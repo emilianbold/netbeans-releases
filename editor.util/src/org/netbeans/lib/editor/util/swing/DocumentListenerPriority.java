@@ -44,6 +44,7 @@ public final class DocumentListenerPriority {
 
     /**
      * Udpate that follows caret update.
+     * @since 1.6
      */
     public static final DocumentListenerPriority AFTER_CARET_UPDATE
             = new DocumentListenerPriority(0, "after-caret-update"); // NOI18N

@@ -84,7 +84,7 @@ public class PriorityMutex {
     /**
      * Release the ownership of the mutex.
      *
-     * @see lock()
+     * @see #lock()
      */
     public synchronized void unlock() {
         if (Thread.currentThread() != lockThread) {
