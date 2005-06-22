@@ -131,7 +131,7 @@ public final class VisualPropertySupport {
             if (values[i].equals(value))
                 selectedIndex = i;
         }
-        if (selectedIndex >0 && selectedIndex <= component.getItemCount()) 
+        if (selectedIndex < component.getItemCount()) 
             component.setSelectedIndex( selectedIndex );                      
         component.removeActionListener( componentListener );
         component.addActionListener(componentListener);
