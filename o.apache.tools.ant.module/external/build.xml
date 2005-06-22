@@ -17,28 +17,28 @@ Microsystems, Inc. All Rights Reserved.
         <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
         <unscramble logfile="${extnl}/unscrambling.log">
             <!-- LFI #2106 for all: -->
-            <binary clear="ant-api-1.6.3.zip" scrambled="ant-api-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-            <binary clear="ant-docs-1.6.3.zip" scrambled="ant-docs-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-            <binary clear="ant-libs-1.6.3.zip" scrambled="ant-libs-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-            <binary clear="ant-misc-1.6.3.zip" scrambled="ant-misc-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-api-1.6.5.zip" scrambled="ant-api-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-docs-1.6.5.zip" scrambled="ant-docs-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-libs-1.6.5.zip" scrambled="ant-libs-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-misc-1.6.5.zip" scrambled="ant-misc-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
         </unscramble>
         <mkdir dir="lib"/>
-        <unzip src="ant-libs-1.6.3.zip" dest="lib"/>
+        <unzip src="ant-libs-1.6.5.zip" dest="lib"/>
     </target>
     <target name="scramble">
         <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
         <scramble>
-            <binary clear="ant-api-1.6.3.zip.master" scrambled="ant-api-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-            <binary clear="ant-docs-1.6.3.zip.master" scrambled="ant-docs-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-            <binary clear="ant-libs-1.6.3.zip.master" scrambled="ant-libs-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/> 
-            <binary clear="ant-misc-1.6.3.zip.master" scrambled="ant-misc-1.6.3.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-api-1.6.5.zip.master" scrambled="ant-api-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-docs-1.6.5.zip.master" scrambled="ant-docs-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
+            <binary clear="ant-libs-1.6.5.zip.master" scrambled="ant-libs-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/> 
+            <binary clear="ant-misc-1.6.5.zip.master" scrambled="ant-misc-1.6.5.zip.scrambled" license="${extnl}/apache-license-2.0.txt"/>
        </scramble>
     </target>
     <target name="clean">
-        <delete file="ant-api-1.6.3.zip"/>
-        <delete file="ant-docs-1.6.3.zip"/>
-        <delete file="ant-libs-1.6.3.zip"/>
-        <delete file="ant-misc-1.6.3.zip"/>
+        <delete file="ant-api-1.6.5.zip"/>
+        <delete file="ant-docs-1.6.5.zip"/>
+        <delete file="ant-libs-1.6.5.zip"/>
+        <delete file="ant-misc-1.6.5.zip"/>
         <delete dir="lib"/>
     </target>
 </project>
