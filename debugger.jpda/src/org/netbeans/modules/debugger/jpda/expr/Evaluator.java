@@ -1533,91 +1533,22 @@ public class Evaluator implements JavaParserVisitor {
         return value;
     }
 
-    static int INVOKE_TIMEOUT_MILLIS = 700;
-
     public static Value invokeVirtual (
         ObjectReference objectReference, 
         Method method, 
         ThreadReference evaluationThread, 
         List args
-     ) throws TimeoutException, InvalidExpressionException {
-
-        EvaluationThread evalThread = new EvaluationThread (
-            objectReference, 
-            evaluationThread, 
-            method, 
-            args, 
-            ObjectReference.INVOKE_SINGLE_THREADED
-        );
-        synchronized (evalThread) {
-            evalThread.start();
-            try {
-                evalThread.wait (INVOKE_TIMEOUT_MILLIS);
-            } catch (InterruptedException e) {
-            }
-            if (!evalThread.isFinished ()) {
-                evalThread.stop();  // we cannot gracefully finish the thread, it's stuck in JDI
-                throw new TimeoutException ();
-            }
-            if (evalThread.getException () != null)
-                throw new InvalidExpressionException (evalThread.getException ());
-            return evalThread.getValue ();
-        }
-    }
-
-    public static final class TimeoutException extends Exception {
-    }
-
-    private static class EvaluationThread extends Thread {
-
-        private ObjectReference obj;
-        private ThreadReference evaluationThread;
-        private Method          method;
-        private List            args;
-        private int             options;
-
-        private boolean     finished;
-        private Value       value;
-        private Throwable   exception;
-
-        public EvaluationThread(ObjectReference obj, ThreadReference evaluationThread, Method method, List args, int options) {
-            super("EvalThread");
-            this.obj = obj;
-            this.evaluationThread = evaluationThread;
-            this.method = method;
-            this.args = args;
-            this.options = options;
-        }
-
-        public void run() {
-            try {
-                if (verbose) 
-                    throw new UnsupportedOperationException (NbBundle.getMessage (
-                        Evaluator.class, 
-                        "CTL_UnsupportedOperationException"
-                    )); 
-                value = obj.invokeMethod(evaluationThread, method, args, options);
-            } catch (ThreadDeath e) {
-                return; // killed by the caller, no need to notify
-            } catch (Throwable e) {
-                exception = e;
-            }
-            synchronized (this) {
-                finished = true;
-                notify();
-            }
-        }
-
-        public Value getValue() {
+     ) throws InvalidExpressionException {
+        
+        try {
+            Value value =
+                    objectReference.invokeMethod(evaluationThread, method,
+                                                 args,
+                                                 ObjectReference.INVOKE_SINGLE_THREADED);
             return value;
+        } catch (Throwable e) {
+            throw new InvalidExpressionException (e);
         }
-
-        public Throwable getException() {
-            return exception;
-        }
-
-        public boolean isFinished() {
-            return finished;
-        }
+        
     }
 }

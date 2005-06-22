@@ -246,7 +246,48 @@ public class TreeModelNode extends AbstractNode {
             });
         }
         task.schedule(0);
-        
+    }
+    
+    void refresh (String id) {
+        if (id == Node.PROP_DISPLAY_NAME) {
+            htmlDisplayName = null;
+            try {
+                String name = model.getDisplayName (object);
+                if (name == null) {
+                    Throwable t = 
+                        new NullPointerException (
+                            "Model: " + model + ".getDisplayName (" + object + 
+                            ") = null!"
+                        );
+                    ErrorManager.getDefault().notify(t);
+                }
+                setName (name, false);
+            } catch (UnknownTypeException e) {
+                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            }
+        } else if (id == Node.PROP_ICON) {
+            try {
+                String iconBase = model.getIconBase (object);
+                if (iconBase != null)
+                    setIconBase (iconBase);
+                else
+                    setIconBase ("org/openide/resources/actions/empty");
+            } catch (UnknownTypeException e) {
+                Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            }
+        } else if (id == Node.PROP_SHORT_DESCRIPTION) {
+            fireShortDescriptionChange(null, null);
+        } else if (id == Node.PROP_LEAF) {
+            getRequestProcessor ().post (new Runnable () {
+                public void run () {
+                    refreshTheChildren();
+                }
+            });
+        } else {
+            refresh();
+        }
     }
     
     private static RequestProcessor requestProcessor;
@@ -432,7 +473,8 @@ public class TreeModelNode extends AbstractNode {
             synchronized (evaluated) {
                 evaluated[0] = 0;
             }
-            treeModelRoot.getChildrenEvaluator().evaluate(this);
+            // It's refresh => do not check for this children already being evaluated
+            treeModelRoot.getChildrenEvaluator().evaluate(this, false);
             Object[] ch;
             synchronized (evaluated) {
                 if (evaluated[0] != 1) {
@@ -706,11 +748,15 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public void evaluate(Evaluable eval) {
+            evaluate(eval, true);
+        }
+        
+        public void evaluate(Evaluable eval, boolean checkForEvaluating) {
             synchronized (objectsToEvaluate) {
                 for (Iterator it = objectsToEvaluate.iterator(); it.hasNext(); ) {
                     if (eval == it.next()) return ; // Already scheduled
                 }
-                if (currentlyEvaluating == eval) return ; // Is being evaluated
+                if (checkForEvaluating && currentlyEvaluating == eval) return ; // Is being evaluated
                 objectsToEvaluate.add(eval);
                 objectsToEvaluate.notify();
                 if (evalTask.isFinished()) {

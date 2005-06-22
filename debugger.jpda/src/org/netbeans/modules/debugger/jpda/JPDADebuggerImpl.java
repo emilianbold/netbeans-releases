@@ -542,23 +542,19 @@ public class JPDADebuggerImpl extends JPDADebugger {
     ) throws InvalidExpressionException {
         if (currentThread == null)
             throw new InvalidExpressionException ("No current context");
-        try {
-            synchronized (LOCK) {
-                List l = disableAllBreakpoints ();
-                try {
-                    return org.netbeans.modules.debugger.jpda.expr.Evaluator.
-                        invokeVirtual (
-                            reference,
-                            method,
-                            getEvaluationThread (),
-                            Arrays.asList (arguments)
-                        );
-                } finally {
-                    enableAllBreakpoints (l);
-                }
+        synchronized (LOCK) {
+            List l = disableAllBreakpoints ();
+            try {
+                return org.netbeans.modules.debugger.jpda.expr.Evaluator.
+                    invokeVirtual (
+                        reference,
+                        method,
+                        getEvaluationThread (),
+                        Arrays.asList (arguments)
+                    );
+            } finally {
+                enableAllBreakpoints (l);
             }
-        } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
-            throw new InvalidExpressionException(e.getMessage());
         }
     }
 

@@ -640,8 +640,14 @@ public final class Models {
     private static ModelEvent translateEvent(ModelEvent event, Object newSource) {
         ModelEvent newEvent;
         if (event instanceof ModelEvent.NodeChanged) {
-            newEvent = new ModelEvent.NodeChanged(newSource,
-                    ((ModelEvent.NodeChanged) event).getNode());
+            if (event instanceof javax.naming.ldap.ExtendedResponse) {
+                newEvent = new NodeChangedEvent(newSource,
+                        ((ModelEvent.NodeChanged) event).getNode(),
+                        ((javax.naming.ldap.ExtendedResponse) event).getID());
+            } else {
+                newEvent = new ModelEvent.NodeChanged(newSource,
+                        ((ModelEvent.NodeChanged) event).getNode());
+            }
         } else if (event instanceof ModelEvent.TableValueChanged) {
             newEvent = new ModelEvent.TableValueChanged(newSource,
                     ((ModelEvent.TableValueChanged) event).getNode(),
@@ -652,6 +658,26 @@ public final class Models {
             newEvent = event;
         }
         return newEvent;
+    }
+    
+    private static class NodeChangedEvent extends ModelEvent.NodeChanged
+                                          implements javax.naming.ldap.ExtendedResponse {
+        
+        private String ID;
+        
+        public NodeChangedEvent(Object source, Object node, String ID) {
+            super(source, node);
+            this.ID = ID;
+        }
+        
+        public byte[] getEncodedValue() {
+            return null;
+        }
+
+        public String getID() {
+            return ID;
+        }
+        
     }
     
     /**

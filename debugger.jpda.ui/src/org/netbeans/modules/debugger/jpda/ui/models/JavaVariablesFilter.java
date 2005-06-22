@@ -129,11 +129,14 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()Ljava/util/Set;",
                     new Variable [0]
                 );
-                return ((ObjectVariable) ov.invokeMethod (
+                ov = (ObjectVariable) ov.invokeMethod (
                     "toArray",
                     "()[Ljava/lang/Object;",
                     new Variable [0]
-                )).getFields (from, to);
+                );
+                int fc = ov.getFieldsCount();
+                if (to == 0) to = fc;
+                return ov.getFields (Math.min(from, fc), Math.min(to, fc));
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
                      (e.getTargetException () instanceof 

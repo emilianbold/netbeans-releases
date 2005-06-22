@@ -50,9 +50,7 @@ public class WatchesNodeModel extends VariablesNodeModel {
         if (o instanceof JPDAWatch) {
             JPDAWatch w = (JPDAWatch) o;
             boolean evaluated;
-            synchronized (VariablesTreeModelFilter.evaluatedNodes) {
-                evaluated = VariablesTreeModelFilter.evaluatedNodes.contains(o);
-            }
+            evaluated = VariablesTreeModelFilter.isEvaluated(o);
             if (!evaluated) {
                 return w.getExpression ();
             }

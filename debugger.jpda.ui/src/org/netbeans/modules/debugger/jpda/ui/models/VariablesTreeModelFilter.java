@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,6 +44,8 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Queue;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 
 
@@ -52,15 +55,23 @@ import org.openide.util.WeakSet;
  * @author   Jan Jancura
  */
 public class VariablesTreeModelFilter implements TreeModelFilter, 
-NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
+NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     
     private ContextProvider lookupProvider;
     
-    /** The set of nodes that alread evaluated their values. */
-    static final Set evaluatedNodes = new WeakSet();
+    /** The set of nodes that already evaluated their values. */
+    private static final Set evaluatedNodes = new WeakSet();
     
     /** The set of nodes by their models. */
     private final Map evaluatedNodesByModels = new WeakHashMap();
+    
+    private final Collection modelListeners = new HashSet();
+    
+    private RequestProcessor evaluationRP = new RequestProcessor();
+    
+    private RequestProcessor.Task evaluationTask;
+    
+    private LinkedList evaluationQueue = new LinkedList();
     
     
     public VariablesTreeModelFilter (ContextProvider lookupProvider) {
@@ -75,6 +86,61 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
      */
     public Object getRoot (TreeModel original) {
         return original.getRoot ();
+    }
+    
+    static boolean isEvaluated(Object o) {
+        synchronized (evaluatedNodes) {
+            return evaluatedNodes.contains(o);
+        }
+    }
+    
+    private static void waitToEvaluate(Object o) {
+        synchronized (evaluatedNodes) {
+            while (!isEvaluated(o)) {
+                try {
+                    evaluatedNodes.wait();
+                } catch (InterruptedException iex) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+    
+    private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
+        synchronized (evaluationQueue) {
+            if (evaluationQueue.contains(o) &&
+                evaluationQueue.contains(whenEvaluated)) return ;
+            if (evaluationTask == null) {
+                evaluationTask = evaluationRP.create(this);
+            }
+            evaluationQueue.add(o);
+            evaluationQueue.add(whenEvaluated);
+            evaluationTask.schedule(1);
+        }
+    }
+    
+    public void run() {
+        Object node;
+        do {
+            node = null;
+            Runnable whenEvaluated = null;
+            synchronized (evaluationQueue) {
+                if (!evaluationQueue.isEmpty()) {
+                    node = evaluationQueue.removeFirst();
+                    whenEvaluated = (Runnable) evaluationQueue.removeFirst();
+                }
+            }
+            if (node != null) {
+                waitToEvaluate(node);
+                if (whenEvaluated != null) {
+                    whenEvaluated.run();
+                } else {
+                    fireModelChange(new ModelEvent.NodeChanged(this, node));
+                    //System.out.println("FIRE "+node+" evaluated, ID = "+node.hashCode());
+                }
+            }
+        } while (node != null);
+        evaluationTask = null;
     }
     
     /** 
@@ -92,13 +158,18 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
      * @return  children for given parent on given indexes
      */
     public Object[] getChildren (
-        TreeModel   original, 
-        Object      parent, 
-        int         from, 
-        int         to
+        final TreeModel   original, 
+        final Object      parent, 
+        final int         from, 
+        final int         to
     ) throws UnknownTypeException {
         Object[] ch;
-        VariablesFilter vf = getFilter (parent, true);
+        VariablesFilter vf = getFilter (parent, true, new Runnable() {
+            public void run() {
+                fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
+                                                     parent, org.openide.nodes.Node.PROP_LEAF));
+            }
+        });
         if (vf == null) 
             ch = original.getChildren (parent, from, to);
         else
@@ -133,13 +204,22 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
      * @return  true if node is leaf
      */
     public int getChildrenCount (
-        TreeModel   original, 
-        Object      parent
+        final TreeModel   original, 
+        final Object      parent
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (parent, true);
-        if (vf == null) 
-            return original.getChildrenCount (parent);
-        return vf.getChildrenCount (original, (Variable) parent);
+        VariablesFilter vf = getFilter (parent, true, new Runnable() {
+            public void run() {
+                fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
+                                                     parent, org.openide.nodes.Node.PROP_LEAF));
+            }
+        });
+        int count;
+        if (vf == null) {
+            count = original.getChildrenCount (parent);
+        } else {
+            count = vf.getChildrenCount (original, (Variable) parent);
+        }
+        return count;
     }
     
     /**
@@ -154,43 +234,120 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         TreeModel original, 
         Object node
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true);
+        VariablesFilter vf = getFilter (node, true, null);
         if (vf == null) 
             return original.isLeaf (node);
         return vf.isLeaf (original, (Variable) node);
     }
 
     public void addModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
     }
 
     public void removeModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
+    }
+    
+    private void fireModelChange(ModelEvent me) {
+        Object[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray();
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            ((ModelListener) listeners[i]).modelChanged(me);
+        }
     }
     
     
     // NodeModelFilter
     
-    public String getDisplayName (NodeModel original, Object node) 
+    public String getDisplayName (final NodeModel original, final Object node) 
     throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true);
-        if (vf == null) 
-            return original.getDisplayName (node);
-        return vf.getDisplayName (original, (Variable) node);
+        final String[] unfilteredDisplayName = new String[] { null };
+        VariablesFilter vf = getFilter (node, true, new Runnable() {
+            public void run() {
+                VariablesFilter vf = getFilter (node, false, null);
+                if (vf == null) return ;
+                String filteredDisplayName;
+                try {
+                    filteredDisplayName = vf.getDisplayName (original, (Variable) node);
+                } catch (UnknownTypeException utex) {
+                    // still do fire
+                    filteredDisplayName = utex.toString();
+                }
+                if (!filteredDisplayName.equals(unfilteredDisplayName[0])) {
+                    fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
+                            node, org.openide.nodes.Node.PROP_DISPLAY_NAME));
+                }
+            }
+        });
+        if (vf == null) {
+            String displayName = original.getDisplayName (node);
+            unfilteredDisplayName[0] = displayName;
+            return displayName;
+        } else {
+            return vf.getDisplayName (original, (Variable) node);
+        }
     }
     
-    public String getIconBase (NodeModel original, Object node) 
+    public String getIconBase (final NodeModel original, final Object node) 
     throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true);
-        if (vf == null) 
-            return original.getIconBase (node);
-        return vf.getIconBase (original, (Variable) node);
+        final String[] unfilteredIconBase = new String[] { null };
+        VariablesFilter vf = getFilter (node, true, new Runnable() {
+            public void run() {
+                VariablesFilter vf = getFilter (node, false, null);
+                if (vf == null) return ;
+                String filteredIconBase;
+                try {
+                    filteredIconBase = vf.getIconBase (original, (Variable) node);
+                } catch (UnknownTypeException utex) {
+                    // still do fire
+                    filteredIconBase = utex.toString();
+                }
+                if (!filteredIconBase.equals(unfilteredIconBase[0])) {
+                    fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
+                            node, org.openide.nodes.Node.PROP_ICON));
+                }
+            }
+        });
+        if (vf == null) {
+            String iconBase = original.getIconBase (node);
+            unfilteredIconBase[0] = iconBase;
+            return iconBase;
+        } else {
+            return vf.getIconBase (original, (Variable) node);
+        }
     }
     
-    public String getShortDescription (NodeModel original, Object node) 
+    public String getShortDescription (final NodeModel original, final Object node) 
     throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true);
-        if (vf == null) 
+        final String[] unfilteredShortDescription = new String[] { null };
+        VariablesFilter vf = getFilter (node, true, new Runnable() {
+            public void run() {
+                VariablesFilter vf = getFilter (node, false, null);
+                if (vf == null) return ;
+                String filteredShortDescription;
+                try {
+                    filteredShortDescription = vf.getShortDescription (original, (Variable) node);
+                } catch (UnknownTypeException utex) {
+                    // still do fire
+                    filteredShortDescription = utex.toString();
+                }
+                if (!filteredShortDescription.equals(unfilteredShortDescription[0])) {
+                    fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
+                            node, org.openide.nodes.Node.PROP_SHORT_DESCRIPTION));
+                }
+            }
+        });
+        if (vf == null) {
             return original.getShortDescription (node);
-        return vf.getShortDescription (original, (Variable) node);
+        } else {
+            return vf.getShortDescription (original, (Variable) node);
+        }
     }
     
     
@@ -200,7 +357,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         NodeActionsProvider original, 
         Object node
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true);
+        VariablesFilter vf = getFilter (node, true, null);
         if (vf == null) 
             return original.getActions (node);
         return vf.getActions (original, (Variable) node);
@@ -210,7 +367,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         NodeActionsProvider original, 
         Object node
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (node, true);
+        VariablesFilter vf = getFilter (node, true, null);
         if (vf == null) 
             original.performDefaultAction (node);
         else
@@ -226,7 +383,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         String columnID
     ) throws UnknownTypeException {
         Object value;
-        VariablesFilter vf = getFilter (row, false);
+        VariablesFilter vf = getFilter (row, false, null);
         if (vf == null) {
             value = original.getValueAt (row, columnID);
         } else {
@@ -234,6 +391,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         }
         synchronized (evaluatedNodes) {
             evaluatedNodes.add(row);
+            evaluatedNodes.notifyAll();
             Set nodes = (Set) evaluatedNodesByModels.get(original);
             if (nodes == null) {
                 nodes = new WeakSet();
@@ -250,7 +408,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         Object row, 
         String columnID
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (row, true);
+        VariablesFilter vf = getFilter (row, true, null);
         if (vf == null) 
             return original.isReadOnly (row, columnID);
         return vf.isReadOnly (original, (Variable) row, columnID);
@@ -262,7 +420,7 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
         String columnID, 
         Object value
     ) throws UnknownTypeException {
-        VariablesFilter vf = getFilter (row, false);
+        VariablesFilter vf = getFilter (row, false, null);
         if (vf == null)
             original.setValueAt (row, columnID, value);
         else
@@ -276,13 +434,14 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
     private HashMap ancestorToFilter;
     
     /**
-     * @param lazy When <code>null</code>, get the correct filter immediately.
-     *             Otherwise if the variable is not initialized, set this parameter
-     *             to { true } and return <code>null</code>, when it is initialized,
-     *             set this to { false } and return the filter (or <code>null</code>).
+     * @param o The object to get the filter for
+     * @param checkEvaluated Whether we should check if the object was already evaluated
+     * @param whenEvaluated If the object is not yet evaluated, <code>null</code>
+     *                      will be returned and <code>whenEvaluated.run()<code>
+     *                      will be executed when the object becomes evaluated.
      * @return The filter or <code>null</code>.
      */
-    private VariablesFilter getFilter (Object o, boolean checkEvaluated) {//, boolean[] lazy) {
+    private VariablesFilter getFilter (Object o, boolean checkEvaluated, Runnable whenEvaluated) {
         if (typeToFilter == null) {
             typeToFilter = new HashMap ();
             ancestorToFilter = new HashMap ();
@@ -311,6 +470,9 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
             synchronized (evaluatedNodes) {
                 //System.out.println("Var "+v+" is evaluated = "+evaluatedNodes.contains(v));
                 if (!evaluatedNodes.contains(v)) {
+                    if (whenEvaluated != null) {
+                        postEvaluationMonitor(o, whenEvaluated);
+                    }
                     return null;
                 }
             }
@@ -359,6 +521,28 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter {
             synchronized (evaluatedNodes) {
                 evaluatedNodes.remove(node);
             }
+        }
+        
+    }
+    
+    private static class NodeChangedEvent extends ModelEvent.NodeChanged implements javax.naming.ldap.ExtendedResponse {
+        // java.sql.Savepoint
+        // javax.naming.ldap.ExtendedResponse
+        // javax.print.attribute.Attribute
+        
+        private String ID;
+        
+        public NodeChangedEvent(Object source, Object node, String ID) {
+            super(source, node);
+            this.ID = ID;
+        }
+        
+        public byte[] getEncodedValue() {
+            return null;
+        }
+
+        public String getID() {
+            return ID;
         }
         
     }

@@ -99,6 +99,21 @@ public class TreeModelRoot implements ModelListener {
                         }
                     }
                 }
+                if (event instanceof ModelEvent.NodeChanged) {
+                    ModelEvent.NodeChanged nchEvent = (ModelEvent.NodeChanged) event;
+                    Object node = nchEvent.getNode();
+                    if (node != null) {
+                        TreeModelNode tmNode = findNode(node);
+                        if (tmNode != null) {
+                            if (event instanceof javax.naming.ldap.ExtendedResponse) {
+                                String id = ((javax.naming.ldap.ExtendedResponse) event).getID();
+                                tmNode.refresh(id);
+                            }
+                            tmNode.refresh();
+                            return ; // We're done
+                        }
+                    }
+                }
                 rootNode.setObject (model.getRoot ());
             }
         });
