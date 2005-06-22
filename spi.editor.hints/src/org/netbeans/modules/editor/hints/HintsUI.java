@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 public class HintsUI implements MouseListener, KeyListener {
     private JTextComponent comp = null;
     private List hints = Collections.EMPTY_LIST;
-    private static int WINDOW_GAP = 2;
     
     private Popup listPopup = null;
     private JLabel hintIcon = null;
@@ -144,18 +143,15 @@ public class HintsUI implements MouseListener, KeyListener {
         if (comp == null || !comp.isDisplayable() || !comp.isShowing()) {
             return;
         }
-        configureBounds (getHintIcon(), false);
+        configureBounds (getHintIcon());
     }
     
-    private void configureBounds (JComponent jc, boolean trackCaret) {
+    private void configureBounds (JComponent jc) {
         JRootPane pane = comp.getRootPane();
         JLayeredPane lp = pane.getLayeredPane();
         Rectangle r = null;
         try {
-            int pos = comp.getCaret().getDot();
-            if (!trackCaret) {
-                pos = javax.swing.text.Utilities.getRowStart(comp, pos);
-            }
+            int pos = javax.swing.text.Utilities.getRowStart(comp, comp.getCaret().getDot());
             r = comp.modelToView (pos);
         } catch (BadLocationException e) {
             setHints (null, null, false);
@@ -165,12 +161,6 @@ public class HintsUI implements MouseListener, KeyListener {
         Point p = new Point(r.x, r.y );
          
         Dimension d = jc.getPreferredSize();
-        
-        if (trackCaret) {
-            p.y += d.height;
-        } else {
-            p.x -= 17;
-        }
         
         SwingUtilities.convertPointToScreen(p, comp);
         SwingUtilities.convertPointFromScreen(p, lp);
