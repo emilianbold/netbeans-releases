@@ -435,16 +435,16 @@ public class Util {
     }
     
     /** Returns a String holding the stack trace information printed by printStackTrace() */
-    public static String getStackTrace(Exception ex) {
+    public static String getStackTrace (Throwable t) {
         StringWriter sw = new StringWriter(500);
         PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
+        t.printStackTrace(pw);
         return sw.toString();
     }
     
     /** Logs the stack trace information printed by printStackTrace() */
-    public static void logStackTrace(Log log, Exception ex) {
-        String trace = getStackTrace(ex);
+    public static void logStackTrace (Log log, Throwable t) {
+        String trace = getStackTrace(t);
         log.logEvent(log, Log.DBG, trace);
         log.logEvent(log, Log.ERROR, trace);
     }
