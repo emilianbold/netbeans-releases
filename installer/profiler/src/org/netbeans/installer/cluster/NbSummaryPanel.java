@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -49,7 +49,6 @@ public class NbSummaryPanel extends TextDisplayPanel
         try {
             ProductService service = (ProductService) getService(ProductService.NAME);
             if (type == ProductService.POST_INSTALL) {
-                logEvent(this, Log.DBG, "queryEnter exitCode: " + getWizard().getExitCode());
                 //#48305: Method GenericSoftwareObject.getInstallStatus() does not work. It returns
                 //always 0. We must use getWizard().getExitCode() as workaround.
                 //ProductTree pt = service.getSoftwareObjectTree(ProductService.DEFAULT_PRODUCT_SOURCE);
