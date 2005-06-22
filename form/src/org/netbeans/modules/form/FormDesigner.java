@@ -604,7 +604,31 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             Rectangle hBounds = handleLayer.getBounds();
             Dimension size = alignmentPalette.getPreferredSize();
             alignmentPalette.setBounds(hBounds.x + hBounds.width - size.width - 10,
-                hBounds.y + hBounds.height - size.height - 10, size.width, size.height);            
+                hBounds.y + hBounds.height - size.height - 10, size.width, size.height);
+            handleLayer.addComponentListener(new ComponentAdapter() {
+                public void componentResized(ComponentEvent e) {
+                    // Ensure that the alignmentPalette is within the bounds of the handleLayer
+                    Rectangle bounds = alignmentPalette.getBounds();
+                    Dimension dim = handleLayer.getSize();
+                    int gap = dim.width - bounds.x - bounds.width;
+                    if (gap < 0) {
+                        alignmentPalette.setLocation(bounds.x + gap, bounds.y);
+                        bounds = alignmentPalette.getBounds();
+                    }
+                    if (bounds.x < 0) {
+                        alignmentPalette.setLocation(0, bounds.y);
+                        bounds = alignmentPalette.getBounds();
+                    }
+                    gap = dim.height - bounds.y - bounds.height;
+                    if (gap < 0) {
+                        alignmentPalette.setLocation(bounds.x, bounds.y + gap);
+                        bounds = alignmentPalette.getBounds();
+                    }
+                    if (bounds.y < 0) {
+                        alignmentPalette.setLocation(bounds.x, 0);
+                    }
+                }
+            });
         }
         alignmentPalette.updateState();
         alignmentPalette.setVisible(getDesignerMode() == MODE_SELECT);
@@ -1735,8 +1759,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
                 public void mouseDragged(MouseEvent e) {
                     Point p = pointFromComponentToHandleLayer(e.getPoint(), (Component)e.getSource());
-                    if (handleLayer.contains(p)) {
-                        Rectangle bounds = AlignmentPalette.this.getBounds();
+                    Point shift = new Point(p.x-lastPoint.x, p.y-lastPoint.y);
+                    Rectangle bounds = AlignmentPalette.this.getBounds();
+                    if (new Rectangle(0, 0, handleLayer.getWidth(), handleLayer.getHeight()).contains(
+                        new Rectangle(bounds.x + shift.x, bounds.y + shift.y, bounds.width, bounds.height))) {
                         bounds.translate(p.x-lastPoint.x, p.y-lastPoint.y);
                         AlignmentPalette.this.setBounds(bounds);
                         lastPoint = p;
