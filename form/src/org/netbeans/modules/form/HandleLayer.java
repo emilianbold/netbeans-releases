@@ -63,6 +63,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     private ComponentDrag draggedComponent;
     private JPanel dragPanel;
 
+    private Point lastMousePosition;
+    private int lastXPosDiff;
+    private int lastYPosDiff;
+            
     private Point lastLeftMousePoint;
     private Point prevLeftMousePoint;
     private boolean draggingEnded; // prevents dragging from starting inconveniently
@@ -1435,6 +1439,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             return; // dragging makes sense only selection mode
 
         Point p = e.getPoint();
+        if (lastMousePosition != null) {
+            lastXPosDiff = p.x - lastMousePosition.x;
+            lastYPosDiff = p.y - lastMousePosition.y;
+        }
 
         if (!draggingEnded && !anyDragger() && lastLeftMousePoint != null) { // no dragging yet
             if (!viewOnly
@@ -1472,10 +1480,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             repaint();
         }
 
+        lastMousePosition = p;
         e.consume();
     }
 
     public void mouseMoved(MouseEvent e) {
+        Point p = e.getPoint();
+        if (lastMousePosition != null) {
+            lastXPosDiff = p.x - lastMousePosition.x;
+            lastYPosDiff = p.y - lastMousePosition.y;
+        }
         if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
@@ -1491,6 +1505,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             checkResizing(e);
         }
         highlightPanel(e);
+        lastMousePosition = p;
     }
 
     /**
@@ -1642,6 +1657,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         RADVisualContainer fixedTarget;
         Component[] showingComponents;
         Rectangle[] originalBounds; // in coordinates of HandleLayer
+        Rectangle compoundBounds; // compound from original bounds
         Rectangle[] movingBounds; // in coordinates of ComponentLayer
         Point hotSpot; // in coordinates of ComponentLayer
         Point convertPoint; // from HandleLayer to ComponentLayer (top visual component)
@@ -1668,6 +1684,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 showingComponents[i] = (Component) formDesigner.getComponent(movingComponents[i]);
                 originalBounds[i] = showingComponents[i].getBounds();
                 convertRectangleFromComponent(originalBounds[i], showingComponents[i].getParent());
+                compoundBounds = compoundBounds != null ?
+                                 compoundBounds.union(originalBounds[i]) : originalBounds[i];
                 movingBounds[i] = new Rectangle();
                 movingBounds[i].width = originalBounds[i].width;
                 movingBounds[i].height = originalBounds[i].height;
@@ -1691,15 +1709,66 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             return movingComponents != null && formDesigner.getTopDesignComponent() == movingComponents[0];
         }
                 
-        final RADVisualContainer getTargetContainer(Point p, int mode) {
+        final RADVisualContainer getTargetContainer(Point p, int modifiers) {
             if (fixedTarget != null) {
                 return fixedTarget;
             }
-            RADVisualContainer metacont = HandleLayer.this.getMetaContainerAt(p, mode);
+            RADVisualContainer metacont = HandleLayer.this.getMetaContainerAt(
+                    getMoveDirectionSensitivePoint(p, modifiers),
+                    ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST);
             if (substituteForContainer(metacont)) {
                 metacont = metacont.getParentContainer();
             }
             return metacont;
+        }
+
+        private Point getMoveDirectionSensitivePoint(Point p, int modifiers) {
+            if (lastMousePosition != null
+                && compoundBounds != null
+                && (modifiers & (InputEvent.ALT_MASK|InputEvent.CTRL_MASK|InputEvent.SHIFT_MASK)) == 0)
+            {
+                if (compoundBounds.width <= 0 || compoundBounds.height <= 0) {
+                    return p;
+                }
+                int x;
+                int y;
+                if (lastXPosDiff != 0 && lastYPosDiff != 0) {
+                    double dx = lastXPosDiff;
+                    double dy = lastYPosDiff;
+                    double d = Math.abs(dy/dx);
+                    double r = compoundBounds.getHeight() / compoundBounds.getWidth();
+                    if (d > r) {
+                        x = p.x + (int)Math.round(compoundBounds.getHeight() / d / 2.0) * (lastXPosDiff > 0 ? 1 : -1);
+                        y = p.y - convertPoint.y - hotSpot.y + compoundBounds.y + (lastYPosDiff > 0 ? compoundBounds.height : 0);
+                    }
+                    else {
+                        x = p.x - convertPoint.x - hotSpot.x + compoundBounds.x + (lastXPosDiff > 0 ? compoundBounds.width : 0);
+                        y = p.y + (int)Math.round(compoundBounds.getWidth() * d / 2.0) * (lastYPosDiff > 0 ? 1 : -1);
+                    }
+                }
+                else {
+                    x = lastXPosDiff == 0 ? p.x :
+                        p.x - convertPoint.x - hotSpot.x + compoundBounds.x + (lastXPosDiff > 0 ? compoundBounds.width : 0);
+                    y = lastYPosDiff == 0 ? p.y :
+                        p.y - convertPoint.y - hotSpot.y + compoundBounds.y + (lastYPosDiff > 0 ? compoundBounds.height : 0);
+                }
+                Rectangle boundaries = formDesigner.getComponentLayer().getDesignerInnerBounds();
+                // don't let the component component fall into non-visual area easily
+                if (x < boundaries.x && x + 8 >= boundaries.x) {
+                    x = boundaries.x;
+                }
+                else if (x > boundaries.x + boundaries.width && x - 8 < boundaries.x + boundaries.width) {
+                    x = boundaries.x + boundaries.width - 1;
+                }
+                if (y < boundaries.y && y + 8 >= boundaries.y) {
+                    y = boundaries.y;
+                }
+                else if (y > boundaries.y + boundaries.height && y - 8 < boundaries.y + boundaries.height) {
+                    y = boundaries.y + boundaries.height - 1;
+                }
+                return new Point(x, y);
+            }
+            else return p;
         }
 
         final void move(MouseEvent e) {
@@ -1718,8 +1787,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 return;
             }
 
-            targetContainer = getTargetContainer(
-                    p, ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST);
+            targetContainer = getTargetContainer(p, modifiers);
 
             if (newDrag && targetContainer != null && targetContainer.getLayoutSupport() == null) {
                 p.x -= convertPoint.x;
@@ -1729,10 +1797,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                                       ((modifiers & InputEvent.ALT_MASK) == 0),
                                                       ((modifiers & InputEvent.CTRL_MASK) != 0),
                                                       movingBounds);
-                    for (int i=0; i<showingComponents.length; i++) {
-                        showingComponents[i].setSize(movingBounds[i].width, movingBounds[i].height);
-                        doLayout(showingComponents[i]);
-                    }
             }
             else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
                 oldMove(p);
@@ -2237,6 +2301,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 if (originalBounds == null) {
                     originalBounds = new Rectangle[] { new Rectangle(convertPoint.x, convertPoint.y, size.width, size.height) };
                     showingComponents[0].setBounds(originalBounds[0]);
+                    compoundBounds = originalBounds[0];
                     movingBounds = new Rectangle[] { new Rectangle(0, 0, size.width, size.height) };
                 }
 
@@ -2268,8 +2333,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         boolean end(Point p, int modifiers) {
             if (p != null) {
-                targetContainer = getTargetContainer(
-                        p, ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST);
+                targetContainer = getTargetContainer(p, modifiers);
 
                 boolean newLayout;
                 boolean oldLayout;
