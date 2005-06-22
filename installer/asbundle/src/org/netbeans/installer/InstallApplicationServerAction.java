@@ -98,6 +98,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     public void build(ProductBuilderSupport support) {
         try {
             support.putClass(RunCommand.class.getName());
+            support.putClass("org.netbeans.installer.RunCommand$StreamAccumulator");
             support.putClass(FileComparator.class.getName());
             support.putClass(Util.class.getName());
             support.putClass(NetUtils.class.getName());

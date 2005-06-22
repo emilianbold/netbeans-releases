@@ -67,6 +67,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     public void build(ProductBuilderSupport support) {
         try {
             support.putClass(RunCommand.class.getName());
+            support.putClass("org.netbeans.installer.RunCommand$StreamAccumulator");
             support.putClass(FileComparator.class.getName());
             support.putClass(Util.class.getName());
             support.putClass("org.netbeans.installer.InstallJ2sdkAction$ProgressThread");

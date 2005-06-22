@@ -38,6 +38,7 @@ public class JDKSearchAction extends CancelableWizardAction  {
             support.putClass(Util.class.getName());
             support.putClass(JDKVersion.class.getName());
             support.putClass(RunCommand.class.getName());
+            support.putClass("org.netbeans.installer.RunCommand$StreamAccumulator");
             support.putClass(JDKInfo.class.getName());
             support.putClass(SolarisRoutines.class.getName());
             support.putRequiredService(Win32RegistryService.NAME);
