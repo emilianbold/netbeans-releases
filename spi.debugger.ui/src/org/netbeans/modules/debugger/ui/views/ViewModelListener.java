@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -120,6 +120,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             nodeActionsProviders =  joinLookups(e, dm, NodeActionsProvider.class);
             nodeActionsProviderFilters = joinLookups(e, dm, NodeActionsProviderFilter.class);
             columnModels =          joinLookups(e, dm, ColumnModel.class);
+            mm =                    joinLookups(e, dm, Model.class);
         } else {
             treeModels =            dm.lookup (viewType, TreeModel.class);
             treeModelFilters =      dm.lookup (viewType, TreeModelFilter.class);
@@ -131,9 +132,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             nodeActionsProviders =  dm.lookup (viewType, NodeActionsProvider.class);
             nodeActionsProviderFilters = dm.lookup (viewType, NodeActionsProviderFilter.class);
             columnModels =          dm.lookup (viewType, ColumnModel.class);
+            mm =                    dm.lookup (viewType, Model.class);
         }
         
-        List models = new ArrayList(10);
+        List models = new ArrayList(11);
         models.add(treeModels);
         models.add(treeModelFilters);
         models.add(treeExpansionModels);
@@ -144,6 +146,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         models.add(nodeActionsProviders);
         models.add(nodeActionsProviderFilters);
         models.add(columnModels);
+        models.add(mm);
         
         Models.setModelsToView (
             view, 

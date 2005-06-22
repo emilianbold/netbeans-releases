@@ -140,10 +140,11 @@ public final class Models {
         List nodeActionsProviders;
         List nodeActionsProviderFilters;
         List columnModels;
+        List otherModels;
         
-        // Either the list contains 10 lists of individual models, or the models directly
+        // Either the list contains 10 lists of individual models + one list of mixed models; or the models directly
         boolean hasLists = false;
-        if (models.size() == 10) {
+        if (models.size() == 11) {
             Iterator it = models.iterator ();
             while (it.hasNext ()) {
                 if (!(it.next() instanceof List)) break;
@@ -152,7 +153,7 @@ public final class Models {
                 hasLists = true;
             }
         }
-        if (hasLists) { // We have 10 lists of individual models
+        if (hasLists) { // We have 11 lists of individual models
             treeModels =            (List) models.get(0);
             treeModelFilters =      (List) models.get(1);
             revertOrder(treeModelFilters);
@@ -167,6 +168,7 @@ public final class Models {
             nodeActionsProviderFilters = (List) models.get(8);
             revertOrder(nodeActionsProviderFilters);
             columnModels =          (List) models.get(9);
+            otherModels =           (List) models.get(10);
         } else { // We have the models, need to find out what they implement
             treeModels =           new LinkedList ();
             treeModelFilters =     new LinkedList ();
@@ -178,44 +180,45 @@ public final class Models {
             nodeActionsProviders = new LinkedList ();
             nodeActionsProviderFilters = new LinkedList ();
             columnModels =         new LinkedList ();
+            otherModels =          models;
+        }
             
-            Iterator it = models.iterator ();
-            while (it.hasNext ()) {
-                Object model = it.next ();
-                boolean first = model.getClass ().getName ().endsWith ("First");
-                if (model instanceof TreeModel)
-                    treeModels.add(model);
-                if (model instanceof TreeModelFilter)
-                    if (first)
-                        treeModelFilters.add(model);
-                    else
-                        treeModelFilters.add(0, model);
-                if (model instanceof TreeExpansionModel)
-                    treeExpansionModels.add(model);
-                if (model instanceof NodeModel)
-                    nodeModels.add(model);
-                if (model instanceof NodeModelFilter)
-                    if (first)
-                        nodeModelFilters.add(model);
-                    else
-                        nodeModelFilters.add(0, model);
-                if (model instanceof TableModel)
-                    tableModels.add(model);
-                if (model instanceof TableModelFilter)
-                    if (first)
-                        tableModelFilters.add(model);
-                    else
-                        tableModelFilters.add(0, model);
-                if (model instanceof NodeActionsProvider)
-                    nodeActionsProviders.add(model);
-                if (model instanceof NodeActionsProviderFilter)
-                    if (first)
-                        nodeActionsProviderFilters.add(model);
-                    else
-                        nodeActionsProviderFilters.add(0, model);
-                if (model instanceof ColumnModel)
-                    columnModels.add(model);
-            }
+        Iterator it = otherModels.iterator ();
+        while (it.hasNext ()) {
+            Object model = it.next ();
+            boolean first = model.getClass ().getName ().endsWith ("First");
+            if (model instanceof TreeModel)
+                treeModels.add(model);
+            if (model instanceof TreeModelFilter)
+                if (first)
+                    treeModelFilters.add(model);
+                else
+                    treeModelFilters.add(0, model);
+            if (model instanceof TreeExpansionModel)
+                treeExpansionModels.add(model);
+            if (model instanceof NodeModel)
+                nodeModels.add(model);
+            if (model instanceof NodeModelFilter)
+                if (first)
+                    nodeModelFilters.add(model);
+                else
+                    nodeModelFilters.add(0, model);
+            if (model instanceof TableModel)
+                tableModels.add(model);
+            if (model instanceof TableModelFilter)
+                if (first)
+                    tableModelFilters.add(model);
+                else
+                    tableModelFilters.add(0, model);
+            if (model instanceof NodeActionsProvider)
+                nodeActionsProviders.add(model);
+            if (model instanceof NodeActionsProviderFilter)
+                if (first)
+                    nodeActionsProviderFilters.add(model);
+                else
+                    nodeActionsProviderFilters.add(0, model);
+            if (model instanceof ColumnModel)
+                columnModels.add(model);
         }
         /*
         System.out.println("Tree Models = "+treeModels);
