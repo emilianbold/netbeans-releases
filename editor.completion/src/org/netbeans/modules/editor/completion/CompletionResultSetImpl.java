@@ -160,7 +160,7 @@ public final class CompletionResultSetImpl {
     }
     
     public List getItems() {
-        assert finished : "Adding not finished";
+        assert isFinished() : "Adding not finished";
         return items;
     }
     
@@ -189,14 +189,17 @@ public final class CompletionResultSetImpl {
     }
     
     public void finish() {
-        if (finished) {
-            throw new IllegalStateException("finish() already called"); // NOI18N
+        synchronized (this) {
+            if (finished) {
+                throw new IllegalStateException("finish() already called"); // NOI18N
+            }
+            finished = true;
         }
-        finished = true;
+
         completionImpl.finishNotify(this);
     }
     
-    public boolean isFinished() {
+    public synchronized boolean isFinished() {
         return finished;
     }
     
@@ -210,7 +213,7 @@ public final class CompletionResultSetImpl {
     }
     
     private void checkNotFinished() {
-        if (finished) {
+        if (isFinished()) {
             throw new IllegalStateException("Result set already finished"); // NOI18N
         }
     }
