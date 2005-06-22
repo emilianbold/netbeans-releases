@@ -30,7 +30,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 
 public class CompletionJList extends JList {
     
-    private static final int DARKER_COLOR_COMPONENT = 10;
+    private static final int DARKER_COLOR_COMPONENT = 5;
     
     private final RenderComponent renderComponent;
     
@@ -38,8 +38,6 @@ public class CompletionJList extends JList {
     
     private int maxVisibleRowCount;
     
-    private static final Color EVEN_LINE_COLOR = new Color(250, 250, 250);
-
     public CompletionJList(int maxVisibleRowCount, MouseListener mouseListener) {
         this.maxVisibleRowCount = maxVisibleRowCount;
         addMouseListener(mouseListener);
