@@ -1253,7 +1253,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (!multipleImpact) { // if this was single adding...
-            accommodateOutPosition(interval, dimension, pos1.alignment^1); // adapt size of parent/neighbor
+            accommodateOutPosition(interval, dimension, alignment1^1,  pos2!= null && pos2.snapped); // adapt size of parent/neighbor
             if (dimension == HORIZONTAL && !needAlign && interval.getParent().isSequential()) {
                 // check whether the added interval could not be rather placed
                 // in a neighbor parallel group
@@ -1922,7 +1922,7 @@ public class LayoutDesigner implements LayoutConstants {
      * form the method tries to shorten the nearest gap in the parent sequence.
      * [practically this method is now needed when an interval is resized out of its parent and snapped]
      */
-    private void accommodateOutPosition(LayoutInterval interval, int dimension, int alignment) {
+    private void accommodateOutPosition(LayoutInterval interval, int dimension, int alignment, boolean snapped) {
         if (alignment == CENTER || alignment == BASELINE) {
             return; // [but should consider these too...]
         }
@@ -1935,7 +1935,7 @@ public class LayoutDesigner implements LayoutConstants {
         do {
             if (parent.isSequential()) {
                 if (sizeIncrement > 0) {
-                    sizeIncrement = accommodateSizeInSequence(interval, sizeIncrement, dimension, alignment);
+                    sizeIncrement = accommodateSizeInSequence(interval, sizeIncrement, dimension, alignment, snapped);
                 }
                 if (parent.getSubInterval(alignment == LEADING ? 0 : parent.getSubIntervalCount()-1) != interval) {
                     return; // not a border interval in the sequence, can't go up
@@ -1956,7 +1956,7 @@ public class LayoutDesigner implements LayoutConstants {
                // can't accommodate at the aligned side [but could probably turn to other side - update 'pos', etc]
     }
 
-    private int accommodateSizeInSequence(LayoutInterval interval, int sizeIncrement, int dimension, int alignment) {
+    private int accommodateSizeInSequence(LayoutInterval interval, int sizeIncrement, int dimension, int alignment, boolean snapped) {
         LayoutInterval parent = interval.getParent();
         assert parent.isSequential();
         int d = alignment == LEADING ? -1 : 1;
@@ -1970,8 +1970,14 @@ public class LayoutDesigner implements LayoutConstants {
 
                 int size = currentSize - sizeIncrement;
                 if (size <= pad) {
-                    size = NOT_EXPLICITLY_DEFINED;
-                    sizeIncrement -= currentSize - pad;
+                    if (size > 0 || !snapped || (i+d >= 0 && i+d < n)) {
+                        size = NOT_EXPLICITLY_DEFINED;
+                        sizeIncrement -= currentSize - pad;
+                    }
+                    else { // remove gap
+                        layoutModel.removeInterval(parent, i);
+                        break;
+                    }
                 }
                 else sizeIncrement = 0;
 
