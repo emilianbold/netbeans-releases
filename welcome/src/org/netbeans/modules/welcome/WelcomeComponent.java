@@ -119,10 +119,6 @@ class WelcomeComponent extends TopComponent{
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
-    static void clearRef(){
-        component.clear();
-    }
-    
     private void initAccessibility(){
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WelcomeComponent.class, "ACS_Welcome_DESC")); // NOI18N
     }
