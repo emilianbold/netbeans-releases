@@ -13,72 +13,27 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
-import java.awt.BorderLayout;
-import java.awt.Toolkit;
 import java.awt.event.*;
-import java.awt.datatransfer.Transferable;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
-import java.text.MessageFormat;
-import java.awt.print.PrinterJob;
-import java.awt.print.Pageable;
-import java.awt.print.Printable;
-import java.awt.print.PageFormat;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterIOException;
-import java.awt.print.PrinterAbortException;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.Dimension;
-import java.awt.Rectangle;
-import java.awt.Component;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 
-import javax.swing.Action;
-import javax.swing.JEditorPane;
-import javax.swing.JScrollPane;
-import javax.swing.JButton;
-import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.html.HTMLFrameHyperlinkEvent;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.undo.CannotUndoException;
 
-import org.openide.awt.UndoRedo;
 import org.openide.actions.*;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.CloseCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.*;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAdapter;
-import org.openide.nodes.NodeListener;
 import org.openide.loaders.*;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.*;
 //import org.openide.util.Task;
 //import org.openide.util.TaskListener;
-import org.openide.util.WeakListener;
-import org.openide.util.datatransfer.PasteType;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
-import org.netbeans.api.diff.Difference;
 
 /** Support for associating an editor and a Swing {@link Document} to a revision object.
  * This is a modification of org.openide.text.DataEditorSupport

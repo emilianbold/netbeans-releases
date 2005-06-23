@@ -15,18 +15,7 @@ package org.netbeans.api.debugger;
 
 import java.beans.*;
 import java.io.*;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.text.MessageFormat;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderListener;
-
 
 /** 
  * Debugger Engine represents implementation of one debugger (Java Debugger, 
