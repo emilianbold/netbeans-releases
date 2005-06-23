@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectType;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -80,6 +81,45 @@ public final class ProjectXMLManager {
     /** Creates a new instance of ProjectXMLManager */
     public ProjectXMLManager(AntProjectHelper helper) {
         this.helper = helper;
+    }
+    
+    public void setModuleType(NbModuleTypeProvider.NbModuleType moduleType) {
+        Element confData = getConfData();
+        Document doc = confData.getOwnerDocument();
+        
+        Element standaloneEl = Util.findElement(confData, ProjectXMLManager.STANDALONE,
+                NbModuleProjectType.NAMESPACE_SHARED);
+        if (standaloneEl != null && moduleType == NbModuleTypeProvider.STANDALONE) {
+            // nothing needs to be done - standalone is already set
+            return;
+        }
+
+        Element suiteCompEl = Util.findElement(confData, ProjectXMLManager.SUITE_COMPONENT,
+                NbModuleProjectType.NAMESPACE_SHARED);
+        if (suiteCompEl != null && moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
+            // nothing needs to be done - suiteCompEl is already set
+            return;
+        }
+
+        if (suiteCompEl == null && standaloneEl == null && moduleType == NbModuleTypeProvider.NETBEANS_ORG) {
+            // nothing needs to be done - nb.org modules don't have any element
+            return;
+        }
+
+        // Ok, we get here. So clean up....
+        if (suiteCompEl != null) {
+            confData.removeChild(suiteCompEl);
+        }
+        if (standaloneEl != null) {
+            confData.removeChild(standaloneEl);
+        }
+        
+        // ....and create element for new module type.
+        Element newModuleType = createTypeElement(doc, moduleType);
+        if (newModuleType != null) {
+            confData.appendChild(newModuleType);
+        }
+        helper.putPrimaryConfigurationData(confData, true);
     }
     
     /** Returns sorted direct module dependencies. */
@@ -472,7 +512,7 @@ public final class ProjectXMLManager {
      * suite</em> module.
      */
     static void generateEmptyModuleTemplate(FileObject projectXml, String cnb,
-            int type) throws IOException {
+            NbModuleTypeProvider.NbModuleType moduleType) throws IOException {
         
         Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
         
@@ -488,24 +528,25 @@ public final class ProjectXMLManager {
         confEl.appendChild(dataEl);
         Document dataDoc = dataEl.getOwnerDocument();
         dataEl.appendChild(createModuleElement(dataDoc, CODE_NAME_BASE, cnb));
-        switch (type) {
-            case NbModuleProject.TYPE_STANDALONE:
-                dataEl.appendChild(createModuleElement(dataDoc, STANDALONE));
-                break;
-            case NbModuleProject.TYPE_SUITE_COMPONENT:
-                dataEl.appendChild(createModuleElement(dataDoc, SUITE_COMPONENT));
-                break;
-            case NbModuleProject.TYPE_NETBEANS_ORG:
-                // has no special element
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown module type: " + type); // NOI18N
+        Element moduleTypeEl = createTypeElement(dataDoc, moduleType);
+        if (moduleTypeEl != null) {
+            dataEl.appendChild(moduleTypeEl);
         }
         dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
         dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));
         
         // store document to disk
         ProjectXMLManager.safelyWrite(projectXml, prjDoc);
+    }
+    
+    private static Element createTypeElement(Document dataDoc, NbModuleTypeProvider.NbModuleType type) {
+        Element result = null;
+        if (type == NbModuleTypeProvider.STANDALONE) {
+            result = createModuleElement(dataDoc, STANDALONE);
+        } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+            result = createModuleElement(dataDoc, SUITE_COMPONENT);
+        }
+        return result;
     }
     
     /**

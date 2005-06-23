@@ -13,21 +13,15 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Provides convenient access to a lot of Suite Module's properties.
@@ -37,6 +31,14 @@ import org.openide.filesystems.FileUtil;
 final class SuiteProperties extends ModuleProperties {
     
     private NbPlatform platform;
+    
+    /** Project the current properties represents. */
+    private Project project;
+    
+    /** Represent original set of sub-modules. */
+    private final Set/*<Project>*/ origSubModules;
+    
+    /** Represent currently set set of sub-modules. */
     private Set/*<Project>*/ subModules;
     
     // XXX don't know exact allowed ant property format. We might use something
@@ -51,12 +53,18 @@ final class SuiteProperties extends ModuleProperties {
     /**
      * Creates a new instance of SuiteProperties
      */
-    SuiteProperties(AntProjectHelper helper, PropertyEvaluator evaluator,
-            Set/*<Project>*/ subModules) {
+    SuiteProperties(Project project, AntProjectHelper helper,
+            PropertyEvaluator evaluator, Set/*<Project>*/ subModules) {
         super(helper, evaluator);
+        this.project = project;
+        this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
         platform = NbPlatform.getPlatformByID(
                 evaluator.getProperty("nbplatform.active")); // NOI18N
+    }
+
+    Project getProject() {
+        return project;
     }
     
     Map/*<String, String>*/ getDefaultValues() {
@@ -82,69 +90,19 @@ final class SuiteProperties extends ModuleProperties {
         // store submodules if they've changed
         SuiteSubModulesListModel model = getModulesListModel();
         if (model.isChanged()) {
-            removeAllModules();
-            addModules(model.getSubModules());
+            SuiteUtils.replaceSubModules(this);
             super.storeProperties();
         }
     }
     
-    /**
-     * Remove properties relating to submodules from
-     * <em>nbproject/project.properties</em> and
-     * <em>nbproject/private/private.properties</em> appropriately which
-     * actually means <em>modules</em> property as well ass all properties for
-     * individual submodules.
-     */
-    private void removeAllModules() {
-        String modules = getProjectProperties().getProperty(MODULES_PROPERTY);
-        if (modules != null) {
-            String[] pieces = PropertyUtils.tokenizePath(modules);
-            for (int i = 0; i < pieces.length; i++) {
-                String module = pieces[i];
-                // every submodules created by GUI customizer has its own
-                // property but user should add manually path into the modules
-                // property directly. So lets delete all project properties
-                if (module.matches(ANT_PROPERTY_REGEXP)) {
-                    String key = module.substring(2, module.length() - 1);
-                    removeProperty(key);
-                    removePrivateProperty(key);
-                } // else nothing - a module is removed by removing "modules" property
-            }
-        }
-        getProjectProperties().setProperty(MODULES_PROPERTY, "");
+    Set/*<Project>*/ getSubModules() {
+        return getModulesListModel().getSubModules();
     }
     
-    private void addModules(Set/*<Project>*/ projects) throws IOException {
-        for (Iterator it = projects.iterator(); it.hasNext(); ) {
-            Project prj = (Project) it.next();
-            appendToSuite(prj.getProjectDirectory(), getHelper().getProjectDirectory());
-        }
+    Set/*<Project>*/ getOrigSubModules() {
+        return origSubModules;
     }
-    
-    // XXX stolen from NbModuleProjectGenerator.appendToSuite - get rid of
-    // duplicated code!
-    private void appendToSuite(FileObject projectDir, FileObject suiteDir) throws IOException {
-        File projectDirF = FileUtil.toFile(projectDir);
-        File suiteDirF = FileUtil.toFile(suiteDir);
-        String projectPropKey = "project." + projectDirF.getName(); // NOI18N
-        if (CollocationQuery.areCollocated(projectDirF, suiteDirF)) {
-            // XXX the generating of relative path doesn't seem's too clever, check it
-            setProperty(projectPropKey,
-                    PropertyUtils.relativizeFile(suiteDirF, projectDirF));
-        } else {
-            setPrivateProperty(projectPropKey, projectDirF.getAbsolutePath());
-        }
-        String modulesProp = getProperty("modules"); // NOI18N
-        if (modulesProp == null) {
-            modulesProp = "";
-        }
-        if (modulesProp.length() > 0) {
-            modulesProp += ":"; // NOI18N
-        }
-        modulesProp += "${" + projectPropKey + "}"; // NOI18N
-        setProperty("modules", modulesProp.split("(?<=:)", -1)); // NOI18N
-    }
-    
+
     /**
      * Returns list model of module's dependencies regarding the currently
      * selected platform.

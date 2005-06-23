@@ -42,6 +42,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -99,6 +100,7 @@ public final class NbModuleProject implements Project {
     private List/*<Map<String,String>>*/ evalDefs;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
+    private NbModuleTypeProvider typeProvider;
     
     private String locBundlePropsPath;
     private String infoDisplayName;
@@ -214,7 +216,8 @@ public final class NbModuleProject implements Project {
             new CustomizerProviderImpl(this, getHelper(), evaluator(), 
                     getModuleType() == TYPE_STANDALONE, locBundlePropsPath),
             new SuiteProviderImpl(),
-        });
+            getNbModuleTypeProvider()
+      });
     }
     
     public String toString() {
@@ -229,6 +232,7 @@ public final class NbModuleProject implements Project {
         return helper.getProjectDirectory();
     }
     
+    // XXX get rid of this method. Use NbModuleProjectType.NbModuleType instead
     public int getModuleType() {
         Element data = getHelper().getPrimaryConfigurationData(true);
         if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) {
@@ -238,6 +242,27 @@ public final class NbModuleProject implements Project {
         } else {
             return TYPE_NETBEANS_ORG;
         }
+    }
+    
+    public NbModuleTypeProvider getNbModuleTypeProvider() {
+        if (typeProvider != null) {
+            return typeProvider;
+        }
+        Element data = getHelper().getPrimaryConfigurationData(true);
+        final NbModuleTypeProvider.NbModuleType type;
+        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) {
+            type = NbModuleTypeProvider.SUITE_COMPONENT;
+        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) {
+            type = NbModuleTypeProvider.STANDALONE;
+        } else {
+            type = NbModuleTypeProvider.NETBEANS_ORG;
+        }
+        typeProvider = new NbModuleTypeProvider() {
+            public NbModuleType getModuleType() {
+                return type;
+            }
+        };
+        return typeProvider;
     }
     
     public FileObject getManifestFile() {

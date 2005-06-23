@@ -89,7 +89,7 @@ public final class SuiteCustomizer implements CustomizerProvider {
         } else {
             SubprojectProvider spp = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
             Set/*<Project>*/ subModules = spp.getSubprojects();
-            this.suiteProps = new SuiteProperties(helper, evaluator, subModules);
+            this.suiteProps = new SuiteProperties(project, helper, evaluator, subModules);
             init();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {

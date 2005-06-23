@@ -53,7 +53,7 @@ public class NbModuleProjectGenerator {
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        createProjectXML(dirFO, cnb, NbModuleProject.TYPE_STANDALONE);
+        createProjectXML(dirFO, cnb, NbModuleTypeProvider.STANDALONE);
         createPlatformProperties(dirFO, platformID);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
@@ -70,7 +70,7 @@ public class NbModuleProjectGenerator {
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        createProjectXML(dirFO, cnb, NbModuleProject.TYPE_SUITE_COMPONENT);
+        createProjectXML(dirFO, cnb, NbModuleTypeProvider.SUITE_COMPONENT);
         createSuiteProperties(dirFO, suiteDir);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
@@ -96,7 +96,7 @@ public class NbModuleProjectGenerator {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
         createBuildXML(dirFO, cnb, nborg);
-        createProjectXML(dirFO, cnb, NbModuleProject.TYPE_NETBEANS_ORG);
+        createProjectXML(dirFO, cnb, NbModuleTypeProvider.NETBEANS_ORG);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
         createLayer(dirFO, layerPath);
@@ -111,7 +111,7 @@ public class NbModuleProjectGenerator {
      * <em>standalone</em> or <em>module in suite</em> module.
      */
     private static void createProjectXML(FileObject projectDir,
-            String cnb, int type) throws IOException {
+            String cnb, NbModuleTypeProvider.NbModuleType type) throws IOException {
         ProjectXMLManager.generateEmptyModuleTemplate(
                 createFileObject(projectDir, AntProjectHelper.PROJECT_XML_PATH),
                 cnb, type);
@@ -156,7 +156,13 @@ public class NbModuleProjectGenerator {
         }
     }
     
-    private static void createSuiteProperties(FileObject projectDir, File suiteDir) throws IOException {
+    /**
+     * Detects whether <code>projectDir</code> is relative to
+     * <code>suiteDir</code> and creates <em>nbproject/suite.properties</em> or
+     * <em>nbproject/private/suite-private.properties</em> with
+     * <em>suite.dir</em> appropriately set.
+     */
+    public static void createSuiteProperties(FileObject projectDir, File suiteDir) throws IOException {
         File projectDirF = FileUtil.toFile(projectDir);
         String suiteLocation;
         String suitePropertiesLocation;
@@ -323,7 +329,7 @@ public class NbModuleProjectGenerator {
     }
 
     /** Just utility method to store <code>EditableProperties</code>. */
-    private static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
+    public static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
         FileLock lock = propsFO.lock();
         try {
             OutputStream os = propsFO.getOutputStream(lock);
