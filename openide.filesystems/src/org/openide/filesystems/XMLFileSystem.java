@@ -432,7 +432,19 @@ public final class XMLFileSystem extends AbstractFileSystem {
     private void refreshChildrenInAtomicAction(AbstractFolder fo, ResourceElem resElem) {
         try {
             beginAtomicAction();
+            Collection oldChildren = new HashSet(Collections.list(fo.existingSubFiles(true)));
+            
             refreshChildren(fo, resElem);
+            
+            Collection newChildren = Collections.list(fo.existingSubFiles(true));
+            oldChildren.removeAll(newChildren);
+            for (Iterator it = oldChildren.iterator(); it.hasNext();) {
+                AbstractFileObject invalid = (AbstractFileObject)it.next();
+                if (invalid.validFlag) {
+                    invalid.validFlag = false;
+                    invalid.fileDeleted0(new FileEvent(invalid));
+                }
+            }            
         } finally {
             finishAtomicAction();
         }

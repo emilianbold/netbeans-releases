@@ -129,6 +129,39 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         fileChangedAssert ("Change in the content", 1);
     }
     
+    public void testChangesAreFiredOnSetXMLUrlsEvenWhenRemoved() throws Exception {
+        File u1 = writeFile("u1.txt", "Ahoj");
+        
+        File f = writeFile("layer1.xml",
+                "<filesystem>\n" +
+                "<folder name='TestModule'>\n" +
+                "<file name='sample.txt' url='u1.txt' />\n" +
+                "</folder>\n" +
+                "</filesystem>\n"
+                );
+        
+        File f2 = writeFile("layer2.xml",
+                "<filesystem>\n" +
+                "</filesystem>\n"
+                );
+        
+        
+        
+        
+        xfs = new XMLFileSystem(f.toURL());
+        
+        FileObject fo = xfs.findResource("TestModule/sample.txt");
+        assertEquals("Four bytes there", 4, fo.getSize());
+        registerDefaultListener(fo);
+        
+        xfs.setXmlUrl(f2.toURL());
+        
+        assertFalse("Valid no more", fo.isValid());
+        assertEquals("Empty now", 0, fo.getSize());
+        
+        fileDeletedAssert("Change in the content", 1);
+    }
+    
     private File writeFile(String name, String content) throws IOException {
         File f = new File (getWorkDir (), name);
         java.io.FileWriter w = new java.io.FileWriter (f);
