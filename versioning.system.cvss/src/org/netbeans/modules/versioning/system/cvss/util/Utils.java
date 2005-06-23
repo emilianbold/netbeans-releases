@@ -26,6 +26,7 @@ import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.*;
+import org.netbeans.lib.cvsclient.admin.Entry;
 
 import java.io.*;
 import java.util.*;
@@ -237,7 +238,35 @@ public class Utils {
             return "";
         }
     }
-    
+
+    /**
+     * Determines the sticky information for a given file. If the file is new then it
+     * returns its parent directory's sticky info, if any.  
+     * 
+     * @param file file to examine
+     * @return String stciky information for a file (without leading specified) or null 
+     */ 
+    public static String getSticky(File file) {
+        if (file == null) return null;
+        FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file);
+        Entry entry = info.getEntry(file);
+        if (entry != null) {
+            return entry.getStickyInformation();
+        }
+        if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            if ((file = file.getParentFile()) == null) return null;
+            int status = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file).getStatus();
+            if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
+                String stickyTag = CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
+                return stickyTag == null ? null : stickyTag.substring(1);
+            } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                return null;
+            }
+            return getSticky(file.getParentFile());
+        }
+        return null;
+    }
+
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 

@@ -210,10 +210,37 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             ph.finish();
             return;
         }
+        
+        final String [] tableColumns;
+        final String branchTitle;
+        if (nodes.length > 0) {
+            boolean stickyCommon = true;
+            String currentSticky = nodes[0].getSticky();
+            for (int i = 1; i < nodes.length; i++) {
+                String sticky = nodes[i].getSticky();
+                if (sticky != currentSticky && (sticky == null || currentSticky == null || !sticky.equals(currentSticky))) {
+                    stickyCommon = false;
+                    break;
+                }
+            }
+            if (stickyCommon) {
+                tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                branchTitle = currentSticky.length() == 0 ? null : MessageFormat.format(loc.getString("CTL_VersioningView_BranchTitle_Single"), new Object [] { currentSticky });
+            } else {
+                tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STICKY, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
+                branchTitle = loc.getString("CTL_VersioningView_BranchTitle_Multi");
+            }
+        } else {
+            tableColumns = null;
+            branchTitle = null;
+        }
+        
         flatModelTimestamp = System.currentTimeMillis();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (nodes.length > 0) {
+                    syncTable.setColumns(tableColumns);
+                    parentTopComponent.setBranchTitle(branchTitle);
                     setVersioningComponent(syncTable.getComponent());
                 } else {
                     setVersioningComponent(noContentComponent);

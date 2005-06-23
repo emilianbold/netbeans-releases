@@ -22,6 +22,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.DeleteLocalAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
+import org.netbeans.lib.cvsclient.admin.Entry;
 
 
 import javax.swing.*;
@@ -38,12 +39,13 @@ public class SyncFileNode extends AbstractNode {
     
     private CvsFileNode node;
 
-    static final String COLUMN_NAME_REVISION    = "revision";
     static final String COLUMN_NAME_NAME        = "name";
     static final String COLUMN_NAME_PATH        = "path";
     static final String COLUMN_NAME_STATUS      = "status";
+    static final String COLUMN_NAME_STICKY      = "sticky";
     
     private String htmlDisplayName;
+    private String sticky;
 
     public SyncFileNode(CvsFileNode node) {
         this(Children.LEAF, node);
@@ -93,15 +95,15 @@ public class SyncFileNode extends AbstractNode {
     }
 
     private void initProperties() {
-        if (node.getFile().isDirectory()) setIconBase("org/openide/loaders/defaultFolder");
+        if (node.getFile().isDirectory()) setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif");
 
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
         
         ps.put(new NameProperty());
         ps.put(new PathProperty());
-        ps.put(new RevisionProperty());
         ps.put(new StatusProperty());
+        ps.put(new StickyProperty());
         
         sheet.put(ps);
         setSheet(sheet);        
@@ -125,6 +127,20 @@ public class SyncFileNode extends AbstractNode {
         refreshHtmlDisplayName();
     }
 
+    /**
+     * Gets sticky information for the given file. Sticky info does not include any leading specifier (T, D). 
+     * 
+     * @return String branch,tag,date sticky info or an empty String, never returns null
+     */ 
+    public String getSticky() {
+        if (sticky == null) {
+            if ((sticky = Utils.getSticky(node.getFile())) == null) {
+                sticky = "";
+            }
+        }
+        return sticky == null || sticky.length() == 0 ? "" : sticky;
+    }
+
     private abstract class SyncFileProperty extends PropertySupport.ReadOnly {
 
         protected SyncFileProperty(String name, Class type, String displayName, String shortDescription) {
@@ -140,21 +156,17 @@ public class SyncFileNode extends AbstractNode {
         }
     }
     
-    private class RevisionProperty extends SyncFileProperty {
+    private class StickyProperty extends SyncFileProperty {
 
-        public RevisionProperty() {
-            super(COLUMN_NAME_REVISION, String.class, "Revision", "Revision");
+        public StickyProperty() {
+            super(COLUMN_NAME_STICKY, String.class, "Sticky", "Sticky");
         }
 
         public Object getValue() {
-            String revision = node.getInformation().getRevision(node.getFile());
-            if (revision == null) return "";
-            if (revision.equals("0")) return "";
-            if (revision.startsWith("-")) return "";
-            return revision;
+            return getSticky();
         }
     }
-
+    
     private class PathProperty extends SyncFileProperty {
 
         private String shortPath;

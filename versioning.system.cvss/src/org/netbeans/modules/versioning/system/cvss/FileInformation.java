@@ -272,18 +272,17 @@ public class FileInformation implements Serializable {
     }
 
     /**
-     * Retrieves file's revision number. This entry is then cached.
+     * Retrieves file's CVS Entry.
      *
      * @param file file this information belongs to
-     * @return revision number or special value for newly added or removed files. May be null if the file does not exist,
-     * is not versioned or its Entry has not been parsed.
+     * @return Entry parsed entry form the CVS/Entries file or null if the file does not exist,
+     * is not versioned or its Entry is invalid
      */
-    public String getRevision(File file) {
-        if (isDirectory) throw new IllegalStateException("Directories have no revision number");
+    public Entry getEntry(File file) {
         if (cvsEntry == null) readEntry(file);
-        return (cvsEntry != null) ? cvsEntry.getRevision() : null;
+        return cvsEntry;
     }
-
+    
     private void readEntry(File file) {
         try {
             cvsEntry = CvsVersioningSystem.getInstance().getAdminHandler().getEntry(file);

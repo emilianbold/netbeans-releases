@@ -57,7 +57,7 @@ import java.util.*;
 import java.io.File;
 
 /**
- * View that displays nodes in the Synchronize view. 
+ * Table that displays nodes in the Versioning view. 
  * 
  * @author Maros Sandor
  */
@@ -72,7 +72,27 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     private JScrollPane     component;
     private SyncFileNode [] nodes = new SyncFileNode[0];
     
+    private String []   tableColumns; 
     private TableSorter sorter;
+
+    /**
+     * Defines labels for Versioning view table columns.
+     */ 
+    private static final Map columnLabels = new HashMap(4);
+    {
+        columnLabels.put(SyncFileNode.COLUMN_NAME_STICKY, new String [] { 
+                                          loc.getString("CTL_VersioningView_Column_Sticky_Title"), 
+                                          loc.getString("CTL_VersioningView_Column_Sticky_Desc")});
+        columnLabels.put(SyncFileNode.COLUMN_NAME_NAME, new String [] { 
+                                          loc.getString("CTL_VersioningView_Column_File_Title"), 
+                                          loc.getString("CTL_VersioningView_Column_File_Desc")});
+        columnLabels.put(SyncFileNode.COLUMN_NAME_STATUS, new String [] { 
+                                          loc.getString("CTL_VersioningView_Column_Status_Title"), 
+                                          loc.getString("CTL_VersioningView_Column_Status_Desc")});
+        columnLabels.put(SyncFileNode.COLUMN_NAME_PATH, new String [] { 
+                                          loc.getString("CTL_VersioningView_Column_Path_Title"), 
+                                          loc.getString("CTL_VersioningView_Column_Path_Desc")});
+    }
 
     private static final Comparator NodeComparator = new Comparator() {
         public int compare(Object o1, Object o2) {
@@ -107,19 +127,31 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
         table.getSelectionModel().addListSelectionListener(this);
-        setupColumns();
-        sorter.setColumnComparator(1, new StatusPropertyComparator());
-        sorter.setSortingStatus(1, TableSorter.ASCENDING);
         table.addAncestorListener(this);
+        setColumns(new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH });
     }
 
-    public void setDefaultColumnSizes() {
+    void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 int width = table.getWidth();
-                table.getColumnModel().getColumn(0).setPreferredWidth(width / 10 * 2);
-                table.getColumnModel().getColumn(1).setPreferredWidth(width / 10 * 2);
-                table.getColumnModel().getColumn(2).setPreferredWidth(width / 10 * 6);
+                if (tableColumns.length == 3) {
+                    for (int i = 0; i < tableColumns.length; i++) {
+                        if (SyncFileNode.COLUMN_NAME_PATH.equals(tableColumns[i])) {
+                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 60 / 100);
+                        } else {
+                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 20 / 100);
+                        }
+                    }
+                } else if (tableColumns.length == 4) {
+                    for (int i = 0; i < tableColumns.length; i++) {
+                        if (SyncFileNode.COLUMN_NAME_PATH.equals(tableColumns[i])) {
+                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 55 / 100);
+                        } else {
+                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 15 / 100);
+                        }
+                    }
+                }
             }
         });
     }
@@ -146,23 +178,34 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     public JComponent getComponent() {
         return component;
     }
-
-    private void setupColumns() {
-        Node.Property [] columns = new Node.Property[3];
-        columns[0] = new ColumnDescriptor(SyncFileNode.COLUMN_NAME_NAME, String.class, 
-                                          loc.getString("CTL_VersioningView_Column_File_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_File_Desc"));
-        columns[1] = new ColumnDescriptor(SyncFileNode.COLUMN_NAME_STATUS, String.class, 
-                                          loc.getString("CTL_VersioningView_Column_Status_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_Status_Desc"));
-        columns[2] = new ColumnDescriptor(SyncFileNode.COLUMN_NAME_PATH, String.class, 
-                                          loc.getString("CTL_VersioningView_Column_Path_Title"), 
-                                          loc.getString("CTL_VersioningView_Column_Path_Desc"));
-        setProperties(columns);
+    
+    /**
+     * Sets visible columns in the Versioning table.
+     * 
+     * @param columns array of column names, they must be one of SyncFileNode.COLUMN_NAME_XXXXX constants.  
+     */ 
+    void setColumns(String [] columns) {
+        if (Arrays.equals(columns, tableColumns)) return;
+        setDefaultColumnSizes();
+        setModelProperties(columns);
+        tableColumns = columns;
+        for (int i = 0; i < tableColumns.length; i++) {
+            if (SyncFileNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
+                sorter.setColumnComparator(i, new StatusPropertyComparator());
+                sorter.setSortingStatus(i, TableSorter.ASCENDING);
+                break;
+            }
+        }
     }
-
-    private void setProperties(Node.Property[] columns) {
-        tableModel.setProperties(columns);
+        
+    private void setModelProperties(String [] columns) {
+        Node.Property [] properties = new Node.Property[columns.length];
+        for (int i = 0; i < columns.length; i++) {
+            String column = columns[i];
+            String [] labels = (String[]) columnLabels.get(column);
+            properties[i] = new ColumnDescriptor(column, String.class, labels[0], labels[1]);  
+        }
+        tableModel.setProperties(properties);
     }
 
     void setTableModel(SyncFileNode [] nodes) {

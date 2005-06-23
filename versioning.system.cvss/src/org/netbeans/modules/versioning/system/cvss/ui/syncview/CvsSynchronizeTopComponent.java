@@ -34,6 +34,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private SynchronizePanel        syncPanel;
     private File []                 roots;
     private String                  contentTitle;
+    private String                  branchTitle;
     private long                    lastUpdateTimestamp;
     
     private static CvsSynchronizeTopComponent instance;
@@ -92,17 +93,34 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
         super.componentClosed();
     }
 
-    public void refreshContent() {
+    private void refreshContent() {
         if (syncPanel == null) return;  // the component is not showing => nothing to refresh
         updateTitle();
         syncPanel.setRoots(roots);        
     }
 
+    /**
+     * Sets the 'content' portion of Versioning component title.
+     * Title pattern: Versioning[ - contentTitle[ - branchTitle]] (10 minutes ago)
+     * 
+     * @param contentTitle a new content title, e.g. "2 projects"
+     */ 
     public void setContentTitle(String contentTitle) {
         this.contentTitle = contentTitle;
         updateTitle();
     }
 
+    /**
+     * Sets the 'branch' portion of Versioning component title.
+     * Title pattern: Versioning[ - contentTitle[ - branchTitle]] (10 minutes ago)
+     * 
+     * @param branchTitle a new content title, e.g. "release40" branch
+     */ 
+    void setBranchTitle(String branchTitle) {
+        this.branchTitle = branchTitle;
+        updateTitle();
+    }
+    
     public void contentRefreshed() {
         lastUpdateTimestamp = System.currentTimeMillis();
         updateTitle();
@@ -113,8 +131,13 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
         if (contentTitle == null) {
             setName(loc.getString("CTL_Synchronize_TopComponent_Title")); //NOI18N
         } else {
-            setName(MessageFormat.format(loc.getString(
-                    "CTL_Synchronize_TopComponent_MultiTitle"), new Object [] { contentTitle, age }));
+            if (branchTitle == null) {
+                setName(MessageFormat.format(loc.getString(
+                        "CTL_Synchronize_TopComponent_MultiTitle"), new Object [] { contentTitle, age }));
+            } else {
+                setName(MessageFormat.format(loc.getString(
+                        "CTL_Synchronize_TopComponent_Title_ContentBranch"), new Object [] { contentTitle, branchTitle, age }));
+            }
         }
     }
 
@@ -178,6 +201,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
      */
     public void setRoots(File [] roots) {
         this.roots = removeDuplicates(roots);
+        setBranchTitle(null);
         refreshContent();
     }
 

@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.util.NbBundle;
 
 import java.io.File;
@@ -54,7 +55,8 @@ class Setup {
         this.baseFile = baseFile;
         FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
         int status = info.getStatus();
-        String revision = info.getRevision(baseFile);
+        Entry entry = info.getEntry(baseFile);
+        String revision = entry != null ? entry.getRevision() : null;
         if (revision != null && revision.charAt(0) == '-') revision = revision.substring(1);
 
         String firstTitle;
@@ -141,7 +143,7 @@ class Setup {
     static String getDisplayedRevision(File baseFile, String revision) {
         if (revision == REVISION_CURRENT) {
             FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
-            return MessageFormat.format(loc.getString("MSG_LocalRevision"), new Object [] { info.getRevision(baseFile) });
+            return MessageFormat.format(loc.getString("MSG_LocalRevision"), new Object [] { info.getEntry(baseFile).getRevision() });
         } else {
             return revision;
         }
