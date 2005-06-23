@@ -355,6 +355,11 @@ cause it to fail.
             <filter pattern="http://openide.netbeans.org/versioning-policy.html.*" accept='true' />
             <filter pattern="http://www.netbeans.org/issues/show_bug.cgi.*" accept='true' />
             <filter pattern="http://openide.netbeans.org.*tutorial.*api-design.*" accept='true' />
+            <filter pattern="http://mdr.netbeans.org/example.html" accept='true' />
+            <filter pattern="http://mdr.netbeans.org/uml2mof.*" accept='true' />
+            <filter pattern="http://java.netbeans.org/models/java/java.xml" accept='true' />
+            <!-- UI specifications -->
+            <filter pattern="http://ui.netbeans.org/docs/hi/javamdr/.*" accept='true' />
             <!-- is used in generated question from arch.xml -->
             <filter pattern="http://www.netbeans.org/community/guidelines/q-evangelism.html" accept='true' />
             <!-- direct link to main website is ok as well -->
