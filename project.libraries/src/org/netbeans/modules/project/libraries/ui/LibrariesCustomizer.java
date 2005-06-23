@@ -26,7 +26,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.MissingResourceException;
@@ -211,8 +210,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
             }
             else {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message (
-                        MessageFormat.format(NbBundle.getMessage(LibrariesCustomizer.class, "ERR_ExistingName"),
-                                new Object[] {newName}),
+                        NbBundle.getMessage(LibrariesCustomizer.class, "ERR_ExistingName", newName),
                         NotifyDescriptor.ERROR_MESSAGE));
             }
         }                        

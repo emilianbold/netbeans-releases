@@ -14,7 +14,6 @@
 package org.netbeans.modules.project.libraries.ui;
 
 import java.awt.Color;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -126,8 +125,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
                 }
             }
             else {
-                message = MessageFormat.format(NbBundle.getMessage(NewLibraryPanel.class, "ERR_ExistingName"),
-                    new Object[] {name});
+                message = NbBundle.getMessage(NewLibraryPanel.class, "ERR_ExistingName", name);
             }
         }
         if (dd != null) {
