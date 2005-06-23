@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -106,7 +108,7 @@ abstract class ModuleProperties {
             getProjectProperties().setProperty(key, value);
         }
     }
-
+    
     /**
      * The given property will be stored into the project's properties. If the
      * given value is equals to the default value it will be removed from the
@@ -123,7 +125,7 @@ abstract class ModuleProperties {
             getPrivateProperties().setProperty(key, value);
         }
     }
-
+    
     void setProperty(String key, String[] value) {
         getProjectProperties().setProperty(key, value);
     }
@@ -132,8 +134,16 @@ abstract class ModuleProperties {
         setProperty(key, Boolean.toString(bProp));
     }
     
+    String getProjectDisplayName() {
+        return Util.getDisplayName(getHelper().getProjectDirectory());
+    }
+    
+    final File getProjectDirectoryFile() {
+        return FileUtil.toFile(getHelper().getProjectDirectory());
+    }
+    
     final String getProjectDirectory() {
-        return FileUtil.toFile(getHelper().getProjectDirectory()).getAbsolutePath();
+        return getProjectDirectoryFile().getAbsolutePath();
     }
     
     /**
