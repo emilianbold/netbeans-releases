@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JPanel;
-import javax.swing.text.JTextComponent;
 
 /**
  * Provides common support for a <em>standard</em> panels in the NetBeans module
@@ -46,11 +45,6 @@ abstract class NbPropertyPanel extends JPanel implements ComponentFactory.Storag
     
     void setBooleanProperty(String key, boolean property) {
         props.setBooleanProperty(key, property);
-    }
-    
-    static void setText(JTextComponent textComp, String text) {
-        textComp.setText(text);
-        textComp.setCaretPosition(text == null ? 0 : text.length());
     }
     
     public void store() { /* empty implementation */ }

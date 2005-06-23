@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import javax.swing.JFileChooser;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 
 /**
  * Represents <em>Packaging</em> panel in Netbeans Module customizer.
@@ -27,12 +28,12 @@ final class CustomizerPackaging extends NbPropertyPanel {
         super(moduleProps);
         initComponents();
         // cluster
-        NbPropertyPanel.setText(jarFileValue, moduleProps.getJarFile());
+        UIUtil.setText(jarFileValue, moduleProps.getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
         isGlobal.setSelected(getBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL));
-        NbPropertyPanel.setText(licenseValue, getProperty(SingleModuleProperties.LICENSE_FILE));
-        NbPropertyPanel.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
-        NbPropertyPanel.setText(authorValue, getProperty(SingleModuleProperties.NBM_MODULE_AUTHOR));
+        UIUtil.setText(licenseValue, getProperty(SingleModuleProperties.LICENSE_FILE));
+        UIUtil.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
+        UIUtil.setText(authorValue, getProperty(SingleModuleProperties.NBM_MODULE_AUTHOR));
     }
 
     public void store() {

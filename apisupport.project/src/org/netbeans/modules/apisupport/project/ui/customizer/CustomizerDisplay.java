@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import javax.swing.JPanel;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Utilities;
 
@@ -50,8 +51,8 @@ final class CustomizerDisplay extends JPanel implements
     }
     
     private void readFromProperties() {
-        NbPropertyPanel.setText(nameValue, getBundle().getProperty("OpenIDE-Module-Name")); // NOI18N
-        NbPropertyPanel.setText(shortDescValue, getBundle().getProperty("OpenIDE-Module-Short-Description")); // NOI18N
+        UIUtil.setText(nameValue, getBundle().getProperty("OpenIDE-Module-Name")); // NOI18N
+        UIUtil.setText(shortDescValue, getBundle().getProperty("OpenIDE-Module-Short-Description")); // NOI18N
         longDescValue.setText(getBundle().getProperty("OpenIDE-Module-Long-Description")); // NOI18N
         categoryValue.setSelectedItem(getCategory()); // NOI18N)
         fillUpCategoryValue();

@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.io.File;
+import javax.swing.text.JTextComponent;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -50,4 +51,13 @@ public final class UIUtil {
             (fileOrFolder.isDirectory() ? fileOrFolder : null));
     }
 
+    /**
+     * Set the <code>text</code> for the <code>textComp</code> and set its
+     * carret position to the end of the text.
+     */
+    public static void setText(JTextComponent textComp, String text) {
+        textComp.setText(text);
+        textComp.setCaretPosition(text == null ? 0 : text.length());
+    }
 }
+

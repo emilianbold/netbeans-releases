@@ -24,6 +24,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -47,17 +48,17 @@ final class CustomizerVersioning extends NbPropertyPanel {
         initComponents();
         initPublicPackageTable();
         friendsList.setModel(props.getFriendListModel());
-        NbPropertyPanel.setText(cnbValue, props.getCodeNameBase());
-        NbPropertyPanel.setText(majorRelVerValue, props.getMajorReleaseVersion());
-        NbPropertyPanel.setText(tokensValue, props.getProvidedTokens());
+        UIUtil.setText(cnbValue, props.getCodeNameBase());
+        UIUtil.setText(majorRelVerValue, props.getMajorReleaseVersion());
+        UIUtil.setText(tokensValue, props.getProvidedTokens());
         String specVersion = props.getSpecificationVersion();
         if (null == specVersion || "".equals(specVersion)) { // NOI18N
             appendImpl.setSelected(true);
-            NbPropertyPanel.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
+            UIUtil.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
         } else {
-            NbPropertyPanel.setText(specificationVerValue, specVersion);
+            UIUtil.setText(specificationVerValue, specVersion);
         }
-        NbPropertyPanel.setText(implVerValue, props.getImplementationVersion());
+        UIUtil.setText(implVerValue, props.getImplementationVersion());
         regularMod.setSelected(true);
         autoloadMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD));
         eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));

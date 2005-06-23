@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
+
 /**
  * Represents <em>Sources</em> panel in Netbeans Module customizer.
  *
@@ -28,13 +30,13 @@ final class CustomizerSources extends NbPropertyPanel {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);
         } else {
-            NbPropertyPanel.setText(moduleSuiteValue, modProps.getSuiteDirectory());
+            UIUtil.setText(moduleSuiteValue, modProps.getSuiteDirectory());
         }
         for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
             srcLevelValue.addItem(SingleModuleProperties.SOURCE_LEVELS[i]);
         }
         srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCES));
-        NbPropertyPanel.setText(prjFolderValue, modProps.getProjectDirectory());
+        UIUtil.setText(prjFolderValue, modProps.getProjectDirectory());
     }
     
     public void store() {

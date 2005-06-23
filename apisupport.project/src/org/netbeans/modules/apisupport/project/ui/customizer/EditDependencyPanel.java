@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 
 /**
  * Represents panel for editing dependency details. Shown after <em>Edit</em>
@@ -35,10 +36,10 @@ final class EditDependencyPanel extends JPanel {
     }
     
     private void readFromEntry() {
-        NbPropertyPanel.setText(codeNameBaseValue, origDep.getModuleEntry().getCodeNameBase());
-        NbPropertyPanel.setText(jarLocationValue, origDep.getModuleEntry().getJarLocation().getAbsolutePath());
-        NbPropertyPanel.setText(releaseVersionValue, origDep.getReleaseVersion());
-        NbPropertyPanel.setText(specVerValue, origDep.getSpecificationVersion());
+        UIUtil.setText(codeNameBaseValue, origDep.getModuleEntry().getCodeNameBase());
+        UIUtil.setText(jarLocationValue, origDep.getModuleEntry().getJarLocation().getAbsolutePath());
+        UIUtil.setText(releaseVersionValue, origDep.getReleaseVersion());
+        UIUtil.setText(specVerValue, origDep.getSpecificationVersion());
         implVer.setSelected(origDep.hasImplementationDepedendency());
         ManifestManager.PackageExport[] pp = origDep.getModuleEntry().getPublicPackages();
         boolean anyAvailablePkg = pp != null && pp.length != 0;
