@@ -14,13 +14,16 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -172,4 +175,35 @@ public class Util {
         }
     }
     
+    /**
+     * Tries to find {@link Project} in the given directory. If succeeds
+     * delegates to {@link #getDisplayName(Project)}. Returns abolute path of
+     * project directory otherwise.
+     */
+    public static String getDisplayName(FileObject projectDir) {
+        try {
+            Project p = ProjectManager.getDefault().findProject(projectDir);
+            return getDisplayName(p);
+        } catch (IOException e) {
+            return FileUtil.toFile(projectDir).getAbsolutePath();
+        }
+    }
+    
+    /**
+     * Returns a display name for the given {@link Project}. Firstly it tries
+     * to acquire display name from the {@link ProjectInformation} if it is
+     * available in the project's lookup. If not, the project's directory
+     * absolute path is used as a fallback.
+     */
+    public static String getDisplayName(Project prj) {
+        ProjectInformation info = (ProjectInformation) prj.getLookup().
+                lookup(ProjectInformation.class);
+        String text;
+        if (info == null) {
+            text = FileUtil.toFile(prj.getProjectDirectory()).getAbsolutePath();
+        } else {
+            text = info.getDisplayName();
+        }
+        return text;
+    }
 }
