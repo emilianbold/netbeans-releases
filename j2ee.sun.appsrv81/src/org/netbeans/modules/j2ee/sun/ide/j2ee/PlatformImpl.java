@@ -109,7 +109,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                 result = "Directory '" + platformRoot.getAbsolutePath() + "' does not exist.";
         } else {
                 version = getAppServerVersion(platformRoot);
-                File testF = new File(platformRoot, "appserv_uninstall.class"); // NOI18N
+                File testF = new File(platformRoot, "bin"); // NOI18N
                 if(!testF.exists()) {
                         result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
                 } //else if(APPSERVER_VERSION_8_0.equals(PlatformImpl.getAppServerVersion(platformRoot))) {
@@ -117,6 +117,14 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                 //} //else {
                         // passed all tests
                 //}
+		testF = new File(platformRoot, "domains"); // NOI18N
+                if(!testF.exists()) {
+                        result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
+		}
+		testF = new File(platformRoot, "lib"); // NOI18N
+                if(!testF.exists()) {
+                        result = "'" + platformRoot.getAbsolutePath() + "' is not a SJSAS 8.1 installation directory.";
+                }
         }
         
         return result;

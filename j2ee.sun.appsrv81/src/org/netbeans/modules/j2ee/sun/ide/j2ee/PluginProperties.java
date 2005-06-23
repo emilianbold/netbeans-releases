@@ -471,7 +471,8 @@ public class PluginProperties  {
     static {
         fileColl.add("bin");
         fileColl.add("lib");
-        fileColl.add("appserv_uninstall.class");
+        fileColl.add("config");
+        fileColl.add("domains");
     }
     
     public boolean isGoodAppServerLocation(File candidate){
