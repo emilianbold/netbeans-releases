@@ -893,22 +893,6 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             }
         }
 
-        /** Properties of this node are displayed in the layout property sheet */
-        class ComponentProxyNode extends FilterNode {
-
-            ComponentProxyNode(Node original) {
-                super(original);
-            }
-
-            public Node.PropertySet[] getPropertySets() {
-                Node.PropertySet[] sets = super.getPropertySets();
-                for (int i=0; i < sets.length; i++)
-                    if ("layout".equals(sets[i].getName())) // NOI18N
-                        return new Node.PropertySet[] { sets[i] };
-                return new Node.PropertySet[0]; // cannot return null...
-            }
-        }
-
         /** Innerclass for the component which is dragged */
         class DragLabel extends JLabel {
 
@@ -983,6 +967,22 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
     }
 
+    /** Properties of this node are displayed in the layout property sheet */
+    static class ComponentProxyNode extends FilterNode {
+        
+        ComponentProxyNode(Node original) {
+            super(original);
+        }
+        
+        public Node.PropertySet[] getPropertySets() {
+            Node.PropertySet[] sets = super.getPropertySets();
+            for (int i=0; i < sets.length; i++)
+                if ("layout".equals(sets[i].getName())) // NOI18N
+                    return new Node.PropertySet[] { sets[i] };
+                    return new Node.PropertySet[0]; // cannot return null...
+        }
+    }
+    
 
     /** Proxy for the container it's layout is edited */
     class GBContainerProxy extends JPanel {
