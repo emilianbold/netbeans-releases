@@ -117,7 +117,7 @@ public final class ProjectXMLManager {
         // ....and create element for new module type.
         Element newModuleType = createTypeElement(doc, moduleType);
         if (newModuleType != null) {
-            confData.appendChild(newModuleType);
+            confData.insertBefore(newModuleType, findModuleDependencies(confData));
         }
         helper.putPrimaryConfigurationData(confData, true);
     }
