@@ -504,7 +504,7 @@ public final class ClassPath {
             if (root == null || !root.isValid()) {
                 root = URLMapper.findFileObject(this.url);
                 if (root == null) {
-                    this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be red.",
+                    this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
                         new Object[] {this.url}));
                     return null;
                 }
