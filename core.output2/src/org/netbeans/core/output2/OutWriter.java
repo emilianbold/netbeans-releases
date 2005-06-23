@@ -498,16 +498,12 @@ class OutWriter extends PrintWriter {
                 return;
             }
             int addedCount = doPrintln (s);
-            if (addedCount == 1) {
-                lines.addListener(lines.getLineCount() - 1, l, important);
-            } else {
-                int newCount = lines.getLineCount();
-                for (int i=newCount - addedCount; i < newCount; i++) {
-                    lines.addListener (i, l, important);
-                    //#48485 we should update the UI, since the lines are in the model
-                    // and jump next/previous can't jump to appropriate place.
-                    lines.fire();
-                }
+            int newCount = lines.getLineCount();
+            for (int i=newCount - addedCount; i < newCount; i++) {
+                lines.addListener (i, l, important);
+                //#48485 we should update the UI, since the lines are in the model
+                // and jump next/previous can't jump to appropriate place.
+                lines.fire();
             }
         }
         

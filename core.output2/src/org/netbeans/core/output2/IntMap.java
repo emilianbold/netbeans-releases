@@ -127,7 +127,7 @@ final class IntMap {
     
     public void put (int key, Object val) {
         if (last > 0) {
-            assert key > keys[last];
+            assert key > keys[last]: "key=" + key + " last=" + keys[last];
         }
         if (last == keys.length - 1) {
             growArrays();
