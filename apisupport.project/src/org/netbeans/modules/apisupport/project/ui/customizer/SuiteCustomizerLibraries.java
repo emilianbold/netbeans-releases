@@ -140,6 +140,7 @@ public class SuiteCustomizerLibraries extends JPanel
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(platformPanel, gridBagConstraints);
 
+        moduleLabel.setLabelFor(moduleList);
         org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(SuiteCustomizerLibraries.class, "LBL_Modules"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
