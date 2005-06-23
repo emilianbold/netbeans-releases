@@ -7,12 +7,10 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.text;
-
-import javax.swing.JEditorPane;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.text.PrintSettings;
@@ -20,16 +18,7 @@ import org.openide.options.SystemOption;
 import org.openide.util.*;
 
 import org.netbeans.editor.Settings;
-import org.netbeans.modules.editor.options.AllOptions;
 
-import org.netbeans.modules.xml.core.XMLDataObject;
-import org.netbeans.modules.xml.core.EntityDataObject;
-import org.netbeans.modules.xml.core.DTDDataObject;
-
-import org.netbeans.modules.xml.text.syntax.XMLKit;
-import org.netbeans.modules.xml.text.syntax.DTDKit;
-import org.netbeans.modules.xml.text.syntax.XMLOptions;
-import org.netbeans.modules.xml.text.syntax.DTDOptions;
 import org.netbeans.modules.xml.text.syntax.XMLPrintOptions;
 import org.netbeans.modules.xml.text.syntax.DTDPrintOptions;
 import org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer;
@@ -40,8 +29,6 @@ import org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer;
  * @author Libor Kramolis
  */
 public class TextEditModuleInstall extends ModuleInstall {
-
-    private static final long serialVersionUID = -7645158417177075459L;
 
     public void installed() {
         restored();
@@ -58,11 +45,6 @@ public class TextEditModuleInstall extends ModuleInstall {
     public void uninstalled () {
         uninstalledTextEditor();
     }
-
-
-    //
-    // Text editor
-    //
 
     /**
      */
