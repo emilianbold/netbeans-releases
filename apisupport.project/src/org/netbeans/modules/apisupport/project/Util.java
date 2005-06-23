@@ -20,8 +20,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -177,33 +177,15 @@ public class Util {
     
     /**
      * Tries to find {@link Project} in the given directory. If succeeds
-     * delegates to {@link #getDisplayName(Project)}. Returns abolute path of
-     * project directory otherwise.
+     * delegates to {@link ProjectInformation#getDisplayName}. Returns {@link
+     * FileUtil#getFileDisplayName} otherwise.
      */
     public static String getDisplayName(FileObject projectDir) {
         try {
             Project p = ProjectManager.getDefault().findProject(projectDir);
-            return getDisplayName(p);
+            return ProjectUtils.getInformation(p).getDisplayName();
         } catch (IOException e) {
-            return FileUtil.toFile(projectDir).getAbsolutePath();
+            return FileUtil.getFileDisplayName(projectDir);
         }
-    }
-    
-    /**
-     * Returns a display name for the given {@link Project}. Firstly it tries
-     * to acquire display name from the {@link ProjectInformation} if it is
-     * available in the project's lookup. If not, the project's directory
-     * absolute path is used as a fallback.
-     */
-    public static String getDisplayName(Project prj) {
-        ProjectInformation info = (ProjectInformation) prj.getLookup().
-                lookup(ProjectInformation.class);
-        String text;
-        if (info == null) {
-            text = FileUtil.toFile(prj.getProjectDirectory()).getAbsolutePath();
-        } else {
-            text = info.getDisplayName();
-        }
-        return text;
     }
 }

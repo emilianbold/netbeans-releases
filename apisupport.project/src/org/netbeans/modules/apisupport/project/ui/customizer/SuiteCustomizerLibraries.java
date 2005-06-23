@@ -22,6 +22,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
@@ -230,10 +231,10 @@ public class SuiteCustomizerLibraries extends JPanel
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(SuiteCustomizerLibraries.class,
                             "MSG_TryingToAddNonNBModule", // NOI18N
-                            Util.getDisplayName(project))));
+                            ProjectUtils.getInformation(project).getDisplayName())));
                 } else if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
                     Object[] params = new Object[] {
-                        Util.getDisplayName(project),
+                        ProjectUtils.getInformation(project).getDisplayName(),
                         getSuiteProjectName(project),
                         getSuiteProjectDirectory(project),
                         suiteProps.getProjectDisplayName(),
@@ -252,7 +253,7 @@ public class SuiteCustomizerLibraries extends JPanel
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             NbBundle.getMessage(SuiteCustomizerLibraries.class,
                             "MSG_TryingToAddNBORGModule", // NOI18N
-                            Util.getDisplayName(project))));
+                            ProjectUtils.getInformation(project).getDisplayName())));
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
