@@ -107,8 +107,10 @@ public class StartLog {
      *  The end is passed as argument.
      */
     public static void logMeasuredStartupTime(long end){
-        ((PerformanceTestsImpl)impl).log("IDE starts t=" + Long.toString(((PerformanceTestsImpl)impl).zero) + "\nIDE is running t=" + Long.toString(end) + "\n");
-        ((PerformanceTestsImpl)impl).writeLogs();
+        if (impl instanceof PerformanceTestsImpl) {
+            ((PerformanceTestsImpl)impl).log("IDE starts t=" + Long.toString(((PerformanceTestsImpl)impl).zero) + "\nIDE is running t=" + Long.toString(end) + "\n");
+            ((PerformanceTestsImpl)impl).writeLogs();
+        }
     }
     
     
