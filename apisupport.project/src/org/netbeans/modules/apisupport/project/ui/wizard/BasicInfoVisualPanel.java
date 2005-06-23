@@ -476,7 +476,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private void browseModuleSuite(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseModuleSuite
         JFileChooser chooser = ProjectChooser.projectChooser();
-        int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
+        int option = chooser.showOpenDialog(this);
         if (option == JFileChooser.APPROVE_OPTION) {
             File projectDir = chooser.getSelectedFile();
             try {
