@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.KeyStroke;
@@ -125,11 +124,10 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         WatchPanel wp = new WatchPanel(w.getExpression());
         JComponent panel = wp.getPanel();
 
-        ResourceBundle bundle = NbBundle.getBundle(WatchesActionsProvider.class);
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
             panel,
-            java.text.MessageFormat.format(bundle.getString("CTL_WatchDialog_Title"), // NOI18N 
-                                           new Object [] { w.getExpression() })
+            NbBundle.getMessage(WatchesActionsProvider.class, "CTL_WatchDialog_Title", // NOI18N 
+                                           w.getExpression())
         );
         dd.setHelpCtx(new HelpCtx("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,14 +16,11 @@ package org.netbeans.modules.debugger.ui.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.debugger.ui.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -63,8 +60,7 @@ public final class ConnectAction extends AbstractAction {
         final ConnectorPanel cp = new ConnectorPanel ();
         DialogDescriptor descr = new DialogDescriptor (
             cp,
-            NbBundle.getBundle (ConnectAction.class).getString 
-                ("CTL_Connect_to_running_process"),
+            NbBundle.getMessage (ConnectAction.class, "CTL_Connect_to_running_process"),
             true, // modal
             new ConnectListener (cp)
         );
@@ -82,7 +78,6 @@ public final class ConnectAction extends AbstractAction {
         }
         
         public void actionPerformed (ActionEvent e) {
-            boolean tryAgain = false;
             if (e.getSource ().equals (DialogDescriptor.OK_OPTION)) {
                 connectorPanel.ok ();
             } else

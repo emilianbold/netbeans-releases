@@ -27,10 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import javax.swing.JDialog;
 
 import javax.swing.JFileChooser;
 
@@ -41,7 +39,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -178,7 +175,6 @@ public class PatchAction extends NodeAction {
             if (fo.isData()) file = fo;
             else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
             if (file == null) {
-                String path = null;
                 notFoundFileNames.add(FileUtil.getFileDisplayName(fo) + '/' + fileDiffs[i].getFileName());
             } else {
                 FileObject backup = createFileBackup(file);
@@ -272,7 +268,7 @@ public class PatchAction extends NodeAction {
         } catch (IOException ioex) {
 //            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
 //                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
-            String msg = MessageFormat.format (NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed"), new Object[] {ioex.getLocalizedMessage(), fo.getNameExt()});
+            String msg = NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt());
             NotifyDescriptor dd = new NotifyDescriptor.Message(msg);
             DialogDisplayer.getDefault().notify (dd);
             ErrorManager.getDefault().log (msg);
