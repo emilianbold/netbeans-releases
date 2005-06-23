@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,6 @@ import java.util.*;
 
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import java.text.MessageFormat;
 import org.openide.DialogDisplayer;
 
 /** Static methods useful for XMLJ2eeDataObject.
@@ -681,8 +680,8 @@ public class XMLJ2eeUtils {
     }
     
     private static void showDialog(String elementName, String attrName, String attrValue){
-     String mes = MessageFormat.format (NbBundle.getMessage(XMLJ2eeUtils.class, "TXT_elementExists"),
-     new Object [] {elementName,attrName,attrValue});
+     String mes = NbBundle.getMessage(XMLJ2eeUtils.class, "TXT_elementExists",
+        new Object [] { elementName, attrName, attrValue});
      NotifyDescriptor.Message message = new NotifyDescriptor.Message(mes);
      DialogDisplayer.getDefault().notify(message);
     }

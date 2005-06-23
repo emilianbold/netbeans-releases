@@ -16,23 +16,18 @@ package org.netbeans.modules.j2ee.ddloaders.common.xmlutils;
 import org.openide.cookies.*;
 import org.openide.nodes.CookieSet;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.XMLDataObject;
 import org.openide.ErrorManager;
 import org.openide.text.Line;
 import org.openide.windows.*;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-import java.util.ResourceBundle;
-import java.text.MessageFormat;
 import java.io.*;
 import org.xml.sax.*;
 import org.openide.xml.*;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
-import org.openide.windows.IOProvider;
 
 /** Represents a XMLJ2eeDataObject in the Repository.
  *
@@ -110,7 +105,7 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
     */    
     public String getOutputStringForInvalidDocument(SAXParseError error){
         //return error.getErrorText()+" ["+error.getErrorLine()+","+error.getErrorColumn()+"]";
-        String mes = MessageFormat.format (NbBundle.getMessage (XMLJ2eeDataObject.class, "TXT_errorMessage"),
+        String mes = NbBundle.getMessage (XMLJ2eeDataObject.class, "TXT_errorMessage",
                                 new Object [] { error.getErrorText(),
                                                 new Integer(error.getErrorLine()),
                                                 new Integer(error.getErrorColumn()) });
@@ -277,7 +272,7 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
             inOut.setFocusTaken (false);
             OutputWriter outputWriter = inOut.getOut();
             int line   = Math.max(0,error.getErrorLine());
-            int column = Math.max(0,error.getErrorColumn());
+//            int column = Math.max(0,error.getErrorColumn());
             
             LineCookie cookie = (LineCookie)getCookie(LineCookie.class);
             // getting Line object

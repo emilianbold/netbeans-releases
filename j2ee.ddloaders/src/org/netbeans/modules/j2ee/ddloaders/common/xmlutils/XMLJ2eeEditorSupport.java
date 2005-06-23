@@ -28,7 +28,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -47,7 +46,6 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
     private org.openide.DialogDescriptor dialog;    
     private RequestProcessor.Task parsingDocumentTask;
     XMLJ2eeDataObject dataObject;
-    private javax.swing.text.Document xmlJ2eeDocument;
 
     /** Create a new editor support.
      * @param obj the data object whose primary file will be edited as text
@@ -188,8 +186,7 @@ implements EditCookie, EditorCookie.Observable,/* OpenCookie, */LineCookie, Clos
             getDataObject().setModified (false);
         } catch (java.io.UnsupportedEncodingException ex) {
             // ask user what next?
-            String message = java.text.MessageFormat.format(NbBundle.getMessage(XMLJ2eeEditorSupport.class,"TEXT_SAVE_AS_UTF"),
-                                                            new Object[] {enc});
+            String message = NbBundle.getMessage(XMLJ2eeEditorSupport.class,"TEXT_SAVE_AS_UTF", enc);
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
             Object res = DialogDisplayer.getDefault().notify(descriptor);
 
