@@ -36,7 +36,8 @@ public class SuiteProjectGenerator {
     
     private static final String PLATFORM_PROPERTIES_PATH =
             "nbproject/platform.properties"; // NOI18N
-    private static final String PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
+    public static final String PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
+    public static final String PRIVATE_PROPERTIES_PATH = "nbproject/private/private.properties"; // NOI18N
     
     /** Use static factory methods instead. */
     private SuiteProjectGenerator() {/* empty constructor*/}
