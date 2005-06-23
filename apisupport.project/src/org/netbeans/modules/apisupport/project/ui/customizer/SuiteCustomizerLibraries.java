@@ -25,6 +25,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -210,6 +211,7 @@ public class SuiteCustomizerLibraries extends JPanel
         int option = chooser.showOpenDialog(this);
         if (option == JFileChooser.APPROVE_OPTION) {
             File projectDir = chooser.getSelectedFile();
+            UIUtil.setProjectChooserDirParent(projectDir);
             Project project;
             try {
                 project = ProjectManager.getDefault().findProject(

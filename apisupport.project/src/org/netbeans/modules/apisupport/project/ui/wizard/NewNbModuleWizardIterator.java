@@ -23,6 +23,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -96,11 +97,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         Set/*<FileObject>*/ resultSet = new HashSet();
         resultSet.add(projectFolderFO);
         
-        final File chooserFolder = (projectFolder != null) ?
-            projectFolder.getParentFile() : null;
-        if (chooserFolder != null && chooserFolder.exists()) {
-            ProjectChooser.setProjectsFolder(chooserFolder);
-        }
+        UIUtil.setProjectChooserDirParent(projectFolder);
         
         // XXX this constant should be defined somewhere!
         settings.putProperty("setAsMain", Boolean.valueOf(data.isMainProject()));

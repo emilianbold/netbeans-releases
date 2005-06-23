@@ -24,12 +24,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
-import org.openide.windows.WindowManager;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -479,6 +479,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         int option = chooser.showOpenDialog(this);
         if (option == JFileChooser.APPROVE_OPTION) {
             File projectDir = chooser.getSelectedFile();
+            UIUtil.setProjectChooserDirParent(projectDir);
             try {
                 Project suite = ProjectManager.getDefault().findProject(
                         FileUtil.toFileObject(projectDir));
