@@ -13,14 +13,16 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Set;
 import javax.swing.JList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
@@ -32,15 +34,20 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
- * Tests {@link SuiteProperties}
+ * Tests {@link SuiteProperties}. Actually also for some classes which
+ * SuiteProperties utilizes - which doesn't mean they shouldn't be tested
+ * individually :)
  *
  * @author Martin Krauskopf
  */
 public class SuitePropertiesTest extends TestBase {
     
+    private FileObject suiteRepoFO;
     private SuiteProject suite1Prj;
+    private SuiteProject suite2Prj;
     private SuiteProperties suite1Props;
     private FileObject suite1FO;
+    private FileObject suite2FO;
     
     public SuitePropertiesTest(String name) {
         super(name);
@@ -49,13 +56,15 @@ public class SuitePropertiesTest extends TestBase {
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
-        File suite1 = copyFolder(file(extexamplesF, "suite1"));
-        suite1FO = FileUtil.toFileObject(suite1);
+        suiteRepoFO = prepareSuiteRepo(extexamples);
+        suite1FO = suiteRepoFO.getFileObject("suite1");
+        suite2FO = suiteRepoFO.getFileObject("suite2");
         suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
-        SubprojectProvider spp = (SubprojectProvider) suite1Prj.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
-        this.suite1Props = new SuiteProperties(
-                suite1Prj.getHelper(), suite1Prj.getEvaluator(), subModules);
+        suite2Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
+        SubprojectProvider suite1spp = (SubprojectProvider) suite1Prj.getLookup().lookup(SubprojectProvider.class);
+        Set/*<Project>*/ suite1subModules = suite1spp.getSubprojects();
+        this.suite1Props = new SuiteProperties(suite1Prj, suite1Prj.getHelper(),
+                suite1Prj.getEvaluator(), suite1subModules);
     }
     
     private SuiteProject getSuite1Project(boolean reload) throws IOException {
@@ -63,6 +72,28 @@ public class SuitePropertiesTest extends TestBase {
             suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
         }
         return suite1Prj;
+    }
+    
+    private SuiteProject getSuite2Project(boolean reload) throws IOException {
+        if (reload) {
+            suite2Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite2FO);
+        }
+        return suite2Prj;
+    }
+    
+    private Project getMiscProject() throws IOException {
+        FileObject miscFO = suite2FO.getFileObject("misc-project");
+        return ProjectManager.getDefault().findProject(miscFO);
+    }
+    
+    private SubprojectProvider getSuite1SPP(boolean reloadSuite1) throws IOException {
+        return (SubprojectProvider) getSuite1Project(reloadSuite1).
+                getLookup().lookup(SubprojectProvider.class);
+    }
+    
+    private SubprojectProvider getSuite2SPP(boolean reloadSuite2) throws IOException {
+        return (SubprojectProvider) getSuite2Project(reloadSuite2).
+                getLookup().lookup(SubprojectProvider.class);
     }
     
     public void testPropertiesAreLoaded() throws Exception {
@@ -110,26 +141,50 @@ public class SuitePropertiesTest extends TestBase {
         SubprojectProvider spp = (SubprojectProvider) getSuite1Project(true).
                 getLookup().lookup(SubprojectProvider.class);
         assertEquals("one module should be left", 1, spp.getSubprojects().size());
+        NbModuleProject libProject = (NbModuleProject) spp.getSubprojects().toArray()[0];
         assertEquals("lib module should be the one", "org.netbeans.examples.modules.lib",
-                ((NbModuleProject) spp.getSubprojects().toArray()[0]).getCodeNameBase());
+                libProject.getCodeNameBase());
+        assertSame("lib module is still suite component module", NbModuleTypeProvider.SUITE_COMPONENT,
+                libProject.getNbModuleTypeProvider().getModuleType());
+        
+        // assert that the remove module (action-project) is standalone
+        FileObject actionFO = suite1FO.getFileObject("action-project");
+        Project actionProject = ProjectManager.getDefault().findProject(actionFO);
+        NbModuleTypeProvider actionNmtp = (NbModuleTypeProvider) actionProject.
+                getLookup().lookup(NbModuleTypeProvider.class);
+        assertNotNull(actionNmtp);
+        assertSame("action-project module is standalone module now", NbModuleTypeProvider.STANDALONE,
+                actionNmtp.getModuleType());
     }
     
     public void testAddSubModule() throws Exception {
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
         
-        // simulate removing all items from the list
-        Project antProject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant/project")));
-        assertNotNull(antProject);
-        model.addModule(antProject);
+        Project miscProject = getMiscProject();
+        assertNotNull(miscProject);
+        model.addModule(miscProject);
         assertEquals("one project should be added", 3, model.getSize());
         
         saveProperties(suite1Props);
         
-        SubprojectProvider spp = (SubprojectProvider) getSuite1Project(true).
-                getLookup().lookup(SubprojectProvider.class);
-        assertEquals("one module should be left", 3, spp.getSubprojects().size());
-        assertTrue("ant/project is there", spp.getSubprojects().contains(antProject));
+        // assert miscProject is part of suite1
+        SubprojectProvider suite1spp = getSuite1SPP(true);
+        assertEquals("one module should be left", 3, suite1spp.getSubprojects().size());
+        assertTrue("misc-project has moved to suite1", suite1spp.getSubprojects().contains(miscProject));
+        
+        
+        // assert miscProject is not part of suite2
+        SubprojectProvider suite2spp = getSuite2SPP(true);
+        assertFalse("misc-project is not part of suite2 anymore",
+                suite2spp.getSubprojects().contains(miscProject));
+        
+        // assert miscProject has correctly set suite provider
+        SuiteProvider sp = (SuiteProvider) getMiscProject().getLookup().lookup(SuiteProvider.class);
+        assertNotNull(sp);
+        assertEquals("misc-project was moved to suite1",
+                FileUtil.toFile(getSuite1Project(false).getProjectDirectory()),
+                sp.getSuiteDirectory());
     }
     
     private void saveProperties(final SuiteProperties props) {
@@ -152,4 +207,22 @@ public class SuitePropertiesTest extends TestBase {
         }
     }
     
+    // XXX fastly copied from ProjectXMLManagerTest!!!
+    private FileObject prepareSuiteRepo(FileObject what) throws Exception {
+        int srcFolderLen = what.getPath().length();
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        // XXX this should be probably be using (TestBase.this.)copyFolder
+        for (Enumeration en = what.getFolders(true); en.hasMoreElements(); ) {
+            FileObject src = (FileObject) en.nextElement();
+            if (src.getName().equals("CVS")) {
+                continue;
+            }
+            FileObject dest = FileUtil.createFolder(workDir, src.getPath().substring(srcFolderLen));
+            for (Enumeration en2 = src.getData(false); en2.hasMoreElements(); ) {
+                FileObject fo = (FileObject) en2.nextElement();
+                FileUtil.copyFile(fo, dest, fo.getName());
+            }
+        }
+        return workDir;
+    }
 }
