@@ -16,7 +16,6 @@ package org.netbeans.beaninfo.editors;
 import java.awt.Image;
 import java.beans.PropertyEditorSupport;
 import java.beans.FeatureDescriptor;
-import java.text.MessageFormat;
 import org.openide.ErrorManager;
 
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -128,7 +127,6 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     }
     
     public void paintValue (java.awt.Graphics g, java.awt.Rectangle rectangle) {
-        int px;
         Image img = (Image) findObject (images, findIndex (values, getValue ()));
     
         if (img != null) {

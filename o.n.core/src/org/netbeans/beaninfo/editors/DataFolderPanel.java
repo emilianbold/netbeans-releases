@@ -20,7 +20,6 @@ import java.util.StringTokenizer;
 import java.beans.*;
 import java.io.File;
 import java.util.Enumeration;
-import java.text.MessageFormat;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ChangeListener;
