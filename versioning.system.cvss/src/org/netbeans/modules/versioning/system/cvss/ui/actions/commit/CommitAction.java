@@ -19,10 +19,7 @@ import org.openide.DialogDisplayer;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
-import org.netbeans.modules.versioning.system.cvss.FileInformation;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
@@ -98,7 +95,7 @@ public class CommitAction extends AbstractSystemAction {
         return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
     }
 
-    public static void invokeCommit(String title, File [] roots) {
+    public static void invokeCommit(String contentTitle, File [] roots) {
         if (CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
             JOptionPane.showMessageDialog(null, loc.getString("MSG_NoFilesToCommit_Prompt"), 
                                           loc.getString("MSG_NoFilesToCommit_Title"), JOptionPane.INFORMATION_MESSAGE);
@@ -109,26 +106,29 @@ public class CommitAction extends AbstractSystemAction {
         cmd.setDisplayName(NbBundle.getMessage(CommitAction.class, "BK0001"));
         copy (cmd, commandTemplate);
         
-        final CommitSettings settings = new CommitSettings(roots);
+        final CommitSettings settings = new CommitSettings();
         settings.setCommand(cmd);
         final JButton commit = new JButton(loc.getString("CTL_CommitForm_Action_Commit"));
         commit.setEnabled(false);
         JButton cancel = new JButton(loc.getString("CTL_CommitForm_Action_Cancel"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 settings, 
-                title,
+                MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }),
                 true,
                 new Object [] { commit, cancel },
                 commit,
                 DialogDescriptor.BOTTOM_ALIGN,
                 null,
-                null); 
+                null);
         descriptor.setClosingOptions(null);
         settings.addVersioningListener(new VersioningListener() {
             public void versioningEvent(VersioningEvent event) {
-                enableCommit(settings, commit);
+                refreshCommitDialog(settings, commit);
             }
         });
+        setupNodes(settings, roots);
+        settings.putClientProperty("contentTitle", contentTitle);
+        settings.putClientProperty("DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         if (descriptor.getValue() != commit) return;
@@ -138,12 +138,40 @@ public class CommitAction extends AbstractSystemAction {
         cmd.setFiles(roots);
         executeCommit(settings);
     }
+    
+    private static void setupNodes(CommitSettings settings, File [] roots) {
+        CvsFileNode [] filesToCommit = CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes();
 
-    private static void enableCommit(CommitSettings settings, JButton commit) {
+/*
+        Set stickyTags = new HashSet(2);
+        for (int i = 0; i < filesToCommit.length; i++) {
+            CvsFileNode node = filesToCommit[i];
+            stickyTags.add(Utils.getSticky(node.getFile()));
+        }
+        if (stickyTags.size() > 1) {
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS, 
+                                                CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
+        } else {
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS, 
+                                                CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
+        }
+*/
+        settings.setNodes(filesToCommit);
+    }
+
+    /**
+     * User changed a commit action.
+     * 
+     * @param settings
+     * @param commit
+     */ 
+    private static void refreshCommitDialog(CommitSettings settings, JButton commit) {
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
+        Set stickyTags = new HashSet();
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
             if (file.getOptions() == CommitOptions.EXCLUDE) continue;
+            stickyTags.add(Utils.getSticky(file.getNode().getFile()));
             int status = file.getNode().getInformation().getStatus();
             if ((status & FileInformation.STATUS_REMOTE_CHANGE) != 0 || status == FileInformation.STATUS_VERSIONED_CONFLICT) {
                 commit.setEnabled(false);
@@ -153,8 +181,35 @@ public class CommitAction extends AbstractSystemAction {
                 settings.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");
                 return;
             }
+            stickyTags.add(Utils.getSticky(file.getNode().getFile()));
         }
-        settings.setErrorLabel("");
+        
+        if (stickyTags.size() > 1) {
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS, 
+                                                CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
+        } else {
+            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS, 
+                                                CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
+        }
+        
+        String contentTitle = (String) settings.getClientProperty("contentTitle");
+        DialogDescriptor dd = (DialogDescriptor) settings.getClientProperty("DialogDescriptor");
+        if (stickyTags.size() <= 1) {
+            String stickyTag = stickyTags.size() == 0 ? null : (String) stickyTags.iterator().next(); 
+            if (stickyTag == null) {
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
+                settings.setErrorLabel("");
+            } else {
+                stickyTag = stickyTag.substring(1);
+                dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag }));
+                String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag });
+                settings.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");
+            }
+        } else {
+            dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
+            String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
+            settings.setErrorLabel("<html><font color=\"#CC0000\">" + msg + "</font></html>");
+        }
         commit.setEnabled(true);
     }
 
@@ -165,8 +220,7 @@ public class CommitAction extends AbstractSystemAction {
             title = MessageFormat.format(NbBundle.getBundle(CommitAction.class).getString("CTL_CommitDialog_Title_Multi"), 
                                          new Integer[] { new Integer(roots.length) });
         } else {
-            title = MessageFormat.format(NbBundle.getBundle(CommitAction.class).getString("CTL_CommitDialog_Title"), 
-                                         new Object[] { roots[0].getName() });            
+            title = roots[0].getName();            
         }
         invokeCommit(title, roots);
     }

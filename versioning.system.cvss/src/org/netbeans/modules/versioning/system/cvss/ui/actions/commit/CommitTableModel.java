@@ -14,8 +14,6 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.netbeans.modules.versioning.system.cvss.CvsFileTableModel;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
@@ -35,24 +33,52 @@ import java.io.File;
 class CommitTableModel extends AbstractTableModel {
 
     private static final ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
-    private static final String [] columns = {
-        loc.getString("CTL_CommitTable_Column_File"),
-        loc.getString("CTL_CommitTable_Column_Status"),
-        loc.getString("CTL_CommitTable_Column_Action"),
-        loc.getString("CTL_CommitTable_Column_Folder")
-    };
+
+    /**
+     * Defines labels for Versioning view table columns.
+     */ 
+    private static final Map columnLabels = new HashMap(5);
+    {
+        columnLabels.put(CommitSettings.COLUMN_NAME_NAME, new String [] { 
+                                          loc.getString("CTL_CommitTable_Column_File"), 
+                                          loc.getString("CTL_CommitTable_Column_File")});
+        columnLabels.put(CommitSettings.COLUMN_NAME_STICKY, new String [] { 
+                                          loc.getString("CTL_CommitTable_Column_Sticky"), 
+                                          loc.getString("CTL_CommitTable_Column_Sticky")});
+        columnLabels.put(CommitSettings.COLUMN_NAME_STATUS, new String [] { 
+                                          loc.getString("CTL_CommitTable_Column_Status"), 
+                                          loc.getString("CTL_CommitTable_Column_Status")});
+        columnLabels.put(CommitSettings.COLUMN_NAME_ACTION, new String [] { 
+                                          loc.getString("CTL_CommitTable_Column_Action"), 
+                                          loc.getString("CTL_CommitTable_Column_Action")});
+        columnLabels.put(CommitSettings.COLUMN_NAME_PATH, new String [] { 
+                                          loc.getString("CTL_CommitTable_Column_Folder"), 
+                                          loc.getString("CTL_CommitTable_Column_Folder")});
+    }
     
-    private CvsFileTableModel   fileTableModel;
-    private boolean             fetchingNodes;
     private CommitOptions []    commitOptions;
     private CvsFileNode []      nodes;
+    
+    private String [] columns;
 
-    public CommitTableModel(CvsFileTableModel tableModel) {
-        fileTableModel = tableModel;
+    public CommitTableModel() {
+        setColumns(new String [0]);
+        setNodes(new CvsFileNode[0]);
+    }
+
+    void setNodes(CvsFileNode [] nodes) {
+        this.nodes = nodes;
+        createCommitOptions();
+        fireTableDataChanged();
+    }
+    
+    void setColumns(String [] cols) {
+        if (Arrays.equals(cols, columns)) return;
+        columns = cols;
+        fireTableStructureChanged();
     }
 
     public CommitSettings.CommitFile[] getCommitFiles() {
-        if (nodes == null) return new CommitSettings.CommitFile[0];
         CommitSettings.CommitFile [] files = new CommitSettings.CommitFile[nodes.length]; 
         for (int i = 0; i < nodes.length; i++) {
             files[i] = new CommitSettings.CommitFile(nodes[i], commitOptions[i]);
@@ -61,7 +87,7 @@ class CommitTableModel extends AbstractTableModel {
     }
     
     public String getColumnName(int column) {
-        return columns[column];
+        return ((String []) columnLabels.get(columns[column]))[0];
     }
 
     public int getColumnCount() {
@@ -69,47 +95,42 @@ class CommitTableModel extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        initNodes();
-        return nodes == null ? 0 : nodes.length;
+        return nodes.length;
     }
 
     public Class getColumnClass(int columnIndex) {
-        switch (columnIndex) {
-        case 0:
-        case 1:
-        case 3:
-            return String.class;
-        case 2:
+        String col = columns[columnIndex];
+        if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
             return CommitOptions.class;
-        default: 
-            throw new IllegalArgumentException("Column index out of range: " + columnIndex);
         }
+        return String.class;
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex == 2;
+        String col = columns[columnIndex];
+        return col.equals(CommitSettings.COLUMN_NAME_ACTION);
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {
-        initNodes();
-        if (nodes == null) return "";
-        switch (columnIndex) {
-        case 0:
+        String col = columns[columnIndex];
+        if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
-        case 1:
+        } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
+            String sticky = Utils.getSticky(nodes[rowIndex].getFile());
+            return sticky == null ? "" : sticky.substring(1);
+        } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
             return nodes[rowIndex].getInformation().getStatusText();
-        case 2:
+        } else if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
             return commitOptions[rowIndex];
-        case 3:
+        } else if (col.equals(CommitSettings.COLUMN_NAME_PATH)) {
             return Utils.getRelativePath(nodes[rowIndex].getFile());
-        default:
-            throw new IllegalArgumentException("Column index out of range: " + columnIndex);
         }
+        throw new IllegalArgumentException("Column index out of range: " + columnIndex);
     }
 
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        switch (columnIndex) {
-        case 2:
+        String col = columns[columnIndex];
+        if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
             CommitOptions now = commitOptions[rowIndex]; 
             commitOptions[rowIndex] = (CommitOptions) aValue;
             if (now == CommitOptions.EXCLUDE && aValue != CommitOptions.EXCLUDE) {
@@ -117,36 +138,21 @@ class CommitTableModel extends AbstractTableModel {
             } else if (aValue == CommitOptions.EXCLUDE && now != CommitOptions.EXCLUDE) {
                 CvsModuleConfig.getDefault().addExclusionPath(nodes[rowIndex].getFile().getAbsolutePath());
             }
-            break;
-        default:
+        } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex);
         }
     }
 
-    private synchronized void initNodes() {
-        if (fetchingNodes || nodes != null) return;
-        fetchingNodes = true;
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                CvsFileNode [] newNodes = fileTableModel.getNodes();
-                createCommitOptions(newNodes);
-                fetchingNodes = false;
-                nodes = newNodes;
-                fireTableDataChanged();
-            }
-        });        
-    }
-
-    private void createCommitOptions(CvsFileNode[] newNodes) {
-        commitOptions = new CommitOptions[newNodes.length];
-        for (int i = 0; i < newNodes.length; i++) {
-            CvsFileNode newNode = newNodes[i];
-            if (CvsModuleConfig.getDefault().isExcludedFromCommit(newNode.getFile().getAbsolutePath())) {
+    private void createCommitOptions() {
+        commitOptions = new CommitOptions[nodes.length];
+        for (int i = 0; i < nodes.length; i++) {
+            CvsFileNode node = nodes[i];
+            if (CvsModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
                 commitOptions[i] = CommitOptions.EXCLUDE;
             } else {
-                switch (newNode.getInformation().getStatus()) {
+                switch (node.getInformation().getStatus()) {
                 case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-                    commitOptions[i] = getDefaultCommitOptions(newNode.getFile());
+                    commitOptions[i] = getDefaultCommitOptions(node.getFile());
                     break;
                 case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
                 case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:

@@ -244,21 +244,24 @@ public class Utils {
      * returns its parent directory's sticky info, if any.  
      * 
      * @param file file to examine
-     * @return String stciky information for a file (without leading specified) or null 
+     * @return String sticky information for a file (with leading D or T specifier) or null 
      */ 
     public static String getSticky(File file) {
         if (file == null) return null;
         FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file);
         Entry entry = info.getEntry(file);
         if (entry != null) {
-            return entry.getStickyInformation();
+            String stickyInfo = null;
+            if (entry.getTag() != null) stickyInfo = "T" + entry.getTag();
+            else if (entry.getDate() != null) stickyInfo = "D" + entry.getDateFormatted();
+            return stickyInfo;
         }
         if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
             if ((file = file.getParentFile()) == null) return null;
             int status = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file).getStatus();
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                 String stickyTag = CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
-                return stickyTag == null ? null : stickyTag.substring(1);
+                return stickyTag == null ? null : stickyTag;
             } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                 return null;
             }

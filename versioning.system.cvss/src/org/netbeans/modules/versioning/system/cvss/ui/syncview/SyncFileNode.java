@@ -22,8 +22,6 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.DeleteLocalAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
-import org.netbeans.lib.cvsclient.admin.Entry;
-
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
@@ -136,6 +134,8 @@ public class SyncFileNode extends AbstractNode {
         if (sticky == null) {
             if ((sticky = Utils.getSticky(node.getFile())) == null) {
                 sticky = "";
+            } else {
+                sticky = sticky.substring(1);
             }
         }
         return sticky == null || sticky.length() == 0 ? "" : sticky;

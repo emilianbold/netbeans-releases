@@ -21,31 +21,32 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.util.*;
-import java.io.File;
 
 /**
  * View that displays nodes in the Synchronize view. 
  * 
  * @author Maros Sandor
  */
-class CommitTable implements MouseListener {
+class CommitTable implements MouseListener, AncestorListener {
 
     private CommitTableModel    tableModel;
     private JTable              table;
     private JComponent          component;
     
     private TableSorter sorter;
+    private String[]    columns;
 
-    public CommitTable(File [] roots) {
-        tableModel = new CommitTableModel(CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE));
+    public CommitTable() {
+        tableModel = new CommitTableModel();
         sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
         table.getTableHeader().setReorderingAllowed(false);
@@ -54,18 +55,77 @@ class CommitTable implements MouseListener {
         table.getTableHeader().setReorderingAllowed(true);
         sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
+        table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         table.addMouseListener(this);
-        sorter.setColumnComparator(1, new StatusComparator());
-        sorter.setSortingStatus(1, TableSorter.ASCENDING);
-        
-        Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
-        table.getColumnModel().getColumn(0).setPreferredWidth(200);
-        table.getColumnModel().getColumn(1).setPreferredWidth(100);
-        table.getColumnModel().getColumn(2).setPreferredWidth(120);
-        table.getColumnModel().getColumn(3).setPreferredWidth(ss.width / 2 - 420);
     }
 
+    public void ancestorAdded(AncestorEvent event) {
+        setDefaultColumnSizes();
+    }
+
+    /**
+     * Sets sizes of Commit table columns, kind of hardcoded.
+     */ 
+    private void setDefaultColumnSizes() {
+        int width = table.getWidth();
+        TableColumnModel columnModel = table.getColumnModel();
+        if (columnModel.getColumnCount() != columns.length) return; 
+        if (columns.length == 4) {
+            for (int i = 0; i < columns.length; i++) {
+                String col = columns[i];
+                sorter.setColumnComparator(i, null);
+                sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+                    columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
+                    sorter.setColumnComparator(i, new StatusComparator());
+                    sorter.setSortingStatus(i, TableSorter.ASCENDING);
+                    columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
+                    columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
+                } else {
+                    columnModel.getColumn(i).setPreferredWidth(width * 40 / 100);
+                }
+            }
+        } else if (columns.length == 5) {
+            for (int i = 0; i < columns.length; i++) {
+                String col = columns[i];
+                sorter.setColumnComparator(i, null);
+                sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
+                if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+                    columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
+                        columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
+                    sorter.setColumnComparator(i, new StatusComparator());
+                    sorter.setSortingStatus(i, TableSorter.ASCENDING);
+                    columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
+                } else if (col.equals(CommitSettings.COLUMN_NAME_ACTION)) {
+                    columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
+                } else {
+                    columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
+                }
+            }
+        }
+    }
+
+    public void ancestorMoved(AncestorEvent event) {
+    }
+
+    public void ancestorRemoved(AncestorEvent event) {
+    }
+    
+    void setColumns(String[] cols) {
+        columns = cols;
+        tableModel.setColumns(cols);
+        setDefaultColumnSizes();
+    }
+
+    void setNodes(CvsFileNode[] nodes) {
+        tableModel.setNodes(nodes);
+    }
+    
     public CommitSettings.CommitFile[] getCommitFiles() {
         return tableModel.getCommitFiles();
     }

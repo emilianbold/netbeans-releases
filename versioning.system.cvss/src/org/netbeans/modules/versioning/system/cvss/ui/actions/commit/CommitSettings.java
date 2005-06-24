@@ -21,7 +21,6 @@ import org.netbeans.modules.versioning.util.ListenersSupport;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
-import java.io.File;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.beans.PropertyChangeListener;
@@ -34,9 +33,14 @@ import java.beans.PropertyChangeEvent;
  */
 public class CommitSettings extends javax.swing.JPanel implements PropertyChangeListener, TableModelListener {
     
+    static final String COLUMN_NAME_NAME    = "name";
+    static final String COLUMN_NAME_STICKY  = "sticky";
+    static final String COLUMN_NAME_STATUS  = "status";
+    static final String COLUMN_NAME_ACTION  = "action";
+    static final String COLUMN_NAME_PATH    = "path";
+    
     static final Object EVENT_SETTINGS_CHANGED = new Object();
 
-    private final File[]    roots;
     private CommitTable     commitTable;
 
     public static class CommitFile {
@@ -57,13 +61,30 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         }
     }
     
-    public CommitSettings(File [] roots) {
-        this.roots = roots;
+    public CommitSettings() {
         Dimension ss = Toolkit.getDefaultToolkit().getScreenSize();
         setPreferredSize(new Dimension(ss.width / 2, ss.height / 5 * 2));
         init();
     }
 
+    /**
+     * Set columns to display in the Commit table.
+     * 
+     * @param cols array of column names
+     */ 
+    void setColumns(String[] cols) {
+        commitTable.setColumns(cols);
+    }
+
+    /**
+     * Set file nodes to display in the Commit table.
+     * 
+     * @param nodes array of nodes
+     */ 
+    void setNodes(CvsFileNode[] nodes) {
+        commitTable.setNodes(nodes);
+    }
+    
     public String getCommitMessage() {
         return taMessage.getText();
     }
@@ -98,7 +119,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         errorLabel.setMinimumSize(errorLabel.getPreferredSize());
         errorLabel.setText("");
         jScrollPane1.setMinimumSize(jScrollPane1.getPreferredSize());
-        commitTable = new CommitTable(roots);
+        commitTable = new CommitTable();
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

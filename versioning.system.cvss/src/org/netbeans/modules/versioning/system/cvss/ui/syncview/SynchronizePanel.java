@@ -266,8 +266,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
-        CommitAction.invokeCommit(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { parentTopComponent.getContentTitle() }),
-                                  rootFiles);
+        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), rootFiles);
     }
     
     /**
