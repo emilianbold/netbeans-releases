@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -62,7 +61,6 @@ public class SuiteCustomizerLibraries extends JPanel
                 }
             }
         });
-        jLabel1.setForeground(UIManager.getColor("nb.errorForeground"));
     }
     
     private void updateEnabled() {
@@ -97,7 +95,6 @@ public class SuiteCustomizerLibraries extends JPanel
         buttonPanel = new javax.swing.JPanel();
         addModuleButton = new javax.swing.JButton();
         removeModuleButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -188,14 +185,6 @@ public class SuiteCustomizerLibraries extends JPanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(buttonPanel, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "<html>Please be aware that Modules Manipulation is under a heavy development<br> and it is not really in a stable state yet. So use only at your own risk. Thanks.</html> ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        add(jLabel1, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -288,7 +277,6 @@ public class SuiteCustomizerLibraries extends JPanel
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addModuleButton;
     private javax.swing.JPanel buttonPanel;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton managePlafsButton;
     private javax.swing.JLabel moduleLabel;
     private javax.swing.JList moduleList;
