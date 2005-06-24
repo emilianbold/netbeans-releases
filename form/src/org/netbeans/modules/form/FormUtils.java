@@ -361,7 +361,9 @@ public class FormUtils
     };
     
     private static ClassPattern[] designTimeClasses = new ClassPattern[] {
-        new ClassPattern("org.netbeans.modules.form.", ClassPattern.PACKAGE_AND_SUBPACKAGES) // NOI18N
+        new ClassPattern("org.netbeans.modules.form.", ClassPattern.PACKAGE_AND_SUBPACKAGES), // NOI18N
+        new ClassPattern("org.netbeans.beaninfo.editors.", ClassPattern.PACKAGE), // NOI18N
+        new ClassPattern("org.netbeans.modules.i18n.form.", ClassPattern.PACKAGE) // NOI18N
     };
 
     // -----------------------------------------------------------------------------
