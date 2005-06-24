@@ -282,6 +282,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
                                 RequestProcessor.getDefault().post(logWriter, 0, Thread.NORM_PRIORITY);
                                 return;
                             }
+                            
+                            if (line.indexOf("Shutdown complete")>-1) {
+                                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_FAILED")));//NOI18N
+                                return;
+                            }
+
                         }
                         
                         try {
@@ -310,7 +316,15 @@ public class JBStartServer extends StartServer implements ProgressObject{
         public void run() {
             try {
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
-                Process serverProcess = Runtime.getRuntime().exec(serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH));
+                String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
+                
+                File serverStopFile = new File(serverStopFileName);
+                if (!serverStopFile.exists()){
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_FNF")));//NOI18N
+                    return;
+                }
+                
+                Process serverProcess = Runtime.getRuntime().exec(serverStopFileName+" --shutdown");
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING,
                         NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));
                 
@@ -347,8 +361,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
-        private final static String SHUTDOWN_SH = "/bin/shutdown.sh --shutdown";//NOI18N
-        private final static String SHUTDOWN_BAT = "/bin/shutdown.bat --shutdown";//NOI18N
+        private final static String SHUTDOWN_SH = "/bin/shutdown.sh";//NOI18N
+        private final static String SHUTDOWN_BAT = "/bin/shutdown.bat";//NOI18N
     }
     
     
