@@ -878,17 +878,9 @@ public final class NbModuleProject implements Project {
     
     private final class SuiteProviderImpl implements SuiteProvider {
 
-        private File suite;
-        
         public File getSuiteDirectory() {
-            // XXX maybe this will not be cached when there will be a
-            // possibility to move projects from suite to suite, remove from 
-            // suite... tests will reveal this anyway
-            if (suite == null) {
-                String suiteDir = eval.getProperty("suite.dir"); // NOI18N
-                return suiteDir == null ? null : helper.resolveFile(suiteDir);
-            }
-            return suite;
+            String suiteDir = eval.getProperty("suite.dir"); // NOI18N
+            return suiteDir == null ? null : helper.resolveFile(suiteDir);
         }
         
     }
