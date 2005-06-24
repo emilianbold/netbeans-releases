@@ -67,33 +67,12 @@ public class SuitePropertiesTest extends TestBase {
                 suite1Prj.getEvaluator(), suite1subModules);
     }
     
-    private SuiteProject getSuite1Project(boolean reload) throws IOException {
-        if (reload) {
-            suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
-        }
-        return suite1Prj;
+    private Project findSuite1Project() throws IOException {
+        return ProjectManager.getDefault().findProject(suite1FO);
     }
     
-    private SuiteProject getSuite2Project(boolean reload) throws IOException {
-        if (reload) {
-            suite2Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite2FO);
-        }
-        return suite2Prj;
-    }
-    
-    private Project getMiscProject() throws IOException {
-        FileObject miscFO = suite2FO.getFileObject("misc-project");
-        return ProjectManager.getDefault().findProject(miscFO);
-    }
-    
-    private SubprojectProvider getSuite1SPP(boolean reloadSuite1) throws IOException {
-        return (SubprojectProvider) getSuite1Project(reloadSuite1).
-                getLookup().lookup(SubprojectProvider.class);
-    }
-    
-    private SubprojectProvider getSuite2SPP(boolean reloadSuite2) throws IOException {
-        return (SubprojectProvider) getSuite2Project(reloadSuite2).
-                getLookup().lookup(SubprojectProvider.class);
+    private SubprojectProvider getSubProjectProvider(Project project) throws IOException {
+        return (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
     }
     
     public void testPropertiesAreLoaded() throws Exception {
@@ -121,8 +100,7 @@ public class SuitePropertiesTest extends TestBase {
         
         saveProperties(suite1Props);
         
-        SubprojectProvider spp = (SubprojectProvider) getSuite1Project(true).
-                getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = getSubProjectProvider(findSuite1Project());
         assertEquals("none module should be left", 0, spp.getSubprojects().size());
     }
     
@@ -138,8 +116,7 @@ public class SuitePropertiesTest extends TestBase {
         
         saveProperties(suite1Props);
         
-        SubprojectProvider spp = (SubprojectProvider) getSuite1Project(true).
-                getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider spp = getSubProjectProvider(findSuite1Project());
         assertEquals("one module should be left", 1, spp.getSubprojects().size());
         NbModuleProject libProject = (NbModuleProject) spp.getSubprojects().toArray()[0];
         assertEquals("lib module should be the one", "org.netbeans.examples.modules.lib",
@@ -159,34 +136,39 @@ public class SuitePropertiesTest extends TestBase {
                 actionNmtp.getModuleType());
     }
     
-    public void testAddSubModule() throws Exception {
+    public void testMoveSubModuleBetweenSuites() throws Exception {
+        FileObject miscFO = suite2FO.getFileObject("misc-project");
+        Project miscProject = ProjectManager.getDefault().findProject(miscFO);
+        assertNotNull(miscProject);
+        SuiteProvider sp = (SuiteProvider) miscProject.getLookup().lookup(SuiteProvider.class);
+        assertNotNull(sp);
+        assertEquals("is in suite2", FileUtil.toFile(suite2FO), sp.getSuiteDirectory());
+        
+        // simulate addition of miscProject to the suite1
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
-        
-        Project miscProject = getMiscProject();
-        assertNotNull(miscProject);
         model.addModule(miscProject);
         assertEquals("one project should be added", 3, model.getSize());
-        
+
+        // saves all changes
         saveProperties(suite1Props);
         
-        // assert miscProject is part of suite1
-        SubprojectProvider suite1spp = getSuite1SPP(true);
+        // assert miscProject is part of suite1 (has moved from suite2)....
+        SubprojectProvider suite1spp = getSubProjectProvider(findSuite1Project());
         assertEquals("one module should be left", 3, suite1spp.getSubprojects().size());
         assertTrue("misc-project has moved to suite1", suite1spp.getSubprojects().contains(miscProject));
         
-        
+        // ....and as such has correctly set suite provider
+        sp = (SuiteProvider) miscProject.getLookup().lookup(SuiteProvider.class);
+        assertNotNull(sp);
+        assertNotNull(sp.getSuiteDirectory());
+        assertEquals("misc-project was moved from suite2 to suite1", FileUtil.toFile(suite1FO), sp.getSuiteDirectory());
+
         // assert miscProject is not part of suite2
-        SubprojectProvider suite2spp = getSuite2SPP(true);
+        SubprojectProvider suite2spp = getSubProjectProvider(miscProject);
         assertFalse("misc-project is not part of suite2 anymore",
                 suite2spp.getSubprojects().contains(miscProject));
         
-        // assert miscProject has correctly set suite provider
-        SuiteProvider sp = (SuiteProvider) getMiscProject().getLookup().lookup(SuiteProvider.class);
-        assertNotNull(sp);
-        assertEquals("misc-project was moved to suite1",
-                FileUtil.toFile(getSuite1Project(false).getProjectDirectory()),
-                sp.getSuiteDirectory());
     }
     
     private void saveProperties(final SuiteProperties props) {
@@ -200,7 +182,7 @@ public class SuitePropertiesTest extends TestBase {
             });
             // and save the project
             if (result == Boolean.TRUE) {
-                ProjectManager.getDefault().saveProject(getSuite1Project(false));
+                ProjectManager.getDefault().saveProject(props.getProject());
             }
         } catch (MutexException e) {
             ErrorManager.getDefault().notify((IOException)e.getException());
