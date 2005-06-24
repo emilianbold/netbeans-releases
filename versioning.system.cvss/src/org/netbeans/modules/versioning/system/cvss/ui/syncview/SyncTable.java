@@ -190,6 +190,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         setModelProperties(columns);
         tableColumns = columns;
         for (int i = 0; i < tableColumns.length; i++) {
+            sorter.setColumnComparator(i, null);
+            sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
             if (SyncFileNode.COLUMN_NAME_STATUS.equals(tableColumns[i])) {
                 sorter.setColumnComparator(i, new StatusPropertyComparator());
                 sorter.setSortingStatus(i, TableSorter.ASCENDING);

@@ -77,6 +77,7 @@ class CommitTable implements MouseListener, AncestorListener {
                 sorter.setColumnComparator(i, null);
                 sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
                 if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+                    sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
                 } else if (col.equals(CommitSettings.COLUMN_NAME_STATUS)) {
                     sorter.setColumnComparator(i, new StatusComparator());
@@ -94,6 +95,7 @@ class CommitTable implements MouseListener, AncestorListener {
                 sorter.setColumnComparator(i, null);
                 sorter.setSortingStatus(i, TableSorter.NOT_SORTED);
                 if (col.equals(CommitSettings.COLUMN_NAME_NAME)) {
+                    sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
                 } else if (col.equals(CommitSettings.COLUMN_NAME_STICKY)) {
                         columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
@@ -278,4 +280,11 @@ class CommitTable implements MouseListener, AncestorListener {
         }
     }
     
+    private class FileNameComparator implements Comparator {
+        public int compare(Object o1, Object o2) {
+            Integer row1 = (Integer) o1;
+            Integer row2 = (Integer) o2;
+            return tableModel.getNodeAt(row1.intValue()).getName().compareToIgnoreCase(tableModel.getNodeAt(row2.intValue()).getName());
+        }
+    }
 }
