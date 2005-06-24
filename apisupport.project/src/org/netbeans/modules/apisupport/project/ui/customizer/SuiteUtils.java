@@ -78,6 +78,17 @@ public class SuiteUtils {
         if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
             try {
                 // clean up a submodule
+
+                // XXX after a few calls this finally calls
+                // AntProjectListener.configurationXmlChanged() which in turns
+                // tries to load subModule's classpath (see
+                // NbModuleProject.computeModuleClasspath). But it is still
+                // computing classpath like if the subModule was
+                // suite-component because project.xml is not written yet. Has
+                // to be solved somehow. Probably need more controll over the
+                // process or manually write or... ?
+                setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
+
                 File subModuleF = FileUtil.toFile(subModule.getProjectDirectory());
                 FileObject fo = FileUtil.toFileObject(new File(subModuleF, "nbproject/suite.properties")); // NOI18N
                 if (fo != null) {
@@ -88,19 +99,18 @@ public class SuiteUtils {
                     fo.delete();
                 }
                 
-                // copy platform.properties
+                // copy platform.properties if it doesn't exist yet
                 File suiteF = FileUtil.toFile(suite.getProjectDirectory());
                 FileObject plafPropsFO = FileUtil.toFileObject(new File(suiteF, "/nbproject/platform.properties")); // NOI18N
                 FileObject subModuleNbProject = FileUtil.toFileObject(new File(subModuleF, "nbproject")); // NOI18N
-                FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
-                
-                // clean up a subModules
-                setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE, true);
+                if (subModuleNbProject.getFileObject("platform.properties") == null) {
+                    FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+                }
+                ProjectManager.getDefault().saveProject(subModule);
                 
                 // clean up a suite
                 removeSubModuleFromSuite(suite, subModule);
                 ProjectManager.getDefault().saveProject(suite);
-                
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -280,17 +290,14 @@ public class SuiteUtils {
         
         // adjust subModule's properties
         NbModuleProjectGenerator.createSuiteProperties(subModule.getProjectDirectory(), suiteDirF);
-        setNbModuleType(subModule, NbModuleTypeProvider.SUITE_COMPONENT, true);
+        setNbModuleType(subModule, NbModuleTypeProvider.SUITE_COMPONENT);
+        ProjectManager.getDefault().saveProject(subModule);
     }
     
-    private static void setNbModuleType(Project module, NbModuleTypeProvider.NbModuleType type,
-            boolean save) throws IOException {
+    private static void setNbModuleType(Project module, NbModuleTypeProvider.NbModuleType type) throws IOException {
         // XXX do not cast to NbModuleProject - find better way (e.g. provide method in NbModuleTypeProvider)
         ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module).getHelper());
         pxm.setModuleType(type);
-        if (save) {
-            ProjectManager.getDefault().saveProject(module);
-        }
     }
-    
+
 }

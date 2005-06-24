@@ -144,8 +144,10 @@ public class SuitePropertiesTest extends TestBase {
         NbModuleProject libProject = (NbModuleProject) spp.getSubprojects().toArray()[0];
         assertEquals("lib module should be the one", "org.netbeans.examples.modules.lib",
                 libProject.getCodeNameBase());
+        NbModuleTypeProvider libProjectNmtp = (NbModuleTypeProvider) libProject.
+                getLookup().lookup(NbModuleTypeProvider.class);
         assertSame("lib module is still suite component module", NbModuleTypeProvider.SUITE_COMPONENT,
-                libProject.getNbModuleTypeProvider().getModuleType());
+                libProjectNmtp.getModuleType());
         
         // assert that the remove module (action-project) is standalone
         FileObject actionFO = suite1FO.getFileObject("action-project");

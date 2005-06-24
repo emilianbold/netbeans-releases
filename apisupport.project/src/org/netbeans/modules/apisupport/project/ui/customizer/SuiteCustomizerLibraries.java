@@ -265,6 +265,8 @@ public class SuiteCustomizerLibraries extends JPanel
         SuiteProvider sp = (SuiteProvider) suiteComp.
                 getLookup().lookup(SuiteProvider.class);
         assert sp != null;
+        assert sp.getSuiteDirectory() != null : "Invalid suite provider for: " // NOI18N
+                + suiteComp.getProjectDirectory();
         return sp.getSuiteDirectory();
     }
     
