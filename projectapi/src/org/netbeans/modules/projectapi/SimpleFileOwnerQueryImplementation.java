@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,9 +21,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -32,8 +32,8 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import org.openide.util.WeakSet;
 
 /**
  * Finds a project by searching the directory tree.
@@ -57,6 +57,8 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
         }
         return getOwner(file);
     }
+    
+    private final Set/*<FileObject>*/ warnedAboutBrokenProjects = new WeakSet();
         
     public Project getOwner(FileObject f) {
         while (f != null) {
@@ -66,7 +68,9 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     p = ProjectManager.getDefault().findProject(f);
                 } catch (IOException e) {
                     // There is a project here, but we cannot load it...
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    if (warnedAboutBrokenProjects.add(f)) { // #60416
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    }
                     return null;
                 }
                 if (p != null) {
