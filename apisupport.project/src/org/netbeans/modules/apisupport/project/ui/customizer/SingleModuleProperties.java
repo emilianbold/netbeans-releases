@@ -30,9 +30,10 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
-import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.DependencyListModel;
@@ -128,6 +129,7 @@ final class SingleModuleProperties extends ModuleProperties {
     
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     public static final String NB_PLATFORM_PROPERTY = "NB_PLATFORM";
+    public static final String DEPENDENCIES_PROPERTY = "MODULE_DEPENDENCIES";
 
     /**
      * Creates a new instance of SingleModuleProperties
@@ -241,6 +243,17 @@ final class SingleModuleProperties extends ModuleProperties {
         return isStandalone;
     }
     
+    boolean dependingOnImplDependency() {
+        Set/*<ModuleDependency>*/ deps = getDependenciesListModel().getDependencies();
+        for (Iterator it = deps.iterator(); it.hasNext(); ) {
+            ModuleDependency dep = (ModuleDependency) it.next();
+            if (dep.hasImplementationDepedendency()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private ProjectXMLManager getProjectXMLManager() {
         if (projectXMLManager == null) {
             projectXMLManager = new ProjectXMLManager(getHelper());
@@ -258,6 +271,19 @@ final class SingleModuleProperties extends ModuleProperties {
                 try {
                     dependencyListModel = new DependencyListModel(
                             getProjectXMLManager().getDirectDependencies(getActivePlatform()));
+                    // add listener and fire DEPENDENCIES_PROPERTY when deps are changed
+                    dependencyListModel.addListDataListener(new ListDataListener() {
+                        public void contentsChanged(ListDataEvent e) {
+                            firePropertyChange(DEPENDENCIES_PROPERTY, null,
+                                    getDependenciesListModel());
+                        }
+                        public void intervalAdded(ListDataEvent e) {
+                            contentsChanged(null);
+                        }
+                        public void intervalRemoved(ListDataEvent e) {
+                            contentsChanged(null);
+                        }
+                    });
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
                     dependencyListModel = ComponentFactory.getInvalidDependencyListModel();
@@ -406,7 +432,7 @@ final class SingleModuleProperties extends ModuleProperties {
         changeSupport.removePropertyChangeListener(pchl);
     }
     
-    public void firePropertyChange(String propName, Object oldValue, Object newValue) {
+    private void firePropertyChange(String propName, Object oldValue, Object newValue) {
         changeSupport.firePropertyChange(propName, oldValue, newValue);
     }
 

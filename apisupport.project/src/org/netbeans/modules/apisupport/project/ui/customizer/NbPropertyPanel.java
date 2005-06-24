@@ -31,6 +31,10 @@ abstract class NbPropertyPanel extends JPanel implements ComponentFactory.Storag
         initComponents();
     }
     
+    SingleModuleProperties getProperties() {
+        return props;
+    }
+    
     String getProperty(String key) {
         return props.getProperty(key);
     }

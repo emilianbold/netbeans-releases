@@ -16,6 +16,8 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JCheckBox;
@@ -77,6 +79,13 @@ final class CustomizerVersioning extends NbPropertyPanel {
             }
         });
         removeFriendButton.setEnabled(false);
+        props.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (SingleModuleProperties.DEPENDENCIES_PROPERTY == evt.getPropertyName()) {
+                    updateAppendImpl();
+                }
+            }
+        });
         updateAppendImpl();
     }
     
@@ -109,17 +118,16 @@ final class CustomizerVersioning extends NbPropertyPanel {
         publicPkgsTable.getActionMap().put("startEditing", switchAction); // NOI18N
     }
     
-    // XXX this is not correct yet. Impl. deps. in Libraries panel have to be
-    // considered
     private void updateAppendImpl() {
-        boolean isEmpty = "".equals(implVerValue.getText().trim()); // NOI18N
-        if (isEmpty && appendImpl.isEnabled()) {
+        boolean isImplVerFiled = !"".equals(implVerValue.getText().trim()); // NOI18N
+        boolean shouldEnable = isImplVerFiled || getProperties().dependingOnImplDependency();
+        if (shouldEnable && !appendImpl.isEnabled()) {
+            appendImpl.setEnabled(true);
+            appendImpl.setSelected(lastAppImplChecked);
+        } else if (!shouldEnable && appendImpl.isEnabled()) {
             appendImpl.setEnabled(false);
             lastAppImplChecked = appendImpl.isSelected();
             appendImpl.setSelected(false);
-        } else if (!isEmpty && !appendImpl.isEnabled()) {
-            appendImpl.setEnabled(true);
-            appendImpl.setSelected(lastAppImplChecked);
         }
     }
     
