@@ -133,6 +133,20 @@ public class JUnitOutputReader {
                 return;   //ignore other texts until we get exception class name
             }
             String trimmed = RegexpUtils.specialTrim(msg);
+            if (trimmed.length() == 0) {
+                if (callstackBuffer != null) {
+                    
+                    /* finalize the trouble and clear buffers: */
+                    trouble.stackTrace = (String[]) callstackBuffer.toArray(
+                                            new String[callstackBuffer.size()]);
+                    callstackBuffer = null;
+                }
+                report.reportTestcase(testcase);
+
+                trouble = null;
+                testcase = null;
+                return;
+            }
             if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
                 matcher = regexp.getCallstackLinePattern().matcher(msg);
                 if (matcher.matches()) {
@@ -147,18 +161,6 @@ public class JUnitOutputReader {
             }
             if ((callstackBuffer == null) && (trouble.message != null)) {
                 trouble.message = trouble.message + '\n' + msg;
-            } else if (trimmed.length() == 0) {
-                if (callstackBuffer != null) {
-                    
-                    /* finalize the trouble and clear buffers: */
-                    trouble.stackTrace = (String[]) callstackBuffer.toArray(
-                                            new String[callstackBuffer.size()]);
-                    report.reportTestcase(testcase);
-                    
-                    callstackBuffer = null;
-                    trouble = null;
-                    testcase = null;
-                }
             }
             /* else: just ignore the text */
             return;
@@ -264,11 +266,20 @@ public class JUnitOutputReader {
         }
         closePreviousReport();
         
-        final boolean success = (exception == null);
+        int errStatus = ResultView.ERR_STATUS_OK;
+        if (exception != null) {
+            if (exception instanceof java.lang.ThreadDeath) {
+                errStatus = ResultView.ERR_STATUS_INTERRUPTED;
+            } else {
+                errStatus = ResultView.ERR_STATUS_EXCEPTION;
+            }
+        }
+        
+        final int status = errStatus;
         Mutex.EVENT.postWriteRequest(new Runnable() {
             public void run() {
                 ResultView resultView = ResultView.getInstance();
-                resultView.displayReport(topReport);
+                resultView.displayReport(topReport, status);
             }
         });
     }
