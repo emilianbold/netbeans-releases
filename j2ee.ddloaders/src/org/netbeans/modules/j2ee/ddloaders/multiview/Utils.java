@@ -261,6 +261,10 @@ public class Utils {
         try {
             Method method = JMIUtils.createMethod(interfaceClass);
             method.setName(prototype.getName());
+            Type type = prototype.getType();
+            if (type != null) {
+                method.setType(JMIUtils.resolveType(type.getName()));
+            }
             JMIUtils.replaceParameters(method, prototype.getParameters());
             method.setModifiers(modifiers);
             if (remote) {

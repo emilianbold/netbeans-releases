@@ -69,6 +69,7 @@ public class EntityHelper extends EntityAndSessionHelper {
                 prototype.setType(type);
             } else {
                 prototype.getParameters().add(JMIUtils.createParameter(prototype, fieldName, type, false));
+                prototype.setType(JMIUtils.resolveType("void"));
             }
             JavaClass beanClass = getBeanClass();
             Utils.addMethod(beanClass, prototype, false, Modifier.PUBLIC | Modifier.ABSTRACT);

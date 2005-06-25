@@ -143,21 +143,28 @@ class CmpRelationshipsDialogHelper {
                         entityHelper = origEntityHelper;
                     }
                     if (entityHelper != null) {
-                        String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
-                        Type type = JMIUtils.resolveType(typeName);
-                        Method getterMethod = entityHelper.getGetterMethod(fieldName);
-                        if (getterMethod == null) {
-                            getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
-                        }
-                        Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-                        if (setterMethod == null) {
-                            setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
-                        }
-                        if (getter) {
-                            Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), getterMethod, false, 0);
-                        }
-                        if (setter) {
-                            Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod, false, 0);
+                        JMIUtils.beginJmiTransaction(true);
+                        boolean rollback = true;
+                        try {
+                            String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
+                            Type type = JMIUtils.resolveType(typeName);
+                            Method getterMethod = entityHelper.getGetterMethod(fieldName);
+                            if (getterMethod == null) {
+                                getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
+                            }
+                            Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
+                            if (setterMethod == null) {
+                                setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
+                            }
+                            if (getter) {
+                                Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), getterMethod, false, 0);
+                            }
+                            if (setter) {
+                                Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod, false, 0);
+                            }
+                            rollback = false;
+                        } finally {
+                            JMIUtils.endJmiTransaction(rollback);
                         }
                     }
                 }
