@@ -17,7 +17,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileAlreadyLockedException;
 
 import java.math.BigDecimal;
 import java.io.OutputStream;
@@ -334,7 +333,11 @@ public class EjbJarProxy implements EjbJar {
 
     public void write(FileObject fo) throws java.io.IOException {
         if (ejbJar != null) {
-            try {
+            // trying to use OutputProvider for writing changes
+            DataObject dobj = DataObject.find(fo);
+            if (dobj != null && dobj instanceof EjbJarProxy.OutputProvider) {
+                ((EjbJarProxy.OutputProvider) dobj).write(this);
+            } else {
                 FileLock lock = fo.lock();
                 try {
                     OutputStream os = fo.getOutputStream(lock);
@@ -346,14 +349,6 @@ public class EjbJarProxy implements EjbJar {
                     }
                 } finally {
                     lock.releaseLock();
-                }
-            } catch (FileAlreadyLockedException ex) {
-                // trying to use OutputProvider for writing changes
-                DataObject dobj = DataObject.find(fo);
-                if (dobj != null && dobj instanceof EjbJarProxy.OutputProvider) {
-                    ((EjbJarProxy.OutputProvider) dobj).write(this);
-                } else {
-                    throw ex;
                 }
             }
         }

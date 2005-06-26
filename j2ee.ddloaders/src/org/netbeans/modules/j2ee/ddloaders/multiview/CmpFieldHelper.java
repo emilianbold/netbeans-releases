@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -68,7 +67,8 @@ public class CmpFieldHelper {
     }
 
     public void setType(Type newType) {
-        JMIUtils.beginJmiTransaction(true);
+        EntityMethodController entityMethodController = entityHelper.getEntityMethodController();
+        entityMethodController.beginWriteJmiTransaction();
         boolean rollback = true;
         try {
             if (newType instanceof PrimitiveType && isPrimary()) {
@@ -79,7 +79,9 @@ public class CmpFieldHelper {
             Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
             boolean primary = isPrimary();
             JavaClass localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
+            entityMethodController.registerClassForSave(localBusinessInterfaceClass);
             JavaClass remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
+            entityMethodController.registerClassForSave(remoteBusinessInterfaceClass);
             changeReturnType(Utils.getMethod(localBusinessInterfaceClass, getterMethod), newType);
             Utils.changeParameterType(Utils.getMethod(localBusinessInterfaceClass, setterMethod), newType);
             changeReturnType(Utils.getMethod(remoteBusinessInterfaceClass, getterMethod), newType);
@@ -90,7 +92,9 @@ public class CmpFieldHelper {
             if (primary) {
                 entityHelper.setPrimKeyClass(newType);
             }
-            Method[] methods = JMIUtils.getMethods(entityHelper.getBeanClass());
+            JavaClass beanClass = entityHelper.getBeanClass();
+            entityMethodController.registerClassForSave(beanClass);
+            Method[] methods = JMIUtils.getMethods(beanClass);
             for (int i = 0; i < methods.length; i++) {
                 Method method = methods[i];
                 String name = method.getName();
@@ -110,11 +114,11 @@ public class CmpFieldHelper {
                     }
                 }
             }
-            entityHelper.cmpFields.firePropertyChange(null);
             rollback = false;
         } finally {
-            JMIUtils.endJmiTransaction(rollback);
+            entityMethodController.endWriteJmiTransaction(rollback);
         }
+        entityHelper.cmpFields.firePropertyChange(null);
         modelUpdatedFromUI();
     }
 
@@ -125,7 +129,6 @@ public class CmpFieldHelper {
     private void changeReturnType(Method method, Type type) {
         if (method != null) {
             method.setType(type);
-            modelUpdatedFromUI();
         }
     }
 
@@ -182,23 +185,31 @@ public class CmpFieldHelper {
         String title = NbBundle.getMessage(CmpFieldHelper.class, "MSG_ConfirmDeleteFieldTitle");
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
-            String fieldName = getFieldName();
-            Method getterMethod = entityHelper.getGetterMethod(fieldName);
-            Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-            JavaClass localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
-            removeMethod(localBusinessInterfaceClass, getterMethod);
-            removeMethod(localBusinessInterfaceClass, setterMethod);
-            JavaClass remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
-            removeMethod(remoteBusinessInterfaceClass, getterMethod);
-            removeMethod(remoteBusinessInterfaceClass, setterMethod);
+            EntityMethodController entityMethodController = entityHelper.getEntityMethodController();
+            entityMethodController.beginWriteJmiTransaction();
+            boolean rollback = true;
             try {
-                EntityMethodController ec = (EntityMethodController) EntityMethodController.createFromClass(
-                        entityHelper.getBeanClass());
-                new CMPFieldNode(field, ec, entityHelper.ejbJarFile).destroy();
-                modelUpdatedFromUI();
-            } catch (IOException e) {
-                Utils.notifyError(e);
+                String fieldName = getFieldName();
+                Method getterMethod = entityHelper.getGetterMethod(fieldName);
+                Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
+                JavaClass localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
+                entityMethodController.registerClassForSave(localBusinessInterfaceClass);
+                removeMethod(localBusinessInterfaceClass, getterMethod);
+                removeMethod(localBusinessInterfaceClass, setterMethod);
+                JavaClass remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
+                entityMethodController.registerClassForSave(remoteBusinessInterfaceClass);
+                removeMethod(remoteBusinessInterfaceClass, getterMethod);
+                removeMethod(remoteBusinessInterfaceClass, setterMethod);
+                try {
+                    entityMethodController.deleteField(field, entityHelper.ejbJarFile);
+                } catch (IOException e) {
+                    Utils.notifyError(e);
+                }
+                rollback = false;
+            } finally {
+                entityMethodController.endWriteJmiTransaction(rollback);
             }
+            modelUpdatedFromUI();
             return true;
         }
         return false;

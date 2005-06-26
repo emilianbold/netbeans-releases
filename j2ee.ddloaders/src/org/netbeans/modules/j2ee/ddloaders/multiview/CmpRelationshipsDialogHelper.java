@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Type;
@@ -143,7 +144,8 @@ class CmpRelationshipsDialogHelper {
                         entityHelper = origEntityHelper;
                     }
                     if (entityHelper != null) {
-                        JMIUtils.beginJmiTransaction(true);
+                        EntityMethodController entityMethodController = entityHelper.getEntityMethodController();
+                        entityMethodController.beginWriteJmiTransaction();
                         boolean rollback = true;
                         try {
                             String typeName = fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType;
@@ -157,14 +159,14 @@ class CmpRelationshipsDialogHelper {
                                 setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
                             }
                             if (getter) {
-                                Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), getterMethod, false, 0);
+                                entityMethodController.addMethod(getterMethod, true, true);
                             }
                             if (setter) {
-                                Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod, false, 0);
+                                entityMethodController.addMethod(setterMethod, true, true);
                             }
                             rollback = false;
                         } finally {
-                            JMIUtils.endJmiTransaction(rollback);
+                            entityMethodController.endWriteJmiTransaction(rollback);
                         }
                     }
                 }

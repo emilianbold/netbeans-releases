@@ -60,10 +60,12 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     public Method createAccessMethod(String fieldName, Type type, boolean get) {
-        JMIUtils.beginJmiTransaction(true);
+        entityMethodController.beginWriteJmiTransaction();
         boolean rollback = true;
         try {
-            Method prototype = JMIUtils.createMethod(getBeanClass());
+            JavaClass beanClass = getBeanClass();
+            entityMethodController.registerClassForSave(beanClass);
+            Method prototype = JMIUtils.createMethod(beanClass);
             prototype.setName(Utils.getMethodName(fieldName, get));
             if (get) {
                 prototype.setType(type);
@@ -71,13 +73,12 @@ public class EntityHelper extends EntityAndSessionHelper {
                 prototype.getParameters().add(JMIUtils.createParameter(prototype, fieldName, type, false));
                 prototype.setType(JMIUtils.resolveType("void"));
             }
-            JavaClass beanClass = getBeanClass();
             Utils.addMethod(beanClass, prototype, false, Modifier.PUBLIC | Modifier.ABSTRACT);
             Method accessMethod = Utils.getMethod(beanClass, prototype);
             rollback = false;
             return accessMethod;
         } finally {
-            JMIUtils.endJmiTransaction(rollback);
+            entityMethodController.endWriteJmiTransaction(rollback);
         }
     }
 
@@ -95,12 +96,7 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     public Method getGetterMethod(String fieldName) {
-        JMIUtils.beginJmiTransaction();
-        try {
-            return EntityMethodController.getGetterMethod(getBeanClass(), fieldName);
-        } finally {
-            JMIUtils.endJmiTransaction(false);
-        }
+        return EntityMethodController.getGetterMethod(getBeanClass(), fieldName);
     }
 
     public void removeQuery(Query query) {
@@ -143,11 +139,11 @@ public class EntityHelper extends EntityAndSessionHelper {
         changeFinderMethodParam(getLocalHomeInterfaceClass(), params, newType);
         changeFinderMethodParam(getHomeInterfaceClass(), params, newType);
         entity.setPrimKeyClass(newType.getName());
-        modelUpdatedFromUI();
     }
 
-    private static void changeFinderMethodParam(JavaClass javaClass, List params, Type newType) {
+    private void changeFinderMethodParam(JavaClass javaClass, List params, Type newType) {
         if (javaClass != null) {
+            entityMethodController.registerClassForSave(javaClass);
             Method method = javaClass.getMethod(PRIMARY_KEY_FINDER_METHOD, params, false);
             Utils.changeParameterType(method, newType);
         }

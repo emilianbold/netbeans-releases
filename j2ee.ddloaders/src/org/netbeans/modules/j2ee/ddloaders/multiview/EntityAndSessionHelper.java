@@ -72,8 +72,6 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
                 if (businessInterfaceClass != null) {
                     removeBeanInterface(businessInterfaceClass.getName());
                 }
-                ejb.setLocal(null);
-                ejb.setLocalHome(null);
             } else {
                 JavaClass businessInterfaceClass = getRemoteBusinessInterfaceClass();
                 if (businessInterfaceClass != null) {
@@ -81,12 +79,17 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
                 }
                 removeBeanInterface(ejb.getRemote());
                 Utils.removeClass(sourceClassPath, ejb.getHome());
-                ejb.setRemote(null);
-                ejb.setHome(null);
             }
             rollback = false;
         } finally {
             JMIUtils.endJmiTransaction(rollback);
+        }
+        if (local) {
+            ejb.setLocal(null);
+            ejb.setLocalHome(null);
+        } else {
+            ejb.setRemote(null);
+            ejb.setHome(null);
         }
         modelUpdatedFromUI();
     }
@@ -138,33 +141,38 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         try {
             JMIUtils.beginJmiTransaction(true);
             boolean rollback = true;
+            String componentInterfaceName;
+            String homeInterfaceName;
             try {
                 if (local) {
-                    String localInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
-                    localInterfaceName = generator.generateLocal(packageName, packageFile, localInterfaceName, ejbName);
-                    String localHomeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
-                    localHomeInterfaceName = generator.generateLocalHome(packageName, packageFile, localHomeInterfaceName,
-                            localInterfaceName, ejbName);
+                    componentInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
+                    componentInterfaceName = generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
+                    homeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
+                    homeInterfaceName = generator.generateLocalHome(packageName, packageFile, homeInterfaceName,
+                            componentInterfaceName, ejbName);
                     String businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
                     generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(),
-                            localInterfaceName);
-                    ejb.setLocal(localInterfaceName);
-                    ejb.setLocalHome(localHomeInterfaceName);
+                            componentInterfaceName);
                 } else {
-                    String remoteInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
-                    remoteInterfaceName = generator.generateRemote(packageName, packageFile, remoteInterfaceName, ejbName);
-                    String homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
+                    componentInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
+                    componentInterfaceName = generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
+                    homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
                     homeInterfaceName = generator.generateHome(packageName, packageFile, homeInterfaceName,
-                            remoteInterfaceName, ejbName);
+                            componentInterfaceName, ejbName);
                     String businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
                     generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName, ejb.getEjbClass(),
-                            remoteInterfaceName);
-                    ejb.setRemote(remoteInterfaceName);
-                    ejb.setHome(homeInterfaceName);
+                            componentInterfaceName);
                 }
                 rollback = false;
             } finally {
                 JMIUtils.endJmiTransaction(rollback);
+            }
+            if (local) {
+                ejb.setLocal(componentInterfaceName);
+                ejb.setLocalHome(homeInterfaceName);
+            } else {
+                ejb.setRemote(componentInterfaceName);
+                ejb.setHome(homeInterfaceName);
             }
             modelUpdatedFromUI();
         } catch (IOException e) {
