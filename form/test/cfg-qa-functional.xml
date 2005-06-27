@@ -15,19 +15,29 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="Form config">
     
 
-   <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
+   <testbag testattribs="validation, full" executor="ide" name="testbag_OpenForms">
         <testset dir="qa-functional/src">
             <patternset>
-				<include name="org/netbeans/qa/form/visualDevelopment/*.*"/>			
+                <include name="org/netbeans/qa/form/OpenForm.class"/>
             </patternset>
         </testset>
     </testbag>
-    
+
+
+<!-- Marek G. -->
+   <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/visualDevelopment/*.*"/>                
+            </patternset>
+        </testset>
+    </testbag>
+<!-- -->    
 
 <!--   <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
         <testset dir="qa-functional/src">
             <patternset>
-				<include name="org/netbeans/qa/form/compatibility/*.*"/>		
+                <include name="org/netbeans/qa/form/compatibility/*.*"/>		
             </patternset>
         </testset>
     </testbag>
@@ -40,16 +50,17 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
--->    
+-->
     
+<!-- Marek G. -->
     <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo">
         <testset dir="qa-functional/src">
             <patternset>
-		    <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
+		    <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> 
             </patternset>
         </testset>
     </testbag>
-    
+<!-- -->    
     
     <testbag testattribs="unstable" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">

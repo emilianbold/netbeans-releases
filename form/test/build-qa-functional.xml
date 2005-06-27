@@ -25,7 +25,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Creates an empty Java project in IDE -->
     <!-- <property name="xtest.ide.create.project" value="true"/> -->
     <!-- Opens project at specified location -->
-    <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/>
+    
+    <!-- Marek G.--> <property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/> <!-- -->
 
 
     <!-- ========= -->

@@ -1,0 +1,16 @@
+form/build/test/qa-functional/data/SampleProject/src/data/clear_Frame.form
+form/build/test/qa-functional/data/SampleProject/src/data/clear_JFrame.form
+form/src/org/netbeans/modules/form/EventCustomEditor.form
+form/src/org/netbeans/modules/form/FormCustomEditor.form
+form/src/org/netbeans/modules/form/FormCustomEditorAdvanced.form
+form/src/org/netbeans/modules/form/MethodPicker.form
+form/src/org/netbeans/modules/form/ParametersPicker.form
+form/src/org/netbeans/modules/form/PropertyPicker.form
+form/src/org/netbeans/modules/form/editors/CustomCodeEditor.form
+form/src/org/netbeans/modules/form/editors/StringArrayCustomEditor.form
+form/src/org/netbeans/modules/form/palette/PaletteManager.form
+form/src/org/netbeans/modules/form/wizard/ConnectionPanel1.form
+form/src/org/netbeans/modules/form/wizard/ConnectionPanel2.form
+form/src/org/netbeans/modules/form/wizard/ConnectionPanel3.form
+form/test/qa-functional/data/SampleProject/src/data/clear_Frame.form
+form/test/qa-functional/data/SampleProject/src/data/clear_JFrame.form
