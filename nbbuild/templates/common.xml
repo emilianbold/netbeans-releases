@@ -187,9 +187,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="test-preinit" depends="init"/>
     <target name="test-init" depends="init,test-preinit,test-lib-init">
-        <property name="test.unit.src.dir" location="test/unit/src"/>
-        <property name="build.test.unit.classes.dir" location="build/test/unit/classes"/>
-        <property name="build.test.unit.results.dir" location="build/test/unit/results"/>
+        <property name="test.unit.dir" location="test/unit"/>
+        <property name="test.unit.src.dir" location="${test.unit.dir}/src"/>
+        <property name="build.test.unit.dir" location="build/test/unit"/>
+        <property name="build.test.unit.classes.dir" location="${build.test.unit.dir}/classes"/>
+        <property name="build.test.unit.results.dir" location="${build.test.unit.dir}/results "/>
         <property name="test.filter.trace" value="true"/>
         <path id="test.unit.cp">
             <path refid="cp"/>
@@ -208,7 +210,9 @@ Microsystems, Inc. All Rights Reserved.
         </propertyset>
     </target>
 
-    <target name="test-build" depends="init,test-init,jar">
+    <target name="test-build" depends="jar,do-test-build"/>
+
+    <target name="do-test-build" depends="init,test-init">
         <mkdir dir="${build.test.unit.classes.dir}"/>
         <javac srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}"
                debug="true" deprecation="${build.compiler.deprecation}"
@@ -220,6 +224,11 @@ Microsystems, Inc. All Rights Reserved.
         <copy todir="${build.test.unit.classes.dir}">
             <fileset dir="${test.unit.src.dir}">
                 <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.test.unit.dir}">
+            <fileset dir="${test.unit.dir}">
+                <include name="data/**"/>
             </fileset>
         </copy>
     </target>
@@ -234,6 +243,16 @@ Microsystems, Inc. All Rights Reserved.
                source="${javac.source}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
             <classpath refid="test.unit.cp"/>
         </javac>
+        <copy todir="${build.test.unit.classes.dir}">
+            <fileset dir="${test.unit.src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.test.unit.dir}">
+            <fileset dir="${test.unit.dir}">
+                <include name="data/**"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="test" depends="init,test-init,test-build">
