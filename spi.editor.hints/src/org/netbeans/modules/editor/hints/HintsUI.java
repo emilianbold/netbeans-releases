@@ -47,12 +47,11 @@ import org.openide.util.NbBundle;
  * @author Tim Boudreau
  */
 public class HintsUI implements MouseListener, KeyListener {
-    private JTextComponent comp = null;
-    private List hints = Collections.EMPTY_LIST;
-    
-    private Popup listPopup = null;
-    private JLabel hintIcon = null;
-    private ScrollCompletionPane hintListComponent = null;
+    private JTextComponent comp;
+    private List hints = Collections.EMPTY_LIST;   
+    private Popup listPopup;
+    private JLabel hintIcon;
+    private ScrollCompletionPane hintListComponent;
     
     /** Creates a new instance of HintsUI */
     HintsUI() {
