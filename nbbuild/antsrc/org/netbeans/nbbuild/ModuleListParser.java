@@ -462,7 +462,13 @@ final class ModuleListParser {
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File((String) properties.get("basedir")));
             }
-            entries = scanNetBeansOrgSources(new File(nball), properties, project);
+            String netbeansDestDir = (String)properties.get("netbeans.dest.dir");
+            // If netbeans.dest.dir is within nball scan sources otherwise binaries.
+            if(netbeansDestDir.startsWith(nball)) {
+                entries = scanNetBeansOrgSources(new File(nball), properties, project);
+            } else {
+                entries = scanBinaries(properties, project);
+            }
         }
     }
     
