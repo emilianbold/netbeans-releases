@@ -245,6 +245,9 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
         Writer wr = null;
+        if (encoding == null) {
+            encoding = getObjectEncoding(false, true);//use encoding from fileobject & cache it
+        }
         try {
             if (!isSupportedEncoding(encoding)){
                 encoding = defaulEncoding;
