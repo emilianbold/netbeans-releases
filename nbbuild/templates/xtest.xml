@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- This calls target which will call compilers according to cfg file. -->
     <!-- You should not change this target unless you realy know what you are doing. -->
-    <target name="buildtests" depends="call-bootstrap,init" 
+    <target name="buildtests" depends="init" 
             description="Builds the test files.">
     	<xtest executeAction="buildTests"/>
     </target>
