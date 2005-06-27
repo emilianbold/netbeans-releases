@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -92,19 +92,8 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="build-qa-functional.xml" target="internal-execution"/>
     </target>
 
-    <!-- Calls bootstrap target from nbbuild/build.xml to satisfy that nbantext.jar is ready -->
-    <target name="call-bootstrap" depends="check-bootstrap" unless="bootstrap-ready">
-        <ant dir="${nb_all}/nbbuild" target="bootstrap"/>
-    </target>
-
-    <!-- Checks nbantext.jar exists -->
-    <target name="check-bootstrap">
-        <available file="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready" />
-    </target>
-    
     <target name="show-results-nb" if="netbeans.home">
-        <!-- Probably a cleaner way of doing this, but this should work for now. -->
-        <nbbrowse file="${nb_all}/${xtest.module}/test/results/index.html"/>
+        <nbbrowse file="results/index.html"/>
     </target>
 
 </project>

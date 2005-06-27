@@ -15,8 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xtest-unit" basedir="." default="all">
 
-    <dirname property="nb_all" file="${ant.file.xtest-unit}/../.."/>
-
     <condition property="do.we.need.to.parse.project.xml.file" >
         <or>
             <not><isset property="code.name.base.dashes" /></not>
@@ -46,7 +44,9 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="init-parse-project-xml" depends="init-read-property-files" if="do.we.need.to.parse.project.xml.file" >
-        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <!-- Use harness instead of nbbuild/nbantext.jar" -->
+        <property name="harness.dir" location="${netbeans.dest.dir}/harness"/>
+        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${harness.dir}/tasks.jar"/>
         <parseprojectxml project=".." codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
     </target>
         
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="build.sysclasspath" value="ignore"/>
     </target>
     
-    <target name="init-cp">
+    <target name="init-cp" depends="init">
         <path id="test.unit.compile.cp">
             <pathelement path="${module.classpath}"/>
             <pathelement location="${cluster}/${module.jar}"/>
@@ -77,17 +77,17 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="default-compiler" depends="init,init-cp">
-        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
-            <classpath refid="test.unit.compile.cp"/>
-        </buildTests>
+    <target name="default-compiler">
+        <!-- Build tests but not build module sources. -->
+        <ant dir=".." target="do-test-build"/>
+        <packageTests/>
     </target>
     
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
     
-    <target name="run-unit-test" depends="init,init-cp">
+    <target name="run-unit-test" depends="init-cp">
         <executeTests pluginname="jvm">
             <classpath refid="test.unit.run.cp"/>
         </executeTests>
