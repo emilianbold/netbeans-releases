@@ -232,7 +232,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     return;
                 }
                 
-                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, "{-c}{"+JBOSS_INSTANCE+"}");
+                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(serverRunFileName, "-c "+JBOSS_INSTANCE);
                 
                 String envp[];
                 
