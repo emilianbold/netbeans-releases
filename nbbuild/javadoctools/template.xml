@@ -360,6 +360,7 @@ cause it to fail.
             <filter pattern="http://java.netbeans.org/models/java/java.xml" accept='true' />
             <!-- UI specifications -->
             <filter pattern="http://ui.netbeans.org/docs/hi/javamdr/.*" accept='true' />
+            <filter pattern="http://ui.netbeans.org/docs/ui/code_folding/cf_uispec.html" accept="true" />
             <!-- is used in generated question from arch.xml -->
             <filter pattern="http://www.netbeans.org/community/guidelines/q-evangelism.html" accept='true' />
             <!-- direct link to main website is ok as well -->
