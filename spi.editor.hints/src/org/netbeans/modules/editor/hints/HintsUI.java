@@ -129,13 +129,21 @@ public class HintsUI implements MouseListener, KeyListener {
     private void removePopup() {
         if (listPopup != null) {
             listPopup.hide();
+            hintListComponent.getView().removeMouseListener(this);
             hintListComponent = null;
+            listPopup = null;
             hintIcon.setToolTipText(NbBundle.getMessage(HintsUI.class, "HINT_Bulb")); // NOI18N
         }
     }
     
     boolean isKnownComponent(Component c) {
-        return c == comp || c == hintIcon || c == hintListComponent;
+        return c != null && 
+               (c == comp 
+                || c == hintIcon 
+                || c == hintListComponent
+                || (c instanceof Container && ((Container)c).isAncestorOf(hintListComponent))
+                )
+        ;
     }
     
     private void showHints() {
@@ -201,6 +209,7 @@ public class HintsUI implements MouseListener, KeyListener {
         // be sure that hint will hide when popup is showing
         ToolTipManager.sharedInstance().setEnabled(false);
         ToolTipManager.sharedInstance().setEnabled(true);
+        assert hintListComponent == null;
         hintListComponent = 
                 new ScrollCompletionPane(comp, hints, null, null);
         
@@ -213,16 +222,13 @@ public class HintsUI implements MouseListener, KeyListener {
             Point p = new Point (r.x + 5, r.y + 20);
             SwingUtilities.convertPointToScreen(p, comp);
             
+            assert listPopup == null;
             listPopup = getPopupFactory().getPopup(
                     comp, hintListComponent, p.x, p.y);
             listPopup.show();
         } catch (BadLocationException ble) {
             ErrorManager.getDefault().notify (ble);
             setHints (null, null, false);
-            if (listPopup != null) {
-                listPopup.hide();
-                listPopup = null;
-            }
         }
     }
     
