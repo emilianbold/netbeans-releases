@@ -29,7 +29,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.openide.options.SystemOption;
 import org.openide.util.RequestProcessor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
