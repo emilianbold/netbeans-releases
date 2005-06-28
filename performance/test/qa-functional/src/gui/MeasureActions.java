@@ -79,28 +79,28 @@ public class MeasureActions  {
         suite.addTest(new SelectCategoriesInNewFile("testSelectXML","Select XML in New File"));
         suite.addTest(new SelectCategoriesInNewFile("testSelectOther","Select Other in New File"));
         
+        //TODO    suite.addTest(new OpenProject("testOpenJavaApplicationProject", "Open Java Application project"));
+        //TODO    suite.addTest(new OpenProject("testOpenJavaLibraryProject", "Open Java Library project"));
+        //TODO    suite.addTest(new OpenProject("testOpenWebApplicationProject", "Open Web Application project"));
+        //TODO    suite.addTest(new OpenProject("testOpenJavaProjectWithExistingSources", "Open Java Project with Existing sources"));
+        
+        suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
+        suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
+        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
+        //TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
+        
+        
         /*
+        suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));
+        suite.addTest(new DeleteFolder("testDeleteFolderWith100JavaFiles", "Delete folder with 100 java files"));
+         *
         suite.addTest(new RefreshFolder("testRefreshFolderWith50JavaFiles", "Refresh folder with 50 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100JavaFiles", "Refresh folder with 100 java files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100XmlFiles", "Refresh folder with 100 xml files"));
         suite.addTest(new RefreshFolder("testRefreshFolderWith100TxtFiles", "Refresh folder with 100 txt files"));
          
-        suite.addTest(new DeleteFolder("testDeleteFolderWith50JavaFiles", "Delete folder with 50 java files"));
-        suite.addTest(new DeleteFolder("testDeleteFolderWith100JavaFiles", "Delete folder with 100 java files"));
-         
-        suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
-        suite.addTest(new CreateProject("testCreateJavaLibraryProject", "Create Java Library project"));
-        suite.addTest(new CreateProject("testCreateWebApplicationProject", "Create Web Application project"));
-//TODO    suite.addTest(new CreateProject("testCreateJavaProjectWithExistingSources", "Create Java Project with Existing sources"));
-         
-         
         suite.addTest(new RefactorFindUsages("measureTime", "Refactor find usages"));
-         */
-        
-        //TODO    suite.addTest(new OpenProject("testOpenJavaApplicationProject", "Open Java Application project"));
-        //TODO    suite.addTest(new OpenProject("testOpenJavaLibraryProject", "Open Java Library project"));
-        //TODO    suite.addTest(new OpenProject("testOpenWebApplicationProject", "Open Web Application project"));
-        //TODO    suite.addTest(new OpenProject("testOpenJavaProjectWithExistingSources", "Open Java Project with Existing sources"));
+
         
         //TODO    suite.addTest(new CloseProject("testCloseJavaApplicationProject", "Close Java Application project"));
         
@@ -136,7 +136,7 @@ public class MeasureActions  {
         //TODO    suite.addTest(new CompileFile("testCompileFile", "Compile Java file"));
         
         //TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
-        
+*/        
         
         return suite;
     }

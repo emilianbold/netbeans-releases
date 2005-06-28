@@ -133,7 +133,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             new RegionFilter() {
         public boolean accept(javax.swing.JComponent c) {
             Class clz = null;
-            return c.getClass().getName().equals("org.netbeans.editor.ext.JDCPopupPanel") || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+            return c.getClass().getName().equals("org.netbeans.modules.editor.completion.ScrollCompletionPane") || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
         }
     };
 
@@ -143,12 +143,16 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     private static final class CodeCompletionSubchooser implements ComponentChooser {
 
         public boolean checkComponent(Component comp) {
-            return (comp instanceof org.netbeans.editor.ext.JDCPopupPanel);
+            return (comp.getClass().getName().equals("javax.swing.Popup$HeavyWeightWindow"));
         }
 
         public String getDescription() {
-            return "org.netbeans.editor.ext.JDCPopupPanel";
+            return "javax.swing.Popup$HeavyWeightWindow";
         }
+    }
+    
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new JavaCompletionInEditor("measureTime"));
     }
     
 }

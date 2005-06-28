@@ -67,7 +67,11 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
             throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
-        return new TopComponentOperator("JFrame20kB.form");
+        return new TopComponentOperator("JFrame20kB");
+    }
+
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new OpenFormFile("testOpening20kBFormFile"));
     }
     
 }
