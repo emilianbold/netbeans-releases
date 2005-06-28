@@ -78,18 +78,18 @@ public class GraphManager extends Object {
 	if (in == null)
 	    throw new Schema2BeansException(Common.getMessage(
 		"InputStreamCantBeNull_msg"));
-	
+
 	if (factory != null)
 	    GraphManager.factoryMap.put(in, factory);
 	else
 	    GraphManager.factoryMap.remove(in);
-	
+
 	if (writer != null)
 	    GraphManager.writerMap.put(in, writer);
 	else
 	    GraphManager.writerMap.remove(in);
     }
-    
+
     /**
      *  Set an external writer to use instead of the default one
      */
@@ -100,7 +100,7 @@ public class GraphManager extends Object {
     public void setWriteCData(boolean value) {
         writeCData = value;
     }
-    
+
     public static Node createRootElementNode(String name) throws Schema2BeansRuntimeException {
         String s = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n" +// NOI18N
             "<" + name + "/>";	// NOI18N
@@ -119,7 +119,7 @@ public class GraphManager extends Object {
         }
         return doc;
     }
-    
+
     //
     //	Document created for this GraphManager. Called by the generated bean.
     //
@@ -127,7 +127,7 @@ public class GraphManager extends Object {
 	if (doc instanceof Document) {
 	    this.document = (Document)doc;
 	    this.setNodeFactory((Document)doc);
-	    
+
 	    //
 	    //	The factory/writer should know about the doc now
 	    //	and no more about the original InputStream.
@@ -138,7 +138,7 @@ public class GraphManager extends Object {
 		this.docFactory = (GraphManager.Factory)o;
 		GraphManager.factoryMap.remove(doc);
 	    }
-	    
+
 	    o = GraphManager.writerMap.get(doc);
 	    if (o != null) {
 		this.docWriter = (GraphManager.Writer)o;
@@ -149,8 +149,8 @@ public class GraphManager extends Object {
 	    throw new Schema2BeansRuntimeException(Common.getMessage(
 		"CantFindFactory_msg"));
     }
-    
-    
+
+
     /**
      * This returns the DOM Document object, root
      * of the current DOM graph.  Operations that cause structural
@@ -161,13 +161,13 @@ public class GraphManager extends Object {
     public Document getXmlDocument() {
 	return this.document;
     }
-    
+
     public void setDoctype(String publicId, String systemId) {
         //System.out.println("GraphManager.setDoctype: publicId="+publicId+" systemId="+systemId);
 	this.docTypePublic = publicId;
 	this.docTypeSystem = systemId;
     }
-    
+
     /**
      *	Parse the DOM tree until the element named 'name' is found.
      *	Return the node of the name or null if not found.
@@ -185,7 +185,7 @@ public class GraphManager extends Object {
 	}
 	return n;
     }
-    
+
     /**
      *	This method is called by the createRoot() method of the root bean
      *	(part of the BaseBean class). The doc might not be available
@@ -202,26 +202,26 @@ public class GraphManager extends Object {
 	if (doc != null)
 	    this.bindingsMap.put(doc, beanRoot.binding);
     }
-    
+
     public void completeRootBinding(BaseBean beanRoot, Node doc) {
 	this.bindingsMap.put(doc, beanRoot.binding);
 	beanRoot.binding.setNode(doc);
     }
-    
+
     /**
      *	This method sets the DOM nodes factory.
      */
     public void setNodeFactory(Document doc) {
 	this.factory = new NodeFactory(doc);
     }
-    
+
     /**
      *  Return the DOM node factory
      */
     public NodeFactory getNodeFactory() {
 	return this.factory;
     }
-    
+
     /**
      *	Return the root of the bean graph
      */
@@ -276,7 +276,7 @@ public class GraphManager extends Object {
         domWriter.setWriteCData(writeCData);
         return domWriter;
     }
-    
+
     /**
      * Take the current DOM tree and readjust whitespace so that it
      * looks pretty.
@@ -299,7 +299,7 @@ public class GraphManager extends Object {
             out.append(indent);
         }
     }
-    
+
     protected static void printLevel(java.io.Writer out, int level, String indent, String text) throws java.io.IOException {
         StringBuffer outBuf = new StringBuffer();
         printLevel(outBuf, level, indent, text);
@@ -352,7 +352,7 @@ public class GraphManager extends Object {
                 // Dump the contents to stdout
                 in = tee(in);
             }
-	    
+
             //
             //	Change the references to map the newly created doc
             //	The BaseBean instance is not created yet. The doc
@@ -361,12 +361,12 @@ public class GraphManager extends Object {
             Object o = GraphManager.factoryMap.get(in);
             if (o != null) {
                 GraphManager.Factory f = (GraphManager.Factory)o;
-		
+
                 Document doc = f.createDocument(in, validate);
-		
+
                 GraphManager.factoryMap.remove(in);
                 GraphManager.factoryMap.put(doc, o);
-		
+
                 Object o2 = GraphManager.writerMap.get(in);
                 if (o2 != null) {
                     GraphManager.writerMap.remove(in);
@@ -424,7 +424,7 @@ public class GraphManager extends Object {
             throw new Schema2BeansNestedException(Common.getMessage("CantCreateXMLDOMDocument_msg"), e);
         }
     }
-    
+
     /**
      *	This method is called by the generated beans when they are
      *	building themselves from a DOM tree.
@@ -442,10 +442,10 @@ public class GraphManager extends Object {
     public void fillProperties(BeanProp[] prop, Node node) throws Schema2BeansException {
         BaseBean 	bean;
         DOMBinding 	binding, newBinding;
-	
+
         if (prop == null || node == null)
             return;
-	
+
         if (this.bindingsMap.get(node) == null) {
             throw new Schema2BeansException(Common.getMessage(
                                                               "CurrentNodeHasNoBinding_msg", new Integer(node.hashCode())));
@@ -470,13 +470,13 @@ public class GraphManager extends Object {
                 dtdName2Prop.put(dtdName, prop[i]);
             }
         }
-	
+
         //  Assume that the DOM parsing takes longer than prop parsing
         Map dupDtdNameIterators = new HashMap();	// Map<String, Iterator<BeanProp>>
         for (Node n = node.getFirstChild(); n != null; n = n.getNextSibling()) {
             if (n.getNodeType() == Node.ELEMENT_NODE) {
                 String eltName = n.getNodeName();
-		
+
                 //System.out.println("eltName="+eltName);
                 BeanProp matchingProp = (BeanProp) dtdName2Prop.get(eltName);
                 if (matchingProp != null) {
@@ -498,7 +498,7 @@ public class GraphManager extends Object {
                         }
                     }
                     binding = (DOMBinding)this.bindingsMap.get(n);
-			
+
                     if (DDLogFlags.debug) {
                         String s = eltName + " N(" + n.hashCode()+") - " +
                             (binding==null?"new node":"already bound B(" +
@@ -508,17 +508,17 @@ public class GraphManager extends Object {
                                         DDLogFlags.DBG_BLD, 1,
                                         DDLogFlags.FOUNDNODE, s);
                     }
-			
+
                     newBinding =
                         matchingProp.registerDomNode(n, binding, null);
-			
+
                     if (newBinding != null) {
-			    
+
                         if (Common.isBean(matchingProp.type))
                             bean = (BaseBean)newBinding.getBean(matchingProp);
                         else
                             bean = null;
-			    
+
                         if (DDLogFlags.debug) {
                             String s = "B(" + newBinding.hashCode() +
                                 ") - " + matchingProp.getPropClass().getName();
@@ -527,7 +527,7 @@ public class GraphManager extends Object {
                                             DDLogFlags.DBG_BLD, 1,
                                             DDLogFlags.BOUNDNODE, s);
                         }
-			    
+
                         if (bean != null) {
                             //
                             //  The property was a bean, fill up this bean.
@@ -563,7 +563,7 @@ public class GraphManager extends Object {
             }
         }
     }
-    
+
     //////////////////////
     //
     //	Event misc. methods, base on the name of the PropertyChanged event
@@ -575,78 +575,56 @@ public class GraphManager extends Object {
     //	String		getAttributeName(String name)
     //	boolean		isAttribute(String name)
     //
-    
+
     /**
      *	Return the bean holding the property 'name' as a BaseBean object
      */
     public BaseBean getPropertyParent(String name) {
         return (BaseBean) getPropertyParent(root, name);
     }
-    
+
     public static Bean getPropertyParent(Bean theRoot, String name) {
-        if (!name.startsWith("/"))	// NOI18N
-            throw new IllegalArgumentException(Common.getMessage(
-                                                                 "NameShouldStartWithSlash_msg", name));
-	
-        int		i1, i2, i;
-        String		beanName, indexName;
-        Bean	curBean = null;
-	
-        i1 = 0;
-	
-        do {
-            i1 = name.indexOf('/', i1);
-            if (i1 != -1) {
-                i1++;
-                i2 = name.indexOf('/', i1);
-                if (i2 == -1) {
-                    if (curBean == null)
-                        curBean = theRoot;
-                    //	We reached the property, return the bean found
-                    break;
+        String[] path = name.split("/", -1); // NOI18N
+        int n = path.length;
+        if (n < 2 || path[0].length() > 0) {
+            throw new IllegalArgumentException(Common.getMessage("NameShouldStartWithSlash_msg", name));
+        }
+        if (n == 2) {
+            return null;
+        }
+        Bean curBean = theRoot;
+        for (int i = 2; i < n - 1; i++) {
+            String[] element = path[i].split("[.]", 2); // NOI18N
+            String beanName = element[0];
+            int index;
+            if (element.length == 1) {
+                index = 0;
+            } else {
+                String indexName = element[1];
+                if (indexName.indexOf('i') != -1) {
+                    throw new IllegalStateException(
+                            Common.getMessage("CantFindBeanBecausePartOfNameRemoved_msg", beanName, name));
                 }
-		
-                beanName = name.substring(i1, i2);
-                i = beanName.indexOf('.');
-		
-                if (i != -1) {
-                    indexName = beanName.substring(i+1);
-                    beanName = beanName.substring(0, i);
-		    
-                    if (indexName.indexOf('i') != -1)
-                        throw new IllegalStateException(
-                                                        Common.getMessage(
-                                                                          "CantFindBeanBecausePartOfNameRemoved_msg",
-                                                                          beanName, name));
-                } else
-                    indexName = "0";	// NOI18N
-		
-                if (curBean == null)
-                    curBean = theRoot;
-                else
-                    curBean = curBean.propertyById(beanName,
-                                                   Integer.parseInt(indexName, 
-                                                                    16));
-		
-                if (curBean == null)
-                    throw new IllegalStateException(Common.getMessage(
-                                                                      "CantFindBeanMayHaveBeenRemoved_msg", beanName,  name));
+                index = Integer.parseInt(indexName, 16);
             }
-        } while (i1 != -1);
-	
+            curBean = curBean.propertyById(beanName, index);
+            if (curBean == null) {
+                throw new IllegalStateException(
+                        Common.getMessage("CantFindBeanMayHaveBeenRemoved_msg", beanName, name));
+            }
+        }
         return curBean;
     }
-    
     
     public String getKeyPropertyName(String propName, String[] prop,
 				     String[] key) {
 	return this.getKeyPropertyName(propName, prop, key, false);
     }
-    
+
     public String getKeyPropertyName(String propName) {
 	return this.getKeyPropertyName(propName, null, null, true);
     }
-    
+
     /**
      *	Return the bean holding the property 'name' as a BaseBean object
      */
@@ -654,7 +632,7 @@ public class GraphManager extends Object {
 				     String[] key, boolean keyName) {
         return getKeyPropertyName(root, propName, prop, key, keyName);
     }
-    
+
     public static String getKeyPropertyName(Bean theRoot,
                                             String propName, String[] prop,
                                             String[] key, boolean keyName) {
@@ -663,10 +641,10 @@ public class GraphManager extends Object {
 	Bean	curBean = theRoot;
 	String 		beanName, indexName;
 	String		name = propName;
-	
+
 	if (name.charAt(0) == '/')
 	    name = name.substring(1);
-	
+
 	do {
 	    int i = name.indexOf('/');
 	    if (i != -1) {
@@ -677,13 +655,13 @@ public class GraphManager extends Object {
 		beanName = name;
 		name = null;
 	    }
-	    
+
 	    i = beanName.indexOf('.');
-	    
+
 	    if (i != -1) {
 		indexName = beanName.substring(i+1);
 		beanName = beanName.substring(0, i);
-		
+
 		if (indexName.indexOf('i') != -1)
 		    throw new IllegalStateException(
 		    Common.getMessage(
@@ -692,21 +670,21 @@ public class GraphManager extends Object {
 	    }
 	    else
 		indexName = "0";	// NOI18N
-	    
-	    
+
+
 	    if (theRoot.hasName(beanName)) {
             curBean = theRoot;
 	    } else {
 		if (curBean.getProperty(beanName).isBean()) {
 		    curBean = curBean.propertyById(beanName,
-						   Integer.parseInt(indexName, 
+						   Integer.parseInt(indexName,
 								    16));
 		} else
 		    curBean = null;
 	    }
-	    
+
 	    keyPropName.append(beanName);
-	    
+
 	    if (prop != null && curBean != null) {
 		//	If a property name/key is defined, add it to the path
 		for (i=0; i<prop.length; i++) {
@@ -736,16 +714,16 @@ public class GraphManager extends Object {
 		    }
 		}
 	    }
-	    
+
 	    if (name != null)
 		keyPropName.append("/");			// NOI18N
-	    
+
 	} while (name != null && curBean != null);
-	
+
 	return keyPropName.toString();
     }
-    
-    
+
+
     /**
      *	Return the bean holding the property 'name' as a BaseBean object
      */
@@ -762,10 +740,10 @@ public class GraphManager extends Object {
 		i = propName.indexOf('/', j);
 	    }
 	} while(j!=-1 && i!=-1);
-	
+
 	return name.toString();
     }
-    
+
     /**
      *	Return the name of the bean holding the property 'name'
      */
@@ -779,10 +757,10 @@ public class GraphManager extends Object {
 	i = name.lastIndexOf('.');
 	if (i != -1)
 	    name = name.substring(0, i);
-	
+
 	return name;
     }
-    
+
     /**
      *	Return the name of the property of the PropertyChangeEvent named name.
      *	Any index or attribute is removed from the name of the event.
@@ -804,10 +782,10 @@ public class GraphManager extends Object {
 	i = name.lastIndexOf(':');
 	if (i != -1)
 	    name = name.substring(0, i);
-	
+
 	return name;
     }
-    
+
     /**
      *	Return the name of the attribute if this is the name of an attribute,
      *	return null otherwise.
@@ -825,7 +803,7 @@ public class GraphManager extends Object {
 	    name = null;
 	return name;
     }
-    
+
     /**
      *	Return true if this is the name of an attribute
      */
@@ -833,7 +811,7 @@ public class GraphManager extends Object {
 	int i = name.lastIndexOf(':');
 	return (i != -1);
     }
-    
+
     /**
      *	Return the index value of the property, as a string
      */
@@ -852,8 +830,8 @@ public class GraphManager extends Object {
 	    name = null;
 	return name;
     }
-    
-    
+
+
     /**
      *	If the property is an indexed property, return the index of
      *	the property.
@@ -874,7 +852,7 @@ public class GraphManager extends Object {
                 Bean bean = getPropertyParent(theRoot, name);
                 if (bean != null) {
                     BeanProp bp = bean.beanProp(getPropertyName(name));
-		    
+
                     if (bp != null)
                         return bp.idToIndex(Integer.parseInt(index, 16));
                 }
