@@ -115,9 +115,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         private Set files;
         private Set fileSystemListeners;
         private RequestProcessor.Task task;
-        private volatile boolean iconChange;
-        private volatile boolean nameChange;
-        
+
         public RootNode(NbModuleProject project) {
             // XXX add a NodePathResolver impl to lookup
             super(new RootChildren(project), Lookups.fixed(new Object[] {project}));
@@ -128,21 +126,29 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             setDisplayName(pi.getDisplayName());
             setShortDescription("Project in " + FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
             
+            setFiles(getProjectFiles());
+        }
+
+        private Set getProjectFiles() {
             Set roots = new HashSet();
             Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-            
+
             // TODO add Sources.addChengeListener(this)
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             for (int i = 0; i<groups.length; i++) {
                 SourceGroup group = groups[i];
                 FileObject fo = group.getRootFolder();
                 if (fo != null) {
-                    roots.add(fo);
+                    FileObject [] files = fo.getChildren();
+                    for (int j = 0; j < files.length; j++) {
+                        FileObject file = files[j];
+                        if (group.contains(file)) roots.add(file);
+                    }
                 }
             }
-            setFiles(roots);
+            return roots;
         }
-        
+
         protected final void setFiles(Set files) {
             fileSystemListeners = new HashSet();
             this.files = files;
@@ -243,15 +249,9 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
 
         public void run() {
-            if (iconChange) {
-                fireIconChange();
-                fireOpenedIconChange();
-                iconChange = false;
-            }
-            if (nameChange) {
-                fireDisplayNameChange(null, null);
-                nameChange = false;
-            }
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
         }
 
         public void annotationChanged(FileStatusEvent event) {
@@ -259,19 +259,16 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 task = RequestProcessor.getDefault().create(this);
             }
 
-            if ((iconChange == false && event.isIconChange())  || (nameChange == false && event.isNameChange())) {
-                Iterator it = files.iterator();
-                while (it.hasNext()) {
-                    FileObject fo = (FileObject) it.next();
-                    if (event.hasChanged(fo)) {
-                        iconChange |= event.isIconChange();
-                        nameChange |= event.isNameChange();
-                    }
+            // any change in project's files/folders names or icons can change project's name or icon
+            Iterator it = files.iterator();
+            while (it.hasNext()) {
+                FileObject fo = (FileObject) it.next();
+                if (event.hasChanged(fo)) {
+                    task.schedule(100);  // batch by 100 ms
+                    break;
                 }
             }
-
-            task.schedule(50);  // batch by 50 ms
-        }        
+        }
     }
     
     private static final String IMPORTANT_FILES_NAME = "important.files";
