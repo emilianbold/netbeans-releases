@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import org.apache.tools.ant.module.spi.AntSession;
 import org.openide.util.Mutex;
 import org.xml.sax.SAXException;
 
@@ -29,6 +31,9 @@ import org.xml.sax.SAXException;
  * @author  Marian Petras
  */
 public class JUnitOutputReader {
+    
+    /** */
+    private File antScript;
     
     /** */
     private RegexpUtils regexp = RegexpUtils.getInstance();
@@ -246,7 +251,9 @@ public class JUnitOutputReader {
     
     /**
      */
-    void taskStarted() {
+    void taskStarted(final AntSession session) {
+        this.antScript = session.getOriginatingScript();
+        
         Mutex.EVENT.postWriteRequest(new Runnable() {
             public void run() {
                 ResultView.getInstance().clear();
@@ -279,7 +286,7 @@ public class JUnitOutputReader {
         Mutex.EVENT.postWriteRequest(new Runnable() {
             public void run() {
                 ResultView resultView = ResultView.getInstance();
-                resultView.displayReport(topReport, status);
+                resultView.displayReport(topReport, status, antScript);
             }
         });
     }

@@ -78,6 +78,8 @@ final class RegexpUtils {
               + RegexpPatterns.JAVA_ID_REGEX + "(?:\\."                 //NOI18N
               + RegexpPatterns.JAVA_ID_REGEX + ")+"                     //NOI18N
               + "(?: ?\\([^()]+\\))?";                                  //NOI18N
+    static final String LOCATION_IN_FILE_REGEX
+            = RegexpPatterns.JAVA_ID_REGEX_FULL + "(?:\\:[0-9]+)?";     //NOI18N
     /** */
     static final String XML_DECL_PREFIX = "<?xml";                      //NOI18N
     /** */
@@ -126,6 +128,7 @@ final class RegexpUtils {
     private volatile Pattern fullJavaIdPattern, suiteStatsPattern, 
                              outputDelimPattern, testcaseIssuePattern,
                              testcaseExceptPattern, callstackLinePattern,
+                             locationInFilePattern,
                              testcaseHeaderBriefPattern,
                              testcaseHeaderPlainPattern,
                              xmlDeclPattern, floatNumPattern;
@@ -208,6 +211,14 @@ final class RegexpUtils {
             callstackLinePattern = Pattern.compile(CALLSTACK_LINE_REGEX);
         }
         return callstackLinePattern;
+    }
+    
+    /** */
+    Pattern getLocationInFilePattern() {
+        if (locationInFilePattern == null) {
+            locationInFilePattern = Pattern.compile(LOCATION_IN_FILE_REGEX);
+        }
+        return locationInFilePattern;
     }
     
     /** */

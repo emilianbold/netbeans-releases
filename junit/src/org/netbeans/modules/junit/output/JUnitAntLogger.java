@@ -72,7 +72,8 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void taskStarted(final AntEvent event) {
-        getOutputReader(event.getSession()).taskStarted();
+        final AntSession session = event.getSession();
+        getOutputReader(session).taskStarted(session);
     }
     
     /**
