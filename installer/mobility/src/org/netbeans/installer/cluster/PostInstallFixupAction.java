@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,9 +21,9 @@ import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.wizard.service.file.FileService;
 import com.installshield.wizard.service.ServiceException;
-import java.io.File;
-import java.util.StringTokenizer;
+import com.installshield.wizard.service.system.SystemUtilService;
 
+import java.io.File;
 
 public class PostInstallFixupAction extends ProductAction {
     public void build(ProductBuilderSupport support) {
@@ -40,11 +40,16 @@ public class PostInstallFixupAction extends ProductAction {
                 ProductService.DEFAULT_PRODUCT_SOURCE,
                 null,
                 "absoluteInstallLocation");
+            
+            logEvent(this, Log.DBG, "uninstall installDir: " + installDir);
+            deleteFiles(installDir, new String[] {"_uninst" + File.separator + "install.log"});
+
+            logEvent(this, Log.DBG, "uninstall Delete install dir on exit: " + installDir);
+            SystemUtilService systemUtilService = (SystemUtilService) getServices().getService(SystemUtilService.NAME);
+            systemUtilService.deleteDirectoryOnExit(installDir,false);
         } catch (ServiceException ex) {
             logEvent(this, Log.ERROR, ex);
         }
-        logEvent(this, Log.DBG, "uninstall installDir: " + installDir);
-        deleteFiles(installDir, new String[] {"_uninst" + File.separator + "install.log"});
     }
     
     public void deleteFiles(String dir, String[] fileNames) {
