@@ -75,7 +75,8 @@ public class Controller { //XXX public only for debug access to logging code
     private static final int ACTION_CLEAR = 12;
     private static final int ACTION_NEXTTAB = 13;
     private static final int ACTION_PREVTAB = 14;
-    private static final int ACTION_TO_EDITOR = 15;
+// issue 59447    
+//    private static final int ACTION_TO_EDITOR = 15;
     
 
     //Package private for unit tests
@@ -109,10 +110,10 @@ public class Controller { //XXX public only for debug access to logging code
             (KeyStroke)null);
     Action prevTabAction = new ControllerAction (ACTION_PREVTAB, "PreviousViewAction", //NOI18N
             (KeyStroke)null);
-    
-    Action toEditorAction = new ControllerAction (ACTION_TO_EDITOR, "ToEditorAction", 
-            // if you ever change or remove the shortcut, check the popup hiding hack. in postPopuMenu()
-            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
+// issue 59447    
+//    Action toEditorAction = new ControllerAction (ACTION_TO_EDITOR, "ToEditorAction", 
+//            // if you ever change or remove the shortcut, check the popup hiding hack. in postPopuMenu()
+//            KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0));
 
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
@@ -123,7 +124,7 @@ public class Controller { //XXX public only for debug access to logging code
     private Action[] kbdActions = new Action[] {
         copyAction, selectAllAction, findAction, findNextAction, 
         findPreviousAction, wrapAction, saveAsAction, closeAction,
-        navToLineAction, postMenuAction, clearAction, toEditorAction,
+        navToLineAction, postMenuAction, clearAction, //toEditorAction,
     };
 
     Controller() {}
@@ -407,16 +408,17 @@ public class Controller { //XXX public only for debug access to logging code
                 if (log) log ("Action PREVTAB received");
                 win.selectPreviousTab(tab);
                 break;
-            case ACTION_TO_EDITOR :
-                if (log) log ("Action TO_EDITOR received"); //NOI18N
-                Mode m = WindowManager.getDefault().findMode ("editor"); //NOI18N
-                if (m != null) {
-                    TopComponent tc = m.getSelectedTopComponent();
-                    if (tc != null) {
-                        tc.requestActive();
-                    }
-                }
-                break;
+// #issue 59447                
+//            case ACTION_TO_EDITOR :
+//                if (log) log ("Action TO_EDITOR received"); //NOI18N
+//                Mode m = WindowManager.getDefault().findMode ("editor"); //NOI18N
+//                if (m != null) {
+//                    TopComponent tc = m.getSelectedTopComponent();
+//                    if (tc != null) {
+//                        tc.requestActive();
+//                    }
+//                }
+//                break;
                 
             default :
                 assert false;
@@ -820,6 +822,8 @@ public class Controller { //XXX public only for debug access to logging code
                 if (Controller.log) Controller.log ("Sending input to " + in);
 
                 in.pushText (txt + "\n");
+				//#56070 - copy input to output, TODO - make it more different color..
+                io.getOut().println(txt);
             }
         }
     }
