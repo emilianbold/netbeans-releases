@@ -130,6 +130,23 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
      * for all parents.
      */
     public void fireFileStatusEvent(File file) {
+        Map folders = new HashMap();
+        for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
+            try {
+                FileObject fo = FileUtil.toFileObject(parent);
+                if (fo != null) {
+                    FileSystem fs = fo.getFileSystem();
+                    Set fsFolders = (Set) folders.get(fs);
+                    if (fsFolders == null) {
+                        fsFolders = new HashSet();
+                        folders.put(fs, fsFolders);
+                    }
+                    fsFolders.add(fo);
+                }
+            } catch (FileStateInvalidException e) {
+                // ignore files in invalid filesystems
+            }
+        }
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             try {
@@ -138,13 +155,10 @@ public class FileStatusProvider extends AnnotationProvider implements Versioning
                 // ignore files in invalid filesystems
             }
         }
-        try {
-            for (file = file.getParentFile(); file != null; file = file.getParentFile()) {
-                fo = FileUtil.toFileObject(file);
-                if (fo != null) fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, true, false));
-            }
-        } catch (FileStateInvalidException e) {
-            // ignore files in invalid filesystems
+        for (Iterator i = folders.keySet().iterator(); i.hasNext();) {
+            FileSystem fs = (FileSystem) i.next();
+            Set files = (Set) folders.get(fs);
+            fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
         }
     }
 
