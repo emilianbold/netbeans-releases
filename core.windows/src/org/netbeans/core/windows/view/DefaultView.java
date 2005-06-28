@@ -88,18 +88,28 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     
     public String guessSlideSide (TopComponent comp) {
         String toReturn = Constants.LEFT;
-        Rectangle compb = comp.getBounds();
-        Rectangle editorb = hierarchy.getPureEditorAreaBounds();
-        Point leftTop = new Point(0, 0);
-        SwingUtilities.convertPointToScreen(leftTop, comp);
-        if (editorb.x > leftTop.x) {
-            toReturn = Constants.LEFT;
-        }
-        if ((editorb.x + editorb.width) < leftTop.x) {
-            toReturn = Constants.RIGHT;
-        }
-        if ((editorb.y + editorb.height) < leftTop.y) {
+        if (hierarchy.getMaximizedModeView() != null) {
+			//issue #58562
+            toReturn = (String)comp.getClientProperty("lastSlideSide");
+            if (toReturn == null) {
+                //TODO? now how does one figure on startup with maximazed mode where the editor is?
+                toReturn = Constants.LEFT;
+            }
+        } else {
+            Rectangle compb = comp.getBounds();
+            Rectangle editorb = hierarchy.getPureEditorAreaBounds();
+            Point leftTop = new Point(0, 0);
+            SwingUtilities.convertPointToScreen(leftTop, comp);
+            if (editorb.x > leftTop.x) {
+                toReturn = Constants.LEFT;
+            }
+            if ((editorb.x + editorb.width) < leftTop.x) {
+                toReturn = Constants.RIGHT;
+            }
+            if ((editorb.y + editorb.height) < leftTop.y) {
                 toReturn = Constants.BOTTOM;
+            }
+            comp.putClientProperty("lastSlideSide", toReturn);
         }
         return toReturn;
     }
