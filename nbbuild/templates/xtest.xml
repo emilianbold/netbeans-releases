@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- This calls target which will call compilers according to cfg file. -->
     <!-- You should not change this target unless you realy know what you are doing. -->
-    <target name="buildtests" depends="init" 
+    <target name="buildtests" depends="call-bootstrap,init" 
             description="Builds the test files.">
     	<xtest executeAction="buildTests"/>
     </target>
@@ -92,6 +92,16 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="build-qa-functional.xml" target="internal-execution"/>
     </target>
 
+    <!-- Calls bootstrap target from nbbuild/build.xml to satisfy that nbantext.jar is ready -->
+    <target name="call-bootstrap" depends="check-bootstrap" unless="bootstrap-ready">
+        <ant dir="${nb_all}/nbbuild" target="bootstrap"/>
+    </target>
+
+    <!-- Checks nbantext.jar exists -->
+    <target name="check-bootstrap">
+        <available file="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready" />
+    </target>
+    
     <target name="show-results-nb" if="netbeans.home">
         <nbbrowse file="results/index.html"/>
     </target>
