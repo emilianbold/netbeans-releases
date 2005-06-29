@@ -51,19 +51,14 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <folder name="x-jsp">
                 <folder name="Popup">
-                    <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/View Servlet.instance"/>
+                    <!-- WebServiceActionGroup -->
+                    <attr name="org-openide-actions-PasteAction.instance/SeparatorWSClient.instance" boolvalue="true"/>
+                    <file name="SeparatorWSClient.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-
-                    <file name="org-netbeans-modules-project-ui-RunSingle.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.runSingle"/>
-                    </file>
-                    
-                    <!-- Place after WebServiceActionGroup -->
-                    <attr name="org-netbeans-modules-project-ui-RunSingle.instance/org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance/org-netbeans-modules-web-core-jsploader-EditServletAction.shadow" boolvalue="true"/>
-                    <attr name="generate-goto-popup/org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
+                    <attr name="SeparatorWSClient.instance/org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance"/>
+                    <attr name="org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance/SeparatorProperties.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
