@@ -39,6 +39,7 @@ import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -54,8 +55,11 @@ public class JavaCompletionProvider implements CompletionProvider {
         int ret = 0;
         if (typedText != null && typedText.endsWith(".")) // NOI18N
             ret |= COMPLETION_QUERY_TYPE;
-        if (typedText != null && (typedText.endsWith("()")) || typedText.endsWith("();") || typedText.endsWith("().") || typedText.endsWith("(),")) // NOI18N
+        if (typedText != null && (typedText.endsWith("()")) || typedText.endsWith("();") // NOI18N
+                || typedText.endsWith("().") || typedText.endsWith("(),") // NOI18N
+        )
             ret |= TOOLTIP_QUERY_TYPE;
+
         if (ret != 0) {
             try {
                 TokenID token = ((ExtSyntaxSupport)Utilities.getSyntaxSupport(component)).getTokenID(component.getCaret().getDot());
@@ -277,6 +281,13 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private JToolTip queryToolTip;
         
+        private boolean nonInitialQuery;
+        
+        /** Method/constructor name for tracking whether the method is still
+         * being completed.
+         */
+        private String initialQueryMethodName;
+        
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             NbJavaJMICompletionQuery query = new NbJavaJMICompletionQuery(true);
             BaseDocument bdoc = (BaseDocument)doc;
@@ -291,6 +302,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Object o = it.next();
                     if (o instanceof NbJMIResultItem.CallableFeatureResultItem) {
                         NbJMIResultItem.CallableFeatureResultItem item = (NbJMIResultItem.CallableFeatureResultItem) o;
+                        
+                        if (nonInitialQuery) {
+                            if (initialQueryMethodName != null
+                                && !initialQueryMethodName.equals(item.getName())
+                            ) { // Standing on different method for query refreshing
+                                // Request hiding of the completion
+                                Completion.get().hideToolTip();
+                                break;
+                            }
+                        } else { // initial query -> remember the active method's name
+                            initialQueryMethodName = item.getName();
+                        }
+
                         List parms = item.createParamsList();
                         if (parms.size() > 0) {
                             idx = item.getCurrentParamIndex();
@@ -303,6 +327,7 @@ public class JavaCompletionProvider implements CompletionProvider {
 
                 resultSet.setAnchorOffset(queryAnchorOffset = res.getSubstituteOffset() + 1);
                 resultSet.setToolTip(queryToolTip = new MethodParamsTipPaintComponent(list, idx));
+                nonInitialQuery = true;
             }
             resultSet.finish();
         }
