@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.HashMap;
+import java.net.URL;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
@@ -49,7 +50,7 @@ public final class DDProvider {
         //ddMap=new java.util.WeakHashMap(5);
         ddMap = new HashMap(5);
     }
-    
+
     /**
     * Accessor method for DDProvider singleton
     * @return DDProvider object
@@ -70,7 +71,7 @@ public final class DDProvider {
         if (ejbJarProxy!=null) {
             return ejbJarProxy;
         }
-        
+
         fo.addFileChangeListener(new FileChangeAdapter() {
             public void fileChanged(FileEvent evt) {
                 FileObject fo=evt.getFile();
@@ -120,7 +121,7 @@ public final class DDProvider {
                 } catch (java.io.IOException ex){}
             }
         });
-        
+
         try {
             DDParse parseResult = parseDD(fo);
             EjbJar original = createEjbJar(parseResult);
@@ -154,23 +155,23 @@ public final class DDProvider {
 
     private EjbJarProxy getFromCache (FileObject fo) {
  /*       WeakReference wr = (WeakReference) ddMap.get(fo);
-        if (wr == null) {
-            return null;
-        }
-        EjbJarProxy ejbJarProxy = (EjbJarProxy) wr.get ();
-        if (ejbJarProxy == null) {
-            ddMap.remove (fo);
-        }
-        return ejbJarProxy;*/
+if (wr == null) {
+    return null;
+}
+EjbJarProxy ejbJarProxy = (EjbJarProxy) wr.get ();
+if (ejbJarProxy == null) {
+    ddMap.remove (fo);
+}
+return ejbJarProxy;*/
         return (EjbJarProxy) ddMap.get(fo);
     }
-    
+
     /**
      * Returns the root of deployment descriptor bean graph for java.io.File object.
      *
      * @param is source representing the ejb-jar.xml file
      * @return EjbJar object - root of the deployment descriptor bean graph
-     */    
+     */
     public EjbJar getDDRoot(InputSource is) throws IOException, SAXException {
         DDParse parse = parseDD(is);
         EjbJar ejbJar = createEjbJar(parse);
@@ -178,14 +179,17 @@ public final class DDProvider {
         setProxyErrorStatus(proxy, parse);
         return proxy;
     }
-    
+
     // PENDING j2eeserver needs BaseBean - this is a temporary workaround to avoid dependency of web project on DD impl
     /**  Convenient method for getting the BaseBean object from CommonDDBean object
      *
      */
     public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean bean) {
-        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) return (org.netbeans.modules.schema2beans.BaseBean)bean;
-        else if (bean instanceof EjbJarProxy) return (org.netbeans.modules.schema2beans.BaseBean) ((EjbJarProxy)bean).getOriginal();
+        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) {
+            return (org.netbeans.modules.schema2beans.BaseBean) bean;
+        } else if (bean instanceof EjbJarProxy) {
+            return (org.netbeans.modules.schema2beans.BaseBean) ((EjbJarProxy) bean).getOriginal();
+        }
         return null;
     }
 
@@ -198,16 +202,16 @@ public final class DDProvider {
             ejbJarProxy.setStatus(EjbJar.STATE_VALID);
         }
     }
-    
-    private static EjbJar createEjbJar(DDParse parse) {        
+
+    private static EjbJar createEjbJar(DDParse parse) {
           EjbJar jar = null;
           String version = parse.getVersion();
           if (EjbJar.VERSION_2_1.equals(version)) {
               return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } else if (EjbJar.VERSION_2_0.equals(version)) {
               return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
-          } 
-          
+          }
+
           return jar;
     }
 
@@ -218,23 +222,25 @@ public final class DDProvider {
                 resolver=new DDResolver();
             }
             return resolver;
-        }        
-        public InputSource resolveEntity (String publicId, String systemId) {
-            if (EJB_11_DOCTYPE.equals(publicId)) { 
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_1_1.dtd"); //NOI18N
+        }
+
+        public InputSource resolveEntity(String publicId, String systemId) {
+            // return a proper input source
+            String resource;
+            if (EJB_11_DOCTYPE.equals(publicId)) {
+                resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_1_1.dtd"; //NOI18N
             } else if (EJB_20_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_0.dtd"); //NOI18N
+                resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_0.dtd"; //NOI18N
             } else if ("http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd".equals(systemId)) {
-                return new InputSource("nbres:/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_1.xsd"); //NOI18N
+                resource = "/org/netbeans/modules/j2ee/dd/impl/resources/ejb-jar_2_1.xsd"; //NOI18N
             } else {
-                // use the default behaviour
                 return null;
             }
+            URL url = this.getClass().getResource(resource);
+            return new InputSource(url.toString());
         }
     }
-    
+
     private static class ErrorHandler implements org.xml.sax.ErrorHandler {
         private int errorType=-1;
         SAXParseException error;
@@ -252,37 +258,37 @@ public final class DDProvider {
                 error=sAXParseException;
             }
             //throw sAXParseException;
-        }        
+        }
         public void fatalError(org.xml.sax.SAXParseException sAXParseException) throws org.xml.sax.SAXException {
             errorType=2;
             throw sAXParseException;
         }
-        
+
         public int getErrorType() {
             return errorType;
         }
         public SAXParseException getError() {
             return error;
-        }        
+        }
     }
 
-    public SAXParseException parse(FileObject fo) 
+    public SAXParseException parse(FileObject fo)
     throws org.xml.sax.SAXException, java.io.IOException {
         DDParse parseResult = parseDD(fo);
         return parseResult.getWarning();
     }
-    
-    private DDParse parseDD (FileObject fo) 
+
+    private DDParse parseDD (FileObject fo)
     throws SAXException, java.io.IOException {
         return parseDD(fo.getInputStream());
     }
-    
-    private DDParse parseDD (InputStream is) 
+
+    private DDParse parseDD (InputStream is)
     throws SAXException, java.io.IOException {
         return parseDD(new InputSource(is));
     }
-    
-    private DDParse parseDD (InputSource is) 
+
+    private DDParse parseDD (InputSource is)
     throws SAXException, java.io.IOException {
         DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
         org.apache.xerces.parsers.DOMParser parser = new org.apache.xerces.parsers.DOMParser();
@@ -298,7 +304,7 @@ public final class DDProvider {
         SAXParseException error = errorHandler.getError();
         return new DDParse(d, error);
     }
-    
+
     /**
      * This class represents one parse of the deployment descriptor
      */
@@ -311,14 +317,14 @@ public final class DDProvider {
             saxException = saxEx;
             extractVersion();
         }
-        
+
         /**
          * @return document from last parse
          */
         public Document getDocument() {
             return document;
         }
-        
+
         /**
          * Extracts version of deployment descriptor. 
          */
@@ -336,12 +342,12 @@ public final class DDProvider {
                 }
             }
         }
-        
+
         public String getVersion() {
             return version;
         }
-        
-        /** 
+
+        /**
          * @return validation error encountered during the parse
          */
         public SAXParseException getWarning() {
