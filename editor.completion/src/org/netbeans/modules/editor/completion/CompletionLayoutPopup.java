@@ -49,7 +49,11 @@ class CompletionLayoutPopup {
     
     private Rectangle screenBounds;
     
-    public boolean isVisible() {
+    private boolean preferDisplayAboveCaret;
+    
+    private boolean showRetainedPreferredSize;
+    
+    public final boolean isVisible() {
         return (popup != null);
     }
     
@@ -57,10 +61,11 @@ class CompletionLayoutPopup {
         return (contentComponent != null);
     }
     
-    public void hide() {
+    public final void hide() {
         if (isVisible()) {
             popup.hide();
             popup = null;
+            popupBounds = null;
             contentComponent = null;
             anchorOffset = -1;
             // Reset screen bounds as well to not cache too long
@@ -68,55 +73,67 @@ class CompletionLayoutPopup {
         }
     }
     
-    public boolean isDisplayAboveCaret() {
+    public final boolean isDisplayAboveCaret() {
         return displayAboveCaret;
     }
     
-    public Rectangle getPopupBounds() {
+    public final Rectangle getPopupBounds() {
         return popupBounds;
     }
     
-    void setLayout(CompletionLayout layout) {
+    final void setLayout(CompletionLayout layout) {
         assert (layout != null);
         this.layout = layout;
     }
     
-    protected void setContentComponent(JComponent contentComponent) {
+    final void setPreferDisplayAboveCaret(boolean preferDisplayAboveCaret) {
+        this.preferDisplayAboveCaret = preferDisplayAboveCaret;
+    }
+    
+    final void setContentComponent(JComponent contentComponent) {
         assert (contentComponent != null);
         this.contentComponent = contentComponent;
     }
     
-    protected void setAnchorOffset(int anchorOffset) {
+    final void setAnchorOffset(int anchorOffset) {
         this.anchorOffset = anchorOffset;
         anchorOffsetBounds = null;
     }
     
-    protected Rectangle getScreenBounds() {
+    final Rectangle getScreenBounds() {
         if (screenBounds == null) {
             screenBounds = getEditorComponent().getGraphicsConfiguration().getBounds();
         }
         return screenBounds;
     }
     
-    protected int getAnchorOffset() {
+    final int getAnchorOffset() {
         return (anchorOffset != -1)
             ? anchorOffset
             : getEditorComponent().getCaretPosition();
     }
     
-    protected final JComponent getContentComponent() {
+    final JComponent getContentComponent() {
         return contentComponent;
     }
     
-    Dimension getPreferredSize() {
+    final Dimension getPreferredSize() {
         return getContentComponent().getPreferredSize();
     }
     
-    protected CompletionLayout getLayout() {
+    final void resetPreferredSize() {
+        getContentComponent().setPreferredSize(null);
+    }
+    
+    final boolean isShowRetainedPreferredSize() {
+        return showRetainedPreferredSize;
+    }
+    
+    final CompletionLayout getLayout() {
         return layout;
     }
     
-    protected JTextComponent getEditorComponent() {
+    final JTextComponent getEditorComponent() {
         return layout.getEditorComponent();
     }
     
@@ -124,7 +141,7 @@ class CompletionLayoutPopup {
         return 0;
     }
 
-    protected Rectangle getAnchorOffsetBounds() {
+    final Rectangle getAnchorOffsetBounds() {
         if (anchorOffsetBounds == null){ 
             int anchorOffset = getAnchorOffset();
             try {
@@ -140,49 +157,52 @@ class CompletionLayoutPopup {
         return anchorOffsetBounds;
     }
     
-    protected void resetContentPreferredSize() {
-        getContentComponent().setPreferredSize(null);
-    }
-    
-    protected Popup getPopup() {
+    final Popup getPopup() {
         return popup;
     }
     
     /**
      * Find bounds of the popup based on knowledge of the preferred size
      * of the content component and the preference of the displaying
-     * of the popup either above or below the origin rectangle.
+     * of the popup either above or below the occupied bounds.
      *
-     * @param originBounds bounds of the rectangle above or below which
+     * @param occupiedBounds bounds of the rectangle above or below which
      *   the bounds should be found.
-     * @param aboveOrigin whether the bounds should be found for position
-     *   above or below the origin rectangle.
+     * @param aboveOccupiedBounds whether the bounds should be found for position
+     *   above or below the occupied bounds.
      * @return rectangle with absolute screen bounds of the popup.
      */
-    final Rectangle findPopupBounds(Rectangle originBounds, boolean aboveOrigin) {
+    private Rectangle findPopupBounds(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
         Dimension prefSize = getPreferredSize();
         Rectangle screen = getScreenBounds();
         Rectangle popupBounds = new Rectangle();
         
-        popupBounds.x = Math.min(originBounds.x,
+        popupBounds.x = Math.min(occupiedBounds.x,
                 (screen.x + screen.width) - prefSize.width);
         popupBounds.x = Math.max(popupBounds.x, 0);
         popupBounds.width = Math.min(prefSize.width, screen.width);
         
-        if (aboveOrigin) {
+        if (aboveOccupiedBounds) {
             popupBounds.height = Math.min(prefSize.height,
-                    originBounds.y - CompletionLayout.POPUP_VERTICAL_GAP);
-            popupBounds.y = originBounds.y - CompletionLayout.POPUP_VERTICAL_GAP - popupBounds.height;
+                    occupiedBounds.y - CompletionLayout.POPUP_VERTICAL_GAP);
+            popupBounds.y = occupiedBounds.y - CompletionLayout.POPUP_VERTICAL_GAP - popupBounds.height;
         } else { // below caret
-            popupBounds.y = originBounds.y
-                    + originBounds.height + CompletionLayout.POPUP_VERTICAL_GAP;
+            popupBounds.y = occupiedBounds.y
+                    + occupiedBounds.height + CompletionLayout.POPUP_VERTICAL_GAP;
             popupBounds.height = Math.min(prefSize.height,
                     (screenBounds.y + screenBounds.height) - popupBounds.y);
         }
         return popupBounds;
     }
     
-    protected void showPopup(Rectangle popupBounds, boolean displayAboveCaret) {
+    /**
+     * Create and display the popup at the given bounds.
+     *
+     * @param popupBounds location and size of the popup.
+     * @param displayAboveCaret whether the popup is displayed above the anchor
+     *  bounds or below them (it does not be right above them).
+     */
+    private void show(Rectangle popupBounds, boolean displayAboveCaret) {
         // Hide the original popup if exists
         if (popup != null) {
             popup.hide();
@@ -190,7 +210,10 @@ class CompletionLayoutPopup {
         }
         
         // Explicitly set the preferred size
-        contentComponent.setPreferredSize(popupBounds.getSize());
+        Dimension origPrefSize = getPreferredSize();
+        Dimension newPrefSize = popupBounds.getSize();
+        contentComponent.setPreferredSize(newPrefSize);
+        showRetainedPreferredSize = newPrefSize.equals(origPrefSize);
 
         PopupFactory factory = PopupFactory.getSharedInstance();
         // Create popup without explicit parent window
@@ -202,15 +225,37 @@ class CompletionLayoutPopup {
         this.displayAboveCaret = displayAboveCaret;
     }
     
-    void showAtOptimalBounds() {
-        boolean aboveCaret = isMoreSpaceAbove(getAnchorOffsetBounds());
-        Rectangle bounds = findPopupBounds(getAnchorOffsetBounds(), aboveCaret);
-        showPopup(bounds, aboveCaret);
+    /**
+     * Show the popup along the anchor bounds and take
+     * the preferred location (above or below caret) into account.
+     */
+    void showAlongAnchorBounds() {
+        showAlongOccupiedBounds(getAnchorOffsetBounds());
     }
     
-    void showAboveOrBelowCaret(boolean aboveCaret) {
-        Rectangle bounds = findPopupBounds(getAnchorOffsetBounds(), aboveCaret);
-        showPopup(bounds, aboveCaret);
+    void showAlongAnchorBounds(boolean aboveCaret) {
+        showAlongOccupiedBounds(getAnchorOffsetBounds(), aboveCaret);
+    }
+    
+    /**
+     * Show the popup along the anchor bounds and take
+     * the preferred location (above or below caret) into account.
+     */
+    void showAlongOccupiedBounds(Rectangle occupiedBounds) {
+        boolean aboveCaret;
+        if (isEnoughSpace(occupiedBounds, preferDisplayAboveCaret)) {
+            aboveCaret = preferDisplayAboveCaret;
+        } else { // not enough space at preferred location
+            // Choose the location with more space
+            aboveCaret = isMoreSpaceAbove(occupiedBounds);
+        }
+        Rectangle bounds = findPopupBounds(occupiedBounds, aboveCaret);
+        show(bounds, aboveCaret);
+    }
+    
+    void showAlongOccupiedBounds(Rectangle occupiedBounds, boolean aboveCaret) {
+        Rectangle bounds = findPopupBounds(occupiedBounds, aboveCaret);
+        show(bounds, aboveCaret);
     }
     
     boolean isMoreSpaceAbove(Rectangle bounds) {
@@ -220,13 +265,48 @@ class CompletionLayoutPopup {
         return (above > below);
     }
     
-    boolean isEnoughSpace(Rectangle originBounds, boolean aboveOrigin) {
+    /**
+     * Check whether there is enough space for this popup
+     * on its preferred location related to caret.
+     */
+    boolean isEnoughSpace(Rectangle occupiedBounds) {
+        return isEnoughSpace(occupiedBounds, preferDisplayAboveCaret);
+    }
+    
+    /**
+     * Check whether there is enough space for this popup above
+     * or below the given occupied bounds.
+     * 
+     * @param occupiedBounds bounds above or below which the available
+     *  space should be determined.
+     * @param aboveOccupiedBounds whether the space should be checked above
+     *  or below the occupiedBounds.
+     * @return true if there is enough space for the preferred size of this popup
+     *  on the requested side or false if not.
+     */
+    boolean isEnoughSpace(Rectangle occupiedBounds, boolean aboveOccupiedBounds) {
         Rectangle screen = getScreenBounds();
-        int freeHeight = aboveOrigin
-            ? originBounds.y - screen.y
-            : (screen.y + screen.height) - (originBounds.y + originBounds.height);
+        int freeHeight = aboveOccupiedBounds
+            ? occupiedBounds.y - screen.y
+            : (screen.y + screen.height) - (occupiedBounds.y + occupiedBounds.height);
         Dimension prefSize = getPreferredSize();
         return (prefSize.height < freeHeight);
+    }
+    
+    boolean isEnoughSpace(boolean aboveCaret) {
+        return isEnoughSpace(getAnchorOffsetBounds(), aboveCaret);
+    }
+    
+    public boolean isOverlapped(Rectangle bounds) {
+        return isVisible() ? popupBounds.intersects(bounds) : false;
+    }
+
+    public boolean isOverlapped(CompletionLayoutPopup popup) {
+        return popup.isVisible() ? isOverlapped(popup.getPopupBounds()) : false;
+    }
+    
+    public Rectangle unionBounds(Rectangle bounds) {
+        return isVisible() ? bounds.union(getPopupBounds()) : bounds;
     }
 
 }

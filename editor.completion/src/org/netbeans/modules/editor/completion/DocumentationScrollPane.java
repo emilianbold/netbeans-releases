@@ -68,6 +68,8 @@ public class DocumentationScrollPane extends JScrollPane {
     private List/*<CompletionDocItem>*/ history = new ArrayList(5);
     private int currentHistoryIndex = -1;
     private CompletionDocumentation currentDocumentation = null;
+    
+    private Dimension documentationPreferredSize;
 
     /** Creates a new instance of ScrollJavaDocPane */
     public DocumentationScrollPane(JTextComponent editorComponent) {
@@ -75,7 +77,8 @@ public class DocumentationScrollPane extends JScrollPane {
         this.editorComponent = editorComponent;
  
         // Determine and use fixed preferred size
-        setPreferredSize(CompletionSettings.INSTANCE.documentationPopupPreferredSize());
+        documentationPreferredSize = CompletionSettings.INSTANCE.documentationPopupPreferredSize();
+        setPreferredSize(null); // Use the documentationPopupPreferredSize
         
         Color bgColor = CompletionSettings.INSTANCE.documentationBackgroundColor();
 
@@ -87,6 +90,14 @@ public class DocumentationScrollPane extends JScrollPane {
         installTitleComponent();
         installKeybindings();
     }
+    
+    public void setPreferredSize(Dimension preferredSize) {
+        if (preferredSize == null) {
+            preferredSize = documentationPreferredSize;
+        }
+        super.setPreferredSize(preferredSize);
+    }
+    
     
     public void setData(CompletionDocumentation doc) {
         setDocumentation(doc);

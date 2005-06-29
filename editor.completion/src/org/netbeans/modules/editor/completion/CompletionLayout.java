@@ -73,10 +73,13 @@ public final class CompletionLayout {
     CompletionLayout() {
         completionPopup = new CompletionPopup();
         completionPopup.setLayout(this);
+        completionPopup.setPreferDisplayAboveCaret(true);
         docPopup = new DocPopup();
         docPopup.setLayout(this);
+        docPopup.setPreferDisplayAboveCaret(false);
         tipPopup = new TipPopup();
         tipPopup.setLayout(this);
+        tipPopup.setPreferDisplayAboveCaret(true);
     }
     
     public JTextComponent getEditorComponent() {
@@ -163,73 +166,71 @@ public final class CompletionLayout {
         return tipPopup.isVisible();
     }
 
+    /**
+     * Layout either of the copmletion, documentation or tooltip popup.
+     * <br>
+     * This method can be called recursively to update other popups
+     * once certain popup was updated.
+     *
+     * <p>
+     * The rules for the displayment are the following:
+     * <ul>
+     *  <li> The tooltip popup should be above caret if there is enough space.
+     *  <li> The completion popup should be above caret if there is enough space
+     *       and the tooltip window is not displayed.
+     *  <li> If both tooltip and completion popups are visible then vertically
+     *       each should be on opposite side of the anchor bounds (caret).
+     *  <li> Documentation should be preferrably shrinked if there is not enough
+     *       vertical space.
+     *  <li> Documentation anchoring should be aligned with completion.
+     * </ul>
+     */
     void updateLayout(CompletionLayoutPopup popup) {
-        if (popup == completionPopup) { // completion popup
-            // Completion popup should always be nearest to the caret
-            // Check whether doc is visible and if so and enough space then display
-            // on the opposite side
-            if (isDocumentationVisible()) {
-                if (docPopup.isDisplaySameSideAsCompletion()) {
-                    // Already displayed before on the same side as completion
-                    // Attempt to show completion on the same side
-                    Rectangle bounds = popup.findPopupBounds(
-                            popup.getAnchorOffsetBounds(), docPopup.isDisplayAboveCaret());
-                    popup.showPopup(bounds, docPopup.isDisplayAboveCaret());
-                    // Check whether there would be overlap between doc and completion
-                    // or whether the doc popup would be anchored elsewhere than completion
-                    if (bounds.intersects(docPopup.getPopupBounds())
-                        || popup.getAnchorOffset() != docPopup.getAnchorOffset()
-                    ) {
-                        updateLayout(docPopup);
-                    }
-                    
-                } else { // doc popup was not displayed on the same side as completion
-                    // Attempt to show completion at opposite side than documentation
-                    boolean wantCompletionAboveCaret = !docPopup.isDisplayAboveCaret();
-                    if (popup.isEnoughSpace(popup.getAnchorOffsetBounds(), wantCompletionAboveCaret)
-                        && popup.getAnchorOffset() == docPopup.getAnchorOffset()
-                    ) {
-                        popup.showAboveOrBelowCaret(wantCompletionAboveCaret);
-                    } else { // not enough space on the opposite side (or anchoring differs)
-                        // Redisplay completion at optimal bounds and leave doc to follow
-                        popup.showAtOptimalBounds();
-                        updateLayout(docPopup);
-                    }
-                }
+        // Make sure the popup returns its natural preferred size
+        popup.resetPreferredSize();
 
-            } else { // doc not visible
-                popup.showAtOptimalBounds();
+        if (popup == completionPopup) { // completion popup
+            if (isToolTipVisible()) {
+                // Display on opposite side than tooltip
+                boolean wantAboveCaret = !tipPopup.isDisplayAboveCaret();
+                if (completionPopup.isEnoughSpace(wantAboveCaret)) {
+                    completionPopup.showAlongAnchorBounds(wantAboveCaret);
+                } else { // not enough space -> show on same side
+                    Rectangle occupiedBounds = popup.getAnchorOffsetBounds();
+                    occupiedBounds = tipPopup.unionBounds(occupiedBounds);
+                    completionPopup.showAlongOccupiedBounds(occupiedBounds,
+                            tipPopup.isDisplayAboveCaret());
+                }
+                
+            } else { // tooltip not visible
+                popup.showAlongAnchorBounds();
+            }
+            
+            // Update docPopup layout if necessary
+            if (docPopup.isVisible()
+                && (docPopup.isOverlapped(popup) || docPopup.isOverlapped(tipPopup)
+                    || docPopup.getAnchorOffset() != completionPopup.getAnchorOffset()
+                    || !docPopup.isShowRetainedPreferredSize())
+            ) {
+                updateLayout(docPopup);
             }
             
         } else if (popup == docPopup) { // documentation popup
             if (isCompletionVisible()) {
                 // Documentation must sync anchoring with completion
                 popup.setAnchorOffset(completionPopup.getAnchorOffset());
-
-                boolean wantDocAboveCaret = !completionPopup.isDisplayAboveCaret();
-                // Display on opposite side if there is enough space on the opposite side
-                // or (even if not enough space on the opposite side)
-                // there is more space on the opposite side than on the same side
-                if (popup.isEnoughSpace(popup.getAnchorOffsetBounds(), wantDocAboveCaret)
-                    || (popup.isMoreSpaceAbove(popup.getAnchorOffsetBounds().
-                            union(completionPopup.getPopupBounds())) == wantDocAboveCaret)
-                ) {
-                    // Enough space or more space -> display at opposite side
-                    popup.showAboveOrBelowCaret(wantDocAboveCaret);
-                } else { // not enough space on the opposite side or less space there
-                    Rectangle completionBounds = completionPopup.getPopupBounds();
-                    Rectangle bounds = popup.findPopupBounds(
-                            completionBounds, completionPopup.isDisplayAboveCaret());
-                    // Display on the same side as completion bounds (either both above or both below)
-                    popup.showPopup(bounds, completionPopup.isDisplayAboveCaret());
-                    docPopup.setDisplaySameSideAsCompletion(true);
-                }
-            } else { // completion not displayed
-                popup.showAtOptimalBounds();
             }
+            
+            Rectangle occupiedBounds = popup.getAnchorOffsetBounds();
+            occupiedBounds = tipPopup.unionBounds(completionPopup.unionBounds(occupiedBounds));
+            docPopup.showAlongOccupiedBounds(occupiedBounds);
 
         } else if (popup == tipPopup) { // tooltip popup
-            popup.showAtOptimalBounds();
+            popup.showAlongAnchorBounds(); // show possibly above the caret
+            if (completionPopup.isOverlapped(popup) || docPopup.isOverlapped(popup)) {
+                // docPopup layout will be handled as part of completion popup layout
+                updateLayout(completionPopup);
+            }
         }
     }
     
@@ -247,7 +248,7 @@ public final class CompletionLayout {
 
             if (isVisible()) {
                 lastSize = getContentComponent().getSize();
-                resetContentPreferredSize();
+                resetPreferredSize();
 
             } else { // not yet visible => create completion scrollpane
                 lastSize = new Dimension(0, 0); // no last size => use (0,0)
@@ -323,25 +324,10 @@ public final class CompletionLayout {
     
     private static final class DocPopup extends CompletionLayoutPopup {
         
-        private boolean displaySameSideAsCompletion;
-        
-        boolean isDisplaySameSideAsCompletion() {
-            return displaySameSideAsCompletion;
-        }
-        
-        void setDisplaySameSideAsCompletion(boolean displaySameSideAsCompletion) {
-            this.displaySameSideAsCompletion = displaySameSideAsCompletion;
-        }
-        
         private DocumentationScrollPane getDocumentationScrollPane() {
             return (DocumentationScrollPane)getContentComponent();
         }
         
-        protected void showPopup(Rectangle popupBounds, boolean displayAboveCaret) {
-            super.showPopup(popupBounds, displayAboveCaret);
-            displaySameSideAsCompletion = false;
-        }
-
         protected void show(CompletionDocumentation doc, int anchorOffset) {
             if (!isVisible()) { // documentation already visible
                 setContentComponent(new DocumentationScrollPane(getEditorComponent()));
@@ -381,7 +367,7 @@ public final class CompletionLayout {
             Dimension lastSize;
             if (isVisible()) { // tooltip already visible
                 lastSize = getContentComponent().getSize();
-                resetContentPreferredSize();
+                resetPreferredSize();
             } else { // documentation not visible yet
                 lastSize = new Dimension(0, 0);
             }
