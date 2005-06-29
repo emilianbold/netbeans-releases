@@ -1638,18 +1638,31 @@ to simulate
             <xsl:param name="files" /><!-- number of files in the libfile property -->
             <xsl:param name="libfile"/>
             <xsl:if test="$files &gt; 0">
-                <xsl:variable name="fileNo" select="$files+(-1)"/>
-                <xsl:variable name="lib" select="concat(substring-before($libfile,'}'),'.libfile.',$files,'}')"/>
-                <xsl:variable name="propertyName" select="concat($property, '.', $fileNo+1)"/>
-                <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>} </xsl:text>
-                <xsl:call-template name="manifestPrintEntriesIterateFiles">
-                    <xsl:with-param name="files" select="$fileNo"/>
+                <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
+                    <xsl:with-param name="files" select="$files"/>
                     <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="index" select="1"/>
                     <xsl:with-param name="property" select="$property"/>
                 </xsl:call-template>
             </xsl:if>
         </xsl:template>
 
+        <xsl:template name="manifestPrintEntriesIterateFilesIncreasingOrder" >
+            <xsl:param name="property"/>
+            <xsl:param name="files" /><!-- number of files in the libfile property -->
+            <xsl:param name="index" /><!-- index of file in libfile property -->
+            <xsl:param name="libfile"/>
+            <xsl:if test="$files &gt; 0">
+                <xsl:variable name="propertyName" select="concat($property, '.', $index)"/>
+                <xsl:text>${</xsl:text><xsl:value-of select="$propertyName"/><xsl:text>} </xsl:text>
+                <xsl:call-template name="manifestPrintEntriesIterateFilesIncreasingOrder">
+                    <xsl:with-param name="files" select="$files+(-1)"/>
+                    <xsl:with-param name="index" select="$index+1"/>
+                    <xsl:with-param name="libfile" select="$libfile"/>
+                    <xsl:with-param name="property" select="$property"/>
+                </xsl:call-template>
+            </xsl:if>
+        </xsl:template>
 
         <xsl:template name="copyIterateFiles" >
             <xsl:param name="files" />
