@@ -27,6 +27,7 @@ import java.util.Stack;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.openide.xml.XMLUtil;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -216,14 +217,11 @@ public class RegistryViewImpl implements WebServicesRegistryView, PropertyChange
         List result = Collections.EMPTY_LIST;
 
         try {
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            SAXParser saxParser = factory.newSAXParser();
+            org.xml.sax.XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false,true);
             ServiceNameParser handler= new ServiceNameParser();
-            saxParser.parse(wsdlFile.getInputStream(), handler);
+            xmlReader.setContentHandler(handler);
+            xmlReader.parse(new org.xml.sax.InputSource(wsdlFile.getInputStream()));
             result = handler.getServiceNameList();
-        } catch(ParserConfigurationException ex) {
-            // Bogus WSDL, return empty list.
         } catch(SAXException ex) {
             // Bogus WSDL, return empty list.
         } catch(IOException ex) {
