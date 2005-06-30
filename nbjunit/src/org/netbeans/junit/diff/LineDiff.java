@@ -60,7 +60,7 @@ public class LineDiff implements Diff {
      * @param l2 second line to compare
      * @return true if lines equal
      */
-    private boolean compareLines(String l1,String l2) {
+    protected boolean compareLines(String l1,String l2) {
         if (getIgnoreCase()) {
             if (l1.equalsIgnoreCase(l2))
                 return true;
