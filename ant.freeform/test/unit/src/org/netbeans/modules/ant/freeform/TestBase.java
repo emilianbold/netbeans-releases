@@ -60,7 +60,7 @@ public abstract class TestBase extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        egdir = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir"), "example-projects"));
+        egdir = FileUtil.normalizeFile(new File(getDataDir(), "example-projects"));
         assertTrue("example dir " + egdir + " exists", egdir.exists());
         egdirFO = FileUtil.toFileObject(egdir);
         assertNotNull("have FileObject for " + egdir, egdirFO);
@@ -89,7 +89,7 @@ public abstract class TestBase extends NbTestCase {
         Project _extbuildroot = ProjectManager.getDefault().findProject(projdir);
         assertNotNull("have a project", _extbuildroot);
         extbuildroot = (FreeformProject) _extbuildroot;
-        datadir = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir")));
+        datadir = FileUtil.normalizeFile(getDataDir());
         assertTrue("data dir exists", datadir.exists());
     }
     
