@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,13 +47,11 @@ public class TargetListerTest extends NbTestCase {
     }
     
     private FileObject testdir;
-    
+
     protected void setUp() throws Exception {
         super.setUp();
-        String testdirLoc = System.getProperty("test.data.dir");
-        assertNotNull("test.data.dir defined", testdirLoc);
-        testdir = FileUtil.toFileObject(new File(testdirLoc));
-        assertNotNull("testdir exists: " + testdirLoc, testdir);
+        testdir = FileUtil.toFileObject(this.getDataDir());
+        assertNotNull("testdir unit/data exists", testdir);
     }
     
     public void testSimpleUsage() throws Exception {

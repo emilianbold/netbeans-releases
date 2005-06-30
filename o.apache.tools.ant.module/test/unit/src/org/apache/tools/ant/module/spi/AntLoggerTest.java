@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -56,7 +56,7 @@ public class AntLoggerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         LOGGER.reset();
-        testdir = new File(System.getProperty("test.data.dir"), "antlogger");
+        testdir = new File(this.getDataDir(), "antlogger");
         assertTrue("have a dir " + testdir, testdir.isDirectory());
         testdirFO = FileUtil.toFileObject(testdir);
         assertNotNull("have testdirFO", testdirFO);
