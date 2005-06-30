@@ -65,6 +65,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- XXX check if these files exist, and if not, run xtest/build.xml -->
             <pathelement location="${xtest.home}/lib/junit.jar"/>
             <pathelement location="${xtest.home}/lib/nbjunit.jar"/>
+            <pathelement location="${xtest.home}/lib/nbjunit-ide.jar"/>
             <pathelement location="${xtest.home}/lib/insanelib.jar"/>
         </path>
     </target>
