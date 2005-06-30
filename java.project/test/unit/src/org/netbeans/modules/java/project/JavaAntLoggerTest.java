@@ -58,9 +58,7 @@ public final class JavaAntLoggerTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        String testDataDirS = System.getProperty("test.data.dir");
-        assertNotNull("have test.data.dir (should have been set by test environment)", testDataDirS);
-        simpleAppDir = new File(testDataDirS, "simple-app");
+        simpleAppDir = new File(getDataDir(), "simple-app");
         assertTrue("have dir " + simpleAppDir, simpleAppDir.isDirectory());
         SFBQ.setSimpleAppDir(simpleAppDir);
         nonhyperlinkedOut.clear();
