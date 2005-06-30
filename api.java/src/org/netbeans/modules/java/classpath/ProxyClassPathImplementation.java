@@ -95,7 +95,7 @@ public class ProxyClassPathImplementation implements ClassPathImplementation {
                     return;
                 it = ((ArrayList)ProxyClassPathImplementation.this.listeners.clone()).iterator();
             }
-            PropertyChangeEvent event = new PropertyChangeEvent (this, evt.getPropertyName(),null,null);
+            PropertyChangeEvent event = new PropertyChangeEvent (ProxyClassPathImplementation.this, evt.getPropertyName(),null,null);
             while (it.hasNext()) {
                 ((PropertyChangeListener)it.next()).propertyChange (event);
             }
