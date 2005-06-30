@@ -9,9 +9,19 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/test-unit" basedir="." default="all">
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
+    
+    <!-- Need to override target from xtest-unit.xml because standard module 
+         build script need external directory which is not available on test4u. -->
+    <target name="default-compiler" depends="init-cp">
+        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="test.unit.compile.cp"/>
+            </classpath>
+        </buildTests>
+    </target>
 </project>
