@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="web/webapi/test" basedir="." default="all" >
@@ -21,6 +21,4 @@ Microsystems, Inc. All Rights Reserved.
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
-    <property name="xtest.jvm.args" value="-Dtest.data.dir=${basedir}/data"/> 
-    <property name="xtest.extra.ide.mounts" value="${basedir}"/>
 </project>
