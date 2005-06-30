@@ -599,12 +599,16 @@ public final class ParseProjectXml extends Task {
         }
         // Also look for <class-path-extension>s for myself and put them in my own classpath.
         String cnb = getCodeNameBase(pDoc);
-        ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
-        assert entry != null;
-        File[] exts = entry.getClassPathExtensions();
-        for (int i = 0; i < exts.length; i++) {
-            cp.append(':');
-            cp.append(exts[i].getAbsolutePath());
+        // XXX special handling of splited openide, condition can be removed
+        // when org.openide as module removed
+        if (!"org.openide".equals (cnb)) {
+            ModuleListParser.Entry entry = modules.findByCodeNameBase(cnb);
+            assert entry != null;
+            File[] exts = entry.getClassPathExtensions();
+            for (int i = 0; i < exts.length; i++) {
+                cp.append(':');
+                cp.append(exts[i].getAbsolutePath());
+            }
         }
         return cp.toString();
     }
