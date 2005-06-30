@@ -59,32 +59,12 @@ public class CommitAction extends AbstractSystemAction {
 
     // handle exclude from commit status which is not not modeled as status
     protected File [] getFilesToProcess() {
-        int enabledStatus = getFileEnabledStatus();
-        int dirEnabledStatus = getDirectoryEnabledStatus();
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         CvsModuleConfig config = CvsModuleConfig.getDefault();
-        File [] files = Utils.getActivatedFiles();
-        boolean atLeastOneUnexcluded = false;
+        File [] files = super.getFilesToProcess();
         for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            FileInformation fi = cache.getStatus(file);
-            if (file.isDirectory()) {
-                if ((fi.getStatus() & dirEnabledStatus) == 0) return new File[0];
-            } else {
-                if ((fi.getStatus() & enabledStatus) == 0) return new File[0];
-            }
-
-            if (config.isExcludedFromCommit(files[i].getAbsolutePath())) {
-                continue;
-            }
-            atLeastOneUnexcluded = true;
+            if (config.isExcludedFromCommit(files[i].getAbsolutePath())) return new File[0];
         }
-
-        if (atLeastOneUnexcluded) {
-            return files;
-        } else {
-            return new File[0];
-        }
+        return files;
     }
 
     protected int getFileEnabledStatus() {

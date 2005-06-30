@@ -20,8 +20,6 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.api.project.Project;
@@ -58,7 +56,7 @@ public abstract class AbstractSystemAction extends SystemAction {
      * </ul>
      */
     public String getName() {
-        File [] nodes = Utils.getActivatedFiles();
+        File [] nodes = Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
         String baseName = getBaseName();
 
         int objectCount = nodes.length;
@@ -129,20 +127,7 @@ public abstract class AbstractSystemAction extends SystemAction {
      * @return files to act on or empty array if this action should be disabled.
      */
     protected File [] getFilesToProcess() {
-        int enabledStatus = getFileEnabledStatus();
-        int dirEnabledStatus = getDirectoryEnabledStatus();
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getActivatedFiles();
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            FileInformation fi = cache.getStatus(file);
-            if (file.isDirectory()) {
-                if ((fi.getStatus() & dirEnabledStatus) == 0) return new File[0];
-            } else {
-                if ((fi.getStatus() & enabledStatus) == 0) return new File[0];
-            }
-        }
-        return files;
+        return Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
     }
 
     public boolean isEnabled() {

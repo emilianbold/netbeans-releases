@@ -24,6 +24,7 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.*;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -36,36 +37,62 @@ import java.awt.Dialog;
 import java.awt.Frame;
 
 /**
+ * Provides static utility methods for CVS module.
+ * 
  * @author Maros Sandor
  */
 public class Utils {
 
     /**
-     * Determines which nodes the user wants to work on. They are either activated (selected) nodes or
-     * all defined versioning roots in a project.
-     * 
-     * @return array of files/folders to act on
+     * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
+     * method returns File objects instead od Nodes. Every node is examined for Files it represents. File and Folder
+     * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
+     * logical nodes must provide FileObjects in their Lookup.
+     *   
+     * @return File [] array of activated files 
      */ 
     public static File [] getActivatedFiles() {
+        return getActivatedFiles(~0, ~0);
+    }
+            
+    /**
+     * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
+     * method returns File objects instead od Nodes. Every node is examined for Files it represents. File and Folder
+     * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
+     * logical nodes must provide FileObjects in their Lookup.
+     *
+     * @param includingFileStatus if any activated file does not have this CVS status, an empty array is returned   
+     * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned   
+     * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
+     */ 
+    public static File [] getActivatedFiles(int includingFileStatus, int includingFolderStatus) {
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         List files = new ArrayList(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             CvsFileNode cvsNode = (CvsFileNode) node.getLookup().lookup(CvsFileNode.class);
             if (cvsNode != null) {
+                File file = cvsNode.getFile();
+                FileInformation fi = cache.getStatus(file);
+                if (file.isDirectory()) {
+                    if ((fi.getStatus() & includingFolderStatus) == 0) return new File[0];
+                } else {
+                    if ((fi.getStatus() & includingFileStatus) == 0) return new File[0];
+                }
                 files.add(cvsNode.getFile());
                 continue;
             }
             Project project =  (Project) node.getLookup().lookup(Project.class);
             if (project != null) {
-                addProjectFiles(files, project);
+                if (!addProjectFiles(files, project, includingFolderStatus)) return new File[0];
                 continue;
             }
             addFileObjects(node, files);
         }
         return (File[]) files.toArray(new File[files.size()]);
-    }
-
+    }    
+    
     /**
      * @return <code>true</code> if
      * <ul>
@@ -122,29 +149,50 @@ public class Utils {
         }
     }
 
-    public static void addProjectFiles(Collection files, Project project) {
+    /**
+     * Determines all files and folders that belong to a given project and adds them to the supplied Collection.
+     *  
+     * @param files destination collection of Files
+     * @param project project to examine
+     * @param includingFolderStatus requested CVS status of source groups' root folders
+     * @return true if files were successfuly added or false if project contains a folder that does not have
+     * requested status
+     */ 
+    public static boolean addProjectFiles(Collection files, Project project, int includingFolderStatus) {
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         for (int j = 0; j < sourceGroups.length; j++) {
             SourceGroup sourceGroup = sourceGroups[j];
-            File srcRoot = FileUtil.toFile(sourceGroup.getRootFolder());
+            FileObject srcRootFo = sourceGroup.getRootFolder();
+            File rootFile = FileUtil.toFile(srcRootFo);
+            FileInformation fi = cache.getStatus(rootFile);
+            if ((fi.getStatus() & includingFolderStatus) == 0) return false;
             try {
-                getCVSRootFor(srcRoot);
-                files.add(srcRoot);
+                getCVSRootFor(FileUtil.toFile(srcRootFo));
             } catch (IOException e) {
                 // the folder is not under a versioned root
+                continue;
+            }
+            FileObject [] rootChildren = srcRootFo.getChildren();
+            for (int i = 0; i < rootChildren.length; i++) {
+                FileObject rootChildFo = rootChildren[i];
+                if (CvsVersioningSystem.FILENAME_CVS.equals(rootChildFo.getNameExt())) continue;
+                if (sourceGroup.contains(rootChildFo)) {
+                    files.add(FileUtil.toFile(rootChildFo));
+                }
             }
         }
+        return true;
     }
     
     public static List getProjectsSources(Project [] projects) {
         List roots = new ArrayList();
         for (int i = 0; i < projects.length; i++) {
-            addProjectFiles(roots, projects[i]);
+            addProjectFiles(roots, projects[i], ~0);
         }
         return roots;
     }
-    
 
     private static Collection toFileCollection(Collection fileObjects) {
         Set files = new HashSet(fileObjects.size());
