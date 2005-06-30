@@ -13,4 +13,13 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="all" name="build-unit">
     <import file="../../nbbuild/templates/xtest-unit.xml"/>
+    
+    <!-- Need to override target from xtest-unit.xml because module doesn't have standard build script. -->
+    <target name="default-compiler" depends="init-cp">
+        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="test.unit.compile.cp"/>
+            </classpath>
+        </buildTests>
+    </target>
 </project>
