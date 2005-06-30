@@ -409,7 +409,7 @@ final class ModuleListParser {
     }
     
     private static Entry scanStandaloneSource(Hashtable properties, Project project) throws IOException {
-        File basedir = new File((String) properties.get("basedir"));
+        File basedir = new File((String) properties.get("project"));
         Entry entry = (Entry) STANDALONE_SCAN_CACHE.get(basedir);
         if (entry == null) {
             Map/*<String,Entries>*/ entries = new HashMap();

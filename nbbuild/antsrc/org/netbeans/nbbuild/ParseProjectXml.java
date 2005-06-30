@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarFile;
@@ -249,7 +250,9 @@ public final class ParseProjectXml extends Task {
             ModuleListParser modules = null;
             if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
                 String nball = getProject().getProperty("nb_all");
-                modules = new ModuleListParser(getProject().getProperties(), getModuleType(pDoc), getProject());
+                Hashtable properties = getProject().getProperties();
+                properties.put("project", project.getCanonicalPath());
+                modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
             }
             if (ideDependenciesProperty != null || moduleDependenciesProperty != null) {
                 Dep[] deps = getDeps(pDoc);
