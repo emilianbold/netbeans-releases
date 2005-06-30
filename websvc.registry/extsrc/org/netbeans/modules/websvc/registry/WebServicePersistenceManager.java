@@ -61,6 +61,7 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
                 
              WebServiceListModel wsListModel = WebServiceListModel.getInstance();
 		if(websvcRefFile.exists()) {
+                        String originalParserFactory = System.getProperty(SAXParserFactory_PROP);
 			ClassLoader origClassLoader = null;
 			XMLDecoder decoder = null;
 
@@ -98,8 +99,8 @@ public class WebServicePersistenceManager implements ExceptionListener, org.netb
 				// Restore the SAXParserFactor property that was changed, restore
 				// this threads context classloader and close the decoder stream 
 				// if it was opened.
-				System.getProperties().put(SAXParserFactory_PROP, "org.netbeans.core.xml.SAXFactoryImpl"); // NOI18N
-				
+                                System.getProperties().put(SAXParserFactory_PROP,originalParserFactory);
+                            
 				if(origClassLoader != null) {
 					Thread.currentThread().setContextClassLoader(origClassLoader);
 				}
