@@ -174,12 +174,13 @@ public class Controller { //XXX public only for debug access to logging code
         if (result != null) {
             win.setSelectedTab(result);
         }
-        if (!activateContainer) {
-            win.requestVisibleForNewTab();
-        } else {
-            win.requestActiveForNewTab();
-        }
-        
+//
+//        if (!activateContainer) {
+//            win.requestVisibleForNewTab();
+//        } else {
+//            win.requestActiveForNewTab();
+//        }
+//        
         return result;
     }
 

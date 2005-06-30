@@ -134,11 +134,22 @@ class OutWriter extends PrintWriter {
             int result = 1;
             if (idx != -1) { //XXX platform specific line sep?
                 //XXX this can be much more efficient by slicing buffers
-                StringTokenizer tok = new StringTokenizer (s, "\n"); //NOI18N
+                StringTokenizer tok = new StringTokenizer(s, "\n", true); //NOI18N
                 result = 0;
+                boolean lastWasNewLine = true;
                 while (tok.hasMoreTokens()) {
-                    doPrintln(tok.nextToken());
-                    result++;
+                    String token = tok.nextToken();
+                    if (token.equals("\n")) {
+                        if (lastWasNewLine) {
+                            doPrintln("");
+                            result++;
+                        }
+                        lastWasNewLine = true;
+                    } else {
+                        lastWasNewLine = false;
+                        doPrintln(token);
+                        result++;
+                    }
                 }
             } else {
                 ByteBuffer buf;
@@ -443,7 +454,8 @@ class OutWriter extends PrintWriter {
                     //TODO we can optimize the array writing a bit by not delegating to the 
                     //println metod which perform a physical write on each line, 
                     // but to write just once, when everything is processed.
-                    println (new String(data, start, (count + 1 - start)));
+                    String sx = new String(data, start, (count + 1 - start));
+                    println (sx);
                     start = count + 1;
                     if (start >= len + off) {
                         return;
