@@ -271,14 +271,6 @@ public class AllOptionsFolder{
         getBase().setTextAntialiasing(textAntialiasing);
     }
 
-    public boolean isDragAndDropEnabled() {
-        return getBase().isDragAndDropEnabled();
-    }
-    
-    public void setDragAndDropEnabled(boolean dragAndDropEnabled) {
-        getBase().setDragAndDropEnabled(dragAndDropEnabled);
-    }
-    
     /** Loads default global keyBindings List and initializes it.
      *  It is used mainly by other options for initializing global keyBindings */
     protected void loadDefaultKeyBindings(){

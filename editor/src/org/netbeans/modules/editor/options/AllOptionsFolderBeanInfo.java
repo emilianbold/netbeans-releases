@@ -30,8 +30,7 @@ public class AllOptionsFolderBeanInfo extends BaseOptionsBeanInfo {
         EDITOR_STATE_PROP,
         BaseOptions.OPTIONS_VERSION_PROP,
         BaseOptions.TOOLBAR_VISIBLE_PROP,
-        BaseOptions.TEXT_ANTIALIASING_PROP,
-        BaseOptions.DRAG_AND_DROP_PROP,
+        BaseOptions.TEXT_ANTIALIASING_PROP
     };
     
     public AllOptionsFolderBeanInfo() {

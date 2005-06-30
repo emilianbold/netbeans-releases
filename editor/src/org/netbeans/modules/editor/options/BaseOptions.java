@@ -138,7 +138,6 @@ public class BaseOptions extends OptionSupport {
     public static final String TOOLBAR_VISIBLE_PROP = "toolbarVisible"; // NOI18N
     public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
     public static final String CODE_FOLDING_PROPS_PROP = "codeFoldingProps"; // NOI18N    
-    public static final String DRAG_AND_DROP_PROP = "dragAndDropEnabled"; // NOI18N    
     
     protected static final String[] BASE_PROP_NAMES = {
         ABBREV_MAP_PROP,
@@ -601,14 +600,6 @@ public class BaseOptions extends OptionSupport {
         LINE_NUMBER_VISIBLE_PROP);
     }
 
-    public boolean isDragAndDropEnabled() {
-        return getSettingBoolean(SettingsNames.DRAG_AND_DROP);
-    }
-    public void setDragAndDropEnabled(boolean b) {
-        setSettingBoolean(SettingsNames.DRAG_AND_DROP, b,
-        DRAG_AND_DROP_PROP);
-    }
-    
     public Insets getScrollJumpInsets() {
         return (Insets)getSettingValue(SettingsNames.SCROLL_JUMP_INSETS);
     }
