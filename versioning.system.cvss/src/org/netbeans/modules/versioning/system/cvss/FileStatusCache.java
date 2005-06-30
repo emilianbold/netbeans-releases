@@ -80,8 +80,6 @@ public class FileStatusCache {
      * are updated by the refresh method.
      */
 
-    private final Object    scanLock = new Object();
-
     private final Turbo     turbo;
     
     /**
@@ -203,19 +201,19 @@ public class FileStatusCache {
         if (current == null && !fi.isDirectory() && fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE) {
             return fi;
         }
-        synchronized(turbo) {
-            Map newFiles = new HashMap(files);
-            if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
-                newFiles.remove(file);
-                turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
-            }
-            else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
-                newFiles.remove(file);
-            } else {
-                newFiles.put(file, fi);
-            }
-            turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+
+        Map newFiles = new HashMap(files);
+        if (fi.getStatus() == FileInformation.STATUS_UNKNOWN) {
+            newFiles.remove(file);
+            turbo.writeEntry(file, FILE_STATUS_MAP, null);  // remove mapping in case of directories
         }
+        else if (fi.getStatus() == FileInformation.STATUS_VERSIONED_UPTODATE && file.isFile()) {
+            newFiles.remove(file);
+        } else {
+            newFiles.put(file, fi);
+        }
+        turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
+
         if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
             File [] content = listFiles(file);
             for (int i = 0; i < content.length; i++) {
@@ -252,26 +250,24 @@ public class FileStatusCache {
      * @param dir directory to cleanup
      */ 
     public void clearVirtualDirectoryContents(File dir, boolean recursive) {
-        synchronized(turbo) {
-            Map files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-            if (files == null) {
-               return;
-            }
-            Set set = new HashSet(files.keySet());
-            Map newMap = null;
-            for (Iterator i = set.iterator(); i.hasNext();) {
-                File file = (File) i.next();
-                if (recursive && file.isDirectory()) {
-                    clearVirtualDirectoryContents(file, true);
-                }
-                FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
-                if ((fi.getStatus() & STATUS_MISSING) != 0) {
-                    if (newMap == null) newMap = new HashMap(files);
-                    newMap.remove(file);
-                }
-            }
-            if (newMap != null) turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
+        Map files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        if (files == null) {
+           return;
         }
+        Set set = new HashSet(files.keySet());
+        Map newMap = null;
+        for (Iterator i = set.iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            if (recursive && file.isDirectory()) {
+                clearVirtualDirectoryContents(file, true);
+            }
+            FileInformation fi = refresh(file, REPOSITORY_STATUS_UNKNOWN);
+            if ((fi.getStatus() & STATUS_MISSING) != 0) {
+                if (newMap == null) newMap = new HashMap(files);
+                newMap.remove(file);
+            }
+        }
+        if (newMap != null) turbo.writeEntry(dir, FILE_STATUS_MAP, newMap);
     }
 
     // --- Package private contract ------------------------------------------
@@ -284,10 +280,8 @@ public class FileStatusCache {
         Map originalFiles = null;
         Map files;
         originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-        synchronized(scanLock) {
-            files = scanFolder(dir);
-            turbo.writeEntry(dir, FILE_STATUS_MAP, files);
-        }
+        files = scanFolder(dir);
+        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         if (originalFiles != null) {
             for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -330,21 +324,13 @@ public class FileStatusCache {
     private Map getScannedFiles(File dir) {
         Map files;
         if (dir.getName().equals(CvsVersioningSystem.FILENAME_CVS)) return NOT_MANAGED_MAP;
-        synchronized(turbo) {
-            files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-            if (files != null) return files;
-        }
+        files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
             return NOT_MANAGED_MAP; 
         }
-        synchronized(scanLock) {
-            synchronized(turbo) {
-                files = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-                if (files != null) return files;
-            }
-            files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
-            turbo.writeEntry(dir, FILE_STATUS_MAP, files);
-        }
+        files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
+        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
         for (Iterator i = files.keySet().iterator(); i.hasNext();) {
             File file = (File) i.next();
             FileInformation info = (FileInformation) files.get(file);
