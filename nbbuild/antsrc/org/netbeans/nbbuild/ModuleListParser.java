@@ -479,7 +479,10 @@ final class ModuleListParser {
               entries = scanNetBeansOrgSources(new File(nball), properties, project);
             } else {
               entries = scanBinaries(properties, project);
-            } 
+              // module itself has to be added because it doesn't have to be in binaries
+              Entry e = scanStandaloneSource(properties, project);
+              entries.put(e.getCnb(), e);
+            }
         }
     }
     
