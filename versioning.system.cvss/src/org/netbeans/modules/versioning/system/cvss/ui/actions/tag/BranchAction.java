@@ -33,9 +33,7 @@ import java.text.MessageFormat;
  */
 public class BranchAction extends AbstractSystemAction {
 
-    private static TagCommand   commandTemplate = new TagCommand();
-    
-    private static final int enabledForStatus = FileInformation.STATUS_VERSIONED_MERGE 
+    private static final int enabledForStatus = FileInformation.STATUS_VERSIONED_MERGE
                     | FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY 
                     | FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY 
                     | FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY
@@ -51,10 +49,8 @@ public class BranchAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         File [] roots = getFilesToProcess();
-                
+
         TagCommand cmd = new TagCommand();
-        copy (cmd, commandTemplate);
-        
         String title;
         if (roots.length > 1) {
             title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title_Multi"), 
@@ -65,23 +61,16 @@ public class BranchAction extends AbstractSystemAction {
         }
         
         BranchSettings settings = new BranchSettings();
-        settings.setCommand(cmd);
-        DialogDescriptor descriptor = new DialogDescriptor(settings, title); 
+        DialogDescriptor descriptor = new DialogDescriptor(settings, title);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
 
-        settings.updateCommand(cmd);
+        settings.saveSettings();
         cmd.setMakeBranchTag(true);
-        copy(commandTemplate, cmd);
         cmd.setFiles(roots);
         
         TagExecutor executor = new TagExecutor(CvsVersioningSystem.getInstance(), cmd);
         executor.execute();
-    }
-    
-    private void copy(TagCommand c1, TagCommand c2) {
-        c1.setTag(c2.getTag());
-        c1.setCheckThatUnmodified(c2.isCheckThatUnmodified());
     }
 }

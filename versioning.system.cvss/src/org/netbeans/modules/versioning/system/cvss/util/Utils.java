@@ -88,7 +88,7 @@ public class Utils {
                 if (!addProjectFiles(files, project, includingFolderStatus)) return new File[0];
                 continue;
             }
-            addFileObjects(node, files);
+            if (!addFileObjects(node, files, includingFileStatus, includingFolderStatus)) return new File[0];
         }
         return (File[]) files.toArray(new File[files.size()]);
     }    
@@ -122,17 +122,18 @@ public class Utils {
         return false;
     }
 
-    private static void addFileObjects(Node node, List files) {
+    private static boolean addFileObjects(Node node, List files, int includingFileStatus, int includingFolderStatus) {
         Collection folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
+        List nodeFiles = new ArrayList();
         if (folders.size() > 0) {
             for (Iterator j = folders.iterator(); j.hasNext();) {
                 NonRecursiveFolder nonRecursiveFolder = (NonRecursiveFolder) j.next();
-                files.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
+                nodeFiles.add(new FlatFolder(FileUtil.toFile(nonRecursiveFolder.getFolder()).getAbsolutePath()));
             }
         } else {
             Collection fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
             if (fileObjects.size() > 0) {
-                files.add(toFileCollection(fileObjects));
+                nodeFiles.add(toFileCollection(fileObjects));
             } else {
                 DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
                 if (dataObject instanceof DataShadow) {
@@ -142,11 +143,23 @@ public class Utils {
                     FileObject fo = dataObject.getPrimaryFile();
                     File file = FileUtil.toFile(fo);
                     if (file != null) {
-                        files.add(file);
+                        nodeFiles.add(file);
                     }
                 }
             }
         }
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (Iterator i = nodeFiles.iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            FileInformation fi = cache.getStatus(file);
+            if (file.isDirectory()) {
+                if ((fi.getStatus() & includingFolderStatus) == 0) return false;
+            } else {
+                if ((fi.getStatus() & includingFileStatus) == 0) return false;
+            }
+        }
+        files.addAll(nodeFiles);
+        return true;
     }
 
     /**

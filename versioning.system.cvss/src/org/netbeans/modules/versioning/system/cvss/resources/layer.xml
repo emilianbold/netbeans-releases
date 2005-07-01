@@ -53,6 +53,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction"/>
             </file>                                    
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchesMenu"/>
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction"/>
             </file>                                    
@@ -110,10 +113,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>            
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.instance"/>
-            </file>            
-            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.instance"/>
-            </file>            
+            </file>
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.instance"/>
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.instance"/>
             </file>            
@@ -158,9 +161,9 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow/Separator3.instance" boolvalue="true" />
 
             <attr name="Separator3.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow" boolvalue="true" />
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.shadow" boolvalue="true" />
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchAction.shadow/Separator4.instance" boolvalue="true" />
-            
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.shadow/Separator4.instance" boolvalue="true" />
+
             <attr name="Separator4.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-AnnotationsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-log-LogAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-LogAction.shadow/Separator5.instance" boolvalue="true" />
