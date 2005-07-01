@@ -306,7 +306,7 @@ public class NbTestConfig extends Task {
         group.setProperties(module_props);
         StringTokenizer testtypes_tokens = new StringTokenizer(testtypes,",");
         while (testtypes_tokens.hasMoreTokens()) {
-            String testtype = testtypes_tokens.nextToken();
+            String testtype = testtypes_tokens.nextToken().trim();
             updateTable(group, name, testtype, attributes);
         }
         
@@ -358,7 +358,7 @@ public class NbTestConfig extends Task {
         group.setProperties(group_props);
         StringTokenizer modules_tokens = new StringTokenizer(modules,",");
         while (modules_tokens.hasMoreTokens()) {
-            String module = modules_tokens.nextToken();
+            String module = modules_tokens.nextToken().trim();
             updateTable(group, module, name, attributes);
         } 
         
@@ -436,7 +436,7 @@ public class NbTestConfig extends Task {
         String [] attrs = new String [ta.countTokens()];
         int j = 0;
         while(ta.hasMoreTokens()) {
-            String atr = ta.nextToken();
+            String atr = ta.nextToken().trim();
             attrs[j++] = atr;
         }
         test.setAttributes(attrs);
