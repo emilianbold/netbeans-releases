@@ -179,6 +179,12 @@
 	<mapID target="dd_multiview_pages_errorPagesNode" url="web/csh/graphic_editor/dd_multiview_pages_errorPagesNode.html" />
 	<mapID target="dd_multiview_pages_jspPropertyGroupsNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" />
 	<mapID target="dd_multiview_pages_jspPropertyGroupNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" />
+
+	<mapID target="dd_multiview_references_messageDestRefsNode" url="web/csh/graphic_editor/dd_multiview_references_messageDestRefsNode.html" />
+	<mapID target="dd_multiview_references_ejbRefsNode" url="web/csh/graphic_editor/dd_multiview_references_ejbRefsNode.html" />
+	<mapID target="dd_multiview_references_envEntriesNode" url="web/csh/graphic_editor/dd_multiview_references_envEntriesNode.html" />
+	<mapID target="dd_multiview_references_resRefsNode" url="web/csh/graphic_editor/dd_multiview_references_resRefsNode.html" />
+	<mapID target="dd_multiview_references_resEnvRefsNode" url="web/csh/graphic_editor/dd_multiview_references_resEnvRefsNode.html" />
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
