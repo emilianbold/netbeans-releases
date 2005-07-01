@@ -101,7 +101,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         
         jCheckBoxBuildSubprojects.setModel( uiProperties.NO_DEPENDENCIES_MODEL );                        
         jComboBoxTarget.setModel(uiProperties.PLATFORM_MODEL);               
-        
+        jComboBoxTarget.setRenderer(uiProperties.PLATFORM_LIST_RENDERER);
         testBroken();
         
         uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel().addListDataListener( this );

@@ -65,8 +65,17 @@ public class PlatformUiSupport {
      * @param activePlatform the active project's platform 
      * @return {@link ComboBoxModel}
      */
-    public static ComboBoxModel createComboBoxModel (String activePlatform) {
+    public static ComboBoxModel createPlatformComboBoxModel (String activePlatform) {
         return new PlatformComboBoxModel (activePlatform);
+    }
+    
+    /**
+     * Creates a {@link ListCellRenderer} for rendering items of the {@link ComboBoxModel}
+     * created by the {@link PlatformUiSupport#createPlatformComboBoxModel} method.
+     * @return {@link ListCellRenderer}
+     */
+    public static ListCellRenderer createPlatformListCellRenderer () {
+        return new PlatformListCellRenderer ();
     }
 
     /**
@@ -211,16 +220,29 @@ public class PlatformUiSupport {
         return platformKey.platform;
     }    
     
+    /**
+     * This class represents a  JavaPlatform in the {@link ListModel}
+     * created by the {@link PlatformUiSupport#createPlatformComboBoxModel}
+     * method.
+     */
     private static class PlatformKey implements Comparable {
         
         private String name;
         private JavaPlatform platform;
         
+        /**
+         * Creates a PlatformKey for a broken platform
+         * @param name the ant name of the broken platform
+         */
         public PlatformKey (String name) {
             assert name != null;
             this.name = name;
         }
         
+        /**
+         * Creates a PlatformKey for a platform
+         * @param platform the {@link JavaPlatform}
+         */
         public PlatformKey (JavaPlatform platform) {
             assert platform != null;
             this.platform = platform;
@@ -263,6 +285,9 @@ public class PlatformUiSupport {
             return this.platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
         }
         
+        public boolean isBroken () {
+            return this.platform == null;
+        }
     }
     
     private static class PlatformComboBoxModel extends AbstractListModel implements ComboBoxModel, PropertyChangeListener {
@@ -351,6 +376,22 @@ public class PlatformUiSupport {
         
     }
     
+    private static class PlatformListCellRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            assert value instanceof PlatformKey : "Wrong model";  //NOI18N
+            PlatformKey key = (PlatformKey) value;
+            String name;
+            if (key.isBroken()) {
+                name = NbBundle.getMessage (PlatformUiSupport.class,"TXT_BrokenPlatformFmt", key.getDisplayName());
+            }
+            else {
+                name = key.getDisplayName();
+            }
+            return super.getListCellRendererComponent(list, name, index, isSelected, cellHasFocus);
+        }        
+    }
+
     private static class SourceLevelComboBoxModel extends AbstractListModel implements ComboBoxModel, ListDataListener {
         
         private static final String VERSION_PREFIX = "1.";      //The version prefix
