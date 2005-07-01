@@ -116,6 +116,14 @@ public final class AquaLFCustoms extends LFCustoms {
                     
             TAB_ACTIVE_SELECTION_FOREGROUND, new GuaranteedValue ("textText", Color.BLACK),
                     
+            // progress component related
+            "nbProgressBar.Foreground", new Color(49, 106, 197),
+            "nbProgressBar.Background", Color.WHITE,
+            "nbProgressBar.popupDynaText.foreground", new Color(141, 136, 122),
+            "nbProgressBar.popupText.background", new Color(249, 249, 249),        
+            "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
+            "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
+            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
                     
         }; //NOI18N

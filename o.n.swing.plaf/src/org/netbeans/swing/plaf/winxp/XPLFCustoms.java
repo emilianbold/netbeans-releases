@@ -146,6 +146,14 @@ public final class XPLFCustoms extends LFCustoms {
             DESKTOP_SPLITPANE_BORDER, BorderFactory.createEmptyBorder(4, 0, 0, 0),
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.WinXPSlidingButtonUI",
 
+            // progress component related
+            "nbProgressBar.Foreground", new Color(49, 106, 197),
+            "nbProgressBar.Background", Color.WHITE,
+            "nbProgressBar.popupDynaText.foreground", new Color(141, 136, 122),
+            "nbProgressBar.popupText.background", new Color(249, 249, 249),        
+            "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
+            "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
+            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_xp.png")
 
         }; //NOI18N

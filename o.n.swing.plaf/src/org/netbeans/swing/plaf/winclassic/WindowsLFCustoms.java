@@ -146,6 +146,14 @@ public final class WindowsLFCustoms extends LFCustoms {
                     new Color(152, 177, 208),
                     "InternalFrame.activeTitleBackground"),
 
+            // progress component related
+            "nbProgressBar.Foreground", new Color(49, 106, 197),
+            "nbProgressBar.Background", Color.WHITE,
+            "nbProgressBar.popupDynaText.foreground", new Color(141, 136, 122),
+            "nbProgressBar.popupText.background", new Color(249, 249, 249),        
+            "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
+            "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
+            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
         }; //NOI18N
 
         return result;
