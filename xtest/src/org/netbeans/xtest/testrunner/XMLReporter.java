@@ -8,22 +8,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-/*
- * XMLReporter.java
- *
- * Created on November 2, 2002, 12:37 PM
- */
-
 package org.netbeans.xtest.testrunner;
 
-// Error manager temporarily disabled -> code needs to be reorganized, so it can
-// be used from IDE plugins
-
-//import org.netbeans.xtest.ide.XTestErrorManager;
 import org.netbeans.xtest.testrunner.*;
 import org.netbeans.xtest.pe.xmlbeans.*;
 import org.netbeans.xtest.pe.*;
@@ -34,8 +23,6 @@ import junit.framework.*;
 import org.netbeans.junit.*;
 import java.io.*;
 
-//import org.openide.ErrorManager;
-
 /**
  *
  * @author  mb115822
@@ -43,7 +30,6 @@ import java.io.*;
  */
 public class XMLReporter implements JUnitTestListener {
 
-    //private ArrayList testSuites;
     private UnitTestSuite currentTestSuite;
     private UnitTestCase currentTestCase;
     private ArrayList runTestCases;
@@ -67,8 +53,6 @@ public class XMLReporter implements JUnitTestListener {
     private String currentTestName = UNKNOWN_TEST;
     private String currentClassName = UNKNOWN_TEST;
     private String currentSuiteName = UNKNOWN_TEST;
-    
-    private static String ERRORMANAGER_MESSAGE = "* XTest detected some errors in ErrorManager - see messages.log for details *";
     
     /** Creates new XMLResultProcessor */
     public XMLReporter(File resultsDirectory) {
@@ -163,40 +147,6 @@ public class XMLReporter implements JUnitTestListener {
                }
             }
         }
-        
-        /*
-        if (JUnitTestRunner.usingXTestErrorManager()) {
-            // check for the status of XTestErrorManager
-            // there were some problems with the TEST
-            // XTestEM caught error
-            // revert the status if test passed, otherwise leave it and add more info tu message
-            XTestErrorManager xtEM = XTestErrorManager.get();
-            if (xtEM != null) {
-                boolean notificationsPresent = xtEM.anyNotifications();
-                String xtemResultsLog = xtEM.extractResultsLog();
-                if (xtemResultsLog != null) {
-                    if (currentTestCase.xml_cdata == null) {
-                        currentTestCase.xml_cdata = "";
-                    }
-                    currentTestCase.xml_cdata += "\nErrorManager received logs/notifications:\n\n" +  xtemResultsLog;
-                    
-                    if (currentTestCase.xmlat_message == null) {
-                        currentTestCase.xmlat_message = "ErrorManager received logs/notifications";
-                    }
-                    
-                    if ((currentTestCase.xmlat_result.equals(UnitTestCase.TEST_PASS)|
-                        currentTestCase.xmlat_result.equals(UnitTestCase.TEST_UNEXPECTED_PASS))&(notificationsPresent)) {
-                        currentTestCase.xmlat_result = UnitTestCase.TEST_ERROR;
-                        testsErrors++;
-                        testsPassed--;
-                        if (currentTestCase.xmlat_result.equals(UnitTestCase.TEST_UNEXPECTED_PASS))
-                            testsUnexpectedPassed--;
-                    }
-                }
-            }
-        }
-         **/
-        
         //add data to the current suite
         if (test instanceof NbPerformanceTest) {
             NbPerformanceTest.PerformanceData pdata[] = ((NbPerformanceTest)test).getPerformanceData();
@@ -212,7 +162,6 @@ public class XMLReporter implements JUnitTestListener {
             currentTestSuite.xmlel_Data[0].xmlel_PerformanceData = (PerformanceData[])(performanceData.toArray(new PerformanceData[0]));
         }
         
-        logToIDE("XTest: test "+currentClassName+"."+currentTestName+" finished as: "+currentTestCase.xmlat_result);
         // save the result
         saveCurrentSuite();
         
@@ -253,8 +202,6 @@ public class XMLReporter implements JUnitTestListener {
         // now get the suite out -- suite is still not completed
         saveCurrentSuite();
         
-        logToIDE("XTest: test "+currentClassName+"."+currentTestName+" started");
-        
         caseTime = System.currentTimeMillis();
     }
 
@@ -285,7 +232,6 @@ public class XMLReporter implements JUnitTestListener {
      * The whole testsuite ended.
      */
     public void endTestSuite(TestSuite suite, TestResult suiteResult) {
-        logToIDE("XTest: suite "+currentSuiteName+" finished");        
         // add remaining data and write it to a file
         //System.out.println("reporter:endTestSuite()");
         //System.err.println("xmlel_UnitTestCase:"+currentTestSuite.xmlel_UnitTestCase);
@@ -316,7 +262,6 @@ public class XMLReporter implements JUnitTestListener {
         // create new results file
         outFile = new File(resultsDirectory, "TEST-"+suite.getName()+".xml");
         //
-        resetErrorManagerResultsLog();
         currentTestSuite = new UnitTestSuite();
         suiteTime = System.currentTimeMillis();
         currentSuiteName = suite.getName();
@@ -330,24 +275,8 @@ public class XMLReporter implements JUnitTestListener {
         testsErrors = 0;
         testsUnexpectedPassed = 0;
         testsExpectedFailed = 0;
-        logToIDE("XTest: suite "+currentSuiteName+" started at "+currentTestSuite.xmlat_timeStamp);        
         saveCurrentSuite();        
     }
-    
-    
-    // reset results log in XTest error manager
-    
-    private void resetErrorManagerResultsLog() {
-        /*
-        if (JUnitTestRunner.usingXTestErrorManager()) {
-            XTestErrorManager xtem = XTestErrorManager.get();
-            if (xtem != null) {
-                xtem.resetResultsLog();
-            }
-        }
-         */
-    }
-     
     
     private boolean saveCurrentSuite() {
         try {
@@ -408,19 +337,4 @@ public class XMLReporter implements JUnitTestListener {
         }
         return result;
     }
-    
-    
-   private void logToIDE(String message) {
-       // if running using custom error manager and running inside IDE
-       // log to EM              
-       
-     /*
-        if (JUnitTestRunner.usingXTestErrorManager()) {                        
-            ErrorManager.getDefault().log(ErrorManager.USER,message);
-        }
-     */
-   }
-     
-    
-    
 }
