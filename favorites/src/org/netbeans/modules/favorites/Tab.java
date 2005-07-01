@@ -23,6 +23,7 @@ import java.util.Stack;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -40,6 +41,7 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeOp;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -83,7 +85,11 @@ implements Runnable, ExplorerManager.Provider {
         // following line tells the top component which lookup should be associated with it
         associateLookup (ExplorerUtils.createLookup (manager, map));
     }
-
+    
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx(Tab.class);
+    }
+    
     public ExplorerManager getExplorerManager() {
         return manager;
     }
