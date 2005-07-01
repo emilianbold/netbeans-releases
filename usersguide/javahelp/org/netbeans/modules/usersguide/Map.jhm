@@ -374,6 +374,9 @@ the Options window:-->
 <!-- Files window :-->
 <mapID target="ProjectTab_Files" url="project/csh/proj_files_window.html" />
 
+<!-- Favorites window :-->
+<mapID target="org.netbeans.modules.favorites.Tab" url="project/csh/proj_fav_window.html" />
+
 <!-- Navigator window :-->
 <mapID target="navigator.java" url="editing/csh/nav_window.html" />
 
