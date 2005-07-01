@@ -8,7 +8,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -47,6 +47,9 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
     
     private int expectedFailCount = 0;
     
+    private int xtestErrorManagerCorrection = 0;
+    private boolean failureAlreadySet;
+    
     public ConsoleSummaryReporter() {
         this.pw = new PrintWriter(System.out);
     }
@@ -70,14 +73,15 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
 
     public void endTestSuite(TestSuite suite, TestResult suiteResult) {
         long suiteDelta = System.currentTimeMillis() - suiteStartTime;
-        int passCount = suiteResult.runCount()-suiteResult.failureCount()-suiteResult.errorCount();
+        int failCount = suiteResult.failureCount()-xtestErrorManagerCorrection;
+        int passCount = suiteResult.runCount()-failCount-suiteResult.errorCount();
         if (passCount < 0) {
             passCount = 0;
         }
         if (passCount != suiteResult.runCount()) {
             pw.println("- test suite "+suite.getName()+" FAILED");
             pw.println("- time elapsed: "+timeFormatter.format(suiteDelta/1000.0)+" seconds");            
-            pw.print("- passed: "+passCount+"  failed: "+suiteResult.failureCount());
+            pw.print("- passed: "+passCount+"  failed: "+failCount);
             if (expectedFailCount > 0)
                 pw.print(" (incl. "+expectedFailCount+" expected)");
             pw.println("  errors: "+suiteResult.errorCount()+"  total: "+suiteResult.runCount());
@@ -97,13 +101,16 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
     
 
 	// empty
-    public void startTest(Test t) {}
+    public void startTest(Test t) {
+        failureAlreadySet = false;
+    }
 
 	// empty
     public void endTest(Test test) {}
-
+    
 	// empty
     public void addFailure(Test test, AssertionFailedError t) {
+        failureAlreadySet = true;
         if (test instanceof NbTest) {
            if (((NbTest)test).getExpectedFail() != null)
                expectedFailCount++;
@@ -111,7 +118,12 @@ public class ConsoleSummaryReporter implements JUnitTestListener {
     }
 
 	// empty
-    public void addError(Test test, Throwable t) {}
+    public void addError(Test test, Throwable t) {
+        if(failureAlreadySet) {
+            // error added by XTestErrorManager and we have to subtract one fail
+            xtestErrorManagerCorrection++;
+        }
+    }
 
 	// empty    
     public void setOutputFile(java.io.File outFile) {}

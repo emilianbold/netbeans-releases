@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -240,31 +240,38 @@ public class MainWithExec implements Main.MainWithExecInterface {
     private static class XTestResultListener implements TestListener {
         
         private  TestResult result;
+        private boolean checkXTestErrorManager = true;
         
         public XTestResultListener(TestResult result) {
             this.result = result;
         }
         
         /** An error occurred. */
-        public void addError(Test test, Throwable t) {}
+        public void addError(Test test, Throwable t) {
+            // report this error and ignore possible additional errors from XTestErrorManager
+            checkXTestErrorManager = false;
+        }
         
         /** A failure occurred.*/
-        public void addFailure(Test test, AssertionFailedError t){}
+        public void addFailure(Test test, AssertionFailedError t){};
 
         /* A test ended. */
         public void endTest(Test test) {
-            try {
-                Iterator it = XTestErrorManager.getExceptions().iterator();
-                if (it.hasNext()) {
-                    // exception was thrown => add the first found exception as
-                    // an error (i.e. its stack trace will be printed in results)
-                    result.addError(test, (Throwable)it.next());
-                    XTestErrorManager.clearExceptions();
+            if(checkXTestErrorManager) {
+                try {
+                    Iterator it = XTestErrorManager.getExceptions().iterator();
+                    if (it.hasNext()) {
+                        // exception was thrown => add the first found exception as
+                        // an error (i.e. its stack trace will be printed in results)
+                        result.addError(test, (Throwable)it.next());
+                        XTestErrorManager.clearExceptions();
+                    }
+                } catch (Exception e) {
+                    // ClassNotFound exception, etc
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                // ClassNotFound exception, etc
-                e.printStackTrace();
             }
+            checkXTestErrorManager = true;
         }
         
         /** A test started. */
