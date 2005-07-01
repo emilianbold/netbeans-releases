@@ -21,6 +21,18 @@
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
+                    <source-file>
+                        <location>plugin_descriptor.xml</location>
+                    </source-file>
+                    <source-file>
+                        <location>lib/basic_compiler_targets.xml</location>
+                    </source-file>
+                    <source-file>
+                        <location>lib/basic_packager_targets.xml</location>
+                    </source-file>
+                    <source-file>
+                        <location>lib/basic_result_processor_targets.xml</location>
+                    </source-file>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
