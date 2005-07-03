@@ -256,7 +256,12 @@ public class WizardDescriptor extends DialogDescriptor {
     private Map properties;
     ResourceBundle bundle = NbBundle.getBundle(WizardDescriptor.class);
 
-    private Thread backgroundValidationTask;
+    /** Request processor that is used for background validation and 
+     * supports Thread.interrupted(). There can be more parael invokations
+     */
+    private static final RequestProcessor BACKGROUND_VALIDATION_RP = 
+        new RequestProcessor("Wizard Background Validation", 16, true); // NOI18N
+    private RequestProcessor.Task backgroundValidationTask;
 
     {
         // button init
@@ -1135,8 +1140,7 @@ public class WizardDescriptor extends DialogDescriptor {
             AsynchronousValidatingPanel p = (AsynchronousValidatingPanel) panel;
             setValid(false);  // disable Next> Finish buttons
             p.prepareValidation();
-            backgroundValidationTask = new Thread(validationPeformer);
-            backgroundValidationTask.start();
+            backgroundValidationTask = BACKGROUND_VALIDATION_RP.post(validationPeformer);
         } else if (panel instanceof ValidatingPanel) {
             validationPeformer.run();
         } else {
@@ -1646,7 +1650,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             if (ev.getSource() == cancelButton) {
                 if (backgroundValidationTask != null) {
-                    backgroundValidationTask.interrupt();
+                    backgroundValidationTask.cancel();
                 }
                 Object oldValue = getValue();
                 setValueWithoutPCH(CANCEL_OPTION);

@@ -31,7 +31,11 @@ Microsystems, Inc. All Rights Reserved.
       <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
       <description>
           When one calls <a href="@TOP@/org/openide/util/RequestProcessor.Task.html">RequestProcessor.Task</a>.cancel(), 
-          the running thread gets interrupted.
+          the running thread gets interrupted if the 
+          <a href="@TOP@/org/openide/util/RequestProcessor.html#RequestProcessor(java.lang.String,%20int,%20boolean)">
+          RequestProcessor(string, int, boolean) 
+          </a> 
+          constructor is used.
           There always was a way how to cancel not yet running Task, 
           but if the task was already running, one was out of luck. Since now
           the thread running the task is interrupted and the Runnable can check 

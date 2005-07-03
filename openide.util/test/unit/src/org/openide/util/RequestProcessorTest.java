@@ -690,7 +690,7 @@ public class RequestProcessorTest extends NbTestCase {
     }
     
     public void testCancelInterruptsTheRunningThread () throws Exception {
-        RequestProcessor rp = new RequestProcessor ("Cancellable");
+        RequestProcessor rp = new RequestProcessor ("Cancellable", 1, true);
         
         class R implements Runnable {
             public boolean checkBefore;
@@ -750,9 +750,72 @@ public class RequestProcessorTest extends NbTestCase {
             assertTrue ("But interupted after", r.checkAfter);
         }
     }
+
+    public void testCancelDoesNotInterruptTheRunningThread () throws Exception {
+        RequestProcessor rp = new RequestProcessor ("Not Cancellable", 1, false);
+        
+        class R implements Runnable {
+            public boolean checkBefore;
+            public boolean checkAfter;
+            public boolean interrupted;
+            
+            public synchronized void run () {
+                checkBefore = Thread.interrupted();
+                
+                notifyAll ();
+                
+                try {
+                    wait ();
+                    interrupted = false;
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                }
+                
+                notifyAll ();
+                
+                try {
+                    wait ();
+                } catch (InterruptedException ex) {
+                }
+                
+                checkAfter = Thread.interrupted();
+                
+                notifyAll ();
+            }
+        }
+        
+        R r = new R ();
+        synchronized (r) {
+            RequestProcessor.Task t = rp.post (r);
+            r.wait ();
+            assertTrue ("The task is already running", !t.cancel ());
+            r.notifyAll ();
+            r.wait ();
+            r.notifyAll ();
+            r.wait ();
+            assertFalse ("The task has not been interrupted", r.interrupted);
+            assertTrue ("Not before", !r.checkBefore);
+            assertTrue ("Not after - as the notification was thru InterruptedException", !r.checkAfter);
+        }
+        
+        // interrupt after the task has finished
+        r = new R ();
+        synchronized (r) {
+            RequestProcessor.Task t = rp.post (r);
+            r.wait ();
+            r.notifyAll ();
+            r.wait ();
+            assertTrue ("The task is already running", !t.cancel ());
+            r.notifyAll ();
+            r.wait ();
+            assertTrue ("The task has not been interrupted by exception", !r.interrupted);
+            assertFalse ("Not interupted before", r.checkBefore);
+            assertFalse ("Not interupted after", r.checkAfter);
+        }
+    }
     
     public void testInterruptedStatusIsClearedBetweenTwoTaskExecution () throws Exception {
-        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusIsClearedBetweenTwoTaskExecution");
+        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusIsClearedBetweenTwoTaskExecution", 1, true);
         
         final RequestProcessor.Task[] task = new RequestProcessor.Task[1];
         // test interrupted status is cleared after task ends
@@ -797,7 +860,7 @@ public class RequestProcessorTest extends NbTestCase {
     }
     
     public void testInterruptedStatusWorksInInversedTasks() throws Exception {
-        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasks");
+        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasks", 1, true);
         
         class Fail implements Runnable {
             public Fail (String n) {
@@ -874,7 +937,7 @@ public class RequestProcessorTest extends NbTestCase {
     }
 
     public void testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon() throws Exception {
-        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon");
+        RequestProcessor rp = new RequestProcessor ("testInterruptedStatusWorksInInversedTasksWhenInterruptedSoon", 1, true);
         
         class Fail implements Runnable {
             public RequestProcessor.Task wait;
