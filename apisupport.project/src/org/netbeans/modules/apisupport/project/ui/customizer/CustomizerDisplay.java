@@ -54,8 +54,8 @@ final class CustomizerDisplay extends JPanel implements
         UIUtil.setText(nameValue, getBundle().getProperty("OpenIDE-Module-Name")); // NOI18N
         UIUtil.setText(shortDescValue, getBundle().getProperty("OpenIDE-Module-Short-Description")); // NOI18N
         longDescValue.setText(getBundle().getProperty("OpenIDE-Module-Long-Description")); // NOI18N
-        categoryValue.setSelectedItem(getCategory()); // NOI18N)
         fillUpCategoryValue();
+        categoryValue.setSelectedItem(getCategory());
     }
     
     private void fillUpCategoryValue() {
