@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="xtest-unit" basedir="." default="all">
+
+    <condition property="do.we.need.to.parse.project.xml.file" >
+        <or>
+            <not><isset property="code.name.base.dashes" /></not>
+            <not><isset property="module.classpath" /></not>
+        </or>
+    </condition>
+    <available file="../nbproject/project.properties" property="do.we.need.to.process.properties.file" />
+    
+    <!-- Init all possible properties for suites and standalone modules. 
+         Order of properties has to be preserved:
+    
+        nbproject/private/suite-private.properties <!- Module in suite ->
+        nbproject/suite.properties <!- Module in suite ->
+        nbproject/private/platform-private.properties <!- Standalone ->
+        nbproject/platform.properties <!- Standalone ->
+        ${suite.dir}/nbproject/private/platform-private.properties <!- Module in suite ->
+        ${suite.dir}/nbproject/platform.properties <!- Module in suite ->
+        ${user.properties.file}
+        <nbmproject:property name="harness.dir" value="nbplatform.${nbplatform.active}.harness.dir"/>
+        <nbmproject:property name="netbeans.dest.dir" value="nbplatform.${nbplatform.active}.netbeans.dest.dir"/>
+        nbproject/private/private.properties
+        nbproject/project.properties
+        ${suite.dir}/nbproject/private/private.properties <!- Module in suite ->
+        ${suite.dir}/nbproject/project.properties <!- Module in suite ->
+    -->
+    <target name="init-properties" if="do.we.need.to.process.properties.file">
+        <property name="temp.properties.path" location="${java.io.tmpdir}/temp.properties"/>
+        <concat destfile="${temp.properties.path}">
+            <filelist dir="../nbproject" 
+                      files="private/suite-private.properties,
+                             suite.properties,
+                             private/platform-private.properties,
+                             platform.properties"/>
+        </concat>
+        <!-- basedir has to be changed from <module>/test to <module>/test/.. -->
+        <replace file="${temp.properties.path}">
+            <replacetoken><![CDATA[${basedir}]]></replacetoken>
+            <replacevalue><![CDATA[${basedir}/..]]></replacevalue>
+        </replace>
+        <property file="${temp.properties.path}"/>
+        <delete file="${temp.properties.path}"/>
+        <property file="${suite.dir}/nbproject/private/platform-private.properties"/> <!-- In suite -->
+        <property file="${suite.dir}/nbproject/platform.properties"/> <!-- In suite -->
+        <property file="${user.properties.file}"/>
+        <macrodef name="nbmproperty">
+            <attribute name="name"/>
+            <attribute name="value"/>
+            <sequential>
+                <property name="@{name}" value="${@{value}}"/>
+            </sequential>
+        </macrodef>
+        <nbmproperty name="harness.dir" value="nbplatform.${nbplatform.active}.harness.dir"/>
+        <nbmproperty name="netbeans.dest.dir" value="nbplatform.${nbplatform.active}.netbeans.dest.dir"/>
+        <property file="../nbproject/private/private.properties"/>
+        <property file="../nbproject/project.properties"/>
+        <property file="${suite.dir}/nbproject/private/private.properties"/> <!-- In suite -->
+        <property file="${suite.dir}/nbproject/project.properties"/> <!-- In suite -->
+        <condition property="cluster" value="${suite.dir}/build/cluster"> <!-- #59872 -->
+            <isset property="suite.dir"/>
+        </condition>
+        <property name="cluster" location="../build/cluster"/>
+    </target>
+    
+    <target name="init-system-properties" if="do.we.need.to.process.properties.file">
+        <!-- #45947 - properties from project.properties with test-unit-sys-prop
+        prefix are treated as system properties. -->
+        <property name="temp.properties.path" location="${java.io.tmpdir}/temp.properties"/>
+        <copy file="../nbproject/project.properties" tofile="${temp.properties.path}"/>
+        <replace file="${temp.properties.path}" token="test-unit-sys-prop." value="xtest.userdata|"/>
+        <property file="${temp.properties.path}"/>
+        <!-- Properties with prefix "xtest.userdata|" are written to the
+        ${xtest.workdir}/sys/userdata.properties in module_harness.xml#write-property 
+        target and then loaded as system properties before test execution. -->
+        <delete file="${temp.properties.path}"/>
+        <!-- #45947 end -->
+    </target>
+    
+    <target name="init-parse-project-xml" depends="init-properties" if="do.we.need.to.parse.project.xml.file" >
+        <!-- Use harness instead of ${nb_all}/nbbuild/nbantext.jar" -->
+        <property name="harness.dir" location="${netbeans.dest.dir}/harness"/>
+        <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${harness.dir}/tasks.jar"/>
+        <parseprojectxml project=".." codenamebasedashesproperty="code.name.base.dashes" moduleclasspathproperty="module.classpath"/>
+    </target>
+        
+    <target name="init" depends="init-properties,init-system-properties,init-parse-project-xml">
+        <property name="module.jar.dir" value="modules"/>
+        <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
+        <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
+        <property name="build.compiler.debug" value="true"/>
+        <property name="build.compiler.source" value="1.4"/>
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+    </target>
+    
+    <target name="init-cp" depends="init">
+        <path id="test.unit.compile.cp">
+            <pathelement path="${module.classpath}"/>
+            <pathelement location="${cluster}/${module.jar}"/>
+            <pathelement path="${cp.extra}"/>
+            <pathelement path="${test.unit.cp.extra}"/>
+        </path>
+        <path id="test.unit.run.cp">
+        <path refid="test.unit.compile.cp"/>
+            <pathelement path="${test.unit.run.cp.extra}"/>
+        </path>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="default-compiler">
+        <!-- Build tests but not build module sources. -->
+        <ant dir=".." target="do-test-build"/>
+        <packageTests/>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="run-unit-test" depends="init-cp">
+        <executeTests pluginname="jvm">
+            <classpath refid="test.unit.run.cp"/>
+        </executeTests>
+    </target>
+        
+</project>
