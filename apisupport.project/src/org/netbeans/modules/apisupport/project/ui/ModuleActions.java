@@ -134,8 +134,6 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         actions.add(SystemAction.get(DeleteAction.class));
          */
-        actions.add(null);
-        actions.add(CommonProjectActions.customizeProjectAction());
 
         // Honor #57874 contract:
         try {
@@ -165,6 +163,8 @@ public final class ModuleActions implements ActionProvider {
 
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
+        actions.add(null);
+        actions.add(CommonProjectActions.customizeProjectAction());
         return (Action[])actions.toArray(new Action[actions.size()]);
     }
     
