@@ -92,6 +92,8 @@ final class CustomizerVersioning extends NbPropertyPanel {
     private void initPublicPackageTable() {
         publicPkgsTable.setModel(props.getPublicPackagesModel());
         publicPkgsTable.getColumnModel().getColumn(0).setMaxWidth(CHECKBOX_WIDTH + 20);
+        publicPkgsTable.setRowHeight(publicPkgsTable.getFontMetrics(publicPkgsTable.getFont()).getHeight() + 
+                (2 * publicPkgsTable.getRowMargin()));
         publicPkgsTable.setTableHeader(null);
         publicPkgsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         publicPkgsSP.getViewport().setBackground(publicPkgsTable.getBackground());
