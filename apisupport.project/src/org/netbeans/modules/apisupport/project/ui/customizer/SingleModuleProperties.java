@@ -92,8 +92,8 @@ final class SingleModuleProperties extends ModuleProperties {
         map.put(IS_AUTOLOAD, "false"); // NOI18N
         map.put(IS_EAGER, "false"); // NOI18N
         map.put(JAVAC_SOURCES, "1.4"); // NOI18N
-        map.put(NBM_IS_GLOBAL, "true"); // NOI18N
-        map.put(NBM_NEEDS_RESTART, "true"); // NOI18N
+        map.put(NBM_IS_GLOBAL, "false"); // NOI18N
+        map.put(NBM_NEEDS_RESTART, "false"); // NOI18N
         DEFAULTS = Collections.unmodifiableMap(map);
     }
     
