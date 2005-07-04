@@ -276,6 +276,25 @@ public class FileOwnerQueryTest extends NbTestCase {
         assertGC("project 2's project dir collected", rootWR);
     }
     
+    
+    /**
+     * Tests the issue 60297. GC causes previosly registered extenral roots
+     * for project to be released. Only one extenral root per project is kept.
+     *
+     */
+    public void testIssue60297 () throws Exception {
+        FileObject ext1 = scratch.getFileObject("external1");                
+        assertEquals("no owner yet", null, FileOwnerQuery.getOwner(ext1));
+        FileOwnerQuery.markExternalOwner(ext1, p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals("now have an owner", p, FileOwnerQuery.getOwner(ext1));        
+        FileObject ext2 = scratch.getFileObject("external2");
+        assertEquals("no owner yet", null, FileOwnerQuery.getOwner(ext2));
+        FileOwnerQuery.markExternalOwner(ext2, p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        System.gc();
+        assertEquals("now have an owner", p, FileOwnerQuery.getOwner(ext2));        
+        assertEquals("still correct for the first external root", p, FileOwnerQuery.getOwner(ext1));
+    }
+    
     private static URI fileObject2URI(FileObject f) throws Exception {
         return URI.create(f.getURL().toString());
     }
