@@ -49,7 +49,7 @@ public class TabListPopupAction extends AbstractAction {
                 Arrays.sort(items);
                 ButtonPopupSwitcher.selectItem(jc, items, p.x, p.y);
             }
-            //Other portion of issue 37847, looks funny if the
+            //Other portion of issue 37487, looks funny if the
             //button becomes pressed
             if (jc instanceof AbstractButton) {
                 AbstractButton jb = (AbstractButton) jc;
