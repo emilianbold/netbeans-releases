@@ -681,9 +681,16 @@ final class NbInstaller extends ModuleInstaller {
     
     public String[] refineProvides (Module m) {
         if (m.getCodeNameBase ().equals ("org.openide.modules")) { // NOI18N
-            ArrayList arr = new ArrayList (3);
+            ArrayList arr = new ArrayList (4);
+            
+            boolean isMac = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_MAC) != 0;
+            boolean isOS2 = (org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_OS2) != 0;
+            
             if (org.openide.util.Utilities.isUnix ()) {
                 arr.add ("org.openide.modules.os.Unix"); // NOI18N
+                if (!isMac) {
+                    arr.add("org.openide.modules.os.PlainUnix"); // NOI18N
+                }
             } 
             
             if (
@@ -692,8 +699,11 @@ final class NbInstaller extends ModuleInstaller {
                 arr.add ("org.openide.modules.os.Windows"); // NOI18N
             } 
             
-            if ((org.openide.util.Utilities.getOperatingSystem () & org.openide.util.Utilities.OS_MAC) != 0) {
+            if (isMac) {
                 arr.add ("org.openide.modules.os.MacOSX"); // NOI18N
+            }
+            if (isOS2) {
+                arr.add ("org.openide.modules.os.OS2"); // NOI18N
             }
             
             // module format is now 1

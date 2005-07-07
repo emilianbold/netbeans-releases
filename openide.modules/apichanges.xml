@@ -18,6 +18,22 @@ Microsystems, Inc. All Rights Reserved.
   	<apidef name="modules">Modules API</apidef>
   </apidefs>
 <changes>
+    <change id="enhanced-support-for-os-specific-modules-iz-50943">
+        <api name="modules"/>
+        <summary>Enhanced support for OS specific modules</summary>
+        <version major="6" minor="3"/>
+        <date day="7" month="7" year="2005"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes" deletion="no" modification="no"/>
+        <description>
+            Modules can now express dependency on more operating system types
+            than those that were available previously. Now there is 
+            <code>org.openide.modules.os.PlainUnix</code> token for all unixes
+            but MacOSX and <code>org.openide.modules.os.OS2</code> for 
+            OS/2. For more details read <a href="@TOP@/org/openide/modules/doc-files/api.html#how-os-specific">here</a>.
+        </description>
+        <issue number="50943" />
+    </change>
     <change id="split-of-openide-branding-files">
         <api name="modules"/>
         <summary>Branding files used during startup have new location</summary>

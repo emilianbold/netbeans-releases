@@ -1079,10 +1079,16 @@ OpenIDE-Module-Requires: org.openide.modules.os.Windows
 OpenIDE-Module-Requires: org.openide.modules.os.Unix
 OpenIDE-Module-Requires: org.openide.modules.os.MacOSX
 </pre>
+In version 6.3 additional tokens have been added:
+<pre>
+OpenIDE-Module-Requires: org.openide.modules.os.OS2
+OpenIDE-Module-Requires: org.openide.modules.os.PlainUnix    
+</pre>
 
 <p class="nonnormative">
 Please note, that Mac OS X is in fact also Unix, so requesting Unix also
-enables your module on Mac OS X.
+enables your module on Mac OS X. If you want <q>all unix types but Mac OS X</q>
+you want to request PlainUnix token.
 </p>
 
 <p class="nonnormative">

@@ -62,7 +62,9 @@ final class SingleModuleProperties extends ModuleProperties {
     private static final String[] IDE_TOKENS = new String[] {
         "org.openide.modules.os.Windows", // NOI18N
         "org.openide.modules.os.Unix",  // NOI18N
-        "org.openide.modules.os.MacOSX" // NOI18N
+        "org.openide.modules.os.MacOSX", // NOI18N
+        "org.openide.modules.os.PlainUnix",  // NOI18N
+        "org.openide.modules.os.OS2" // NOI18N
     };
     
     // property keys for project.properties

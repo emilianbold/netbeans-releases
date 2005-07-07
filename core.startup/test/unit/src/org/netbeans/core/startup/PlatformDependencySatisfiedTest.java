@@ -56,7 +56,9 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         assertEnableModule("org.openide.modules.os.Windows", true);
         assertEnableModule("org.openide.modules.os.MacOSX", false);
         assertEnableModule("org.openide.modules.os.Unix", false);
+        assertEnableModule("org.openide.modules.os.PlainUnix", false);
         assertEnableModule("org.openide.modules.os.Garbage", false);
+        assertEnableModule("org.openide.modules.os.OS2", false);
     }
     
     public void testMacOSX() throws Exception {
@@ -66,7 +68,9 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         assertEnableModule("org.openide.modules.os.Windows", false);
         assertEnableModule("org.openide.modules.os.MacOSX", true);
         assertEnableModule("org.openide.modules.os.Unix", true);
+        assertEnableModule("org.openide.modules.os.PlainUnix", false);
         assertEnableModule("org.openide.modules.os.Garbage", false);
+        assertEnableModule("org.openide.modules.os.OS2", false);
     }
 
     public void testDarwin() throws Exception {
@@ -76,7 +80,9 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         assertEnableModule("org.openide.modules.os.Windows", false);
         assertEnableModule("org.openide.modules.os.MacOSX", true);
         assertEnableModule("org.openide.modules.os.Unix", true);
+        assertEnableModule("org.openide.modules.os.PlainUnix", false);
         assertEnableModule("org.openide.modules.os.Garbage", false);
+        assertEnableModule("org.openide.modules.os.OS2", false);
     }
     
     public void testLinux() throws Exception {
@@ -86,7 +92,9 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         assertEnableModule("org.openide.modules.os.Windows", false);
         assertEnableModule("org.openide.modules.os.MacOSX", false);
         assertEnableModule("org.openide.modules.os.Unix", true);
+        assertEnableModule("org.openide.modules.os.PlainUnix", true);
         assertEnableModule("org.openide.modules.os.Garbage", false);
+        assertEnableModule("org.openide.modules.os.OS2", false);
     }
 
     public void testBSD() throws Exception {
@@ -96,7 +104,21 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         assertEnableModule("org.openide.modules.os.Windows", false);
         assertEnableModule("org.openide.modules.os.MacOSX", false);
         assertEnableModule("org.openide.modules.os.Unix", true);
+        assertEnableModule("org.openide.modules.os.PlainUnix", true);
         assertEnableModule("org.openide.modules.os.Garbage", false);
+        assertEnableModule("org.openide.modules.os.OS2", false);
+    }
+
+    public void testOS2() throws Exception {
+        System.setProperty("os.name", "OS/2");
+        assertEquals ("We are on os/2", org.openide.util.Utilities.OS_OS2, org.openide.util.Utilities.getOperatingSystem());
+        
+        assertEnableModule("org.openide.modules.os.Windows", false);
+        assertEnableModule("org.openide.modules.os.MacOSX", false);
+        assertEnableModule("org.openide.modules.os.Unix", false);
+        assertEnableModule("org.openide.modules.os.PlainUnix", false);
+        assertEnableModule("org.openide.modules.os.Garbage", false);
+        assertEnableModule("org.openide.modules.os.OS2", true);
     }
     
     /**  */
@@ -104,8 +126,7 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
         Manifest man = new Manifest ();
         man.getMainAttributes ().putValue ("Manifest-Version", "1.0");
         man.getMainAttributes ().putValue ("OpenIDE-Module", "org.test.PlatformDependency/1");
-        
-        assertNotNull ("This test is supposed to run on windows, unix and macosx, fail otherwise on this line", req);
+        man.getMainAttributes ().putValue ("OpenIDE-Module-Public-Packages", "-");
         
         man.getMainAttributes ().putValue ("OpenIDE-Module-Requires", req);
         
