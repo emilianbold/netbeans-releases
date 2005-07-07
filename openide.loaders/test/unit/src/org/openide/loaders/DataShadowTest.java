@@ -16,6 +16,7 @@ package org.openide.loaders;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URI;
+import junit.framework.AssertionFailedError;
 
 import junit.textui.TestRunner;
 import org.openide.filesystems.FileSystem;
@@ -28,6 +29,8 @@ import org.openide.filesystems.Repository;
 import org.netbeans.junit.*;
 import org.openide.filesystems.*;
 
+import org.openide.loaders.FolderInstanceTest.ErrManager;
+
 /** Test things about shadows and broken shadows, etc.
  * @author Jaroslav Tulach
  */
@@ -39,9 +42,12 @@ implements java.net.URLStreamHandlerFactory {
     private DataFolder folder;
     /** fs we work on */
     private FileSystem lfs;
+    /** test's own error manager */
+    private org.openide.ErrorManager err;
     
     static {
         // to handle nbfs urls...
+        System.setProperty("org.openide.util.Lookup", "org.openide.loaders.FolderInstanceTest$Lkp");
         java.net.URL.setURLStreamHandlerFactory (new DataShadowTest (null));
     }
     
@@ -69,6 +75,23 @@ implements java.net.URLStreamHandlerFactory {
         folder = DataFolder.findFolder (fo);
         
         Repository.getDefault ().addFileSystem (lfs);
+        
+        
+        assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
+        ErrManager.resetMessages();
+        ErrManager.log = getLog ();
+        
+        err = ErrManager.getDefault().getInstance(getName());
+    }
+    
+    protected void runTest () throws Throwable {
+        try {
+            super.runTest ();
+        } catch (AssertionFailedError err) {
+            AssertionFailedError n = new AssertionFailedError (err.getMessage () + "\n" + ErrManager.messages);
+            n.initCause (err);
+            throw n;
+        }
     }
     
     protected void tearDown() throws Exception {
@@ -133,31 +156,42 @@ implements java.net.URLStreamHandlerFactory {
         FileObject primary = shade.getPrimaryFile ();
 
         assertTrue ("Is valid now", shade.isValid ());
+        err.log("Before delete");
         original.delete ();
+        err.log("After delete");
         
         assertFalse ("Shadow is not valid anymore", shade.isValid ());
         assertFalse ("Original is gone", original.isValid ());
         
+        err.log("Going to find new shadow");
         DataObject shade2 = DataObject.find (primary);
+        err.log("Found: " + shade2);
         assertEquals ("Represents broken shadow (a bit implemetnation detail, but useful test)", BrokenDataShadow.class, shade2.getClass ());
         assertFalse ("Is not data shadow", shade2 instanceof DataShadow);
         
         // recreates the original
+        err.log("Before recreation of the original");
         FileObject original2 = FileUtil.createData (lfs.getRoot (), original.getPrimaryFile ().getPath ());
+        err.log("Original is there: " + original2);
         DataObject obj2;
         
         if (createDataObjectOrNot) {
+            err.log("Now get the data object");
             obj2 = DataObject.find (original2);
+            err.log("Object is there: " + obj2);
         }
         
         assertFalse ("Previous is not valid anymore", shade2.isValid ());
         
         DataObject shade3 = DataObject.find (primary);
+        err.log("Shade3 is here: " + shade3);
         assertTrue ("it is a data shadow again", shade3 instanceof DataShadow);
         assertEquals ("Points to the same filename", original.getPrimaryFile ().getPath (), ((DataShadow)shade3).getOriginal ().getPrimaryFile ().getPath ());
-        
+
+        err.log("Before find for " + original2);
         assertEquals ("But of course the original is newly created", DataObject.find (original2), ((DataShadow)shade3).getOriginal ());
         
+        err.log("Before shade.getOriginal()");
         assertEquals ("However the old shadow is not updated as originals are never updated", original, shade.getOriginal ());
     }
 
