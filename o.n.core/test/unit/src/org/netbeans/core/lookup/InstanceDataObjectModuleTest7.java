@@ -60,7 +60,8 @@ implements FileChangeListener {
                 int debug = 5;
                 while (inst1 == null && debug-- > 0) {
                     Thread.sleep (300);
-                    org.openide.ErrorManager.getDefault ().log ("  SLEEP[300ms]: " + obj1.getCookie(InstanceCookie.class));
+                    inst1 = (InstanceCookie)obj1.getCookie(InstanceCookie.class);
+                    org.openide.ErrorManager.getDefault ().log ("  SLEEP[300ms]: " + inst1);
                 }
             }
             assertNotNull("Had an instance from " + obj1, inst1);
