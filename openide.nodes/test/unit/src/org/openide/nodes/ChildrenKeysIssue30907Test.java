@@ -145,6 +145,10 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
     private void doBug30907 (final boolean slowAddNotify, final boolean throwException, boolean readAccess, int mainCount, int threadCount) throws Exception {
         FINAL_LOCK = new Object ();        
         
+        ErrManager.messages.append ("doBug30907 slowAddNotify: " + slowAddNotify 
+            + " throwException: " + throwException + " readAccess: " + readAccess + " mainCount: " + mainCount +
+            " threadCount: " + threadCount + '\n');
+        
         //
         // the purpose of this test is to create a livelock - execution never ends
         // as described in the bug
