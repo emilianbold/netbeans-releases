@@ -15,13 +15,11 @@ package org.openide.awt;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.KeyStroke;
-import javax.swing.MenuElement;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.*;
@@ -81,7 +79,11 @@ public class MenuBar extends JMenuBar implements Externalizable {
      */
     public MenuBar(DataFolder folder) {
         this();
-        setBorder (javax.swing.BorderFactory.createEmptyBorder());
+        boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
+        if (!GTK) { //Let GTK supply some border, or mnemonic underlines
+            //will be flush and look ugly
+            setBorder (BorderFactory.createEmptyBorder());
+        }
         DataFolder theFolder = folder;
         if (theFolder == null) {
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Menu");

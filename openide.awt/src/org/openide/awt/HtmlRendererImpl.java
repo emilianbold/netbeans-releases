@@ -124,8 +124,10 @@ class HtmlRendererImpl extends JLabel implements HtmlRenderer.Renderer {
         type = TYPE_TREE;
 
         if (swingRendering && selected) {
-            setBackground(HtmlLabelUI.getBackgroundFor(this));
-            setForeground(HtmlLabelUI.getForegroundFor(this));
+            if (HtmlLabelUI.GTK) {
+                setBackground(HtmlLabelUI.getBackgroundFor(this));
+                setForeground(HtmlLabelUI.getForegroundFor(this));
+            }
             setOpaque(true);
         }
 

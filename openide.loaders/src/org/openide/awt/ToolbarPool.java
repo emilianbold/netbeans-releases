@@ -117,7 +117,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
         getAccessibleContext().setAccessibleName(instance.instanceName());
         getAccessibleContext().setAccessibleDescription(instance.instanceName());
 
-        if (UIManager.getLookAndFeel() instanceof com.sun.java.swing.plaf.windows.WindowsLookAndFeel) {
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) {
             if( isXPTheme() ) {
                 //Set up custom borders for XP
                 setBorder(BorderFactory.createCompoundBorder(
@@ -130,6 +130,8 @@ public final class ToolbarPool extends JComponent implements Accessible {
             } else {
                 setBorder( BorderFactory.createEtchedBorder() );
             }
+        } else if ("GTK".equals(UIManager.getLookAndFeel().getID())) {
+            setBorder (BorderFactory.createEmptyBorder(5, 0, 3, 0));
         }
     }
     

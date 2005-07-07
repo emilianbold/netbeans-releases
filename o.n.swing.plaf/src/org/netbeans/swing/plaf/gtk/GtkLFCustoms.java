@@ -44,6 +44,9 @@ public class GtkLFCustoms extends LFCustoms {
         Object selBg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.DARK, Color.CYAN) : (Object) Color.CYAN;
         Object selFg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.TEXT_FOREGROUND, Color.BLACK) : (Object) Color.BLACK;
 
+        Object fb = new Color (144, 144, 255);
+        Object tabBg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_INTFRAME, ThemeValue.DARK, fb) : (Object) fb;
+        
         if (!ThemeValue.functioning()) {
             Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
             int sz = 11;
@@ -94,14 +97,13 @@ public class GtkLFCustoms extends LFCustoms {
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.GtkSlidingButtonUI", //NOI18N
 
-
             DESKTOP_BACKGROUND, ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.LIGHT, Color.GRAY) : (Object) Color.GRAY,
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
 
             TOOLBAR_UI, "org.netbeans.swing.plaf.gtk.GtkToolbarUI", //NOI18N
                     
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png"),
-            
+            "winclassic_tab_sel_gradient", tabBg,
         };
         return result;
     }

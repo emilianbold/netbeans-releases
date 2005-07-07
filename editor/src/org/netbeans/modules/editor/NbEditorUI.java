@@ -44,6 +44,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.border.Border;
 import org.netbeans.modules.editor.CustomizableSideBar.SideBarPosition;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
@@ -153,8 +154,13 @@ public class NbEditorUI extends ExtEditorUI {
         
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
-        // remove default scroll-pane border, winsys will handle borders itself           
-        scroller.setBorder(BorderFactory.createEmptyBorder());
+        // remove default scroll-pane border, winsys will handle borders itself 
+        Border empty = BorderFactory.createEmptyBorder();
+        // Important:  Do not delete or use null instead, will cause
+        //problems on GTK L&F.  Must set both scroller border & viewport
+        //border! - Tim
+        scroller.setBorder(empty);
+        scroller.setViewportBorder(empty);
         
         Map/*<SideBarPosition, JComponent>*/ sideBars = CustomizableSideBar.createSideBars(component);
         

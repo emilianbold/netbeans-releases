@@ -108,9 +108,6 @@ class GtkToolBarButtonUI extends ButtonUI implements ChangeListener {
             if (iconH <= r.height) {
                 iconY = (r.height / 2) - (iconH / 2);
             }
-            if (iconH > 20) {
-                iconY += 2;
-            }
             ic.paintIcon(b, g, iconX, iconY);
         }
     }
@@ -154,6 +151,7 @@ class GtkToolBarButtonUI extends ButtonUI implements ChangeListener {
             } else {
                 result = new Dimension (minButtonSize, minButtonSize);
             }
+            result.width += 4;
             return result;
         } else {
             if (c.getLayout() != null) {

@@ -225,8 +225,9 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
         }
     }
     
+    private static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
     protected JEditorPane createTextView() {
-        JEditorPane result = new JEditorPane();
+        JEditorPane result = GTK ? new GEP() : new JEditorPane();
         result.addComponentListener(this);
         
         // we don't want the background to be gray even though the text there is not editable
@@ -260,6 +261,12 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
 
     public void componentHidden(ComponentEvent e) {
         //do nothing
+    }
+    
+    private static final class GEP extends JEditorPane {
+        public java.awt.Color getBackground() {
+            return UIManager.getColor("text");
+        }
     }
 
 }

@@ -190,8 +190,9 @@ public class GarbageCollectAction extends CallableSystemAction {
 
         protected void paintComponent(Graphics g) {
             Dimension size = getSize();
-            size.height--; // better fits in typical containers
-
+            size.height -= 4; // better fits in typical containers
+            size.width -= 3;
+            g.translate (3, 1);
             Color old = g.getColor();
 
             try {
@@ -251,6 +252,7 @@ public class GarbageCollectAction extends CallableSystemAction {
                 }
             } finally {
                 g.setColor(old);
+                g.translate (-3, -1);
             }
 
             super.paintComponent(g);

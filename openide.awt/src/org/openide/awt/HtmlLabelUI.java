@@ -39,9 +39,10 @@ import javax.swing.plaf.LabelUI;
  */
 class HtmlLabelUI extends LabelUI {
     /** System property to automatically turn on antialiasing for html strings */
+    static final boolean GTK = "GTK".equals(UIManager.getLookAndFeel().getID());
     private static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
          ||Boolean.getBoolean("swing.aatext") // NOI18N
-         ||("GTK".equals(UIManager.getLookAndFeel().getID()) && gtkShouldAntialias()) // NOI18N
+         ||(GTK && gtkShouldAntialias()) // NOI18N
          ||"Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     private static HtmlLabelUI uiInstance = null;
     private static int FIXED_HEIGHT = 0;
@@ -185,9 +186,11 @@ class HtmlLabelUI extends LabelUI {
                 focus = Color.BLUE;
             }
 
-            int x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
-            g.setColor(focus);
-            g.drawRect(x, 0, c.getWidth() - (x + 1), c.getHeight() - 1);
+            if (!GTK) {
+                int x = ((h.getIcon() == null) ? 0 : (h.getIcon().getIconWidth() + h.getIconTextGap()));
+                g.setColor(focus);
+                g.drawRect(x, 0, c.getWidth() - (x + 1), c.getHeight() - 1);
+            }
         }
 
         paint(g, c);
@@ -395,9 +398,12 @@ class HtmlLabelUI extends LabelUI {
             return getUnfocusedSelectionBackground();
         }
 
-        if (isGTK()) {
-            //GTK does its own thing, we'll only screw it up by painting the background ourselves
-            //            return null;
+        if (GTK) {
+            //GTK does its own thing, we'll only screw it up by painting 
+            //the background ourselves
+            //XXX - Tim - Why was this line commented out?  It mangles painting
+            //on GTK L&F.
+            return null;
         }
 
         Color result = null;
