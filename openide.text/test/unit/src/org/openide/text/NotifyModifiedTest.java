@@ -43,6 +43,8 @@ implements CloneableEditorSupport.Env {
     protected CES support;
     /** the content of lookup of support */
     private InstanceContent ic;
+    /** private err manager */
+    private org.openide.ErrorManager err;
 
     
     // Env variables
@@ -68,6 +70,8 @@ implements CloneableEditorSupport.Env {
         assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
         ErrManager.resetMessages();
         ErrManager.log = getLog ();
+        
+        err = ErrManager.getDefault().getInstance(getName());
     }
     
     protected void runTest () throws Throwable {
@@ -447,31 +451,43 @@ implements CloneableEditorSupport.Env {
     public void testUndoDoesMarkFileAsDirtyIssue56963 () throws Exception {
         content = "Somecontent";
         
+        err.log("Going to open");
         final javax.swing.text.StyledDocument doc = support.openDocument();
+        err.log("Opened: " + doc);
 
         int len = doc.getLength ();
         
         assertEquals ("Content opened", "Somecontent", doc.getText (0, len));
         
+        err.log("Going to remove " + len + " characters");
         doc.remove (0, len);
+        err.log("Removed");
         
         assertEquals ("Empty", 0, doc.getLength ());
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
+        err.log("Going to save");
         support.saveDocument ();
         waitEQ ();
+        err.log("Saved");
         
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
         
+        err.log("Going to undo");
         support.getUndoRedo ().undo ();
         waitEQ ();
+        err.log("Undoed");
         
         assertEquals ("Lengh it back", len, doc.getLength ());
         assertEquals ("Content is back", "Somecontent", doc.getText (0, len));
         
+        err.log("Before assertModified");
         support.assertModified (true, "Document is Modified");
 
+        err.log("Before redo");
         support.getUndoRedo ().redo ();
+        waitEQ ();
+        err.log("After redo");
         
         assertEquals ("Zero length", 0, doc.getLength ());
         
@@ -547,19 +563,24 @@ implements CloneableEditorSupport.Env {
         
         doc.remove (0, len);
         
+        err.log("After remove");
         assertEquals ("Empty", 0, doc.getLength ());
         assertTrue ("Can undo", support.getUndoRedo ().canUndo ());
         
+        err.log("Before save");
         support.saveDocument ();
         waitEQ ();
+        err.log("After save");
         
         
         assertTrue ("Can undo as well", support.getUndoRedo ().canUndo ());
         assertEquals ("Once modified", 1, support.notifyModified);
         assertEquals ("Once unmodified after save", 1, support.notifyUnmodified);
 
+        err.log("Before undo");
         support.getUndoRedo ().undo ();
         waitEQ ();
+        err.log("After undo");
         
         assertEquals ("Lengh it back", len, doc.getLength ());
         assertEquals ("Content is back", "Somecontent", doc.getText (0, len));
@@ -590,7 +611,10 @@ implements CloneableEditorSupport.Env {
     }
     
     private void waitEQ () throws Exception {
-        javax.swing.SwingUtilities.invokeAndWait (new Runnable () { public void run () { } });
+        // repeat five times to handle also runnables started from AWT
+        for (int i = 0; i < 5; i++) {
+            javax.swing.SwingUtilities.invokeAndWait (new Runnable () { public void run () { } });
+        }
     }
     
     //

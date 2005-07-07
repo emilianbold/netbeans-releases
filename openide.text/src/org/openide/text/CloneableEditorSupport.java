@@ -1289,8 +1289,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         }
 
                         ERR.log("post-reload task posting to AWT"); // NOI18N
-                        SwingUtilities.invokeLater(
-                            new Runnable() {
+                        Runnable run = new Runnable() {
                                 public void run() {
                                     if (panes != null) {
                                         for (int i = 0; i < panes.length; i++) {
@@ -1307,33 +1306,35 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     }
 
                                     // XXX do this from AWT???
-                                    ERR.log("discardAllEdits"); // NOI18N
+                                    ERR.log("task-discardAllEdits"); // NOI18N
                                     getUndoRedo().discardAllEdits(); // reset undo manager
 
                                     // Insert before-save undo event to enable unmodifying undo
-                                    ERR.log("undoableEditHappened"); // NOI18N
+                                    ERR.log("task-undoableEditHappened"); // NOI18N
                                     getUndoRedo().undoableEditHappened(
                                         new UndoableEditEvent(
                                             CloneableEditorSupport.this, new BeforeSaveEdit(lastSaveTime)
                                         )
                                     );
 
-                                    ERR.log("check already modified"); // NOI18N
+                                    ERR.log("task-check already modified"); // NOI18N
 
                                     // #57104 - if modified previously now it should become unmodified
                                     if (isAlreadyModified()) {
-                                        ERR.log("callNotifyUnmodified"); // NOI18N
+                                        ERR.log("task-callNotifyUnmodified"); // NOI18N
                                         callNotifyUnmodified();
                                     }
 
                                     updateLineSet(true);
-                                    ERR.log("addUndoableEditListener"); // NOI18N
+                                    ERR.log("task-addUndoableEditListener"); // NOI18N
 
                                     // Add undoable listener after atomic change has finished
                                     doc.addUndoableEditListener(getUndoRedo());
                                 }
-                            }
-                        );
+                            };
+                        ERR.log("Posting the AWT runnable: " + run);
+                        SwingUtilities.invokeLater(run);
+                        ERR.log("Posted in " + Thread.currentThread());
                     }
                 }
             );
