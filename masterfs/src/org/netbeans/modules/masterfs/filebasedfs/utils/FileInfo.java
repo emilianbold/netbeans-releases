@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLock;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.naming.UNCName;
 
@@ -141,7 +141,7 @@ public final class FileInfo {
 
     public boolean isConvertibleToFileObject() {
         if (isConvertibleToFileObject == -1) {
-            isConvertibleToFileObject = (exists() && !WriteLock.isActiveLockFile(getFile()) && (getFile().getParent() != null || !isWindowsFloppy())) ?  1 : 0;
+            isConvertibleToFileObject = (exists() && !WriteLockUtils.isActiveLockFile(getFile()) && (getFile().getParent() != null || !isWindowsFloppy())) ?  1 : 0;
         }
         
         return (isConvertibleToFileObject == 1) ? true : false;

@@ -12,8 +12,6 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
-
-import java.util.HashSet;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.FileLock;
@@ -23,7 +21,6 @@ import org.openide.util.Enumerations;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Set;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 
 /**
@@ -179,7 +176,7 @@ final class FileObj extends BaseFileObj {
 
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
-        return WriteLock.tryLock(me);
+        return WriteLockFactory.tryLock(me);
     }
 
     final boolean checkLock(final FileLock lock) throws IOException {
