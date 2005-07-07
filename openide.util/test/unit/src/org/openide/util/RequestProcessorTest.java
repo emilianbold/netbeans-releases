@@ -838,6 +838,13 @@ public class RequestProcessorTest extends NbTestCase {
                 if (runIn == null) {
                     runIn = Thread.currentThread();
                     task[0].schedule (0);
+                    
+                    // wait to make sure the task is scheduled
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                 } else {
                     goodThread = Thread.currentThread () == runIn;
                 }
