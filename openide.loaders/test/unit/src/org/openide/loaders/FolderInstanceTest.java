@@ -32,6 +32,7 @@ public class FolderInstanceTest extends NbTestCase {
         System.setProperty("org.openide.util.Lookup", "org.openide.loaders.FolderInstanceTest$Lkp");
     }
 
+    private org.openide.ErrorManager err;
     
     public FolderInstanceTest() {
         super("");
@@ -65,6 +66,8 @@ public class FolderInstanceTest extends NbTestCase {
         assertNotNull("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault().lookup(ErrManager.class));
         ErrManager.resetMessages();
         ErrManager.log = getLog ();
+        
+        err = ErrManager.getDefault().getInstance(getName());
     }
 
     protected void runTest () throws Throwable {
@@ -111,38 +114,58 @@ public class FolderInstanceTest extends NbTestCase {
         
 
         DataLoader l = DataLoader.getLoader(DataLoaderOrigTest.SimpleUniFileLoader.class);
+        err.log("Add loader: " + l);
         Pool.setExtra(l);
+        err.log("Loader added");
         try {
             FileObject aa = lfs.findResource("/AA/A.simple");
             DataObject tmp = DataObject.find (aa);
             assertEquals ("Is of the right type", DataLoaderOrigTest.SimpleDataObject.class, tmp.getClass ());
             DataLoaderOrigTest.SimpleDataObject obj = (DataLoaderOrigTest.SimpleDataObject)tmp;
             
+            err.log("simple object found: " + obj);
+            
             if (cookie) {
+                err.log("Adding cookie");
                 obj.cookieSet().add (new InstanceSupport.Instance (new Integer (100)));
+                err.log("Cookie added");
             }
             
+            
             F instance = new F (folder);
-            instance.instanceCreate ();
+            err.log("Instance for " + folder + " created");
+            Object result = instance.instanceCreate ();
+            err.log("instanceCreate called. Result: " + result);
             
             Enumeration en = obj.listeners ();
+            
+            err.log("Asking for listeners of " + obj);
             
             assertTrue ("Folder instance should have add one listener", en.hasMoreElements ());
             en.nextElement ();
             assertTrue ("But there should be just one", !en.hasMoreElements ());
             
+            err.log("Successfully tested for one listener, creating B.simple");
+            
             folder.getPrimaryFile().createData("B.simple");
+            err.log("B.simple created");
             assertEquals ("DO created", folder.getChildren ().length, 2);
+            err.log("Children obtained correctly");
+            
             // wait to finish processing
-            instance.instanceCreate ();
+            result = instance.instanceCreate ();
+            err.log("instanceCreate finished, with result: " + result);
 
             en = obj.listeners ();
+            err.log("Asking for listeners once again");
             assertTrue ("Folder instance should not change the amount of listeners", en.hasMoreElements ());
             en.nextElement ();
             assertTrue ("And there still should be just one", !en.hasMoreElements ());
-            
+            err.log("Successfully tested for listeners");
         } finally {
+            err.log("Clearing data loader");
             Pool.setExtra(null);
+            err.log("Loader cleared");
         }
     }
 
