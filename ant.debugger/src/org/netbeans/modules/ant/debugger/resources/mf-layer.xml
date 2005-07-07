@@ -26,6 +26,9 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                 </folder>
                 <folder name="Popup">
+                    <attr name="org-openide-actions-ToolsAction.instance/AfterToolsSeparator.instance" boolvalue="true"/>
+                    <file name="AfterToolsSeparator.instance"><attr name="instanceClass" stringvalue="javax.swing.JSeparator"/></file>
+                    <attr name="AfterToolsSeparator.instance/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance"/>                    
                     <attr name="org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
