@@ -94,21 +94,30 @@ public class NotificationTable extends JTable {
             nameField.setSelectedItem(o);
             
             nameField.addItemListener(new ItemListener() {
+                private String notifType;
                 
                 public void itemStateChanged(ItemEvent evt) {
-                    ArrayList<MBeanNotificationType> array  = 
-                            new ArrayList<MBeanNotificationType>();
-                    if (evt.getItem().toString().equals(
-                            WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
-                        array.add(new MBeanNotificationType(
-                                WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE));
-                    }
-                    model.setValueAt(array, row, model.IDX_NOTIF_TYPE);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            model.fireTableDataChanged();
+                    if (evt.getStateChange() == evt.DESELECTED)
+                        notifType = evt.getItem().toString();
+                    else {
+                        ArrayList<MBeanNotificationType> array  =
+                                new ArrayList<MBeanNotificationType>();
+
+                        if (evt.getItem().toString().equals(
+                                WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
+                            array.add(new MBeanNotificationType(
+                                    WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE));
+                            model.setValueAt(array, row, model.IDX_NOTIF_TYPE);
+                        } else if (notifType.equals(
+                                WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
+                            model.setValueAt(array, row, model.IDX_NOTIF_TYPE);
                         }
-                    });
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                model.fireTableDataChanged();
+                            }
+                        });
+                    }
                 }
             });
             
