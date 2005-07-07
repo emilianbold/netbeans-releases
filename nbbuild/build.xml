@@ -2656,14 +2656,50 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../j2ee/genericserver" target="netbeans"/>
   </target>
 
-  <target name="all-j2ee/sunappsrv8" depends="init, all-db/model">
-    <echo message="Building module j2ee/sunappsrv8.."/>
+  <target name="all-serverplugins/sun/appsrv81" depends="init, all-serverplugins/sun/sunddapi, all-serverplugins/sun/appsrv, all-serverplugins/sun/sunddui, all-db/model">
+    <echo message="Building module serverplugins/sun/appsrv81.."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
-    <ant dir="../j2ee/sunappsrv8" target="netbeans"/>
+    <ant dir="../serverplugins/sun/appsrv81" target="netbeans"/>
+  </target>
+
+  <!-- this is project is not a netbeans module project, so we do a no-op
+       here.  The code in appsrvbridge gets built by XXX -->
+  <target name="all-serverplugins/sun/appsrvbridge" depends="init">
+    <echo message="Building module serverplugins/sun/appsrvbridge.. NO-OP"/>
+  </target>
+
+    <target name="all-serverplugins/sun/appsrv" depends="init, all-serverplugins/sun/sunddapi, all-db/model">
+    <echo message="Building module serverplugins/sun/appsrv.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../serverplugins/sun/appsrv" target="netbeans"/>
+  </target>
+
+  <target name="all-serverplugins/sun/sunddapi" depends="init, all-db/model">
+    <echo message="Building module serverplugins/sun/sunddapi.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../serverplugins/sun/sunddapi" target="netbeans"/>
+  </target>
+
+  <target name="all-serverplugins/sun/sunddui" depends="init, all-db/model">
+    <echo message="Building module serverplugins/sun/sunddui.."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../serverplugins/sun/sunddui" target="netbeans"/>
   </target>
 
 
