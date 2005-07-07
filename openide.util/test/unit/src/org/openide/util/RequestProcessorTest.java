@@ -723,8 +723,9 @@ public class RequestProcessorTest extends NbTestCase {
         }
         
         R r = new R ();
+        RequestProcessor.Task t;
         synchronized (r) {
-            RequestProcessor.Task t = rp.post (r);
+            t = rp.post (r);
             r.wait ();
             assertTrue ("The task is already running", !t.cancel ());
             r.wait ();
@@ -734,11 +735,19 @@ public class RequestProcessorTest extends NbTestCase {
             assertTrue ("Not before", !r.checkBefore);
             assertTrue ("Not after - as the notification was thru InterruptedException", !r.checkAfter);
         }
+        t.waitFinished();
+        /*
+        try {
+            assertGC("no", new java.lang.ref.WeakReference(this));
+        } catch (Error e) {
+            // ok
+        }
+         */
         
         // interrupt after the task has finished
         r = new R ();
         synchronized (r) {
-            RequestProcessor.Task t = rp.post (r);
+            t = rp.post (r);
             r.wait ();
             r.notifyAll ();
             r.wait ();
@@ -749,6 +758,7 @@ public class RequestProcessorTest extends NbTestCase {
             assertTrue ("Not interupted before", !r.checkBefore);
             assertTrue ("But interupted after", r.checkAfter);
         }
+        t.waitFinished();
     }
 
     public void testCancelDoesNotInterruptTheRunningThread () throws Exception {
