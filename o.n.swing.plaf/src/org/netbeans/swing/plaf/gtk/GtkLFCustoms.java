@@ -134,7 +134,29 @@ public class GtkLFCustoms extends LFCustoms {
                 "Panel.font", controlFont, //NOI18N
 
                 "Tree.expandedIcon", new GTKExpandedIcon(), //NOI18N
-                "Tree.collapsedIcon", new GTKCollapsedIcon() //NOI18N
+                "Tree.collapsedIcon", new GTKCollapsedIcon(), //NOI18N
+                
+                // workaround: GTKLookAndFeel FileChooser is unusable, cannot
+                // choose a dir and doesn't look native anyway.  We force MetalFileChooserUI
+                        
+                "FileChooserUI", "javax.swing.plaf.metal.MetalFileChooserUI", // NOI18N
+                "FileView.computerIcon",       javax.swing.plaf.metal.MetalIconFactory.getTreeComputerIcon(), // NOI18N
+                "FileView.hardDriveIcon",      javax.swing.plaf.metal.MetalIconFactory.getTreeHardDriveIcon(), // NOI18N
+                "FileView.floppyDriveIcon",    javax.swing.plaf.metal.MetalIconFactory.getTreeFloppyDriveIcon(), // NOI18N
+                "FileChooser.newFolderIcon",   javax.swing.plaf.metal.MetalIconFactory.getFileChooserNewFolderIcon(), // NOI18N
+                "FileChooser.upFolderIcon",    javax.swing.plaf.metal.MetalIconFactory.getFileChooserUpFolderIcon(), // NOI18N
+                "FileChooser.homeFolderIcon",  javax.swing.plaf.metal.MetalIconFactory.getFileChooserHomeFolderIcon(), // NOI18N
+                "FileChooser.detailsViewIcon", javax.swing.plaf.metal.MetalIconFactory.getFileChooserDetailViewIcon(), // NOI18N
+                "FileChooser.listViewIcon",    javax.swing.plaf.metal.MetalIconFactory.getFileChooserListViewIcon(), // NOI18N
+                "FileChooser.usesSingleFilePane", Boolean.TRUE, // NOI18N
+                "FileChooser.ancestorInputMap", // NOI18N
+                            new UIDefaults.LazyInputMap(new Object[] {
+                                "ESCAPE", "cancelSelection", // NOI18N
+                                "F2", "editFileName", // NOI18N
+                                "F5", "refresh", // NOI18N
+                                "BACK_SPACE", "Go Up", // NOI18N
+                                "ENTER", "approveSelection" // NOI18N
+                            }),
             };
         } else {
             Object[] result = new Object[] {
