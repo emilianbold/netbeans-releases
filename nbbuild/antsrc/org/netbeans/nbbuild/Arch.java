@@ -112,7 +112,7 @@ public class Arch extends Task implements ErrorHandler {
         Source qSource;
         try {
             javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
-            factory.setValidating(!generateTemplate);
+            factory.setValidating(!generateTemplate && !"true".equals(this.getProject().getProperty ("arch.private.disable.validation.for.test.purposes"))); // NOI18N
             
             javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
             builder.setErrorHandler(this);
@@ -208,6 +208,7 @@ public class Arch extends Task implements ErrorHandler {
                     } catch (IOException ex) {
                         throw new BuildException (ex);
                     }
+                    qSource = new javax.xml.transform.stream.StreamSource (questionsFile);
                 } else {
                     log (
                         questionsFile.getAbsolutePath() + ": some questions have not been answered: " + s + "\n" + 
@@ -282,13 +283,28 @@ public class Arch extends Task implements ErrorHandler {
         }
     }
     
-    private void generateMissingQuestions (Set missing) throws IOException {
-        Writer w = new OutputStreamWriter (new FileOutputStream (questionsFile.toString (), true));
+    private void generateMissingQuestions (Set missing) throws IOException, BuildException {
+        StringBuffer sb = new StringBuffer();
+        InputStreamReader is = new InputStreamReader(new FileInputStream(questionsFile.toString()));
+        char[] arr = new char[4096];
+        for (;;) {
+            int len = is.read(arr);
+            if (len == -1) break;
+            
+            sb.append(arr, 0, len);
+        }
         
-        w.write("<!-- Copy this above the </api-answers> tag! -->\n\n");
+        int indx = sb.indexOf("</api-answers>");
+        if (indx == -1) {
+            throw new BuildException("There is no </api-answers> in " + questionsFile);
+        }
         
+        sb.delete (indx, indx + "</api-answers>".length());
+        
+        Writer w = new OutputStreamWriter (new FileOutputStream (questionsFile.toString ()));
+        w.write(sb.toString());
         writeQuestions (w, missing);
-        
+        w.write("</api-answers>\n");
         w.close();
     }
 
