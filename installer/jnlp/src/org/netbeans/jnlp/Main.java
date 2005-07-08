@@ -23,7 +23,7 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        org.netbeans.core.Main.main(args);
+        org.netbeans.core.startup.Main.main(args);
     }
     
 }
