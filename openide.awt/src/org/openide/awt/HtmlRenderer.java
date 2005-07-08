@@ -319,13 +319,20 @@ public final class HtmlRenderer {
         }
 
         FontMetrics fm = g.getFontMetrics(f);
-        Rectangle2D r = fm.getStringBounds(s, g);
+//        Rectangle2D r = fm.getStringBounds(s, g);
+        int wid;
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+            wid = fm.stringWidth(s);
+        } else {
+            wid = (int)fm.getStringBounds(s, g).getWidth();
+        }
 
         if (paint) {
             g.setColor(foreground);
             g.setFont(f);
 
-            if ((r.getWidth() <= w) || (style == STYLE_CLIP)) {
+            if ((wid <= w) || (style == STYLE_CLIP)) {
                 g.drawString(s, x, y);
             } else {
                 char[] chars = s.toCharArray();
@@ -334,8 +341,8 @@ public final class HtmlRenderer {
                     return 0;
                 }
 
-                double chWidth = r.getWidth() / chars.length;
-                int estCharsOver = new Double((r.getWidth() - w) / chWidth).intValue();
+                double chWidth = wid / chars.length;
+                int estCharsOver = new Double((wid - w) / chWidth).intValue();
 
                 if (style == STYLE_TRUNCATE) {
                     int length = chars.length - estCharsOver;
@@ -369,7 +376,7 @@ public final class HtmlRenderer {
             }
         }
 
-        return r.getWidth();
+        return wid;
     }
 
     /**
@@ -888,6 +895,10 @@ public final class HtmlRenderer {
 
                 //Get the bounds of the substring we'll paint
                 Rectangle2D r = fm.getStringBounds(chars, pos, nextTag + 1, g);
+                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                    r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag + 1)), r.getHeight());
+                } 
 
                 //Store the height, so we can add it if we're in word wrap mode,
                 //to return the height painted
@@ -952,6 +963,10 @@ public final class HtmlRenderer {
                             }
 
                             r = fm.getStringBounds(chars, pos, pos + length, g);
+                            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                                // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                                r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, pos + length)), r.getHeight());
+                            } 
 
                             //                            System.err.println("Truncated set to true at " + pos + " (" + chars[pos] + ")");
                             truncated = true;
@@ -996,6 +1011,10 @@ public final class HtmlRenderer {
                                 if (boundsChanged) {
                                     //recalculate the width we will add
                                     r = fm.getStringBounds(chars, pos, nextTag + 1, g);
+                                    if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                                        // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                                        r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag + 1)), r.getHeight());
+                                    } 
                                 }
 
                                 goToNextRow = false;
