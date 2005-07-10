@@ -31,7 +31,7 @@ import java.util.Date;
  *
  * @author Tim Boudreau
  */
-public class ChicletWrapper implements Runnable {
+class ChicletWrapper implements Runnable {
     private boolean allowVertical = true;
     private boolean leftNotch = false;
     private boolean rightNotch = false;

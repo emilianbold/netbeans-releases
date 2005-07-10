@@ -69,7 +69,7 @@ public abstract class TabDisplayerUI extends ComponentUI {
      * return what they want, but for performance reasons, it is highly
      * desirable that the shape object returned honor <code>equals()</code> and
      * <code>hashCode()</code>, as there are significant optimizations in
-     * NetBeans' drag and drop support that depened on this.
+     * NetBeans' drag and drop support that depend on this.
      */
     public abstract Polygon getExactTabIndication(int index);
 
