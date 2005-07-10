@@ -225,13 +225,7 @@ public class Arch extends Task implements ErrorHandler {
             
             if (file != null) {
                 log ("Using " + file + " as the XSL stylesheet");
-                try {
-                    ss = new javax.xml.transform.stream.StreamSource (
-                        new java.io.FileInputStream (file)
-                    );
-                } catch (java.io.IOException ex) {
-                    throw new BuildException (ex);
-                }
+                ss = new javax.xml.transform.stream.StreamSource (file);
             } else {
                 ss = new javax.xml.transform.stream.StreamSource (
                     getClass ().getResourceAsStream ("Arch.xsl")

@@ -62,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
                 <hr/>            
                 <h2>Interfaces table</h2>
 
-                <xsl:call-template name="for-each-group">
+                <xsl:call-template name="generate-api-table">
                     <xsl:with-param name="target" >api-group</xsl:with-param>
                 </xsl:call-template>
                 
@@ -163,13 +163,17 @@ Microsystems, Inc. All Rights Reserved.
     <!-- enumerates all groups of APIs and calls given template 
       on each of them
     -->
-    <xsl:template name="for-each-group" >
+    <xsl:template name="generate-api-table" >
         <xsl:param name="target" />
+        <xsl:param name="generate-export" select="'true'" />
+        <xsl:param name="generate-import" select="'true'" />
     
         <xsl:for-each select="//api[generate-id() = generate-id(key('apiGroups', @group))]">
             <xsl:call-template name="jump-to-target">
                 <xsl:with-param name="group" select="@group" />
                 <xsl:with-param name="target" select="$target" />
+                <xsl:with-param name="generate-export" select="$generate-export" />
+                <xsl:with-param name="generate-import" select="$generate-import" />
             </xsl:call-template>
         </xsl:for-each>
 
@@ -177,11 +181,15 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:template name="jump-to-target" >
         <xsl:param name="target" />
         <xsl:param name="group" />
+        <xsl:param name="generate-export" />
+        <xsl:param name="generate-import" />
         
         <xsl:choose>
             <xsl:when test="$target='api-group'" >
                 <xsl:call-template name="api-group">
                     <xsl:with-param name="group" select="$group" />
+                    <xsl:with-param name="generate-export" select="$generate-export" />
+                    <xsl:with-param name="generate-import" select="$generate-import" />
                 </xsl:call-template>
             </xsl:when>
             <xsl:otherwise>
@@ -197,6 +205,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <xsl:template name="api-group" >
         <xsl:param name="group" />
+        <xsl:param name="generate-export" />
+        <xsl:param name="generate-import" />
         
     
         <a>
@@ -208,7 +218,14 @@ Microsystems, Inc. All Rights Reserved.
         
         <xsl:variable 
             name="all_interfaces" 
-            select="//api[@group=$group and generate-id() = generate-id(key('apiNames', @name))]" 
+            select="//api[@group=$group and 
+                          generate-id() = generate-id(key('apiNames', @name)) and
+                          (
+                            ($generate-export = 'true' and @type = 'export') 
+                            or
+                            ($generate-import = 'true' and @type = 'import') 
+                          )
+                  ]" 
         />
         <table cellpadding="1" cellspacing="0" border="0" class="tablebg" width="100%"><tr><td>
           <table border="0" cellpadding="3" cellspacing="1" width="100%">   
@@ -303,12 +320,29 @@ Microsystems, Inc. All Rights Reserved.
        <xsl:for-each select="$all_definitions" >
             <xsl:variable name="describe.node" select="./node()" />
 
+            <xsl:variable name="before-hash-sign" select="substring-before(@url,'#')" />
+            
             <xsl:if test="@url" >
                 <a>
                     <xsl:attribute name="href" >
                         <xsl:value-of select="@url" />
                     </xsl:attribute>
-                    <xsl:value-of select="@url" />
+                    <xsl:choose>
+                        <xsl:when test="$before-hash-sign and string-length($before-hash-sign) > 40" >
+                            .../<xsl:value-of select="substring-after(substring($before-hash-sign, string-length(@before-hash-sign) - 40),'/')" />
+                        </xsl:when>
+                        <xsl:when test="$before-hash-sign" >
+                            <xsl:value-of select="$before-hash-sign" />
+                        </xsl:when>
+                        
+                        <xsl:when test="string-length(@url) > 40">
+                            .../<xsl:value-of select="substring-after(substring(@url, string-length(@url) - 40),'/')" />
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="@url" />
+                        </xsl:otherwise>
+                    </xsl:choose>
+                    
                 </a>
                 <p/>
             </xsl:if>

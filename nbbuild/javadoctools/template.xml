@@ -64,7 +64,12 @@ cause it to fail.
         <property name="javadoc.src" location="${javadoc.base}/src"/>
         <!-- Extra HTML files, normally in **/doc-files/*.html: -->
         <property name="javadoc.docfiles" location="../dummy"/>
-        <property name="javadoc.overview" location="overview-generic.html"/>
+        <condition property="javadoc.overview.generate.generic">
+            <not>
+                <isset property="javadoc.overview" />
+            </not>
+        </condition>
+        <property name="javadoc.overview" location="${netbeans.dest.dir}/tmp/overview/${javadoc.name}-overview-generic.html"/>
         <property name="javadoc.apichanges" location="apichanges-empty.xml"/>
         <property name="javadoc.arch" location="arch-empty.xml"/>
         
@@ -119,6 +124,11 @@ cause it to fail.
         <!-- set the property for use in this script -->
         <property name="javadoc.docs.${javadoc.name}" value="${javadoc.web.root}/${javadoc.name}" />
     </target>
+    
+    <target name="javadoc-generate-overview" depends="javadoc-init" if="javadoc.overview.generate.generic" >
+        <mkdir dir="${netbeans.dest.dir}/tmp/overview/" />
+        <arch xsl="exportOverview.xsl" answers="${javadoc.arch}" output="${javadoc.overview}" stylesheet="prose.css"/>
+    </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">
         <uptodate targetfile="${javadoc.out.zip}" property="javadoc.up.to.date">
@@ -141,6 +151,7 @@ cause it to fail.
             <srcfiles file="${javadoc.apichanges}"/>
             <srcfiles file="${javadoc.arch}"/>
             <srcfiles file="${javadoc.overview}"/>
+            <srcfiles file="exportOverview.xsl"/>
         </uptodate>
         <condition property="javadoc.should.not.be.generated" >
             <or>
@@ -182,7 +193,7 @@ cause it to fail.
         </condition>
     </target>
     
-    <target name="javadoc-exec-packages" depends="javadoc-init,javadoc-generate-references,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title,javadoc-exec-condition" unless="javadoc.exec.packages" >
+    <target name="javadoc-exec-packages" depends="javadoc-init,javadoc-generate-references,javadoc-generate-overview,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title,javadoc-exec-condition" unless="javadoc.exec.packages" >
         <tstamp/>
         <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2005 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
         <javadoc source="1.4" author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false">
@@ -203,7 +214,7 @@ cause it to fail.
         </javadoc>
     </target>
     
-    <target name="javadoc-exec-files" depends="javadoc-init,javadoc-generate-references,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" if="javadoc.files.provided" unless="javadoc.up.to.date" >
+    <target name="javadoc-exec-files" depends="javadoc-init,javadoc-generate-references,javadoc-generate-overview,javadoc-exec-condition,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" if="javadoc.files.provided" unless="javadoc.up.to.date" >
         <tstamp/>
         <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2005 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
         <javadoc source="1.4" author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false" useexternalfile="true" >
