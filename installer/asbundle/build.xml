@@ -67,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="NetBeans-dev-${buildnumber}"/>
+    <property name="installer.basename" value="NetBeans4.2dev-asbundle-${buildnumber}"/>
   </target>
   
   <macrodef name="transform-ml">
