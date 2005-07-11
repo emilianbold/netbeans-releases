@@ -18,9 +18,20 @@ Microsystems, Inc. All Rights Reserved.
   
   <property name="cluster.dir" location="mobility"/>
   <property name="ismp.project" value="mobility.xml"/>
-  <property name="installer.basename" value="NetBeansMobility"/>
   
-  <target name="init" />
+  <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
+    <property name="inited" value="true" />
+  </target>
+
+  <target name="set-buildnumber" unless="buildnumber">
+    <tstamp>
+        <format property="buildnumber" pattern="yyMMdd"/>
+    </tstamp>
+  </target>
+
+  <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
+    <property name="installer.basename" value="MobilityPack4.2dev-${buildnumber}"/>
+  </target>
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
