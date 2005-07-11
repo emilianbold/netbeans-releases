@@ -2484,7 +2484,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../java/freeform" target="netbeans"/>
   </target>
-  <target name="all-ant/project" depends="init,all-ant,all-projects/projectapi">
+  <target name="all-ant/project" depends="init,all-ant,all-projects/projectapi,all-projects/projectuiapi,all-core/progress">
       <echo message="Building module ant/project..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

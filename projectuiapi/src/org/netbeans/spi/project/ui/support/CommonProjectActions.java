@@ -99,6 +99,20 @@ public class CommonProjectActions {
     }
     
     /**
+     * Create an action "Delete Project".
+     * It should be invoked with an action context containing
+     * one or more {@link org.netbeans.api.project.Project}s.
+     * <p class="nonnormative">
+     * You might include this in the context menu of a logical view.
+     * </p>
+     * @since 1.4
+     * @return an action
+     */
+    public static Action deleteProjectAction() {
+        return Utilities.getActionsFactory().deleteProjectAction();
+    }
+
+    /**
      * Creates action that invokes <b>New Project</b> wizard.
      * 
      * <p>{@link #EXISTING_SOURCES_FOLDER} keyed action

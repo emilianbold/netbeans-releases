@@ -266,9 +266,9 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
             </file>
             
-            <!-- SetMain and customize -->
-            
             <attr name="SeparatorOpen.instance/org-netbeans-modules-project-ui-SetMainProject.shadow" boolvalue="true" />
+            
+            <!-- SetMain and customize -->
             
             <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>

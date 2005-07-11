@@ -19,8 +19,9 @@ import org.netbeans.api.project.ProjectManager;
 /**
  * Callback permitting {@link Project}s to inform the {@link ProjectManager}
  * of important lifecycle events.
- * Currently the only available event is modification of the project metadata.
- * However in the future other events may be added, such as moving or deleting
+ * Currently the only available events are modification of the project metadata
+ * and project deletion notification.
+ * However in the future other events may be added, such as moving
  * the project, which the project manager would need to be informed of.
  * <p>
  * This interface may only be implemented by the project manager. A
@@ -38,5 +39,21 @@ public interface ProjectState {
      * <p>Acquires write access.
      */
     void markModified();
+    
+    /**
+     * <p>Inform the manager that the project has been deleted. The project will
+     * be removed from any {@link ProjectManager}'s  mappings.
+     * If {@link ProjectManager#findProject} is called on the project directory,
+     * the {@link ProjectFactory ProjectFactories} are asked again to recognize
+     * the project.</p>
+     *
+     * <p>The project is no longer recognized as created by the {@link ProjectManager}.</p>
+     *
+     * <p>Acquires write access.</p>
+     *
+     * @throws IllegalStateException if notifyDeleted is called more than once for a project.
+     * @since 1.6
+     */
+    void notifyDeleted() throws IllegalStateException ;
     
 }

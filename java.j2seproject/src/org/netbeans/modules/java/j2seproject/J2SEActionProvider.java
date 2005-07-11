@@ -83,6 +83,7 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_DEBUG_TEST_SINGLE, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
+        COMMAND_DELETE,
     };
     
     // Project
@@ -138,6 +139,10 @@ class J2SEActionProvider implements ActionProvider {
     }
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
+        if (COMMAND_DELETE.equals(command)) {
+            project.getAntProjectHelper().performDefaultDeleteOperation();
+            return ;
+        }
         
         Runnable action = new Runnable () {
             public void run () {

@@ -735,7 +735,11 @@ public final class OpenProjectList {
                 if ( projectReference != null ) { // Reference to project exists
                     p = (Project)projectReference.get();
                     if ( p != null ) {
-                        return p; // And refers to some project
+                        // And refers to some project, check for validity:
+                        if ( ProjectManager.getDefault().isValid( p ) )
+                            return p; 
+                        else
+                            return null;
                     }
                 }
                 

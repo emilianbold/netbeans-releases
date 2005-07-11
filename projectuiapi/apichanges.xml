@@ -76,6 +76,22 @@ is the proper place.
 
     <changes>
 
+        <change id="action-delete-added">
+            <api name="general"/>
+            <summary>Delete Action Added</summary>
+            <version major="1" minor="4"/>
+            <date day="11" month="7" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" />
+            <description>            
+                Introduced:
+                <ul>
+                    <li><code>CommonProjectActions.deleteProjectAction</code> method</li>
+                </ul>                
+            </description>
+            <issue number="51468" />            
+        </change>
+        
         <change id="CommonProjectActions.EXISTING_SOURCES_FOLDER">
             <api name="general"/>
             <summary>New Project Wizard Action</summary>

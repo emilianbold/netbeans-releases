@@ -82,6 +82,7 @@ public final class FreeformProject implements Project {
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider
             new LookupMergerImpl(), // LookupMerger
+            new FreeformProjectOperations(this),
         });
         return new FreeformLookup(baseLookup, this, helper, eval, aux);
     }

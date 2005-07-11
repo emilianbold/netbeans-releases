@@ -122,6 +122,10 @@ public final class J2SEProject implements Project, AntProjectListener {
     public Lookup getLookup() {
         return lookup;
     }
+    
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
@@ -148,6 +152,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new RecommendedTemplatesImpl (this.updateHelper),
             new J2SEProjectClassPathExtender(this, this.updateHelper, eval,refHelper),
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
+            new J2SEProjectOperations(this),
         });
     }
 

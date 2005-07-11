@@ -76,6 +76,20 @@ is the proper place.
 
     <changes>
 
+        <change id="delete-support">
+            <api name="general"/>
+            <summary>Basic Support SPI for Project Delete</summary>
+            <version major="1" minor="8"/>
+            <date day="11" month="7" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>AntProjectHelper.notifyDeleted()</code> and <code>AntProjectHelper.performDefaultDeleteOperation()</code>
+                added.
+            </description>
+            <issue number="51468"/>
+        </change>
+        
         <change id="StoreGroup">
             <api name="general"/>
             <summary>Support SPI for creating/storing Swing models for simple Ant properties</summary>

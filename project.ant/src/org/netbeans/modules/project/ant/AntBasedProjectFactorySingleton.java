@@ -15,13 +15,15 @@ package org.netbeans.modules.project.ant;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectFactory;
@@ -55,6 +57,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
     
     private static final Map/*<Project,Reference<AntProjectHelper>>*/ project2Helper = new WeakHashMap();
     private static final Map/*<AntProjectHelper,Reference<Project>>*/ helper2Project = new WeakHashMap();
+    private static final Map/*<AntBasedProjectType, List<Reference<AntProjectHelper>>>*/ type2Projects = new HashMap(); //for second part of #42738
     private static final Lookup.Result/*<AntBasedProjectType>*/ antBasedProjectTypes;
     private static Map/*<String,AntBasedProjectType>*/ antBasedProjectTypesByType = null;
     static {
@@ -62,10 +65,39 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         antBasedProjectTypes.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 synchronized (AntBasedProjectFactorySingleton.class) {
+                    Set/*<AntBasedProjectType>*/ oldTypes = type2Projects.keySet();
+                    Set/*<AntBasedProjectType>*/ removed  = new HashSet(oldTypes);
+                    
+                    removed.removeAll(antBasedProjectTypes.allInstances());
+                    
+                    antBasedProjectTypesRemoved(removed);
+                    
                     antBasedProjectTypesByType = null;
                 }
             }
         });
+    }
+    
+    private static void antBasedProjectTypesRemoved(Set/*<AntBasedProjectType>*/ removed) {
+        for (Iterator/*<AntBasedProjectType>*/ i = removed.iterator(); i.hasNext(); ){
+            AntBasedProjectType type = (AntBasedProjectType) i.next();
+            List/*<Reference<AntProjectHelper>>*/ projects = (List/*<Reference<AntProjectHelper>>*/) type2Projects.get(type);
+            
+            if (projects != null) {
+                for (Iterator/*<Reference<AntProjectHelper>>*/ prjs = projects.iterator(); prjs.hasNext(); ) {
+                    Reference/*<AntProjectHelper>*/ r = (Reference/*<AntProjectHelper>*/) prjs.next();
+                    Object instance = r.get();
+                    
+                    if (instance != null) {
+                        AntProjectHelper helper = (AntProjectHelper) instance;
+                        
+                        helper.notifyDeleted();
+                    }
+                }
+            }
+            
+            type2Projects.remove(type);
+        }
     }
     
     private static synchronized AntBasedProjectType findAntBasedProjectType(String type) {
@@ -133,6 +165,14 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         Project project = provider.createProject(helper);
         project2Helper.put(project, new WeakReference(helper));
         helper2Project.put(helper, new WeakReference(project));
+        List/*<Reference<AntProjectHelper>>*/ l = (List/*<Reference<AntProjectHelper>>*/) type2Projects.get(provider);
+        
+        if (l == null) {
+            type2Projects.put(provider, l = new ArrayList/*<Reference<AntProjectHelper>>*/());
+        }
+        
+        l.add(new WeakReference(helper));
+        
         return project;
     }
     

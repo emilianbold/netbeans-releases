@@ -22,6 +22,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.actions.DeleteAction;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
@@ -48,6 +49,7 @@ public class Actions implements ActionsFactory {
     private static Action OPEN_SUBPROJECTS;
     private static Action CLOSE_PROJECT;
     private static Action NEW_FILE;
+    private static Action DELETE_PROJECT;
             
     public synchronized Action setAsMainProjectAction() {
         if ( SET_AS_MAIN_PROJECT == null ) {
@@ -84,10 +86,13 @@ public class Actions implements ActionsFactory {
         return NEW_FILE;
     }    
     
+    public Action deleteProjectAction() {
+        return deleteProject();
+    }
+
     public synchronized Action newProjectAction() {
         return new NewProject();
     }
-    
     
     public Action projectCommandAction(String command, String namePattern, Icon icon ) {
         return new ProjectAction( command, namePattern, icon, null );
@@ -160,6 +165,18 @@ public class Actions implements ActionsFactory {
             null ); 
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/runCurrentProject.gif"); //NOI18N
         return a;
+    }
+    
+    public static synchronized Action deleteProject() {
+        if (DELETE_PROJECT == null) {
+            DELETE_PROJECT = new ProjectAction(
+                ActionProvider.COMMAND_RUN, 
+                NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"), // NO18N
+                null,
+                null );
+        }
+        
+        return DELETE_PROJECT;
     }
     
     // 1-off actions -----------------------------------------------------------
@@ -257,5 +274,5 @@ public class Actions implements ActionsFactory {
         a.putValue("iconBase","org/netbeans/modules/project/ui/resources/debugProject.gif"); //NOI18N
         return a;
     }
-            
+
 }

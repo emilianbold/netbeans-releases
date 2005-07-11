@@ -76,6 +76,33 @@ is the proper place.
 
     <changes>
 
+        <change id="delete-support">
+            <api name="general"/>
+            <summary>Support for project delete</summary>
+            <version major="1" minor="6"/>
+            <date day="11" month="7" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility>
+                <p>
+                    As only the ProjectManager is allowed to implement ProjectState interface,
+                    this change should not directly affect any clients.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    The <code>notifyDeleted</code> action is added to the <code>ProjectState</code>,
+                    allowing the project implmentation to let the <code>ProjectManager</code>
+                    know that the project has been deleted. <code>ProjectManager.isValid(Project)</code> added
+		    to detect deleted projects.
+                </p>
+                <p>
+                    <code>ProjectOperations</code> and <code>ProjectOperationsImplementation</code> added to support
+                    project delete operation.
+                </p>
+            </description>
+            <issue number="51468"/>
+        </change>
+        
         <change id="markExternal-for-file-and-URIs">
             <api name="general"/>
             <summary>The FileOwnerQuery.markExternalOwner allows registration of individal files and URIs</summary>

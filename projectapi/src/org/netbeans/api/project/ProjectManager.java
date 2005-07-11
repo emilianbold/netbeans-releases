@@ -15,6 +15,7 @@ package org.netbeans.api.project;
 
 import java.io.IOException;
 import java.lang.ref.Reference;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -455,7 +456,23 @@ public final class ProjectManager {
                 }
             });
         }
-        
+
+        public void notifyDeleted() throws IllegalStateException {
+            assert p != null;
+            mutex().writeAccess(new Mutex.Action() {
+                public Object run() {
+                    if (proj2Factory.get(p) == null) {
+                        throw new IllegalStateException("An attempt to call notifyDeleted more than once. Project: " + p.getProjectDirectory());
+                    }
+                    
+                    dir2Proj.remove(p.getProjectDirectory());
+                    proj2Factory.remove(p);
+                    modifiedProjects.remove(p);
+                    return null;
+                }
+            });
+        }
+
     }
     
     /**
@@ -548,6 +565,24 @@ public final class ProjectManager {
         } catch (MutexException e) {
             throw (IOException)e.getException();
         }
+    }
+    
+    /**
+     * Check whether a given project is still valid (ie. not deleted).
+     * <p>Acquires read access.</p>
+     *
+     * @since 1.6
+     *
+     * @param p a project loaded by this manager
+     */
+    public boolean isValid(final Project p) {
+        return ((Boolean)mutex().readAccess(new Mutex.Action() {
+            public Object run() {
+                synchronized (dir2Proj) {
+                    return Boolean.valueOf(proj2Factory.containsKey(p));
+                }
+            }
+        })).booleanValue();
     }
     
     /**

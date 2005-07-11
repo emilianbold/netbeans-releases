@@ -192,6 +192,14 @@ public final class TestUtil extends ProxyLookup {
     }
     
     /**
+     * Mark a test project as modified.
+     * @param p a test project
+     */
+    public static void notifyDeleted(Project p) {
+        ((TestProject)p).state.notifyDeleted();
+    }
+    
+    /**
      * If set to something non-null, loading a broken project will wait for
      * notification on this monitor before throwing an exception.
      * @see ProjectManagerTest#testLoadExceptionWithConcurrentLoad

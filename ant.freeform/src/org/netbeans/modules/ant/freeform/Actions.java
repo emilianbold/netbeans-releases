@@ -71,6 +71,7 @@ public final class Actions implements ActionProvider {
      */
     private static final Set/*<String>*/ COMMON_IDE_GLOBAL_ACTIONS = new HashSet(Arrays.asList(new String[] {
         ActionProvider.COMMAND_DEBUG,
+        ActionProvider.COMMAND_DELETE,
     }));
     /**
      * Similar to {@link #COMMON_IDE_GLOBAL_ACTIONS}, but these are not IDE-specific.
@@ -113,10 +114,15 @@ public final class Actions implements ActionProvider {
         }
         // #46886: also always enable all common global actions, in case they should be selected:
         names.addAll(COMMON_NON_IDE_GLOBAL_ACTIONS);
+        names.add(COMMAND_DELETE);
         return (String[])names.toArray(new String[names.size()]);
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        if (COMMAND_DELETE.equals(command)) {
+            return true;
+        }
+        
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
@@ -166,6 +172,10 @@ public final class Actions implements ActionProvider {
     }
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (COMMAND_DELETE.equals(command)) {
+            project.helper().performDefaultDeleteOperation();
+            return ;
+        }
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
@@ -427,6 +437,8 @@ public final class Actions implements ActionProvider {
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
+        actions.add(null);
+        actions.add(CommonProjectActions.deleteProjectAction());
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         

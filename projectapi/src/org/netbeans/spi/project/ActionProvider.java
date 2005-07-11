@@ -86,7 +86,13 @@ public interface ActionProvider {
      */
     String COMMAND_DEBUG_STEP_INTO = "debug.stepinto"; // NOI18N
     
-        
+    /**
+     * Standard command for deleting the project.
+     *
+     * @since 1.6
+     */
+    String COMMAND_DELETE = "delete"; // NOI18N
+    
     /**
      * Get a list of all commands which this project supports.
      * @return a list of command names suitable for {@link #invokeAction}

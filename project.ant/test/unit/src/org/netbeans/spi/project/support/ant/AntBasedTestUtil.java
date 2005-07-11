@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,6 +29,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,6 +52,8 @@ import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ProjectOperationsImplementation;
+import org.netbeans.spi.project.ProjectOperationsImplementation.DeleteOperationImplementation;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -160,6 +164,7 @@ public class AntBasedTestUtil {
                     }
                 },
                 "hello",
+                new DeleteProjectOperationImpl(this),
             });
         }
         
@@ -244,6 +249,53 @@ public class AntBasedTestUtil {
         
     }
     
+    public static final class DeleteProjectOperationImpl implements DeleteOperationImplementation {
+        
+        private boolean wasCleaned = false;
+        private boolean wasNotified = false;
+        
+        private FileObject externalFile = null;
+        
+        private TestAntBasedProject project;
+        
+        public DeleteProjectOperationImpl(TestAntBasedProject project) {
+            this.project = project;
+        }
+        
+        public List getMetadataFiles() {
+            return Collections.singletonList(project.getProjectDirectory().getFileObject("nbproject"));
+        }
+        
+        public List getDataFiles() {
+            if (externalFile == null) {
+                return Collections.singletonList(project.getProjectDirectory().getFileObject("src"));
+            } else {
+                return Arrays.asList(new FileObject[] {project.getProjectDirectory().getFileObject("src"), externalFile});
+            }
+        }
+        
+        public void setExternalFile(FileObject externalFile) {
+            this.externalFile = externalFile;
+        }
+        
+        public synchronized boolean getWasCleaned() {
+            return wasCleaned;
+        }
+        
+        public synchronized void performClean() throws IOException {
+            wasCleaned = true;
+        }
+        
+        public synchronized boolean getWasNotified() {
+            return wasNotified;
+        }
+        
+        public synchronized void notifyDeleted() throws IOException {
+            wasNotified = true;
+        }
+        
+    }
+        
     /**
      * Load a properties file from disk.
      * @param h a project reference

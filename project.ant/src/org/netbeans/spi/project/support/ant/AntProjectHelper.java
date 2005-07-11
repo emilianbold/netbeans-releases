@@ -29,6 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
+import org.netbeans.modules.project.ant.DefaultAntProjectOperations;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
@@ -37,6 +38,7 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectState;
+import org.netbeans.api.project.ProjectOperations;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.ErrorManager;
@@ -469,6 +471,36 @@ public final class AntProjectHelper {
      */
     public FileObject getProjectDirectory() {
         return dir;
+    }
+    
+    /**Notification that this project has been deleted.
+     * See {@link org.netbeans.api.projects.ProjectState#notifyDeleted}.
+     *
+     * @since 1.8
+     */
+    public void notifyDeleted() {
+        state.notifyDeleted();
+    }
+    
+    /**Perform default delete operation. Gathers all necessary data, shows a confirmation
+     * dialog and deletes the project (if confirmed by the user).
+     *
+     * @since 1.8
+     *
+     * @throws IllegalStateException if
+     * {@link org.netbeans.api.projects.ProjectOperations.getDefault().isDeleteOperationSupported}
+     * returns false for this project.
+     */
+    public void performDefaultDeleteOperation() throws IllegalStateException {
+        Project p = AntBasedProjectFactorySingleton.getProjectFor(this);
+        
+        assert p != null;
+        
+        if (!ProjectOperations.getDefault().isDeleteOperationSupported(p)) {
+            throw new IllegalStateException("Attempt to delete project that does not support deletion.");
+        }
+        
+        DefaultAntProjectOperations.deleteProject(p);
     }
     
     /**

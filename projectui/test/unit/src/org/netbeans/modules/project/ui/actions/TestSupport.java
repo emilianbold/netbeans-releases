@@ -50,6 +50,9 @@ public final class TestSupport {
         return new TestProjectFactory();
     }
     
+    public static void notifyDeleted(Project p) {
+        ((TestProject) p).state.notifyDeleted();
+    }
         
     private static final class TestProjectFactory implements ProjectFactory {
         

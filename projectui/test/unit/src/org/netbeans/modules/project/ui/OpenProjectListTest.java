@@ -177,6 +177,42 @@ public class OpenProjectListTest extends NbTestCase {
         assertEquals("both close hooks were called", 2, TestProjectOpenedHookImpl.closed);
     }
     
+    public void testNotifyDeleted() throws Exception {
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        
+        FileObject p1 = workDir.createFolder("p1");
+        FileObject p1TestProject = p1.createFolder("testproject");
+        
+        Project project1 = ProjectManager.getDefault().findProject(p1);
+        
+        assertNotNull("project1 is recognized", project1);
+        
+        OpenProjectList.getDefault().open(project1);
+        
+        OpenProjectList.getDefault().close(new Project[] {project1});
+        
+        p1TestProject.delete();
+        TestSupport.notifyDeleted(project1);
+        
+        assertNull("project1 is deleted", ProjectManager.getDefault().findProject(p1));
+        
+        assertFalse("project1 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project1));
+        
+        FileObject p2 = workDir.createFolder("p2");
+        FileObject p2TestProject = p2.createFolder("testproject");
+        
+        Project project2 = ProjectManager.getDefault().findProject(p2);
+        
+        assertNotNull("project2 is recognized", project2);
+        OpenProjectList.getDefault().open(project1);
+        
+        OpenProjectList.getDefault().close(new Project[] {project1});
+        
+        TestSupport.notifyDeleted(project2);
+        
+        assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project2));
+    }
+    
     // helper code
 
     private static class MySubprojectProvider implements SubprojectProvider {

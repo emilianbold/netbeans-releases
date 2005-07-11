@@ -16,6 +16,9 @@ package org.netbeans.modules.project.ui;
 import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -26,6 +29,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
@@ -33,6 +38,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -87,7 +94,7 @@ public class ProjectTab extends TopComponent
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
         map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-        map.put("delete", ExplorerUtils.actionDelete(manager, true));
+        map.put("delete", new DelegatingAction(ActionProvider.COMMAND_DELETE, ExplorerUtils.actionDelete(manager, true)));
         
         initComponents();
         
@@ -525,6 +532,68 @@ public class ProjectTab extends TopComponent
             catch ( NodeNotFoundException e ) {
                 return null;
             }
+        }
+        
+    }
+    
+    private class DelegatingAction extends AbstractAction implements PropertyChangeListener {
+        
+        private Action explorerAction;
+        private String projectAction;
+        
+        public DelegatingAction(String projectAction, Action explorerAction) {
+            this.projectAction = projectAction;
+            this.explorerAction = explorerAction;
+            
+            manager.addPropertyChangeListener(this);
+            explorerAction.addPropertyChangeListener(this);
+        }
+        
+        private boolean isProject() {
+            Node[] nodes = manager.getSelectedNodes();
+            
+            if (nodes.length == 1) {
+                return nodes[0].getParentNode() == rootNode;
+            }
+            
+            return false;
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            if (isProject()) {
+                Node[] nodes = manager.getSelectedNodes();
+                Project p = (Project) nodes[0].getLookup().lookup(Project.class);
+                
+                assert p != null;
+                
+                ActionProvider ap = (ActionProvider) p.getLookup().lookup(ActionProvider.class);
+                
+                ap.invokeAction(projectAction, nodes[0].getLookup());
+            } else {
+                explorerAction.actionPerformed(e);
+            }
+        }
+        
+        public void updateIsEnabled() {
+            if (isProject()) {
+                Node[] nodes = manager.getSelectedNodes();
+                Project p = (Project) nodes[0].getLookup().lookup(Project.class);
+                
+                if (p == null) {
+                    setEnabled(false);
+                }
+                
+                ActionProvider ap = (ActionProvider) p.getLookup().lookup(ActionProvider.class);
+                
+                setEnabled(ap.isActionEnabled(projectAction, nodes[0].getLookup()));
+            } else {
+                setEnabled(explorerAction.isEnabled());
+            }
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            //a bit brute force:
+            updateIsEnabled();
         }
         
     }
