@@ -300,7 +300,23 @@ public class FileInformation implements Serializable {
     public boolean equals(Object o) {
         if (!(o instanceof FileInformation)) return false;
         FileInformation other = (FileInformation) o;
-        return status == other.status && isDirectory == other.isDirectory;
+        if (status != other.status || isDirectory != other.isDirectory) return false;
+        return cvsEntry == other.cvsEntry || cvsEntry != null && entriesEqual(cvsEntry, other.cvsEntry); 
+    }
+
+    /**
+     * Replacement for missing Entry.equals(). It is implemented as a separate method to maintain compatibility.
+     * 
+     * @param e1 first entry to compare
+     * @param e2 second Entry to compare
+     * @return true if supplied entries contain equivalent information
+     */ 
+    private static boolean entriesEqual(Entry e1, Entry e2) {
+        if (e2 == null) return false;
+        if (e1.getStickyInformation() != e2.getStickyInformation() && 
+                e1.getStickyInformation() != null && !e1.getStickyInformation().equals(e2.getStickyInformation())) return false;
+        if (!e1.getRevision().equals(e2.getRevision())) return false;
+        return true;
     }
 
     public int hashCode() {
