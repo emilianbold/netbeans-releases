@@ -18,9 +18,20 @@ Microsystems, Inc. All Rights Reserved.
   
   <property name="cluster.dir" location="enterprise1"/>
   <property name="ismp.project" value="j2ee.xml"/>
-  <property name="installer.basename" value="NetBeansJ2EE"/>
   
-  <target name="init" />
+  <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
+    <property name="inited" value="true"/>
+  </target>
+
+   <target name="set-buildnumber" unless="buildnumber">
+    <tstamp>
+        <format property="buildnumber" pattern="yyMMdd"/>
+    </tstamp>
+  </target>
+
+  <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
+    <property name="installer.basename" value="J2EEKit4.2dev-${buildnumber}"/>
+  </target>
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
