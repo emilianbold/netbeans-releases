@@ -69,7 +69,8 @@ cause it to fail.
                 <isset property="javadoc.overview" />
             </not>
         </condition>
-        <property name="javadoc.overview" location="${netbeans.dest.dir}/tmp/overview/${javadoc.name}-overview-generic.html"/>
+        <property name="javadoc.overview" location="../build/tmp/overview/${javadoc.name}-overview-generic.html"/>
+        <mkdir dir="${javadoc.overview}/../" />
         <property name="javadoc.apichanges" location="apichanges-empty.xml"/>
         <property name="javadoc.arch" location="arch-empty.xml"/>
         
@@ -126,7 +127,6 @@ cause it to fail.
     </target>
     
     <target name="javadoc-generate-overview" depends="javadoc-init" if="javadoc.overview.generate.generic" >
-        <mkdir dir="${netbeans.dest.dir}/tmp/overview/" />
         <arch xsl="exportOverview.xsl" answers="${javadoc.arch}" output="${javadoc.overview}" stylesheet="prose.css"/>
     </target>
 
