@@ -63,7 +63,7 @@ public class BranchAction extends AbstractSystemAction {
                                          new Object[] { roots[0].getName() });            
         }
         
-        BranchSettings settings = new BranchSettings();
+        BranchSettings settings = new BranchSettings(roots);
         DialogDescriptor descriptor = new DialogDescriptor(settings, title);
         settings.putClientProperty("org.openide.DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);

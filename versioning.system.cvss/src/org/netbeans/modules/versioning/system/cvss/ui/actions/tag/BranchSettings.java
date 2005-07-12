@@ -14,11 +14,18 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
+import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.DialogDescriptor;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import java.text.MessageFormat;
+import java.io.IOException;
+import java.io.File;
 
 /**
  * Settings panel for the Branch command.
@@ -27,7 +34,10 @@ import java.text.MessageFormat;
  */
 class BranchSettings extends javax.swing.JPanel implements DocumentListener {
     
-    public BranchSettings() {
+    private final File[] roots;
+
+    public BranchSettings(File [] roots) {
+        this.roots = roots;
         initComponents();
         cbTagBase.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBase", true));
         cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.checkout", true));
@@ -158,6 +168,12 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
 
         jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("MNE_BranchForm_BrowseBranch").charAt(0));
         jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BrowseBranch"));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseBranches(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -165,6 +181,28 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void browseBranches(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseBranches
+        String module = null;
+        CVSRoot root = null;
+        for (int i = 0; i < roots.length; i++) {
+            try {
+                root = CVSRoot.parse(Utils.getCVSRootFor(roots[i]));
+                AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
+                module = ah.getRepositoryForDirectory(roots[i].getAbsolutePath(), "").substring(1);
+            } catch (IOException e) {
+                // no root for this file, try next
+            }
+        }
+        if (root == null) {
+            return;
+        }
+        BranchSelector selector = new BranchSelector();
+        String tag = selector.selectTag(root, module, null);
+        if (tag != null) {
+            tfName.setText(tag);
+        }
+    }//GEN-LAST:event_browseBranches
 
     private void branchNameChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_branchNameChanged
         refreshComponents();
