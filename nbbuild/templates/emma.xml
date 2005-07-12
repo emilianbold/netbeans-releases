@@ -152,12 +152,10 @@ TODO:
     -->
     
     <target name="coverage-runtests">
-        <property name="xtest.ide.commandline.suffix" value=""/>
         <antcall target="runtests">
             <param name="coverage.lib.path" location="${emma.dir}/emma.jar"/>
-            <param name="coverage.jvm.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
-            <param name="xtest.ide.commandline.suffix" 
-               value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma ${xtest.ide.commandline.suffix}"/>
+            <param name="xtest.jvm.coverage.args" value="-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
+            <param name="xtest.ide.coverage.args" value="-J-Dnetbeans.security.nocheck=true -J-Demma.coverage.out.file=${coverage.dir}/coverage.emma"/>
         </antcall>
     </target>
     

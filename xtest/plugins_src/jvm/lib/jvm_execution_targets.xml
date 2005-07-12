@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="_jvmplugin.test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
         <!-- END -->
         
-        <property name="coverage.jvm.args" value=""/>
+        <property name="xtest.jvm.coverage.args" value=""/>
         <property name="xtest.jvm.args" value=""/>
         <property name="junit.properties.file" value=""/>
 
@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.enable.assertions" value="true"/>
         
         <!-- run the tests -->        
-        <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args} ${coverage.jvm.args}"
+        <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args} ${xtest.jvm.coverage.args}"
             enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}"
             testMode="${xtest.testrunner.mode}"  timeout="${xtest.timeout}">
             <classpath  refid="_jvmplugin.test.classpath"/>

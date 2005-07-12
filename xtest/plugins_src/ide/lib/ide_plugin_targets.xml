@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.enable.assertions" value="true"/>
         <property name="xtest.ide.commandline.suffix" value=""/>
         <property name="xtest.ide.jvmargs" value=""/>
+        <property name="xtest.ide.coverage.args" value=""/>
         <property name="junit.properties.file" value=""/>
         <property name="xtest.ide.reuse.userdir" value="false"/>
         <!-- Set IDE window system to mdi only if userdir is not reused. -->
@@ -234,7 +235,8 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.userdir=&quot;${xtest.userdir}&quot;
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}
 -J-Dprebuilt.storage.dir=&quot;${xtest.ide.mdrstorage}&quot;
-${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
+${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}
+${xtest.ide.coverage.args}"/>
 
 <!--
 http://www.netbeans.org/issues/show_bug.cgi?id=52385
