@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -270,14 +270,13 @@ public class PESWeb extends XMLBean {
                             PESLogger.logger.fine("Searching in "+hostDirs[l]);                            
                             // try to load XTest results report - if not successfull ... that's bad
                             try {
-                                
                                 IncomingReport ic = new IncomingReport();
                                 ic.setReportRoot(hostDirs[l].getAbsolutePath());
                                 // is report valid
                                 if (ic.areReportFilesValid()) {
                                     File xtrFile = new File(hostDirs[l], PEConstants.XMLRESULTS_DIR+
                                     File.separator + PEConstants.TESTREPORT_XML_FILE);
-                                    XTestResultsReport xtr = XTestResultsReport.loadReportFromFile(xtrFile);
+                                    XTestResultsReport xtr = XTestResultsReport.loadFromFile(xtrFile);
                                     ic.readXTestResultsReport(xtr);
                                     ic.setReconfiguration(true);
                                     ic.setValid(true);

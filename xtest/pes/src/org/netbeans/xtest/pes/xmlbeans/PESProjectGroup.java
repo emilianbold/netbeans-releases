@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -202,12 +202,12 @@ public class PESProjectGroup extends XMLBean {
                             PESLogger.logger.log(Level.WARNING,"Results retransformation failed for report from"+report.getReportRoot(),e);
                         }
                     } catch (Exception e) {
-                        PESLogger.logger.log(Level.WARNING,"Caught exception when processing report from"+report.getReportRoot()+" report is not valid",e);
+                        PESLogger.logger.log(Level.WARNING,"Caught exception when processing report from "+report.getReportRoot()+" report is not valid",e);
                         // exception - delete the directory
                         FileUtils.deleteDirectory(outputDir,false);
                         // this report cannot be added to web
                         failedReports.add(report);
-                        report.setValid(false);
+                        report.setValid(false, "Caught exception when processing report from "+report.getReportRoot()+". "+e.getMessage());
                     }
                     
                 } else { // reconfiguration stuff
@@ -314,7 +314,9 @@ public class PESProjectGroup extends XMLBean {
                 if (o instanceof IncomingReport) {
                     IncomingReport report = (IncomingReport)o;
                     try {
-                        PESLogger.logger.warning("found invalid file :"+report.getArchiveFile()+", moving it to"+invalidDir);
+                        PESLogger.logger.warning("found invalid archive: "+report.getArchiveFile()+
+                                ", moving it to "+invalidDir+
+                                "\nThe reason is: "+report.getInvalidMessage());
                         FileUtils.moveFileToDir(report.getArchiveFile(),invalidDir);
                     } catch (IOException ioe) {
                         PESLogger.logger.log(Level.WARNING,"Caugth IOException when moving invalid zips to 'invalid':"+ioe.getMessage(),ioe);

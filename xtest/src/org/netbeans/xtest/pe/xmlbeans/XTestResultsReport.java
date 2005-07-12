@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,16 +70,52 @@ public class XTestResultsReport extends XMLBean {
     /** Holds value of property systemInfo_id. */
     private long systemInfo_id;    
     
+    
+    private String invalidMessage = "";
+    
+    /** Returns a reason why this report is not valid.
+     * @return reason
+     */
+    public String getInvalidMessage() {
+        return invalidMessage;
+    }
+    
+    public void setInvalidMessage(String invalidMessage) {
+        this.invalidMessage += " "+invalidMessage;
+    }
+    
     // business methods
     public boolean isValid() {
-        if (xmlat_project == null) return false;
-        if (xmlat_build == null) return false;
-        if (xmlat_testingGroup == null) return false;
-        if (xmlat_testedType == null) return false;
-        if (xmlat_host == null) return false;        
-        if (xmlat_testsTotal < 1) return false;
-        if (xmlel_SystemInfo == null || xmlel_SystemInfo.length < 1) return false;
-        return true;
+        boolean status = true;
+        if (xmlat_project == null) {
+            setInvalidMessage("Project is null.");
+            status = false;
+        }
+        if (xmlat_build == null) {
+            setInvalidMessage("Build number is null.");
+            status = false;
+        }
+        if (xmlat_testingGroup == null) {
+            setInvalidMessage("Testing group is null.");
+            status = false;
+        }
+        if (xmlat_testedType == null) {
+            setInvalidMessage("Tested type is null.");
+            status = false;
+        }
+        if (xmlat_host == null) {
+            setInvalidMessage("Host is null.");
+            status = false;
+        }
+        if (xmlat_testsTotal < 1) {
+            setInvalidMessage("Tests total is "+xmlat_testsTotal+". Must be > 0.");
+            status = false;
+        }
+        if (xmlel_SystemInfo == null || xmlel_SystemInfo.length < 1) {
+            setInvalidMessage("System info is null or empty.");
+            status = false;
+        }
+        return status;
     }
     
     public boolean equals(Object obj) {

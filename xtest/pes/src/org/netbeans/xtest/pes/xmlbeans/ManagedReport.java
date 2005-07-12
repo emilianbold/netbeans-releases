@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -221,25 +221,41 @@ public class ManagedReport extends XTestResultsReport  {
     }
     */
     
+    private static String invalidFileMessage = "";
+    
+    public static String getInvalidFileMessage() {
+        return ManagedReport.invalidFileMessage;
+    }
+    
+    private static boolean checkFile(File file) {
+        if (!file.isFile()) {
+            invalidFileMessage = "File "+file+" not found.";
+            return false;
+        }
+        return true;
+    }
+    
     // check validity of the XML part of the report
     public static boolean areXMLFilesValid(File reportRootDir) {
-        if (!(new File(reportRootDir,getXMLResultsFilename(PEConstants.TESTREPORT_XML_FILE))).isFile()) return false;
-        if (!(new File(reportRootDir,getXMLResultsFilename(PEConstants.TESTREPORT_FAILURES_XML_FILE))).isFile()) return false;        
-        return true;
-    }    
+        return 
+            checkFile(new File(reportRootDir,getXMLResultsFilename(PEConstants.TESTREPORT_XML_FILE))) &&
+            checkFile(new File(reportRootDir,getXMLResultsFilename(PEConstants.TESTREPORT_FAILURES_XML_FILE)));
+    }
 
     // check validity of the report
     // this means, report has all xml and html files generated, including index.html
     public static boolean areReportFilesValid(File reportRootDir) {
         // xml files
-        if (!areXMLFilesValid(reportRootDir)) return false;
+        if (!areXMLFilesValid(reportRootDir)) {
+            return false;
+        }
         // html files
-        if (!(new File(reportRootDir,getHTMLResultsFilename(PEConstants.INDEX_HTML_FILE))).isFile()) return false;
-        if (!(new File(reportRootDir,getHTMLResultsFilename(PEConstants.MAIN_NAVIGATOR_HTML_FILE))).isFile()) return false;
-        if (!(new File(reportRootDir,getHTMLResultsFilename(PEConstants.SYSTEMINFO_HTML_FILE))).isFile()) return false;
-        if (!(new File(reportRootDir,getHTMLResultsFilename(PEConstants.TESTREPORT_HTML_FILE))).isFile()) return false;
-        if (!(new File(reportRootDir,getHTMLResultsFilename(PEConstants.TESTREPORT_FAILURES_HTML_FILE)).isFile())) return false;
-        return true;
+        return 
+            checkFile(new File(reportRootDir,getHTMLResultsFilename(PEConstants.INDEX_HTML_FILE))) &&
+            checkFile(new File(reportRootDir,getHTMLResultsFilename(PEConstants.MAIN_NAVIGATOR_HTML_FILE))) &&
+            checkFile(new File(reportRootDir,getHTMLResultsFilename(PEConstants.SYSTEMINFO_HTML_FILE))) &&
+            checkFile(new File(reportRootDir,getHTMLResultsFilename(PEConstants.TESTREPORT_HTML_FILE))) &&
+            checkFile(new File(reportRootDir,getHTMLResultsFilename(PEConstants.TESTREPORT_FAILURES_HTML_FILE)));
     }
 
     

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -398,88 +398,12 @@ public class ServerEngine {
         
         for (int i=0; i<zips.length; i++) {
             File tempDir = createTempDir(workDir);
-            PESLogger.logger.finer("processing zip:"+zips[i]+" - trying to unpack to "+tempDir);            
-            //
-            IncomingReport newReport = new IncomingReport();
-            results.add(newReport);
-            newReport.setArchiveFile(zips[i]);
-            newReport.setReplace(replace);
-            
-            
-            // unpack required files
-            boolean result=true;
-            try {
-                // xml files
-                ZipUtils.unpackZip(zips[i],tempDir,PEConstants.XMLRESULTS_DIR);
-                // html files
-                ZipUtils.unpackZip(zips[i],tempDir,PEConstants.HTMLRESULTS_DIR);
-                ZipUtils.unpackZip(zips[i],tempDir,PEConstants.INDEX_HTML_FILE);
-            } catch (IOException ioe) {
-                PESLogger.logger.log(Level.WARNING,"IOE caught when partialy unpacking zip files",ioe);
-                result = false;
-            }
-
-           
-            
-            
-            // is zip correctly unpacked
-            if (result == true) {
-                // well, we're still not sure whether the report is valid
-                // we need to check it in more details
-                result = false;
-                newReport.setReportRoot(tempDir.getAbsolutePath());
-
-                // check existence of all important files
-                if (ManagedReport.areReportFilesValid(tempDir)) {
-                    
-                    // check whether result is also a valid XTestResultReport
-                    // try to load XTestResultsReport
-                    File reportFile = new File(tempDir, PEConstants.XMLRESULTS_DIR+
-                    File.separator + PEConstants.TESTREPORT_XML_FILE);
-                    PESLogger.logger.finest(" trying to load XTestResultsReport from "+reportFile);
-                    
-                    // does the expected XTestResultsReport file exist?
-                    if (reportFile.isFile()) {
-                        try {
-                            XTestResultsReport xtr = XTestResultsReport.loadReportFromFile(reportFile);
-                            PESLogger.logger.finest("XTestResultsReport loaded ");
-                            // ok report was loaded - what about validity - is valid ?
-                            if (xtr.isValid()) {
-                                // report looks as valid
-                                PESLogger.logger.finest("XTestResultsReport seems to be valid");
-                                newReport.readXTestResultsReport(xtr);
-                                result = true;
-                            } else {
-                                // report is not valid
-                                PESLogger.logger.warning("XTestResultsReport from "+zips[i]+" is is not valid");
-                                result = false;
-                            }
-                        } catch (Exception e) {
-                            // some problem ... report cannot be loaded to XTestResultRseport object
-                            PESLogger.logger.log(Level.FINEST,"Loading report failed, Exception thrown:",e);
-                            result = false;
-                        }
-                    } else {
-                        // XTestResultsReport file does not exist
-                        PESLogger.logger.finest("Report is not valid - XTestResultsReport file not found at "+reportFile);
-                        result = false;
-                    }
-                } else {
-                    PESLogger.logger.fine("Report is nor valid - required files does not exist");
-                    result = false;
-                }
-            } else {
-                // problem wih unpacking
-                PESLogger.logger.finest("unpacking of zip:"+zips[i]+" failed");                
-                result = false;
-            }
-            // set validity of processed report
-            newReport.setValid(result);
-            if (result == false) {
+            if (!processZip(results, zips[i], workDir, tempDir, replace)) {
                 // delete already unpacked stuff - if available
                 PESLogger.logger.finest("Report is not valid - deleting tempDir "+tempDir);
                 FileUtils.delete(tempDir);
             }
+
         }
         
         // now process the files with invalid names        
@@ -495,13 +419,74 @@ public class ServerEngine {
             PESLogger.logger.finer("found invalid file :"+zips[i]);
             IncomingReport newReport = new IncomingReport();
             results.add(newReport);
-            newReport.setValid(false);
+            newReport.setValid(false, "Invalid archive file name.");
             newReport.setArchiveFile(zips[i]);
         }
         return results;
     }
     
-    
+    private boolean processZip(Collection results, File zip, File workDir, File tempDir, boolean replace) throws IOException {
+        PESLogger.logger.finer("processing zip:"+zip+" - trying to unpack to "+tempDir);
+
+        IncomingReport newReport = new IncomingReport();
+        results.add(newReport);
+        newReport.setArchiveFile(zip);
+        newReport.setReplace(replace);
+        try {
+            // xml files
+            ZipUtils.unpackZip(zip,tempDir,PEConstants.XMLRESULTS_DIR);
+            // html files
+            ZipUtils.unpackZip(zip,tempDir,PEConstants.HTMLRESULTS_DIR);
+            ZipUtils.unpackZip(zip,tempDir,PEConstants.INDEX_HTML_FILE);
+        } catch (IOException ioe) {
+            PESLogger.logger.log(Level.WARNING,"IOE caught when partialy unpacking zip files",ioe);
+            newReport.setValid(false, "IOE caught when partialy unpacking zip files: "+ioe.getMessage());
+            return false;
+        }
+        // well, we're still not sure whether the report is valid
+        // we need to check it in more details
+        newReport.setReportRoot(tempDir.getAbsolutePath());
+
+        // check existence of all important files
+        if (!ManagedReport.areReportFilesValid(tempDir)) {
+            PESLogger.logger.fine("Report is not valid - "+ManagedReport.getInvalidFileMessage());
+            newReport.setValid(false, ManagedReport.getInvalidFileMessage());
+            return false;
+        }
+
+        // check whether result is also a valid XTestResultReport
+        // try to load XTestResultsReport
+        File reportFile = new File(tempDir, PEConstants.XMLRESULTS_DIR+
+                                            File.separator+
+                                            PEConstants.TESTREPORT_XML_FILE);
+        PESLogger.logger.finest(" trying to load XTestResultsReport from "+reportFile);
+
+        try {
+            XTestResultsReport xtr = XTestResultsReport.loadFromFile(reportFile);
+            PESLogger.logger.finest("XTestResultsReport loaded ");
+            // ok report was loaded - what about validity - is valid ?
+            if (xtr.isValid()) {
+                // report looks as valid
+                PESLogger.logger.finest("XTestResultsReport seems to be valid");
+                newReport.readXTestResultsReport(xtr);
+            } else {
+                // report is not valid
+                //PESLogger.logger.warning("XTestResultsReport from "+zip+" is is not valid. The reason is: "+xtr.getInvalidMessage());
+                //newReport.setValid(false, "XTestResultsReport from "+zip+" is is not valid. The reason is: "+xtr.getInvalidMessage())
+                PESLogger.logger.fine("XTestResultsReport from "+zip+" is is not valid. The reason is: "+xtr.getInvalidMessage());;
+                newReport.setValid(false, xtr.getInvalidMessage());
+                return false;
+            }
+        } catch (Exception e) {
+            // some problem ... report cannot be loaded to XTestResultRseport object
+            PESLogger.logger.log(Level.FINEST,"Loading report failed, Exception thrown:",e);
+            newReport.setValid(false, "Loading report failed, Exception thrown: "+e.getMessage());
+            return false;
+        }
+        // set validity of processed report
+        newReport.setValid(true);
+        return true;
+    }
     
     /** move invalid results to invalid dir
      * - also remove invalid results from supplied collection - we're done
@@ -510,7 +495,7 @@ public class ServerEngine {
     private void processInvalidResults(Collection results) throws IOException {
         if (results == null) return;
         if (results.isEmpty()) return;
-        PESLogger.logger.fine("Proecssing invalid results");
+        PESLogger.logger.fine("Processing invalid results");
         Collection removedResults = new ArrayList();
         Iterator i = results.iterator();
         File invalidDir = pesConfig.getIncomingInvalidDir();
@@ -521,7 +506,9 @@ public class ServerEngine {
                 if (!report.isValid()) {
                     // delete file ....
                     try {
-                        PESLogger.logger.warning("found invalid file :"+report.getArchiveFile()+", moving it to"+invalidDir);
+                        PESLogger.logger.warning("found invalid archive: "+report.getArchiveFile()+
+                                ", moving it to "+invalidDir+
+                                "\nThe reason is: "+report.getInvalidMessage());
                         removedResults.add(report);
                         FileUtils.moveFileToDir(report.getArchiveFile(),invalidDir);
                     } catch (IOException ioe) {                        
