@@ -146,7 +146,11 @@ class CompletionLayoutPopup {
             int anchorOffset = getAnchorOffset();
             try {
                 anchorOffsetBounds = getEditorComponent().modelToView(anchorOffset);
-                anchorOffsetBounds.x -= getAnchorHorizontalShift();
+                if (anchorOffsetBounds != null){
+                    anchorOffsetBounds.x -= getAnchorHorizontalShift();
+                } else {
+                    anchorOffsetBounds = new Rectangle(); // use empty rectangle
+                }
             } catch (BadLocationException e) {
                 anchorOffsetBounds = new Rectangle(); // use empty rectangle
             }
