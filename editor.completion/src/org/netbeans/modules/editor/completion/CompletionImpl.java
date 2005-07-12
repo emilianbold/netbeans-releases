@@ -192,7 +192,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
                 String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
                 for (int i = 0; i < activeProviders.length; i++) {
                     int type = activeProviders[i].getAutoQueryTypes(activeComponent, typedText);
-                    if (completionResults == null && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0) {
+                    if (completionResults == null && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
+                            CompletionSettings.INSTANCE.completionAutoPopup()) {
                         restartCompletionAutoPopupTimer();
                     }
                     if (toolTipResults == null && (type & CompletionProvider.TOOLTIP_QUERY_TYPE) != 0) {
