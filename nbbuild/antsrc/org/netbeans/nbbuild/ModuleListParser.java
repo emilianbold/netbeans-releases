@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import org.apache.tools.ant.BuildListener;
@@ -248,7 +250,25 @@ final class ModuleListParser {
             }
             exts.add(binary);
         }
-        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir);
+        List/*<String>*/ prereqs = new ArrayList();
+        Element depsEl = XMLUtil.findElement(dataEl, "module-dependencies", ParseProjectXml.NBM_NS);
+        if (depsEl == null) {
+            throw new IOException("Malformed project file " + projectxml);
+        }
+        Iterator deps = XMLUtil.findSubElements(depsEl).iterator();
+        while (deps.hasNext()) {
+            Element dep = (Element) deps.next();
+            if (XMLUtil.findElement(dep, "build-prerequisite", ParseProjectXml.NBM_NS) == null) {
+                continue;
+            }
+            Element cnbEl2 = XMLUtil.findElement(dep, "code-name-base", ParseProjectXml.NBM_NS);
+            if (cnbEl2 == null) {
+                throw new IOException("Malformed project file " + projectxml);
+            }
+            String cnb2 = XMLUtil.findText(cnbEl2);
+            prereqs.add(cnb2);
+        }
+        Entry entry = new Entry(cnb, jar, (File[]) exts.toArray(new File[exts.size()]), dir, path, (String[]) prereqs.toArray(new String[prereqs.size()]));
         if (entries.containsKey(cnb)) {
             throw new IOException("Duplicated module " + cnb + ": found in " + entries.get(cnb) + " and " + entry);
         } else {
@@ -344,7 +364,7 @@ final class ModuleListParser {
                                 exts[l] = new File(dir, pieces[l].replace('/', File.separatorChar));
                             }
                         }
-                        Entry entry = new Entry(codenamebase, m, exts, dir);
+                        Entry entry = new Entry(codenamebase, m, exts, dir, null, null);
                         if (entries.containsKey(codenamebase)) {
                             throw new IOException("Duplicated module " + codenamebase + ": found in " + entries.get(codenamebase) + " and " + entry);
                         } else {
@@ -487,6 +507,14 @@ final class ModuleListParser {
     }
     
     /**
+     * Find all entries in this list.
+     * @return a set of all known entries
+     */
+    public Set/*<Entry>*/ findAll() {
+        return new HashSet(entries.values());
+    }
+    
+    /**
      * Find one entry by code name base.
      * @param cnb the desired code name base
      * @return the matching entry or null
@@ -504,12 +532,16 @@ final class ModuleListParser {
         private final File jar;
         private final File[] classPathExtensions;
         private final File sourceLocation;
+        private final String netbeansOrgPath;
+        private final String[] buildPrerequisites;
         
-        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation) {
+        Entry(String cnb, File jar, File[] classPathExtensions, File sourceLocation, String netbeansOrgPath, String[] buildPrerequisites) {
             this.cnb = cnb;
             this.jar = jar;
             this.classPathExtensions = classPathExtensions;
             this.sourceLocation = sourceLocation;
+            this.netbeansOrgPath = netbeansOrgPath;
+            this.buildPrerequisites = buildPrerequisites;
         }
         
         /**
@@ -531,6 +563,21 @@ final class ModuleListParser {
          */
         public File[] getClassPathExtensions() {
             return classPathExtensions;
+        }
+        
+        /**
+         * Get the path within netbeans.org, if this is a netbeans.org module (else null).
+         */
+        public String getNetbeansOrgPath() {
+            return netbeansOrgPath;
+        }
+        
+        /**
+         * Get a list of declared build prerequisites (or null for sourceless entries).
+         * Each entry is a code name base.
+         */
+        public String[] getBuildPrerequisites() {
+            return buildPrerequisites;
         }
         
         public String toString() {

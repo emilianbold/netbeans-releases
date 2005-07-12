@@ -71,7 +71,16 @@ Microsystems, Inc. All Rights Reserved.
         <for-each locations="lib"/>
     </target>
 
-    <target name="netbeans" depends="jars,release">
+    <target name="modulexml" depends="init">
+        <mkdir dir="${cluster}/config/Modules"/>
+        <createmodulexml xmldir="${cluster}/config/Modules">
+            <autoload dir="${cluster}">
+                <include name="modules/autoload/xml-tax.jar"/>
+            </autoload>
+        </createmodulexml>
+    </target>
+
+    <target name="netbeans" depends="jars,release,modulexml">
        <for-each locations="lib"/>
        <genlist outputfiledir="${cluster}" module="modules/autoload/xml-tax.jar">
           <fileset dir="${cluster}">
