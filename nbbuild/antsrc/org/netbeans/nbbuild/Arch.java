@@ -84,6 +84,10 @@ public class Arch extends Task implements ErrorHandler {
         this.xsl = xsl;
     }
     
+    private File apichanges = null;
+    public void setApichanges (File apichanges) {
+        this.apichanges = apichanges;
+    }
     
     /** Run the conversion */
     public void execute () throws BuildException {        
@@ -110,11 +114,13 @@ public class Arch extends Task implements ErrorHandler {
         
         org.w3c.dom.Document q;
         Source qSource;
+        javax.xml.parsers.DocumentBuilderFactory factory;
+        javax.xml.parsers.DocumentBuilder builder;
         try {
-            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
+            factory = javax.xml.parsers.DocumentBuilderFactory.newInstance ();
             factory.setValidating(!generateTemplate && !"true".equals(this.getProject().getProperty ("arch.private.disable.validation.for.test.purposes"))); // NOI18N
             
-            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+            builder = factory.newDocumentBuilder();
             builder.setErrorHandler(this);
 
             if (generateTemplate) {
@@ -209,6 +215,13 @@ public class Arch extends Task implements ErrorHandler {
                         throw new BuildException (ex);
                     }
                     qSource = new javax.xml.transform.stream.StreamSource (questionsFile);
+                    try {
+                        q = builder.parse(questionsFile);
+                    } catch (IOException ex) {
+                        throw new BuildException(ex);
+                    } catch (SAXException ex) {
+                        throw new BuildException(ex);
+                    }
                 } else {
                     log (
                         questionsFile.getAbsolutePath() + ": some questions have not been answered: " + s + "\n" + 
@@ -216,6 +229,35 @@ public class Arch extends Task implements ErrorHandler {
                     , Project.MSG_WARN);
                 }
             }
+        }
+
+        
+        if (apichanges != null) {
+            // read also apichanges and add them to the document
+            log("Reading apichanges from " + apichanges);
+
+            org.w3c.dom.Document api;
+            try {
+                api = builder.parse (apichanges);
+            } catch (SAXParseException ex) {
+                log(ex.getSystemId() + ":" + ex.getLineNumber() + ": " + ex.getLocalizedMessage(), Project.MSG_ERR);
+                throw new BuildException(apichanges.getAbsolutePath() + " is malformed or invalid", ex, getLocation());
+            } catch (Exception ex) {
+                throw new BuildException ("File " + apichanges + " cannot be parsed: " + ex.getLocalizedMessage(), ex, getLocation());
+            }
+            
+            NodeList node = api.getElementsByTagName("apichanges");
+            if (node.getLength() != 1) {
+                throw new BuildException("Expected one element <apichanges/> in " + apichanges + "but was: " + node.getLength());
+            }
+
+            Node n = node.item(0);
+            Node el = q.getElementsByTagName("api-answers").item(0);
+            
+            el.appendChild(q.importNode(n, true));
+            
+            
+            qSource = new DOMSource(q);
         }
         
         // apply the transform operation

@@ -86,7 +86,7 @@ cause it to fail.
             <include name="*.css"/>
         </fileset>
         <property name="javadoc.check.external.links" value="false"/>
-        <property name="javadoc.check.failonerror" value="false"/>
+            <property name="javadoc.check.failonerror" value="false"/>
         <property name="javadoc.header" value="&amp;nbsp;"/>
         <mkdir dir="${javadoc.out.dir}"/>
         
@@ -127,7 +127,16 @@ cause it to fail.
     </target>
     
     <target name="javadoc-generate-overview" depends="javadoc-init" if="javadoc.overview.generate.generic" >
-        <arch xsl="exportOverview.xsl" answers="${javadoc.arch}" output="${javadoc.overview}" stylesheet="prose.css"/>
+        <delete file="${javadoc.overview}" />
+        <arch xsl="exportOverview.xsl" answers="${javadoc.arch}" output="${javadoc.overview}" stylesheet="prose.css"
+            apichanges="${javadoc.apichanges}" 
+        >
+            <!--
+            <param name="changes-since-year" expression="${previous.release.year}"/>
+            <param name="changes-since-day" expression="${previous.release.day}"/>
+            <param name="changes-since-month" expression="${previous.release.month}"/>
+            -->
+        </arch>
     </target>
 
     <target name="javadoc-check-timestamps" depends="javadoc-init">

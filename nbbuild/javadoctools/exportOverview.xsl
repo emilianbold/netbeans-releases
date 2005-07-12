@@ -13,6 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:import href="../antsrc/org/netbeans/nbbuild/Arch.xsl" />
+    <xsl:import href="export-apichanges.xsl" />
     <xsl:output method="html" />
     
     <xsl:param name="arch.stylesheet"/>
@@ -33,10 +34,13 @@ Microsystems, Inc. All Rights Reserved.
           </p>
 
           <h3>What is New (see <a href="apichanges.html">all changes</a>)?</h3>
-          
-          <p>
-              PENDING: need access to apichanges.xml to do this
-          </p>
+
+          <ul>
+              <xsl:call-template name="api-changes" >
+                  <xsl:with-param name="changes-since-url" select="'apichanges.html'" />
+                  <xsl:with-param name="changes-since-amount" select="'5'" />
+              </xsl:call-template>
+          </ul>
           
           <h3>Use Cases</h3>
           
@@ -200,5 +204,31 @@ Microsystems, Inc. All Rights Reserved.
 
     </xsl:template>
     
+    <xsl:template name="print-change" >
+        <li>
+            <xsl:choose>
+                <xsl:when test="date/@month=1">Jan</xsl:when>
+                <xsl:when test="date/@month=2">Feb</xsl:when>
+                <xsl:when test="date/@month=3">Mar</xsl:when>
+                <xsl:when test="date/@month=4">Apr</xsl:when>
+                <xsl:when test="date/@month=5">May</xsl:when>
+                <xsl:when test="date/@month=6">Jun</xsl:when>
+                <xsl:when test="date/@month=7">Jul</xsl:when>
+                <xsl:when test="date/@month=8">Aug</xsl:when>
+                <xsl:when test="date/@month=9">Sep</xsl:when>
+                <xsl:when test="date/@month=10">Oct</xsl:when>
+                <xsl:when test="date/@month=11">Nov</xsl:when>
+                <xsl:when test="date/@month=12">Dec</xsl:when>
+            </xsl:choose><xsl:text> </xsl:text>
+            <xsl:value-of select="date/@day"/> '<xsl:value-of select="substring(date/@year, 3, 2)"/>
+            <xsl:text> </xsl:text>
+            <a><xsl:attribute name="href">apichanges.html#<xsl:call-template name="change-id"/></xsl:attribute>
+                <xsl:apply-templates select="summary/node()"/>
+            </a>
+            <p>
+                <xsl:apply-templates select="description/node()" />
+            </p>
+        </li>
+    </xsl:template>
     
 </xsl:stylesheet> 

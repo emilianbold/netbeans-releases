@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:import href="apichanges.xsl" />
     
     <xsl:output method="html"/>
-    <xsl:param name="date" />
+    <xsl:param name="date"  />
     <xsl:param name="changes-since-year"  />
     <xsl:param name="changes-since-month"  />
     <xsl:param name="changes-since-day"  />
