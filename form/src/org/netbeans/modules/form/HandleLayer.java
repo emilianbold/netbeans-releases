@@ -1989,12 +1989,15 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     compIds, originalBounds, hotSpot);
             }
             else { // dragging started in the old layout support
-                LayoutComponent layoutComp = getLayoutModel().getLayoutComponent(compIds[0]);
-                if (layoutComp == null) {
-                    layoutComp = new LayoutComponent(compIds[0], false);
+                LayoutComponent[] layoutComps = new LayoutComponent[compIds.length];
+                for (int i=0; i < compIds.length; i++) {
+                    layoutComps[i] = getLayoutModel().getLayoutComponent(compIds[i]);
+                    if (layoutComps[i] == null) {
+                        layoutComps[i] = new LayoutComponent(compIds[i], false);
+                    }
                 }
                 formDesigner.getLayoutDesigner().startAdding(
-                    new LayoutComponent[] { layoutComp }, originalBounds, hotSpot);                    
+                    layoutComps, originalBounds, hotSpot);                    
             }
 
             if ((modifiers & InputEvent.ALT_MASK) != 0) {
