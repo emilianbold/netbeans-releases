@@ -14,19 +14,38 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.openide.DialogDescriptor;
+
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
+import java.text.MessageFormat;
 
 /**
  * Settings panel for the Branch command.
  * 
  * @author Maros Sandor
  */
-public class BranchSettings extends javax.swing.JPanel {
+class BranchSettings extends javax.swing.JPanel implements DocumentListener {
     
     public BranchSettings() {
         initComponents();
         cbTagBase.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBase", true));
         cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.checkout", true));
         tfName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.branchName", "new_branch"));
+        tfName.getDocument().addDocumentListener(this);
+        refreshComponents();
+    }
+
+    public boolean isCheckingOutBranch() {
+        return cbCheckoutBranch.isSelected();
+    }
+
+    public boolean isTaggingBase() {
+        return cbTagBase.isSelected();
+    }
+
+    public String getBranchName() {
+        return tfName.getText();
     }
 
     public void saveSettings() {
@@ -35,6 +54,32 @@ public class BranchSettings extends javax.swing.JPanel {
         CvsModuleConfig.getDefault().setDefaultValue("BranchSettings.branchName", tfName.getText());
     }
 
+    public String computeBaseTagName() {
+        return tfName.getText() + "_root";
+    }
+    
+    private void refreshComponents() {
+        String cbTagBaseName = MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_TagBase"), 
+                                                  new Object [] { computeBaseTagName() });
+        org.openide.awt.Mnemonics.setLocalizedText(cbTagBase, cbTagBaseName);
+        DialogDescriptor dd = (DialogDescriptor) getClientProperty("org.openide.DialogDescriptor");
+        if (dd != null) {
+            dd.setValid(tfName.getText().trim().length() > 0);
+        }
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        refreshComponents();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        refreshComponents();
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        refreshComponents();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -96,6 +141,12 @@ public class BranchSettings extends javax.swing.JPanel {
         add(nameLabel, gridBagConstraints);
 
         tfName.setColumns(20);
+        tfName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                branchNameChanged(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -114,6 +165,10 @@ public class BranchSettings extends javax.swing.JPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void branchNameChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_branchNameChanged
+        refreshComponents();
+    }//GEN-LAST:event_branchNameChanged
 
     private void cbTagBaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTagBaseActionPerformed
         // TODO add your handling code here:

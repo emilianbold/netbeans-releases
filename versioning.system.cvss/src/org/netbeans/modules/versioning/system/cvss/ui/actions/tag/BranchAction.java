@@ -14,10 +14,14 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
+import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -50,7 +54,6 @@ public class BranchAction extends AbstractSystemAction {
     public void actionPerformed(ActionEvent ev) {
         File [] roots = getFilesToProcess();
 
-        TagCommand cmd = new TagCommand();
         String title;
         if (roots.length > 1) {
             title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title_Multi"), 
@@ -62,15 +65,65 @@ public class BranchAction extends AbstractSystemAction {
         
         BranchSettings settings = new BranchSettings();
         DialogDescriptor descriptor = new DialogDescriptor(settings, title);
+        settings.putClientProperty("org.openide.DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
 
         settings.saveSettings();
-        cmd.setMakeBranchTag(true);
-        cmd.setFiles(roots);
         
-        TagExecutor executor = new TagExecutor(CvsVersioningSystem.getInstance(), cmd);
-        executor.execute();
+        RequestProcessor.getDefault().post(new BranchExecutor(roots, settings));
+    }
+    
+    private static class BranchExecutor implements Runnable {
+
+        private final File[] roots;
+        private final BranchSettings settings;
+
+        public BranchExecutor(File[] roots, BranchSettings settings) {
+            this.roots = roots;
+            this.settings = settings;
+        }
+
+        public void run() {
+            if (settings.isTaggingBase()) {
+                if (!tag(roots, settings.computeBaseTagName())) return;
+            }
+            if (!branch(roots, settings.getBranchName())) return;
+            if (settings.isCheckingOutBranch()) {
+                update(roots, settings.getBranchName());
+            }
+        }
+
+        private void update(File[] roots, String revision) {
+            UpdateCommand cmd = new UpdateCommand();
+
+            cmd.setUpdateByRevision(revision);
+            cmd.setFiles(roots);
+        
+            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            ExecutorSupport.notifyError(executors);
+        }
+
+        private boolean branch(File[] roots, String branchName) {
+            TagCommand cmd = new TagCommand();
+
+            cmd.setMakeBranchTag(true);
+            cmd.setFiles(roots);
+            cmd.setTag(branchName);
+        
+            TagExecutor [] executors = TagExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            return ExecutorSupport.wait(executors);
+        }
+
+        private boolean tag(File[] roots, String tagName) {
+            TagCommand cmd = new TagCommand();
+        
+            cmd.setFiles(roots);
+            cmd.setTag(tagName);
+        
+            TagExecutor [] executors = TagExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            return ExecutorSupport.wait(executors);
+        }
     }
 }

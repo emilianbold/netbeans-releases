@@ -423,4 +423,22 @@ public abstract class ExecutorSupport implements CVSListener  {
             }
         }
     }
+
+    /**
+     * Waits until all executors finish.
+     * 
+     * @param executors array of executors to check
+     * @return true if all executors finished successfuly, false otherwise
+     */ 
+    public static boolean wait(ExecutorSupport[] executors) {
+        boolean success = true;
+        for (int i = 0; i < executors.length; i++) {
+            ExecutorSupport executor = executors[i];
+            executor.getTask().waitFinished();
+            if (executor.getFailure() != null) {
+                success = false;
+            }
+        }
+        return success;
+    }
 }

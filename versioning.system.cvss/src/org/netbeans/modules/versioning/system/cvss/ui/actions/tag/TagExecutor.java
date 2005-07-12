@@ -19,12 +19,14 @@ import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
+import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
-import org.netbeans.lib.cvsclient.command.add.AddCommand;
-import org.netbeans.lib.cvsclient.command.add.AddInformation;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Executes a given 'tag' command and refreshes file statuses.
@@ -33,11 +35,38 @@ import java.io.File;
  */
 public class TagExecutor extends ExecutorSupport {
     
-    public TagExecutor(CvsVersioningSystem cvs, TagCommand cmd) {
-        this(cvs, cmd, null);
+    private static final ResourceBundle loc = NbBundle.getBundle(TagExecutor.class);
+    
+    /**
+     * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
+     * executed in the background. This method may split the original command into more commands if the original
+     * command would execute on incompatible files. See {@link #prepareBasicCommand(org.netbeans.lib.cvsclient.command.BasicCommand)} 
+     * for more information.
+     * 
+     * @param cmd command o execute
+     * @param cvs CVS engine to use
+     * @param options global option for the command
+     * @return array of executors that will execute the command (or array of splitted commands)
+     */ 
+    public static TagExecutor [] executeCommand(TagCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
+        Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
+        if (cmd.getDisplayName() == null) cmd.setDisplayName(loc.getString("MSG_TagExecutor_CmdDisplayName"));
+        try {
+            cmds = prepareBasicCommand(cmd);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+            return null;
+        }
+        TagExecutor [] executors = new TagExecutor[cmds.length]; 
+        for (int i = 0; i < cmds.length; i++) {
+            Command command = cmds[i];
+            executors[i] = new TagExecutor(cvs, (TagCommand) command, options);
+            executors[i].execute();
+        }
+        return executors;
     }
     
-    public TagExecutor(CvsVersioningSystem cvs, TagCommand cmd, GlobalOptions options) {
+    private TagExecutor(CvsVersioningSystem cvs, TagCommand cmd, GlobalOptions options) {
         super(cvs, cmd, options);
     }
 
