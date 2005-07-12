@@ -154,6 +154,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- ant -f nbbuild/build.xml print-selected-modules | perl -n -e 'if (/modules=(.+)/) {for (sort split /, ?/, $1) {if (-f "$_/nbproject/project.xml") {print "                <project>../$_</project>\n"} else {print "                <!-" . "- Unprojectized: $_ -" . "->\n"}}}' | uniq -->
                 <project>../ant</project>
                 <project>../ant/browsetask</project>
+                <project>../ant/debugger</project>
                 <project>../ant/freeform</project>
                 <project>../ant/grammar</project>
                 <project>../ant/project</project>
@@ -190,6 +191,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../diff</project>
                 <project>../editor</project>
                 <project>../editor/bookmarks</project>
+                <project>../editor/completion</project>
                 <project>../editor/fold</project>
                 <project>../editor/lib</project>
                 <project>../editor/plain</project>
@@ -206,6 +208,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../i18n/form</project>
                 <project>../ide/applemenu</project>
                 <!-- Unprojectized: ide/branding -->
+                <project>../ide/launcher/upgrade</project>
                 <project>../ide/updatecenters</project>
                 <project>../ide/welcome</project>
                 <project>../image</project>
@@ -220,7 +223,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../j2ee/genericserver</project>
                 <project>../j2ee/platform</project>
                 <project>../j2ee/refactoring</project>
-                <!-- Unprojectized: j2ee/sunappsrv8 -->
                 <project>../j2ee/utilities</project>
                 <project>../j2eeserver</project>
                 <project>../j2eeserver/ant</project>
@@ -281,6 +283,11 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../properties/syntax</project>
                 <project>../refactoring</project>
                 <project>../schema2beans/rt</project>
+                <project>../serverplugins/sun/appsrv</project>
+                <project>../serverplugins/sun/appsrv81</project>
+                <project>../serverplugins/sun/appsrvbridge</project>
+                <project>../serverplugins/sun/sunddapi</project>
+                <project>../serverplugins/sun/sunddui</project>
                 <project>../tasklist/api</project>
                 <project>../tasklist/core</project>
                 <project>../tasklist/docscan</project>
@@ -317,6 +324,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/catalog</project>
                 <project>../xml/core</project>
                 <project>../xml/css</project>
+                <project>../xml/multiview</project>
                 <project>../xml/schema</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
