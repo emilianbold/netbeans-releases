@@ -86,6 +86,9 @@ public class GenericSources {
      * @param openedIcon an opened variant icon to use, or null
      */
     public static SourceGroup group(Project p, FileObject rootFolder, String name, String displayName, Icon icon, Icon openedIcon) {
+        if (name == null) {
+            throw new NullPointerException("Cannot specify a null name for a source group"); // NOI18N
+        }
         return new Group(p, rootFolder, name, displayName, icon, openedIcon);
     }
     

@@ -15,7 +15,6 @@ package org.netbeans.modules.project.ui;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.CharConversionException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,29 +25,28 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
+import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Support for creating logical views.
@@ -85,11 +83,11 @@ public class PhysicalView {
         
         if ( projectDirGroup == null ) {
             // Illegal project
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL,
-                new IllegalStateException( "Project " + p +                         // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Project " + p +                                                // NOI18N
                     "either does not contain it's project directory under the " +   // NOI18N
-                    "Generic source groups or the project directory is under" +     // NOI18N
-                    "more than one source group" ) );                               // NOI18N
+                    "Generic source groups or the project directory is under " +     // NOI18N
+                    "more than one source group");                                  // NOI18N
             return new Node[0];
         }
         
@@ -180,7 +178,12 @@ public class PhysicalView {
                 return pi.getName();
             }
             else {
-                return group.getName();
+                String n = group.getName();
+                if (n == null) {
+                    n = "???"; // NOI18N
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "SourceGroup impl of type " + group.getClass().getName() + " specified a null getName(); this is illegal");
+                }
+                return n;
             }
         }
 

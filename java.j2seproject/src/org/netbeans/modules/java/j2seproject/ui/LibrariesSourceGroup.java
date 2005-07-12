@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,12 +15,11 @@ package org.netbeans.modules.java.j2seproject.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.api.project.SourceGroup;
-
 
 /**
  * LibrariesSourceGroup
@@ -65,13 +64,12 @@ final class LibrariesSourceGroup implements SourceGroup {
     }
 
     public String getName() {
-        String result = null;
         try {        
             return root.getURL().toExternalForm();
         } catch (FileStateInvalidException fsi) { 
             ErrorManager.getDefault().notify (fsi);
+            return root.toString();
         }
-        return result;
     }
 
     public String getDisplayName() {
