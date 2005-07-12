@@ -117,19 +117,21 @@ public final class InsertModuleAllTargets extends Task {
                 t.setLocation(getLocation());
                 t.setDepends(namedDepsS);
                 project.addTarget(t);
+                if (myCluster != null) {
+                    CallTarget call = (CallTarget) project.createTask("antcall");
+                    call.setTarget("build-one-cluster-dependencies");
+                    call.setInheritAll(false);
+                    Property param = call.createParam();
+                    param.setName("one.cluster.dependencies");
+                    param.setValue((String) props.get(myCluster + ".depends"));
+                    param = call.createParam();
+                    param.setName("one.cluster.name");
+                    param.setValue("this-cluster");
+                    t.addTask(call);
+                }
                 Echo echo = (Echo) project.createTask("echo");
                 echo.setMessage("Building " + path + "...");
                 t.addTask(echo);
-                CallTarget call = (CallTarget) project.createTask("antcall");
-                call.setTarget("build-one-cluster-dependencies");
-                call.setInheritAll(false);
-                Property param = call.createParam();
-                param.setName("one.cluster.dependencies");
-                param.setValue((String) props.get(myCluster + ".depends"));
-                param = call.createParam();
-                param.setName("one.cluster.name");
-                param.setValue("this-cluster");
-                t.addTask(call);
                 Ant ant = (Ant) project.createTask("ant");
                 ant.setDir(project.resolveFile("../" + path));
                 ant.setTarget("netbeans");
