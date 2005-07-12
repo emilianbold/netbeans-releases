@@ -33,11 +33,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="MessageHandler/WSDL.wsdl" boolvalue="true"/>
             <file name="WSDL.wsdl" url = "WSDL.template">
                 <attr name="template" boolvalue="true"/>
-                <!--
-                <attr name="instantiatingIterator"
-                    methodvalue="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardIterator.create" />
-                <attr name="templateCategory" stringvalue="web-service-clients"/>
-                -->
+                <attr name="templateWizardIterator" 
+                    newvalue="org.netbeans.modules.websvc.wsdl.wizard.WsdlIterator"/>
                 <attr name="templateWizardURL"
                     urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/WSDL.html"/>
                 <attr name="SystemFileSystem.localizingBundle"
@@ -45,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon"
                     urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl.gif"/>
             </file>
+            <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
         </folder>
     </folder>
     <folder name="Editors">
