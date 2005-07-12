@@ -162,9 +162,9 @@ class ComponentDragger
             computeConstraints(point, constraints, indices);
         }
         if (targetMetaContainer == null) {
-            if (handleLayer.mouseOnVisual(point)) {
-                return;
-            }
+//            if (handleLayer.mouseOnVisual(point)) {
+//                return;
+//            }
             constraints = indices = null;
         }
 
