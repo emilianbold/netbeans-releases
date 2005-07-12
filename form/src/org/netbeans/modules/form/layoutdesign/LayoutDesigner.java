@@ -4891,6 +4891,12 @@ public class LayoutDesigner implements LayoutConstants {
                                             resizingDef[i].getResizingGap() : null;
                     if (resGap != null) { // special gap for design time resizing
                         resizeInterval(resGap, resizingDef[i].getResizingGapSize(currentSize));
+                        if (resGap.getPreferredSize() == NOT_EXPLICITLY_DEFINED && LayoutInterval.canResize(resGap)) {
+                            layoutModel.setIntervalSize(resGap, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, USE_PREFERRED_SIZE);
+                            if (!LayoutInterval.wantResize(root, false)) {
+                                layoutModel.setIntervalSize(resGap, NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, Short.MAX_VALUE);
+                            }
+                        }
                     }
                 }
                 updateLayoutStructure(root, i);
