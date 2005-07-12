@@ -30,17 +30,12 @@ import org.w3c.dom.Element;
 
 // XXX testMissingImport
 // XXX testDiamondImport
-// XXX testAntPropertySubstImport
 
 /**
  * Tests functionality of {@link TargetLister}.
  * @author Jesse Glick
  */
 public class TargetListerTest extends NbTestCase {
-    
-    static {
-        TargetListerTest.class.getClassLoader().setDefaultAssertionStatus(true);
-    }
     
     public TargetListerTest(String name) {
         super(name);
@@ -50,12 +45,14 @@ public class TargetListerTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        testdir = FileUtil.toFileObject(this.getDataDir());
-        assertNotNull("testdir unit/data exists", testdir);
+        FileObject masterTestdir = FileUtil.toFileObject(getDataDir());
+        assertNotNull("testdir unit/data exists", masterTestdir);
+        testdir = masterTestdir.getFileObject("targetlister");
+        assertNotNull("testdir unit/data/targetlister exists", testdir);
     }
     
     public void testSimpleUsage() throws Exception {
-        FileObject simple = testdir.getFileObject("targetlister/simple.xml");
+        FileObject simple = testdir.getFileObject("simple.xml");
         assertNotNull("simple.xml found", simple);
         List/*<TargetLister.Target>*/ targets = getTargets(simple);
         assertEquals("five targets", 5, targets.size());
@@ -100,7 +97,7 @@ public class TargetListerTest extends NbTestCase {
     }
     
     public void testBasicImportAndOverrides() throws IOException {
-        FileObject importing = testdir.getFileObject("targetlister/importing.xml");
+        FileObject importing = testdir.getFileObject("importing.xml");
         assertNotNull("importing.xml found", importing);
         List/*<TargetLister.Target>*/ targets = getTargets(importing);
         assertEquals("seven targets", 7, targets.size());
@@ -152,7 +149,7 @@ public class TargetListerTest extends NbTestCase {
     
     public void testImportedDefaultAndDifferentBasedir() throws Exception {
         // #50087: Ant does *not* use the basedir when resolving an <import>!
-        FileObject importing4 = testdir.getFileObject("targetlister/importing4.xml");
+        FileObject importing4 = testdir.getFileObject("importing4.xml");
         assertNotNull("importing4.xml found", importing4);
         List/*<TargetLister.Target>*/ targets = getTargets(importing4);
         assertEquals("three targets", 3, targets.size());
@@ -173,7 +170,7 @@ public class TargetListerTest extends NbTestCase {
 
     /** Cf. #55263: stack overflow error */
     public void testRecursiveImport() throws Exception {
-        FileObject rec1 = testdir.getFileObject("targetlister/recursive1.xml");
+        FileObject rec1 = testdir.getFileObject("recursive1.xml");
         assertNotNull("recursive1.xml found", rec1);
         List/*<TargetLister.Target>*/ targets = getTargets(rec1);
         assertEquals("two targets", 2, targets.size());
@@ -183,6 +180,19 @@ public class TargetListerTest extends NbTestCase {
         t = (TargetLister.Target) targets.get(1);
         assertEquals("correct qname #2", "recursive2.y", t.getQualifiedName());
         assertFalse("not default #2", t.isDefault());
+    }
+    
+    public void testComputedImports() throws Exception {
+        FileObject importing = testdir.getFileObject("computedimports/importing.xml");
+        assertNotNull("importing.xml found", importing);
+        List/*<TargetLister.Target>*/ targets = getTargets(importing);
+        assertEquals("three targets", 3, targets.size());
+        TargetLister.Target t = (TargetLister.Target) targets.get(0);
+        assertEquals("correct qname #1", "importing.master", t.getQualifiedName());
+        t = (TargetLister.Target) targets.get(1);
+        assertEquals("correct qname #2", "subdir/imported1.foundme", t.getQualifiedName());
+        t = (TargetLister.Target) targets.get(2);
+        assertEquals("correct qname #3", "subdir/imported3.intermediate", t.getQualifiedName());
     }
     
     private static List/*<TargetLister.Target>*/ getTargets(FileObject fo) throws IOException {

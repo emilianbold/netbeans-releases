@@ -20,6 +20,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/*Test.class"/>
                 <!-- Failing (but only within IDE) for mysterious reasons; related to #50160: -->
                 <exclude name="**/IntrospectedInfoTest.class/testBasicAttributes"/>
+                <!-- Not yet impl: -->
+                <exclude name="**/TargetListerTest.class/testComputedImports"/>
             </patternset>
         </testset>
     </testbag>
