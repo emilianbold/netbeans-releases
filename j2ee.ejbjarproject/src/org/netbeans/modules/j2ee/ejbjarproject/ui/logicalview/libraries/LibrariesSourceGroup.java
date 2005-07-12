@@ -65,13 +65,12 @@ final class LibrariesSourceGroup implements SourceGroup {
     }
 
     public String getName() {
-        String result = null;
         try {        
             return root.getURL().toExternalForm();
         } catch (FileStateInvalidException fsi) { 
             ErrorManager.getDefault().notify (fsi);
+            return root.toString();
         }
-        return result;
     }
 
     public String getDisplayName() {
