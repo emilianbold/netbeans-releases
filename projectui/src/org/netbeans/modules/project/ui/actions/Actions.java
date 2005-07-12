@@ -51,7 +51,6 @@ public class Actions implements ActionsFactory {
     private static Action OPEN_SUBPROJECTS;
     private static Action CLOSE_PROJECT;
     private static Action NEW_FILE;
-    private static Action DELETE_PROJECT;
             
     public synchronized Action setAsMainProjectAction() {
         if ( SET_AS_MAIN_PROJECT == null ) {
@@ -170,16 +169,15 @@ public class Actions implements ActionsFactory {
     }
     
     public static synchronized Action deleteProject() {
-        if (DELETE_PROJECT == null) {
-            DELETE_PROJECT = new ProjectAction(
-                ActionProvider.COMMAND_DELETE, 
-                NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"), // NO18N
-                null,
-                null );
-            DELETE_PROJECT.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-        }
+        Action a = new ProjectAction(
+            ActionProvider.COMMAND_DELETE, 
+            NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"), // NO18N
+            null,
+            null );
         
-        return DELETE_PROJECT;
+        a.putValue(Action.ACCELERATOR_KEY, DeleteAction.get(DeleteAction.class).getValue(Action.ACCELERATOR_KEY));
+        
+        return a;
     }
     
     // 1-off actions -----------------------------------------------------------
