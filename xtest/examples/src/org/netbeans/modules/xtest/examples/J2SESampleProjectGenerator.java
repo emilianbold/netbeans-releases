@@ -178,7 +178,7 @@ public class J2SESampleProjectGenerator {
                 if(e.getAttribute("name").equals("xtest.home")) { // NOI18N
                     File xtestHome = InstalledFileLocator.getDefault().
                             locate("xtest-distribution", "org.netbeans.modules.xtest", false);  // NOI18N
-                    e.setAttribute("location", xtestHome.getCanonicalPath());// NOI18N
+                    e.setAttribute("location", xtestHome.getAbsolutePath());// NOI18N
                 }
                 if(e.getAttribute("name").equals("xtest.module")) {  // NOI18N
                     e.setAttribute("value", projectName); // NOI18N
@@ -187,7 +187,7 @@ public class J2SESampleProjectGenerator {
                     File netbeansDestDir = InstalledFileLocator.getDefault().
                             locate("core/core.jar", null, false);  // NOI18N
                     netbeansDestDir = new File(netbeansDestDir, "../../..");
-                    e.setAttribute("location", netbeansDestDir.getCanonicalPath());// NOI18N
+                    e.setAttribute("location", netbeansDestDir.getAbsolutePath());// NOI18N
                 }
             }
             nlist = doc.getElementsByTagName("path");  //NOI18N
@@ -196,7 +196,7 @@ public class J2SESampleProjectGenerator {
                 if(e.getAttribute("id").equals("jemmy.path")) { // NOI18N
                     File jemmyJar = InstalledFileLocator.getDefault().
                             locate("modules/ext/jemmy.jar", "org.netbeans.modules.jemmy", false);  // NOI18N
-                    e.setAttribute("location", jemmyJar.getCanonicalPath());// NOI18N
+                    e.setAttribute("location", jemmyJar.getAbsolutePath());// NOI18N
                 }
             }
             saveXml(doc, prjLoc, filePath);                    

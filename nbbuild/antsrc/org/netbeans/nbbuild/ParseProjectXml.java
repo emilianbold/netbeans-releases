@@ -251,7 +251,7 @@ public final class ParseProjectXml extends Task {
             if (moduleDependenciesProperty != null || moduleClassPathProperty != null) {
                 String nball = getProject().getProperty("nb_all");
                 Hashtable properties = getProject().getProperties();
-                properties.put("project", project.getCanonicalPath());
+                properties.put("project", project.getAbsolutePath());
                 modules = new ModuleListParser(properties, getModuleType(pDoc), getProject());
             }
             if (ideDependenciesProperty != null || moduleDependenciesProperty != null) {
