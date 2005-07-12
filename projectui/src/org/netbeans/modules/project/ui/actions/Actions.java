@@ -170,7 +170,7 @@ public class Actions implements ActionsFactory {
     public static synchronized Action deleteProject() {
         if (DELETE_PROJECT == null) {
             DELETE_PROJECT = new ProjectAction(
-                ActionProvider.COMMAND_RUN, 
+                ActionProvider.COMMAND_DELETE, 
                 NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"), // NO18N
                 null,
                 null );
