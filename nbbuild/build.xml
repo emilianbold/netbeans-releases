@@ -93,9 +93,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init-module-list" depends="bootstrap,setup-jdkhome">
     <!-- Define modules. -->
-    <!-- The following is not permitted by Ant: -->
-    <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
-    <!-- So this is a little trick to do it anyway. -->
     <resolve name="modules" value="config.modules.${moduleconfig}"/>
     <resolve name="fixedmodules" value="config.fixedmodules.${moduleconfig}"/>
     <property name="allmodules" value="${fixedmodules},${modules}"/>
@@ -185,15 +182,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
    <ant dir="../schema2beans/rt" target="netbeans"/>
   </target>
-  <!-- Not a module: -->
-  <target name="build-schema2beans/anttask" depends="init,all-schema2beans/rt,all-schema2beans/dev">
-    <echo message="Building schema2beans/anttask..."/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../schema2beans/anttask" target="jars"/>
-  </target>
   <target name="all-schema2beans/dev" depends="init,all-schema2beans/rt">
     <echo message="Building module schema2beans/dev..."/>
     <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
@@ -202,6 +190,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../schema2beans/dev" target="netbeans"/>
+    <ant dir="../schema2beans/anttask" target="jars"/>
   </target>
 
   <target name="all-tomcatint/tomcat5/bundled" depends="init">
@@ -1059,6 +1048,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               resolvedependencies="${resolve.clean.dependencies}"
               deptargetprefix="all-"
               failonerror="${stop.when.clean.error}" />
+    <ant dir="../schema2beans/dev" target="clean"/> 
+    <ant dir="../schema2beans/anttask" target="clean"/> 
   </target>
 
   <target name="clean" depends="init,cleanall,localclean"
