@@ -29,6 +29,8 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
@@ -257,7 +259,10 @@ public class Annotator {
                 new SystemActionBridge(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit")),
                 null,
                 new SystemActionBridge(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag")),
+                null,
                 new SystemActionBridge(SystemAction.get(BranchAction.class), loc.getString("CTL_PopupMenuItem_Branch")),
+                new SystemActionBridge(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch")),
+                new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
                 null,
                 new SystemActionBridge(SystemAction.get(IgnoreAction.class), 
                                        ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ? 
@@ -272,7 +277,10 @@ public class Annotator {
                 new SystemActionBridge(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit")),
                 null,
                 new SystemActionBridge(SystemAction.get(TagAction.class), loc.getString("CTL_PopupMenuItem_Tag")),
+                null,
                 new SystemActionBridge(SystemAction.get(BranchAction.class), loc.getString("CTL_PopupMenuItem_Branch")),
+                new SystemActionBridge(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch")),
+                new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
                 null,
                 new SystemActionBridge(SystemAction.get(AnnotationsAction.class), loc.getString("CTL_PopupMenuItem_Annotations")),
                 new SystemActionBridge(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log")),
