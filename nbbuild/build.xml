@@ -172,27 +172,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-installer" description="Dummy target for build system compatibility"/>
 
-  <target name="all-schema2beans/rt" depends="init">
-    <echo message="Building module schema2beans/rt..."/>
-<!--    HACK!!! because of cyclic dependenecies 
-<getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>-->
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="nb.cluster.platform"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-   <ant dir="../schema2beans/rt" target="netbeans"/>
-  </target>
-  <target name="all-schema2beans/dev" depends="init,all-schema2beans/rt">
-    <echo message="Building module schema2beans/dev..."/>
-    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../schema2beans/dev" target="netbeans"/>
-    <ant dir="../schema2beans/anttask" target="jars"/>
-  </target>
-
   <target name="all-tomcatint/tomcat5/bundled" depends="init">
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1048,8 +1027,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               resolvedependencies="${resolve.clean.dependencies}"
               deptargetprefix="all-"
               failonerror="${stop.when.clean.error}" />
-    <ant dir="../schema2beans/dev" target="clean"/> 
-    <ant dir="../schema2beans/anttask" target="clean"/> 
   </target>
 
   <target name="clean" depends="init,cleanall,localclean"
