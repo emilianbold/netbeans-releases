@@ -14,9 +14,19 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.openide.util.NbBundle;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 import java.awt.event.ActionEvent;
+import java.awt.Dialog;
+import java.io.File;
+import java.text.MessageFormat;
 
 /**
  * Performs the CVS 'update -r branch' command on selected nodes.
@@ -40,5 +50,34 @@ public class SwitchBranchAction extends AbstractSystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        File [] roots = getFilesToProcess();
+
+        UpdateCommand cmd = new UpdateCommand();
+        String title;
+        if (roots.length > 1) {
+            title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_SwitchBranchDialog_Title_Multi"), 
+                                         new Integer[] { new Integer(roots.length) });
+        } else {
+            title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
+                                         new Object[] { roots[0].getName() });            
+        }
+        
+        SwitchBranchPanel settings = new SwitchBranchPanel(roots);
+        DialogDescriptor descriptor = new DialogDescriptor(settings, title);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.setVisible(true);
+        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
+
+        settings.saveSettings();
+        if (settings.getSwitchToTrunk().isSelected()) {
+            cmd.setResetStickyOnes(true);
+        } else {
+            cmd.setUpdateByRevision(settings.getTfBranchName().getText());
+        }
+        
+        cmd.setFiles(roots);
+        
+        UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+        ExecutorSupport.notifyError(executors);
     }
 }

@@ -261,7 +261,7 @@ public class CvsVersioningSystem {
      * @param file file to be tested
      * @return true, if the file is ignored by CVS, false otherwise.
      */
-    public boolean isIgnored(File file) {
+    boolean isIgnored(File file) {
         String name = file.getName();
         Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
