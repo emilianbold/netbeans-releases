@@ -14,11 +14,13 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
@@ -174,6 +176,7 @@ public class Actions implements ActionsFactory {
                 NbBundle.getMessage(Actions.class, "LBL_DeleteProjectAction_Name"), // NO18N
                 null,
                 null );
+            DELETE_PROJECT.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
         }
         
         return DELETE_PROJECT;
