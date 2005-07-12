@@ -368,19 +368,6 @@ public final class NbModuleProject implements Project {
         }
         File clusterDir = thisEntry.getClusterDirectory();
         stock.put("cluster", clusterDir.getAbsolutePath()); // NOI18N
-        Map/*<String,String>*/ defaults = new HashMap();
-        defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
-        defaults.put("module.jar.dir", "modules"); // NOI18N
-        defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
-        defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
-        defaults.put("manifest.mf", "manifest.mf"); // NOI18N
-        defaults.put("src.dir", "src"); // NOI18N
-        defaults.put("build.classes.dir", "build/classes"); // NOI18N
-        defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
-        defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
-        defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
-        defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
-        defaults.put("javac.source", "1.4");
         List/*<PropertyProvider>*/ providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
         // XXX should listen to changes in values of properties which refer to property files:
@@ -414,6 +401,19 @@ public final class NbModuleProject implements Project {
         }
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        Map/*<String,String>*/ defaults = new HashMap();
+        defaults.put("code.name.base.dashes", getCodeNameBase().replace('.', '-')); // NOI18N
+        defaults.put("module.jar.dir", "modules"); // NOI18N
+        defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
+        defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
+        defaults.put("manifest.mf", "manifest.mf"); // NOI18N
+        defaults.put("src.dir", "src"); // NOI18N
+        defaults.put("build.classes.dir", "build/classes"); // NOI18N
+        defaults.put("test.unit.src.dir", "test/unit/src"); // NOI18N
+        defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
+        defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
+        defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
+        defaults.put("javac.source", "1.4");
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         providers.add(createModuleClasspathPropertyProvider());
         Map/*<String,String>*/ buildDefaults = new HashMap();
