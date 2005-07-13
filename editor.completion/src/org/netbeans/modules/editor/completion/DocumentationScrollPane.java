@@ -296,6 +296,8 @@ public class DocumentationScrollPane extends JScrollPane {
         mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0));
         mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK));
         mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK));
+        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
+        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
     }        
     
     private void mapWithShift(KeyStroke key) {
