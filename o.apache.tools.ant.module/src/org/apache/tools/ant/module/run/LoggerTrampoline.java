@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,23 +41,15 @@ public final class LoggerTrampoline {
     
     public static Creator ANT_SESSION_CREATOR, ANT_EVENT_CREATOR, TASK_STRUCTURE_CREATOR;
     static {
-        Class c1 = AntSession.class;
         try {
-            Class.forName(c1.getName(), true, c1.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        Class c2 = AntEvent.class;
-        try {
-            Class.forName(c2.getName(), true, c2.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        Class c3 = TaskStructure.class;
-        try {
-            Class.forName(c3.getName(), true, c3.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            Class c = AntSession.class;
+            Class.forName(c.getName(), true, c.getClassLoader());
+            c = AntEvent.class;
+            Class.forName(c.getName(), true, c.getClassLoader());
+            c = TaskStructure.class;
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            assert false : e;
         }
         assert ANT_SESSION_CREATOR != null && ANT_EVENT_CREATOR != null && TASK_STRUCTURE_CREATOR != null;
     }
