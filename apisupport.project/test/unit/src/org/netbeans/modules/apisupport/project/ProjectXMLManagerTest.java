@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -53,7 +52,7 @@ public class ProjectXMLManagerTest extends TestBase {
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
-        suiteRepoFO = prepareSuiteRepo(extexamples);
+        suiteRepoFO = FileUtil.toFileObject(copyFolder(extexamplesF));
         FileObject suite1FO = suiteRepoFO.getFileObject("suite1");
         FileObject suite2FO = suiteRepoFO.getFileObject("suite2");
         FileObject actionFO = suite1FO.getFileObject("action-project");
@@ -357,21 +356,4 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("number of binary origins", 2, xercesPXM.getBinaryOrigins().length);
     }
     
-    private FileObject prepareSuiteRepo(FileObject what) throws Exception {
-        int srcFolderLen = what.getPath().length();
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        // XXX this should be probably be using (TestBase.this.)copyFolder
-        for (Enumeration en = what.getFolders(true); en.hasMoreElements(); ) {
-            FileObject src = (FileObject) en.nextElement();
-            if (src.getName().equals("CVS")) {
-                continue;
-            }
-            FileObject dest = FileUtil.createFolder(workDir, src.getPath().substring(srcFolderLen));
-            for (Enumeration en2 = src.getData(false); en2.hasMoreElements(); ) {
-                FileObject fo = (FileObject) en2.nextElement();
-                FileUtil.copyFile(fo, dest, fo.getName());
-            }
-        }
-        return workDir;
-    }
 }

@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Set;
 import javax.swing.JList;
 import org.netbeans.api.project.Project;
@@ -56,7 +55,7 @@ public class SuitePropertiesTest extends TestBase {
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
-        suiteRepoFO = prepareSuiteRepo(extexamples);
+        suiteRepoFO = FileUtil.toFileObject(copyFolder(extexamplesF));
         suite1FO = suiteRepoFO.getFileObject("suite1");
         suite2FO = suiteRepoFO.getFileObject("suite2");
         suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
@@ -191,22 +190,4 @@ public class SuitePropertiesTest extends TestBase {
         }
     }
     
-    // XXX fastly copied from ProjectXMLManagerTest!!!
-    private FileObject prepareSuiteRepo(FileObject what) throws Exception {
-        int srcFolderLen = what.getPath().length();
-        FileObject workDir = FileUtil.toFileObject(getWorkDir());
-        // XXX this should be probably be using (TestBase.this.)copyFolder
-        for (Enumeration en = what.getFolders(true); en.hasMoreElements(); ) {
-            FileObject src = (FileObject) en.nextElement();
-            if (src.getName().equals("CVS")) {
-                continue;
-            }
-            FileObject dest = FileUtil.createFolder(workDir, src.getPath().substring(srcFolderLen));
-            for (Enumeration en2 = src.getData(false); en2.hasMoreElements(); ) {
-                FileObject fo = (FileObject) en2.nextElement();
-                FileUtil.copyFile(fo, dest, fo.getName());
-            }
-        }
-        return workDir;
-    }
 }
