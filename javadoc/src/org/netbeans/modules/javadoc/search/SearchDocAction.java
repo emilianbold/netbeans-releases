@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,6 @@ package org.netbeans.modules.javadoc.search;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-
-import javax.swing.SwingUtilities;
 
 /**
  * Search doc global action (working with whole solution).

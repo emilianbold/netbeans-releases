@@ -18,9 +18,6 @@
 
 package org.netbeans.modules.javadoc.httpfs;
 
-import java.awt.event.ActionEvent;
-
-import org.openide.actions.FileSystemAction;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObject;
