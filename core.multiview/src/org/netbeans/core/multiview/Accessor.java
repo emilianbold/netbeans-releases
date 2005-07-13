@@ -28,7 +28,12 @@ public abstract class Accessor {
     static {
         // invokes static initializer of Item.class
         // that will assign value to the DEFAULT field above
-        Object o = MultiViewPerspective.class;
+        Class c = MultiViewPerspective.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }    
     
     public abstract MultiViewPerspective createPerspective(MultiViewDescription desc);

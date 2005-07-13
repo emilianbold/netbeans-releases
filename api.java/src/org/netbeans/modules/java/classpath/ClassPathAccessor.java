@@ -22,7 +22,12 @@ public abstract class ClassPathAccessor {
     
     // force loading of ClassPath class. That will set DEFAULT variable.
     static {
-        Object o = ClassPath.class;
+        Class c = ClassPath.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public abstract ClassPath createClassPath(ClassPathImplementation spiClasspath);

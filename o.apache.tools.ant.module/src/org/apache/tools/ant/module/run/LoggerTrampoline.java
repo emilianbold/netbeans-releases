@@ -41,9 +41,24 @@ public final class LoggerTrampoline {
     
     public static Creator ANT_SESSION_CREATOR, ANT_EVENT_CREATOR, TASK_STRUCTURE_CREATOR;
     static {
-        Object ignore = AntSession.class;
-        ignore = AntEvent.class;
-        ignore = TaskStructure.class;
+        Class c1 = AntSession.class;
+        try {
+            Class.forName(c1.getName(), true, c1.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        Class c2 = AntEvent.class;
+        try {
+            Class.forName(c2.getName(), true, c2.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        Class c3 = TaskStructure.class;
+        try {
+            Class.forName(c3.getName(), true, c3.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         assert ANT_SESSION_CREATOR != null && ANT_EVENT_CREATOR != null && TASK_STRUCTURE_CREATOR != null;
     }
     

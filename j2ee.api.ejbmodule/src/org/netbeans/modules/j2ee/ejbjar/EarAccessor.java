@@ -25,7 +25,12 @@ public abstract class EarAccessor {
     
     // force loading of EjbJar class. That will set DEFAULT variable.
     static {
-        Object o = Ear.class;
+        Class c = Ear.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public abstract Ear createEar(EarImplementation spiEar);

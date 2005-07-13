@@ -30,7 +30,12 @@ import org.openide.filesystems.FileUtil;
 public class J2SEPlatformModuleTest extends NbTestCase {
     
     static {
-        Object ignore = TestUtil.class; // force lookup init before anyone else
+        Class c = TestUtil.class; // force lookup init before anyone else
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public J2SEPlatformModuleTest(String testName) {

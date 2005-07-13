@@ -25,7 +25,12 @@ public abstract class WebModuleAccessor {
     
     // force loading of WebModule class. That will set DEFAULT variable.
     static {
-        Object o = WebModule.class;
+        Class c = WebModule.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     public abstract WebModule createWebModule(WebModuleImplementation spiWebmodule);

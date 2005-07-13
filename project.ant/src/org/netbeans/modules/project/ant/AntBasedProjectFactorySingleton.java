@@ -221,7 +221,12 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
     /** Defined in AntProjectHelper's static initializer. */
     public static AntProjectHelperCallback HELPER_CALLBACK;
     static {
-        Object ignore = AntProjectHelper.class;
+        Class c = AntProjectHelper.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         assert HELPER_CALLBACK != null;
     }
     

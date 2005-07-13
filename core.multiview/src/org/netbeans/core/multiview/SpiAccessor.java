@@ -29,7 +29,12 @@ public abstract class SpiAccessor {
     static {
         // invokes static initializer of Item.class
         // that will assign value to the DEFAULT field above
-        Object o = MultiViewElementCallback.class;
+        Class c = MultiViewElementCallback.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }    
     
     public abstract MultiViewElementCallback createCallback(MultiViewElementCallbackDelegate delegate);
