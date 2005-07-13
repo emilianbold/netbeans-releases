@@ -60,17 +60,31 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:with-param name="generate-import" select="'false'" />
                 </xsl:call-template>
         
-            <h3>Dependencies</h3>
+            <h3>Implementation Details</h3>
 
-            <h5>What do other modules need to do to declare a dependency on this one?</h5>
-            <xsl:apply-templates select="api-answers/answer[@id='deploy-dependencies']/node()" mode="description"/>
+            <xsl:if test="api-answers/answer[@id='arch-where']/node()" >
+                <h5>Where are the sources for the module?</h5>
+                <xsl:apply-templates select="api-answers/answer[@id='arch-where']/node()" mode="description"/>
+            </xsl:if>
+            
+            <xsl:if test="api-answers/answer[@id='deploy-dependencies']/node()" >
+                <h5>What do other modules need to do to declare a dependency on this one?</h5>
+                <xsl:apply-templates select="api-answers/answer[@id='deploy-dependencies']/node()" mode="description"/>
+            </xsl:if>
 
-            <h5>Other dependencies</h5>
-
-                PENDING: Need project.xml to list what projects this one depends on from project.xml &amp;
-                arch.xml and
-                other imported interfaces from arch.xml
-
+            
+            <p>
+                Read more about the implementation in the <a href="architecture-summary.html">answers to 
+                architecture questions</a>.
+            </p>
+            
+            <!--
+                <xsl:call-template name="generate-api-table" >
+                    <xsl:with-param name="target" select="'api-group'" />
+                    <xsl:with-param name="generate-export" select="'false'" />
+                    <xsl:with-param name="generate-group" select="'java'" />
+                </xsl:call-template>
+            -->
          </body>
         </html>
          
@@ -127,6 +141,11 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:template match="usecase" mode="description" >
         <h5><xsl:value-of select="@name" /></h5>
         <xsl:apply-templates select="./node()" />
+    </xsl:template>
+    <xsl:template match="@*|node()" mode="description" >
+       <xsl:copy  >
+          <xsl:apply-templates select="@*|node()"/>
+       </xsl:copy>
     </xsl:template>
      
     <!-- Format random HTML elements as is: -->

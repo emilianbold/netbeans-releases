@@ -15,6 +15,9 @@ package org.netbeans.nbbuild;
 import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Ant;
@@ -87,6 +90,11 @@ public class Arch extends Task implements ErrorHandler {
     private File apichanges = null;
     public void setApichanges (File apichanges) {
         this.apichanges = apichanges;
+    }
+
+    private File project = null;
+    public void setProject (File x) {
+        this.project = x;
     }
     
     /** Run the conversion */
@@ -259,6 +267,163 @@ public class Arch extends Task implements ErrorHandler {
             
             qSource = new DOMSource(q);
         }
+
+        
+        if (project != null) {
+            // read also project file and apply transformation on defaultanswer tags
+            log("Reading project from " + project);
+
+            
+            
+            org.w3c.dom.Document prj;
+            try {
+                DocumentBuilderFactory fack = DocumentBuilderFactory.newInstance();
+                fack.setNamespaceAware(false);
+                prj = fack.newDocumentBuilder().parse (project);
+            } catch (SAXParseException ex) {
+                log(ex.getSystemId() + ":" + ex.getLineNumber() + ": " + ex.getLocalizedMessage(), Project.MSG_ERR);
+                throw new BuildException(project.getAbsolutePath() + " is malformed or invalid", ex, getLocation());
+            } catch (Exception ex) {
+                throw new BuildException ("File " + project + " cannot be parsed: " + ex.getLocalizedMessage(), ex, getLocation());
+            }
+            
+            // enhance the project document with info about stability and logical name of an API
+            // use arch.code-name-base.name and arch.code-name-base.category
+            // to modify regular:
+            //    <dependency>
+            //        <code-name-base>org.openide.util</code-name-base>
+            //        <build-prerequisite/>
+            //        <compile-dependency/>
+            //        <run-dependency>
+            //            <specification-version>6.2</specification-version>
+            //        </run-dependency>
+            //    </dependency>
+            // to include additional items like:
+            //    <dependency>
+            //        <code-name-base>org.openide.util</code-name-base>
+            //        <api-name>UtilitiesAPI</api-name>
+            //        <api-category>official</api-category>
+            //        <build-prerequisite/>
+            //        <compile-dependency/>
+            //        <run-dependency>
+            //            <specification-version>6.2</specification-version>
+            //        </run-dependency>
+            //    </dependency>
+            
+            {
+                NodeList deps = prj.getElementsByTagName("code-name-base");
+                for (int i = 0; i < deps.getLength(); i++) {
+                    Node name = deps.item(i);
+                    String api = name.getChildNodes().item(0).getNodeValue();
+                    String human = this.getProject().getProperty("arch." + api + ".name");
+                    if (human != null) {
+                        if (human.equals("")) {
+                            throw new BuildException("Empty name for " + api + " from " + project);
+                        }
+                        
+                        Element e = prj.createElement("api-name");
+                        e.appendChild(prj.createTextNode(human));
+                        name.getParentNode().insertBefore(e, name);
+                    }
+                    String category = this.getProject().getProperty("arch." + api + ".category");
+                    if (category != null) {
+                        if (category.equals("")) {
+                            throw new BuildException("Empty category for " + api + " from " + project);
+                        }
+                        Element e = prj.createElement("api-category");
+                        e.appendChild(prj.createTextNode(category));
+                        name.getParentNode().insertBefore(e, name);
+                    }
+                    
+                }
+            }
+
+            // finds out the lotion in CVS
+            // will be available as element under
+            // <project>
+            //    <cvs-location>openide/util</cvs-location>
+            {
+                File f = project;
+                StringBuffer sb = new StringBuffer();
+                String sep = "";
+                for (;;) {
+                    if (new File(f, "nbbuild").isDirectory()) {
+                        break;
+                    }
+                    
+                    if (f.isDirectory() && !"nbproject".equals (f.getName())) {
+                        sb.insert(0, sep);
+                        sep = "/";
+                        sb.insert(0, f.getName());
+                    }
+                    
+                    f = f.getParentFile();
+                    if (f == null) {
+                        // not found anything
+                        sb.setLength(0);
+                        break;
+                    }
+                }
+                Element el = prj.createElement("cvs-location");
+                el.appendChild(prj.createTextNode(sb.toString()));
+                prj.getDocumentElement().appendChild(el);
+            }
+            
+            
+            DOMSource prjSrc = new DOMSource(prj);
+            
+            NodeList node = prj.getElementsByTagName("project");
+            if (node.getLength() != 1) {
+                throw new BuildException("Expected one element <project/> in " + project + "but was: " + node.getLength());
+            }
+
+            NodeList list= q.getElementsByTagName("answer");
+            for (int i = 0; i < list.getLength(); i++) {
+                Node n = list.item(i);
+                String id = n.getAttributes().getNamedItem("id").getNodeValue();
+                java.net.URL u = Arch.class.getResource("Arch-default-" + id + ".xsl");
+                if (u != null) {
+                    log("Found default answer to " + id + " question", Project.MSG_VERBOSE);
+                    Node defaultAnswer = findDefaultAnswer(n);
+                    if (defaultAnswer != null && 
+                        "none".equals(defaultAnswer.getAttributes().getNamedItem("generate").getNodeValue())
+                    ) {
+                        log("Skipping answer as there is <defaultanswer generate='none'", Project.MSG_VERBOSE);
+                        // ok, this default answer is requested to be skipped
+                        continue;
+                    }
+                    
+                    DOMResult res = new DOMResult(q.createElement("p"));
+                    try {
+                        StreamSource defXSL = new StreamSource(u.openStream());
+                    
+                        TransformerFactory fack = TransformerFactory.newInstance();
+                        Transformer t = fack.newTransformer(defXSL);
+                        t.transform(prjSrc, res);
+                    } catch (IOException ex) {
+                        throw new BuildException (ex);
+                    } catch (javax.xml.transform.TransformerException ex) {
+                        throw new BuildException (ex);
+                    }
+                    
+                    if (defaultAnswer != null) {
+                        log("Replacing default answer", Project.MSG_VERBOSE);
+                        defaultAnswer.getParentNode().replaceChild(res.getNode(), defaultAnswer);
+                    } else {
+                        log("Adding default answer to the end of previous one", Project.MSG_VERBOSE);
+                        Element para = q.createElement("p");
+                        para.appendChild(q.createTextNode("Default answer to this question is:"));
+                        para.appendChild(q.createComment("If you do not want default answer to be generated you can use <defaultanswer generate='none' /> here"));
+                        para.appendChild(q.createElement("br"));
+                        para.appendChild(res.getNode());
+                        n.appendChild(para);
+                    }
+                }
+            }
+            
+            
+            qSource = new DOMSource(q);
+        }
         
         // apply the transform operation
         try {
@@ -352,11 +517,16 @@ public class Arch extends Task implements ErrorHandler {
             
             //w.write("\n\n<!-- Question: " + s + "\n");
             w.write("\n\n<!--\n        ");
-            
             w.write(elementToString(n));
-            
             w.write("\n-->\n");
-            w.write(" <answer id=\"" + s + "\">\n  <p>\n   XXX no answer for " + s + "\n  </p>\n </answer>\n\n");
+            
+            java.net.URL u = Arch.class.getResource("Arch-default-" + s + ".xsl");
+            if (u != null) {
+                // there is default answer
+                w.write(" <answer id=\"" + s + "\">\n  <defaultanswer generate='here' />\n </answer>\n\n");
+            } else {
+                w.write(" <answer id=\"" + s + "\">\n  <p>\n   XXX no answer for " + s + "\n  </p>\n </answer>\n\n");
+            }
         }
     }
         
@@ -469,5 +639,19 @@ public class Arch extends Task implements ErrorHandler {
             throw (IOException)new IOException(x.toString()).initCause(x);
         }
     }
-    
+
+    private static Node findDefaultAnswer(Node n) {
+        if (n.getNodeName().equals ("defaultanswer")) {
+            return n;
+        }
+        
+        NodeList arr = n.getChildNodes();
+        for (int i = 0; i < arr.getLength(); i++) {
+            Node found = findDefaultAnswer(arr.item(i));
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
 }

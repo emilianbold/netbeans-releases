@@ -80,6 +80,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.packages" value="${module.javadoc.packages}"/>
             <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.manifest" location="${manifest.mf}"/>
+            <property name="javadoc.project" location="nbproject/project.xml"/>
         </ant>
     </target>
     

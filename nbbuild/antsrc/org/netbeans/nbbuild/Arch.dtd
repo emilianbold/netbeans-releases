@@ -20,7 +20,7 @@ Describes format of NetBeans Architecture Answers file
      can occur in HTML
 -->
 <!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../../../../../libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd">
-<!ENTITY % special "br | span | bdo | object | img | map | api | usecase ">
+<!ENTITY % special "br | span | bdo | object | img | map | api | usecase | defaultanswer ">
 <!-- Now include normal XHTML DTD: -->
 %xhtml;
 
@@ -45,6 +45,11 @@ HTML contents of the document, with substitutions.
 <!ELEMENT answer %Flow; >
 <!ATTLIST answer
           id ID #REQUIRED
+>
+
+<!ELEMENT defaultanswer EMPTY >
+<!ATTLIST defaultanswer
+          generate (here|none) 'here' 
 >
 
 <!ELEMENT api %Flow; >

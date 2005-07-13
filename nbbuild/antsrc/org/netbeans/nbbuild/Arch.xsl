@@ -167,12 +167,18 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:param name="target" />
         <xsl:param name="generate-export" select="'true'" />
         <xsl:param name="generate-import" select="'true'" />
+        <xsl:param name="generate-group" select="''" />
     
-        <xsl:for-each select="//api[generate-id() = generate-id(key('apiGroups', @group))]">
+        <xsl:for-each select="//api[
+            generate-id() = generate-id(key('apiGroups', @group))
+            and
+            ($generate-group = '' or @group = $generate-group)
+        ]">
             <xsl:call-template name="jump-to-target">
                 <xsl:with-param name="group" select="@group" />
                 <xsl:with-param name="target" select="$target" />
                 <xsl:with-param name="generate-export" select="$generate-export" />
+                <xsl:with-param name="generate-import" select="$generate-import" />
                 <xsl:with-param name="generate-import" select="$generate-import" />
             </xsl:call-template>
         </xsl:for-each>

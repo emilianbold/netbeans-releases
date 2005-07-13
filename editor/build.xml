@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javadoc.src" value="../../editor"/>
         <property name="javadoc.files" value="editor_javadoc_files" />
         <property name="javadoc.arch" location="arch/arch-editor.xml"/>
+        <property name="javadoc.project" location="nbproject/project.xml"/>
     </ant>
   </target>
 

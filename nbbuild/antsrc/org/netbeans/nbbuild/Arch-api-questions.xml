@@ -91,6 +91,15 @@ openide/www/tutorial/questions.html.
             should be covered by the tests? 
             </hint>
         </question>
+
+        <question id="arch-where" when="init">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
     </category>
     <category id="dep" name="Project and platform dependencies">
         <question id="dep-nb" when="init" >

@@ -128,8 +128,10 @@ cause it to fail.
     
     <target name="javadoc-generate-overview" depends="javadoc-init" if="javadoc.overview.generate.generic" >
         <delete file="${javadoc.overview}" />
+
+        <property file="${export.interfaces}/properties/all.properties" />
         <arch xsl="exportOverview.xsl" answers="${javadoc.arch}" output="${javadoc.overview}" stylesheet="prose.css"
-            apichanges="${javadoc.apichanges}" 
+            apichanges="${javadoc.apichanges}" project="${javadoc.project}" 
         >
             <!--
             <param name="changes-since-year" expression="${previous.release.year}"/>
@@ -277,7 +279,13 @@ cause it to fail.
         </taskdef>
         <!-- Warn about incorrect question version, but do not make build fail: -->
         <property name="arch.warn" value="true"/>
-        <arch answers="${javadoc.arch}" output="${javadoc.out.dir}/architecture-summary.html" stylesheet="prose.css" overviewlink="overview-summary.html" footer="@FOOTER@"/>
+        <arch answers="${javadoc.arch}" 
+            output="${javadoc.out.dir}/architecture-summary.html" 
+            stylesheet="prose.css" 
+            overviewlink="overview-summary.html" 
+            footer="@FOOTER@" 
+            project="${javadoc.project}" 
+        />
     </target>
 
     <target name="arch-replace-init" if="javadoc.manifest">
@@ -292,6 +300,7 @@ cause it to fail.
 
     <target name="javadoc-stage-arch-replace" depends="javadoc-init,javadoc-check-timestamps,arch-replace-init" unless="javadoc.up.to.date" if="javadoc.manifest">
         <replace file="${javadoc.out.dir}/architecture-summary.html" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
+        <replace file="${javadoc.out.dir}/overview-summary.html" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
     </target>
     
     <!-- XXX up-to-date check here should be independent: from ${javadoc.arch} to ${export.interfaces}/${javadoc.name} -->
@@ -306,6 +315,16 @@ cause it to fail.
         <property name="arch.target" value="${javadoc.name}" />
         <arch xsl="exportInterfaces.xsl" answers="${javadoc.arch}" output="${export.interfaces}/architecture-summary.html" stylesheet="prose.css"/>
         <move file="${export.interfaces}/architecture-summary.html" tofile="${export.interfaces}/${javadoc.name}" />
+        <mkdir dir="${export.interfaces}/properties" />
+        <style style="exportInterfaceProperties.xsl" in="${export.interfaces}/${javadoc.name}" out="${export.interfaces}/properties/${javadoc.name}" >
+            <param name="code.name.base" expression="${javadoc.name}" />
+        </style>
+        <concat destfile="${export.interfaces}/properties/all.properties" >
+            <fileset dir="${export.interfaces}/properties/">
+                <include name="*" />
+                <exclude name="all.properties" />
+            </fileset>
+        </concat>
     </target>
     
     <target name="javadoc-stage-export-interfaces-replace" depends="javadoc-init,javadoc-check-timestamps,arch-replace-init" unless="javadoc.up.to.date" if="javadoc.manifest+export.interfaces">
@@ -362,7 +381,7 @@ cause it to fail.
             <include name="**/package-summary.html"/>
             <include name="**/doc-files/**/*.html"/>
             <!-- Make hyperlinks point to the source files, not the copied files: -->
-            <mapper type="glob" from="${javadoc.out.dir}/overview-summary.html" to="${javadoc.overview}"/>
+            <mapper type="glob" from="${javadoc.out.dir}/overview-summary.html" to="${javadoc.arch}"/>
             <mapper type="glob" from="${javadoc.out.dir}/*/package-summary.html" to="${javadoc.docfiles}/*/package.html"/>
             <mapper type="glob" from="${javadoc.out.dir}/apichanges.html" to="${javadoc.apichanges}"/>
             <mapper type="glob" from="${javadoc.out.dir}/architecture-summary.html" to="${javadoc.arch}"/>
