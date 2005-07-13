@@ -50,22 +50,25 @@ public final class ProjectXMLManager {
             "http://www.netbeans.org/ns/project/1"; // NOI18N
     
     // elements constants
-    private static final String DATA = "data"; // NOI18N
-    private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
-    private static final String STANDALONE = "standalone"; // NOI18N
-    private static final String SUITE_COMPONENT = "suite-component"; // NOI18N
-    private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
-    private static final String DEPENDENCY = "dependency"; // NOI18N
-    private static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
-    private static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
-    private static final String RELEASE_VERSION = "release-version"; // NOI18N
-    private static final String SPECIFICATION_VERSION = "specification-version"; // NOI18N
+    private static final String BINARY_ORIGIN = "binary-origin"; // NOI18N
     private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
-    private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
-    private static final String PUBLIC_PACKAGES= "public-packages"; // NOI18N
-    private static final String FRIEND_PACKAGES= "friend-packages"; // NOI18N
+    private static final String CLASS_PATH_EXTENSION = "class-path-extension"; // NOI18N
+    private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
+    private static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
+    private static final String DATA = "data"; // NOI18N
+    private static final String DEPENDENCY = "dependency"; // NOI18N
     private static final String FRIEND = "friend"; // NOI18N
+    private static final String FRIEND_PACKAGES= "friend-packages"; // NOI18N
+    private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
+    private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
     private static final String PACKAGE = "package"; // NOI18N
+    private static final String PUBLIC_PACKAGES= "public-packages"; // NOI18N
+    private static final String RELEASE_VERSION = "release-version"; // NOI18N
+    private static final String RUN_DEPENDENCY = "run-dependency"; // NOI18N
+    private static final String SPECIFICATION_VERSION = "specification-version"; // NOI18N
+    private static final String STANDALONE = "standalone"; // NOI18N
+    private static final String SUBPACKAGES = "subpackages"; // NOI18N
+    private static final String SUITE_COMPONENT = "suite-component"; // NOI18N
     
     private AntProjectHelper helper;
     private NbPlatform plaf;
@@ -73,6 +76,7 @@ public final class ProjectXMLManager {
     private String cnb;
     private SortedSet/*<ModuleDependency>*/ directDeps;
     private String[] publicPackages;
+    private String[] cpExtensions;
     private String[] friends;
     
     // cached confData element for easy access with getConfData
@@ -93,19 +97,19 @@ public final class ProjectXMLManager {
             // nothing needs to be done - standalone is already set
             return;
         }
-
+        
         Element suiteCompEl = Util.findElement(confData, ProjectXMLManager.SUITE_COMPONENT,
                 NbModuleProjectType.NAMESPACE_SHARED);
         if (suiteCompEl != null && moduleType == NbModuleTypeProvider.SUITE_COMPONENT) {
             // nothing needs to be done - suiteCompEl is already set
             return;
         }
-
+        
         if (suiteCompEl == null && standaloneEl == null && moduleType == NbModuleTypeProvider.NETBEANS_ORG) {
             // nothing needs to be done - nb.org modules don't have any element
             return;
         }
-
+        
         // Ok, we get here. So clean up....
         if (suiteCompEl != null) {
             confData.removeChild(suiteCompEl);
@@ -142,7 +146,7 @@ public final class ProjectXMLManager {
             if (me == null) {
                 // XXX might be e.g. shown in nb.errorForreground and "disabled"
                 Util.err.log(ErrorManager.WARNING,
-                    "Detected dependency on module which cannot be found in " + // NOI18N
+                        "Detected dependency on module which cannot be found in " + // NOI18N
                         "the current module's universe (platform, suite): " +  // NOI18N
                         cnb + " (skipping)"); // NOI18N
                 continue;
@@ -333,7 +337,10 @@ public final class ProjectXMLManager {
         helper.putPrimaryConfigurationData(confData, true);
     }
     
-    /** Returns sorted array of all exposed public packages. */
+    /**
+     * Returns sorted array of <code>String</code>s of all exposed public
+     * packages.
+     */
     public String[] getPublicPackages() {
         if (publicPackages != null) {
             return publicPackages;
@@ -342,6 +349,7 @@ public final class ProjectXMLManager {
                 ProjectXMLManager.findPublicPackages(getConfData());
         Set sortedPP = new TreeSet();
         for (int i = 0; i < pp.length; i++) {
+            // XXX handle package in the right way when it is "recursive"
             sortedPP.add(pp[i].getPackage());
         }
         publicPackages = new String[pp.length];
@@ -354,6 +362,34 @@ public final class ProjectXMLManager {
             friends = ProjectXMLManager.findFriends(getConfData());
         }
         return friends;
+    }
+    
+    
+    /**
+     * Returns paths of all libraries bundled within a project this
+     * <em>manager</em> manage. So the result should be an array of
+     * <code>String</code>s each representing a relative path to the project's
+     * external library (jar/zip).
+     * @return an array of strings (may be empty)
+     */
+    public String[] getBinaryOrigins() {
+        if (cpExtensions != null) {
+            return cpExtensions;
+        }
+        
+        List/*<Element>*/ cpExtEls = Util.findSubElements(getConfData());
+        Set/*<String>*/ binaryOrigs = new TreeSet();
+        for (Iterator it = cpExtEls.iterator(); it.hasNext(); ) {
+            Element cpExtEl = (Element) it.next();
+            if (CLASS_PATH_EXTENSION.equals(cpExtEl.getTagName())) {
+                Element binOrigEl = Util.findElement(cpExtEl, BINARY_ORIGIN, NbModuleProjectType.NAMESPACE_SHARED);
+                if (binOrigEl != null) {
+                    binaryOrigs.add(Util.findText(binOrigEl));
+                }
+            }
+        }
+        String[] result = new String[binaryOrigs.size()];
+        return (String[]) binaryOrigs.toArray(result);
     }
     
     /** Returns code-name-base. */
@@ -468,6 +504,8 @@ public final class ProjectXMLManager {
             Element pkgEl = (Element) it.next();
             if (PACKAGE.equals(pkgEl.getTagName())) {
                 packages.add(new ManifestManager.PackageExport(Util.findText(pkgEl), false));
+            } else if (SUBPACKAGES.equals(pkgEl.getTagName())) {
+                packages.add(new ManifestManager.PackageExport(Util.findText(pkgEl), true));
             }
         }
         return packages;
@@ -595,4 +633,5 @@ public final class ProjectXMLManager {
         }
         return confData;
     }
+    
 }

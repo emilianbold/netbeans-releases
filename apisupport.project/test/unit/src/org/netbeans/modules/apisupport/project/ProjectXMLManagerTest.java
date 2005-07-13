@@ -331,6 +331,14 @@ public class ProjectXMLManagerTest extends TestBase {
         assertEquals("public packages", new Integer(1), new Integer(getNewMiscPXM().getPublicPackages().length));
     }
     
+    public void testGetBinaryOrigins() throws Exception {
+        NbModuleProject xercesPrj = (NbModuleProject) ProjectManager.getDefault().
+                findProject(nbroot.getFileObject("libs/xerces"));
+        ProjectXMLManager xercesPXM = new ProjectXMLManager(xercesPrj.getHelper());
+        assertEquals("number of binary origins", 2, xercesPXM.getBinaryOrigins().length);
+        
+    }
+    
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {
         int srcFolderLen = what.getPath().length();
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
