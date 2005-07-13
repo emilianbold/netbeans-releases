@@ -103,6 +103,10 @@ Microsystems, Inc. All Rights Reserved.
         </ant>
     </target>
     
+    <target name="reload-in-ide" depends="netbeans">
+        <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
+    </target>
+    
     <target name="javahelp" depends="init" if="has.javahelp">
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>
         <copy todir="${build.javahelp.dir}">
