@@ -215,11 +215,13 @@ public class JavaCompletionProvider implements CompletionProvider {
             private MyJavaDoc doc;
             private Action goToSource = null;
             private ExtEditorUI ui;
+            private URL url;
             
             public DocItem(final Object item, ExtEditorUI ui) {
                 this.ui = ui;
                 doc = new MyJavaDoc(ui);
                 doc.setItem(item);
+                this.url = getURL(item);
                 Resource res = item instanceof Element ? ((Element)item).getResource() : null;
                 if (res != null && res.getName().endsWith(".java")) //NOI18N
                     goToSource = new AbstractAction() {
@@ -241,7 +243,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             
             public URL getURL() {
-                return null;
+                return url;
+            }
+            
+            private URL getURL(Object item){
+                return doc.getURL(item);
             }
             
             public Action getGotoSourceAction() {
@@ -256,6 +262,11 @@ public class JavaCompletionProvider implements CompletionProvider {
 
                 private void setItem(Object item) {
                     new MyJavaDocParser(item).run();
+                }
+                
+                private URL getURL(Object item){
+                    URL[] urls = getJMISyntaxSupport().getJavaDocURLs(item);
+                    return (urls == null || urls.length < 1) ? null : urls[0];
                 }
                 
                 private class MyJavaDocParser extends NbJMICompletionJavaDoc.JMIParsingThread {
