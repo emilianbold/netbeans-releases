@@ -41,7 +41,6 @@ public class JarWithModuleAttributes extends Jar {
     private static final Pattern IMPL_DEP = Pattern.compile(" *([a-zA-Z0-9_.]+)(/[0-9]+)? *= *(.+) *");
 
     public void setManifest(File manifestFile) throws BuildException {
-        super.setManifest(manifestFile);
         Manifest added = new Manifest();
         try {
             String pubPkgs = getProject().getProperty("public.packages");
@@ -81,19 +80,28 @@ public class JarWithModuleAttributes extends Jar {
             if (moduleDeps != null) {
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Module-Dependencies", moduleDeps));
             }
-            if (!"lib".equals (getProject().getProperty("module.jar.dir"))) {
-                // modules in lib cannot request this token
-                added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Requires", "org.openide.modules.ModuleFormat1"));
-            }
             // Check to see if OpenIDE-Module-Implementation-Version is already defined.
             String implVers;
-            String myself;
+            String ownCnb;
+            Manifest staticManifest;
             InputStream is = new FileInputStream(manifestFile);
             try {
-                Manifest staticManifest = new Manifest(new InputStreamReader(is, "UTF-8"));
+                staticManifest = new Manifest(new InputStreamReader(is, "UTF-8"));
                 Manifest.Section mainSection = staticManifest.getMainSection();
                 implVers = mainSection.getAttributeValue("OpenIDE-Module-Implementation-Version");
-                myself = mainSection.getAttributeValue("OpenIDE-Module");
+                String myself = mainSection.getAttributeValue("OpenIDE-Module");
+                int slash = myself.indexOf('/');
+                if (slash == -1) {
+                    ownCnb = myself;
+                } else {
+                    ownCnb = myself.substring(0, slash);
+                }
+                String cnbs = getProject().getProperty("code.name.base.slashes");
+                String cnbDots = (cnbs != null) ? cnbs.replace('/', '.') : null;
+                if (!ownCnb.equals(cnbDots)) {
+                    // #58248: make sure these stay in synch.
+                    throw new BuildException("Mismatch in module code name base: manifest says " + ownCnb + " but project.xml says " + cnbDots, getLocation());
+                }
             } finally {
                 is.close();
             }
@@ -137,7 +145,7 @@ public class JarWithModuleAttributes extends Jar {
                                 additions.put(cnb, versionI);
                             } catch (NumberFormatException e) {
                                 // OK, ignore this one, not numeric.
-                                getProject().log("Warning: in " + myself + ", use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version from " + cnb, Project.MSG_WARN);
+                                getProject().log("Warning: in " + ownCnb + ", use of spec.version.base with non-integer OpenIDE-Module-Implementation-Version from " + cnb, Project.MSG_WARN);
                             }
                         }
                     }
@@ -149,7 +157,7 @@ public class JarWithModuleAttributes extends Jar {
                 }
                 added.addConfiguredAttribute(new Manifest.Attribute("OpenIDE-Module-Specification-Version", specVersBase));
             } else if ((ideDeps != null && ideDeps.indexOf('=') != -1) || (moduleDeps != null && moduleDeps.indexOf('=') != -1)) {
-                getProject().log("Warning: in " + myself + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update", Project.MSG_WARN);
+                getProject().log("Warning: in " + ownCnb + ", not using spec.version.base, yet declaring implementation dependencies; may lead to problems with Auto Update", Project.MSG_WARN);
             } else if (implVers != null) {
                 try {
                     new Integer(implVers);
@@ -158,6 +166,22 @@ public class JarWithModuleAttributes extends Jar {
                 }
             }
             // Now ask the regular <jar> task to add all this stuff to the regular manifest.mf.
+            added.merge(staticManifest);
+            if (!"lib".equals (getProject().getProperty("module.jar.dir"))) {
+                // modules in lib cannot request this token
+                String key = "OpenIDE-Module-Requires";
+                String token = "org.openide.modules.ModuleFormat1";
+                String requires = staticManifest.getMainSection().getAttributeValue(key);
+                String newRequires;
+                if (requires != null) {
+                    // #59671: have to modify it, not just use super.setManifest(manifestFile).
+                    added.getMainSection().removeAttribute(key);
+                    newRequires = requires + ", " + token;
+                } else {
+                    newRequires = token;
+                }
+                added.addConfiguredAttribute(new Manifest.Attribute(key, newRequires));
+            }
             addConfiguredManifest(added);
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
