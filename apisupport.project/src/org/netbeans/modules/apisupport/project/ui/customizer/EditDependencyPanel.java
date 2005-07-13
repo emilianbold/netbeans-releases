@@ -48,9 +48,11 @@ final class EditDependencyPanel extends JPanel {
         availablePkg.setEnabled(anyAvailablePkg);
         DefaultListModel model = new DefaultListModel();
         if (anyAvailablePkg) {
-            // XXX only temporary(?)
+            // XXX should show all subpackages in the case of recursion is set
+            // to true instead of e.g. org/**
             for (int i = 0; i < pp.length; i++) {
-                model.addElement(pp[i].getPackage());
+                model.addElement(pp[i].getPackage() + 
+                        (pp[i].isRecursive() ? "/**" : ""));
             }
         } else {
             model.addElement("<empty>"); // NOI18N
