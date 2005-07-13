@@ -68,8 +68,8 @@ public final class ModuleActions implements ActionProvider {
         }
         if (isNetBeansOrg) {
             String path = project.getPathWithinNetBeansOrg();
-            actions.add(createMasterAction(project, new String[] {"all-" + path}, "Build with Dependencies"));
-            actions.add(createMasterAction(project, new String[] {"all-" + path, "tryme"}, "Build with Dependencies and Try"));
+            actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, "Build with Dependencies"));
+            actions.add(createMasterAction(project, new String[] {"init", "all-" + path, "tryme"}, "Build with Dependencies and Try"));
         } else {
             actions.add(createGlobalAction(project, new String[] {"run"}, "Run"));
         }
