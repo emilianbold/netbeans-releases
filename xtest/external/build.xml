@@ -34,8 +34,8 @@ Microsystems, Inc. All Rights Reserved.
     </condition>
     <target name="emma" unless="skip-download-emma" depends="setup-proxy" >
         <echo message="Going to download emma. If it fails download it from http://emma.sf.net/ (and unpack into ${basedir}) or invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <get src="http://voxel.dl.sourceforge.net/sourceforge/emma/emma-2.0.4217-lib.zip" dest="emma-2.0.4217-lib.zip" />
-        <unzip dest="." src="emma-2.0.4217-lib.zip" />
+        <get src="http://voxel.dl.sourceforge.net/sourceforge/emma/emma-2.0.5312-lib.zip" dest="emma-2.0.5312-lib.zip" />
+        <unzip dest="." src="emma-2.0.5312-lib.zip" />
     </target>
     
     <target name="setup-proxy" if="proxy.host" >
@@ -46,6 +46,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="junit-3.8.1.jar"/>
         <delete file="emma.jar" />
         <delete file="emma_ant.jar" />
-        <delete file="emma-2.0.4217-lib.zip" />
+        <delete file="emma-2.0.5312-lib.zip" />
     </target>
 </project>
