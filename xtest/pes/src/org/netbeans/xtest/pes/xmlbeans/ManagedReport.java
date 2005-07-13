@@ -144,29 +144,21 @@ public class ManagedReport extends XTestResultsReport  {
         return xmlat_mappedHostname;
     }
     
-    
+    /** It returns xmlat_webLink trimmed of ending index.html.
+     * xmlat_webLink points to index.html of the report, e.g. 
+     * netbeans_4.2/200507061600/qa-functional_validation/qa-xp-s3/index.html.
+     */
     public String getPathToResultsRoot() {
         if (xmlat_webLink == null) return null;
                 
-        int index = xmlat_webLink.lastIndexOf("/index.html");
+        int index = xmlat_webLink.lastIndexOf("index.html");
         if (index != -1) {
-            return xmlat_webLink.substring(0,index);
+            return xmlat_webLink.substring(0, index-1);
         } else {
             return xmlat_webLink;
         }
        
     }
-    
-    public String getPathToProject() {
-        int idx = xmlat_webLink.indexOf(File.separatorChar);
-        if (idx != -1) {
-            return xmlat_webLink.substring(0,idx);
-        }
-        else {
-            return xmlat_webLink;
-        }
-    }
-    
     
     // delete all ide.zip files, all working directories, etc ...
     public void deleteDetailedData(File reportRoot, boolean leaveIDELog, boolean leaveAntLogs) throws IOException {
@@ -199,27 +191,6 @@ public class ManagedReport extends XTestResultsReport  {
             }
         }
     }
-    
-    
-    // deletes whole report
-    public void deleteFullReport(File reportRoot) throws IOException {
-        if (!reportRoot.isDirectory()) {
-            throw new IllegalArgumentException("reportRoot is not a valid directory - cannot delete");            
-        }
-        // delete full report
-        if (!FileUtils.delete( reportRoot )) {
-            throw new IOException("Cannot delete directory "+reportRoot);
-        }
-    }
-    
-    // toString() method
-    /*
-    public String toString() {
-        StringBuffer str = new StringBuffer("ManagedReport: ");
-        str.append(
-     
-    }
-    */
     
     private static String invalidFileMessage = "";
     

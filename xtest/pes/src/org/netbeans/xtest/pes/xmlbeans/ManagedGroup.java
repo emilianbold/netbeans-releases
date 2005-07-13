@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -200,7 +200,6 @@ public class ManagedGroup extends PESProjectGroup {
                     String type = (String)types.next();
                     PESLogger.logger.fine("Processing project:"+project+" department:"+department+" type:"+type);
                     try {
-                                                
                         ManagedGroup filteredGroup = ManagedGroup.getDefault(this.pesWeb,this.pesProjectGroup);
                         filteredGroup.readPESProjectGroup(pesProjectGroup);
                         filteredGroup.xmlel_ManagedReport = this.filterBy(project,null,department,type,null);
@@ -212,7 +211,7 @@ public class ManagedGroup extends PESProjectGroup {
                         Transformer transformer = XSLTransformers.getBuildsSummaryTransformer();
                         
                         XSLUtils.transform(transformer,filteredDOM,projectFile);
-                        
+
                         if (xmlat_currentBuilds > 0) {
                             projectFile = getProjectHTMLFile(project,department,type,false);
                             PESLogger.logger.finest("As well as to:"+projectFile);
@@ -220,7 +219,6 @@ public class ManagedGroup extends PESProjectGroup {
                             XSLUtils.transform(transformer,filteredDOM,projectFile);
                         }
                         // here goes the matrix ...
-                        
                         if (getHistoryMatricesAge() > 0) {
                             // do history matrices
                             PESLogger.logger.finer("Creating HistoryMatrices, age="+getHistoryMatricesAge());
@@ -237,14 +235,12 @@ public class ManagedGroup extends PESProjectGroup {
                             PESLogger.logger.finer("Setting trasinet flag with age "+getDetailedDataAge());
                             setManagedReportsFlag(getDetailedDataAge(), project, department, type, ManagedReport.OLD);
                         }
-                        
                         // delete old builds if applicable
                         if (getDeleteAge() > 0) {
                             // delete all builds
                             PESLogger.logger.finer("Setting delete flag with age "+getDeleteAge());
                             setManagedReportsFlag(getDeleteAge(), project, department, type, ManagedReport.TO_BE_DELETED);
                         }
-                        
                         // create (recreate) build summary pages for all incoming builds
                         
                         Iterator builds = ManagedGroup.getUniqueBuilds(incomings,project, department,type,null).iterator();
@@ -366,7 +362,6 @@ public class ManagedGroup extends PESProjectGroup {
        // find 'age' number of builds in given project/department/type and if anything older than 'age'
        // is still new - set it's status to transient
        // get all builds for this project/department,type                            
-       
        ManagedReport[] reports = this.filterBy(project,null,department,type,null);
        String[] uniqueBuilds = (String[])ManagedGroup.getUniqueBuilds(reports).toArray(new String[0]);              
        PESLogger.logger.finest("uniqueBuilds.length="+uniqueBuilds.length+" reports.length="+reports.length);
@@ -379,7 +374,6 @@ public class ManagedGroup extends PESProjectGroup {
            PESLogger.logger.finest("last build ="+lastBuild);
            for (int i=0; i<reports.length; i++) {
                // find all builds older than lastBuilds
-               
                if ((lastBuild == null) || (lastBuild.compareToIgnoreCase(reports[i].getBuild()) > 0)) {
                    switch (flag) {
                        case ManagedReport.OLD: 
@@ -436,7 +430,6 @@ public class ManagedGroup extends PESProjectGroup {
            }
        }
    }
-  
     
    public void cleanUpAndRemoveToBeDeleted()  {
        if (xmlel_ManagedReport == null) {
@@ -449,27 +442,18 @@ public class ManagedGroup extends PESProjectGroup {
            if (report != null) {
                if (report.isToBeDeleted()) {
                    try {
-                       
-                       File reportRoot = new File( pesWeb.getWebRoot(), report.getPathToProject() + File.separator + report.getBuild());
-                       
-                       if (reportRoot.isDirectory()) {
-                           try {
-                               // delete full report
-                               PESLogger.logger.finest("deleting full report at "+reportRoot);                               
-                               report.deleteFullReport(reportRoot);
-                               // remove report from the collection
-                               xmlel_ManagedReport[i] = null;
-                           } catch (IOException ioe) {
-                               PESLogger.logger.log(Level.WARNING, "IOExcepting caught when deleting report at "+reportRoot,ioe);
-                           }
-                       }
-                       else {
-                        if ( !reportRoot.exists() ) {
-                            //nothing
+                       File buildRoot = new File(new File(pesWeb.getWebRoot(), 
+                                                          FileUtils.normalizeName(report.getProject())), 
+                                                 FileUtils.normalizeName(report.getBuild()));
+                        PESLogger.logger.finest("deleting old reports at "+buildRoot);
+                        if (FileUtils.delete(buildRoot)) {
+                            // remove report from the collection
+                            xmlel_ManagedReport[i] = null;
+                        } else {
+                            PESLogger.logger.warning("Cannot delete directory "+buildRoot);
                         }
-                       }
                    } catch (IOException ioe) {
-                       PESLogger.logger.log(Level.WARNING, "IOExcepting caught when determining report root "+report.getPathToResultsRoot(),ioe);
+                       PESLogger.logger.log(Level.WARNING, "IOExcepting caught when determining web root.", ioe);
                    }
                }
            }
