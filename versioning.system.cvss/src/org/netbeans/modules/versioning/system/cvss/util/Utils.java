@@ -133,7 +133,7 @@ public class Utils {
         } else {
             Collection fileObjects = node.getLookup().lookup(new Lookup.Template(FileObject.class)).allInstances();
             if (fileObjects.size() > 0) {
-                nodeFiles.add(toFileCollection(fileObjects));
+                nodeFiles.addAll(toFileCollection(fileObjects));
             } else {
                 DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
                 if (dataObject instanceof DataShadow) {
