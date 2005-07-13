@@ -528,7 +528,38 @@ committed to CVS for legal reasons. You need to download it:
                 </xsl:if>
                 <xsl:value-of select="$genid"/>
             </xsl:when>
-            <xsl:otherwise><xsl:value-of select="generate-id($node)"/></xsl:otherwise>
+            <xsl:otherwise>
+                <xsl:call-template name="print-hash" >
+                    <xsl:with-param name="text" select="translate($node/summary/text(),
+                        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+                        '0503925827109823481784209824566547291478206519807439')" />
+                    <xsl:with-param name="hash" select="'3'" />
+                </xsl:call-template>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    
+    <xsl:template name="print-hash" >
+        <xsl:param name="text" />
+        <xsl:param name="hash" />
+        
+        <xsl:variable name="first-char" select="substring($text,1,1)" />
+        <xsl:choose>
+            <xsl:when test="$text and number($first-char) >= 0">
+                <xsl:call-template name="print-hash">
+                    <xsl:with-param name="text" select="substring($text, 2)" />
+                    <xsl:with-param name="hash" select="$hash * 2 + number($first-char)" />
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:when test="$text">
+                <xsl:call-template name="print-hash">
+                    <xsl:with-param name="text" select="substring($text, 2)" />
+                    <xsl:with-param name="hash" select="$hash * 2" />
+                </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:value-of select="$hash" />
+            </xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
