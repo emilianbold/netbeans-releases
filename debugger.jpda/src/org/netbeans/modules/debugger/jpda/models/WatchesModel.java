@@ -162,13 +162,37 @@ public class WatchesModel implements TreeModel {
         listeners.remove (l);
     }
     
-    void fireTreeChanged () {
+    private void fireTreeChanged () {
         synchronized (watchToValue) {
             watchToValue.clear();
         }
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         ModelEvent event = new ModelEvent.TreeChanged(this);
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (event);
+    }
+    
+    private void fireWatchesChanged () {
+
+        class NodeChildrenChanged extends ModelEvent.NodeChanged
+                                  implements javax.naming.ldap.ExtendedResponse {
+            private String id;
+            public NodeChildrenChanged(Object source, Object node, String id) {
+                super(source, node);
+                this.id = id;
+            }
+            public byte[] getEncodedValue() {
+                return null;
+            }
+            public String getID() {
+                return id;
+            }
+        }
+        
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        ModelEvent event = new NodeChildrenChanged(this, ROOT, org.openide.nodes.Node.PROP_LEAF);
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (event);
     }
@@ -405,14 +429,14 @@ public class WatchesModel implements TreeModel {
             WatchesModel m = getModel ();
             if (m == null) return;
             watch.addPropertyChangeListener (this);
-            m.fireTreeChanged ();
+            m.fireWatchesChanged ();
         }
         
         public void watchRemoved (Watch watch) {
             WatchesModel m = getModel ();
             if (m == null) return;
             watch.removePropertyChangeListener (this);
-            m.fireTreeChanged ();
+            m.fireWatchesChanged ();
         }
         
         // currently waiting / running refresh task
@@ -420,6 +444,9 @@ public class WatchesModel implements TreeModel {
         private RequestProcessor.Task task;
         
         public void propertyChange (PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
+            if (DebuggerManager.PROP_WATCHES.equals(propName)) return ;
             final WatchesModel m = getModel ();
             if (m == null) return;
             if (m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {

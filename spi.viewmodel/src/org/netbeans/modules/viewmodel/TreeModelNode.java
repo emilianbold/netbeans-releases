@@ -212,11 +212,15 @@ public class TreeModelNode extends AbstractNode {
     // other methods ...........................................................
     
     void setObject (Object o) {
+        setObjectNoRefresh (o);
+        refresh ();
+    }
+    
+    private void setObjectNoRefresh (Object o) {
         object = o;
         Children ch = getChildren ();
         if (ch instanceof TreeModelChildren)
             ((TreeModelChildren) ch).object = o;
-        refresh ();
     }
     
     public Object getObject () {
@@ -241,7 +245,7 @@ public class TreeModelNode extends AbstractNode {
                     fireShortDescriptionChange(null, null);
                     
                     // 3) refresh children
-                    refreshTheChildren();
+                    refreshTheChildren(true);
                 }
             });
         }
@@ -282,7 +286,7 @@ public class TreeModelNode extends AbstractNode {
         } else if (id == Node.PROP_LEAF) {
             getRequestProcessor ().post (new Runnable () {
                 public void run () {
-                    refreshTheChildren();
+                    refreshTheChildren(false);
                 }
             });
         } else {
@@ -339,11 +343,11 @@ public class TreeModelNode extends AbstractNode {
         firePropertyChange(column, null, null);
     }
     
-    private void refreshTheChildren() {
+    private void refreshTheChildren(boolean refreshSubNodes) {
         Children ch = getChildren();
         try {
             if (ch instanceof TreeModelChildren) {
-                ((TreeModelChildren) ch).refreshChildren();
+                ((TreeModelChildren) ch).refreshChildren(refreshSubNodes);
             } else if (!model.isLeaf (object)) {
                 setChildren(new TreeModelChildren (model, treeModelRoot, object));
             }
@@ -401,6 +405,7 @@ public class TreeModelNode extends AbstractNode {
         private WeakHashMap         objectToNode = new WeakHashMap ();
         private int[]               evaluated = { 0 }; // 0 - not yet, 1 - evaluated, -1 - timeouted
         private Object[]            children_evaluated;
+        private boolean refreshingSubNodes = true;
         
         private static final Object WAIT_KEY = new Object();
         
@@ -417,7 +422,7 @@ public class TreeModelNode extends AbstractNode {
         
         protected void addNotify () {
             initialezed = true;
-            refreshChildren ();
+            refreshChildren (true);
         }
         
         protected void removeNotify () {
@@ -425,10 +430,10 @@ public class TreeModelNode extends AbstractNode {
             setKeys (Collections.EMPTY_SET);
         }
         
-        void refreshChildren () {
+        void refreshChildren (boolean refreshSubNodes) {
             if (!initialezed) return;
 
-            refreshLazyChildren();
+            refreshLazyChildren(refreshSubNodes);
         }
         
         public void evaluateLazily(Runnable evaluatedNotify) {
@@ -465,13 +470,14 @@ public class TreeModelNode extends AbstractNode {
                 evaluated.notifyAll();
             }
             if (fire) {
-                applyChildren(ch);
+                applyChildren(ch, refreshingSubNodes);
             }
         }
         
-        private void refreshLazyChildren () {
+        private void refreshLazyChildren (boolean refreshSubNodes) {
             synchronized (evaluated) {
                 evaluated[0] = 0;
+                this.refreshingSubNodes = refreshSubNodes;
             }
             // It's refresh => do not check for this children already being evaluated
             treeModelRoot.getChildrenEvaluator().evaluate(this, false);
@@ -495,11 +501,11 @@ public class TreeModelNode extends AbstractNode {
             if (ch == null) {
                 applyWaitChildren();
             } else {
-                applyChildren(ch);
+                applyChildren(ch, refreshSubNodes);
             }
         }
         
-        private void applyChildren(final Object[] ch) {
+        private void applyChildren(final Object[] ch, boolean refreshSubNodes) {
             int i, k = ch.length; 
             WeakHashMap newObjectToNode = new WeakHashMap ();
             for (i = 0; i < k; i++) {
@@ -513,7 +519,11 @@ public class TreeModelNode extends AbstractNode {
                 if (wr == null) continue;
                 TreeModelNode tmn = (TreeModelNode) wr.get ();
                 if (tmn == null) continue;
-                tmn.setObject (ch [i]);
+                if (refreshSubNodes) {
+                    tmn.setObject (ch [i]);
+                } else {
+                    tmn.setObjectNoRefresh(ch[i]);
+                }
                 newObjectToNode.put (ch [i], wr);
             }
             objectToNode = newObjectToNode;
@@ -657,7 +667,7 @@ public class TreeModelNode extends AbstractNode {
                 //System.out.println("\nTreeModelNode.evaluateLazily("+TreeModelNode.this.getDisplayName()+", "+id+"): value = "+value+", fire = "+fire);
                 if (fire) {
                     firePropertyChange (id, null, value);
-                    refreshTheChildren();
+                    refreshTheChildren(true);
                 }
                 
             }

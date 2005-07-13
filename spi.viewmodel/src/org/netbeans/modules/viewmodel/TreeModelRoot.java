@@ -108,8 +108,9 @@ public class TreeModelRoot implements ModelListener {
                             if (event instanceof javax.naming.ldap.ExtendedResponse) {
                                 String id = ((javax.naming.ldap.ExtendedResponse) event).getID();
                                 tmNode.refresh(id);
+                            } else {
+                                tmNode.refresh();
                             }
-                            tmNode.refresh();
                             return ; // We're done
                         }
                     }
