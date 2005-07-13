@@ -99,85 +99,85 @@ public class DriverSpecification {
         this.dmd = dmd;
     }
 
-    public void getTables(String tableNamePattern, String[] types) {
+    public void getTables(String tableNamePattern, String[] types) throws SQLException {
         try {
             tableNamePattern = quoteString(tableNamePattern);
             rs = dmd.getTables(catalog, schema, tableNamePattern, types);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getProcedures(String procedureNamePattern) {
+    public void getProcedures(String procedureNamePattern) throws SQLException {
         try {
             procedureNamePattern = quoteString(procedureNamePattern);
             rs = dmd.getProcedures(catalog, schema, procedureNamePattern);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getPrimaryKeys(String table) {
+    public void getPrimaryKeys(String table) throws SQLException {
         try {
             table = quoteString(table);
             rs = dmd.getPrimaryKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getIndexInfo(String table, boolean unique, boolean approximate) {
+    public void getIndexInfo(String table, boolean unique, boolean approximate) throws SQLException {
         try {
             table = quoteString(table);
             rs = dmd.getIndexInfo(catalog, schema, table, unique, approximate);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getColumns(String tableNamePattern, String columnNamePattern) {
+    public void getColumns(String tableNamePattern, String columnNamePattern) throws SQLException {
         try {
             tableNamePattern = quoteString(tableNamePattern);
             columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getColumns(catalog, schema, tableNamePattern, columnNamePattern);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getProcedureColumns(String procedureNamePattern, String columnNamePattern) {
+    public void getProcedureColumns(String procedureNamePattern, String columnNamePattern) throws SQLException {
         try {
             procedureNamePattern = quoteString(procedureNamePattern);
             columnNamePattern = quoteString(columnNamePattern);
             rs = dmd.getProcedureColumns(catalog, schema, procedureNamePattern, columnNamePattern);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getExportedKeys(String table) {
+    public void getExportedKeys(String table) throws SQLException {
         try {
             table = quoteString(table);
             rs = dmd.getExportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
-    public void getImportedKeys(String table) {
+    public void getImportedKeys(String table) throws SQLException {
         try {
             table = quoteString(table);
             rs = dmd.getImportedKeys(catalog, schema, table);
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rs = null;
+            throw exc;
         }
     }
 
@@ -185,7 +185,7 @@ public class DriverSpecification {
         return rs;
     }
 
-    public HashMap getRow() {
+    public HashMap getRow() throws SQLException {
         HashMap rset = new HashMap();
         Object value;
 
@@ -198,15 +198,15 @@ public class DriverSpecification {
                     value = rs.getString(i);
 //                    value = rs.getObject(i); //cannot use getObject() because of problems with MSSQL ODBC driver
                 }  catch (SQLException exc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                     rset = null;
-                    break;
+                    // break;
+                    throw exc;
                 }
                 rset.put(new Integer(i), value);
             }
         } catch (SQLException exc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             rset = null;
+            throw exc;
         }
 
         return rset;

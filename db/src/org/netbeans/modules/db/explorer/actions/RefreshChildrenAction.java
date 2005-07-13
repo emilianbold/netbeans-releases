@@ -50,7 +50,7 @@ public class RefreshChildrenAction extends DatabaseAction {
                     if (nfo != null)
                         nfo.refreshChildren();
                 } catch(Exception exc) {
-                    String message = MessageFormat.format(bundle.getString("RefreshChildrenErrorPrefix"), new String[] {exc.getMessage()}); // NOI18N
+                    String message = bundle.getString("RefreshChildrenErrorPrefix") + " " + MessageFormat.format(bundle.getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             }

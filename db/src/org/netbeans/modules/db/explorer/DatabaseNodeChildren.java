@@ -16,11 +16,13 @@ package org.netbeans.modules.db.explorer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.Vector;
+import javax.swing.SwingUtilities;
 
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -33,6 +35,8 @@ import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 //import org.openide.util.Mutex;
 
@@ -115,7 +119,7 @@ public class DatabaseNodeChildren extends Children.Array {
 //                            });
 //                    }
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        showException(e);
                         children.clear();
                 }
 
@@ -200,7 +204,7 @@ public class DatabaseNodeChildren extends Children.Array {
             node.setInfo(info); /* makes a copy of info, use node.getInfo() to access it */
             node.getInfo().setNode(node); /* this is a weak, be cool, baby ;) */
         } catch (Exception e) {
-            e.printStackTrace();
+            showException(e);
         }
 
         return node;
@@ -221,5 +225,15 @@ public class DatabaseNodeChildren extends Children.Array {
 
         return subnode;
     }
-
+    
+    private void showException(final Exception e) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+                String format = bundle.getString("EXC_ConnectionIsBroken"); //NOI18N
+                String message = bundle.getString("ReadStructureErrorPrefix") + " " + MessageFormat.format(format, new String[] {e.getMessage()}); //NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            }
+        });
+    }
 }
