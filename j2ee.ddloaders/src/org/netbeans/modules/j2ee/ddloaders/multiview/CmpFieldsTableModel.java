@@ -22,7 +22,7 @@ import java.beans.PropertyChangeListener;
 /**
  * @author pfiala
  */
-class CmpFieldsTableModel extends InnerTableModel {
+public class CmpFieldsTableModel extends InnerTableModel {
 
     private EntityHelper.CmpFields cmpFields;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_FieldName"),

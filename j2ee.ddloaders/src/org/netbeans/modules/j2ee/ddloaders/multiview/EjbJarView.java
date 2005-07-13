@@ -22,7 +22,7 @@ import org.openide.nodes.Children;
 /**
  * @author pfiala
  */
-class EjbJarView extends SectionNodeView {
+public class EjbJarView extends SectionNodeView {
 
     protected EnterpriseBeansNode enterpriseBeansNode;
     protected EnterpriseBeans enterpriseBeans;

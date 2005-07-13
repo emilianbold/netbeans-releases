@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class FinderMethodsNode extends EjbSectionNode {
+public class FinderMethodsNode extends EjbSectionNode {
 
     private EntityHelper.Queries queries;
 

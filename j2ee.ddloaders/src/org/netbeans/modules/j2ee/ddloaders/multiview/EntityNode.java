@@ -19,7 +19,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class EntityNode extends EjbNode {
+public class EntityNode extends EjbNode {
 
     private EntityHelper entityHelper;
 

@@ -21,7 +21,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 /**
  * @author pfiala
  */
-class SelectMethodsNode extends EjbSectionNode {
+public class SelectMethodsNode extends EjbSectionNode {
 
     private EntityHelper.Queries queries;
 

@@ -21,7 +21,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class BeanEnvironmentNode extends EjbSectionNode {
+public class BeanEnvironmentNode extends EjbSectionNode {
 
     BeanEnvironmentNode(SectionNodeView sectionNodeView, Ejb ejb) {
         super(sectionNodeView, false, ejb, Utils.getBundleMessage("LBL_BeanEnvironment"), Utils.ICON_BASE_MISC_NODE);

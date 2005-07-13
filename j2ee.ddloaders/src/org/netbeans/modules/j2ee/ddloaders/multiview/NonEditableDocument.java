@@ -19,7 +19,7 @@ import javax.swing.text.AttributeSet;
 /**
  * @author pfiala
  */
-abstract class NonEditableDocument extends PlainDocument {
+public abstract class NonEditableDocument extends PlainDocument {
 
     String text = null;
 

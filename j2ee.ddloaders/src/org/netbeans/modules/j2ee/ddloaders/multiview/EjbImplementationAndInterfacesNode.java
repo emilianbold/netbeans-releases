@@ -20,7 +20,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class EjbImplementationAndInterfacesNode extends EjbSectionNode {
+public class EjbImplementationAndInterfacesNode extends EjbSectionNode {
 
     private EntityAndSessionHelper helper;
 

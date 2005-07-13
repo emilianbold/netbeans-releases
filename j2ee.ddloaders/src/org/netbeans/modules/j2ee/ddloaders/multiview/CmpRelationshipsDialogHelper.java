@@ -38,7 +38,7 @@ import java.util.Vector;
 /**
  * @author pfiala
  */
-class CmpRelationshipsDialogHelper {
+public class CmpRelationshipsDialogHelper {
 
     private static final String CLASS_COLLECTION = "java.util.Collection";  //NOI18N
     private static final String CLASS_SET = "java.util.Set";                //NOI18N

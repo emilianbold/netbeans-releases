@@ -29,7 +29,7 @@ import org.netbeans.jmi.javamodel.JavaClass;
 /**
  * @author pfiala
  */
-class EjbReferencesTableModel extends InnerTableModel {
+public class EjbReferencesTableModel extends InnerTableModel {
 
     private XmlMultiViewDataObject dataObject;
     Ejb ejb;

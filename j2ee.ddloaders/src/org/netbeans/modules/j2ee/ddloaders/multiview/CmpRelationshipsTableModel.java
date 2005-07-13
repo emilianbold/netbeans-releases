@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * @author pfiala
  */
-class CmpRelationshipsTableModel extends InnerTableModel {
+public class CmpRelationshipsTableModel extends InnerTableModel {
 
     private EjbJar ejbJar;
     private final Map relationshipsHelperMap = new HashMap();

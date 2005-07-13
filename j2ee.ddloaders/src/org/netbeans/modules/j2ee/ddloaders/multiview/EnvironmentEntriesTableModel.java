@@ -18,7 +18,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 /**
  * @author pfiala
  */
-class EnvironmentEntriesTableModel extends InnerTableModel {
+public class EnvironmentEntriesTableModel extends InnerTableModel {
 
     private EjbHelper ejbHelper;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_EntryName"),

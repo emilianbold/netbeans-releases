@@ -20,7 +20,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 /**
  * @author pfiala
  */
-class ResourceEnvironmentReferencesTableModel extends InnerTableModel {
+public class ResourceEnvironmentReferencesTableModel extends InnerTableModel {
 
     private Ejb ejb;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Name"),

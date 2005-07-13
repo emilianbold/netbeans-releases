@@ -24,7 +24,7 @@ import javax.swing.table.TableCellEditor;
 /**
  * @author pfiala
  */
-class ResourceReferencesTableModel extends InnerTableModel {
+public class ResourceReferencesTableModel extends InnerTableModel {
 
     private Ejb ejb;
     private static final int COLUMN_AUTHENTICATION = 2;

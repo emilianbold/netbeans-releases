@@ -19,7 +19,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class CmpRelationshipsView extends SectionNodeView {
+public class CmpRelationshipsView extends SectionNodeView {
 
     CmpRelationshipsView(EjbJarMultiViewDataObject dataObject) {
         super(dataObject);

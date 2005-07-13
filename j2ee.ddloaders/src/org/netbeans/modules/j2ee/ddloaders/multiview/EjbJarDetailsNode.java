@@ -20,7 +20,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 /**
  * @author pfiala
  */
-class EjbJarDetailsNode extends EjbSectionNode {
+public class EjbJarDetailsNode extends EjbSectionNode {
 
     EjbJarDetailsNode(SectionNodeView sectionNodeView, EjbJar ejbJar) {
         super(sectionNodeView, true, ejbJar, Utils.getBundleMessage("LBL_ModuleDetails"), Utils.ICON_BASE_MISC_NODE);

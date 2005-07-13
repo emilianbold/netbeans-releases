@@ -27,7 +27,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * @author pfiala
  */
-class CmpFieldsNode extends EjbSectionNode {
+public class CmpFieldsNode extends EjbSectionNode {
 
     private EntityHelper.CmpFields cmpFields;
 

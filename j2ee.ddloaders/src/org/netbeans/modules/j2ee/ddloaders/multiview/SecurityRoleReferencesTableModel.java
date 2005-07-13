@@ -20,7 +20,7 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 /**
  * @author pfiala
  */
-class SecurityRoleReferencesTableModel extends InnerTableModel {
+public class SecurityRoleReferencesTableModel extends InnerTableModel {
 
     private EntityAndSession ejb;
     private static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_ReferenceName"),

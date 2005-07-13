@@ -20,7 +20,7 @@ import org.netbeans.jmi.javamodel.Method;
 /**
  * @author pfiala
  */
-class FinderMethodsTableModel extends QueryMethodsTableModel {
+public class FinderMethodsTableModel extends QueryMethodsTableModel {
 
     protected static final String[] COLUMN_NAMES = {Utils.getBundleMessage("LBL_Method"),
                                                     Utils.getBundleMessage("LBL_ReturnsCollection"),

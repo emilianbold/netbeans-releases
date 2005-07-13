@@ -25,7 +25,7 @@ import java.awt.event.ActionListener;
 /**
  * @author pfiala
  */
-class BeanDetailsPanel extends EjbDetailForm {
+public class BeanDetailsPanel extends EjbDetailForm {
 
     private final Ejb ejb;
     private EjbJarMultiViewDataObject dataObject;
