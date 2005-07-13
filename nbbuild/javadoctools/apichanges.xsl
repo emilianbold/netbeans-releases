@@ -423,7 +423,11 @@ committed to CVS for legal reasons. You need to download it:
         <xsl:value-of select="@day"/> '<xsl:value-of select="substring(@year, 3, 2)"/>
     </xsl:template>
 
-    <xsl:template match="version">
+    <xsl:template match="version" >
+        <xsl:apply-templates mode="print-version" select="." />
+    </xsl:template>
+    
+    <xsl:template match="version" mode="print-version" >
         <xsl:value-of select="@major"/>.<xsl:value-of select="@minor"/>
         <xsl:if test="@subminor">.<xsl:value-of select="@subminor"/></xsl:if>
         <xsl:if test="@subsubminor">.<xsl:value-of select="@subsubminor"/></xsl:if>
@@ -515,7 +519,7 @@ committed to CVS for legal reasons. You need to download it:
             <xsl:when test="$node/version">
                 <xsl:variable name="version" select="$node/version"/>
                 <xsl:variable name="dupes" select="//change/version[generate-id() != generate-id($version) and @major = $version/@major and @minor = $version/@minor and (@subminor = $version/@subminor or not(@subminor) and not($version/@subminor)) and (@subsubminor = $version/@subsubminor or not(@subsubminor) and not ($version/@subsubminor)) and not(../@id)]"/>
-                <xsl:variable name="genid">version-<xsl:apply-templates select="$version"/></xsl:variable>
+                <xsl:variable name="genid">version-<xsl:apply-templates select="$version" mode="print-version" /></xsl:variable>
                 <xsl:if test="$dupes">
                     <xsl:message terminate="yes">
                         "<xsl:value-of select="$genid"/>" cannot be used as the generated ID for change
