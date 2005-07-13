@@ -897,7 +897,7 @@ public final class HtmlRenderer {
                 Rectangle2D r = fm.getStringBounds(chars, pos, nextTag + 1, g);
                 if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                     // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
-                    r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag + 1)), r.getHeight());
+                    r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag - pos + 1)), r.getHeight());
                 } 
 
                 //Store the height, so we can add it if we're in word wrap mode,
