@@ -551,6 +551,10 @@ public final class NbModuleProject implements Project {
             cp.append(module.getClassPathExtensions());
         }
         ModuleEntry myself = ml.getEntry(getCodeNameBase());
+        if (myself == null) {
+            // ???
+            return "";
+        }
         cp.append(myself.getClassPathExtensions());
         return cp.toString();
     }
