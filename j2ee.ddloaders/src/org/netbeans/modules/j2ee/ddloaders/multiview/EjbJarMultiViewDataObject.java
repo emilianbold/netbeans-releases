@@ -524,7 +524,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     
     /** Enable to access Active element 
      */
-    private ToolBarMultiViewElement getActiveMVElement() {
+    public ToolBarMultiViewElement getActiveMVElement() {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
 
