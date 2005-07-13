@@ -54,12 +54,7 @@ public class DiffAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         File [] files = getFilesToProcess();
-        String title; 
-        if (files.length == 1) {
-            title = MessageFormat.format(loc.getString("CTL_DiffDialogLocal_Title"), new Object [] { files[0].getName() }); 
-        } else {
-            title = MessageFormat.format(loc.getString("CTL_DiffDialogLocalMulti_Title"), new Object [] { Integer.toString(files.length) }); 
-        }
+        String title = MessageFormat.format(loc.getString("CTL_DiffDialogLocal_Title"), new Object [] { getContextDisplayName() }); 
         DiffExecutor executor = new DiffExecutor(files, title);
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {

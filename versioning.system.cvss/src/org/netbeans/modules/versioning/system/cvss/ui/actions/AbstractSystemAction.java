@@ -115,6 +115,63 @@ public abstract class AbstractSystemAction extends SystemAction {
         }
     }
     
+    /**
+     * Computes display name of the context this action will operate.
+     * 
+     * @return String name of this action's context, e.g. "3 files", "MyProject", "2 projects", "Foo.java". Returns
+     * null if the context is empty
+     */ 
+    public String getContextDisplayName() {
+        // TODO: reuse this code in getName() 
+        File [] nodes = Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
+        int objectCount = nodes.length;
+        // if all nodes represent project node the use plain name
+        // It avoids "Show changes 2 files" on project node
+        // caused by fact that project contains two source groups.
+
+        boolean projectsOnly = true;
+        Node [] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
+        for (int i = 0; i < activatedNodes.length; i++) {
+            Node activatedNode = activatedNodes[i];
+            Project project =  (Project) activatedNode.getLookup().lookup(Project.class);
+            if (project == null) {
+                projectsOnly = false;
+                break;
+            }
+        }
+        if (projectsOnly) objectCount = activatedNodes.length; 
+
+        if (objectCount == 0) {
+            return null;
+        } else if (objectCount == 1) {
+            if (projectsOnly) {
+                return activatedNodes[0].getDisplayName();
+            }
+            FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                return fo.getNameExt();
+            } else {
+                DataObject dao = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+                if (dao != null) {
+                    return dao.getPrimaryFile().getNameExt();
+                } else {
+                    return activatedNodes[0].getDisplayName();
+                }
+            }
+        } else {
+            if (projectsOnly) {
+                try {
+                    return MessageFormat.format(NbBundle.getBundle(AbstractSystemAction.class).getString("MSG_ActionContext_MultipleProjects"),  // NOI18N
+                                                new Object [] { new Integer(objectCount) });
+                } catch (MissingResourceException ex) {
+                    // ignore use files alternative bellow
+                }
+            }
+            return MessageFormat.format(NbBundle.getBundle(AbstractSystemAction.class).getString("MSG_ActionContext_MultipleFiles"),  // NOI18N
+                                        new Object [] { new Integer(objectCount) });
+        }
+    }    
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(this.getClass());
     }

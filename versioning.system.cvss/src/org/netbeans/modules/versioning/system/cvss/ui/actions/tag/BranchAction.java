@@ -54,14 +54,8 @@ public class BranchAction extends AbstractSystemAction {
     public void actionPerformed(ActionEvent ev) {
         File [] roots = getFilesToProcess();
 
-        String title;
-        if (roots.length > 1) {
-            title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title_Multi"), 
-                                         new Integer[] { new Integer(roots.length) });
-        } else {
-            title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"), 
-                                         new Object[] { roots[0].getName() });            
-        }
+        String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"), 
+                                     new Object[] { getContextDisplayName() });            
         
         BranchSettings settings = new BranchSettings(roots);
         DialogDescriptor descriptor = new DialogDescriptor(settings, title);

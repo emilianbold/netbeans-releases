@@ -121,21 +121,6 @@ public class CommitAction extends AbstractSystemAction {
     
     private static void setupNodes(CommitSettings settings, File [] roots) {
         CvsFileNode [] filesToCommit = CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes();
-
-/*
-        Set stickyTags = new HashSet(2);
-        for (int i = 0; i < filesToCommit.length; i++) {
-            CvsFileNode node = filesToCommit[i];
-            stickyTags.add(Utils.getSticky(node.getFile()));
-        }
-        if (stickyTags.size() > 1) {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STICKY, CommitSettings.COLUMN_NAME_STATUS, 
-                                                CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
-        } else {
-            settings.setColumns(new String [] { CommitSettings.COLUMN_NAME_NAME, CommitSettings.COLUMN_NAME_STATUS, 
-                                                CommitSettings.COLUMN_NAME_ACTION, CommitSettings.COLUMN_NAME_PATH });
-        }
-*/
         settings.setNodes(filesToCommit);
     }
 
@@ -195,14 +180,7 @@ public class CommitAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         File [] roots = getFilesToProcess();
-        String title;
-        if (roots.length > 1) {
-            title = MessageFormat.format(NbBundle.getBundle(CommitAction.class).getString("CTL_CommitDialog_Title_Multi"), 
-                                         new Integer[] { new Integer(roots.length) });
-        } else {
-            title = roots[0].getName();            
-        }
-        invokeCommit(title, roots);
+        invokeCommit(getContextDisplayName(), roots);
     }
     
     private static void copy(CommitCommand c1, CommitCommand c2) {

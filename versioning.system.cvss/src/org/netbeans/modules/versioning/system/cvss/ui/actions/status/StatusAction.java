@@ -31,7 +31,6 @@ import java.util.*;
  */
 public class StatusAction extends AbstractSystemAction {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(StatusAction.class);
     private static final int enabledForStatus = FileInformation.STATUS_MANAGED;  
     
     protected String getBaseName() {
@@ -44,15 +43,8 @@ public class StatusAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         File [] roots = Utils.getActivatedFiles();
-        String title;
-        if (roots.length == 1) {
-            title = roots[0].getName();
-        } else {
-            title = MessageFormat.format(loc.getString("CTL_Status_WindowTitle"), 
-                                         new Object [] { Integer.toString(roots.length) });
-        }
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
-        stc.setContentTitle(title);
+        stc.setContentTitle(getContextDisplayName());
         stc.setRoots(roots);
         stc.open(); 
         stc.requestActive();
