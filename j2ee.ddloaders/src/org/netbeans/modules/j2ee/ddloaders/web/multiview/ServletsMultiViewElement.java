@@ -312,6 +312,7 @@ public class ServletsMultiViewElement extends ToolBarMultiViewElement implements
                 // updating data model
                 dObj.modelUpdatedFromUI();
                 DDUtils.removeServletMappings(webApp,servlet.getServletName());
+                DDUtils.removeFilterMappingsForServlet(webApp,servlet.getServletName());
                 webApp.removeServlet(servlet);
                 
                 // removing section

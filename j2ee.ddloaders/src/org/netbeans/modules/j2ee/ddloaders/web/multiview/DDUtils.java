@@ -316,7 +316,8 @@ public class DDUtils {
         }
         return "";
     }
-    
+    /** removes all filter mappings for given servlet name
+     */
     public static void removeServletMappings(WebApp webApp, String servletName) {
         if (servletName==null) return;
         ServletMapping[] oldMaps = webApp.getServletMapping();
@@ -326,8 +327,8 @@ public class DDUtils {
             }
         }
     }
-    /** removes all filter mappings for filterName
-     * @return Stack of deleetd rows
+    /** removes all filter mappings for given filter name
+     * @return Stack of deleted rows
      */
     public static java.util.Stack removeFilterMappings(WebApp webApp, String filterName) {
         java.util.Stack deletedRows = new java.util.Stack();
@@ -340,6 +341,19 @@ public class DDUtils {
             }
         }
         return deletedRows;
+    }
+    
+    /** removes all filter mappings for given servlet name
+     */
+    public static void removeFilterMappingsForServlet(WebApp webApp, String servletName) {
+        java.util.Stack deletedRows = new java.util.Stack();
+        if (servletName==null) return;
+        FilterMapping[] oldMaps = webApp.getFilterMapping();
+        for (int i=0;i<oldMaps.length;i++) {
+            if (servletName.equals(oldMaps[i].getServletName())) {
+                webApp.removeFilterMapping(oldMaps[i]);
+            }
+        }
     }
     
     public static String addItem(String text, String newItem, boolean asFirst) {
