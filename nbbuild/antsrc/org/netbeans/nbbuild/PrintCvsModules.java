@@ -89,55 +89,23 @@ public class PrintCvsModules extends Task {
     public void execute () throws BuildException {
 
         buildmodules.addAll(modules);
-        Target dummy = new Target ();
-        dummyName = "nbmerge-" + getOwningTarget().getName() + selectorId;
-        targets = getProject().getTargets();
-        while (targets.contains (dummyName))
-            dummyName += "-x";
-        dummy.setName (dummyName);
-        for (int i = 0; i < buildmodules.size (); i++) {
-            String module = (String) buildmodules.elementAt (i);
-            dummy.addDependency (targetprefix + module);
-        }
-        getProject().addTarget(dummy);
-
-        Vector fullList = getProject().topoSort(dummyName, targets);
-        log("fullList is " + fullList, Project.MSG_VERBOSE);
-        // Now remove earlier ones: already done.
-        Vector doneList = getProject().topoSort(getOwningTarget().getName(), targets);
-        List todo = new ArrayList(fullList.subList(0, fullList.indexOf(dummy)));
-        log("todo is " + todo.toString(), Project.MSG_VERBOSE);
-        todo.removeAll(doneList.subList(0, doneList.indexOf(getOwningTarget())));
-        log("todo is " + todo.toString(), Project.MSG_VERBOSE);
-        Iterator targit = todo.iterator();
+        Vector compiletime = new Vector();
         Vector cvslist = new Vector();
         cvslist.add("nbbuild");
-        Vector compiletime = new Vector();
-        while (targit.hasNext()) {
-            Target nexttargit = (Target)targit.next();
-            String tname = nexttargit.getName();
-            log("target name is " + tname, Project.MSG_VERBOSE);
-            if (tname.startsWith(targetprefix)) {
-                String modname = tname.substring(targetprefix.length());
-                log("build module name is " + modname, Project.MSG_VERBOSE);
-                if ( ! buildmodules.contains(modname) ) {
- 		    log("module \""+modname+"\" seems to be only compile-time dependency", Project.MSG_VERBOSE);
-  		    compiletime.add(modname);
-                }
-                log("modname.indexOf(\"/\") is " + modname.indexOf("/"), Project.MSG_DEBUG);
-                if (modname.indexOf("/") > 0) {
-                    modname = modname.substring(0,modname.indexOf("/"));
-                    log("cvs module name is " + modname, Project.MSG_VERBOSE);
-                }
-                if ( ! cvslist.contains(modname) ) {
-                    cvslist.add(modname);
-                } else {
-                    log("not adding cvs module name " + modname, Project.MSG_VERBOSE);
-                }
-                
+        for (int i = 0; i < buildmodules.size (); i++) {
+            String module = (String) buildmodules.elementAt (i);
+            log("module.indexOf(\"/\") is " + module.indexOf("/"), Project.MSG_DEBUG);
+            if (module.indexOf("/") > 0) {
+                module = module.substring(0,module.indexOf("/"));
+                log("cvs module name is " + module, Project.MSG_VERBOSE);
             }
-        
+            if ( ! cvslist.contains(module) ) {
+                cvslist.add(module);
+            } else {
+                log("not adding cvs module name " + module, Project.MSG_VERBOSE);
+            }
         }
+
         log("compiletime="+compiletime);
         log("selectedmodules="+modules);
         log("cvsmodules="+cvslist);    
