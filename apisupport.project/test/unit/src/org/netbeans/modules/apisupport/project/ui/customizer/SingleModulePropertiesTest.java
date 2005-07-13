@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Enumeration;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -79,8 +78,7 @@ public class SingleModulePropertiesTest extends TestBase {
                 "src/org/netbeans/libs/xerces/Bundle.properties");
         pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 38, pptm.getRowCount());
-        // XXX subpackages are not handled yet so this would fail
-//        assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
+        assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
     }
     
     private SingleModuleProperties loadProperties(FileObject dirFO, String propsRelPath) throws IOException {

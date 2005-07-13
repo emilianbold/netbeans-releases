@@ -120,6 +120,7 @@ final class SingleModuleProperties extends ModuleProperties {
     private NbPlatform originalPlatform;
     
     /** package name / selected */
+    private SortedSet/*<String>*/ availablePublicPackages;
     private Map/*<String, Boolean>*/ publicPackages;
     
     private String[] allTokens;
@@ -351,33 +352,55 @@ final class SingleModuleProperties extends ModuleProperties {
     
     PublicPackagesTableModel getPublicPackagesModel() {
         if (publicPackagesModel == null) {
-            publicPackagesModel = new PublicPackagesTableModel(
-                    getPublicPackages(Arrays.asList(getProjectXMLManager().getPublicPackages())));
+            // transform ManifestManager.PackageExport[] to String[]
+            Collection/*<String>*/ sPackages = new TreeSet();
+            ManifestManager.PackageExport[] pexports = getProjectXMLManager().getPublicPackages();
+            for (int i = 0; i < pexports.length; i++) {
+                ManifestManager.PackageExport pexport = pexports[i];
+                if (pexport.isRecursive()) {
+                    for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
+                        String p = (String) it.next();
+                        if (p.startsWith(pexport.getPackage())) {
+                            sPackages.add(p);
+                        }
+                    }
+                } else {
+                    sPackages.add(pexport.getPackage());
+                }
+            }
+            publicPackagesModel = new PublicPackagesTableModel(getPublicPackages(sPackages));
         }
         return publicPackagesModel;
     }
     
     /**
-     * Returns map of package-isSelected entries. Package-private only due to
-     * unit tests.
+     * Returns set of all available public packages for the project.
      */
-    Map/*<String, Boolean>*/ getPublicPackages(Collection/*<String>*/ selectedPackages) {
-        if (publicPackages == null) {
-            Set/*<String>*/ pkgs = new TreeSet();
+    private Set/*<String>*/ getAvailablePublicPackages() {
+        if (availablePublicPackages == null) {
+            availablePublicPackages = new TreeSet();
             
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            addNonEmptyPackages(pkgs, FileUtil.toFileObject(srcDir), "java", false);
+            addNonEmptyPackages(availablePublicPackages, FileUtil.toFileObject(srcDir), "java", false);
             
             // find all available public packages in classpath extensions
             String[] libsPaths = getProjectXMLManager().getBinaryOrigins();
             for (int i = 0; i < libsPaths.length; i++) {
-                addNonEmptyPackagesFromJar(pkgs, getHelper().resolveFile(libsPaths[i]));
+                addNonEmptyPackagesFromJar(availablePublicPackages, getHelper().resolveFile(libsPaths[i]));
             }
-            
+        }
+        return availablePublicPackages;
+    }
+
+    /**
+     * Returns map of package-isSelected entries.
+     */
+    private Map/*<String, Boolean>*/ getPublicPackages(Collection/*<String>*/ selectedPackages) {
+        if (publicPackages == null) {
             // fill up the map
             publicPackages = new TreeMap();
-            for (Iterator it = pkgs.iterator(); it.hasNext(); ) {
+            for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
                 String pkg = (String) it.next();
                 publicPackages.put(pkg,
                         Boolean.valueOf(selectedPackages.contains(pkg)));

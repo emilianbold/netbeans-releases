@@ -1,4 +1,4 @@
-/*/*
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -72,6 +72,12 @@ public class ProjectXMLManagerTest extends TestBase {
         return new ProjectXMLManager(actionProject.getHelper());
     }
     
+    private ProjectXMLManager createXercesPXM() throws IOException {
+        NbModuleProject xercesPrj = (NbModuleProject) ProjectManager.getDefault().
+                findProject(nbroot.getFileObject("libs/xerces"));
+        return new ProjectXMLManager(xercesPrj.getHelper());
+    }
+    
     public void testGetCodeNameBase() throws Exception {
         assertEquals("action-project cnb", "org.netbeans.examples.modules.action", actionPXM.getCodeNameBase());
         assertEquals("misc-project cnb", "org.netbeans.examples.modules.misc", miscPXM.getCodeNameBase());
@@ -79,7 +85,7 @@ public class ProjectXMLManagerTest extends TestBase {
     
     public void testGetDirectDependencies() throws Exception {
         Set deps = actionPXM.getDirectDependencies(null);
-        assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
+        assertEquals("number of dependencies", 2, deps.size());
         
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
@@ -113,7 +119,7 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(actionProject);
         
         final Set newDeps = actionPXM.getDirectDependencies(null);
-        assertEquals("number of dependencies", new Integer(1), new Integer(newDeps.size()));
+        assertEquals("number of dependencies", 1, newDeps.size());
         Set assumed = new HashSet();
         assumed.add("org.netbeans.examples.modules.lib");
         for (Iterator it = newDeps.iterator(); it.hasNext(); ) {
@@ -200,8 +206,7 @@ public class ProjectXMLManagerTest extends TestBase {
         assumed.add("org.netbeans.modules.java.project");
         assumed.add("org.netbeans.modules.java.j2seplatform");
         
-        assertEquals("number of dependencies",
-                new Integer(deps.size()), new Integer(assumed.size()));
+        assertEquals("number of dependencies", deps.size(), assumed.size());
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
             ModuleDependency md = (ModuleDependency) it.next();
             assertTrue("unknown dependency",
@@ -242,13 +247,13 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertNotNull("finding configuration data element", confData);
         ManifestManager.PackageExport[] pp = ProjectXMLManager.findPublicPackages(confData);
-        assertEquals("number of public packages", new Integer(pp.length), new Integer(1));
+        assertEquals("number of public packages", 1, pp.length);
         assertEquals("public package", "org.netbeans.examples.modules.misc", pp[0].getPackage());
     }
     
     public void testReplaceDependencies() throws Exception {
         final Set deps = actionPXM.getDirectDependencies(null);
-        assertEquals("number of dependencies", new Integer(deps.size()), new Integer(2));
+        assertEquals("number of dependencies", 2, deps.size());
         ModuleDependency newOO = null;
         ModuleDependency oldOO = null;
         for (Iterator it = deps.iterator(); it.hasNext(); ) {
@@ -291,10 +296,21 @@ public class ProjectXMLManagerTest extends TestBase {
         ProjectManager.getDefault().saveProject(actionProject);
     }
     
+    public void testGetPublicPackages() throws Exception {
+        assertEquals("number of public packages", 1, miscPXM.getPublicPackages().length);
+        assertEquals("package name", "org.netbeans.examples.modules.misc", miscPXM.getPublicPackages()[0].getPackage());
+        assertFalse("not recursive", miscPXM.getPublicPackages()[0].isRecursive());
+        
+        ProjectXMLManager xercesPXM = createXercesPXM();
+        assertEquals("number of binary origins", 1, xercesPXM.getPublicPackages().length);
+        assertEquals("package name", "org", xercesPXM.getPublicPackages()[0].getPackage());
+        assertTrue("recursive", xercesPXM.getPublicPackages()[0].isRecursive());
+    }
+    
     public void testReplacePublicPackages() throws Exception {
-        String[] publicPackages = miscPXM.getPublicPackages();
-        assertEquals("number of public packages", new Integer(1), new Integer(publicPackages.length));
-        final String[] newPP = new String[] { publicPackages[0], "org.netbeans.examples.modules" };
+        ManifestManager.PackageExport[] publicPackages = miscPXM.getPublicPackages();
+        assertEquals("number of public packages", 1, publicPackages.length);
+        final String[] newPP = new String[] { publicPackages[0].getPackage(), "org.netbeans.examples.modules" };
         
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -305,10 +321,10 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("replace public packages", result.booleanValue());
         ProjectManager.getDefault().saveProject(miscProject);
-        String[] newPublicPackages = getNewMiscPXM().getPublicPackages();
-        assertEquals("number of new public packages", new Integer(2), new Integer(newPublicPackages.length));
-        assertEquals("added package", "org.netbeans.examples.modules", newPublicPackages[0]);
-        assertEquals("added package", "org.netbeans.examples.modules.misc", newPublicPackages[1]);
+        ManifestManager.PackageExport[] newPublicPackages = getNewMiscPXM().getPublicPackages();
+        assertEquals("number of new public packages", 2, newPublicPackages.length);
+//        assertEquals("added package", "org.netbeans.examples.modules", newPublicPackages[0].getPackage());
+//        assertEquals("added package", "org.netbeans.examples.modules.misc", newPublicPackages[1].getPackage());
         assertNull("there must not be friend", getNewMiscPXM().getFriends());
     }
     
@@ -319,24 +335,26 @@ public class ProjectXMLManagerTest extends TestBase {
         // apply and save project
         Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
             public Object run() throws IOException {
-                miscPXM.replaceFriendPackages(friends, miscPXM.getPublicPackages());
+                ManifestManager.PackageExport pkgs[] = miscPXM.getPublicPackages();
+                String[] packages = new String[pkgs.length];
+                for (int i = 0; i < pkgs.length; i++) {
+                    packages[i] = pkgs[i].getPackage();
+                }
+                miscPXM.replaceFriendPackages(friends, packages);
                 return Boolean.TRUE;
             }
         });
         assertTrue("replace friend packages", result.booleanValue());
         ProjectManager.getDefault().saveProject(miscProject);
         String[] newFriendPackages = getNewMiscPXM().getFriends();
-        assertEquals("number of new friend", new Integer(1), new Integer(newFriendPackages.length));
+        assertEquals("number of new friend", 1, newFriendPackages.length);
         assertEquals("stored friend", "org.exampleorg.somefriend", newFriendPackages[0]);
-        assertEquals("public packages", new Integer(1), new Integer(getNewMiscPXM().getPublicPackages().length));
+        assertEquals("public packages", 1, getNewMiscPXM().getPublicPackages().length);
     }
     
     public void testGetBinaryOrigins() throws Exception {
-        NbModuleProject xercesPrj = (NbModuleProject) ProjectManager.getDefault().
-                findProject(nbroot.getFileObject("libs/xerces"));
-        ProjectXMLManager xercesPXM = new ProjectXMLManager(xercesPrj.getHelper());
+        ProjectXMLManager xercesPXM = createXercesPXM();
         assertEquals("number of binary origins", 2, xercesPXM.getBinaryOrigins().length);
-        
     }
     
     private FileObject prepareSuiteRepo(FileObject what) throws Exception {

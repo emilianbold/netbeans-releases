@@ -75,7 +75,7 @@ public final class ProjectXMLManager {
     
     private String cnb;
     private SortedSet/*<ModuleDependency>*/ directDeps;
-    private String[] publicPackages;
+    private ManifestManager.PackageExport[] publicPackages;
     private String[] cpExtensions;
     private String[] friends;
     
@@ -87,7 +87,7 @@ public final class ProjectXMLManager {
         this.helper = helper;
     }
     
-    public void setModuleType(NbModuleTypeProvider.NbModuleType moduleType) {
+    public void setModuleType(NbModuleType moduleType) {
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
         
@@ -338,22 +338,16 @@ public final class ProjectXMLManager {
     }
     
     /**
-     * Returns sorted array of <code>String</code>s of all exposed public
-     * packages.
+     * Returns an array of {@link ManifestManager.PackageExport}s of all
+     * exposed public packages. Method considers both <em>package</em> and
+     * <em>subpackages</em> elements with the recursivity flag set
+     * appropriately for returned entries.
      */
-    public String[] getPublicPackages() {
-        if (publicPackages != null) {
-            return publicPackages;
+    public ManifestManager.PackageExport[] getPublicPackages() {
+        if (publicPackages == null) {
+            publicPackages = ProjectXMLManager.findPublicPackages(getConfData());
         }
-        ManifestManager.PackageExport[] pp =
-                ProjectXMLManager.findPublicPackages(getConfData());
-        Set sortedPP = new TreeSet();
-        for (int i = 0; i < pp.length; i++) {
-            // XXX handle package in the right way when it is "recursive"
-            sortedPP.add(pp[i].getPackage());
-        }
-        publicPackages = new String[pp.length];
-        return (String[]) sortedPP.toArray(publicPackages);
+        return publicPackages;
     }
     
     /** Returns all friends or <code>null</code> if there are none. */
@@ -496,7 +490,11 @@ public final class ProjectXMLManager {
         }
     }
     
-    /** Find packages in public-packages or friend-packages section. */
+    /**
+     * Find packages in public-packages or friend-packages section. Method
+     * considers both <em>package</em> and <em>subpackages</em> elements with
+     * the recursivity flag set appropriately for returned entries.
+     */
     private static Set/*<ManifestManager.PackageExport>*/ findAllPackages(Element parent) {
         Set/*<ManifestManager.PackageExport>*/ packages = new HashSet();
         List/*<Element>*/ pkgEls = Util.findSubElements(parent);
@@ -511,7 +509,11 @@ public final class ProjectXMLManager {
         return packages;
     }
     
-    /** Utility method for finding public packages. */
+    /**
+     * Utility method for finding public packages. Method considers both
+     * <em>package</em> and <em>subpackages</em> elements with the recursivity
+     * flag set appropriately for returned entries.
+     */
     public static ManifestManager.PackageExport[] findPublicPackages(final Element confData) {
         Element ppEl = findPublicPackagesElement(confData);
         Set/*<ManifestManager.PackageExport>*/ pps = new HashSet();
@@ -550,7 +552,7 @@ public final class ProjectXMLManager {
      * suite</em> module.
      */
     static void generateEmptyModuleTemplate(FileObject projectXml, String cnb,
-            NbModuleTypeProvider.NbModuleType moduleType) throws IOException {
+            NbModuleType moduleType) throws IOException {
         
         Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
         
@@ -577,7 +579,7 @@ public final class ProjectXMLManager {
         ProjectXMLManager.safelyWrite(projectXml, prjDoc);
     }
     
-    private static Element createTypeElement(Document dataDoc, NbModuleTypeProvider.NbModuleType type) {
+    private static Element createTypeElement(Document dataDoc, NbModuleType type) {
         Element result = null;
         if (type == NbModuleTypeProvider.STANDALONE) {
             result = createModuleElement(dataDoc, STANDALONE);
