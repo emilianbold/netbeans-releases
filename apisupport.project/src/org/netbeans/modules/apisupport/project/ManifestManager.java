@@ -310,7 +310,7 @@ public final class ManifestManager {
         }
         
         public String toString() {
-            return "PackageExport[" + pkg + (recursive ? "**/" : "") + "]"; // NOI18N
+            return "PackageExport[" + pkg + (recursive ? "/**" : "") + "]"; // NOI18N
         }
     }
 }
