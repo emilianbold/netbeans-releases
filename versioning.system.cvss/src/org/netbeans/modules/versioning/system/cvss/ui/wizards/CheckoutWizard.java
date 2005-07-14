@@ -295,7 +295,7 @@ public final class CheckoutWizard {
                 while (it.hasNext()) {
                     String module = (String) it.next();
                     buf.append(separator).append(module);
-                    separator = ", ";   // NOI18N
+                    separator = ",";   // NOI18N
                 }
                 modulePanel.moduleTextField.setText(buf.toString());
             } else if (e.getSource() == modulePanel.tagButton) {

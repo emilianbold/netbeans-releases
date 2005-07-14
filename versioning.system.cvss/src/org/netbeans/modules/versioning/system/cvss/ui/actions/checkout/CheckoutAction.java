@@ -102,13 +102,13 @@ public final class CheckoutAction extends SystemAction {
         if (moduleString == null || moduleString.length() == 0) {
             moduleString = ".";  // NOI18N
         }
-        StringTokenizer tokenizer = new StringTokenizer(moduleString, " ,;");  // NOi18N
+        StringTokenizer tokenizer = new StringTokenizer(moduleString, ",;");  // NOi18N
         if (tokenizer.countTokens() == 1) {
             cmd.setModule(moduleString);
         } else {
             List moduleList = new ArrayList();
             while( tokenizer.hasMoreTokens()) {
-                String s = tokenizer.nextToken();
+                String s = tokenizer.nextToken().trim();
                 moduleList.add(s);
             }
             String[] modules2 = (String[]) moduleList.toArray(new String[moduleList.size()]);
