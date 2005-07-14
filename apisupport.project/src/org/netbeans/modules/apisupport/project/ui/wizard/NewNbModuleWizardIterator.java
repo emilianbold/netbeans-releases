@@ -23,8 +23,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -69,7 +69,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                 getProperty(NewModuleProjectData.DATA_PROPERTY_NAME);
         
         final File projectFolder = new File(data.getProjectFolder());
+        ModuleUISettings.getDefault().setLastUsedModuleLocation(data.getProjectLocation());
         if (this.type == TYPE_MODULE) {
+            ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
             if (data.isNetBeansOrg()) {
                 // create module within the netbeans.org CVS tree
                 NbModuleProjectGenerator.createNetBeansOrgModule(projectFolder,
@@ -87,6 +89,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                         data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
             }
         } else if (this.type == TYPE_SUITE) {
+            ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
             SuiteProjectGenerator.createSuiteModule(projectFolder, data.getPlatform());
         } else {
             throw new IllegalStateException("Uknown wizard type: " + this.type); // NOI18N

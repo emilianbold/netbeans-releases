@@ -15,12 +15,14 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import javax.swing.ButtonModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.ui.ModuleUISettings;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
@@ -61,27 +63,30 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         super(setting);
         this.isSuiteWizard = isSuiteWizard;
         initComponents();
+        
         this.data = (NewModuleProjectData) getSetting().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         if (isSuiteWizard) {
             detachModuleTypeGroup();
             typeChooserPanel.setVisible(false);
+            locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
+            int counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
+            setProjectName(getMessage("TXT_Suite"), counter); // NOI18N
+            data.setSuiteCounter(counter);
         } else {
             if (moduleSuiteValue.getItemCount() > 0) {
                 suiteModule.setSelected(true);
                 locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+            } else {
+                locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
             }
+            int counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
+            setProjectName(getMessage("TXT_Module"), counter); // NOI18N
+            data.setModuleCounter(counter);
         }
-        nameValue.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { nameUpdated(); }
-            public void removeUpdate(DocumentEvent e) { nameUpdated(); }
-            public void changedUpdate(DocumentEvent e) {}
-        });
-        locationValue.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { locationUpdated(); }
-            public void removeUpdate(DocumentEvent e) { locationUpdated(); }
-            public void changedUpdate(DocumentEvent e) {}
-        });
+        
+        
+        attachDocumentListeners();
         updateEnabled();
     }
     
@@ -103,7 +108,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         browseSuiteButton.setEnabled(suiteModuleSelected);
     }
     
-    private void nameUpdated() {
+    void checkForm() {
         // check module name
         String name = getNameValue();
         if ("".equals(name)) { // NOI18N
@@ -111,10 +116,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             return;
         }
         updateAndCheck(true);
-    }
-    
-    private void locationUpdated() {
-        wasLocationUpdate = true;
+        
         // check module location
         File fLocation = new File(getLocationValue());
         if (!fLocation.exists()) {
@@ -178,7 +180,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
                 setErrorMessage(getMessage("MSG_ProjectFolderExists")); // NOI18N
                 return;
             }
-            setErrorMessage(null);
         }
         setErrorMessage(null);
     }
@@ -205,6 +206,22 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         }
     }
     
+    /** Set <em>next</em> free project name. */
+    private void setProjectName(String formater, int counter) {
+        String name;
+        while ((name = validFreeModuleName(formater, counter)) == null) {
+            counter++;
+        }
+        nameValue.setText(name);
+    }
+    
+    // stolen (then adjusted) from j2seproject
+    private String validFreeModuleName(String formater, int index) {
+        String name = MessageFormat.format(formater, new Object[]{ new Integer(index) });
+        File file = new File(getLocationValue(), name);
+        return file.exists() ? null : name;
+    }
+    
     /** Stores collected data into model. */
     void storeData() {
         data.setProjectName(getNameValue());
@@ -215,6 +232,21 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         data.setStandalone(standAloneModule.isSelected());
         data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
+    }
+    
+    private void attachDocumentListeners() {
+        DocumentListener fieldsDL = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { checkForm(); }
+            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
+            public void changedUpdate(DocumentEvent e) {}
+        };
+        nameValue.getDocument().addDocumentListener(fieldsDL);
+        locationValue.getDocument().addDocumentListener(fieldsDL);
+        locationValue.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { wasLocationUpdate = true; }
+            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
+            public void changedUpdate(DocumentEvent e) {}
+        });
     }
     
     /** This method is called from within the constructor to

@@ -34,7 +34,9 @@ final class NewModuleProjectData {
     private String bundle;
     private String layer;
     private String projectDisplayName;
-    
+    private int moduleCounter;
+    private int suiteCounter;
+
     /** Creates a new instance of NewModuleProjectData */
     NewModuleProjectData() {/* empty constructor */}
     
@@ -132,5 +134,21 @@ final class NewModuleProjectData {
     
     void setProjectDisplayName(String projectDisplayName) {
         this.projectDisplayName = projectDisplayName;
+    }
+
+    int getModuleCounter() {
+        return moduleCounter;
+    }
+    
+    void setModuleCounter(int counter) {
+        this.moduleCounter = counter;
+    }
+
+    int getSuiteCounter() {
+        return suiteCounter;
+    }
+    
+    void setSuiteCounter(int counter) {
+        this.suiteCounter = counter;
     }
 }
