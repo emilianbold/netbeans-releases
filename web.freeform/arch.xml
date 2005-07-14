@@ -168,7 +168,7 @@ Microsystems, Inc. All Rights Reserved.
             Is your module correctly internationalized?
             <hint>
             Correct internationalization means that it obeys instructions 
-            at <a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/i18n-branding.html">
+            at <a href="http://www.netbeans.org/download/dev/javadoc/org-openide-modules/org/openide/modules/doc-files/i18n-branding.html">
             NetBeans I18N pages</a>.
             </hint>
         </question>
