@@ -13,7 +13,6 @@
 
 package org.openide.awt;
 
-import com.sun.rsasign.m;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
