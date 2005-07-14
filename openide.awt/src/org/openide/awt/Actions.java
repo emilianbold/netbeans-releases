@@ -970,9 +970,6 @@ public class Actions extends Object {
             prepareMargins(more, action);
             currentOnes = new ArrayList();
             this.model = model;
-            single.addActionListener(new ISubActionListener(0, model));
-//            model.addChangeListener(this);
-//            checkVisibility();
         }
 
         /** Called when model changes. Regenerates the model.
