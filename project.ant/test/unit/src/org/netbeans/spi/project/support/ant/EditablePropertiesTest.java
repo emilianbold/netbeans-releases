@@ -381,16 +381,17 @@ public class EditablePropertiesTest extends NbTestCase {
     
     public void testNonLatinComments() throws Exception {
         // #60249.
+        String lsep = System.getProperty("line.separator");
         EditableProperties p = new EditableProperties();
         p.setProperty("k", "v");
         p.setComment("k", new String[] {"# \u0158ekni koment teda!"}, false);
-        String expected = "# \\u0158ekni koment teda!\nk=v\n";
+        String expected = "# \\u0158ekni koment teda!" + lsep + "k=v" + lsep;
         assertEquals("Storing non-Latin chars in comments works", expected, getAsString(p));
         p = new EditableProperties();
         p.load(new ByteArrayInputStream(expected.getBytes("ISO-8859-1")));
         assertEquals("Reading non-Latin chars in comments works", Collections.singletonList("# \u0158ekni koment teda!"), Arrays.asList(p.getComment("k")));
         p.setProperty("k", "v2");
-        expected = "# \\u0158ekni koment teda!\nk=v2\n";
+        expected = "# \\u0158ekni koment teda!" + lsep + "k=v2" + lsep;
         assertEquals("Reading and re-writing non-Latin chars in comments works", expected, getAsString(p));
     }
 
