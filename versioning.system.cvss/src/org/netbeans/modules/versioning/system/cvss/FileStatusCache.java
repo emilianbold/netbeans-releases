@@ -411,23 +411,22 @@ public class FileStatusCache {
      * Examines a file or folder and computes its CVS status. 
      * 
      * @param file file/folder to examine
+     * @param entry CVS entry for this file or null if the file does not have a corresponding entry in CVS/Entries
      * @param repositoryStatus status of the file/folder as reported by the CVS server 
      * @return FileInformation file/folder status bean
      */ 
     private FileInformation createFileInformation(File file, Entry entry, int repositoryStatus) {
-        FileInformation fi = null;
-        if (!cvs.isManaged(file)) {
-            return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
-        }
-        if (cvs.isIgnored(file)) {
-            return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
-        }
-        if (entry != null) {
-            fi = createVersionedFileInformation(entry, file, repositoryStatus);            
+        if (entry == null) {
+            if (!cvs.isManaged(file)) {
+                return file.isDirectory() ? FILE_INFORMATION_NOTMANAGED_DIRECTORY : FILE_INFORMATION_NOTMANAGED;
+            }
+            if (cvs.isIgnored(file)) {
+                return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
+            }
+            return createMissingEntryFileInformation(file, repositoryStatus);            
         } else {
-            fi = createMissingEntryFileInformation(file, repositoryStatus);            
+            return createVersionedFileInformation(entry, file, repositoryStatus);            
         }
-        return fi;
     }
 
     /**
