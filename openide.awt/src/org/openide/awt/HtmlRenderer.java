@@ -965,7 +965,7 @@ public final class HtmlRenderer {
                             r = fm.getStringBounds(chars, pos, pos + length, g);
                             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                                 // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
-                                r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, pos + length)), r.getHeight());
+                                r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, length)), r.getHeight());
                             } 
 
                             //                            System.err.println("Truncated set to true at " + pos + " (" + chars[pos] + ")");
@@ -1013,7 +1013,7 @@ public final class HtmlRenderer {
                                     r = fm.getStringBounds(chars, pos, nextTag + 1, g);
                                     if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                                         // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
-                                        r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag + 1)), r.getHeight());
+                                        r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag - pos + 1)), r.getHeight());
                                     } 
                                 }
 
