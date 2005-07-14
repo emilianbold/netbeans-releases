@@ -105,7 +105,7 @@ public class CommonProjectActions {
      * <p class="nonnormative">
      * You might include this in the context menu of a logical view.
      * </p>
-     * @since 1.4
+     * @since 1.8
      * @return an action
      */
     public static Action deleteProjectAction() {
