@@ -585,7 +585,18 @@ public class ProjectTab extends TopComponent
                 
                 ActionProvider ap = (ActionProvider) p.getLookup().lookup(ActionProvider.class);
                 
-                setEnabled(ap.isActionEnabled(projectAction, nodes[0].getLookup()));
+                //Fix for #60946: check whether the action is supported before asking whether it is enabled:
+                String[] sa = ap.getSupportedActions();
+                int k = sa.length;
+                
+                for (int i = 0; i < k; i++) {
+                    if (ActionProvider.COMMAND_DELETE.equals(sa [i])) {
+                        setEnabled(ap.isActionEnabled(projectAction, nodes[0].getLookup()));
+                        return ;
+                    }
+                }
+                
+                setEnabled(false);
             } else {
                 setEnabled(explorerAction.isEnabled());
             }
