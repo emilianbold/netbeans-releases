@@ -74,6 +74,7 @@ public class WebServiceMethodNode extends AbstractNode implements WebServiceMeth
         }
         javaMethod = inOperation.getJavaMethod();
         setName(javaMethod.getName());
+        setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/methodicon.png");
         
         /**
          * Set the shortDescription (tooltip) to the method signature
@@ -126,15 +127,6 @@ public class WebServiceMethodNode extends AbstractNode implements WebServiceMeth
 	public Action getPreferredAction() {
 		return SystemAction.get(TestWebServiceMethodAction.class);
 	}
-	
-    public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/methodicon.png");
-    }
-    
-    public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/methodicon.png");
-    }
-    
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;

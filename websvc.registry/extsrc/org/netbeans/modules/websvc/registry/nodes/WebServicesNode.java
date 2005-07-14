@@ -69,18 +69,11 @@ public class WebServicesNode extends AbstractNode implements WebServicesCookie {
         super(new WebServicesNodeChildren(wsData));
         websvcData = wsData;
         setName(wsData.getDisplayName());
+        setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/webservice.png");
         setShortDescription(wsData.getWSDescription());
 		getCookieSet().add(this);
     }
-    
-    public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservice.png");
-    }
-    
-    public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservice.png");
-    }
-    
+
     // Create the popup menu:
 //    protected SystemAction[] createActions() {
 //        return new SystemAction[] {

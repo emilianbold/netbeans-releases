@@ -38,17 +38,9 @@ public class WebServiceGroupNode extends AbstractNode implements WebServiceGroup
     public WebServiceGroupNode(WebServiceGroup wsGroup) {
         super(new WebServiceGroupNodeChildren(wsGroup));
         websvcGroup = wsGroup;
-        setIconBase("org/netbeans/modules/websvc/registry/resources/folder");
+        setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/folder.png");
 		
 		getCookieSet().add(this);
-    }
-
-    public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/folder-closed.png");
-    }
-
-    public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/folder-open.png");
     }
 
     public WebServiceGroup getWebServiceGroup() {

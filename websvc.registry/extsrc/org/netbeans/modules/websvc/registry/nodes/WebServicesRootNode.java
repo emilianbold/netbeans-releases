@@ -38,20 +38,10 @@ public class WebServicesRootNode extends AbstractNode implements WebServiceGroup
         setName("default");
         setDisplayName(NbBundle.getMessage(WebServicesRootNode.class, "Web_Services"));
         setShortDescription(NbBundle.getMessage(WebServicesRootNode.class, "Web_Services"));
+        setIconBaseWithExtension("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
         getCookieSet().add(this);
-        
-
     }
 
-
-    public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
-    }
-    
-    public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/webservicegroup.png");
-    }
-    
     public WebServiceGroup getWebServiceGroup(){
         return WebServiceListModel.getInstance().getWebServiceGroup("default");
     }

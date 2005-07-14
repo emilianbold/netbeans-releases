@@ -56,21 +56,13 @@ public class WebServicesPortNode  extends AbstractNode {
          */
         
         String portName = (String)port.getProperty(WebServiceData.PORT_PROPERTY_NAME);
+        setIconBaseWithExtension("org/netbeans/modules/websvs/registry/resources/wsport.png");
         setName(portName);
     }
-    
-    
-    public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/wsport-closed.png");
-    }
-    
-    public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/resources/wsport-open.png");
-    }
-    
-	public Action[] getActions(boolean context) {
-		return new Action[0]; // No actions on this node.
-	}    
+
+    public Action[] getActions(boolean context) {
+            return new Action[0]; // No actions on this node.
+    }    
 	
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
@@ -81,6 +73,5 @@ public class WebServicesPortNode  extends AbstractNode {
     public Port getPort() {
         return port;
     }
-    
     
 }
