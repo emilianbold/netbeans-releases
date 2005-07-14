@@ -94,7 +94,6 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
         }
         
         public JComponent[] synchMenuPresenters(JComponent[] items) {
-            System.out.println("synchronizing doc root.");
             getPopupMenu2();
             return items;
         }
