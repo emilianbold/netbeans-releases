@@ -38,7 +38,7 @@ public interface Presenter {
     */
     public interface Menu extends Presenter {
         /** Get a menu item that can present this action in a {@link javax.swing.JMenu}.
-         * If your menu content is dynamic in nature, consider using {@link org.openide.awt.DynamicMenuContent}
+         * If your menu content is dynamic in nature, consider using <a href="@org-openide-awt@/org/openide/awt/DynamicMenuContent.html">DynamicMenuContent</a>
          * @return the representation for this action
          */
         public JMenuItem getMenuPresenter();
@@ -48,7 +48,7 @@ public interface Presenter {
     */
     public interface Popup extends Presenter {
         /** Get a menu item that can present this action in a {@link javax.swing.JPopupMenu}.
-         * If your menu content is dynamic in nature, consider using {@link org.openide.awt.DynamicMenuContent}
+         * If your menu content is dynamic in nature, consider using <a href="@org-openide-awt@/org/openide/awt/DynamicMenuContent.html">DynamicMenuContent</a>
         * @return the representation for this action
         */
         public JMenuItem getPopupPresenter();
