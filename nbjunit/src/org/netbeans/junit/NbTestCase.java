@@ -699,7 +699,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }  
         goldenFileName = className+"/"+filename;
         URL url = this.getClass().getResource("data/goldenfiles/"+goldenFileName);
-        assertNotNull("Golden file "+goldenFileName+" cannot be found neither in ${xtest.data}/goldenfiles nor in src/data/goldenfiles", url);
+        assertNotNull("Golden file not found in any of the following locations:\n  "+
+                goldenFile+"\n  "+
+                "src/"+fullClassName.replace('.', '/').substring(0, fullClassName.indexOf(className))+"data/goldenfiles/"+goldenFileName,
+                url);
         String resString = convertNBFSURL(url);        
         goldenFile = new File(resString);
         return goldenFile;
