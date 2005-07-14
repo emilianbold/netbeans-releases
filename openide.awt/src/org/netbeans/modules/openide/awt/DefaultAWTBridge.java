@@ -17,6 +17,7 @@ import java.awt.Component;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.BooleanStateAction;
 import org.openide.util.actions.SystemAction;
 
@@ -64,6 +65,13 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
     
     public javax.swing.JPopupMenu createEmptyPopup() {
         return new org.openide.awt.JPopupMenuPlus ();
-    }    
+    }  
+    
+    public Component[] convertComponents(Component comp) {
+         if (comp instanceof DynamicMenuContent) {
+            return ((DynamicMenuContent)comp).getMenuPresenters();
+         }
+         return new Component[] {comp};
+    }
     
 }

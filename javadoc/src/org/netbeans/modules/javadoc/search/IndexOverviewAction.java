@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.openide.ErrorManager;
@@ -31,6 +32,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 
@@ -73,7 +75,7 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
      * list of filesystems and finding their titles. When the popup for it
      * is created, it will create submenuitems for each available index.
      */
-    private final class IndexMenu extends JMenu implements HelpCtx.Provider {
+    private final class IndexMenu extends JMenu implements HelpCtx.Provider, DynamicMenuContent {
         
         private int itemHash = 0;
         
@@ -86,15 +88,26 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
             return IndexOverviewAction.this.getHelpCtx();
         }
         
-        public void addNotify() {
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("addNotify");
-            }
-            super.addNotify();
-            IndexBuilder.getDefault();
+        public JComponent[] getMenuPresenters() {
+            getPopupMenu2();
+            return new JComponent[] {this};
         }
         
-        public JPopupMenu getPopupMenu() {
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            System.out.println("synchronizing doc root.");
+            getPopupMenu2();
+            return items;
+        }
+        
+//        public void addNotify() {
+//            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+//                err.log("addNotify");
+//            }
+//            super.addNotify();
+//            IndexBuilder.getDefault();
+//        }
+        
+        public void getPopupMenu2() {
             List[] data = IndexBuilder.getDefault().getIndices();
             int newHash = computeDataHash(data);
             if (newHash != itemHash) {
@@ -122,7 +135,6 @@ public final class IndexOverviewAction extends SystemAction implements Presenter
                     add(dummy);
                 }
             }
-            return super.getPopupMenu();
         }
         
         private int computeDataHash(List[] data) {

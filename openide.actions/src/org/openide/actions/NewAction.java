@@ -128,7 +128,7 @@ public final class NewAction extends NodeAction {
     public javax.swing.JMenuItem getMenuPresenter() {
         return new Actions.SubMenu(this, model, false);
     }
-
+    
     public javax.swing.JMenuItem getPopupPresenter() {
         return new Actions.SubMenu(this, model, true);
     }

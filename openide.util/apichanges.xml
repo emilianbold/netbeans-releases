@@ -24,6 +24,28 @@ Microsystems, Inc. All Rights Reserved.
 <changes>
     <change>
       <api name="util"/>
+      <summary>DynamicMenuContent interface added</summary>
+      <version major="6" minor="4"/>
+      <date day="12" month="6" year="2005"/>
+      <author login="mkleint"/>
+      <compatibility addition="no" modification="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+        In order to support MacOSX top menus and to fix problems with deprecated JInlineMenu, this new
+        interface was added that allows to handle dynamic content in 
+<a href="@TOP@/org/openide/util/actions/Presenter.Menu.html">Presenter.Menu</a>
+ and <a href="@TOP@/org/openide/util/actions/Presenter.Popup.html">Presenter.Popup</a>.
+        If the instance returned by Presenter.Menu/Popup is an instance of 
+<a href="@org-openide-awt@/org/openide/awt/DynamicMenuContent.html">DynamicMenuContent</a>, it's methods are
+        consulted when creating/updating the menu.
+      </description>
+      <class package="org.openide.util.actions" name="Presenter"/>
+      <issue number="35827"/>
+    </change>
+    
+
+    
+    <change>
+      <api name="util"/>
       <summary>Support for interruption of RequestProcessor tasks</summary>
       <version major="6" minor="3"/>
       <date day="10" month="6" year="2005"/>

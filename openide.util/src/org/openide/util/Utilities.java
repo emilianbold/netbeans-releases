@@ -12,18 +12,15 @@
  */
 package org.openide.util;
 
+import javax.swing.JSeparator;
+import org.netbeans.modules.openide.util.AWTBridge;
 import org.openide.ErrorManager;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.actions.Presenter;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-
-import java.beans.PropertyChangeListener;
-import java.beans.VetoableChangeListener;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -43,12 +40,12 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentListener;
+
 
 
 /** Otherwise uncategorized useful static methods.
@@ -2592,14 +2589,23 @@ widthcheck:  {
                             ); // NOI18N
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
                     }
-
-                    menu.add(item);
                 } else {
                     // We need to correctly handle mnemonics with '&' etc.
-                    JMenuItem mi = org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(
+                     item = org.netbeans.modules.openide.util.AWTBridge.getDefault().createPopupPresenter(
                             action
                         );
-                    menu.add(mi);
+                }
+                Component[] comps = AWTBridge.getDefault().convertComponents(item);
+                for (int v = 0; v < comps.length;v++) {
+                    if ((comps[v] == null || comps[v] instanceof JSeparator) && menu.getComponentCount() > 0 && menu.getComponent(menu.getComponentCount() - 1) instanceof JSeparator) {
+//                                System.out.println("ignorring separator");
+                    } else {
+//                                System.out.println("is not=" + comps[v].getClass());
+                        menu.add(comps[v]);
+                    }
+                }
+                if (comps.length == 0 || (comps.length > 0 && comps[comps.length - 1] instanceof JSeparator)) {
+                    haveHadNonSep = false;
                 }
             } else {
                 // Add next time it is needed.

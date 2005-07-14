@@ -22,7 +22,9 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.PopupMenuEvent;
@@ -37,6 +39,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.Presenter;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -84,7 +87,7 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     }
     
     private JMenu createSubMenu() {
-        JMenu menu = new JMenu(this);
+        JMenu menu = new UpdatingMenu(this);
         menu.setMnemonic(NbBundle.getMessage(RecentProjects.class, "MNE_RecentProjectsAction_Name").charAt(0));
         return menu;
     }
@@ -208,6 +211,23 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
     private class ProjectDirListener extends FileChangeAdapter {
         public void fileDeleted(FileEvent fe) {
             recreate = true;
+        }
+    }
+    
+    private class UpdatingMenu extends JMenu implements DynamicMenuContent {
+        
+        public UpdatingMenu(Action action) {
+            super(action);
+        }
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            fillSubMenu(this);
+            recreate = false;
+            return getMenuPresenters();
+        }
+        
+        public JComponent[] getMenuPresenters() {
+            return new JComponent[] { this };
         }
     }
     

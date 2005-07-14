@@ -18,6 +18,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -34,6 +35,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
@@ -102,7 +104,7 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
     }
     
     
-    public class CodeFoldsMenu extends JMenu{
+    public class CodeFoldsMenu extends JMenu implements DynamicMenuContent {
         public CodeFoldsMenu(){
             super();
         }
@@ -113,6 +115,15 @@ public  class NbCodeFoldingAction extends GlobalContextAction implements Present
             //setIcon(new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"))); //NOI18N
             //#40585 fix end
             org.openide.awt.Mnemonics.setLocalizedText(this, s);
+        }
+
+        public JComponent[] getMenuPresenters() {
+            return new JComponent[] { this };
+        }
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            getPopupMenu();
+            return items;
         }
         
         public JPopupMenu getPopupMenu(){

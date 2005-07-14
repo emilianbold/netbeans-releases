@@ -14,7 +14,6 @@ package org.openide.actions;
 
 import org.openide.actions.ActionManager;
 import org.openide.awt.Actions;
-import org.openide.awt.JInlineMenu;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -27,6 +26,7 @@ import java.util.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import org.openide.awt.DynamicMenuContent;
 
 
 /** A "meta-action" that displays (in a submenu) a list of enabled actions provided by modules.
@@ -194,7 +194,7 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
     /** Inline menu that watches model changes only when really needed.
      */
-    private static final class Inline extends JInlineMenu implements PropertyChangeListener, Runnable {
+    private static final class Inline extends JMenuItem implements DynamicMenuContent {
         static final long serialVersionUID = 2269006599727576059L;
 
         /** timestamp of the beginning of the last regeneration */
@@ -205,64 +205,34 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
 
         Inline(Action toolsAction) {
             this.toolsAction = toolsAction;
-            putClientProperty("hack.preShowUpdater", this);
         }
 
-        /** By calling this method, our parent notifies us we've to be keep
-         * updated, so we start listening on SystemAction changes, and
-         * schedule updating Runnable imediately.
-         */
-        public void addNotify() {
-            // We were not notified by our parent, too bad
-            if (timestamp != gl().getTimestamp()) {
-                SwingUtilities.invokeLater(this);
-            }
 
-            gl().addPropertyChangeListener(this);
-            super.addNotify();
-        }
-
-        /** By calling this method, our parent notifies us we don't have
-         * to be up-to-date more, so we switch to lazy mode and discard any
-         * pending updates.
-         */
-        public void removeNotify() {
-            gl().removePropertyChangeListener(this);
-            super.removeNotify();
-        }
-
-        /** Change of model.
-        */
-        public void propertyChange(PropertyChangeEvent ev) {
-            String prop = ev.getPropertyName();
-
-            if ((prop == null) || prop.equals(G.PROP_STATE)) {
-                SwingUtilities.invokeLater(this);
-            }
-        }
-
-        /** Runs the update */
-        public void run() {
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
             if (timestamp == gl().getTimestamp()) {
-                return;
+                return items;
             }
-
             // generate directly list of menu items
             List l = generate(toolsAction, true);
-            setMenuItems((JMenuItem[]) l.toArray(new JMenuItem[l.size()]));
             timestamp = gl().getTimestamp();
+            return (JMenuItem[]) l.toArray(new JMenuItem[l.size()]);
         }
+        
+        
+        public JComponent[] getMenuPresenters() {
+            return synchMenuPresenters(new JComponent[0]);
+        }        
     }
 
     //--------------------------------------------------
 
     /** Inline menu that is either empty or contains one submenu.*/
-    private static final class Popup extends JInlineMenu implements Runnable {
+    private static final class Popup extends JMenuItem implements DynamicMenuContent {
         static final long serialVersionUID = 2269006599727576059L;
 
         /** sub menu */
         private JMenu menu = new MyMenu();
-        private boolean inited = false;
 
         /** Associated tools action. */
         private Action toolsAction;
@@ -272,27 +242,18 @@ public class ToolsAction extends SystemAction implements ContextAwareAction, Pre
             this.toolsAction = toolsAction;
             HelpCtx.setHelpIDString(menu, ToolsAction.class.getName());
 
-            // This can be probably swapped as the popup is short time entity and our hack
-            // will be called just once and very early after the constructor.
-            //            run();
-            putClientProperty("hack.preShowUpdater", this);
         }
 
-        public void addNotify() {
-            if (!inited) { // should not happen
-                SwingUtilities.invokeLater(this); // too late to do it here
-            }
-
-            super.addNotify();
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return gl().isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0];
         }
+        
+        
+        public JComponent[] getMenuPresenters() {
+            return synchMenuPresenters(new JComponent[0]);
+        }                
 
-        /** Runs the update */
-        public void run() {
-            if (!inited) {
-                setMenuItems(gl().isPopupEnabled(toolsAction) ? new JMenuItem[] { menu } : new JMenuItem[0]);
-                inited = true;
-            }
-        }
 
         /** A special menu that will properly update its submenu before posting */
         private class MyMenu extends org.openide.awt.JMenuPlus implements PopupMenuListener {

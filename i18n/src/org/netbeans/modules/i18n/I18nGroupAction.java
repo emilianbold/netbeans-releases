@@ -152,6 +152,10 @@ public final class I18nGroupAction extends SystemAction
             Actions.setMenuText(this, action.getName(), isMenu);
             
             this.isMenu = isMenu;
+            if (isMenu) {
+                // mkleint doens't seem to be dynamic at all, just set it for main menu..
+                createMenuItems();
+            }
         }
 
         /** Creates <code>LazyPopup</code> menu item. */

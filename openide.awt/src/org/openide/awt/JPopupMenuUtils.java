@@ -42,7 +42,7 @@ public class JPopupMenuUtils {
     private static boolean problem = false;
     private static RequestProcessor reqProc;
     private static RequestProcessor.Task task;
-    private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
+//    private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
 
     /*
      * Called when a visible menu has dynamically changed.  Ensure that
@@ -74,9 +74,9 @@ public class JPopupMenuUtils {
         }
 
         if (!newPt.equals(p)) {
-            if (!NO_POPUP_PLACEMENT_HACK) {
-                popup.setLocation(newPt.x, newPt.y);
-            }
+//            if (!NO_POPUP_PLACEMENT_HACK) {
+//                popup.setLocation(newPt.x, newPt.y);
+//            }
         }
 
         if (usedToBeContained != willBeContained) {
@@ -126,9 +126,9 @@ public class JPopupMenuUtils {
                                         refreshPopup(popup);
 
                                         if (!newPt.equals(p)) {
-                                            if (!NO_POPUP_PLACEMENT_HACK) {
-                                                popup.setLocation(newPt.x, newPt.y);
-                                            }
+//                                            if (!NO_POPUP_PLACEMENT_HACK) {
+//                                                popup.setLocation(newPt.x, newPt.y);
+//                                            }
                                         }
 
                                         popup.setVisible(true);

@@ -58,6 +58,8 @@ public abstract class AWTBridge extends Object {
     public abstract Component createToolbarPresenter (Action action);
     
     
+    public abstract Component[] convertComponents(Component comp);
+    
     //
     // Default implementation of the the presenter
     // 
@@ -80,5 +82,8 @@ public abstract class AWTBridge extends Object {
             return new javax.swing.JPopupMenu ();
         }
         
+        public Component[] convertComponents(Component comp) {
+            return new Component[] {comp};
+        }
     }
 }

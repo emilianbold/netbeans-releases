@@ -65,6 +65,8 @@ fi
 
 nbexec="$progdir"/../platform5/lib/nbexec
 
+# in case of macosx, the apple.laf.useScreenMenuBar property should be ideally in the Info.plist file
+# but it doesn't get propagated into the executed java VM. 
 case "`uname`" in
     Darwin*)
         "$nbexec" \

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -34,6 +36,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
+import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
 import org.openide.actions.UndoAction;
@@ -308,14 +311,21 @@ public class NbEditorKit extends ExtKit {
 
             if (action != null) {
                 JMenuItem item = createLocalizedMenuItem(action);
-                item.setEnabled(action.isEnabled());
-                Object helpID = action.getValue ("helpID"); // NOI18N
-                if (helpID != null && (helpID instanceof String)) {
-                    item.putClientProperty ("HelpID", helpID); // NOI18N
+                if (item instanceof DynamicMenuContent) {
+                    Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
+                    for (int i = 0; i < cmps.length; i++) {
+                        popupMenu.add(cmps[i]);
+                    }
+                } else {
+                    item.setEnabled(action.isEnabled());
+                    Object helpID = action.getValue ("helpID"); // NOI18N
+                    if (helpID != null && (helpID instanceof String)) {
+                        item.putClientProperty ("HelpID", helpID); // NOI18N
+                    }
+                    assignAccelerator(component.getKeymap(), action, item);
+                    debugPopupMenuItem(item, action);
+                    popupMenu.add(item);
                 }
-                assignAccelerator(component.getKeymap(), action, item);
-                debugPopupMenuItem(item, action);
-                popupMenu.add(item);
             }
         }
         
@@ -326,21 +336,9 @@ public class NbEditorKit extends ExtKit {
             if (tc != null) {
                 // Add all the actions
                 Action[] actions = tc.getActions();
-                for (int i = 0; i < actions.length; i++) {
-                    Action action = actions[i];
-                    action = translateContextLookupAction(contextLookup, action);
-                    
-                    if (action != null){
-                        JMenuItem item = createLocalizedMenuItem(action);
-                        assignAccelerator(
-                            (Keymap)Lookup.getDefault().lookup(Keymap.class),
-                            action,
-                            item
-                        );
-
-                        debugPopupMenuItem(item, action);
-                        popupMenu.add(item);
-                    }
+                Component[] comps = org.openide.util.Utilities.actionsToPopup(actions, contextLookup).getComponents();
+                for (int i = 0; i < comps.length; i++) {
+                    popupMenu.add(comps[i]);
                 }
             }
         }
@@ -369,14 +367,23 @@ public class NbEditorKit extends ExtKit {
                         action = translateContextLookupAction(contextLookup, action);
                         
                         JMenuItem item = createLocalizedMenuItem(action);
-                        if (item != null) { // && !(item instanceof JMenu))
-                            assignAccelerator(
-                                 (Keymap)Lookup.getDefault().lookup(Keymap.class),
-                                 action,
-                                 item
-                            );
-                            debugPopupMenuItem(item, action);
-                            popupMenu.add(item);
+                        if (item != null) {
+                            if (item instanceof DynamicMenuContent) {
+                                Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
+                                for (int i = 0; i < cmps.length; i++) {
+                                    popupMenu.add(cmps[i]);
+                                }
+                            } else {
+                                if (!(item instanceof JMenu)) {
+                                    assignAccelerator(
+                                         (Keymap)Lookup.getDefault().lookup(Keymap.class),
+                                         action,
+                                         item
+                                    );
+                                }
+                                debugPopupMenuItem(item, action);
+                                popupMenu.add(item);
+                            }
                         }
 
                         return;

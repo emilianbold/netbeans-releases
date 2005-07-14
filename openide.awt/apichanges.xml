@@ -17,6 +17,31 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="DynamicMenuContent-added">
+      <api name="awt"/>
+      <summary>DynamicMenuContent interface added</summary>
+      <version major="6" minor="5"/>
+      <date day="12" month="6" year="2005"/>
+      <author login="mkleint"/>
+      <compatibility addition="yes" modification="yes" binary="compatible" source="compatible" semantic="incompatible" deprecation="yes" deletion="no"/>
+      <description>
+        In order to support MacOSX top menus and to fix problems with deprecated <code>JInlineMenu</code>, this new
+        interface was added that allows to handle dynamic content in <a href="@org-openide-util@/org/openide/util/actions/Presenter.Menu.html">Presenter.Menu</a>
+ and <a href="@org-openide-util@/org/openide/util/actions/Presenter.Popup.html">Presenter.Popup</a>.
+        If the instance returned by Presenter.Menu/Popup is an instance of <a href="@TOP@/org/openide/awt/DynamicMenuContent.html">DynamicMenuContent</a>, it's methods are
+        consulted when creating/updating the menu.
+        <code>JInlineMenu</code> rewritten to use this new approach in a backward compatible way, however changed during visibility of the menu are not supported.
+        <code>JMenuPlus</code> and <code>JPopupMenuPlus</code> are deprecated and behave exactly like their standard Swing counterparts.
+        <code>Actions.Submenu</code> and <code>Actions.MenuItem</code> now implement <code>DynamicMenuContent</code> interface.
+      </description>
+      <class package="org.openide.awt" name="DynamicMenuContent"/>
+      <class package="org.openide.awt" name="JInlineMenu"/>
+      <class package="org.openide.awt" name="JMenuPlus"/>
+      <class package="org.openide.awt" name="JPopupMenuPlus"/>
+      <class package="org.openide.awt" name="Actions"/>
+      <issue number="35827"/>
+    </change>    
+    
     <change id="statuslineelementprovider-added">
         <api name="awt"/>
         <summary>Make IDE's status bar pluggable.</summary>
@@ -48,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
     </change>
     
     <change>
-      <api name="util"/>
+      <api name="awt"/>
       <summary>HTML browser factory deprecated, use lookup instead</summary>
       <date day="8" month="3" year="2001"/>
       <compatibility modification="yes" deprecation="yes" binary="compatible" source="compatible" semantic="compatible" addition="no" deletion="no"/>
@@ -61,7 +86,7 @@ Microsystems, Inc. All Rights Reserved.
       <class package="org.openide.awt" name="HtmlBrowser"/>
     </change>
    <change>
-      <api name="util"/>
+      <api name="awt"/>
       <summary>Display names for toolbars</summary>
       <date day="8" month="12" year="2000"/>
       <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
@@ -85,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
       <class package="org.openide.awt" name="Toolbar"/>
     </change>
     <change>
-      <api name="util"/>
+      <api name="awt"/>
       <summary>Cleaned up accidentally public members of <code>Toolbar</code>
       </summary>
       <date day="19" month="4" year="2000"/>

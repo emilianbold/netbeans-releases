@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>6.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -88,7 +88,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>6.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

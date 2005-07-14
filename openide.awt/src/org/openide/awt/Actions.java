@@ -12,8 +12,8 @@
  */
 package org.openide.awt;
 
+import java.util.List;
 import org.openide.ErrorManager;
-import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -26,8 +26,7 @@ import java.awt.image.*;
 import java.beans.*;
 
 import java.lang.ref.WeakReference;
-
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -126,10 +125,10 @@ public class Actions extends Object {
     public static void connect(JMenuItem item, Action action, boolean popup) {
         Bridge b = new MenuBridge(item, action, popup);
 
-        // Would make more sense to defer this until addNotify, but for some reason (why?)
-        // if you do that, various menus start out compacted and poorly painted.
+        if (item instanceof Actions.MenuItem) {
+            ((Actions.MenuItem)item).setBridge(b);
+        }
         b.updateState(null);
-
         if (!popup) {
             // #39508 fix.
             setMenuActionConnection(item, action);
@@ -349,12 +348,8 @@ public class Actions extends Object {
     * @param action the action to update
     */
     static void updateKey(JMenuItem item, Action action) {
-        if (item instanceof SubMenu || !(item instanceof JMenu)) {
-            if (item instanceof SubMenu && !((SubMenu) item).useAccel()) {
-                item.setAccelerator(null);
-            } else {
-                item.setAccelerator((KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
-            }
+        if (!(item instanceof JMenu)) {
+            item.setAccelerator((KeyStroke) action.getValue(Action.ACCELERATOR_KEY));
         }
     }
 
@@ -937,34 +932,47 @@ public class Actions extends Object {
         }
     }
 
-    /** Sub menu bridge.
+
+    /** The class that listens to the menu item selections and forwards it to the
+     * action class via the performAction() method.
+     */
+    private static class ISubActionListener implements java.awt.event.ActionListener {
+        int index;
+        SubMenuModel support;
+        
+        public ISubActionListener(int index, SubMenuModel support) {
+            this.index = index;
+            this.support = support;
+        }
+        
+        /** called when a user clicks on this menu item */
+        public void actionPerformed(ActionEvent e) {
+            support.performActionAt(index);
+        }
+    }
+
+    /** Sub menu bridge 2.
     */
-    private static final class SubMenuBridge extends MenuBridge implements ChangeListener {
+    private static final class SubMenuBridge extends MenuBridge implements ChangeListener, DynamicMenuContent {
         /** model to obtain subitems from */
         private SubMenuModel model;
-
-        /** submenu */
-        private SubMenu menu;
-
+        private List currentOnes;
+        private JMenuItem single;
+        private JMenu multi;
         /** Constructor.
         */
-        public SubMenuBridge(SubMenu item, Action action, SubMenuModel model, boolean popup) {
-            super(item, action, popup);
-            prepareMargins(item, action);
-
-            menu = item;
+        public SubMenuBridge(JMenuItem one, JMenu more, Action action, SubMenuModel model, boolean popup) {
+            super(one, action, popup);
+            single = one;
+            multi = more;
+            setMenuText(multi, (String)action.getValue(Action.NAME), popup);
+            prepareMargins(one, action);
+            prepareMargins(more, action);
+            currentOnes = new ArrayList();
             this.model = model;
-        }
-
-        public void addNotify() {
-            super.addNotify();
-            model.addChangeListener(this);
-            generateSubMenu();
-        }
-
-        public void removeNotify() {
-            model.removeChangeListener(this);
-            super.removeNotify();
+            single.addActionListener(new ISubActionListener(0, model));
+//            model.addChangeListener(this);
+//            checkVisibility();
         }
 
         /** Called when model changes. Regenerates the model.
@@ -974,97 +982,81 @@ public class Actions extends Object {
             if (!EventQueue.isDispatchThread()) {
                 new IllegalStateException("This must happen in the event thread!").printStackTrace();
             }
-
             // change in keys or in submenu model
-            generateSubMenu();
+//            checkVisibility();
         }
+        
+        public void updateState(String changedProperty) {
+            super.updateState(changedProperty);
+//            checkVisibility();
+        }        
 
-        /** Regenerates the menu
-        */
-        private void generateSubMenu() {
-            boolean shouldUpdate = false;
-
-            try {
-                menu.removeAll();
-
-                int cnt = model.getCount();
-
-                if (cnt != menu.previousCount) {
-                    // update UI
-                    shouldUpdate = true;
-                }
-
-                // in all cases remeber the previous
-                menu.previousCount = cnt;
-
-                // remove if there is an previous listener
-                if (menu.oneItemListener != null) {
-                    menu.removeActionListener(menu.oneItemListener);
-                }
-
-                if (cnt == 0) {
-                    // menu disabled
-                    menu.setEnabled(false);
-
-                    if (menu.oneItemListener != null) {
-                        menu.removeActionListener(menu.oneItemListener);
-                        menu.oneItemListener = null;
-                    }
-
-                    return;
-                } else {
-                    menu.setEnabled(true);
-
-                    // go on
-                }
-
-                if (cnt == 1) {
-                    // generate without submenu
-                    menu.addActionListener(menu.oneItemListener = new ISubActionListener(0, model));
-
-                    HelpCtx help = model.getHelpCtx(0);
-                    associateHelp(menu, (help == null) ? findHelp(action) : help);
-                } else {
-                    boolean addSeparator = false;
-                    int count = model.getCount();
-
-                    for (int i = 0; i < count; i++) {
-                        String label = model.getLabel(i);
-
-                        //          MenuShortcut shortcut = support.getMenuShortcut(i);
-                        if (label == null) {
-                            addSeparator = menu.getItemCount() > 0;
-                        } else {
-                            if (addSeparator) {
-                                menu.addSeparator();
-                                addSeparator = false;
-                            }
-
-                            //       if (shortcut == null)
-                            // (Dafe) changed to support mnemonics in item labels
-                            JMenuItem item = new JMenuItem();
-                            Mnemonics.setLocalizedText(item, label);
-
-                            // attach the shortcut to the first item
-                            if (i == 0) {
-                                updateKey(item, action);
-                            }
-
-                            item.addActionListener(new ISubActionListener(i, model));
-
-                            HelpCtx help = model.getHelpCtx(i);
-                            associateHelp(item, (help == null) ? findHelp(action) : help);
-                            menu.add(item);
+        
+        
+        public JComponent[] getMenuPresenters() {
+            return synchMenuPresenters(null);
+        }
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            currentOnes.clear();
+            int cnt = model.getCount();
+            
+            if (cnt == 0) {
+                updateState(null);
+                currentOnes.add(single);
+                // menu disabled
+                single.setEnabled(false);
+            } else if (cnt == 1) {
+                updateState(null);
+                currentOnes.add(single);
+                single.setEnabled(true);
+                // generate without submenu
+                HelpCtx help = model.getHelpCtx(0);
+                associateHelp(single, (help == null) ? findHelp(action) : help);
+            } else {
+                currentOnes.add(multi);
+                multi.removeAll();
+                //TODO
+                Mnemonics.setLocalizedText(multi, (String)action.getValue(Action.NAME));
+            
+                boolean addSeparator = false;
+                int count = model.getCount();
+            
+                for (int i = 0; i < count; i++) {
+                    String label = model.getLabel(i);
+                
+                    //          MenuShortcut shortcut = support.getMenuShortcut(i);
+                    if (label == null) {
+                        addSeparator = multi.getItemCount() > 0;
+                    } else {
+                        if (addSeparator) {
+                            multi.addSeparator();
+                            addSeparator = false;
                         }
+                    
+                        //       if (shortcut == null)
+                        // (Dafe) changed to support mnemonics in item labels
+                        JMenuItem item = new JMenuItem();
+                        Mnemonics.setLocalizedText(item, label);
+                    
+                        // attach the shortcut to the first item
+                        if (i == 0) {
+                            updateKey(item, action);
+                        }
+                    
+                        item.addActionListener(new ISubActionListener(i, model));
+                    
+                        HelpCtx help = model.getHelpCtx(i);
+                        associateHelp(item, (help == null) ? findHelp(action) : help);
+                        multi.add(item);
                     }
-
-                    associateHelp(menu, findHelp(action));
+                
+                    associateHelp(multi, findHelp(action));
                 }
-            } finally {
-                if (shouldUpdate) {
-                    menu.updateUI();
-                }
+                multi.setEnabled(true);
             }
+            return (JMenuItem[])currentOnes.toArray(new JMenuItem[currentOnes.size()]);
+            
         }
 
         private void associateHelp(JComponent comp, HelpCtx help) {
@@ -1074,26 +1066,7 @@ public class Actions extends Object {
                 HelpCtx.setHelpIDString(comp, null);
             }
         }
-
-        /** The class that listens to the menu item selections and forwards it to the
-        * action class via the performAction() method.
-        */
-        private static class ISubActionListener implements java.awt.event.ActionListener {
-            int index;
-            SubMenuModel support;
-
-            public ISubActionListener(int index, SubMenuModel support) {
-                this.index = index;
-                this.support = support;
-            }
-
-            /** called when a user clicks on this menu item */
-            public void actionPerformed(ActionEvent e) {
-                support.performActionAt(index);
-            }
-        }
     }
-
     //
     //
     // The presenter classes
@@ -1104,9 +1077,9 @@ public class Actions extends Object {
      * Extension of Swing menu item with connection to
      * system actions.
      */
-    public static class MenuItem extends javax.swing.JMenuItem {
+    public static class MenuItem extends javax.swing.JMenuItem implements DynamicMenuContent {
         static final long serialVersionUID = -21757335363267194L;
-
+        private Actions.Bridge bridge;
         /** Constructs a new menu item with the specified label
         * and no keyboard shortcut and connects it to the given SystemAction.
         * @param aAction the action to which this menu item should be connected
@@ -1124,6 +1097,22 @@ public class Actions extends Object {
         public MenuItem(Action aAction, boolean useMnemonic) {
             Actions.connect(this, aAction, !useMnemonic);
         }
+        
+        void setBridge(Actions.Bridge br) {
+            bridge = br;
+        }
+
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return getMenuPresenters();
+        }
+
+        public JComponent[] getMenuPresenters() {
+            if (bridge != null) {
+                bridge.updateState(null);
+            }
+            return new JComponent[] {this};
+        }
+        
     }
 
     /** CheckboxMenuItem extends the java.awt.CheckboxMenuItem and adds
@@ -1207,25 +1196,14 @@ public class Actions extends Object {
             return this.getPreferredSize();
         }
     }
+    
 
     /** SubMenu provides easy way of displaying submenu items based on
     * SubMenuModel.
     */
-    public static class SubMenu extends org.openide.awt.JMenuPlus {
+    public static class SubMenu extends JMenu implements DynamicMenuContent {
         static final long serialVersionUID = -4446966671302959091L;
 
-        /** number of previous sub items */
-        int previousCount = -1;
-
-        /** listener to remove from this menu or <CODE>null</CODE> */
-        ActionListener oneItemListener;
-
-        /** The keystroke which acts as the menu's accelerator.
-         * This menu can have an accelerator! */
-        private KeyStroke accelerator;
-
-        /** The model of the submenu used in menuitem generation */
-        private SubMenuModel subModel;
         private SubMenuBridge bridge;
 
         /** Constructs a new ActMenuItem with the specified label
@@ -1257,160 +1235,22 @@ public class Actions extends Object {
         * @param popup whether this is a popup menu
         */
         public SubMenu(Action aAction, SubMenuModel model, boolean popup) {
-            subModel = model;
-            bridge = new SubMenuBridge(this, aAction, model, popup);
+            bridge = new SubMenuBridge(new JMenuItem(), this, aAction, model, popup);
 
             // set at least the name to have reasonable bounds
             bridge.updateState(Action.NAME);
         }
-
-        // Fixes #26619
-
-        /** Overriden to finish initialization of the bridge on demand
-         */
-        public void addNotify() {
-            super.addNotify();
-            bridge.updateState(null);
-
-            // Empty SubMenu -> disable
-            if (subModel.getCount() == 0) {
-                setEnabled(false);
-            }
+        
+        public JComponent[] getMenuPresenters() {
+            return bridge.getMenuPresenters();
         }
-
-        // XXX Overriding processKeyBinding is not a nice solution, used as
-        // a last resort here to fix the bug.
-        // #9331. Missed accelerator for Paste action.
-
-        /** Overrides superclass method.
-         * If it has accelerator delegates processing of it to the first item. */
-        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-            // If it is as accelerator process the doClick binding to the
-            // first sub-item.
-            if (ks.equals(accelerator)) {
-                // Use first item if there is one.
-                Component[] cs = getMenuComponents();
-
-                if ((cs.length > 0) && cs[0] instanceof JComponent) {
-                    JComponent comp = (JComponent) cs[0];
-
-                    ActionMap am = comp.getActionMap();
-
-                    if ((am != null) && comp.isEnabled()) {
-                        Action action = am.get("doClick"); // NOI18N
-
-                        if (action != null) {
-                            return SwingUtilities.notifyAction(action, ks, e, comp, e.getModifiers());
-                        }
-                    }
-
-                    return false;
-                }
-            }
-
-            return super.processKeyBinding(ks, e, condition, pressed);
+        
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            return bridge.synchMenuPresenters(items);
         }
-
-        // XXX #11048. Ugly patch.
-        // This works for the cases when this menu is in 'menu'
-        // (not popup), the popup is handled by NbPopupMenuUI hack. This same
-        // method for popup wouldn't work since NbPopupMenuUI automatically
-        // passes focus to sub-menu.
-
-        /** Overrides superclass method. Adds a hack for KB menu invokation
-         * when this <code>JMenu</code> needs to act like <code>JMenuItem</code>. */
-        public void processKeyEvent(KeyEvent e, MenuElement[] path, MenuSelectionManager m) {
-            if (
-                (getMenuComponentCount() <= 1) &&
-                    java.util.Arrays.equals(path, MenuSelectionManager.defaultManager().getSelectedPath()) &&
-                    ((e.getKeyCode() == KeyEvent.VK_ENTER) || (e.getKeyCode() == KeyEvent.VK_SPACE))
-            ) {
-                ActionListener ac = oneItemListener;
-
-                if (ac != null) {
-                    m.setSelectedPath(new MenuElement[0]);
-                    ac.actionPerformed(new ActionEvent(e.getSource(), 0, null));
-
-                    return;
-                }
-            }
-
-            super.processKeyEvent(e, path, m);
-        }
-
-        /** Request for either MenuUI or MenuItemUI if the only one subitem should not
-        * use submenu.
-        */
-        public String getUIClassID() {
-            if (previousCount == 0) {
-                return "MenuItemUI"; // NOI18N
-            }
-
-            return (previousCount == 1) ? "MenuItemUI" : "MenuUI"; // NOI18N
-        }
-
-        boolean useAccel() {
-            return subModel.getCount() <= 1;
-        }
-
-        /** Overrides superclass method to be able to have an accelerator. */
-        public void setAccelerator(KeyStroke keyStroke) {
-            KeyStroke oldAccelerator = accelerator;
-            this.accelerator = keyStroke;
-
-            // Note: "accelerator" for the bean prop, not Action.ACCELERATOR_KEY == "AcceleratorKey"
-            firePropertyChange("accelerator", oldAccelerator, accelerator); // NOI18N
-        }
-
-        /** Overrides superclass method to be able to have an accelerator. */
-        public KeyStroke getAccelerator() {
-            return this.accelerator;
-        }
-
-        public void menuSelectionChanged(boolean isIncluded) {
-            if (previousCount <= 1) {
-                setArmed(isIncluded); // JMenuItem behaviour
-            } else {
-                if (isArmed() && !isIncluded) {
-                    setArmed(false);
-                }
-
-                super.menuSelectionChanged(isIncluded);
-            }
-        }
-
-        /** Menu cannot be selected when it represents MenuItem.
-        */
-        public void setSelected(boolean s) {
-            // disabled menu cannot be selected
-            if (isEnabled() || !s) {
-                super.setSelected(s);
-            }
-        }
-
-        /** Seting menu to disabled also sets the item as not selected
-        */
-        public void setEnabled(boolean e) {
-            super.setEnabled(e);
-
-            if (!e) {
-                super.setSelected(false);
-            }
-        }
-
-        public void doClick(int pressTime) {
-            if (!isEnabled()) {
-                // do nothing if not enabled
-                return;
-            }
-
-            if (oneItemListener != null) {
-                oneItemListener.actionPerformed(null);
-            } else {
-                super.doClick(pressTime);
-            }
-        }
+        
     }
+
 
     private static class DisabledButtonFilter extends RGBImageFilter {
         DisabledButtonFilter() {

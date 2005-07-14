@@ -15,11 +15,16 @@ package org.openide.awt;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.event.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.ErrorManager;
 import org.openide.loaders.*;
@@ -368,20 +373,23 @@ public class MenuBar extends JMenuBar implements Externalizable {
     }
 
     /** Menu based on the folder content whith lazy items creation. */
-    private static class LazyMenu extends JMenuPlus implements NodeListener, Runnable {
+    private static class LazyMenu extends JMenu implements NodeListener, Runnable, ChangeListener {
 	DataFolder master;
 	boolean icon;
 	MenuFolder slave;
+        DynaMenuModel dynaModel;
 	
 	/** Constructor. */
         public LazyMenu(final DataFolder df, boolean icon) {
 	    master = df;
 	    this.icon = icon;
+            dynaModel = new DynaMenuModel();
 
 	    // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
             n.addNodeListener (org.openide.nodes.NodeOp.weakNodeListener (this, n));
 	    updateProps();
+            getModel().addChangeListener(this);
 
         }
         
@@ -461,13 +469,34 @@ public class MenuBar extends JMenuBar implements Externalizable {
         public void childrenRemoved (NodeMemberEvent ev) {}
         public void childrenReordered(NodeReorderEvent ev) {}
         public void nodeDestroyed (NodeEvent ev) {}
-
             
-        /** Overrides superclass method to lazy create popup. */
-        public JPopupMenu getPopupMenu() {
-            doInitialize();
-            return super.getPopupMenu();
+        private boolean selected = false;
+        public void stateChanged(ChangeEvent event) {
+            if (selected) {
+                selected = false;
+            } else {
+                selected = true;
+                doInitialize();
+                dynaModel.checkSubmenu(this);
+
+            }
         }
+        
+
+    /** Overriden to provide better strategy for placing the JMenu on the screen.
+    * @param b a boolean value -- true to make the menu visible, false to hide it
+    */
+    public void setPopupMenuVisible(boolean b) {
+        boolean isVisible = isPopupMenuVisible();
+
+        if (b != isVisible) {
+            if ((b == true) && isShowing()) {
+                doInitialize();                
+                dynaModel.checkSubmenu(this);
+            }
+        }
+        super.setPopupMenuVisible(b);
+    }        
         
 	private void doInitialize() {
 	    if(slave == null) {
@@ -554,7 +583,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
     	     */
     	    protected Object createInstance(InstanceCookie[] cookies)
     			    throws IOException, ClassNotFoundException {
-		JMenu m = LazyMenu.this;
+		LazyMenu m = LazyMenu.this;
 
         	//synchronized (this) { // see #15917 - attachment from 2001/09/27
         	LinkedList cInstances = new LinkedList();
@@ -574,69 +603,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
 		    m.add(item);
 		}
 
-	    
-        	// clear first - refresh the menu's content
-        	boolean addSeparator = false;
-                // is menu with some ityem with icon or not
-                boolean isWithIcons = false;
-                Icon curIcon = null;
-        	Iterator it = cInstances.iterator();
-                List menuItems = new ArrayList(cInstances.size());
-        	while (it.hasNext()) {
-            	    Object obj = it.next();
-            	    if (obj instanceof Presenter.Menu) {
-                	obj = ((Presenter.Menu)obj).getMenuPresenter();
-            	    }
-		
-		    if (obj instanceof JMenuItem) {
-                	if(addSeparator) {
-                	    menuItems.add(null);
-                    	    addSeparator = false;
-                	}
-                        // check icon
-                        if (!isWithIcons) {
-                            curIcon = ((JMenuItem)obj).getIcon();
-                            if (curIcon != null) {
-                                isWithIcons = true;
-                            }
-                        }
-            		menuItems.add((JMenuItem)obj);
-            	    } else if (obj instanceof JSeparator) {
-                	addSeparator = menuItems.size() > 0;
-            	    } else if (obj instanceof Action) {
-                	if(addSeparator) {
-                	    menuItems.add(null);
-                    	    addSeparator = false;
-                	}
-                	Action a = (Action)obj;
-                	JMenuItem item = new JMenuItem();
-                	Actions.connect (item, a, false);
-                        // check icon
-                        if (!isWithIcons) {
-                            curIcon = item.getIcon();
-                            if (curIcon != null) {
-                                isWithIcons = true;
-                            }
-                        }
-                	menuItems.add (item);
-            	    }
-        	}
-
-                if (isWithIcons) {
-                    menuItems = alignVertically(menuItems);
-                }
-                
-                // fill menu with built items
-                JMenuItem curItem = null;
-                for (Iterator iter = menuItems.iterator(); iter.hasNext(); ) {
-                    curItem = (JMenuItem)iter.next();
-                    if (curItem != null) {
-                        m.add(curItem);
-                    } else {
-                        // null means separator
-                        m.addSeparator();
-                    }
-                }
+                m.dynaModel.loadSubmenu(cInstances, m);
                 
         	return m;
     	    }
