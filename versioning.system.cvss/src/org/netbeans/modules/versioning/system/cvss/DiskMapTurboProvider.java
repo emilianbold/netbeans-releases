@@ -49,7 +49,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 File file = files[i];
                 DataInputStream dis = null;
                 try {
-                    dis = new DataInputStream(new FileInputStream(file));
+                    dis = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
                     for (;;) {
                         int pathLen = dis.readInt();
                         dis.readInt();
@@ -100,7 +100,7 @@ class DiskMapTurboProvider implements TurboProvider {
         int dirPathLen = dirPath.length();
         DataInputStream dis = null;
         try {
-            dis = new DataInputStream(new FileInputStream(store));
+            dis = new DataInputStream(new BufferedInputStream(new FileInputStream(store)));
             for (;;) {
                 int pathLen = dis.readInt();
                 int mapLen = dis.readInt();
@@ -148,12 +148,12 @@ class DiskMapTurboProvider implements TurboProvider {
         DataOutputStream oos = null;
         DataInputStream dis = null;
         try {
-            oos = new DataOutputStream(new FileOutputStream(storeNew));
+            oos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(storeNew)));
             if (value != null) {
                 writeEntry(oos, dirPath, value);
             }
             if (store.exists()) {
-                dis = new DataInputStream(new FileInputStream(store));
+                dis = new DataInputStream(new BufferedInputStream(new FileInputStream(store)));
                 for (;;) {
                     int pathLen;
                     try {
