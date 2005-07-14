@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.Difference;
@@ -106,7 +106,7 @@ public class GraphicalMergeVisualizer extends MergeVisualizer implements Seriali
         control.initialize(diffs, source1, source2, result,
                            colorUnresolvedConflict, colorResolvedConflict,
                            colorOtherConflict);
-        merge.addVetoableChangeListener(WeakListener.vetoableChange(control, merge));
+        merge.addVetoableChangeListener(WeakListeners.vetoableChange(control, merge));
         merge.addMergePanel(panel);
         return merge;
     }

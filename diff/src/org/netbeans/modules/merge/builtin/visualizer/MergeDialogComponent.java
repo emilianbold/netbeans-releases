@@ -49,7 +49,7 @@ import org.openide.windows.Workspace;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
@@ -422,7 +422,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         
         public MergeNode(MergePanel panel) {
             super(org.openide.nodes.Children.LEAF);
-            panel.addPropertyChangeListener(WeakListener.propertyChange(this, panel));
+            panel.addPropertyChangeListener(WeakListeners.propertyChange(this, panel));
             mergePanelRef = new WeakReference(panel);
             getCookieSet().add(new CloseCookieImpl());
             //activateSave();
