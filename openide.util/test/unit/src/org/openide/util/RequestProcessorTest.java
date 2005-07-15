@@ -25,10 +25,17 @@ public class RequestProcessorTest extends NbTestCase {
         System.setProperty("org.openide.util.Lookup", "org.openide.util.RequestProcessorTest$Lkp");
     }
     
+    private ErrorManager log;
+    
     public RequestProcessorTest(java.lang.String testName) {
         super(testName);
     }
     
+    protected void setUp () throws Exception {
+        super.setUp();
+        
+        log = ErrorManager.getDefault().getInstance(getName());
+    }
 
     protected void runTest() throws Throwable {
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
@@ -38,7 +45,7 @@ public class RequestProcessorTest extends NbTestCase {
             super.runTest();
         } catch (Throwable ex) {
             throw new junit.framework.AssertionFailedError (
-                ErrManager.messages.toString()
+                ex.getMessage() + "\n" + ErrManager.messages.toString()
             ).initCause(ex);
         }
     }
@@ -693,49 +700,72 @@ public class RequestProcessorTest extends NbTestCase {
         RequestProcessor rp = new RequestProcessor ("Cancellable", 1, true);
         
         class R implements Runnable {
+            private String name;
+            
             public boolean checkBefore;
             public boolean checkAfter;
             public boolean interrupted;
             
+            public R (String n) {
+                this.name = n;
+            }
+            
             public synchronized void run () {
                 checkBefore = Thread.interrupted();
                 
+                log.log("in runnable " + name + " check before: " + checkBefore);
+                
                 notifyAll ();
+
+                log.log("in runnable " + name + " after notify");
                 
                 try {
                     wait ();
+                    log.log("in runnable " + name + " after wait, not interrupted");
                     interrupted = false;
                 } catch (InterruptedException ex) {
                     interrupted = true;
+                    log.log("in runnable " + name + " after wait, interrupted");
                 }
                 
                 notifyAll ();
                 
+                log.log("in runnable " + name + " after notifyAll");
+
                 try {
                     wait ();
+                    log.log("in runnable " + name + " after second wait, not interrupted");
                 } catch (InterruptedException ex) {
+                    log.log("in runnable " + name + " after second wait, interrupted");
                 }
                 
                 checkAfter = Thread.interrupted();
+                log.log("in runnable " + name + " checkAfter: " + checkAfter);
                 
                 notifyAll ();
             }
         }
         
-        R r = new R ();
+        R r = new R ("First");
         RequestProcessor.Task t;
         synchronized (r) {
             t = rp.post (r);
             r.wait ();
             assertTrue ("The task is already running", !t.cancel ());
+            log.log("Main checkpoint1");
             r.wait ();
+            log.log("Main checkpoint2");
             r.notifyAll ();
+            log.log("Main checkpoint3");
             r.wait ();
+            log.log("Main checkpoint4");
             assertTrue ("The task has been interrupted", r.interrupted);
             assertTrue ("Not before", !r.checkBefore);
             assertTrue ("Not after - as the notification was thru InterruptedException", !r.checkAfter);
         }
+        log.log("Main checkpoint5");
         t.waitFinished();
+        log.log("Main checkpoint6");
         /*
         try {
             assertGC("no", new java.lang.ref.WeakReference(this));
@@ -745,20 +775,27 @@ public class RequestProcessorTest extends NbTestCase {
          */
         
         // interrupt after the task has finished
-        r = new R ();
+        r = new R ("Second");
         synchronized (r) {
             t = rp.post (r);
+            log.log("Second checkpoint1");
             r.wait ();
             r.notifyAll ();
+            log.log("Second checkpoint2");
             r.wait ();
+            log.log("Second checkpoint3");
             assertTrue ("The task is already running", !t.cancel ());
+            log.log("Second checkpoint4");
             r.notifyAll ();
+            log.log("Second checkpoint5");
             r.wait ();
             assertTrue ("The task has not been interrupted by exception", !r.interrupted);
             assertTrue ("Not interupted before", !r.checkBefore);
             assertTrue ("But interupted after", r.checkAfter);
         }
+        log.log("Second checkpoint6");
         t.waitFinished();
+        log.log("Second checkpoint7");
     }
 
     public void testCancelDoesNotInterruptTheRunningThread () throws Exception {
@@ -1136,7 +1173,8 @@ public class RequestProcessorTest extends NbTestCase {
         
         public org.openide.ErrorManager getInstance (String name) {
             if (
-                name.startsWith ("org.openide.util.RequestProcessor")
+                name.startsWith ("org.openide.util.RequestProcessor") ||
+                name.startsWith("test")
             ) {
                 return new ErrManager ('[' + name + ']');
             } else {
