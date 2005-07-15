@@ -48,6 +48,8 @@ public class UtilitiesActionsTest extends NbTestCase {
         Component[] comp = popup.getComponents();
         boolean onepresent = false;
         boolean twopresent = false;
+        boolean threepresent = false;
+        boolean fourpresent = false;
         boolean zeropresent = false;
         for (int i = 0; i < comp.length; i++) {
             if ("0".equals(((JMenuItem)comp[i]).getText())) {
@@ -56,10 +58,18 @@ public class UtilitiesActionsTest extends NbTestCase {
             if ("2".equals(((JMenuItem)comp[i]).getText())) {
                 twopresent = true;
             }
+            if ("4".equals(((JMenuItem)comp[i]).getText())) {
+                fourpresent = true;
+            }
+            if ("3".equals(((JMenuItem)comp[i]).getText())) {
+                threepresent = true;
+            }
             if ("1".equals(((JMenuItem)comp[i]).getText())) {
                 onepresent = true;
             }
         }
+        assertTrue(threepresent);
+        assertTrue(fourpresent);
         assertTrue(onepresent);
         assertTrue(twopresent);
         assertTrue(zeropresent);
@@ -96,7 +106,7 @@ public class UtilitiesActionsTest extends NbTestCase {
         public JComponent[] getMenuPresenters() {
             itm1 = new JMenuItem();
             itm1.setText("1");
-            itm2 = new JMenuItem();
+            itm2 = new Dyna2();
             itm2.setText("2");
             return new JComponent[] {
                 itm1,
@@ -107,6 +117,28 @@ public class UtilitiesActionsTest extends NbTestCase {
         public JComponent[] synchMenuPresenters(JComponent[] items) {
             ((JMenuItem)items[0]).setText("1x");
             ((JMenuItem)items[1]).setText("2x");
+            return items;
+        }
+    }
+    
+    private class Dyna2 extends JMenuItem implements DynamicMenuContent {
+        private JMenuItem itm1;
+        private JMenuItem itm2;
+        public JComponent[] getMenuPresenters() {
+            itm1 = new JMenuItem();
+            itm1.setText("3");
+            itm2 = new JMenuItem();
+            itm2.setText("4");
+            return new JComponent[] {
+                itm1,
+                itm2,
+                this
+            };
+        }
+    
+        public JComponent[] synchMenuPresenters(JComponent[] items) {
+            ((JMenuItem)items[0]).setText("3x");
+            ((JMenuItem)items[1]).setText("4x");
             return items;
         }
     }
