@@ -208,7 +208,7 @@ public class Utils {
     }
 
     private static Collection toFileCollection(Collection fileObjects) {
-        Set files = new HashSet(fileObjects.size());
+        Set files = new HashSet(fileObjects.size()*4/3+1);
         for (Iterator i = fileObjects.iterator(); i.hasNext();) {
             files.add(FileUtil.toFile((FileObject) i.next()));
         }
@@ -217,7 +217,7 @@ public class Utils {
     }
 
     public static File [] toFileArray(Collection fileObjects) {
-        Set files = new HashSet(fileObjects.size());
+        Set files = new HashSet(fileObjects.size()*4/3+1);
         for (Iterator i = fileObjects.iterator(); i.hasNext();) {
             files.add(FileUtil.toFile((FileObject) i.next()));
         }
