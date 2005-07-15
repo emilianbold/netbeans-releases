@@ -75,8 +75,9 @@ public class ArchQuestionsTest extends NbTestCase {
         assertTrue ("File is generated", answers.exists ());
         
         String res = PublicPackagesInProjectizedXMLTest.readFile(answers);
-        
-        org.w3c.dom.Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(answers);
+        DocumentBuilderFactory fack = DocumentBuilderFactory.newInstance();
+        fack.setValidating(false);
+        org.w3c.dom.Document dom = fack.newDocumentBuilder().parse(answers);
 
         org.w3c.dom.NodeList list = dom.getElementsByTagName("defaultanswer");
         assertTrue("There is at least one defaultanswer: " + res, list.getLength() > 0);
