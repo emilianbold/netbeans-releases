@@ -277,8 +277,9 @@ public class CvsVersioningSystem {
     
     private void addUserPatterns(Set patterns) {
         File userIgnores = new File(System.getProperty("user.home"), FILENAME_CVSIGNORE);
-        if (userIgnores.lastModified() > userIgnorePatternsTimestamp || userIgnores.lastModified() == 0 && userIgnorePatternsTimestamp > 0) {
-            userIgnorePatternsTimestamp = userIgnores.lastModified();
+        long lm = userIgnores.lastModified();
+        if (lm > userIgnorePatternsTimestamp || lm == 0 && userIgnorePatternsTimestamp > 0) {
+            userIgnorePatternsTimestamp = lm;
             parseUserPatterns(userIgnores);
         }
         if (userIgnorePatternsReset) {
