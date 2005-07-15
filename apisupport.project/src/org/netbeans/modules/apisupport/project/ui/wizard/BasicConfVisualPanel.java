@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
+import java.util.StringTokenizer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
@@ -36,6 +37,13 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     private static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
     
     private NewModuleProjectData data;
+    private boolean wasLayerUpdated;
+    private boolean wasBundleUpdated;
+    
+    private boolean listenersAttached;
+    private DocumentListener cnbDL;
+    private DocumentListener layerDL;
+    private DocumentListener bundleDL;
     
     /** Creates new form BasicConfVisualPanel */
     public BasicConfVisualPanel(WizardDescriptor setting) {
@@ -43,50 +51,61 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         initComponents();
         this.data = (NewModuleProjectData) getSetting().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
-        codeNameBaseValue.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { codeNameBaseUpdated(); }
-            public void removeUpdate(DocumentEvent e) { codeNameBaseUpdated(); }
+        cnbDL = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }
+            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
             public void changedUpdate(DocumentEvent e) {}
-        });
-        bundleValue.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { bundleUpdated(); }
-            public void removeUpdate(DocumentEvent e) { bundleUpdated(); }
+        };
+        layerDL = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
+            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
             public void changedUpdate(DocumentEvent e) {}
-        });
-        layerValue.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { layerUpdated(); }
-            public void removeUpdate(DocumentEvent e) { layerUpdated(); }
+        };
+        bundleDL = new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { wasBundleUpdated = true; checkBundle(); }
+            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
             public void changedUpdate(DocumentEvent e) {}
-        });
+        };
     }
     
-    private void codeNameBaseUpdated() {
-        String dotName = getCodeNameBaseValue();
-        String slashName = dotName.replace('.', '/');
-        bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
-        layerValue.setText(slashName + "/layer.xml"); // NOI18N
-        setErrorMessage(null);
+    private void checkCodeNameBase() {
+        if (!isValidCodeNameBase(getCodeNameBaseValue())) {
+            setErrorMessage(getMessage("MSG_InvalidCNB")); // NOI18N
+        } else {
+            setErrorMessage(null);
+            // update layer and bundle from the cnb
+            String dotName = getCodeNameBaseValue();
+            String slashName = dotName.replace('.', '/');
+            if (!wasBundleUpdated) {
+                bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
+                wasBundleUpdated = false;
+            }
+            if (!wasLayerUpdated) {
+                layerValue.setText(slashName + "/layer.xml"); // NOI18N
+                wasLayerUpdated = false;
+            }
+        }
     }
     
-    private void bundleUpdated() {
+    private void checkBundle() {
         checkEntry(getBundleValue(), "Bundle", ".properties"); // NOI18N
     }
     
-    private void layerUpdated() {
+    private void checkLayer() {
         checkEntry(getLayerValue(), "Layer", ".xml"); // NOI18N
     }
     
     /** Used for Layer and Bundle entries. */
-    private void checkEntry(String layer, String resName, String extension) {
-        if (layer.length() == 0) {
+    private void checkEntry(String path, String resName, String extension) {
+        if (path.length() == 0) {
             setErrorMessage(resName + " cannot be empty."); // NOI18N
             return;
         }
-        if (layer.indexOf('/') == -1) {
+        if (path.indexOf('/') == -1) {
             setErrorMessage("Cannot use default package for " + resName);
             return;
         }
-        if (!layer.endsWith(extension)) {
+        if (!path.endsWith(extension)) {
             setErrorMessage(resName + " must have \"" + extension + "\" extension."); // NOI18N
             return;
         }
@@ -94,11 +113,11 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String dotName = EXAMPLE_BASE_NAME + data.getProjectName();
+        String dotName = EXAMPLE_BASE_NAME + data.getProjectName().toLowerCase();
         codeNameBaseValue.setText(dotName);
         codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
         displayNameValue.setText(data.getProjectName());
-        codeNameBaseUpdated();
+        checkCodeNameBase();
     }
     
     /** Stores collected data into model. */
@@ -120,6 +139,73 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     
     private String getLayerValue() {
         return layerValue.getText().trim();
+    }
+    
+    // Stolen from java/project PackageViewChildren.isValidPackageName()
+    // XXX probably should be solved with some regular expression but spec. for
+    // exact format is not probably known
+    private static boolean isValidCodeNameBase(String name) {
+        if (name.length() == 0) {
+            //Fast check of default pkg
+            return true;
+        }
+        StringTokenizer tk = new StringTokenizer(name,".",true); //NOI18N
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (!delimExpected) {
+                if (namePart.equals(".")) { //NOI18N
+                    return false;
+                }
+                for (int i=0; i< namePart.length(); i++) {
+                    char c = namePart.charAt(i);
+                    if (i == 0) {
+                        if (!Character.isJavaIdentifierStart(c)) {
+                            return false;
+                        }
+                    } else {
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            return false;
+                        }
+                    }
+                }
+            } else {
+                if (!namePart.equals(".")) { //NOI18N
+                    return false;
+                }
+            }
+            delimExpected = !delimExpected;
+        }
+        return delimExpected;
+    }
+    
+    public void addNotify() {
+        super.addNotify();
+        attachDocumentListeners();
+    }
+    
+    public void removeNotify() {
+        // prevent checking when the panel is not "active"
+        removeDocumentListeners();
+        super.removeNotify();
+    }
+    
+    private void attachDocumentListeners() {
+        if (!listenersAttached) {
+            codeNameBaseValue.getDocument().addDocumentListener(cnbDL);
+            bundleValue.getDocument().addDocumentListener(bundleDL);
+            layerValue.getDocument().addDocumentListener(layerDL);
+            listenersAttached = true;
+        }
+    }
+    
+    private void removeDocumentListeners() {
+        if (listenersAttached) {
+            codeNameBaseValue.getDocument().removeDocumentListener(cnbDL);
+            bundleValue.getDocument().removeDocumentListener(bundleDL);
+            layerValue.getDocument().removeDocumentListener(layerDL);
+            listenersAttached = false;
+        }
     }
     
     /** This method is called from within the constructor to
@@ -229,7 +315,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-            
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel bundle;
     private javax.swing.JTextField bundleValue;
