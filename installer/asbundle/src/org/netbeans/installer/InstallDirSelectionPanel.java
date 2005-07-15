@@ -370,8 +370,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private boolean createDirectory(String path, String msgPrefix) {
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
 	File dirFile  = new File(path);
-	String dialogMsg = msgPrefix + " "
-	+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryCreateMessage)");
+	String dialogMsg;
 	try {
 	    logEvent(this, Log.DBG, "CheckInstallDir() dirFile:" + dirFile.getAbsolutePath());
 	    if (!dirFile.mkdirs()) {
