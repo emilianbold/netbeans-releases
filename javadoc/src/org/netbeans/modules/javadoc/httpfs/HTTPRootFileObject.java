@@ -404,7 +404,7 @@ class HTTPRootFileObject
             DataObject d = DataObject.find(f);
             InstanceCookie ic = (InstanceCookie)d.getCookie(InstanceCookie.class);
             if (ic != null) {
-                Object o = ic.instanceCreate();
+                Object o = ic.instanceCreate(); // NOPMD
                 // OK, we've initialized.
                 proxyInit = true;
             }
