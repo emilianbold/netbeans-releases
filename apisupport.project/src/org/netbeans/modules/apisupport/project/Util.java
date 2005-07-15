@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -188,4 +189,43 @@ public class Util {
             return FileUtil.getFileDisplayName(projectDir);
         }
     }
+    
+    /**
+     * Normalizes the given value to a regular dotted code name base.
+     * @param value to be normalized
+     */
+    public static String normalizeCNB(String value) {
+        StringTokenizer tk = new StringTokenizer(value.toLowerCase(), ".", true); //NOI18N
+        StringBuffer normalizedCNB = new StringBuffer();
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (!delimExpected) {
+                if (namePart.equals(".")) { //NOI18N
+                    continue;
+                }
+                for (int i = 0; i < namePart.length(); i++) {
+                    char c = namePart.charAt(i);
+                    if (i == 0) {
+                        if (!Character.isJavaIdentifierStart(c)) {
+                            continue;
+                        }
+                    } else {
+                        if (!Character.isJavaIdentifierPart(c)) {
+                            continue;
+                        }
+                    }
+                    normalizedCNB.append(c);
+                }
+            } else {
+                if (namePart.equals(".")) { //NOI18N
+                    normalizedCNB.append(namePart);
+                }
+            }
+            delimExpected = !delimExpected;
+        }
+        // also be sure there is no '.' left at the end of the cnb
+        return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
+    }
+    
 }

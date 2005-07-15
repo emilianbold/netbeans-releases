@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.apisupport.project.Util;
 import org.openide.WizardDescriptor;
 
 /**
@@ -113,8 +114,8 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String dotName = EXAMPLE_BASE_NAME + data.getProjectName().toLowerCase();
-        codeNameBaseValue.setText(dotName);
+        String dotName = EXAMPLE_BASE_NAME + data.getProjectName();
+        codeNameBaseValue.setText(Util.normalizeCNB(dotName));
         codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
         displayNameValue.setText(data.getProjectName());
         checkCodeNameBase();
