@@ -448,7 +448,6 @@ final class SingleModuleProperties extends ModuleProperties {
             }
             getProjectXMLManager().replaceDependencies(depsToSave);
         }
-        // XXX store only after real change
         String[] friends = getFriendListModel().getFriends();
         String[] publicPkgs = getPublicPackagesModel().getSelectedPackages();
         if (friends.length > 0) { // store friends packages
