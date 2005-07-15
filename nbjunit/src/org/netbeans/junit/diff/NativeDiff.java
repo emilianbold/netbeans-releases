@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -103,14 +103,19 @@ public class NativeDiff implements Diff {
         StringBuffer    buf = new StringBuffer(256);
         while (tok.hasMoreTokens()) {
             String token = tok.nextToken();
-            if (token.equals("TESTFILE"))
+            if (token.equals("TESTFILE")) {
+                buf.append('"');
                 buf.append(firstFile);
-            else if (token.equals("PASSFILE")) 
+                buf.append('"');
+            } else if (token.equals("PASSFILE")) {
+                buf.append('"');
                 buf.append(secondFile);
-            else if (0 == token.length()) 
+                buf.append('"');
+            } else if (0 == token.length()) {
                 buf.append('%');
-            else
+            } else {
                 buf.append(token);
+            }
         }
         return buf.toString();
     }
