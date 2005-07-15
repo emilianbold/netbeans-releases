@@ -14,7 +14,6 @@
 package org.netbeans.modules.javadoc.search;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

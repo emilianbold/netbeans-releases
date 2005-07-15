@@ -7,36 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.javadoc.settings;
 
-import java.io.File;
 import java.lang.reflect.Modifier;
 
-//import org.openide.options.ContextSystemOption;
 import org.openide.options.SystemOption;
-import org.openide.util.SharedClassObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ServiceType;
 
 import org.netbeans.modules.javadoc.comments.AutoCommenter;
-import org.netbeans.modules.javadoc.search.Jdk12SearchType;
 import org.netbeans.modules.javadoc.search.JavadocSearchType;
 import org.netbeans.modules.javadoc.*;
 import org.openide.util.Lookup;
 
-/** Options for applets - which applet viewer use ...
+/** Options for JavaDoc
 *
 * @author Petr Hrebejk
-* @version 0.1, Apr 15, 1999
 */
 public class DocumentationSettings extends SystemOption {
     
-    private static final String PROP_SEARCH_PATH         = "searchPatch";   //NOI18N
     private static final String PROP_SEARCH_SORT         = "idxSearchSort";   //NOI18N
     private static final String PROP_SEARCH_NO_HTML      = "idxSearchNoHtml";   //NOI18N
     private static final String PROP_SEARCH_SPLIT        = "idxSearchSplit";       //NOI18N

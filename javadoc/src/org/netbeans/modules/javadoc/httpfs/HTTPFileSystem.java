@@ -8,7 +8,7 @@
  *
  * The Original Code is the HTTP Javadoc Filesystem.
  * The Initial Developer of the Original Code is Jeffrey A. Keyser.
- * Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2002.
+ * Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2005.
  * All Rights Reserved.
  *
  * Contributor(s): Jeffrey A. Keyser.
@@ -28,8 +28,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.FileSystemAction;
-
 
 /**
  *	<p>Implemets the "HTTP Javadoc Filesystem" bean.</p>

@@ -234,7 +234,7 @@ class SearchThreadJdk12_japan extends IndexSearchThread {
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
     static private final int IN_AREF = 2;
-    static private final int IN_B = 3;
+//    static private final int IN_B = 3;
     static private final int IN_DESCRIPTION = 4;
     static private final int IN_DESCRIPTION_SUFFIX = 5;
     

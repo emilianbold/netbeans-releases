@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,12 +15,9 @@ package org.netbeans.modules.javadoc.search;
 
 import java.util.*;
 import java.util.regex.*;
-import java.io.File;
 
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.ServiceType;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
@@ -51,7 +48,7 @@ public abstract class JavadocSearchType extends ServiceType {
         String filter = NbBundle.getMessage(JavadocSearchType.class, "FILTER_OverviewIndiceLabel"); // NOI18N
         StringTokenizer tok = new StringTokenizer(filter, "\n"); // NOI18N
         LinkedList ll = new LinkedList();
-        for (int i = 0; tok.hasMoreTokens(); i++) {
+        while (tok.hasMoreTokens()) {
             try {
                 String expr = tok.nextToken();
                 Pattern re = Pattern.compile(expr);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,11 +18,9 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
-import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.SourceCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.src.*;
 
 
