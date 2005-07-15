@@ -20,6 +20,7 @@ import junit.framework.*;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
+import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.*;
 
@@ -129,6 +130,7 @@ public class OpenForm extends JellyTestCase {
             ActionNoBlock actionNoBlock;
             JFileChooserOperator jFileChooserOperator;
             FormDesignerOperator formDesignerOperator = null;
+            FrameOperator FrameOperator = null;
             for (ListIterator listIterator = list.listIterator(); listIterator.hasNext(); ) {
                 formPath = (String) listIterator.next();
                 fullPath = new StringBuffer(prePath).append(fileSeparator).append(formPath).toString();
@@ -140,21 +142,33 @@ public class OpenForm extends JellyTestCase {
                 actionNoBlock = new ActionNoBlock("File|Open File...", null);
                 actionNoBlock.perform();
                 jFileChooserOperator = new JFileChooserOperator();
-                System.out.println("directory " + directory);
-                System.out.println("filename " + filename);
                 jFileChooserOperator.setCurrentDirectory(new File(directory));
                 jFileChooserOperator.selectFile(filename);
                 jFileChooserOperator.approve();
                 formDesignerOperator = new FormDesignerOperator(filenamenoext);
-                org.netbeans.jemmy.util.PNGEncoder.captureScreen(formDesignerOperator.fakePane().getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
+
+                
+                formDesignerOperator.btTestForm().push();
+                FrameOperator frameOperator = new FrameOperator("Form Preview [" + filenamenoext +"]");
+
+//                org.netbeans.jemmy.util.PNGEncoder.captureScreen(formDesignerOperator.fakePane().getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
+
+                org.netbeans.jemmy.util.PNGEncoder.captureScreen(frameOperator.getSource(), workdirpath + fileSeparator + filenamenoext + ".png");                
+
+                frameOperator.close();                
                 formDesignerOperator.editor().closeDiscardAll(); // strange, but have to do it !!!
                 
                 bufferedWriter.write("<TABLE width=\"98%\" cellspacing=\"2\" cellpadding=\"5\" border=\"0\">");
                 bufferedWriter.write("<TR bgcolor=\"#A6CAF0\" align=\"center\">");
-                bufferedWriter.write("<TD ALIGN=\"LEFT\" colspan=\"1\">.../" + directory.substring(directory.indexOf(module)) + "/<B>" + filenamenoext + "</B></TD>");
+                bufferedWriter.write("<TD ALIGN=\"LEFT\" colspan=\"2\">.../" + directory.substring(directory.indexOf(module)) + "/<B>" + filenamenoext + "</B></TD>");
                 bufferedWriter.write("</TR>");
-                bufferedWriter.write("<TR class=\"pass\">");
+                bufferedWriter.write("<TR bgcolor=\"#A6CAF0\" align=\"center\">");
+                bufferedWriter.write("<TD ALIGN=\"LEFT\" >" + "<B>" + " Current testing " + "</B></TD>");
+                bufferedWriter.write("<TD ALIGN=\"LEFT\" >" + "<B>" + " <FONT color=\"#EEEE0E\">Golden file</FONT> " + "</B></TD>");
+                bufferedWriter.write("</TR>");
+                bufferedWriter.write("<TR>");
                 bufferedWriter.write("<TD ALIGN=\"CENTER\"><IMG BORDER=\"2\" TITLE=\"" + filenamenoext + "\" SRC=\"" + filenamenoext + ".png" + "\"></IMG></TD>");
+                bufferedWriter.write("<TD bgcolor=\"#EEEE0E\" ALIGN=\"CENTER\"><IMG BORDER=\"2\" TITLE=\"" + filenamenoext + "\" SRC=\"" + filenamenoext + ".png" + "\"></IMG></TD>");
                 bufferedWriter.write("</TR>");
                 bufferedWriter.write("</TABLE>");
                 bufferedWriter.write("<HR>");
