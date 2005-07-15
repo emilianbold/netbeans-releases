@@ -17,14 +17,12 @@ import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
-import com.installshield.wizard.awt.AWTWizardUI;
-import com.installshield.wizard.awt.MessageDialog;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
 import com.installshield.wizard.service.ServiceException;
+import com.installshield.wizard.service.WizardServicesUI;
 import com.installshield.wizardx.panels.ExtendedWizardPanel;
 
 import java.awt.BorderLayout;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -471,17 +469,13 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     /* Check if J2SE and NB installation dirs are the same or not.
      */
     private boolean checkBothInstallDirs(String nbDir, String j2seDir) {
-        String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
-        Frame parent = ((AWTWizardUI)getWizard().getUI()).getFrame();
         String dialogMsg = "";
-        MessageDialog msgDialog = null;
         
         //#49348: Do not allow the same dir for JDK and NB.
         if (nbDir.equals(j2seDir)) {
             dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNBJDKTheSame)");
-            msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-            msgDialog.setVisible(true);
+            showErrorMsg(dialogTitle,dialogMsg);
             return false;
         }
         return true;
@@ -491,28 +485,22 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
      * or if it already exits or if it's empty then create it.
      */ 
     private boolean checkInstallDir(String dir, int installDirType, String msgPrefix) {
-
-        String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
         StringTokenizer st = new StringTokenizer(dir);
-        Frame parent = ((AWTWizardUI)getWizard().getUI()).getFrame();
         String dialogMsg = "";
-        MessageDialog msgDialog = null;
 
         if (dir.length() == 0) {
             //Directory must be specified
             dialogMsg = msgPrefix + " "
             + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNotSpecifiedMessage)");
-            msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-            msgDialog.setVisible(true);
+            showErrorMsg(dialogTitle,dialogMsg);
             return false;
         } else if (st.countTokens() > 1) {
             //Check for spaces in path - it is not supported by JDK installer on Linux/Solaris
 	    if (!Util.isWindowsOS() && installDirType == J2SE_INSTALL_DIR) {
 		dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
-		msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-		msgDialog.setVisible(true);
+                showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
 	} else if ((Util.isWindowsOS() && (dir.indexOf("@") != -1 || dir.indexOf("&") != -1 ||
@@ -520,8 +508,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    dir.indexOf("+") != -1 || dir.indexOf("\"") != -1) {
             //Check for illegal characters in a windows path name
 	    dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryIllegalCharsMessage)");
-	    msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-	    msgDialog.setVisible(true);
+            showErrorMsg(dialogTitle,dialogMsg);
 	    return false;
 	}
         
@@ -531,16 +518,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             if (!dirFile.isDirectory()) {
                 dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryInvalidMessage)");
-                msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-                msgDialog.setVisible(true);
+                showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
 	    // This File object must have write permissions
             if (!(dirFile.canWrite())) {
                 dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
-                msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-                msgDialog.setVisible(true);
+                showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
 	    
@@ -558,8 +543,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
 		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
-			msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-			msgDialog.setVisible(true);
+                        showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
 		}else {
@@ -572,8 +556,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		    } catch (Exception e) {
 			dialogMsg = msgPrefix + " "
 		        + resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNoWritePermissionMessage)");
-			msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-			msgDialog.setVisible(true);
+                        showErrorMsg(dialogTitle,dialogMsg);
 			return false;
 		    }
 		}	 
@@ -591,8 +574,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                 dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directorySpecifyEmptyMessage)")
                 + "\n\n" + installedVersion;
-		msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-                msgDialog.setVisible(true);
+                showErrorMsg(dialogTitle,dialogMsg);
                 return false;
             }
         }
@@ -602,24 +584,14 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     /** Create directory. Do not ask user. Report only error when it fails. */
     private boolean createDirectory(String path, String msgPrefix) {
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
-        String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
-        String btnYes = resolveString("$L(com.installshield.wizard.i18n.WizardResources, yes)");
-        String btnNo  = resolveString("$L(com.installshield.wizard.i18n.WizardResources, no)");
-	Object[] objs = new Object[] { btnYes, btnNo };
-        Frame parent  = ((AWTWizardUI)getWizard().getUI()).getFrame();
+	String dialogMsg;
 	File dirFile  = new File(path);
-        MessageDialog msgDialog = null;
-	String dialogMsg = msgPrefix + " "
-	+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryCreateMessage)");
 	try {
-	    //Object obj = getWizard().getServices().getUserInput(dialogTitle,dialogMsg, objs, btnYes);
-	    //if (obj == btnNo) return false;
 	    logEvent(this, Log.DBG, "CheckInstallDir() dirFile:" + dirFile.getAbsolutePath());
 	    if(!dirFile.mkdirs()) {
 		dialogMsg = msgPrefix + " "
 		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryCouldNotCreateMessage)");
-		msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-		msgDialog.setVisible(true);
+                showErrorMsg(dialogTitle,dialogMsg);
 		return false;
 	    }
 	} catch (Exception e) {
@@ -700,5 +672,13 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             return 'C';
         }        
 	return sysDrive;
+    }
+    
+    protected void showErrorMsg(String title, String msg) {
+        try {
+            getWizard().getServices().displayUserMessage(title, msg, WizardServicesUI.ERROR);
+        } catch (Exception e) {
+            throw new Error();
+        }
     }
 }

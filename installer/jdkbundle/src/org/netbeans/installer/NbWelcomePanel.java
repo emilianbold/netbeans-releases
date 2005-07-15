@@ -7,20 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.installer;
 
 import com.installshield.wizard.WizardBeanEvent;
-import com.installshield.wizard.awt.MessageDialog;
 import com.installshield.wizard.swing.SwingWizardUI;
 import com.installshield.wizardx.panels.TextDisplayPanel;
 import com.installshield.util.Log;
+import com.installshield.wizard.service.WizardServicesUI;
 
 import java.awt.Component;
-import java.awt.Frame;
 
 public class NbWelcomePanel extends TextDisplayPanel
 {
@@ -79,17 +78,19 @@ public class NbWelcomePanel extends TextDisplayPanel
                 nextButton.setEnabled(false);
                 ui.getNavigationController().setCancelType(SwingWizardUI.NavigationController.CLOSE);
                 
-                String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
                 String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallWelcomePanel.dialogTitle)");
-                Frame parent = ui.getFrame();
-                MessageDialog msgDialog = null;
-
                 String dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,NbWelcomePanel.notAdminMessage)");
-                msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-                msgDialog.setVisible(true);
+                showErrorMsg(dialogTitle,dialogMsg);
             }
         }
         return true;
     }
     
+    protected void showErrorMsg(String title, String msg) {
+        try {
+            getWizard().getServices().displayUserMessage(title, msg, WizardServicesUI.ERROR);
+        } catch (Exception e) {
+            throw new Error();
+        }
+    }
 }
