@@ -14,8 +14,12 @@
 package org.netbeans.modules.openide.awt;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.BooleanStateAction;
@@ -63,13 +67,28 @@ public final class DefaultAWTBridge extends org.netbeans.modules.openide.util.AW
         return new Actions.ToolbarButton (action);
     }
     
-    public javax.swing.JPopupMenu createEmptyPopup() {
-        return new org.openide.awt.JPopupMenuPlus ();
+    public JPopupMenu createEmptyPopup() {
+        return new JPopupMenu();
     }  
     
     public Component[] convertComponents(Component comp) {
          if (comp instanceof DynamicMenuContent) {
-            return ((DynamicMenuContent)comp).getMenuPresenters();
+            Component[] toRet = ((DynamicMenuContent)comp).getMenuPresenters();
+            boolean atLeastOne = false;
+            Collection col = new ArrayList();
+            for (int i = 0; i < toRet.length; i++) {
+                if (toRet[i] instanceof DynamicMenuContent && toRet[i] != comp) {
+                    col.addAll(Arrays.asList(convertComponents(toRet[i])));
+                    atLeastOne = true;
+                } else {
+                    col.add(toRet[i]);
+                }
+            }
+            if (atLeastOne) {
+                return (Component[]) col.toArray(new Component[col.size()]);
+            } else {
+                return toRet;
+            }
          }
          return new Component[] {comp};
     }
