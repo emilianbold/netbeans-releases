@@ -20,7 +20,6 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -40,7 +39,7 @@ class SwitchBranchPanel extends javax.swing.JPanel {
         rbSwitchToTrunk.setSelected(CvsModuleConfig.getDefault().getDefaultValue("SwitchBranchSettings.switchToTrunk", true));
         rbSwitchToBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("SwitchBranchSettings.switchToBranch", false));
         tfBranchName.setText(CvsModuleConfig.getDefault().getDefaultValue("SwitchBranchSettings.branchName", "existing_branch"));
-        enableComponents();
+        refreshComponents();
     }
 
     public void saveSettings() {
@@ -49,7 +48,7 @@ class SwitchBranchPanel extends javax.swing.JPanel {
         CvsModuleConfig.getDefault().setDefaultValue("SwitchBranchSettings.branchName", tfBranchName.getText());
     }
 
-    private void enableComponents() {
+    private void refreshComponents() {
         if (rbSwitchToTrunk.isSelected()) {
             tfBranchName.setEnabled(false);
             bBrowse.setEnabled(false);
@@ -59,16 +58,12 @@ class SwitchBranchPanel extends javax.swing.JPanel {
         }
     }
     
-    public JTextField getTfBranchName() {
-        return tfBranchName;
+    public String getBranchName() {
+        return tfBranchName.getText();
     }
 
-    public JRadioButton getSwitchToBranch() {
-        return rbSwitchToBranch;
-    }
-
-    public JRadioButton getSwitchToTrunk() {
-        return rbSwitchToTrunk;
+    public boolean isSwitchToTrunk() {
+        return rbSwitchToTrunk.isSelected();
     }
 
     /** This method is called from within the constructor to
@@ -169,7 +164,7 @@ class SwitchBranchPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_browseBranches
 
     private void radioSwitch(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioSwitch
-        enableComponents();
+        refreshComponents();
     }//GEN-LAST:event_radioSwitch
     
     

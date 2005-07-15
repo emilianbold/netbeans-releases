@@ -53,14 +53,8 @@ public class SwitchBranchAction extends AbstractSystemAction {
         File [] roots = getFilesToProcess();
 
         UpdateCommand cmd = new UpdateCommand();
-        String title;
-        if (roots.length > 1) {
-            title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_SwitchBranchDialog_Title_Multi"), 
-                                         new Integer[] { new Integer(roots.length) });
-        } else {
-            title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
-                                         new Object[] { roots[0].getName() });            
-        }
+        String title = MessageFormat.format(NbBundle.getBundle(SwitchBranchAction.class).getString("CTL_SwitchBranchDialog_Title"), 
+                                         new Object[] { getContextDisplayName() });
         
         SwitchBranchPanel settings = new SwitchBranchPanel(roots);
         DialogDescriptor descriptor = new DialogDescriptor(settings, title);
@@ -69,10 +63,10 @@ public class SwitchBranchAction extends AbstractSystemAction {
         if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
 
         settings.saveSettings();
-        if (settings.getSwitchToTrunk().isSelected()) {
+        if (settings.isSwitchToTrunk()) {
             cmd.setResetStickyOnes(true);
         } else {
-            cmd.setUpdateByRevision(settings.getTfBranchName().getText());
+            cmd.setUpdateByRevision(settings.getBranchName());
         }
         
         cmd.setFiles(roots);

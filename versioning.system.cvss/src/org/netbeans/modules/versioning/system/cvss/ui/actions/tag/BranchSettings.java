@@ -23,7 +23,6 @@ import org.openide.DialogDescriptor;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import java.text.MessageFormat;
 import java.io.IOException;
 import java.io.File;
 
@@ -32,17 +31,44 @@ import java.io.File;
  * 
  * @author Maros Sandor
  */
-class BranchSettings extends javax.swing.JPanel implements DocumentListener {
+class BranchSettings extends javax.swing.JPanel {
     
     private final File[] roots;
+    private boolean autoComputeBaseTagName = true;
 
     public BranchSettings(File [] roots) {
         this.roots = roots;
         initComponents();
         cbTagBase.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBase", true));
+        tfBaseTagName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.tagBaseName", "new_branch_root"));
+        tfBaseTagName.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                autoComputeBaseTagName = computeBaseTagName().equals(tfBaseTagName.getText());
+            }
+        });
         cbCheckoutBranch.setSelected(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.checkout", true));
         tfName.setText(CvsModuleConfig.getDefault().getDefaultValue("BranchSettings.branchName", "new_branch"));
-        tfName.getDocument().addDocumentListener(this);
+        tfName.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                refreshComponents();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                refreshComponents();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                refreshComponents();
+            }
+        });
         refreshComponents();
     }
 
@@ -69,25 +95,15 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
     }
     
     private void refreshComponents() {
-        String cbTagBaseName = MessageFormat.format(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_TagBase"), 
-                                                  new Object [] { computeBaseTagName() });
-        org.openide.awt.Mnemonics.setLocalizedText(cbTagBase, cbTagBaseName);
+        jLabel1.setEnabled(cbTagBase.isSelected());
+        tfBaseTagName.setEnabled(cbTagBase.isSelected());
+        if (autoComputeBaseTagName && cbTagBase.isSelected()) {
+            tfBaseTagName.setText(computeBaseTagName());
+        }
         DialogDescriptor dd = (DialogDescriptor) getClientProperty("org.openide.DialogDescriptor");
         if (dd != null) {
             dd.setValid(tfName.getText().trim().length() > 0);
         }
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        refreshComponents();
-    }
-
-    public void insertUpdate(DocumentEvent e) {
-        refreshComponents();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        refreshComponents();
     }
     
     /** This method is called from within the constructor to
@@ -104,6 +120,8 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
         nameLabel = new javax.swing.JLabel();
         tfName = new javax.swing.JTextField();
         jButton1 = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        tfBaseTagName = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -131,7 +149,7 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
         org.openide.awt.Mnemonics.setLocalizedText(cbCheckoutBranch, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_UpdateToBranch"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
@@ -179,6 +197,20 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
         gridBagConstraints.gridy = 0;
         add(jButton1, gridBagConstraints);
 
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/tag/Bundle").getString("CTL_BranchForm_BaseTagName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 21, 0, 5);
+        add(jLabel1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
+        add(tfBaseTagName, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
 
@@ -209,7 +241,7 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
     }//GEN-LAST:event_branchNameChanged
 
     private void cbTagBaseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTagBaseActionPerformed
-        // TODO add your handling code here:
+        refreshComponents();
     }//GEN-LAST:event_cbTagBaseActionPerformed
     
     
@@ -217,7 +249,9 @@ class BranchSettings extends javax.swing.JPanel implements DocumentListener {
     private javax.swing.JCheckBox cbCheckoutBranch;
     private javax.swing.JCheckBox cbTagBase;
     private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField tfBaseTagName;
     private javax.swing.JTextField tfName;
     // End of variables declaration//GEN-END:variables
 }
