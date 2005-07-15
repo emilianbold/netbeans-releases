@@ -7,13 +7,12 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.debugger;
 
-import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Vector;
 
@@ -45,7 +44,7 @@ public abstract class ActionsProviderSupport extends ActionsProvider {
      * @param action action
      */
     public boolean isEnabled (Object action) {
-        return this.enabled.contains (action);
+        return enabled.contains (action);
     }
     
     /**

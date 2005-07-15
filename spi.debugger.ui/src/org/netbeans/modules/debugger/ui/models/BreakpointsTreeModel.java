@@ -18,7 +18,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -38,7 +37,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 public class BreakpointsTreeModel implements TreeModel {
     
     private static final Comparator BREAKPOINTS_COMPARATOR = 
-        new BreakpointsComarator ();
+        new BreakpointsComparator ();
     
     private Listener listener;
     private Vector listeners = new Vector ();
@@ -143,7 +142,7 @@ public class BreakpointsTreeModel implements TreeModel {
         
         private WeakReference model;
         
-        private Listener (
+        public Listener (
             BreakpointsTreeModel tm
         ) {
             model = new WeakReference (tm);
@@ -201,7 +200,10 @@ public class BreakpointsTreeModel implements TreeModel {
         }
     }
     
-    private static class BreakpointsComarator implements Comparator {
+    private static class BreakpointsComparator implements Comparator {
+        public BreakpointsComparator () {
+        }
+        
         public int compare (Object o1, Object o2) {
             if (o1 instanceof String) {
                 if (o2 instanceof String)

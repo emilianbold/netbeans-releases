@@ -75,10 +75,4 @@ public class WatchesNodeModel implements NodeModel {
         listeners.remove (l);
     }
     
-    private void fireTreeChanged () {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
-        for (i = 0; i < k; i++)
-            ((ModelListener) v.get (i)).modelChanged (null);
-    }
 }

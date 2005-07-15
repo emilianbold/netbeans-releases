@@ -13,8 +13,6 @@
 
 package org.netbeans.api.debugger;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 
@@ -29,7 +27,6 @@ import java.util.List;
  */
 public final class DebuggerInfo {
 
-    private String typeID;
     private Lookup lookup;
     
     
@@ -56,7 +53,6 @@ public final class DebuggerInfo {
         String typeID,
         Object[] services
     ) {
-        this.typeID = typeID;
         Object[] s = new Object [services.length + 1];
         System.arraycopy (services, 0, s, 0, services.length);
         s [s.length - 1] = this;

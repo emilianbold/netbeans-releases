@@ -107,7 +107,7 @@ public class SessionsTreeModel implements TreeModel {
         
         private WeakReference model;
         
-        private Listener (
+        public Listener (
             SessionsTreeModel tm
         ) {
             model = new WeakReference (tm);

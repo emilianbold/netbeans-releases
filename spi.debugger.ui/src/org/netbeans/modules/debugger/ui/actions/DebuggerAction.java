@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,17 +15,14 @@ package org.netbeans.modules.debugger.ui.actions;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.Watch;
 
 
 /**

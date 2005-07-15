@@ -7,16 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.debugger.ui;
 
-import java.util.Properties;
 import javax.swing.JComponent;
-import org.netbeans.api.debugger.Breakpoint;
-
 
 /**
  * Support for "New Breakpoint" dialog and Breakpoint Customizer. Represents 

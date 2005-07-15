@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.ui.models;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
 
@@ -118,7 +117,7 @@ public class SesionsNodeModel implements NodeModel {
         
         private WeakReference ref;
         
-        private Listener (
+        public Listener (
             SesionsNodeModel rm
         ) {
             ref = new WeakReference (rm);

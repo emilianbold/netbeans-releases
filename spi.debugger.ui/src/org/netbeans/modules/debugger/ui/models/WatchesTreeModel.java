@@ -136,7 +136,7 @@ public class WatchesTreeModel implements TreeModel {
         
         private WeakReference model;
         
-        private Listener (
+        public Listener (
             WatchesTreeModel tm
         ) {
             model = new WeakReference (tm);

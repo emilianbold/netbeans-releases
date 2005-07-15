@@ -1,41 +1,26 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.ui;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.ClassLoader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.List;
 import javax.swing.ImageIcon;
 
 import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
-
-import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 

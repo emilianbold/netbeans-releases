@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,9 +19,6 @@ import java.util.*;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
-
-import org.openide.util.RequestProcessor;
-
 
 /** 
  * Manages some set of actions. Loads some set of ActionProviders registerred 
@@ -101,13 +98,6 @@ public final class ActionsManager {
     
     // main public methods .....................................................
 
-    private static RequestProcessor requestProcessor;
-    private static RequestProcessor getRequestProcessor () {
-        if (requestProcessor == null)
-            requestProcessor = new RequestProcessor ("ActionsManager");
-        return requestProcessor;
-    }
-    
     /**
      * Performs action on this DebbuggerEngine.
      *
@@ -320,19 +310,9 @@ public final class ActionsManager {
         p.addActionsProviderListener (actionListener);
     }
     
-    private void unregisterActionsProvider (Object action, ActionsProvider p) {
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l == null) return; 
-        l.remove (p);
-        if (l.size () == 0)
-            actionProviders.remove (action);
-        p.removeActionsProviderListener (actionListener);
-    }
-    
     private void initActionImpls () {
         actionProviders = new HashMap ();
         Iterator i = lookup.lookup (null, ActionsProvider.class).iterator ();
-        List l = new ArrayList ();
         while (i.hasNext ()) {
             ActionsProvider ap = (ActionsProvider) i.next ();
             Iterator ii = ap.getActions ().iterator ();

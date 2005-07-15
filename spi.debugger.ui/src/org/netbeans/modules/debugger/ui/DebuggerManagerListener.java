@@ -7,23 +7,19 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.ui;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 
-import org.openide.awt.StatusDisplayer;
 import org.openide.awt.ToolbarPool;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 

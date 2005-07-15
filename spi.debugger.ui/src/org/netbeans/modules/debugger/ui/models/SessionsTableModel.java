@@ -7,20 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.ui.models;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Vector;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -88,15 +83,4 @@ public class SessionsTableModel implements TableModel, Constants {
         listeners.remove (l);
     }
 
-    
-    // other methods ...........................................................
-    
-    private void fireTreeChanged () {
-        Vector v = (Vector) listeners.clone ();
-        int i, k = v.size ();
-        for (i = 0; i < k; i++)
-            ((ModelListener) v.get (i)).modelChanged (
-                new ModelEvent.TreeChanged (this)
-            );
-    }
 }

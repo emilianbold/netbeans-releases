@@ -15,10 +15,7 @@ package org.netbeans.modules.debugger.ui.views;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -51,9 +48,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class ViewModelListener extends DebuggerManagerAdapter {
     
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.models") != null;
-
     private String          viewType;
     private JComponent      view;
     
@@ -158,6 +152,8 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     // innerclasses ............................................................
 
     private static class EmptyModel implements NodeModel {
+        public EmptyModel () {
+        }
         
         public String getDisplayName (Object node) throws UnknownTypeException {
             if (node == TreeModel.ROOT) {

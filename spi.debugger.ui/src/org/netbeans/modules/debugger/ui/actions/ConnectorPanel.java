@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,6 @@ package org.netbeans.modules.debugger.ui.actions;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -78,17 +76,6 @@ Controller {
         refresh (defaultIndex);
     }
     
-    /**
-     * Saves connecting parameters to {@link #connectSettings}.
-     */
-    private void saveSettings() {
-//        if (connectSettings != null) {
-//            String type = ((AttachType) attachTypes.get 
-//                (cbAttachTypes.getSelectedIndex ())).getClass ().getName ();
-//            connectSettings.setLastDebuggerType (type);
-//        }
-    }
-
     private void refresh (int index) {
         JLabel cbLabel = new JLabel (
             NbBundle.getMessage (ConnectorPanel.class, "CTL_Connect_through")

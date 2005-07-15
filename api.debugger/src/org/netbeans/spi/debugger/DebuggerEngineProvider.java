@@ -14,7 +14,6 @@
 package org.netbeans.spi.debugger;
 
 import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.Session;
 
 /**
  * Creates a new instance of {@link org.netbeans.api.debugger.DebuggerEngine}
