@@ -426,7 +426,8 @@ public class Actions extends Object {
 
         /** action to associate */
         protected Action action;
-
+        
+        protected PropertyChangeListener listener;
         /** @param comp component
         * @param action the action
         */
@@ -435,7 +436,8 @@ public class Actions extends Object {
             this.action = action;
 
             // visibility listener
-            Bridge.this.comp.addPropertyChangeListener(new VisL());
+            listener = new VisL();
+            Bridge.this.comp.addPropertyChangeListener(listener);
 
             if (Bridge.this.comp.isShowing()) {
                 addNotify();
@@ -749,7 +751,13 @@ public class Actions extends Object {
         public MenuBridge(JMenuItem item, Action action, boolean popup) {
             super(item, action);
             this.popup = popup;
-
+            
+            if (item instanceof Actions.MenuItem) {
+                // addnotify/remove notify doens't make sense for menus and
+                // popups.
+                MenuBridge.this.comp.removePropertyChangeListener(listener);
+            }
+            
             if (popup) {
                 prepareMargins(item, action);
             } else {
@@ -1100,13 +1108,13 @@ public class Actions extends Object {
         }
 
         public JComponent[] synchMenuPresenters(JComponent[] items) {
+            if (bridge != null) {
+                bridge.updateState(null);
+            }
             return getMenuPresenters();
         }
 
         public JComponent[] getMenuPresenters() {
-            if (bridge != null) {
-                bridge.updateState(null);
-            }
             return new JComponent[] {this};
         }
         

@@ -483,20 +483,23 @@ public class MenuBar extends JMenuBar implements Externalizable {
         }
         
 
-    /** Overriden to provide better strategy for placing the JMenu on the screen.
-    * @param b a boolean value -- true to make the menu visible, false to hide it
-    */
-    public void setPopupMenuVisible(boolean b) {
-        boolean isVisible = isPopupMenuVisible();
-
-        if (b != isVisible) {
-            if ((b == true) && isShowing()) {
-                doInitialize();                
-                dynaModel.checkSubmenu(this);
-            }
-        }
-        super.setPopupMenuVisible(b);
-    }        
+// mkleint: overriding setPopupMenuVisible doesn't work on mac, replaced by listening on changes of Button model.
+        
+//        
+//    /** Overriden to provide better strategy for placing the JMenu on the screen.
+//    * @param b a boolean value -- true to make the menu visible, false to hide it
+//    */
+//    public void setPopupMenuVisible(boolean b) {
+//        boolean isVisible = isPopupMenuVisible();
+//
+//        if (b != isVisible) {
+//            if ((b == true) && isShowing()) {
+//                doInitialize();                
+//                dynaModel.checkSubmenu(this);
+//            }
+//        }
+//        super.setPopupMenuVisible(b);
+//    }        
         
 	private void doInitialize() {
 	    if(slave == null) {
