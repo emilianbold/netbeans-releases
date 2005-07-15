@@ -13,7 +13,6 @@
 package org.openide.awt;
 
 import org.openide.ErrorManager;
-import org.openide.awt.JPopupMenuPlus;
 import org.openide.util.NbBundle;
 
 import java.awt.*;
@@ -317,7 +316,7 @@ public class SplittedPanel extends JComponent implements Accessible {
     /** Updates the splitter's popup menu. */
     protected void updatePopupMenu() {
         if (popupMenu == null) {
-            popupMenu = new JPopupMenuPlus();
+            popupMenu = new JPopupMenu();
 
             java.util.ResourceBundle awtBundle = NbBundle.getBundle(SplittedPanel.class);
 
