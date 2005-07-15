@@ -16,7 +16,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
-import org.openide.awt.JPopupMenuPlus;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -467,7 +466,7 @@ final class DragDropUtilities extends Object {
      * @author Enno Sandner
      */
     static JPopupMenu createDropFinishPopup(final TreeSet pasteTypes) {
-        JPopupMenu menu = new JPopupMenuPlus();
+        JPopupMenu menu = new JPopupMenu();
 
         //System.arraycopy(pasteTypes, 0, pasteTypes_, 0, pasteTypes.length);
         final JMenuItem[] items_ = new JMenuItem[pasteTypes.size()];
