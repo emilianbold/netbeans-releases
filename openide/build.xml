@@ -37,6 +37,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   -->
 
+  <target name="netbeans" >
+	  <!-- empty target as there are still projects that depend on openide. Fuj! -->
+  </target>
+
   <target name="clean" description="Remove all build products." depends="init">
     <delete dir="build"/>
     <delete>
