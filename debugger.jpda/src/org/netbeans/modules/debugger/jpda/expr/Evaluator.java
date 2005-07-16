@@ -1546,9 +1546,18 @@ public class Evaluator implements JavaParserVisitor {
                                                  args,
                                                  ObjectReference.INVOKE_SINGLE_THREADED);
             return value;
-        } catch (Throwable e) {
-            throw new InvalidExpressionException (e);
+        } catch (InvalidTypeException itex) {
+            throw new InvalidExpressionException (itex);
+        } catch (ClassNotLoadedException cnlex) {
+            throw new InvalidExpressionException (cnlex);
+        } catch (IncompatibleThreadStateException itsex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+            ieex.initCause(itsex);
+            throw ieex;
+        } catch (InvocationException iex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (iex);
+            ieex.initCause(iex);
+            throw ieex;
         }
-        
     }
 }

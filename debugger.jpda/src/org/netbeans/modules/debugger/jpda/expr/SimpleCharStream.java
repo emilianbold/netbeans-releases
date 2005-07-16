@@ -47,8 +47,6 @@ class SimpleCharStream
      int newbufline[] = new int[bufsize + 2048];
      int newbufcolumn[] = new int[bufsize + 2048];
 
-     try
-     {
         if (wrapAround)
         {
            System.arraycopy(buffer, tokenBegin, newbuffer, 0, bufsize - tokenBegin);
@@ -79,11 +77,6 @@ class SimpleCharStream
 
            maxNextCharInd = (bufpos -= tokenBegin);
         }
-     }
-     catch (Throwable t)
-     {
-        throw new Error(t.getMessage());
-     }
 
 
      bufsize += 2048;
