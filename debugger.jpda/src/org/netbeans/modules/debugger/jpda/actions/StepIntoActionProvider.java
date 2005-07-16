@@ -59,7 +59,7 @@ implements Executor, Runnable, PropertyChangeListener {
         
     private StepRequest stepRequest;
     private ThreadReference tr;
-    private String position;
+    //private String position;  TODO: Why not used?
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
 
@@ -163,12 +163,12 @@ implements Executor, Runnable, PropertyChangeListener {
     public boolean exec (Event event) {
         stepRequest.disable ();
         LocatableEvent le = (LocatableEvent) event;
-        String np = le.location ().declaringType ().name () + ":" + 
-                    le.location ().lineNumber (null);
+        //String np = le.location ().declaringType ().name () + ":" + 
+        //            le.location ().lineNumber (null);
 
         ThreadReference tr = le.thread ();
         JPDAThread t = getDebuggerImpl ().getThread (tr);
-        boolean stop = (!np.equals (position)) && 
+        boolean stop = //(!np.equals (position)) &&    TODO: position is never set ?
                        getCompoundSmartSteppingListener ().stopHere 
                            (contextProvider, t, getSmartSteppingFilterImpl ());
         if (stop) {
