@@ -21,11 +21,12 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.netbeans.modules.apisupport.project.*;
-import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 
 /**
  * Defines Javadoc locations for built modules.
@@ -41,11 +42,19 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
     
     private final NbModuleProject project;
     
+    /** Default constructor for lookup. */
+    public JavadocForBinaryImpl() {
+        project = null;
+    }
+    
     public JavadocForBinaryImpl(NbModuleProject project) {
         this.project = project;
     }
 
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
+        if (project == null) {
+            return null;
+        }
         if (!binaryRoot.equals(Util.urlForJar(project.getModuleJarLocation()))) {
             return null;
         }
