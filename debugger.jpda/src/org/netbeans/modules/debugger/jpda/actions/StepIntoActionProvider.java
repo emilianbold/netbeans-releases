@@ -165,7 +165,9 @@ implements Executor, Runnable, PropertyChangeListener {
      * Should be called from Operator only.
      */
     public boolean exec (Event event) {
-        stepRequest.disable ();
+        if (stepRequest != null) {
+            stepRequest.disable ();
+        }
         LocatableEvent le = (LocatableEvent) event;
         //String np = le.location ().declaringType ().name () + ":" + 
         //            le.location ().lineNumber (null);
