@@ -145,11 +145,15 @@ implements Executor, Runnable, PropertyChangeListener {
         if (ev.getPropertyName () == SourcePathProvider.PROP_SOURCE_ROOTS) {
             if (ssverbose)
                 System.out.println("\nSS:  source roots changed");
-            ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
-                getCurrentThread ()).getThreadReference ();
-            removeStepRequests (tr);
-        } else
-        super.propertyChange (ev);
+            JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl ().
+                getCurrentThread ();
+            if (jtr != null) {
+                ThreadReference tr = jtr.getThreadReference ();
+                removeStepRequests (tr);
+            }
+        } else {
+            super.propertyChange (ev);
+        }
     }
     
     
