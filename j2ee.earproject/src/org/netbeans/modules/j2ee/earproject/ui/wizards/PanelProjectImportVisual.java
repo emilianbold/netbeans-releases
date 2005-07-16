@@ -159,7 +159,7 @@ public class PanelProjectImportVisual extends SettingsPanel implements DocumentL
         add(createdFolderTextField, gridBagConstraints);
         createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectImportVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/common/ui/wizards/Bundle").getString("LBL_NWP1_BrowseProjectFolder_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseProjectFolder_Button"));
         jButton1.setActionCommand("BROWSE");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -176,7 +176,7 @@ public class PanelProjectImportVisual extends SettingsPanel implements DocumentL
         add(jButton1, gridBagConstraints);
 
         instructionLabel2.setBackground(new java.awt.Color(255, 255, 255));
-        org.openide.awt.Mnemonics.setLocalizedText(instructionLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/common/ui/wizards/Bundle").getString("LBL_ImportInstructions2"));
+        org.openide.awt.Mnemonics.setLocalizedText(instructionLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/wizards/Bundle").getString("LBL_ImportInstructions2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -188,7 +188,7 @@ public class PanelProjectImportVisual extends SettingsPanel implements DocumentL
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(2);
-        jTextArea1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/common/ui/wizards/Bundle").getString("LBL_ImportInstructions1"));
+        jTextArea1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/wizards/Bundle").getString("LBL_ImportInstructions1"));
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();

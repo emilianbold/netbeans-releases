@@ -153,7 +153,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         add(createdFolderTextField, gridBagConstraints);
         createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/earproject/ui/wizards/Bundle").getString("LBL_NWP1_BrowseLocation_Button"));
         jButton1.setActionCommand("BROWSE");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
