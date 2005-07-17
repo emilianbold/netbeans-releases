@@ -59,7 +59,7 @@ implements Executor, Runnable, PropertyChangeListener {
         
     private StepRequest stepRequest;
     private ThreadReference tr;
-    //private String position;  TODO: Why not used?
+    private String position;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
 
@@ -96,7 +96,11 @@ implements Executor, Runnable, PropertyChangeListener {
         synchronized (getDebuggerImpl ().LOCK) {
             if (ssverbose)
                 System.out.println("\nSS:  STEP INTO !!! *************");
-            setStepRequest ();
+            setStepRequest (StepRequest.STEP_INTO);
+            JPDAThread t = getDebuggerImpl ().getCurrentThread ();
+            position = t.getClassName () + '.' +
+                       t.getMethodName () + ':' +
+                       t.getLineNumber (null);
             try {
                 getDebuggerImpl ().resume ();
             } catch (VMDisconnectedException e) {
@@ -169,30 +173,35 @@ implements Executor, Runnable, PropertyChangeListener {
             stepRequest.disable ();
         }
         LocatableEvent le = (LocatableEvent) event;
-        //String np = le.location ().declaringType ().name () + ":" + 
-        //            le.location ().lineNumber (null);
 
         ThreadReference tr = le.thread ();
         JPDAThread t = getDebuggerImpl ().getThread (tr);
-        boolean stop = //(!np.equals (position)) &&    TODO: position is never set ?
-                       getCompoundSmartSteppingListener ().stopHere 
+        boolean stop = getCompoundSmartSteppingListener ().stopHere 
                            (contextProvider, t, getSmartSteppingFilterImpl ());
+        if (stop) {
+            String stopPosition = t.getClassName () + '.' +
+                                  t.getMethodName () + ':' +
+                                  t.getLineNumber (null);
+            if (position.equals(stopPosition)) {
+                // We are where we started!
+                stop = false;
+                setStepRequest (StepRequest.STEP_INTO);
+                return true;
+            }
+        }
         if (stop) {
             removeStepRequests (le.thread ());
             getDebuggerImpl ().setStoppedState (tr);
         } else {
             if (ssverbose)
                 System.out.println("SS:  => do next step!");
-            if (smartSteppingStepOut)
-                //TODO following line of code is wrong !
-                // step out implementation calls getDebuggerImpl ().resume ();
-                // such code should not be called from operator!
-                getStepActionProvider().doAction(ActionsManager.ACTION_STEP_OUT);
-            else
-            if (stepRequest != null)
+            if (smartSteppingStepOut) {
+                setStepRequest (StepRequest.STEP_OUT);
+            } else if (stepRequest != null) {
                 stepRequest.enable ();
-            else
-                setStepRequest ();
+            } else {
+                setStepRequest (StepRequest.STEP_INTO);
+            }
         }
 
         if (ssverbose)
@@ -227,7 +236,7 @@ implements Executor, Runnable, PropertyChangeListener {
             System.out.println("SS:    remove all patterns");
     }
     
-    private void setStepRequest () {
+    private void setStepRequest (int step) {
         ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
             getCurrentThread ()).getThreadReference ();
         removeStepRequests (tr);
@@ -235,7 +244,7 @@ implements Executor, Runnable, PropertyChangeListener {
         eventRequestManager ().createStepRequest (
             tr,
             StepRequest.STEP_LINE,
-            StepRequest.STEP_INTO
+            step
         );
         getDebuggerImpl ().getOperator ().register (stepRequest, this);
         stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
