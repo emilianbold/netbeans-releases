@@ -31,7 +31,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Panel which is used to ask MBean to instantiate and register.
  * @author  tl156378
  */
 public class AddRegistIntfPanel extends javax.swing.JPanel {
@@ -62,23 +62,24 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         
         //init labels
         Mnemonics.setLocalizedText(keepRefCheckBox,
-                     bundle.getString("LBL_Keep_References"));//NOI18N
-        infoTextArea.setText(currentClass.getSimpleName() + " " +
-                bundle.getString("LBL_MBeanRegistration_Informations"));//NOI18N
+                     bundle.getString("LBL_Keep_References")); // NOI18N
+        infoTextArea.setText(currentClass.getSimpleName() + " " + // NOI18N
+                bundle.getString("LBL_MBeanRegistration_Informations")); // NOI18N
     }
     
-    public boolean isAcceptable() {
+    private boolean isAcceptable() {
         return true;
     }
     
     /**
      * Displays a configuration dialog and updates Register MBean options 
      * according to the user's settings.
+     * @return <CODE>boolean</CODE> true only if specified operations are correct.
      */
     public boolean configure() {
         
         // create and display the dialog:
-        String title = bundle.getString("LBL_Action_AddMBeanRegistrationIntf.Title");   //NOI18N
+        String title = bundle.getString("LBL_Action_AddMBeanRegistrationIntf.Title"); // NOI18N
 
         btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
         btnOK.setEnabled(isAcceptable());
@@ -100,11 +101,19 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         }
         return false;
     }
-
+    
+    /**
+     * Returns the MBean class to add operations.
+     * @return <CODE>JavaClass</CODE> the MBean class
+     */
     public JavaClass getMBeanClass() {
         return currentClass;
     }
     
+    /**
+     * Returns the MBean have to keep references of preRegister method parameters.
+     * @return <CODE>boolean</CODE> true if it is selected.
+     */
     public boolean getKeepRefSelected() {
         return keepRefCheckBox.isSelected();
     }

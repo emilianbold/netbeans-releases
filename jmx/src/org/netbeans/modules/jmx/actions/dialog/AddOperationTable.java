@@ -1,12 +1,16 @@
 /*
- * AddOperationTable.java
+ *                 Sun Public License Notice
  *
- * Created on July 8, 2005, 9:45 AM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
+
 
 package org.netbeans.modules.jmx.actions.dialog;
 import java.awt.BorderLayout;
@@ -26,7 +30,8 @@ import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationTable;
 
 /**
- *
+ * Class responsible for the operation table shown when you use Add Operations...
+ * popup action in the contextual management menu.
  * @author tl156378
  */
 public class AddOperationTable extends OperationTable {
@@ -35,6 +40,7 @@ public class AddOperationTable extends OperationTable {
      * Constructor
      * @param model the table model of this table
      * @param wiz the wizard panel
+     * @param ancestorPanel <CODE>JPanel</CODE>
      */
     public AddOperationTable(JPanel ancestorPanel, AbstractTableModel model,
             FireEvent wiz) {
@@ -63,7 +69,7 @@ public class AddOperationTable extends OperationTable {
                 case AddMBeanOperationTableModel.IDX_METH_PARAM :
                     JTextField paramField = new JTextField();
                     paramField.setEditable(false);
-                    paramField.setName("methParamTextField");
+                    paramField.setName("methParamTextField"); // NOI18N
                     JButton paramButton =
                             new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
                     paramButton.setMargin(new java.awt.Insets(2,2,2,2));
@@ -75,7 +81,7 @@ public class AddOperationTable extends OperationTable {
                 case AddMBeanOperationTableModel.IDX_METH_EXCEPTION :
                     JTextField excepField = new JTextField();
                     excepField.setEditable(false);
-                    excepField.setName("methExcepTextField");
+                    excepField.setName("methExcepTextField"); // NOI18N
                     JButton excepButton = 
                           new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
                     excepButton.setMargin(new java.awt.Insets(2,2,2,2));

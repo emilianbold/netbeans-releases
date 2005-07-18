@@ -1,11 +1,14 @@
 /*
- * AddTableRowListenerWithFireEvent.java
+ *                 Sun Public License Notice
  *
- * Created on July 8, 2005, 4:38 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
  *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.jmx.actions.dialog;
@@ -18,7 +21,7 @@ import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 
 /**
- *
+ * Interceptor to fire an event to a class which implements FireEvent interface.
  * @author tl156378
  */
 public class AddTableRowListenerWithFireEvent extends AddTableRowListener{
@@ -30,6 +33,7 @@ public class AddTableRowListenerWithFireEvent extends AddTableRowListener{
      * @param table the Jtable in which a row is to add
      * @param model the corresponding table model
      * @param remButton a reference to the remove line button
+     * @param fireEvent the panel to notify for events
      */
     public AddTableRowListenerWithFireEvent(JTable table, AbstractJMXTableModel model, 
             JButton remButton, FireEvent fireEvent) {

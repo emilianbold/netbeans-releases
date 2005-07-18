@@ -17,7 +17,7 @@ import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
 
 /**
- *
+ * Allows the table to have non-editable cells.
  * @author tl156378
  */
 public class AddMBeanAttributeTableModel extends MBeanAttributeTableModel {
@@ -37,14 +37,26 @@ public class AddMBeanAttributeTableModel extends MBeanAttributeTableModel {
             return super.isCellEditable(r,c);
     }
 
+    /**
+     * Sets the index of the first editable row.
+     * @param firstEditable <CODE>int</CODE> index of the first editable row.
+     */
     public void setFirstEditable(int firstEditable) {
         this.firstEditable = firstEditable;
     }
     
+    /**
+     * Gets the index of the first editable row.
+     * @return <CODE>int</CODE> index of the first editable row.
+     */
     public int getFirstEditable() {
         return firstEditable;
     }
     
+    /**
+     * Used to add an attribute to the model of this table.
+     * @param attribute <CODE>MBeanAttribute</CODE> attribute to add.
+     */
     public void addAttribute(MBeanAttribute attribute) {
         data.add(attribute);
         

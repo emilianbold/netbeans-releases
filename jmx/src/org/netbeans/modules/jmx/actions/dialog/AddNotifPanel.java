@@ -15,12 +15,12 @@ package org.netbeans.modules.jmx.actions.dialog;
 
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
-import javax.management.Notification;
 import javax.swing.JButton;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.MBeanNotification;
+import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.actions.AddNotifAction;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
@@ -37,7 +37,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Panel which is used to ask notifications to user.
  * @author  tl156378
  */
 public class AddNotifPanel extends javax.swing.JPanel {
@@ -52,6 +52,10 @@ public class AddNotifPanel extends javax.swing.JPanel {
     
     private JButton btnOK;
     
+    /**
+     * Returns all the specified notifications by user.
+     * @return <CODE>MBeanNotification[]</CODE> specified notifications by user.
+     */
     public MBeanNotification[] getNotifications() {
         MBeanNotification[] notifs = 
                 new MBeanNotification[notificationModel.getRowCount()];
@@ -79,9 +83,9 @@ public class AddNotifPanel extends javax.swing.JPanel {
         
         notificationModel = new MBeanNotificationTableModel();
         notificationModel.setDefaultTypeValue(
-                getMBeanClass().getName().toLowerCase() + ".type");
+                getMBeanClass().getName().toLowerCase() + WizardConstants.TYPE);
         notificationTable = new NotificationTable(this, notificationModel);
-        notificationTable.setName("notificationTable");
+        notificationTable.setName("notificationTable"); // NOI18N
         notificationTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(notificationTable);
         
@@ -94,28 +98,27 @@ public class AddNotifPanel extends javax.swing.JPanel {
         
         // init labels
         Mnemonics.setLocalizedText(addButton,
-                     bundle.getString("LBL_Button_AddNotification"));//NOI18N
+                     bundle.getString("LBL_Button_AddNotification")); // NOI18N
         Mnemonics.setLocalizedText(removeButton,
-                     bundle.getString("LBL_Button_RemoveNotification"));//NOI18N
+                     bundle.getString("LBL_Button_RemoveNotification")); // NOI18N
         
     }
     
-    public boolean isAcceptable() {
+    private boolean isAcceptable() {
         return true;
     }
     
     /**
      * Displays a configuration dialog and updates Register MBean options 
      * according to the user's settings.
+     * @return <CODE>boolean</CODE> true only if specified attributes are correct.
      */
     public boolean configure() {
         
         // create and display the dialog:
-        String title = NbBundle.getMessage(AddNotifAction.class,
-                                           "LBL_AddNotifAction.Title");   //NOI18N
+        String title = bundle.getString("LBL_AddNotifAction.Title"); // NOI18N
 
-        btnOK = new JButton(
-                NbBundle.getMessage(AddNotifAction.class, "LBL_OK")); //NOI18N
+        btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         
         Object returned = DialogDisplayer.getDefault().notify(
@@ -135,7 +138,11 @@ public class AddNotifPanel extends javax.swing.JPanel {
         }
         return false;
     }
-
+    
+    /**
+     * Returns the MBean class to add notifications.
+     * @return <CODE>JavaClass</CODE> the MBean class
+     */
     public JavaClass getMBeanClass() {
         return currentClass;
     }

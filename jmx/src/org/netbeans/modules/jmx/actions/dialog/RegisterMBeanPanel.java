@@ -49,7 +49,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Panel which is used to ask which MBean to instantiate and register.
  * @author  tl156378
  */
 public class RegisterMBeanPanel extends javax.swing.JPanel 
@@ -73,6 +73,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns the current Java class.
+     * @return <CODE>JavaClass</CODE> current specified Java class
      */
     public JavaClass getJavaClass() {
         return currentClass;
@@ -80,6 +81,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns the current user defined MBean class.
+     * @return <CODE>JavaClass</CODE> specified MBean class
      */
     public JavaClass getMBeanClass() {
         return mbeanClass;
@@ -87,6 +89,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns if the current user defined MBean class is StandardMBean class.
+     * @return <CODE>boolean</CODE> true only if StandardMBean class is selected
      */
     public boolean standardMBeanSelected() {
         return standardMBeanIsSelected;
@@ -94,6 +97,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns the current user defined MBean objectName.
+     * @return <CODE>String</CODE> specified ObjectName
      */
     public String getMBeanObjectName() {
         return objectNameTextField.getText();
@@ -101,6 +105,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns the current user defined class name.
+     * @return <CODE>String</CODE> specified class name
      */
     public String getClassName() {
         return classNameTextField.getText();
@@ -108,6 +113,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns the current user defined class name.
+     * @return <CODE>String</CODE> specified interface name
      */
     public String getInterfaceName() {
         if (selectIntfCheckBox.isSelected())
@@ -119,6 +125,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     /**
      * Returns the current user defined MBean constructor signature.
+     * @return <CODE>String</CODE> signature of choosed constructor
      */
     public String getConstructorSignature() {
         return (String) constructorsTable.getValueAt(
@@ -154,11 +161,11 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         hasGetMBeanServMeth = Introspector.hasMBeanServMethod(currentClass);
         standardMBeanIsSelected = true;
         
-        String[] columnNames = new String[] { "Constructor" };
+        String[] columnNames = new String[] { bundle.getString("LBL_Constructor_column") }; // NOI18N
         String[][] cells = new String[][] {};
         constructorsModel = 
                 new NonEditableTableModel(cells,columnNames);
-        columnNames = new String[] { "Interface" };
+        columnNames = new String[] { bundle.getString("LBL_Interface_column") }; // NOI18N
         interfacesModel = 
                 new NonEditableTableModel(cells,columnNames);
         initTable(constructorsTable,constructorsModel);
@@ -166,15 +173,15 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 
         // init labels
         Mnemonics.setLocalizedText(mbeanClassLabel,
-                     bundle.getString("LBL_MBean_Class"));//NOI18N
+                     bundle.getString("LBL_MBean_Class")); // NOI18N
         Mnemonics.setLocalizedText(classNameLabel,
-                     bundle.getString("LBL_Class"));//NOI18N
+                     bundle.getString("LBL_Class")); // NOI18N
         Mnemonics.setLocalizedText(objectNameLabel,
-                     bundle.getString("LBL_ObjectName"));//NOI18N
+                     bundle.getString("LBL_ObjectName")); // NOI18N
         Mnemonics.setLocalizedText(constructorsLabel,
-                     bundle.getString("LBL_Constructor"));//NOI18N
+                     bundle.getString("LBL_Constructor")); // NOI18N
         Mnemonics.setLocalizedText(selectIntfCheckBox,
-                     bundle.getString("LBL_SelectMgtIntf"));//NOI18N
+                     bundle.getString("LBL_SelectMgtIntf")); // NOI18N
     }
     
     private void initTable(JTable table, TableModel model) {
@@ -186,7 +193,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         table.setRowHeight(18);
     }
     
-    public boolean isAcceptable() {
+    private boolean isAcceptable() {
         return (((constructorsModel.getRowCount() > 0) && 
                 (!standardMBeanIsSelected) &&
                 (constructorsTable.getSelectedRow() != -1) && isMBean) ||
@@ -200,8 +207,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     public boolean configure() {
         
         // create and display the dialog:
-        String title = NbBundle.getMessage(RegisterMBeanAction.class,
-                                           "LBL_RegisterMBeanAction.Title");   //NOI18N
+        String title = bundle.getString("LBL_RegisterMBeanAction.Title"); // NOI18N
         btnOK = new JButton(
                 NbBundle.getMessage(RegisterMBeanAction.class, "LBL_OK")); //NOI18N
         btnOK.setEnabled(isAcceptable());
@@ -289,12 +295,12 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         if (standardMBeanIsSelected) {
                 objectNameTextField.setText(WizardHelpers.reversePackageName(
                     WizardHelpers.getPackageName(className)) +
-                    ":type=" + WizardHelpers.getClassName(className));
+                    ":type=" + WizardHelpers.getClassName(className)); // NOI18N
         } 
         //clear the table
         interfacesModel.setRowCount(0);
         if ((clazz != null) && (!clazz.getClass().getName().startsWith(
-                "org.netbeans.jmi.javamodel.UnresolvedClass"))) {
+                "org.netbeans.jmi.javamodel.UnresolvedClass"))) { // NOI18N
             String[] interfaces = WizardHelpers.getInterfaceNames(clazz);
             boolean hasIntf = (interfaces.length > 0);
             selectIntfCheckBox.setEnabled(hasIntf);
@@ -309,7 +315,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             }
             isExistingClass = true;
         } else {
-            stateLabel.setText("This class doesn't exist.");
+            stateLabel.setText(bundle.getString("LBL_ClassNotExist")); // NOI18N
             selectIntfCheckBox.setEnabled(false);
             selectIntfCheckBox.setSelected(false);
             interfacesScrollPane.setEnabled(false);
@@ -326,11 +332,11 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         JavaModelPackage pkg = (JavaModelPackage) currentClass.refImmediatePackage();
         mbeanClass = (JavaClass) pkg.getJavaClass().resolve(currentMBeanClass);
         if ((mbeanClass != null) && (!mbeanClass.getClass().getName().startsWith(
-                "org.netbeans.jmi.javamodel.UnresolvedClass"))) {
+                "org.netbeans.jmi.javamodel.UnresolvedClass"))) { // NOI18N
             if (!standardMBeanIsSelected) {
                 objectNameTextField.setText(WizardHelpers.reversePackageName(
                     WizardHelpers.getPackageName(mbeanClass.getName())) +
-                    ":type=" + mbeanClass.getSimpleName());
+                    ":type=" + mbeanClass.getSimpleName()); // NOI18N
             }     
             isMBean = Introspector.isMBeanClass(mbeanClass);
             Constructor[] constructors =
@@ -339,27 +345,27 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 for (int i = 0; i < constructors.length; i++) {
                     Constructor currentConstruct = constructors[i];
                     List params = currentConstruct.getParameters();
-                    String construct = mbeanClass.getSimpleName() + "(";
+                    String construct = mbeanClass.getSimpleName() + "("; // NOI18N
                     for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
                         construct += WizardHelpers.getClassName(
                                 it.next().getType().getName());
                         if (it.hasNext())
-                            construct += ", ";
+                            construct += ", "; // NOI18N
                     }
-                    construct += ")";
+                    construct += ")"; // NOI18N
                     constructorsModel.addRow(new String[] { construct });
                 }
                 //select first row
                 constructorsTable.setRowSelectionInterval(0, 0);
             } else {
-                stateLabel.setText("This class has no public constructor.");
+                stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
             
         } else {
             isMBean = false;
         }
         if (!isMBean)
-            stateLabel.setText("This class is not a MBean Class.");
+            stateLabel.setText(bundle.getString("LBL_NotMBeanClass")); // NOI18N
         btnOK.setEnabled(isAcceptable());
     }
     

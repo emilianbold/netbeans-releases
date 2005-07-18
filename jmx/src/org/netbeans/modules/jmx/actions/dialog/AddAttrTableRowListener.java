@@ -21,7 +21,7 @@ import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 
 /**
- *
+ * Interceptor to fire an event to a class which implements FireEvent interface.
  * @author tl156378
  */
 public class AddAttrTableRowListener extends AddTableRowListener{
@@ -33,6 +33,7 @@ public class AddAttrTableRowListener extends AddTableRowListener{
      * @param table the Jtable in which a row is to add
      * @param model the corresponding table model
      * @param remButton a reference to the remove line button
+     * @param fireEvent the panel to notify for events
      */
     public AddAttrTableRowListener(JTable table, AbstractJMXTableModel model, 
             JButton remButton, FireEvent fireEvent) {

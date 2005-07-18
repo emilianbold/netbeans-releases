@@ -1,8 +1,16 @@
 /*
- * RegisterMBeanPanel.java
+ *                 Sun Public License Notice
  *
- * Created on June 3, 2005, 8:51 AM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
+
 
 package org.netbeans.modules.jmx.actions.dialog;
 
@@ -19,7 +27,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Class responsible for the warning message shown when you use Add Operations...
+ * popup action in the contextual management menu and there is already an 
+ * existing implementation of a specified operation.
  * @author  tl156378
  */
 public class AddOperationsInfoPanel extends javax.swing.JPanel {
@@ -28,8 +38,12 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
     
     private JButton btnOK;
      
-    /** 
+    /**
+     * 
      * Creates new form Panel.
+     * @param mbeanClassName <CODE>String</CODE> name of the MBean to update
+     * @param operations <CODE>MBeanOperation[]</CODE> operations of this MBean
+     * @param opExist <CODE>boolean[]</CODE> represents if each operation already exists.
      */
     public AddOperationsInfoPanel(String mbeanClassName, MBeanOperation[] operations,
             boolean[] opExist) {
@@ -43,34 +57,35 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
         StringBuffer methodsList = new StringBuffer();
         for (int i = 0; i < operations.length; i ++) {
             if (opExist[i])
-                methodsList.append(" - " +operations[i].getName() + "(" +
-                        operations[i].getSimpleSignature() + ")\n");
+                methodsList.append(" - " +operations[i].getName() + "(" + // NOI18N
+                        operations[i].getSimpleSignature() + ")\n"); // NOI18N
         }
         
         infoTextArea.setText(
-                bundle.getString("LBL_OpMethodsAlreadyExist_begin") + 
-                mbeanClassName + ".\n" +
+                bundle.getString("LBL_OpMethodsAlreadyExist_begin") +  // NOI18N
+                mbeanClassName + ".\n" + // NOI18N
                 mbeanClassName + 
-                bundle.getString("LBL_OpMethodsAlreadyExist_middle") +
-                mbeanClassName + " " + 
-                bundle.getString("LBL_OpMethodsAlreadyExist_end") +
-                methodsList.toString());//NOI18N
+                bundle.getString("LBL_OpMethodsAlreadyExist_middle") + // NOI18N
+                mbeanClassName + " " +  // NOI18N
+                bundle.getString("LBL_OpMethodsAlreadyExist_end") + // NOI18N
+                methodsList.toString());
     }
     
-    public boolean isAcceptable() {
+    private boolean isAcceptable() {
         return true;
     }
     
     /**
      * Displays a configuration dialog and updates Register MBean options 
      * according to the user's settings.
+     * @return <CODE>boolean</CODE> true only if user clicks on Ok button.
      */
     public boolean configure() {
         
         // create and display the dialog:
-        String title = bundle.getString("LBL_AddOperationsAction.Title");   //NOI18N
+        String title = bundle.getString("LBL_AddOperationsAction.Title"); // NOI18N
 
-        btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
+        btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         
         Object returned = DialogDisplayer.getDefault().notify(

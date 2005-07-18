@@ -312,10 +312,6 @@ public class WizardHelpers
         return resultType;
     }
     
-    private static final String TYPE = ".TYPE";// NOI18N
-    private static final String CLASS = ".class";// NOI18N
-    private static final String GETNAME = ".getName()";// NOI18N
-    
     /**
      * Returns the full type name code needed of the type.
      * @param type <CODE>String</CODE> a type name
@@ -324,43 +320,61 @@ public class WizardHelpers
     public static String getFullTypeNameCode(String type) {
         String resultType = type;
         if (type.equals(WizardConstants.BOOLEAN_NAME)) {
-            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
-            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.BYTE_NAME)) {
-            resultType = WizardConstants.BYTE_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.BYTE_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.BYTE_OBJ_NAME)) {
-            resultType = WizardConstants.BYTE_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.BYTE_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.CHAR_NAME)) {
-            resultType = WizardConstants.CHAR_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.CHAR_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.CHAR_OBJ_NAME)) {
-            resultType = WizardConstants.CHAR_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.CHAR_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.INT_NAME)) {
-            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.INTEGER_OBJ_NAME)) {
-            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.LONG_NAME)) {
-            resultType = WizardConstants.LONG_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.LONG_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.LONG_OBJ_NAME)) {
-            resultType = WizardConstants.LONG_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.LONG_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.VOID_NAME)) {
-            resultType = WizardConstants.VOID_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.VOID_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.DATE_OBJ_NAME)) {
-            resultType = WizardConstants.DATE_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.DATE_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
-            resultType = WizardConstants.STRING_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.STRING_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.OBJECTNAME_NAME)) {
-            resultType = WizardConstants.OBJECTNAME_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.OBJECTNAME_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.FLOAT_NAME)) {
-            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.FLOAT_OBJ_NAME)) {
-            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
-            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + TYPE + GETNAME;
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + 
+                    WizardConstants.TYPE + WizardConstants.GETNAME;
         } else if (type.equals(WizardConstants.DOUBLE_OBJ_NAME)) {
-            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + CLASS + GETNAME;
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + 
+                    WizardConstants.CLASS + WizardConstants.GETNAME;
         } else {
-            resultType = type + CLASS + GETNAME;
+            resultType = type + WizardConstants.CLASS + WizardConstants.GETNAME;
         }
         return resultType;
     }
@@ -373,27 +387,27 @@ public class WizardHelpers
     public static String getFullTypeName(String type) {
         String resultType = type;
         if (type.equals(WizardConstants.BOOLEAN_NAME)) {
-            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
             resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.BYTE_NAME)) {
-            resultType = WizardConstants.BYTE_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.BYTE_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.BYTE_OBJ_NAME)) {
             resultType = WizardConstants.BYTE_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.CHAR_NAME)) {
-            resultType = WizardConstants.CHAR_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.CHAR_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.CHAR_OBJ_NAME)) {
             resultType = WizardConstants.CHAR_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.INT_NAME)) {
-            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.INTEGER_OBJ_NAME)) {
             resultType = WizardConstants.INTEGER_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.LONG_NAME)) {
-            resultType = WizardConstants.LONG_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.LONG_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.LONG_OBJ_NAME)) {
             resultType = WizardConstants.LONG_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.VOID_NAME)) {
-            resultType = WizardConstants.VOID_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.VOID_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.DATE_OBJ_NAME)) {
             resultType = WizardConstants.DATE_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
@@ -401,11 +415,11 @@ public class WizardHelpers
         } else if (type.equals(WizardConstants.OBJECTNAME_NAME)) {
             resultType = WizardConstants.OBJECTNAME_FULLNAME;
         } else if (type.equals(WizardConstants.FLOAT_NAME)) {
-            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.FLOAT_OBJ_NAME)) {
             resultType = WizardConstants.FLOAT_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
-            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + TYPE;
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.DOUBLE_OBJ_NAME)) {
             resultType = WizardConstants.DOUBLE_OBJ_FULLNAME;
         } else {

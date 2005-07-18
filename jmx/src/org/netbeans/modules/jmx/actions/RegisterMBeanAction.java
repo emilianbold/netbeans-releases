@@ -28,10 +28,10 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Action used to add MBean registration code to an existing JMX Agent.
  * @author tl156378
  */
-public class RegisterMBeanAction extends CookieAction implements JMXAction {
+public class RegisterMBeanAction extends CookieAction {
     
     private FileObject fo;
     private DataObject dob;
@@ -41,7 +41,7 @@ public class RegisterMBeanAction extends CookieAction implements JMXAction {
      * Creates a new instance of AddAttrAction 
      */
     public RegisterMBeanAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N 
     }
     
     protected Class[] cookieClasses() {
@@ -98,11 +98,11 @@ public class RegisterMBeanAction extends CookieAction implements JMXAction {
     }
     
     public HelpCtx getHelpCtx () {
-        return new HelpCtx("");
+        return new HelpCtx(""); // NOI18N
     }
     
     public String getName () {
         return NbBundle.getMessage (RegisterMBeanAction.class, 
-                "LBL_Action_RegisterMBean");
+                "LBL_Action_RegisterMBean"); // NOI18N
     }
 }

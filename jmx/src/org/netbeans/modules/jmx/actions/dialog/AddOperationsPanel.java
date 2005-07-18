@@ -1,7 +1,14 @@
 /*
- * RegisterMBeanPanel.java
+ *                 Sun Public License Notice
  *
- * Created on June 3, 2005, 8:51 AM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.jmx.actions.dialog;
@@ -32,8 +39,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author  tl156378
+ * Panel which is used to ask new operations to user.
+ * @author tl156378
  */
 public class AddOperationsPanel extends javax.swing.JPanel 
         implements FireEvent, ListSelectionListener {
@@ -48,6 +55,10 @@ public class AddOperationsPanel extends javax.swing.JPanel
     
     private JButton btnOK;
     
+    /**
+     * Returns all the specified operations by user.
+     * @return <CODE>MBeanOperation[]</CODE> specified operations by user
+     */
     public MBeanOperation[] getOperations() {
         MBeanOperation[] Operations = new MBeanOperation[
                 operationModel.getRowCount() - operationModel.getFirstEditable()];
@@ -58,8 +69,8 @@ public class AddOperationsPanel extends javax.swing.JPanel
     }
      
     /** 
-     * Creates new form RemoveAttrPanel.
-     * @param  node  node selected when the Register Mbean action was invoked
+     * Creates new form AddOperationsPanel.
+     * @param  node  node selected when the Add MBean Operations action was invoked.
      */
     public AddOperationsPanel(Node node) {
         bundle = NbBundle.getBundle(AddAttrAction.class);
@@ -76,7 +87,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
         
         operationModel = new AddMBeanOperationTableModel();
         operationTable = new AddOperationTable(this,operationModel,this);
-        operationTable.setName("OperationTable");
+        operationTable.setName("OperationTable"); // NOI18N
         operationTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(operationTable);
         operationTable.getSelectionModel().addListSelectionListener(this);
@@ -96,9 +107,9 @@ public class AddOperationsPanel extends javax.swing.JPanel
         
         // init labels
         Mnemonics.setLocalizedText(addButton,
-                     bundle.getString("LBL_Button_AddOperation"));//NOI18N
+                     bundle.getString("LBL_Button_AddOperation")); // NOI18N
         Mnemonics.setLocalizedText(removeButton,
-                     bundle.getString("LBL_Button_RemoveOperation"));//NOI18N
+                     bundle.getString("LBL_Button_RemoveOperation")); // NOI18N
         
     }
     
@@ -108,16 +119,15 @@ public class AddOperationsPanel extends javax.swing.JPanel
         btnOK.setEnabled(isAcceptable());
     }
     
-    public boolean isAcceptable() {
+    private boolean isAcceptable() {
         if (!(operationModel.getRowCount() > operationModel.getFirstEditable())) {
-            stateLabel.setText(bundle.getString("LBL_NoOperation"));
+            stateLabel.setText(bundle.getString("LBL_NoOperation")); // NOI18N
             return false;
         } else if (operationNameAlreadyContained()) {
-            stateLabel.setText(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,
-                                "LBL_State_Same_Operation"));
+            stateLabel.setText(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"LBL_State_Same_Operation")); // NOI18N
             return false;
         } else {
-            stateLabel.setText("");
+            stateLabel.setText(""); // NOI18N
             return true;
         }
     }
@@ -155,16 +165,16 @@ public class AddOperationsPanel extends javax.swing.JPanel
     }
     
     /**
-     * Displays a configuration dialog and updates Register MBean options 
-     * according to the user's settings.
+     * Displays a configuration dialog and updates MBean options 
+     * according to the user's settings. 
+     * @return <CODE>boolean</CODE> true only if specified operations are correct.
      */
     public boolean configure() {
         
         // create and display the dialog:
-        String title = NbBundle.getMessage(AddAttrAction.class,
-                                           "LBL_AddOperationsAction.Title"); //NOI18N
+        String title = bundle.getString("LBL_AddOperationsAction.Title"); // NOI18N
 
-        btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
+        btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         
         Object returned = DialogDisplayer.getDefault().notify(
@@ -184,7 +194,11 @@ public class AddOperationsPanel extends javax.swing.JPanel
         }
         return false;
     }
-
+    
+    /**
+     * Returns the MBean class to add operations.
+     * @return <CODE>JavaClass</CODE> the MBean class
+     */
     public JavaClass getMBeanClass() {
         return currentClass;
     }

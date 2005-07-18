@@ -16,7 +16,7 @@ package org.netbeans.modules.jmx.actions.dialog;
 import javax.swing.table.DefaultTableModel;
 
 /**
- *
+ * Allows to have a non editable table.
  * @author tl156378
  */
 public class NonEditableTableModel extends DefaultTableModel {
@@ -24,6 +24,7 @@ public class NonEditableTableModel extends DefaultTableModel {
    public NonEditableTableModel(Object[][] cells, String[]columnNames) {
        super(cells,columnNames);
    }
+   
    /**
      * Returns false regardless of parameter values.
      *

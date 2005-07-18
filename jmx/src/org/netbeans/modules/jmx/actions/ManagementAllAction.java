@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * ManagementAllAction.java
- *
- * Created on January 19, 2001, 1:00 PM
- */
 
 package org.netbeans.modules.jmx.actions;
 import java.awt.event.ActionEvent;
@@ -30,9 +25,10 @@ import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 
-/** Action which just holds a few other SystemAction's for grouping purposes.
+/** 
+ * Action which just groups update actions.
  *
- * @author  vstejskal
+ * @author  tleveque
  * @version 1.0
  */
 public class ManagementAllAction extends SystemAction implements Presenter.Menu, Presenter.Popup {
@@ -51,7 +47,7 @@ public class ManagementAllAction extends SystemAction implements Presenter.Menu,
     }
     
     public String getName () {
-        return NbBundle.getMessage (ManagementAllAction.class, "LBL_ManagementAction");
+        return NbBundle.getMessage (ManagementAllAction.class, "LBL_ManagementAction"); // NOI18N 
     }
 
     public HelpCtx getHelpCtx () {

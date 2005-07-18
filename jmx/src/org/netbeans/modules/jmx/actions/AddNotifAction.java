@@ -28,10 +28,10 @@ import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Action used to add notifications to an existing MBean.
  * @author tl156378
  */
-public class AddNotifAction extends CookieAction implements JMXAction {
+public class AddNotifAction extends CookieAction {
     
     private DataObject dob;
     private Resource rc;
@@ -40,7 +40,7 @@ public class AddNotifAction extends CookieAction implements JMXAction {
      * Creates a new instance of UpdateAttrAction 
      */
     public AddNotifAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
     protected Class[] cookieClasses() {
@@ -91,11 +91,11 @@ public class AddNotifAction extends CookieAction implements JMXAction {
     }
     
     public HelpCtx getHelpCtx () {
-        return new HelpCtx("");
+        return new HelpCtx(""); // NOI18N
     }
     
     public String getName () {
         return NbBundle.getMessage (AddNotifAction.class, 
-                "LBL_Action_AddMBeanNotification");
+                "LBL_Action_AddMBeanNotification"); // NOI18N
     }
 }

@@ -26,7 +26,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Class responsible for the warning message shown when you use Add Attributes...
+ * popup action in the contextual management menu and there is already an 
+ * existing implementation of a specified attribute.
  * @author  tl156378
  */
 public class AddAttributesInfoPanel extends javax.swing.JPanel {
@@ -37,7 +39,6 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
      
     /** 
      * Creates new form Panel.
-     * @param  node  node selected when the Register Mbean action was invoked
      */
     public AddAttributesInfoPanel(String mbeanClassName, MBeanAttribute[] attributes,
             AttributeMethods[] attrMethods) {
@@ -52,20 +53,20 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
         for (int i = 0; i < attributes.length; i ++) {
             if (attrMethods[i].equals(AttributeMethods.GET) ||
                     attrMethods[i].equals(AttributeMethods.BOTH))
-                    methodsList.append(" - get" + attributes[i].getName() + "\n");
+                    methodsList.append(" - get" + attributes[i].getName() + "\n"); // NOI18N
             else if (attrMethods[i].equals(AttributeMethods.SET) ||
                     attrMethods[i].equals(AttributeMethods.BOTH))
-                    methodsList.append(" - set" + attributes[i].getName() + "\n");
+                    methodsList.append(" - set" + attributes[i].getName() + "\n"); // NOI18N
         }
         
         infoTextArea.setText(
-                bundle.getString("LBL_AttrMethodsAlreadyExist_begin") + 
-                mbeanClassName + ".\n" +
+                bundle.getString("LBL_AttrMethodsAlreadyExist_begin") +  // NOI18N
+                mbeanClassName + ".\n" + // NOI18N
                 mbeanClassName + 
-                bundle.getString("LBL_AttrMethodsAlreadyExist_middle") +
-                mbeanClassName + " " + 
-                bundle.getString("LBL_AttrMethodsAlreadyExist_end") +
-                methodsList.toString());//NOI18N
+                bundle.getString("LBL_AttrMethodsAlreadyExist_middle") + // NOI18N
+                mbeanClassName + " " +  // NOI18N
+                bundle.getString("LBL_AttrMethodsAlreadyExist_end") + // NOI18N
+                methodsList.toString());
     }
     
     public boolean isAcceptable() {
@@ -75,13 +76,14 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
     /**
      * Displays a configuration dialog and updates Register MBean options 
      * according to the user's settings.
+     * @return <CODE>boolean</CODE> true only if user clicks on Ok button.
      */
     public boolean configure() {
         
         // create and display the dialog:
-        String title = bundle.getString("LBL_AddAttributesAction.Title");   //NOI18N
+        String title = bundle.getString("LBL_AddAttributesAction.Title"); // NOI18N
 
-        btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
+        btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         
         Object returned = DialogDisplayer.getDefault().notify(

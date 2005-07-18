@@ -38,7 +38,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Panel which is used to ask new attributes to user.
  * @author  tl156378
  */
 public class AddAttributesPanel extends javax.swing.JPanel 
@@ -54,6 +54,10 @@ public class AddAttributesPanel extends javax.swing.JPanel
     
     private JButton btnOK;
     
+    /**
+     * Returns all the specified attributes by user.
+     * @return <CODE>MBeanAttribute[]</CODE> specified attributes by user
+     */
     public MBeanAttribute[] getAttributes() {
         MBeanAttribute[] attributes = new MBeanAttribute[
                 attributeModel.getRowCount() - attributeModel.getFirstEditable()];
@@ -64,8 +68,8 @@ public class AddAttributesPanel extends javax.swing.JPanel
     }
      
     /** 
-     * Creates new form RemoveAttrPanel.
-     * @param  node  node selected when the Register Mbean action was invoked
+     * Creates new form AddAttributesPanel.
+     * @param  node  node selected when the Add MBean Attributes action was invoked
      */
     public AddAttributesPanel(Node node) {
         bundle = NbBundle.getBundle(AddAttrAction.class);
@@ -82,7 +86,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         
         attributeModel = new AddMBeanAttributeTableModel();
         attributeTable = new AddAttributeTable(attributeModel,this);
-        attributeTable.setName("attributeTable");
+        attributeTable.setName("attributeTable"); // NOI18N
         attributeTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(attributeTable);
         attributeTable.getSelectionModel().addListSelectionListener(this);
@@ -102,9 +106,9 @@ public class AddAttributesPanel extends javax.swing.JPanel
         
         // init labels
         Mnemonics.setLocalizedText(addButton,
-                     bundle.getString("LBL_Button_AddAttribute"));//NOI18N
+                     bundle.getString("LBL_Button_AddAttribute")); // NOI18N
         Mnemonics.setLocalizedText(removeButton,
-                     bundle.getString("LBL_Button_RemoveAttribute"));//NOI18N
+                     bundle.getString("LBL_Button_RemoveAttribute")); // NOI18N
         
     }
     
@@ -114,16 +118,15 @@ public class AddAttributesPanel extends javax.swing.JPanel
         btnOK.setEnabled(isAcceptable());
     }
     
-    public boolean isAcceptable() {
+    private boolean isAcceptable() {
         if (!(attributeModel.getRowCount() > attributeModel.getFirstEditable())) {
-            stateLabel.setText(bundle.getString("LBL_NoAttribute"));
+            stateLabel.setText(bundle.getString("LBL_NoAttribute")); // NOI18N
             return false;
         } else if (AttributeNameAlreadyContained()) {
-            stateLabel.setText(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,
-                            "LBL_State_Same_Attribute_Name"));
+            stateLabel.setText(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"LBL_State_Same_Attribute_Name")); // NOI18N
             return false;
         } else {
-            stateLabel.setText("");
+            stateLabel.setText(""); // NOI18N
             return true;
         }
     }
@@ -152,16 +155,16 @@ public class AddAttributesPanel extends javax.swing.JPanel
     }
     
     /**
-     * Displays a configuration dialog and updates Register MBean options 
+     * Displays a configuration dialog and updates the MBean options 
      * according to the user's settings.
+     * @return <CODE>boolean</CODE> true only if specified attributes are correct.
      */
     public boolean configure() {
         
         // create and display the dialog:
-        String title = NbBundle.getMessage(AddAttrAction.class,
-                                           "LBL_AddAttributesAction.Title");   //NOI18N
+        String title = bundle.getString("LBL_AddAttributesAction.Title"); // NOI18N
 
-        btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
+        btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         
         Object returned = DialogDisplayer.getDefault().notify(
@@ -181,7 +184,11 @@ public class AddAttributesPanel extends javax.swing.JPanel
         }
         return false;
     }
-
+    
+    /**
+     * Returns the MBean class to add Attributes.
+     * @return <CODE>JavaClass</CODE> the MBean class
+     */
     public JavaClass getMBeanClass() {
         return currentClass;
     }

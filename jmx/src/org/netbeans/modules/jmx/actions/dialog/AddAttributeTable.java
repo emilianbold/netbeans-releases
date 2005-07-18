@@ -24,7 +24,8 @@ import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.table.AttributeTable;
 
 /**
- *
+ * Class responsible for the attribute table shown when you use Add Attributes...
+ * popup action in the contextual management menu.
  * @author tl156378
  */
 public class AddAttributeTable extends AttributeTable {
@@ -32,7 +33,7 @@ public class AddAttributeTable extends AttributeTable {
     /**
      * Constructor
      * @param model the table model of this table
-     * @param wiz the wizard panel
+     * @param wiz the panel to notify for events
      */
     public AddAttributeTable(AbstractTableModel model, FireEvent wiz) {
         super(model,wiz);
