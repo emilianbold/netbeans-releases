@@ -18,12 +18,15 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCu
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.PrimitiveType;
 import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.jmi.javamodel.NamedElement;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
@@ -230,47 +233,65 @@ public class CmpFieldHelper {
             return;
         }
         String fieldName = getFieldName();
+        boolean primary = isPrimary();
+        final int oldFieldRow = entityHelper.cmpFields.getFieldRow(field);
+        RefactoringSession refactoringSession = RefactoringSession.create("Rename");
         Method[] methods = JMIUtils.getMethods(entityHelper.getBeanClass());
-
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
-            String name = method.getName();
-            if ("ejbCreate".equals(name) || "ejbPostCreate".equals(name)) {
-                List parameters = method.getParameters();
-                for (Iterator it = parameters.iterator(); it.hasNext();) {
-                    Parameter parameter = (Parameter) it.next();
-                    if (fieldName.equals(parameter.getName())) {
-                        parameter.setName(newName);
-                        break;
-                    }
-                }
+        Method ejbPostCreateMethod = (Method) findNamedElement(methods, "ejbPostCreate");
+        Method ejbCreateMethod = (Method) findNamedElement(methods, "ejbCreate");
+        if (ejbCreateMethod != null) {
+            Parameter[] parameters = (Parameter[]) ejbCreateMethod.getParameters().toArray(new Parameter[0]);
+            NamedElement parameter = findNamedElement(parameters, fieldName);
+            if (parameter != null) {
+                prepareRename(refactoringSession, parameter, newName);
             }
         }
-        if (isPrimary()) {
-            entityHelper.setPrimkeyFieldName(newName);
+        if (ejbPostCreateMethod != null) {
+            Parameter[] parameters = (Parameter[]) ejbPostCreateMethod.getParameters().toArray(new Parameter[0]);
+            NamedElement parameter = findNamedElement(parameters, fieldName);
+            if (parameter != null) {
+                prepareRename(refactoringSession, parameter, newName);
+            }
         }
-        final int oldFieldRow = entityHelper.cmpFields.getFieldRow(field);
-        Method localGetter = getLocalGetter();
-        Method localSetter = getLocalSetter();
-        Method remoteGetter = getRemoteGetter();
-        Method remoteSetter = getRemoteSetter();
-        String getterName = Utils.getMethodName(newName, true);
-        String setterName = Utils.getMethodName(newName, false);
-        field.setFieldName(newName);
         Method getterMethod = entityHelper.getGetterMethod(fieldName);
         Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-        Utils.renameMethod(getterMethod, getterName);
-        Utils.renameMethod(setterMethod, setterName);
-        Utils.renameMethod(localGetter, getterName);
-        Utils.renameMethod(localSetter, setterName);
-        Utils.renameMethod(remoteGetter, getterName);
-        Utils.renameMethod(remoteSetter, setterName);
+        String getterName = Utils.getMethodName(newName, true);
+        String setterName = Utils.getMethodName(newName, false);
+        prepareRename(refactoringSession, getterMethod, getterName);
+        prepareRename(refactoringSession, setterMethod, setterName);
+        prepareRename(refactoringSession, getLocalGetter(), getterName);
+        prepareRename(refactoringSession, getLocalSetter(), setterName);
+        prepareRename(refactoringSession, getRemoteGetter(), getterName);
+        prepareRename(refactoringSession, getRemoteSetter(), setterName);
+        refactoringSession.doRefactoring(true);
+        field.setFieldName(newName);
+        if (primary) {
+            entityHelper.setPrimkeyFieldName(newName);
+        }
         final int newFieldRow = entityHelper.cmpFields.getFieldRow(field);
         if (oldFieldRow != newFieldRow) {
             entityHelper.cmpFields.firePropertyChange(new PropertyChangeEvent(entityHelper.cmpFields,
                     PROPERTY_FIELD_ROW_CHANGED, new Integer(oldFieldRow), new Integer(newFieldRow)));
         }
         modelUpdatedFromUI();
+    }
+
+    private static void prepareRename(RefactoringSession refactoringSession, NamedElement element, String newName) {
+        if (element != null) {
+            RenameRefactoring refactoring = new RenameRefactoring(element);
+            refactoring.setNewName(newName);
+            refactoring.prepare(refactoringSession);
+        }
+    }
+
+    private static NamedElement findNamedElement(NamedElement[] elements, String name) {
+        for (int i = 0; i < elements.length; i++) {
+            NamedElement element = elements[i];
+            if (name.equals(element.getName())) {
+                return element;
+            }
+        }
+        return null;
     }
 
     public void setDescription(String s) {
