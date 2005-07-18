@@ -335,7 +335,7 @@ public abstract class ExecutorSupport implements CVSListener  {
     // XXX actually masks error in cvsclient library
     // command-line cvs works smoothly over multi-cvsrooted
     // workdirs opening new connections as necessary
-    private static File[][] splitByCvsRoot(File [] files) throws IOException {
+    protected static File[][] splitByCvsRoot(File [] files) throws IOException {
         Map fileBuckets = new HashMap();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];

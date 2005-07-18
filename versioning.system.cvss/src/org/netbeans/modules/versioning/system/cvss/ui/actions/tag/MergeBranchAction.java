@@ -19,7 +19,7 @@ import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
-import org.netbeans.lib.cvsclient.command.tag.TagCommand;
+import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDescriptor;
@@ -68,10 +68,14 @@ public class MergeBranchAction extends AbstractSystemAction {
         RequestProcessor.getDefault().post(new MergeBranchExecutor(roots, settings));
     }
  
+    /**
+     * Runnable that executes actions specified in the MergeBranch settings panel.
+     */ 
     private static class MergeBranchExecutor implements Runnable {
 
         private final File[] roots;
         private final MergeBranchPanel settings;
+        private String temporaryTag;
 
         public MergeBranchExecutor(File[] roots, MergeBranchPanel settings) {
             this.roots = roots;
@@ -79,34 +83,89 @@ public class MergeBranchAction extends AbstractSystemAction {
         }
 
         public void run() {
-            if (!update()) return;
-            tag();
+            if (settings.isTaggingAfterMerge()) {
+                temporaryTag = settings.getAfterMergeTagName() + "_tempheadmarker";
+                if (!tagHeadTemporary()) return;
+                try {
+                    if (!update()) return;
+                    tag();
+                } finally {
+                    removeTagHeadTemporary();
+                }
+            } else {
+                update();
+            }
         }
 
+        /**
+         * If user requests the merge to start at a specific tag: 
+         *     cvs update -j merge_tag -j my_branch
+         * If user requests to merge everything from the common ancestor revision: 
+         *     cvs update -j my_branch
+         * Branch_tag may be HEAD if we merge from trunk.
+         * 
+         * @return true if update succeeds, false otherwise
+         */ 
         private boolean update() {
             UpdateCommand cmd = new UpdateCommand();
 
-            if (settings.isMergingFromTrunk()) {
-                
-            } else {
-                
-            }
+            String branchName = settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName();
+            String headTag = temporaryTag != null ? temporaryTag : branchName; 
             
+            if (settings.isUsingMergeTag()) {
+                cmd.setMergeRevision1(settings.getMergeTagName());
+                cmd.setMergeRevision2(headTag);
+            } else {
+                cmd.setMergeRevision1(headTag);
+            }
             cmd.setFiles(roots);
         
             UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
             return ExecutorSupport.wait(executors);
         }
 
+        /**
+         * Tags the head of branch we merged from:
+         *     cvs rtag -F -r my_branch merge_tag module1 module2 ...
+         * 
+         * @return true if tagging succeeds, false otherwsie 
+         */ 
         private boolean tag() {
-            TagCommand cmd = new TagCommand();
+            RtagCommand cmd = new RtagCommand();
         
-            cmd.setFiles(roots);
-//            cmd.setTag(tagName);
+            cmd.setOverrideExistingTag(true);
+            cmd.setTagByRevision(temporaryTag);
+            cmd.setTag(settings.getAfterMergeTagName());
         
-            TagExecutor [] executors = TagExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, roots, null);
+            return ExecutorSupport.wait(executors);
+        }
+
+        /**
+         * Places or removes a temporary tag at the head of the branch we merge from:
+         *     cvs rtag -F -r my_branch temporary_tag module1 module2 ...
+         * 
+         * @return true if tagging succeeds, false otherwsie 
+         */ 
+        private boolean tagHeadTemporary() {
+            RtagCommand cmd = new RtagCommand();
+        
+            cmd.setOverrideExistingTag(true);
+            cmd.setTagByRevision(settings.isMergingFromTrunk() ? "HEAD" : settings.getBranchName());
+            cmd.setTag(temporaryTag);
+
+            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, roots, null);
+            return ExecutorSupport.wait(executors);
+        }
+
+        private boolean removeTagHeadTemporary() {
+            RtagCommand cmd = new RtagCommand();
+                    
+            cmd.setDeleteTag(true);
+            cmd.setTag(temporaryTag);
+        
+            RTagExecutor [] executors = RTagExecutor.executeCommand(cmd, roots, null);
             return ExecutorSupport.wait(executors);
         }
     }
-    
 }

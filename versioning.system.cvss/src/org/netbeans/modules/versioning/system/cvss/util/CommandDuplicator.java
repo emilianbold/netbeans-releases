@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.util;
 
 import org.netbeans.lib.cvsclient.command.Command;
+import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
 import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
@@ -29,6 +30,7 @@ public abstract class CommandDuplicator {
         if (src instanceof CommitCommand) return new CommitCloner((CommitCommand) src);
         if (src instanceof UpdateCommand) return new UpdateCloner((UpdateCommand) src);
         if (src instanceof RemoveCommand) return new RemoveCloner((RemoveCommand) src);
+        if (src instanceof RtagCommand) return new RtagCloner((RtagCommand) src);
         throw new IllegalArgumentException("Clone not supported for command type: " + src.getClass().getName());
     }
 
@@ -90,6 +92,30 @@ public abstract class CommandDuplicator {
             RemoveCommand c = new RemoveCommand();
             c.setDeleteBeforeRemove(sample.isDeleteBeforeRemove());
             c.setIgnoreLocallyExistingFiles(sample.isIgnoreLocallyExistingFiles());
+            c.setRecursive(sample.isRecursive());
+            return c;
+        }
+    }
+
+    private static class RtagCloner extends CommandDuplicator {
+        private final RtagCommand sample;
+
+        public RtagCloner(RtagCommand sample) {
+            this.sample = sample;
+        }
+
+        public Command duplicate() {
+            RtagCommand c = new RtagCommand();
+            c.setClearFromRemoved(sample.isClearFromRemoved());
+            c.setDeleteTag(sample.isDeleteTag());
+            c.setMakeBranchTag(sample.isMakeBranchTag());
+            c.setMatchHeadIfRevisionNotFound(sample.isMatchHeadIfRevisionNotFound());
+            c.setModules(sample.getModules());
+            c.setNoExecTagProgram(sample.isNoExecTagProgram());
+            c.setOverrideExistingTag(sample.isOverrideExistingTag());
+            c.setTag(sample.getTag());
+            c.setTagByDate(sample.getTagByDate());
+            c.setTagByRevision(sample.getTagByRevision());
             c.setRecursive(sample.isRecursive());
             return c;
         }
