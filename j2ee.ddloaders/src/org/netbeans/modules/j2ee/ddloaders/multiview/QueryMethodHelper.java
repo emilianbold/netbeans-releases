@@ -92,10 +92,8 @@ public class QueryMethodHelper {
         QueryMethod queryMethod = query.getQueryMethod();
         List parameters = getQueryMethodParams(queryMethod);
         String methodName = queryMethod.getMethodName();
-        boolean hasLocal = localHomeClass == null ?
-                false : localHomeClass.getMethod(methodName, parameters, false) != null;
-        boolean hasRemote = homeClass == null ?
-                false : homeClass.getMethod(methodName, parameters, false) != null;
+        boolean hasLocal = localHomeClass != null && localHomeClass.getMethod(methodName, parameters, false) != null;
+        boolean hasRemote = homeClass != null && homeClass.getMethod(methodName, parameters, false) != null;
         String remote = "remote"; //NOI18N;
         String local = "local"; //NOI18N;
         if (hasLocal) {
@@ -131,9 +129,9 @@ public class QueryMethodHelper {
     }
 
     public Method getPrototypeMethod() {
+        Method prototypeMethod = JMIUtils.createMethod(null);
         Method implementationMethod = getImplementationMethod();
         if (implementationMethod == null) {
-            Method prototypeMethod = JMIUtils.createMethod(null);
             QueryMethod queryMethod = query.getQueryMethod();
             prototypeMethod.setName(queryMethod.getMethodName());
             MethodParams queryParams = queryMethod.getMethodParams();
@@ -144,7 +142,10 @@ public class QueryMethodHelper {
             }
             return prototypeMethod;
         } else {
-            return (Method) implementationMethod.duplicate();
+            prototypeMethod.setName(implementationMethod.getName());
+            prototypeMethod.setType(implementationMethod.getType());
+            JMIUtils.replaceParameters(prototypeMethod, implementationMethod.getParameters());
+            return prototypeMethod;
 
         }
     }
@@ -162,7 +163,7 @@ public class QueryMethodHelper {
                 prototypeMethod = remoteMethod;
             }
         }
-        return prototypeMethod;
+        return prototypeMethod.isValid() ? prototypeMethod : null;
     }
 
     public void updateFinderMethod(Method prototype, Query query, boolean singleReturn, boolean publishToLocal,
@@ -208,9 +209,7 @@ public class QueryMethodHelper {
     }
 
     private JavaClass getHomeClass(boolean remote) {
-        JavaClass interfaceClass = remote ?
-                entityHelper.getHomeInterfaceClass() : entityHelper.getLocalHomeInterfaceClass();
-        return interfaceClass;
+        return remote ? entityHelper.getHomeInterfaceClass() : entityHelper.getLocalHomeInterfaceClass();
     }
 
     private void setReturn(Method prototype, boolean singleReturn, boolean remote) {
