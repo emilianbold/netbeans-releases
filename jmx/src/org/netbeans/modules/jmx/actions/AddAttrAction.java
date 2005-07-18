@@ -121,7 +121,6 @@ public class AddAttrAction extends CookieAction {
     }
     
     public String getName () {
-        return NbBundle.getMessage (AddAttrAction.class, 
-                "LBL_Action_AddMBeanAttribute"); // NOI18N
+        return NbBundle.getMessage (AddAttrAction.class, "LBL_Action_AddMBeanAttribute"); // NOI18N
     }
 }
