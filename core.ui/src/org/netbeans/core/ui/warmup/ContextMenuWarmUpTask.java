@@ -38,8 +38,6 @@ public final class ContextMenuWarmUpTask implements Runnable {
     public void run() {
         // For first context menu.
         org.openide.actions.ActionManager.getDefault().getContextActions();
-        new org.openide.awt.JPopupMenuPlus();
-        new org.openide.awt.JInlineMenu();
         new javax.swing.JMenuItem();
 
         // #30676 ToolsAction popup warm up.
