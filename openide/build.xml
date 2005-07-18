@@ -43,11 +43,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="clean" description="Remove all build products." depends="init">
     <delete dir="build"/>
-    <delete>
-      <fileset dir="${cluster}">
-        <patternset refID="openide.files"/>
-      </fileset>
-    </delete>
   </target>
 
     <!-- support for testing under main trunk version of the ide -->
