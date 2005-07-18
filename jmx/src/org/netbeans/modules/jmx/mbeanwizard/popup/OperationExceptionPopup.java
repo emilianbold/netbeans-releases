@@ -79,12 +79,9 @@ public class OperationExceptionPopup extends AbstractPopup{
     
     protected void initComponents() {
         
-        addJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationException_addException");// NOI18N
-        removeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationException_remException");// NOI18N
-        closeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationException_close");// NOI18N
+        addJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_addException"));// NOI18N
+        removeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_remException"));// NOI18N
+        closeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_close"));// NOI18N
         
         addJButton.setName("addExceptionJButton");// NOI18N
         removeJButton.setName("remExceptionJButton");// NOI18N
@@ -102,9 +99,7 @@ public class OperationExceptionPopup extends AbstractPopup{
             public void actionPerformed(ActionEvent evt) {
                 if (existsSameException()) {
                      ManagementDialogs.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(
-                             OperationExceptionPopup.class, 
-                             "ERR_InheritanceConflict"), // NOI18N
+                        new NotifyDescriptor.Message(NbBundle.getMessage(OperationExceptionPopup.class, "ERR_InheritanceConflict"), // NOI18N
                              NotifyDescriptor.ERROR_MESSAGE));
                 } else {
                     textFieldToFill.setText(storeSettings());

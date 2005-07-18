@@ -65,8 +65,7 @@ public class NotificationTypePopup extends AbstractPopup{
         initComponents();
         readSettings();
         
-        setDimensions(NbBundle.getMessage(NotificationTypePopup.class,
-                "LBL_NotificationType_Popup"));// NOI18N
+        setDimensions(NbBundle.getMessage(NotificationTypePopup.class,"LBL_NotificationType_Popup"));// NOI18N
     }
     
     protected void initJTable() {
@@ -79,12 +78,9 @@ public class NotificationTypePopup extends AbstractPopup{
     
     protected void initComponents() {
         
-        addJButton = instanciatePopupButton(NotificationTypePopup.class,
-                "LBL_Notification_addType");// NOI18N
-        removeJButton = instanciatePopupButton(NotificationTypePopup.class,
-                "LBL_Notification_remType");// NOI18N
-        closeJButton = instanciatePopupButton(NotificationTypePopup.class,
-                "LBL_Notification_close");// NOI18N
+        addJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_addType"));// NOI18N
+        removeJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_remType"));// NOI18N
+        closeJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_close"));// NOI18N
         
         addJButton.addActionListener(
             new AddTableRowListener(popupTable,popupTableModel,removeJButton));

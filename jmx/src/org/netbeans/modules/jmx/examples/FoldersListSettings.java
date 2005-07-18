@@ -23,12 +23,11 @@ public class FoldersListSettings extends SystemOption {
     private static final String LAST_EXTERNAL_SOURCE_ROOT = "srcRoot";  //NOI18N
 
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
-
-
+    
     public String displayName() {
-        return NbBundle.getMessage (FoldersListSettings.class, "TXT_J2SEProjectFolderList"); //NOI18N
+        return null;
     }
-
+    
     public String getLastExternalSourceRoot () {
         return (String) getProperty(LAST_EXTERNAL_SOURCE_ROOT);
     }

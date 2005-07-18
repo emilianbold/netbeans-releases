@@ -61,8 +61,7 @@ public class MBeanNotificationPanel extends JPanel {
         this.ancestorPanel = this;
         
         initComponents();
-        String str = NbBundle.getMessage(MBeanNotificationPanel.class,
-                "LBL_Notification_Panel");// NOI18N
+        String str = NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_Notification_Panel");// NOI18N
         setName(str);
     }
     
@@ -82,12 +81,10 @@ public class MBeanNotificationPanel extends JPanel {
         
         JButton notifAddJButton = new JButton();
         Mnemonics.setLocalizedText(notifAddJButton,
-                NbBundle.getMessage(MBeanNotificationPanel.class,
-                "BUTTON_add_notification"));//NOI18N
+                NbBundle.getMessage(MBeanNotificationPanel.class,"BUTTON_add_notification"));//NOI18N
         JButton notifRemJButton = new JButton();
         Mnemonics.setLocalizedText(notifRemJButton,
-                NbBundle.getMessage(MBeanNotificationPanel.class,
-                "BUTTON_rem_notification"));//NOI18N
+                NbBundle.getMessage(MBeanNotificationPanel.class,"BUTTON_rem_notification"));//NOI18N
         
         notifAddJButton.setName("notifAddJButton");// NOI18N
         notifRemJButton.setName("notifRemJButton");// NOI18N

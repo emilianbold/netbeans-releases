@@ -67,8 +67,7 @@ public class OperationParameterPopup extends AbstractPopup{
         
         readSettings();
         
-        setDimensions(NbBundle.getMessage(OperationParameterPopup.class,
-                "LBL_OperationParameter_Popup"));// NOI18N
+        setDimensions(NbBundle.getMessage(OperationParameterPopup.class,"LBL_OperationParameter_Popup"));// NOI18N
     }
     
     protected void initJTable() {
@@ -81,13 +80,10 @@ public class OperationParameterPopup extends AbstractPopup{
     protected void initComponents() {
         initJTable();
         
-        addJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationParameter_addParam");// NOI18N
-        removeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationParameter_remParam");// NOI18N
-        closeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationParameter_close");// NOI18N
-        
+        addJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_addParam"));// NOI18N
+        removeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_remParam"));// NOI18N
+        closeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_close"));// NOI18N
+     
         addJButton.setName("addParamJButton");// NOI18N
         removeJButton.setName("remParamJButton");// NOI18N
         closeJButton.setName("closeJButton");// NOI18N

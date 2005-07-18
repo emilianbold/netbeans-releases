@@ -65,11 +65,8 @@ public class AntActions {
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(
-                AntActions.class,
-                "HINT_EnableLocalManagementAction" // NOI18N
-                )
-                );
+                NbBundle.getMessage(AntActions.class,"HINT_EnableLocalManagementAction")); // NOI18N
+        
         a.putValue(
                 "iconBase", // NOI18N
                 "org/netbeans/modules/jmx/resources/run_project.png" //NOI18N
@@ -93,11 +90,8 @@ public class AntActions {
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(
-                AntActions.class,
-                "HINT_EnableRemoteManagementAction" // NOI18N
-                )
-                );
+                NbBundle.getMessage(AntActions.class, "HINT_EnableRemoteManagementAction" ));// NOI18N
+        
         a.putValue(
                 "iconBase", // NOI18N
                 "org/netbeans/modules/jmx/resources/run_project.png" // NOI18N
@@ -121,11 +115,8 @@ public class AntActions {
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(
-                AntActions.class,
-                "HINT_DebugLocalManagementAction" // NOI18N
-                )
-                );
+                NbBundle.getMessage(AntActions.class, "HINT_DebugLocalManagementAction")); // NOI18N
+
         a.putValue(
                 "iconBase", // NOI18N
                 "org/netbeans/modules/jmx/resources/debug_project.png" // NOI18N
@@ -149,11 +140,8 @@ public class AntActions {
                 null);
         a.putValue(
                 Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(
-                AntActions.class,
-                "HINT_DebugRemoteManagementAction" // NOI18N
-                )
-                );
+                NbBundle.getMessage(AntActions.class,"HINT_DebugRemoteManagementAction")); // NOI18N
+
         a.putValue(
                 "iconBase", // NOI18N
                 "org/netbeans/modules/jmx/resources/debug_project.png" // NOI18N
