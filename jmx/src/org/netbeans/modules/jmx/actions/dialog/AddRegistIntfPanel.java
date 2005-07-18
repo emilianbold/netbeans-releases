@@ -48,7 +48,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
      * @param  node  node selected when the Register Mbean action was invoked
      */
     public AddRegistIntfPanel(Node node) {
-        bundle = NbBundle.getBundle(AddRegisterIntfAction.class);
+        bundle = NbBundle.getBundle(AddRegistIntfPanel.class);
         
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;

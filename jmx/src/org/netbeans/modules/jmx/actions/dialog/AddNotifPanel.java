@@ -69,7 +69,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
      * @param  node  node selected when the Register Mbean action was invoked
      */
     public AddNotifPanel(Node node) {
-        bundle = NbBundle.getBundle(AddNotifAction.class);
+        bundle = NbBundle.getBundle(AddNotifPanel.class);
         
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;

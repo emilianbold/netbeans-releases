@@ -47,7 +47,7 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
      */
     public AddOperationsInfoPanel(String mbeanClassName, MBeanOperation[] operations,
             boolean[] opExist) {
-        bundle = NbBundle.getBundle(AddOpAction.class);
+        bundle = NbBundle.getBundle(AddOperationsInfoPanel.class);
         
         // init tags
         

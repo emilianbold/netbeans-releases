@@ -72,7 +72,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
      * @param  node  node selected when the Add MBean Attributes action was invoked
      */
     public AddAttributesPanel(Node node) {
-        bundle = NbBundle.getBundle(AddAttrAction.class);
+        bundle = NbBundle.getBundle(AddAttributesPanel.class);
         
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;

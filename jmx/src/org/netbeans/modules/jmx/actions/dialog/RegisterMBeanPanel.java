@@ -137,7 +137,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
      * @param  node  node selected when the Register Mbean action was invoked
      */
     public RegisterMBeanPanel(Node node) {
-        bundle = NbBundle.getBundle(RegisterMBeanAction.class);
+        bundle = NbBundle.getBundle(RegisterMBeanPanel.class);
         
         initComponents();
         
@@ -208,8 +208,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         
         // create and display the dialog:
         String title = bundle.getString("LBL_RegisterMBeanAction.Title"); // NOI18N
-        btnOK = new JButton(
-                NbBundle.getMessage(RegisterMBeanAction.class, "LBL_OK")); //NOI18N
+        btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
         btnOK.setEnabled(isAcceptable());
         
         //set listeners

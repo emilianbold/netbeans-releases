@@ -42,7 +42,7 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
      */
     public AddAttributesInfoPanel(String mbeanClassName, MBeanAttribute[] attributes,
             AttributeMethods[] attrMethods) {
-        bundle = NbBundle.getBundle(AddAttrAction.class);
+        bundle = NbBundle.getBundle(AddAttributesInfoPanel.class);
         
         // init tags
         

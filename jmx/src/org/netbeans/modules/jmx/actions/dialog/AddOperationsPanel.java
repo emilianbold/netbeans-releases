@@ -73,7 +73,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
      * @param  node  node selected when the Add MBean Operations action was invoked.
      */
     public AddOperationsPanel(Node node) {
-        bundle = NbBundle.getBundle(AddAttrAction.class);
+        bundle = NbBundle.getBundle(AddOperationsPanel.class);
         
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
