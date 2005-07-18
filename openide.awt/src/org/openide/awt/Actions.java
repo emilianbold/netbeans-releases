@@ -1206,7 +1206,7 @@ public class Actions extends Object {
     /** SubMenu provides easy way of displaying submenu items based on
     * SubMenuModel.
     */
-    public static class SubMenu extends JMenu implements DynamicMenuContent {
+    public static class SubMenu extends JMenuPlus implements DynamicMenuContent {
         static final long serialVersionUID = -4446966671302959091L;
 
         private SubMenuBridge bridge;
