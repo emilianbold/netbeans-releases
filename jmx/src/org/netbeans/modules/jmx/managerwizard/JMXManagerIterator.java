@@ -89,7 +89,7 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
 
         String[] steps = initSteps(false);
         
-        wiz.putProperty("setAsMain", false); // NOI18N
+        wiz.putProperty("setAsMain", false);// NOI18N
 
         try {
             // setup project location for the current project
@@ -112,8 +112,7 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
     {
         
         String[] steps = new String[3];
-        steps[0] = new String("Choose File Type"); // should be added by netbeans
-        // NOI18N
+        steps[0] = new String("Choose File Type");// NOI18N
         steps[1] = bundle.getString("LBL_Manager");// NOI18N
         steps[2] = bundle.getString("LBL_AgentURL");// NOI18N
         
@@ -165,9 +164,8 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
      */
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
     {
-        jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);
-        // NOI18N
+        jc.putClientProperty("WizardPanel_contentData", steps);// NOI18N
+        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);// NOI18N
     }
     
     public void uninitialize(TemplateWizard wiz)
@@ -198,19 +196,16 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
                     JavaClass managerClass = WizardHelpers.getJavaClass(
                             managerRc,
                             managerFile.getName());
-                    J2SEProjectType.overwriteProperty(project, "main.class", 
-                            managerClass.getName());// NOI18N
+                    J2SEProjectType.overwriteProperty(project, "main.class", managerClass.getName());// NOI18N
                 }
             } catch (Exception ex) {
-                WizardHelpers.logErrorMessage(
-                        "Setting project Main Class failure : ", ex);// NOI18N
+                WizardHelpers.logErrorMessage("Setting project Main Class failure : ", ex);// NOI18N
             }
             
             return set;
                 
         } catch (Exception ex) {
-            WizardHelpers.logErrorMessage(
-                    "Manager generation failure : ", ex);// NOI18N
+            WizardHelpers.logErrorMessage("Manager generation failure : ", ex);// NOI18N
             return Collections.EMPTY_SET;
         }
         

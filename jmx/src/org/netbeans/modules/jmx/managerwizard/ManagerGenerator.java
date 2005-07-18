@@ -98,7 +98,7 @@ public class ManagerGenerator
                     sampleTemplate = fillSampleCode();
                 } else { //!sampleSelected
                     sampleTemplate = new String[1];
-                    sampleTemplate[0] = "";
+                    sampleTemplate[0] = WizardConstants.EMPTYSTRING;
                 }
                 //get the main method body text, format it and replace the 
                 //tag {0} with sampleTemplate[0]
@@ -130,7 +130,7 @@ public class ManagerGenerator
                   " for(Iterator i = resultSet.iterator(); i.hasNext();) {\n" +
                   "     System.out.println(\"MBean name: \" + i.next());\n" +
                   " }\n" +
-                  "*/\n"; // NOI18N
+                  "*/\n";// NOI18N
         
         return temp;
     }
@@ -168,7 +168,7 @@ public class ManagerGenerator
                                 "\"});\n";// NOI18N
             }
         } else // security box unchecked
-            connectionTemplate[0] = "";// NOI18N
+            connectionTemplate[0] = WizardConstants.EMPTYSTRING;
     }
     
     private void fillURL(WizardDescriptor wiz) {
@@ -190,17 +190,16 @@ public class ManagerGenerator
                     "JMXServiceURL url = new JMXServiceURL(\"service:jmx:rmi:///jndi/rmi://" +
                     (String)wiz.getProperty(WizardConstants.PROP_MANAGER_HOST)+":"+
                     (String)wiz.getProperty(WizardConstants.PROP_MANAGER_PORT)+"/jmxrmi" +
-                    "\");";
+                    "\");";// NOI18N
         } else {
             if (isCustomUrl) {
                 //generation of a free form URL
                 connectionTemplate[1] = "//Create JMX Agent URL \n" +
                          "JMXServiceURL url = new JMXServiceURL(\""+
                          (String)wiz.getProperty(
-                             WizardConstants.PROP_MANAGER_FREEFORM_URL) + "\");";
-                        // NOI18N
+                             WizardConstants.PROP_MANAGER_FREEFORM_URL) + "\");";// NOI18N
             } else
-                connectionTemplate[1] = "";// NOI18N
+                connectionTemplate[1] = WizardConstants.EMPTYSTRING;
         }
     }
     

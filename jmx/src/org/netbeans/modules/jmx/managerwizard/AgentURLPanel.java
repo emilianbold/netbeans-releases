@@ -70,27 +70,16 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         portJTextField.setText(bundle.getString("TXT_port"));// NOI18N
         portJLabel.setEnabled(true);
         
-        Mnemonics.setLocalizedText(rmiJMXAgentJRadioButton,
-                          bundle.getString("LBL_rbtRmiJmxAgent.text"));// NOI18N
-        Mnemonics.setLocalizedText(hostJLabel,
-                          bundle.getString("LBL_host.text"));// NOI18N
-        Mnemonics.setLocalizedText(portJLabel,
-                          bundle.getString("LBL_port.text"));// NOI18N
-        Mnemonics.setLocalizedText(rmiUserNameJLabel,
-                          bundle.getString("LBL_userName.text"));// NOI18N
-        Mnemonics.setLocalizedText(rmiPasswordJLabel,
-                          bundle.getString("LBL_password.text"));// NOI18N
-        Mnemonics.setLocalizedText(jmxAgentURLJRadioButton,
-                          bundle.getString("LBL_rbtJmxAgent.text"));// NOI18N
-        Mnemonics.setLocalizedText(jmxURLJLabel,
-                          bundle.getString("LBL_jtfJMXURL.text"));// NOI18N
-        
-        Mnemonics.setLocalizedText(securityJCheckBox,
-                          bundle.getString("LBL_jcbxSecurity.text"));//NOI18N
-        Mnemonics.setLocalizedText(userCredentialsJRadioButton,
-                          bundle.getString("LBL_rbtnUserCredentials.text"));//NOI18N
-        Mnemonics.setLocalizedText(codeExampleJRadioButton,
-                          bundle.getString("LBL_rbtnCodeExample.text"));//NOI18N
+        Mnemonics.setLocalizedText(rmiJMXAgentJRadioButton,bundle.getString("LBL_rbtRmiJmxAgent.text"));// NOI18N
+        Mnemonics.setLocalizedText(hostJLabel,bundle.getString("LBL_host.text"));// NOI18N
+        Mnemonics.setLocalizedText(portJLabel,bundle.getString("LBL_port.text"));// NOI18N
+        Mnemonics.setLocalizedText(rmiUserNameJLabel,bundle.getString("LBL_userName.text"));// NOI18N
+        Mnemonics.setLocalizedText(rmiPasswordJLabel,bundle.getString("LBL_password.text"));// NOI18N
+        Mnemonics.setLocalizedText(jmxAgentURLJRadioButton,bundle.getString("LBL_rbtJmxAgent.text"));// NOI18N
+        Mnemonics.setLocalizedText(jmxURLJLabel,bundle.getString("LBL_jtfJMXURL.text"));// NOI18N
+        Mnemonics.setLocalizedText(securityJCheckBox,bundle.getString("LBL_jcbxSecurity.text"));// NOI18N
+        Mnemonics.setLocalizedText(userCredentialsJRadioButton,bundle.getString("LBL_rbtnUserCredentials.text"));// NOI18N
+        Mnemonics.setLocalizedText(codeExampleJRadioButton,bundle.getString("LBL_rbtnCodeExample.text"));// NOI18N
         
         // ensures that every time the text field changes, an event is thrown to the wiz
         rmiUserNameJTextField.getDocument().addDocumentListener(this);
@@ -101,8 +90,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         freeFormURLrbtnSelected = jmxAgentURLJRadioButton.isSelected();
                 
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(AgentURLPanel.class, 
-                                         "LBL_AgentURL_Panel")); // NOI18N
+        setName(NbBundle.getMessage(AgentURLPanel.class, "LBL_AgentURL_Panel")); // NOI18N
     }
     
     /**
@@ -676,28 +664,22 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
             if (getPanel() != null) {
                 if (!getPanel().getHostFieldValidity()) {
                     host = false;
-                    msg = NbBundle.getMessage(AgentURLPanel.class,
-                            "LBL_State_Host_Incorrect"); // NOI18N
+                    msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_Host_Incorrect");// NOI18N
                 }
                 else {
                     if (!getPanel().getPortFieldValidity()) {
                         port = false;
-                        msg = NbBundle.getMessage(AgentURLPanel.class,
-                            "LBL_State_Port_Incorrect");// NOI18N
+                        msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_Port_Incorrect");// NOI18N
                     } else {
                         if (isSecurityCheckBoxSelected() &&
                                 isUserCredentialRbtnSelected()) { //box checked
                             if (!getPanel().getUserNameValidity()) {
                                 credentials = false;
-                                msg = NbBundle.getMessage(
-                                        AgentURLPanel.class,
-                                       "LBL_State_UserName_Incorrect");// NOI18N
+                                msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_UserName_Incorrect");// NOI18N
                             }
                             if (!getPanel().getUserPasswordValidity()) {
                                 credentials = false;
-                                msg = NbBundle.getMessage(
-                                        AgentURLPanel.class,
-                                  "LBL_State_UserPassword_Incorrect"); // NOI18N
+                                msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_UserPassword_Incorrect");// NOI18N
                             }
                         }
                     }
@@ -841,7 +823,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
          * @return <CODE>HelpCtx</CODE> the corresponding help context.
          */
         public HelpCtx getHelp() {
-           return new HelpCtx("jmx_manager_app");  //NOI18N
+           return new HelpCtx("jmx_manager_app");// NOI18N
         }
       
     }

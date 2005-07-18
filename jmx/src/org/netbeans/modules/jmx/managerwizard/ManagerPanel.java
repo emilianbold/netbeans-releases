@@ -51,12 +51,9 @@ public class ManagerPanel extends javax.swing.JPanel {
         bundle = NbBundle.getBundle(JMXManagerIterator.class);
         initComponents ();
         
-        Mnemonics.setLocalizedText(generateMainMethodJCheckBox,
-                                   bundle.getString("LBL_chkMainMethod.text"));//NOI18N
-        Mnemonics.setLocalizedText(setAsMainClassJCheckBox,
-                                   bundle.getString("LBL_chkMainClass.text"));//NOI18N
-        Mnemonics.setLocalizedText(generateSampleCodeJCheckBox,
-                                   bundle.getString("LBL_chkSampleCode.text"));//NOI18N
+        Mnemonics.setLocalizedText(generateMainMethodJCheckBox,bundle.getString("LBL_chkMainMethod.text"));// NOI18N
+        Mnemonics.setLocalizedText(setAsMainClassJCheckBox,bundle.getString("LBL_chkMainClass.text"));// NOI18N
+        Mnemonics.setLocalizedText(generateSampleCodeJCheckBox,bundle.getString("LBL_chkSampleCode.text"));// NOI18N
         
         // init flags
         mainMethodSelected = generateMainMethodJCheckBox.isSelected();
@@ -64,8 +61,7 @@ public class ManagerPanel extends javax.swing.JPanel {
         sampleCodeSelected = generateSampleCodeJCheckBox.isSelected();
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ManagerPanel.class, 
-                                         "LBL_Manager_Panel")); //NOI18N 
+        setName(NbBundle.getMessage(ManagerPanel.class, "LBL_Manager_Panel"));// NOI18N 
         
     }
     
@@ -229,7 +225,7 @@ public class ManagerPanel extends javax.swing.JPanel {
          * @return <CODE>HelpCtx</CODE> the corresponding help context.
          */
         public HelpCtx getHelp() {
-           return new HelpCtx("jmx_manager_app");  //NOI18N
+           return new HelpCtx("jmx_manager_app");// NOI18N
         }
       
     } 
