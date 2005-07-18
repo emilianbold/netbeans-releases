@@ -288,7 +288,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     }
     
     private void updateInterfaces(String className) {
-        stateLabel.setText("");
+        stateLabel.setText( ""); // NOI18N
         JavaModelPackage pkg = (JavaModelPackage) currentClass.refImmediatePackage();
         JavaClass clazz = (JavaClass) pkg.getJavaClass().resolve(className);
         if (standardMBeanIsSelected) {
@@ -327,7 +327,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         //clear the table
         constructorsModel.setRowCount(0);
         //clear information message
-        stateLabel.setText("");
+        stateLabel.setText( ""); // NOI18N
         JavaModelPackage pkg = (JavaModelPackage) currentClass.refImmediatePackage();
         mbeanClass = (JavaClass) pkg.getJavaClass().resolve(currentMBeanClass);
         if ((mbeanClass != null) && (!mbeanClass.getClass().getName().startsWith(
@@ -486,7 +486,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 12);
         constructorPanel.add(jScrollPane2, gridBagConstraints);
 
-        tabPane.addTab("MBean Class Constructors", constructorPanel);
+        tabPane.addTab(java.util.ResourceBundle.getBundle("org/netbeans/modules/jmx/actions/dialog/Bundle").getString("LBL_TAB_Constructor"), constructorPanel);
 
         interfacePanel.setLayout(new java.awt.GridBagLayout());
 
@@ -533,7 +533,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         interfacePanel.add(selectIntfCheckBox, gridBagConstraints);
 
-        tabPane.addTab("Java Class Interfaces", interfacePanel);
+        tabPane.addTab(java.util.ResourceBundle.getBundle("org/netbeans/modules/jmx/actions/dialog/Bundle").getString("LBL_TAB_Interface"), interfacePanel);
 
         tabPane.setSelectedComponent(constructorPanel);
 
