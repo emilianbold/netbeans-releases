@@ -123,7 +123,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
             stateLabel.setText(bundle.getString("LBL_NoAttribute")); // NOI18N
             return false;
         } else if (AttributeNameAlreadyContained()) {
-            stateLabel.setText(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"LBL_State_Same_Attribute_Name")); // NOI18N
+            stateLabel.setText(bundle.getString("LBL_State_Same_Attribute_Name")); // NOI18N
             return false;
         } else {
             stateLabel.setText(""); // NOI18N
