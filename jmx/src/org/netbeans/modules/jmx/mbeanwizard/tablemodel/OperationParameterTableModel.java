@@ -15,7 +15,7 @@ package org.netbeans.modules.jmx.mbeanwizard.tablemodel;
 
 import java.util.ArrayList;
 import javax.swing.JTable;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationParameter;
+import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.WizardConstants;
 

@@ -28,7 +28,7 @@ import javax.swing.event.*;
 
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.listener.RemTableRowListener;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanNotification;
+import org.netbeans.modules.jmx.MBeanNotification;
 
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanNotificationTableModel;
 import org.openide.awt.Mnemonics;

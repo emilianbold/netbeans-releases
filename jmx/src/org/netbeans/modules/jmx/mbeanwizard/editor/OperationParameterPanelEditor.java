@@ -21,7 +21,7 @@ import javax.swing.event.CellEditorListener;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationParameter;
+import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 
 
@@ -148,7 +148,7 @@ public class OperationParameterPanelEditor implements TableCellEditor {
     }
     
     public Object getCellEditorValue() {
-        return model.getOperation(editingRow).getOperationParameterList();
+        return model.getOperation(editingRow).getParametersList();
     }
     
 }

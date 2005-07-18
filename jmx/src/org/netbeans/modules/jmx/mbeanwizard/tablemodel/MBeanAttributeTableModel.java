@@ -14,7 +14,7 @@ package org.netbeans.modules.jmx.mbeanwizard.tablemodel;
 import java.util.ArrayList;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanAttribute;
+import org.netbeans.modules.jmx.MBeanAttribute;
 
 
 /**
@@ -27,6 +27,8 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
     public static final int IDX_ATTR_TYPE        = 1;
     public static final int IDX_ATTR_ACCESS      = 2;
     public static final int IDX_ATTR_DESCRIPTION = 3;
+    
+    private int lastIndex;
     
     /**
      * Constructor
@@ -51,6 +53,7 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
         columnNames[IDX_ATTR_ACCESS]        = sa;
         columnNames[IDX_ATTR_DESCRIPTION]   = sd;
         
+        lastIndex = 0;
     }
     
     /**
@@ -59,12 +62,14 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
      */
     public MBeanAttribute createNewAttribute() {
         
-        return new MBeanAttribute(
-                WizardConstants.ATTR_NAME_DEFVALUE + this.getRowCount(),
+        MBeanAttribute attribute = new MBeanAttribute(
+                WizardConstants.ATTR_NAME_DEFVALUE + lastIndex,
                 WizardConstants.STRING_OBJ_NAME,
                 WizardConstants.ATTR_ACCESS_READ_WRITE,
-                WizardConstants.ATTR_DESCR_DEFVALUE_PREFIX + this.getRowCount() +
+                WizardConstants.ATTR_DESCR_DEFVALUE_PREFIX + lastIndex +
                 WizardConstants.ATTR_DESCR_DEFVALUE_SUFFIX);
+        lastIndex++;
+        return attribute;
     }
     
     /**
@@ -82,10 +87,10 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
     public Object getValueAt(int row, int col) {
         MBeanAttribute attr = (MBeanAttribute)data.get(row);
         switch(col) {
-            case 0: return attr.getAttrName();
-            case 1: return attr.getAttrType();
-            case 2: return attr.getAttrAccess();
-            case 3: return attr.getAttrDescription();
+            case 0: return attr.getName();
+            case 1: return attr.getTypeName();
+            case 2: return attr.getAccess();
+            case 3: return attr.getDescription();
             default: System.out.println("Error getValueAt " +
                     "MBeanAttributeTableModel " + col);
             break;
@@ -100,13 +105,13 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
         if (rowIndex < this.size()){
             MBeanAttribute attr = (MBeanAttribute)data.get(rowIndex);
             switch(columnIndex) {
-                case 0: attr.setAttrName((String)aValue);
+                case 0: attr.setName((String)aValue);
                 break;
-                case 1: attr.setAttrType((String)aValue);
+                case 1: attr.setTypeName((String)aValue);
                 break;
-                case 2: attr.setAttrAccess((String)aValue);
+                case 2: attr.setAccess((String)aValue);
                 break;
-                case 3: attr.setAttrDescription((String)aValue);
+                case 3: attr.setDescription((String)aValue);
                 break;
                 default: System.out.println("Error setValueAt " +
                         "MBeanAttributeTableModel " + columnIndex);

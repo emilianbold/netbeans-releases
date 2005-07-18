@@ -69,6 +69,23 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="java-classes"/>
              </file>
              
+             <file name="Manager.java" url="resources/templates/Manager.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      
+                <attr name="SystemFileSystem.icon" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Manager.gif" />
+                      
+                <attr name="instantiatingIterator" 
+                      methodvalue="org.netbeans.modules.jmx.managerwizard.JMXManagerIterator.createManagerIterator"/>
+                      
+                <attr name="templateWizardURL" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/Manager.html"/>
+                                          
+                <attr name="templateCategory" stringvalue="java-classes"/>
+             </file>
+             
              
             <file name="ManagementProperties.shadow">
                 <attr name="originalFile" 
@@ -109,6 +126,20 @@ Microsystems, Inc. All Rights Reserved.
         </folder>  
     </folder>
     
+    <!-- used to add items to popup menu -->
+    <folder name="Loaders" >
+        <folder name="text" >
+            <folder name="x-java" >
+                <folder name="Actions" >
+                    <file name="ManagementAll.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.ManagementAllAction" />
+                    </file>
+                    <attr name="RefactoringAll.instance/ManagementAll.instance" boolvalue="true" />
+                    <attr name="ManagementAll.instance/RefactoringSeparator-1.instance" boolvalue="true" />
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     
     <folder name="Actions">
         <folder name="Management">
@@ -171,6 +202,36 @@ Microsystems, Inc. All Rights Reserved.
      </folder>
      
     <folder name="Menu"> <!-- Menu actions -->
+        <folder name="Management">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.actions.Bundle" />
+            <file name="AddAttrAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddAttrAction" />
+            </file>
+            <attr name="AddAttrAction.instance/AddOpAction.instance" boolvalue="true" />
+            <file name="AddOpAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddOpAction" />
+            </file>
+            <attr name="AddOpAction.instance/AddNotifAction.instance" boolvalue="true" />
+            <file name="AddNotifAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddNotifAction" />
+            </file>
+            <attr name="AddNotifAction.instance/AddRegisterIntfAction.instance" boolvalue="true" />
+            <file name="AddRegisterIntfAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.AddRegisterIntfAction" />
+            </file>
+            <attr name="AddRegisterIntfAction.instance/jmxMenuSeparator2.instance" boolvalue="true" />
+            <file name="jmxMenuSeparator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="jmxMenuSeparator2.instance/RegisterMBeanAction.instance" boolvalue="true" />
+            <file name="RegisterMBeanAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.RegisterMBeanAction" />
+            </file>
+        </folder>
+        <attr name="Management/Versioning" boolvalue="true"/>
+        <attr name="Management/Refactoring" boolvalue="true" />
+        <attr name="RunProject/Management" boolvalue="true" />
+        <attr name="Management/Tools" boolvalue="true" />
         <folder name="RunProject">       
             <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/empty.gif"/>          
             <attr name="SeparatorRun.instance/jmxSeparator1.instance" boolvalue="true" />           

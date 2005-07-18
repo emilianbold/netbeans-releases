@@ -1,0 +1,83 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Template.Classes;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+
+/**
+ * JMX manager class
+ * @author __USER__
+ */
+public class Manager {
+ 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws Exception {
+        
+        //manager instantiation and connection to the remote agent
+        __NAME__ manager = __NAME__.getDefault();
+          {0}
+        //close connection
+        manager.close();
+        
+        System.out.println("Connection closed.");   
+    }
+    
+    /**
+     * JMX Agent connection
+     * This method is called automatically when <CODE>getDefault()</CODE> 
+     * is called
+     */
+    public void connect() throws Exception {
+        {0}
+        {1}
+        {2}
+
+        //Get the MBeanServerConnection
+        mbsc = connector.getMBeanServerConnection();
+    }
+    
+    /**
+     * Returns a manager singleton.
+     */
+    public synchronized static __NAME__ getDefault() throws Exception {
+        if(singleton == null) {
+            singleton = new __NAME__();
+            singleton.connect();
+        }
+        return singleton;
+    }
+    
+    public MBeanServerConnection getMBeanServerConnection() {
+        return mbsc;
+    }
+    
+    public void close() throws Exception {
+        
+        //Close the connection
+        connector.close();
+    }
+    
+    //MBeanServerConnection definition
+    private MBeanServerConnection mbsc;
+    
+    //The JMX Connector definition
+    private JMXConnector connector;
+    
+    //Singleton instance
+    private static __NAME__ singleton;
+
+ }

@@ -34,7 +34,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.editor.NotificationPanelEditor;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanNotificationType;
+import org.netbeans.modules.jmx.MBeanNotificationType;
 import org.netbeans.modules.jmx.mbeanwizard.popup.NotificationTypePopup;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.NotificationPanelRenderer;
 

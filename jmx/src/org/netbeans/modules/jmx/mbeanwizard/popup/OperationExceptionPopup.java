@@ -31,7 +31,7 @@ import org.netbeans.modules.jmx.runtime.ManagementDialogs;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationExceptionPopupTable;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationException;
+import org.netbeans.modules.jmx.MBeanOperationException;
 
 
 /**
@@ -126,7 +126,7 @@ public class OperationExceptionPopup extends AbstractPopup{
             //get the exception list of the current operation
             ArrayList<MBeanOperationException> panelExcepts =
                     (ArrayList<MBeanOperationException>)
-            methodModel.getOperation(editedRow).getOperationExceptionList();
+            methodModel.getOperation(editedRow).getExceptionsList();
             
             for (int i = 0; i < panelExcepts.size(); i++) {
                  
@@ -172,7 +172,7 @@ public class OperationExceptionPopup extends AbstractPopup{
         }
         
         //copy back the exceptions from the popup to the panel model
-        methodModel.getOperation(editedRow).setOperationExceptionList(mboe);
+        methodModel.getOperation(editedRow).setExceptionsList(mboe);
         
         return excepString;
     }

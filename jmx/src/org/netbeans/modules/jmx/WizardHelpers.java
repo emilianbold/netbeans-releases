@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JComboBox;
+import javax.swing.JEditorPane;
 import javax.swing.JTextField;
 
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -45,17 +46,22 @@ import org.openide.ErrorManager;
 
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Element;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
-
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationException;
+import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileStateInvalidException;
 
 import org.openide.filesystems.URLMapper;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * Helper class : all methods are static.
@@ -298,6 +304,10 @@ public class WizardHelpers
             resultType = WizardConstants.INTEGER_OBJ_NAME;
         } else if (type.equals(WizardConstants.LONG_NAME)) {
             resultType = WizardConstants.LONG_OBJ_NAME;
+        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_NAME;
+        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_NAME;
         }
         return resultType;
     }
@@ -311,7 +321,7 @@ public class WizardHelpers
      * @param type <CODE>String</CODE> a type name
      * @return <CODE>String</CODE> code to get full type name.
      */
-    public static String getFullTypeName(String type) {
+    public static String getFullTypeNameCode(String type) {
         String resultType = type;
         if (type.equals(WizardConstants.BOOLEAN_NAME)) {
             resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + TYPE + GETNAME;
@@ -341,8 +351,89 @@ public class WizardHelpers
             resultType = WizardConstants.STRING_OBJ_FULLNAME + CLASS + GETNAME;
         } else if (type.equals(WizardConstants.OBJECTNAME_NAME)) {
             resultType = WizardConstants.OBJECTNAME_FULLNAME + CLASS + GETNAME;
+        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + TYPE + GETNAME;
+        } else if (type.equals(WizardConstants.FLOAT_OBJ_NAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + CLASS + GETNAME;
+        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + TYPE + GETNAME;
+        } else if (type.equals(WizardConstants.DOUBLE_OBJ_NAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + CLASS + GETNAME;
         } else {
             resultType = type + CLASS + GETNAME;
+        }
+        return resultType;
+    }
+    
+    /**
+     * Returns the full type name of the type.
+     * @param type <CODE>String</CODE> a type name
+     * @return <CODE>String</CODE> code to get full type name.
+     */
+    public static String getFullTypeName(String type) {
+        String resultType = type;
+        if (type.equals(WizardConstants.BOOLEAN_NAME)) {
+            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
+            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.BYTE_NAME)) {
+            resultType = WizardConstants.BYTE_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.BYTE_OBJ_NAME)) {
+            resultType = WizardConstants.BYTE_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.CHAR_NAME)) {
+            resultType = WizardConstants.CHAR_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.CHAR_OBJ_NAME)) {
+            resultType = WizardConstants.CHAR_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.INT_NAME)) {
+            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.INTEGER_OBJ_NAME)) {
+            resultType = WizardConstants.INTEGER_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.LONG_NAME)) {
+            resultType = WizardConstants.LONG_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.LONG_OBJ_NAME)) {
+            resultType = WizardConstants.LONG_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.VOID_NAME)) {
+            resultType = WizardConstants.VOID_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.DATE_OBJ_NAME)) {
+            resultType = WizardConstants.DATE_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
+            resultType = WizardConstants.STRING_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.OBJECTNAME_NAME)) {
+            resultType = WizardConstants.OBJECTNAME_FULLNAME;
+        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.FLOAT_OBJ_NAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_FULLNAME;
+        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + TYPE;
+        } else if (type.equals(WizardConstants.DOUBLE_OBJ_NAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME;
+        } else {
+            resultType = type;
+        }
+        return resultType;
+    }
+    
+    public static String getSimpleTypeName(String type) {
+        String resultType = type;
+        if (type.equals(WizardConstants.BOOLEAN_OBJ_FULLNAME)) {
+            resultType = WizardConstants.BOOLEAN_OBJ_NAME;
+        } else if (type.equals(WizardConstants.INTEGER_OBJ_FULLNAME)) {
+            resultType = WizardConstants.INTEGER_OBJ_NAME;
+        } else if (type.equals(WizardConstants.LONG_OBJ_FULLNAME)) {
+            resultType = WizardConstants.LONG_OBJ_NAME;
+        } else if (type.equals(WizardConstants.DATE_OBJ_FULLNAME)) {
+            resultType = WizardConstants.DATE_OBJ_NAME;
+        } else if (type.equals(WizardConstants.STRING_OBJ_FULLNAME)) {
+            resultType = WizardConstants.STRING_OBJ_NAME;
+        } else if (type.equals(WizardConstants.OBJECTNAME_FULLNAME)) {
+            resultType = WizardConstants.OBJECTNAME_NAME;
+        } else if (type.equals(WizardConstants.FLOAT_OBJ_FULLNAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_NAME;
+        } else if (type.equals(WizardConstants.DOUBLE_OBJ_FULLNAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_NAME;
+        } else {
+            resultType = type;
         }
         return resultType;
     }
@@ -364,6 +455,10 @@ public class WizardHelpers
             result = true;
         } else if (type.equals(WizardConstants.LONG_NAME)) {
             result = true;
+        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
+            result = true;
+        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            result = true;
         }
         return result;
     }
@@ -384,6 +479,10 @@ public class WizardHelpers
         } else if (type.equals(WizardConstants.INT_NAME)) {
             resultValue = "0";
         } else if (type.equals(WizardConstants.LONG_NAME)) {
+            resultValue = "0";
+        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
+            resultValue = "0";
+        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
             resultValue = "0";
         }
         return resultValue;
@@ -508,15 +607,46 @@ public class WizardHelpers
     }
     
     /**
+     * Returns the reversed package name as DNS model.
+     * @param packageName <CODE>String</CODE> a class name
+     * @return <CODE>String</CODE> reversed package name.
+     */
+    public static String reversePackageName(String packageName) {
+        String[] parts = packageName.replace('.', '/').split("/");
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < parts.length; i++) {
+            result.append(parts[parts.length -1 - i]);
+            if (i != parts.length - 1)
+                result.append(".");
+        }
+        return result.toString();
+    }
+    
+    /**
+     * Returns an array of this method param types.
+     * @param completeSignature <CODE>String</CODE> a method signature
+     * @return <CODE>String[]</CODE> an array of param types.
+     */
+    public static String[] getSignature(String completeSignature) {
+        int signBegin = completeSignature.lastIndexOf("(");
+        int signEnd = completeSignature.lastIndexOf(")");
+        String[] params = completeSignature.substring(
+                signBegin + 1, signEnd).split(",");
+        if ((params.length == 1) && (params[0].equals("")))
+            params = new String[] {};
+        return params;
+    }
+    
+    /**
      * Returns the file name of the complete file name with path
-     * @param competeFileName <CODE>String</CODE> a file path
+     * @param completeFileName <CODE>String</CODE> a file path
      * @return <CODE>String</CODE> the file name with the extension.
      */
-    public static String getFileName(String competeFileName) {
-        String fileName = competeFileName;
-        int indexPoint = competeFileName.lastIndexOf(File.separatorChar);
+    public static String getFileName(String completeFileName) {
+        String fileName = completeFileName;
+        int indexPoint = completeFileName.lastIndexOf(File.separatorChar);
         if (indexPoint != -1) {
-            fileName = competeFileName.substring(indexPoint + 1);
+            fileName = completeFileName.substring(indexPoint + 1);
         }
         return fileName;
     }
@@ -782,6 +912,25 @@ public class WizardHelpers
             return null;
         }
     }
+    
+    public static Project getProject(FileObject file)
+    {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        Project result = null;
+        for (int i = 0; i < projects.length; i ++) {
+            SourceGroup[] sources = getSourceGroups(projects[i] );
+            try {
+                for (int j = 0; j < sources.length; j++) {
+                    if (sources[j].contains(file))
+                        return projects[i];
+                }
+            } catch (IllegalArgumentException e) {
+                // case of file is not contained in this project
+            }
+        }
+            
+        return FileOwnerQuery.getOwner(file);
+    }
 
     /**
      * Checks whether the given mbean already exists or not
@@ -868,6 +1017,20 @@ public class WizardHelpers
         return file.exists();
     }
     
+    public static boolean checkFile(String name, String locationPath) {
+        File locDir = new File(locationPath);
+        
+        if (!locDir.exists())
+            return false;
+        
+        File file = new File(locationPath + File.separatorChar + name);
+
+        if (file.exists() && !file.isDirectory())
+            return true; 
+        else 
+            return false;
+    }
+    
     /**
      * Display a dialog with expected content.
      * @param content <CODE>String</CODE> expected content of the displayed dialog
@@ -916,11 +1079,55 @@ public class WizardHelpers
         if (resName != null) {
             while (it.hasNext()) {
                 Element e = (Element)it.next();
-                if (((JavaClass)e).getName().endsWith(name)) 
+                if ((e instanceof JavaClass) && ((JavaClass)e).getName().endsWith(name)) 
                      return (JavaClass)e;
             }
         }
         return null;
+    }
+    
+    /**
+     * Returns an array of JavaClass object which are MBean classes 
+     * contained in the specified project.
+     * @return <code>JavaClass[]</code> with the data object's
+     *          main classes; or an empty array if any MBean class was 
+     *          found (e.g. because of a broken source file)
+     * @param project <CODE>Project</CODE> a project
+     */
+    public static JavaClass[] getMBeanClasses(Project project) {
+        JavaClass[] projectClasses = getJavaClasses(project);
+        Set results = new HashSet();
+        for (int i = 0; i < projectClasses.length; i++) {
+            if (Introspector.isMBeanClass(projectClasses[i]))
+                results.add(projectClasses[i]);
+        }
+        return (JavaClass[]) results.toArray(new JavaClass[results.size()]);
+    }
+    
+    /**
+     * Returns an array of JavaClass object contained in the specified project.
+     * @return <code>JavaClass[]</code> with the data object's
+     *          main classes; or an empty array if any class was 
+     *          found (e.g. because of a broken source file)
+     * @param project <CODE>Project</CODE> a project
+     */
+    public static JavaClass[] getJavaClasses(Project project) {
+        SourceGroup[] sources = getSourceGroups(project);
+        Set results = new HashSet();
+        for (int i = 0; i < sources.length; i++) {
+            Enumeration<FileObject> files = 
+                    sources[i].getRootFolder().getChildren(true);
+            while (files.hasMoreElements()) {
+                FileObject file = files.nextElement();
+                Resource rc = JavaModel.getResource(file);
+                if (rc != null) {
+                    JavaClass clazz = getJavaClass(rc,file.getName());
+                    if (clazz != null)
+                        results.add(clazz);
+                }
+            }
+        }
+        return (JavaClass[]) results.toArray(new JavaClass[results.size()]);
     }
     
     /**
@@ -990,6 +1197,23 @@ public class WizardHelpers
     }
     
     /**
+     * Returns an array containing all declared public methods of the specified class.
+     *
+     * @param clazz <code>JavaClass</code> examine
+     * @return  <code>Method[]</code> public class methods or <code>null</code> if 
+     * there is no public method.
+     */
+    public static Method[] getPublicClassMethods(JavaClass clazz) {
+        Method[] methods = getClassMethods(clazz);
+        Set results = new HashSet();
+        for (int i = 0; i < methods.length; i++) {
+            if (Modifier.isPublic(methods[i].getModifiers()))
+                results.add(methods[i]);
+        }
+        return (Method[]) results.toArray(new Method[results.size()]);
+    } 
+    
+    /**
      * Returns an array containing all methods of the specified class or of their
      * super classes.
      *
@@ -1032,11 +1256,106 @@ public class WizardHelpers
         List interfaces = clazz.getInterfaces();
         Set results = new HashSet();
         for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-            Method[] methods = getInterfaceMethods(it.next());
-            for (int i = 0; i < methods.length; i++)
+            JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();  
+            JavaClass superIntf = (JavaClass)
+                pkg.getJavaClass().resolve(it.next().getName());
+            Method[] methods = getInterfaceMethods(superIntf);
+            for (int i = 0; i < methods.length; i++) {
+                if (!containsMethod(results,methods[i]))
+                    results.add(methods[i]);
+            }
+        }
+        Method[] methods = getPublicClassMethods(clazz);
+        for (int i = 0; i < methods.length; i++) {
+            if (!containsMethod(results,methods[i]))
                 results.add(methods[i]);
         }
         return (Method[]) results.toArray(new Method[results.size()]);
+    }
+    
+    /**
+     * Returns an array containing all implemented interface names by this class.
+     *
+     * @param clazz <code>JavaClass</code> examine 
+     * @return  <code>String[]</code> class methods or an empty array if 
+     * there is no interface.
+     */
+    public static String[] getInterfaceNames(JavaClass clazz) {  
+        Set results = new HashSet();
+        JavaClass superClass = clazz.getSuperClass();
+        if (superClass != null) {
+            List superCLassIntfs = clazz.getInterfaces();
+            for (Iterator<JavaClass> it = superCLassIntfs.iterator(); it.hasNext();) {
+                JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();
+                JavaClass superIntf = (JavaClass)
+                pkg.getJavaClass().resolve(it.next().getName());
+                String[] intfs = getInterfaceNames(superIntf);
+                for (int i = 0; i < intfs.length; i++) {
+                    if (!containsString(results,intfs[i]))
+                        results.add(intfs[i]);
+                }
+            }
+        }
+        List interfaces = clazz.getInterfaces();
+        for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
+            JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();  
+            JavaClass superIntf = (JavaClass)
+                pkg.getJavaClass().resolve(it.next().getName());
+            String[] intfs = getInterfaceNames(superIntf);
+            for (int i = 0; i < intfs.length; i++) {
+                if (!containsString(results,intfs[i]))
+                    results.add(intfs[i]);
+            }
+        }
+        for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
+            JavaClass intf = it.next();
+            if (!containsString(results,intf.getName()))
+                results.add(intf.getName());
+        }
+        return (String[]) results.toArray(new String[results.size()]);
+    }
+    
+    /**
+     * Returns if this method is already contained in the set.
+     * @return <code>boolean</code> false if this method is already contained 
+     * in the set, else true.
+     */
+    public static boolean containsMethod(Set methods, Method method) {
+        for (Iterator<Method> it = methods.iterator(); it.hasNext();) {
+            Method currentMethod = it.next();
+            if ((method.getName().equals(currentMethod.getName())) &&
+                getSignature(method).equals(getSignature(currentMethod))) 
+                return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Returns if this string is already contained in the set.
+     * @return <code>boolean</code> false if this method is already contained 
+     * in the set, else true.
+     */
+    public static boolean containsString(Set set, String st) {
+        for (Iterator<String> it = set.iterator(); it.hasNext();) {
+            String current = it.next();
+            if (st.equals(current)) 
+                return true;
+        }
+        return false;
+    }
+    
+    /**
+     * returns the signature of this method. ex : java.lang.String,boolean,int.
+     */
+    public static String getSignature(Method method) {
+        List params = method.getParameters();
+        StringBuffer signature = new StringBuffer();
+        for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
+            signature.append(it.next().getType().getName());
+            if (it.hasNext())
+                signature.append(",");
+        }
+        return signature.toString();
     }
     
     /**
@@ -1145,6 +1464,8 @@ public class WizardHelpers
         typeCombo.addItem(WizardConstants.DATE_OBJ_NAME);
         typeCombo.addItem(WizardConstants.INT_NAME);
         typeCombo.addItem(WizardConstants.LONG_NAME);
+        typeCombo.addItem(WizardConstants.FLOAT_NAME);
+        typeCombo.addItem(WizardConstants.DOUBLE_NAME);
         typeCombo.addItem(WizardConstants.OBJECTNAME_NAME);        
         typeCombo.addItem(WizardConstants.STRING_OBJ_NAME);
         typeCombo.setSelectedItem(WizardConstants.STRING_OBJ_NAME);
@@ -1181,5 +1502,30 @@ public class WizardHelpers
         
         return accessCombo;
     }
+    
+    /*public static boolean isOpened(FileObject fo) {
+        Set comps = TopComponent.getRegistry().getOpened();
+        for (Iterator<TopComponent> it = comps.iterator(); it.hasNext();) {
+            Node[] arr = it.next().getActivatedNodes();
+            if (arr != null) {
+                for (int j = 0; j < arr.length; j++) {
+                    EditorCookie ec = (EditorCookie) arr[j].getCookie(EditorCookie.class);
+                    if (ec != null) {
+                        JEditorPane[] panes = ec.getOpenedPanes();
+                        if (panes != null) {
+                            try {
+                                System.out.println("panes path :" + panes[j].getPage());
+                                if (fo.getURL().equals(panes[j].getPage()))
+                                    return true;
+                            } catch (FileStateInvalidException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }*/
     
 }

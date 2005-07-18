@@ -27,7 +27,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.mbeanwizard.table.NotificationTypePopupTable;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanNotificationType;
+import org.netbeans.modules.jmx.MBeanNotificationType;
 
 /**
  * Class implementing the notification popup window

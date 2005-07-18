@@ -13,9 +13,6 @@
 package org.netbeans.modules.jmx.mbeanwizard.table;
 
 import org.netbeans.modules.jmx.WizardConstants;
-import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 import java.awt.BorderLayout;
@@ -30,15 +27,17 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.editor.OperationParameterPanelEditor;
-import org.netbeans.modules.jmx.mbeanwizard.editor.OperationExceptionPanelEditor;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.JDialog;
 import javax.swing.ListSelectionModel;
+import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.mbeanwizard.listener.OperationTextFieldKeyListener;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationExceptionPopup;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationParameterPopup;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.OperationParameterPanelEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.OperationExceptionPanelEditor;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationParameterPanelRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationExceptionPanelRenderer;
 
@@ -59,7 +58,7 @@ public class OperationTable extends JTable {
     private JComboBox typeBox;
     
     private JPanel ancestorPanel = null;
-    private AttributesWizardPanel wiz = null;
+    private FireEvent wiz = null;
     
     private JDialog currentPopup = null;
     
@@ -71,7 +70,7 @@ public class OperationTable extends JTable {
      * @param wiz a wizard panel
      */
     public OperationTable(JPanel ancestorPanel, AbstractTableModel model,
-            AttributesWizardPanel wiz) {
+            FireEvent wiz) {
         super(model);
         this.ancestorPanel = ancestorPanel;
         this.wiz = wiz;
@@ -101,6 +100,8 @@ public class OperationTable extends JTable {
             final JTextField nameField = new JTextField();
             String o = (String)getModel().getValueAt(row,column);
             nameField.setText(o);
+            nameField.addKeyListener(new OperationTextFieldKeyListener());
+            /* OLD
             nameField.addKeyListener(new KeyListener() {
                 public void keyPressed(KeyEvent e) {}
                 public void keyReleased(KeyEvent e) {}
@@ -147,6 +148,7 @@ public class OperationTable extends JTable {
                     e.consume();
                 }
             });
+             */
             return new JTextFieldCellEditor(nameField, this);
         } else {
             if (column == 1) { //operation return type
@@ -210,9 +212,9 @@ public class OperationTable extends JTable {
                         panel.add(excepField, BorderLayout.CENTER);
                         panel.add(excepButton, BorderLayout.EAST);
                         
-                        OperationExceptionPanelEditor methExcepEditor = new
-                                OperationExceptionPanelEditor(model,panel, 
-                                excepField, row);
+                        OperationExceptionPanelEditor methExcepEditor = new 
+                                OperationExceptionPanelEditor(model,panel,  
+                                excepField, row); 
                         
                         //TODO Edit OperationExceptionPanelEditor
                         //return new OperationExceptionPanelEditor(panel, 
@@ -282,9 +284,9 @@ public class OperationTable extends JTable {
     
     /**
      * Returns the wizard panel of the parent dialog
-     * @return AttributesWizardPanel
+     * @return FireEvent
      */
-    public AttributesWizardPanel getWiz() {
+    public FireEvent getWiz() {
         
         return this.wiz;
     }

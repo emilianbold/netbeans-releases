@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import javax.swing.JTextField;
 import javax.swing.JTable;
 import javax.swing.JPanel;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationException;
+import org.netbeans.modules.jmx.MBeanOperationException;
 
 
 /**

@@ -12,13 +12,8 @@
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
 import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import java.awt.Dimension;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.JComboBox;
@@ -26,6 +21,10 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.jmx.FireEvent;
+import org.netbeans.modules.jmx.mbeanwizard.listener.AttributeTextFieldKeyListener;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
 
 
 /**
@@ -40,14 +39,14 @@ public class AttributeTable extends JTable {
     // makes it hard to type these calls and to use the object model
     /********************************************************************/
     
-    private AttributesWizardPanel wiz;
+    protected FireEvent wiz;
     
     /**
      * Constructor
      * @param model the table model of this table
      * @param wiz the wizard panel
      */
-    public AttributeTable(AbstractTableModel model, AttributesWizardPanel wiz) {
+    public AttributeTable(AbstractTableModel model, FireEvent wiz) {
         super(model);
         this.wiz = wiz;
         this.setColumnSelectionAllowed(false);
@@ -68,12 +67,13 @@ public class AttributeTable extends JTable {
      public TableCellEditor getCellEditor(int row, int column) {   
         if(row >= getRowCount())
             return null;
-        
         if (column == 0) { // attribute name
             final JTextField nameField = new JTextField();
             String o = (String)getModel().getValueAt(row,column);
             nameField.setText(o);
-            
+            nameField.addKeyListener(new AttributeTextFieldKeyListener()); 
+    
+            /* OLD
             nameField.addKeyListener(new KeyListener() {
                 public void keyPressed(KeyEvent e) {}
                 public void keyReleased(KeyEvent e) {}
@@ -119,7 +119,7 @@ public class AttributeTable extends JTable {
                         
                     e.consume();
                 }
-            });
+            });*/
             
             return new JTextFieldCellEditor(nameField, this);
         } else {
@@ -156,7 +156,6 @@ public class AttributeTable extends JTable {
      * @return TableCellRenderer the cell renderer
      */
     public TableCellRenderer getCellRenderer(int row, int column) {
-        
         if(row >= getRowCount())
             return null;
         
@@ -178,7 +177,7 @@ public class AttributeTable extends JTable {
      * Returns the wizard panel
      * @return AttributesWizardPanel the wizard panel
      */
-    public AttributesWizardPanel getWiz() {
+    public FireEvent getWiz() {
     
         return this.wiz;
     }   

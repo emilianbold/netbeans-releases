@@ -14,8 +14,8 @@ package org.netbeans.modules.jmx.mbeanwizard.tablemodel;
 
 
 import java.util.ArrayList;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanAttribute;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanNotificationType;
+import org.netbeans.modules.jmx.MBeanAttribute;
+import org.netbeans.modules.jmx.MBeanNotificationType;
 import org.openide.util.NbBundle;
 
 

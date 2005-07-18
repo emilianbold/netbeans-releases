@@ -28,6 +28,9 @@ public class WizardConstants
     public static final String PROP_MBEAN_PACKAGE_PATH  = "wizdata.mbeanPackagePath"; // NOI18N
     public static final String PROP_MBEAN_FILE_PATH  = "wizdata.mbeanFilePath"; // NOI18N
     
+    // properties to see if mbean wrapps existing ressource
+    public static final String PROP_MBEAN_EXISTING_CLASS = "wizdata.mbeanExistingClass"; // NOI18N
+            
     // agent default location in the wizard map
     public static final String PROP_AGENT_NAME          = "wizdata.agentName"; // NOI18N
     public static final String PROP_AGENT_PACKAGE_NAME  = "wizdata.agentPackageName"; // NOI18N
@@ -44,6 +47,36 @@ public class WizardConstants
             "wizdata.agentSampleCodeSelected"; // NOI18N
     public static final String PROP_AGENT_MAIN_CLASS_SELECTED =
             "wizdata.agentMainClassSelected"; // NOI18N
+    
+    // properties to fill for the jmx manager (to be modified)
+    public static final String PROP_MANAGER_MAIN_METHOD_SELECTED =
+            "wizdata.managerMainMethodSelected"; // NOI18N
+    public static final String PROP_MANAGER_MAIN_CLASS_SELECTED =
+            "wizdata.managerMainClassSelected"; // NOI18N
+    public static final String PROP_MANAGER_SAMPLE_CODE_SELECTED  = 
+            "wizdata.managerSampleCodeSelected"; // NOI18N
+    public static final String PROP_MANAGER_RMI_URL_SELECTED  = 
+            "wizdata.managerRmiUrlSelected"; // NOI18N
+    public static final String PROP_MANAGER_FREEFORM_URL_SELECTED  = 
+            "wizdata.managerFreeFormUrlSelected"; // NOI18N
+    public static final String PROP_MANAGER_SECURITY_SELECTED  = 
+            "wizdata.managerSecuritySelected"; // NOI18N
+    public static final String PROP_MANAGER_CREDENTIAL_SAMPLE_SELECTED  = 
+            "wizdata.credentialSampleSelected"; // NOI18N
+    public static final String PROP_MANAGER_USER_CREDENTIAL_SELECTED  = 
+            "wizdata.userCredentialSelected"; // NOI18N
+    
+    public static final String PROP_MANAGER_HOST = 
+            "wizdata.managerHost"; // NOI18N
+    public static final String PROP_MANAGER_PORT = 
+            "wizdata.managerPort"; // NOI18N
+    public static final String PROP_MANAGER_USER_NAME = 
+            "wizdata.managerUserName"; // NOI18N
+    public static final String PROP_MANAGER_USER_PASSWORD = 
+            "wizdata.managerUserPassword"; // NOI18N
+    public static final String PROP_MANAGER_FREEFORM_URL = 
+        "wizdata.managerUrl"; // NOI18N
+    public static final Integer MANAGER_MAX_PORT_NUMBER = 65535; // NOI18N
     
     // project hierarchy layout for code generation
     static public final String SRC_DIR  = "src";
@@ -66,6 +99,7 @@ public class WizardConstants
 
     static public final String ATTR_ACCESS_READ_WRITE = "Read / Write";
     static public final String ATTR_ACCESS_READ_ONLY  = "ReadOnly";
+    static public final String ATTR_ACCESS_WRITE_ONLY  = "WriteOnly";
     
     static public final String ATTR_DESCR_DEFVALUE_PREFIX = "NewAttribute"; 
     static public final String ATTR_DESCR_DEFVALUE_SUFFIX = " Description";
@@ -92,6 +126,9 @@ public class WizardConstants
     public static final String ATTRIBUTECHANGE_NOTIFICATION = 
             "javax.management.AttributeChangeNotification";
     public static final String NOTIFICATION = "javax.management.Notification";
+    
+    public static final String STANDARD_MBEAN_CLASS = 
+            "javax.management.StandardMBean";
     
     static public final String MBEAN_POPUP_EDIT_BUTTON = "Edit";
     static public final String MBEAN_DESCR_DEFVALUE    = " Description";
@@ -162,6 +199,12 @@ public class WizardConstants
     public static final String LONG_OBJ_NAME        = "Long";
     public static final String LONG_OBJ_FULLNAME    = "java.lang.Long";
     public static final String LONG_NAME            = "long";
+    public static final String FLOAT_OBJ_NAME       = "Float";
+    public static final String FLOAT_OBJ_FULLNAME   = "java.lang.Float";
+    public static final String FLOAT_NAME           = "float";
+    public static final String DOUBLE_OBJ_NAME      = "Double";
+    public static final String DOUBLE_OBJ_FULLNAME  = "java.lang.Double";
+    public static final String DOUBLE_NAME          = "double";
     public static final String OBJECT_NAME          = "Object";
     public static final String OBJECT_FULLNAME      = "java.lang.Object";
     public static final String OBJECTNAME_NAME      = "ObjectName";
@@ -172,6 +215,9 @@ public class WizardConstants
     public static final String VOID_NAME            = "void";
     public static final String VOID_OBJ_FULLNAME    = "java.lang.Void";
     public static final String VOID_RET_TYPE        = "void";
+    
+    public static final String NULL = "null";
+    public static final String CLASS_EXT = ".class";
     
     //key words of java
     public static final String PACKAGE_NAME  = "package";

@@ -10,48 +10,30 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.jmx.mbeanwizard.renderer;
 
-import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.Component;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 
 /**
- * Class managing the rendering for the combo boxes
- * 
+ *
+ * @author an156382
  */
-public class ComboBoxRenderer extends  DefaultTableCellRenderer {
-	
-    /*******************************************************************/
-    // here, the model is not typed because more than one table uses it
-    // i.e we have to call explicitely the model's internal structure
-    // via getValueAt and setValueAt
-    /********************************************************************/
+public class CheckBoxRenderer extends  DefaultTableCellRenderer {
+     
+    private JCheckBox comp;
+    private Object obj;
     
-        private JComboBox comp;
-        private Object obj;
-        private boolean isEnabled;
-	
-        /**
-         * Constructor
-         * @param comp the combo box to affect the renderer to
-         */
-        public ComboBoxRenderer(JComboBox comp) {
-	    this.comp = comp;
-            this.isEnabled = true;
-	}
-        
-        /**
-         * Constructor
-         * @param comp the combo box to affect the renderer to
-         */
-        public ComboBoxRenderer(JComboBox comp, boolean isEnabled) {
-	    this.comp = comp;
-            this.isEnabled = isEnabled;
-	}
-
-        /**
+    /** Creates a new instance of CheckBoxRenderer */
+    public CheckBoxRenderer(JCheckBox comp) {
+        this.comp = comp;
+    }
+    
+    /**
          * Method returning the modified component (component + rendering)
          * @param table the table in which the component is contained
          * @param value the value of the component
@@ -67,9 +49,10 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
 						       boolean hasFocus,
 						       int row,
 						       int column) {
-            obj = table.getModel().getValueAt(row,column);
-            comp.setSelectedItem(obj);
-            comp.setEnabled(isEnabled);
+            //obj = table.getModel().getValueAt(row,column);
+            //comp.setSelectedItem(obj);
+            comp.setHorizontalAlignment(SwingConstants.CENTER);
+            comp.setSelected(((Boolean)table.getModel().getValueAt(row,column)));
 	    return comp;
 	}
 
@@ -80,4 +63,5 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
 	public Component getComponent() {
 	    return comp;
 	}
+    
 }

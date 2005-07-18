@@ -12,10 +12,6 @@
  */
 package org.netbeans.modules.jmx.mbeanwizard;
 
-import org.netbeans.modules.jmx.FinishableDelegatedWizardPanel;
-import org.netbeans.modules.jmx.StepProblemMessage;
-import org.netbeans.modules.jmx.WizardPanelWithoutReadSettings;
-
 import java.awt.Component;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +26,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.netbeans.jmi.javamodel.JavaClass;
 
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
@@ -38,8 +35,9 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGeneratorControl;
-
-
+import org.netbeans.modules.jmx.FinishableDelegatedWizardPanel;
+import org.netbeans.modules.jmx.WizardPanelWithoutReadSettings;
+import org.netbeans.modules.jmx.StepProblemMessage;
 
 /**
  *
@@ -52,7 +50,10 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
     /** private variables */
     private transient TemplateWizard wiz;
 
+    private transient MBeanWrapperPanel.WrapperAttributesWizardPanel wrapperPanel;
+    
     private transient StandardMBeanPanel.StandardMBeanWizardPanel mbeanOptionsPanel;
+    //private transient AlternStandardMBeanPanel.StandardMBeanWizardPanel mbeanOptionsPanel; 
     private transient MBeanAttrAndMethodPanel.AttributesWizardPanel attributePanel;
     private transient MBeanNotificationPanel.NotificationsWizardPanel notificationPanel;
     private transient MBeanJUnitPanel.JUnitWizardPanel junitOptionsPanel; 
@@ -106,12 +107,18 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         
         this.wiz = wiz;
 
-        steps = new String[5];
+        steps = new String[6];
         steps[0] = new String("Choose File Type"); // should be added by netbeans
+        
+        
+        
         steps[1] = bundle.getString("LBL_Standard_Panel");
-        steps[2] = bundle.getString("LBL_Attribute_Panel");
-        steps[3] = bundle.getString("LBL_Notification_Panel");
-        steps[4] = bundle.getString("LBL_JUnit_Panel");   
+        
+        steps[2] = bundle.getString("LBL_Wrapper_Panel");
+        
+        steps[3] = bundle.getString("LBL_Attribute_Panel");
+        steps[4] = bundle.getString("LBL_Notification_Panel");
+        steps[5] = bundle.getString("LBL_JUnit_Panel");   
         
         // end of work around 
 
@@ -132,7 +139,7 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
             WizardHelpers.logErrorMessage("initialize", ex);
         }
     }
-
+    
     //*********************************************************************
     // WizardIntegration method :
     // 
@@ -147,19 +154,21 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
      * @param wiz a WizardDescriptor
      * @return <CODE>String[]</CODE> step names
      */
+    
     public String[] initializeSteps(WizardDescriptor wiz)
     {
         this.wiz = (TemplateWizard) wiz;
 
-        steps = new String[4];
+        steps = new String[5];
         steps[0] = bundle.getString("LBL_Standard_Panel");
-        steps[1] = bundle.getString("LBL_Attribute_Panel");
-        steps[2] = bundle.getString("LBL_Notification_Panel");
-        steps[3] = bundle.getString("LBL_JUnit_Panel");
+        steps[1] = bundle.getString("LBL_Wrapper_Panel");
+        steps[2] = bundle.getString("LBL_Attribute_Panel");
+        steps[3] = bundle.getString("LBL_Notification_Panel");
+        steps[4] = bundle.getString("LBL_JUnit_Panel");
 
         return steps;
     }
-
+   
     //*********************************************************************
     // WizardIntegration method :
     // 
@@ -178,9 +187,11 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
      * @param steps Panels list to use
      * @param panelOffset number of the first panel of this wizard
      */
+    
     public void initializeComponents(String[] steps, int panelOffset)
     {
         mbeanOptionsPanel = new StandardMBeanPanel.StandardMBeanWizardPanel();
+        //mbeanOptionsPanel = new AlternStandardMBeanPanel.StandardMBeanWizardPanel();
         initializeComponent(steps,panelOffset + 0,
                 (JComponent)mbeanOptionsPanel.getComponent());
         
@@ -198,20 +209,25 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         initializeComponent(steps,panelOffset + 0,
                 (JComponent)mbeanPanel.getComponent());
         ((StandardMBeanPanel.StandardMBeanWizardPanel) mbeanOptionsPanel).
+        //((AlternStandardMBeanPanel.StandardMBeanWizardPanel) mbeanOptionsPanel).
                    setListenerEnabled(delegateMBeanPanel,mbeanOptionsPanel,wiz);
         mbeanPanel.readAllSettings(wiz);
         
-        attributePanel = new MBeanAttrAndMethodPanel.AttributesWizardPanel();
+        wrapperPanel = new MBeanWrapperPanel.WrapperAttributesWizardPanel();
         initializeComponent(steps,panelOffset + 1,
+                (JComponent)wrapperPanel.getComponent());
+        
+        attributePanel = new MBeanAttrAndMethodPanel.AttributesWizardPanel();
+        initializeComponent(steps,panelOffset + 2,
                 (JComponent)attributePanel.getComponent());
 
         notificationPanel = 
                 new MBeanNotificationPanel.NotificationsWizardPanel();
-        initializeComponent(steps,panelOffset + 2,
+        initializeComponent(steps,panelOffset + 3,
                 (JComponent)notificationPanel.getComponent());
         
         junitPanel = getTestChooserPanel();
-        initializeComponent(steps,panelOffset + 3,
+        initializeComponent(steps,panelOffset + 4,
                 (JComponent)junitPanel.getComponent());
         
         currentPanel = mbeanPanel;
@@ -336,8 +352,8 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
     /**
      * Method reaffecting the current panel variable to the next panel
      */
-    public void nextPanel ()
-    {  
+    public void nextPanel() {
+        /*
         if (currentPanel == mbeanPanel) {
             currentPanel = attributePanel;
         } else if (currentPanel == attributePanel) {
@@ -345,13 +361,54 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         } else if (currentPanel == notificationPanel) {
             currentPanel = getTestChooserPanel();
         }
+         */
+        
+        JavaClass isExistingRessource = (JavaClass) wiz.getProperty(
+                (WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+        /*
+        if ((currentPanel == mbeanPanel) && (!isExistingRessource.equals(""))) {
+            currentPanel = wrapperPanel;
+        } else {
+            currentPanel = attributePanel;
+        }
+        
+        if (currentPanel == wrapperPanel) {
+            currentPanel = attributePanel;
+        } else {
+            if (currentPanel == attributePanel) {
+                currentPanel = notificationPanel;
+            } else if (currentPanel == notificationPanel) {
+                currentPanel = getTestChooserPanel();
+            }   
+          }
+        */
+        if (currentPanel == notificationPanel)
+            currentPanel = getTestChooserPanel();
+        else {
+            if (currentPanel == attributePanel) {
+                currentPanel = notificationPanel;
+            } else {
+                if (currentPanel == wrapperPanel) {
+                    currentPanel = attributePanel;
+                } else {
+                      if ((currentPanel == mbeanPanel) && (isExistingRessource != null)) {
+                          currentPanel = wrapperPanel;
+                      } else {
+                          currentPanel = attributePanel;
+                      }
+                }
+            }
+        }
+   
     }
+    
 
     /**
      * Method reaffecting the current panel variable to the previous panel
      */
     public void previousPanel ()
     {
+        /*
         if (currentPanel == attributePanel) {
             currentPanel = mbeanPanel;
         } else if (currentPanel == notificationPanel) {
@@ -359,6 +416,46 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         } else if (currentPanel == junitPanel) {
             currentPanel = notificationPanel;
         } 
+        */
+        /*
+        if (currentPanel == junitPanel) {
+            currentPanel = notificationPanel;
+        } else {
+            if (currentPanel == notificationPanel) {
+                currentPanel = attributePanel;
+            } else {
+                if (currentPanel == attributePanel) {
+                    currentPanel = wrapperPanel;
+                } else {
+                    if (currentPanel == wrapperPanel) {
+                        currentPanel = mbeanPanel;
+                    }
+                }
+            }
+        }
+         **/
+        JavaClass isExistingRessource = (JavaClass)wiz.getProperty(
+                (WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+        
+        if (currentPanel == junitPanel) {
+            currentPanel = notificationPanel;
+        } else {
+            if (currentPanel == notificationPanel) {
+                currentPanel = attributePanel;
+            } else {
+                if (currentPanel == attributePanel) {
+                    if (isExistingRessource != null) {
+                        currentPanel = wrapperPanel;
+                    } else {
+                        currentPanel = mbeanPanel;
+                    } 
+                } else {
+                        if (currentPanel == wrapperPanel) {
+                            currentPanel = mbeanPanel;
+                        }
+                    }
+            }
+        }
     }
 
     private transient Set listeners = new HashSet (1); // Set<ChangeListener>

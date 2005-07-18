@@ -23,7 +23,7 @@ import javax.swing.event.CellEditorListener;
 import java.awt.Component;
 import java.util.ArrayList;
 import javax.swing.JButton;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanNotificationType;
+import org.netbeans.modules.jmx.MBeanNotificationType;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanNotificationTableModel;
 
 

@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard.popup;
-import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.OperationParameterTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
@@ -29,7 +28,8 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationParameter;
+import org.netbeans.modules.jmx.FireEvent;
+import org.netbeans.modules.jmx.MBeanOperationParameter;
 
 
 
@@ -40,7 +40,7 @@ import org.netbeans.modules.jmx.mbeanwizard.mbeanstructure.MBeanOperationParamet
 public class OperationParameterPopup extends AbstractPopup{
     
     
-    private AttributesWizardPanel wiz = null;
+    private FireEvent wiz = null;
     private MBeanMethodTableModel methodModel = null;
     private int editedRow = 0;
     
@@ -53,7 +53,7 @@ public class OperationParameterPopup extends AbstractPopup{
      */
     public OperationParameterPopup(JPanel ancestorPanel, 
             MBeanMethodTableModel model,
-            JTextField textField, int editedRow, AttributesWizardPanel wiz) {
+            JTextField textField, int editedRow, FireEvent wiz) {
         
         super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor());
         
@@ -127,8 +127,7 @@ public class OperationParameterPopup extends AbstractPopup{
             //gets the current parameter list from the current operation
             ArrayList<MBeanOperationParameter> opParam = 
                     (ArrayList<MBeanOperationParameter>)
-                        methodModel.getOperation(editedRow).
-                                        getOperationParameterList();
+                        methodModel.getOperation(editedRow).getParametersList();
             
             for (int i = 0; i < opParam.size(); i++) {
                 popupTableModel.addRow();
@@ -182,7 +181,7 @@ public class OperationParameterPopup extends AbstractPopup{
         }
         
         //copy back the parameters from the popup to the panel model
-        methodModel.getOperation(editedRow).setOperationParameterList(mbop);
+        methodModel.getOperation(editedRow).setParametersList(mbop);
         
         return paramString;
     }
