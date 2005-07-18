@@ -24,6 +24,16 @@
                     <build-prerequisite/>
                     <compile-dependency/>
            </dependency>
+           
+           <dependency>
+                    <code-name-base>org.netbeans.modules.mdr</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+           </dependency>
+           
             <dependency>
                     <code-name-base>org.openide.execution</code-name-base>
                     <build-prerequisite/>
@@ -73,6 +83,7 @@
                     <compile-dependency/>
                     <run-dependency>
 			<!-- <specification-version>5.1</specification-version> -->
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
 	   </dependency>
            
@@ -143,6 +154,24 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                
+                <dependency>
+                    <code-name-base>org.openide.src</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <implementation-version/>
                     </run-dependency>
                 </dependency>
              </module-dependencies> 
