@@ -40,7 +40,7 @@ public class MemoryFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(RepositoryTestHid.class);
         suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
-        suite.addTestSuite(MemoryFSTestHid.class);
+        //suite.addTestSuite(MemoryFSTestHid.class);
         
         return new MemoryFileSystemTest(suite);
     }
