@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -24,6 +25,7 @@ import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.editor.AnnotationType;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.XMLDataObject;
 import org.xml.sax.AttributeList;
 import org.xml.sax.HandlerBase;
@@ -40,6 +42,8 @@ import org.xml.sax.SAXException;
 public class AnnotationTypeProcessor implements XMLDataObject.Processor, InstanceCookie {
     static final String DTD_PUBLIC_ID = "-//NetBeans//DTD annotation type 1.0//EN"; // NOI18N
     static final String DTD_SYSTEM_ID = "http://www.netbeans.org/dtds/annotation-type-1_0.dtd"; // NOI18N
+    static final String DTD_PUBLIC_ID11 = "-//NetBeans//DTD annotation type 1.1//EN"; // NOI18N
+    static final String DTD_SYSTEM_ID11 = "http://www.netbeans.org/dtds/annotation-type-1_1.dtd"; // NOI18N
     
     static final String TAG_TYPE = "type"; //NOI18N
     static final String ATTR_TYPE_NAME = "name"; // NOI18N
@@ -66,9 +70,14 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
     static final String ATTR_USE_HIHGLIGHT_COLOR = "use_highlight_color"; //NOI18N
     static final String ATTR_USE_WAVE_UNDERLINE_COLOR = "use_wave_underline_color"; //NOI18N
     static final String ATTR_INHERIT_FOREGROUND_COLOR = "inherit_foreground_color"; //NOI18N
+    static final String ATTR_USE_CUSTOM_SIDEBAR_COLOR = "use_custom_sidebar_color"; //NOI18N
+    static final String ATTR_CUSTOM_SIDEBAR_COLOR = "custom_sidebar_color"; //NOI18N
+    static final String ATTR_SEVERITY = "severity"; //NOI18N
+    static final String ATTR_BROWSEABLE = "browseable"; //NOI18N
+    static final String ATTR_PRIORITY = "priority"; //NOI18N
     
     /** XML data object. */
-    private XMLDataObject xmlDataObject;
+    private FileObject xmlDataObject;
     
     /**
      * Annotation type created from XML file.
@@ -81,9 +90,14 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
      * @param xmlDO XMLDataObject
      */
     public void attachTo(XMLDataObject xmlDO) {
+        xmlDataObject = xmlDO.getPrimaryFile();
+    }
+
+    //testeability:
+    public void attachTo(FileObject xmlDO) {
         xmlDataObject = xmlDO;
     }
-    
+
     /** Create an instance.
      * @return the instance of type {@link #instanceClass}
      * @exception IOException if an I/O error occured
@@ -132,8 +146,8 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 xp.setEntityResolver(h);
                 xp.setDocumentHandler(h);
                 xp.setErrorHandler(h);
-                xp.parse(new InputSource(xmlDataObject.getPrimaryFile().getInputStream()));
-                at.putProp(AnnotationType.PROP_FILE, xmlDataObject.getPrimaryFile());
+                xp.parse(new InputSource(xmlDataObject.getInputStream()));
+                at.putProp(AnnotationType.PROP_FILE, xmlDataObject);
                 annotationType = at;
             } catch (Exception e) { 
                 ErrorManager.getDefault().notify(e);
@@ -186,9 +200,11 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                     String useHighlightString = amap.getValue(ATTR_USE_HIHGLIGHT_COLOR);
                     String useWaveUnderlineString = amap.getValue(ATTR_USE_WAVE_UNDERLINE_COLOR);
                     String inheritForeString = amap.getValue(ATTR_INHERIT_FOREGROUND_COLOR);
+                    String useCustomSidebarColor = amap.getValue(ATTR_USE_CUSTOM_SIDEBAR_COLOR);
                     at.setUseHighlightColor(Boolean.valueOf(useHighlightString).booleanValue());
                     at.setUseWaveUnderlineColor(Boolean.valueOf(useWaveUnderlineString).booleanValue());
                     at.setInheritForegroundColor(Boolean.valueOf(inheritForeString).booleanValue());
+                    at.setUseCustomSidebarColor(Boolean.valueOf(useCustomSidebarColor).booleanValue());
                     
                     // colors
                     try {
@@ -215,6 +231,13 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                         } else {
                             if (useWaveUnderlineString == null) at.setUseWaveUnderlineColor(false);
                         }
+                        color = amap.getValue(ATTR_CUSTOM_SIDEBAR_COLOR);
+                        if (color != null) {
+                            at.setCustomSidebarColor(Color.decode(color));
+                            if (useCustomSidebarColor == null) at.setUseCustomSidebarColor(true);
+                        } else {
+                            if (useCustomSidebarColor  == null) at.setUseCustomSidebarColor(false);
+                        }
                     } catch (NumberFormatException ex) {
                         rethrow(ex);
                     }
@@ -235,6 +258,24 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                         AnnotationTypeActionsFolder.readActions(at, actions);
                         at.putProp(AnnotationType.PROP_ACTIONS_FOLDER, actions);
                     }
+                    
+                    //extended properties:
+                    at.setSeverity(AnnotationType.Severity.valueOf(amap.getValue(ATTR_SEVERITY)));
+                    at.setBrowseable(Boolean.valueOf(amap.getValue(ATTR_BROWSEABLE)).booleanValue());
+                    
+                    String priorityString = amap.getValue(ATTR_PRIORITY);
+                    int priority = 0;
+                    
+                    if (priorityString != null) {
+                        try {
+                            priority = Integer.parseInt(priorityString);
+                        } catch (NumberFormatException e) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                    }
+                    
+                    at.setPriority(priority);
+                    
                     break;
                     
                 case 1: // <combination ...
@@ -283,6 +324,9 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
         
         public InputSource resolveEntity(java.lang.String pid,java.lang.String sid) throws SAXException   {
             if (DTD_PUBLIC_ID.equals(pid)) {
+                return new InputSource(new ByteArrayInputStream(new byte[0]));
+            }            
+            if (DTD_PUBLIC_ID11.equals(pid)) {
                 return new InputSource(new ByteArrayInputStream(new byte[0]));
             }            
             return new InputSource (sid);            

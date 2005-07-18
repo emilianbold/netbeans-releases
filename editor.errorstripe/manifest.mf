@@ -1,9 +1,5 @@
 Manifest-version: 1.0
-OpenIDE-Module: org.netbeans.modules.editor.errorstripe/1
+OpenIDE-Module: org.netbeans.modules.editor.errorstripe/2
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/errorstripe/resources/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/editor/errorstripe/resources/layer.xml
-OpenIDE-Module-Friends: org.netbeans.modules.editor.errorstripe.annotations,
- org.netbeans.modules.java.errorstripe,
- org.netbeans.modules.latex.errorstripe,
- org.netbeans.modules.tasklist.errorstripe

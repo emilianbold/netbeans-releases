@@ -46,19 +46,19 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
 
                 <dependency>
+                    <code-name-base>org.openide.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.3</specification-version>
+                    </run-dependency>
+                </dependency>
+
+                <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>
-
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
                 </dependency>
 
                 <dependency>
@@ -69,11 +69,29 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.7.0</specification-version>
+                    </run-dependency>
+                </dependency>
+
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.errorstripe.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <implementation-version />
+                    </run-dependency>
+                </dependency>
                 
-                </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.editor.errorstripe.spi</package>
-            </public-packages>
+            </module-dependencies>
+            <public-packages />
         </data>
     </configuration>
 </project>

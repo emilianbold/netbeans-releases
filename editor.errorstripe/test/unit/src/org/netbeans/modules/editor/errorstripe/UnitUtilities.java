@@ -65,6 +65,12 @@ public class UnitUtilities extends ProxyLookup {
             layers[cntr + 1] = Utilities.class.getResource(additionalLayers[cntr]);
         }
         
+        for (int cntr = 0; cntr < layers.length; cntr++) {
+            if (layers[cntr] == null) {
+                throw new IllegalStateException("layers[" + cntr + "]=null");
+            }
+        }
+        
         XMLFileSystem system = new XMLFileSystem();
         system.setXmlUrls(layers);
         

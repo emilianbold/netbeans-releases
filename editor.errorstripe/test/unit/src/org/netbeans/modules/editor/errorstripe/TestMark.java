@@ -14,8 +14,8 @@
 package org.netbeans.modules.editor.errorstripe;
 
 import java.awt.Color;
-import org.netbeans.modules.editor.errorstripe.spi.Mark;
-import org.netbeans.modules.editor.errorstripe.spi.Status;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
+import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
 /**
  *

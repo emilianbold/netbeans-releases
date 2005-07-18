@@ -17,6 +17,19 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="testAnnotation.xml" url="testAnnotation.xml"/>
+            <file name="testAnnotation1.xml" url="testAnnotation1.xml"/>
+            <file name="testAnnotation2.xml" url="testAnnotation2.xml"/>
+            <file name="testAnnotation3.xml" url="testAnnotation3.xml"/>
+            <file name="testAnnotation4.xml" url="testAnnotation4.xml"/>
+            <file name="testAnnotation5.xml" url="testAnnotation5.xml"/>
+            <file name="testAnnotation6.xml" url="testAnnotation6.xml"/>
+	    <!--throws exception:
+            <file name="testAnnotation7.xml" url="testAnnotation7.xml"/>
+	    -->
+            <file name="testAnnotation8.xml" url="testAnnotation8.xml"/>
+            <file name="testAnnotationBrowseable1.xml" url="testAnnotationBrowseable1.xml"/>
+            <file name="testAnnotationBrowseable2.xml" url="testAnnotationBrowseable2.xml"/>
+            <file name="testAnnotationBrowseable3.xml" url="testAnnotationBrowseable3.xml"/>
         </folder>
     </folder>
 </filesystem>

@@ -14,45 +14,14 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
     <folder name="Editors">
-        <folder name="AnnotationTypes">
-            <folder name="StatusForAnnotationType">
-                <file name="test-annotation-1">
-                    <attr name="status" stringvalue="error" />
-                </file>
-                <file name="test-annotation-2">
-                    <attr name="status" stringvalue="warning" />
-                </file>
-                <file name="test-annotation-3">
-                    <attr name="status" stringvalue="ok" />
-                </file>
-                <file name="test-annotation-4">
-                    <attr name="status" stringvalue="error" />
-                    <attr name="color" stringvalue="0x000000" />
-                </file>
-                <file name="test-annotation-5">
-                    <attr name="status" stringvalue="warning" />
-                    <attr name="color" stringvalue="0x000000" />
-                </file>
-                <file name="test-annotation-6">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0x000000" />
-                </file>
-                <file name="test-annotation-7">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="unparseable" />
-                </file>
-                <file name="test-annotation-8">
-                    <attr name="status" stringvalue="unknown" />
-                </file>
-                
-                <file name="test-annotation-browseable-1">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="browseable" boolvalue="true" />
-                </file>
-                <file name="test-annotation-browseable-2">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="browseable" boolvalue="false" />
-                </file>
+        <folder name="text">
+            <folder name="base">
+                <folder name="Services">
+                    <file name="org-netbeans-modules-editor-errorstripe-TestMarkProviderCreator.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.errorstripe.TestMarkProviderCreator.getDefault" />
+                        <attr name="instanceOf" stringvalue="org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator" />
+                    </file>
+                </folder>
             </folder>
         </folder>
     </folder>

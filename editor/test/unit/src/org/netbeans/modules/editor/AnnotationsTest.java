@@ -1,13 +1,16 @@
 
 package org.netbeans.modules.editor;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.AnnotationDesc;
@@ -15,8 +18,9 @@ import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.editor.options.AnnotationTypesFolder;
+import org.netbeans.modules.editor.options.AnnotationTypeProcessor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.text.Annotation;
 
 /**
@@ -156,10 +160,29 @@ public class AnnotationsTest extends BaseDocumentUnitTestCase {
         return annotations;
     } 
 
-    private static final class AnnotationsLoader implements AnnotationTypes.Loader {
+    /*package private*/ static final class AnnotationsLoader implements AnnotationTypes.Loader {
 
         public void loadTypes() {
-            AnnotationTypesFolder.getAnnotationTypesFolder();
+            try {
+                Map typesInstances = new HashMap();
+                FileObject typesFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/AnnotationTypes");
+                FileObject[] types = typesFolder.getChildren();
+                
+                for (int cntr = 0; cntr < types.length; cntr++) {
+                    AnnotationTypeProcessor proc = new AnnotationTypeProcessor();
+                    
+                    System.err.println("CCC:" + types[cntr].getNameExt());
+                    if (types[cntr].getName().startsWith("testAnnotation") && "xml".equals(types[cntr].getExt())) {
+                        proc.attachTo(types[cntr]);
+                        AnnotationType type = (AnnotationType) proc.instanceCreate();
+                        typesInstances.put(type.getName(), type);
+                    }
+                }
+                
+                AnnotationTypes.getTypes().setTypes(typesInstances);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         public void loadSettings() {

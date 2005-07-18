@@ -5,6 +5,5 @@
 	description_key='HINT_TEST_ANNOTATION'
 	localizing_bundle='org.netbeans.modules.editor.Bundle'
 	visible='true' 
-	glyph='nbresloc:/org/netbeans/modules/editor/resources/testAnnotationGlyph.gif'
 	type='line'
 /> 

@@ -622,7 +622,34 @@ example. The actions may be defined by
   &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"org-foo-BarAction.instance"</font>/&gt;
 &lt;/<font class="function-name">folder</font>&gt;
 </pre>
+</dd>
 
+<dt><code>severity</code></dt>
+
+<dd>Severity of this annotation. Allowed values are <code>error</code>,
+<code>warning</code>, <code>ok</code> and <code>none</code>. Annotations with severity
+other then <code>none</code> will be shown in the Error Stripe using default color
+or color specified in <code>custom_sidebar_color</code>. Default value is <code>none</code>.
+</dd>
+
+<dt><code>custom_sidebar_color</code></dt>
+
+<dd>A color which should be used when showing this annotation in the Error Stripe.
+Specify this color if the default color derived from the <code>severity</code> is
+not feasible. Note that this setting has no effect if <code>severity</code>
+is set to <code>none</code>.
+</dd>
+
+<dt><code>browseable</code></dt>
+
+<dd>Whether this annotation should be "browseable" using action like Show Next Error.
+Valid values are <code>true</code> and <code>false</code>, default is <code>false</code>.
+</dd>
+
+<dt><code>priority</code></dt>
+
+<dd>Priority of this annotation with respect to other annotations with the same severity.
+Valid values are integer numbers. Default is 0.
 </dd>
 
 </dl>

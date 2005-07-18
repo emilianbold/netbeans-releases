@@ -28,32 +28,35 @@ import junit.framework.*;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.errorstripe.spi.Mark;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProviderCreator;
-import org.netbeans.modules.editor.errorstripe.spi.UpToDateStatus;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.errorstripe.caret.CaretMarkProviderCreator;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.plain.PlainKit;
-import org.netbeans.modules.editor.errorstripe.spi.Status;
+import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AnnotationViewTest extends TestCase {
+public class AnnotationViewTest extends NbTestCase {
     
     public AnnotationViewTest(String testName) {
         super(testName);
     }
     
-    // TODO add test methods here. The name must begin with 'test'. For example:
-    // public void testHello() {}
-
     protected void setUp() throws Exception {
-        UnitUtilities.prepareTest(new String[] {"/org/netbeans/modules/editor/plain/resources/layer.xml"}, new Object[0]);
+        UnitUtilities.prepareTest(new String[] {"/org/netbeans/modules/editor/resources/annotations-test-layer.xml",
+                                                "/org/netbeans/modules/editor/plain/resources/layer.xml",
+                                                "/org/netbeans/modules/editor/errorstripe/test-layer.xml"},
+                                  new Object[0]);
         BaseKit.getKit(PlainKit.class);
-//        AnnotationTestUtilities.register();
         BaseOptions.findObject(BaseOptions.class, true);
+        
+        CaretMarkProviderCreator.switchOff = true;
     }
 
     protected void tearDown() throws Exception {
@@ -74,7 +77,7 @@ public class AnnotationViewTest extends TestCase {
                 
                 assertEquals(aView.viewToModel(pos)[0], aView.viewToModel(aView.modelToView(aView.viewToModel(pos)[0]))[0]);
                 
-                assertEquals(aView.modelToView(Utilities.getLineOffset(document, document.getLength()) + 1), (-1.0), 0.0001d);
+                assertEquals((-1.0), aView.modelToView(Utilities.getLineOffset(document, document.getLength()) + 1), 0.0001d);
             }
         });
     }
@@ -193,19 +196,6 @@ public class AnnotationViewTest extends TestCase {
     }
     
     private static void performTest(final Action action) throws Exception {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    try {
-                        performTest(action);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            return ;
-        }
-        
         JFrame f = new JFrame();
         JEditorPane editor = new JEditorPane();
         
@@ -217,9 +207,11 @@ public class AnnotationViewTest extends TestCase {
         List marks = Arrays.asList(new Mark[]{mark1, mark2});
         
         TestMarkProvider provider = new TestMarkProvider(Collections.EMPTY_LIST, UpToDateStatus.UP_TO_DATE_OK);
-        TestMarkProviderCreator creator = new TestMarkProviderCreator(provider);
+        TestMarkProviderCreator creator = TestMarkProviderCreator.getDefault();
         
-        AnnotationView aView = new AnnotationView(editor, Arrays.asList(new MarkProviderCreator[] {creator}));
+        creator.setProvider(provider);
+        
+        AnnotationView aView = new AnnotationView(editor);
         
         f.getContentPane().setLayout(new BorderLayout());
         f.getContentPane().add(new JScrollPane(editor), BorderLayout.CENTER);
@@ -252,138 +244,6 @@ public class AnnotationViewTest extends TestCase {
         public abstract void test(AnnotationView aView, BaseDocument document) throws Exception;
     }
 
-    public void testGetMainMarkForBlock() throws /*BadLocation*/Exception {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                    try {
-                        testGetMainMarkForBlock();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            return ;
-        }
-        
-        JEditorPane editor = new JEditorPane();
-        BaseDocument bd = new BaseDocument(PlainKit.class, false);
-        
-        bd.insertString(0, "\n\n\n\n\n\n\n\n\n\n", null);
-        
-        TestMark mark1 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {2, 2});
-        TestMark mark2 = new TestMark(Status.STATUS_OK, null, null, new int[] {2, 2});
-        TestMark mark3 = new TestMark(Status.STATUS_WARNING, null, null, new int[] {2, 4});
-        
-        List marks1 = Arrays.asList(new Mark[]{mark1, mark2, mark3});
-        List marks2 = Arrays.asList(new Mark[]{mark1, mark3});
-        List marks3 = Arrays.asList(new Mark[]{mark2, mark3});
-        List marks4 = Arrays.asList(new Mark[]{mark1, mark2});
-        List marks5 = Arrays.asList(new Mark[]{mark3});
-        
-        TestMarkProvider provider = new TestMarkProvider(marks1, UpToDateStatus.UP_TO_DATE_OK);
-        TestMarkProviderCreator creator = new TestMarkProviderCreator(provider);
-        
-        AnnotationView aView = new AnnotationView(editor, Arrays.asList(new MarkProviderCreator[] {creator}));
-        
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 2));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 3));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 4));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 3));
-        assertEquals(null, aView.getMainMarkForBlock(6, 6));
-        
-        provider.setMarks(marks2);
-        
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 2));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 3));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 4));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 3));
-        assertEquals(null, aView.getMainMarkForBlock(6, 6));
-        
-        provider.setMarks(marks3);
-        
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 2));
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 3));
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 4));
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 3));
-        assertEquals(null, aView.getMainMarkForBlock(6, 6));
-        
-        provider.setMarks(marks4);
-        
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 2));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 3));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 4));
-        assertEquals(mark1, aView.getMainMarkForBlock(2, 6));
-        assertEquals(null, aView.getMainMarkForBlock(3, 6));
-        assertEquals(null, aView.getMainMarkForBlock(3, 3));
-        assertEquals(null, aView.getMainMarkForBlock(6, 6));
-        
-        provider.setMarks(marks5);
-        
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 2));
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 3));
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 4));
-        assertEquals(mark3, aView.getMainMarkForBlock(2, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 6));
-        assertEquals(mark3, aView.getMainMarkForBlock(3, 3));
-        assertEquals(null, aView.getMainMarkForBlock(6, 6));
-    }
-//    
-//    public void testComputeTotalStatus() throws Exception {
-//        if (!SwingUtilities.isEventDispatchThread()) {
-//            SwingUtilities.invokeAndWait(new Runnable() {
-//                public void run() {
-//                    try {
-//                        testComputeTotalStatus();
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
-//            return ;
-//        }
-//        
-//        JFrame f = new JFrame();
-//        JEditorPane editor = new JEditorPane();
-//        
-//        editor.setEditorKit(BaseKit.getKit(PlainKit.class));
-//        
-//        AnnotationView aView = new AnnotationView(editor);
-//        
-//        f.getContentPane().setLayout(new BorderLayout());
-//        f.getContentPane().add(new JScrollPane(editor), BorderLayout.CENTER);
-//        f.getContentPane().add(aView, BorderLayout.EAST);
-//        
-//        f.setSize(500, 500);
-//        
-//        f.setVisible(true);
-//
-//        BaseDocument bd = (BaseDocument) editor.getDocument();
-//        
-//        bd.insertString(0, "\n\n\n\n\n\n\n\n\n\n", null);
-//        
-//        Position start = bd.createPosition(Utilities.getRowStartFromLineOffset(bd, 2));
-//        
-//        AnnotationDesc a1 = new AnnotationTestUtilities.TestAnnotationDesc1(bd, start);
-//        AnnotationDesc a2 = new AnnotationTestUtilities.TestAnnotationDesc2(bd, start);
-//        
-//        bd.getAnnotations().addAnnotation(a1);
-//        bd.getAnnotations().addAnnotation(a2);
-//        
-//        assertEquals(Status.STATUS_ERROR, aView.computeTotalStatus().getStatus());
-//        
-//        bd.getAnnotations().activateNextAnnotation(2);
-//        
-//        assertEquals(Status.STATUS_ERROR, aView.computeTotalStatus().getStatus());
-//        
-//        f.setVisible(false);
-//    }
     
     public void testAnnotationViewFactory() {
         JEditorPane editor = new JEditorPane();
@@ -392,85 +252,9 @@ public class AnnotationViewTest extends TestCase {
         
         assertNotNull(new AnnotationViewFactory().createSideBar(editor));
     }
-    
-    public void testMarkUpdates() {
-        JEditorPane editor = new JEditorPane();
-        
-        TestMark mark1 = new TestMark(Status.STATUS_ERROR, null, null, new int[] {2, 2});
-        TestMark mark2 = new TestMark(Status.STATUS_OK, null, null, new int[] {2, 2});
-        TestMark mark3 = new TestMark(Status.STATUS_OK, null, null, new int[] {4, 6});
-        
-        List marks = Arrays.asList(new Mark[]{mark1, mark2});
-        List marksOnlyFirst = Arrays.asList(new Mark[]{mark1});
-        List marksOnlySecond = Arrays.asList(new Mark[]{mark2});
-        List marksFirstAndThird = Arrays.asList(new Mark[]{mark1, mark3});
-        
-        TestMarkProvider provider = new TestMarkProvider(marks, UpToDateStatus.UP_TO_DATE_OK);
-        TestMarkProviderCreator creator = new TestMarkProviderCreator(provider);
-        
-        AnnotationView aView = new AnnotationView(editor, Arrays.asList(new MarkProviderCreator[] {creator}));
-        
-        List mergedMarks;
-        SortedMap map;
-        
-        mergedMarks = aView.getMergedMarks();
-        
-        assertEquals(marks, mergedMarks);
-        
-        map = aView.getMarkMap();
-        
-        assertEquals(1, map.size());
-        assertEquals(marks, map.get(map.firstKey()));
-        
-        provider.setMarks(marksOnlyFirst);
-        
-        mergedMarks = aView.getMergedMarks();
-        
-        assertEquals(marksOnlyFirst, mergedMarks);
-        
-        map = aView.getMarkMap();
-        
-        assertEquals(1, map.size());
-        assertEquals(marksOnlyFirst, map.get(map.firstKey()));
-        
-        provider.setMarks(marksFirstAndThird);
-        
-        mergedMarks = aView.getMergedMarks();
-        
-        assertEquals(marksFirstAndThird, mergedMarks);
-        
-        map = aView.getMarkMap();
-        
-        assertEquals(4, map.size());
-        assertEquals(new HashSet(Arrays.asList(new Integer[] {new Integer(2), new Integer(4), new Integer(5), new Integer(6)})), map.keySet());
-        assertEquals(Arrays.asList(new Mark[] {mark1}), map.get(new Integer(2)));
-        assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(4)));
-        assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(5)));
-        assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(6)));
-        
-        provider.setMarks(Collections.EMPTY_LIST);
-        
-        mergedMarks = aView.getMergedMarks();
-        
-        assertEquals(Collections.EMPTY_LIST, mergedMarks);
-        
-        map = aView.getMarkMap();
-        
-        assertEquals(0, map.size());
-        
-        provider.setMarks(marksFirstAndThird);
-        
-        mergedMarks = aView.getMergedMarks();
-        
-        assertEquals(marksFirstAndThird, mergedMarks);
-        
-        map = aView.getMarkMap();
-        
-        assertEquals(4, map.size());
-        assertEquals(new HashSet(Arrays.asList(new Integer[] {new Integer(2), new Integer(4), new Integer(5), new Integer(6)})), map.keySet());
-        assertEquals(Arrays.asList(new Mark[] {mark1}), map.get(new Integer(2)));
-        assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(4)));
-        assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(5)));
-        assertEquals(Arrays.asList(new Mark[] {mark3}), map.get(new Integer(6)));
+
+    protected boolean runInEQ() {
+        return true;
     }
+    
 }

@@ -19,6 +19,7 @@ import java.text.MessageFormat;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.editor.errorstripe.privatespi.Status;
 
 /**
  *

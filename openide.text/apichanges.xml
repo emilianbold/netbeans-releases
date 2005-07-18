@@ -17,6 +17,20 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="annotations-error-stripe">
+        <api name="text"/>
+        <summary>Annotation type extended with <code>severity</code>, <code>custom_sidebar_color</code>, <code>browsable</code> and <code>priority</code>
+                 attributes
+        </summary>
+        <version major="6" minor="3"/>
+        <date day="18" month="7" year="2005"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            Annotation type was extended with <code>severity</code>, <code>custom_sidebar_color</code>, <code>browsable</code> and <code>priority</code>
+                 attributes.
+        </description>
+        <issue number="55639"/>
+    </change>
 <change id="Line.SHOW_TOFRONT">
         <api name="text"/>
         <summary>Added a new constant <code>Line.SHOW_TOFRONT</code>

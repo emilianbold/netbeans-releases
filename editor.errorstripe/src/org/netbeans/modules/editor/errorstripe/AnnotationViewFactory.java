@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.errorstripe;
 import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
+import org.openide.ErrorManager;
 
 
 
@@ -30,7 +31,17 @@ public class AnnotationViewFactory implements SideBarFactory {
     }
 
     public JComponent createSideBar(JTextComponent target) {
-        return new AnnotationView(target);
+        long start = System.currentTimeMillis();
+        
+        AnnotationView view = new AnnotationView(target);
+        
+        long end = System.currentTimeMillis();
+        
+        if (AnnotationView.TIMING_ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AnnotationView.TIMING_ERR.log(ErrorManager.INFORMATIONAL, "creating AnnotationView component took: " + (end - start));
+        }
+        
+        return view;
     }
     
 }

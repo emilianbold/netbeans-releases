@@ -19,6 +19,7 @@ import javax.swing.text.Position;
 import junit.framework.*;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.AnnotationType;
+import org.netbeans.editor.AnnotationType.Severity;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.AnnotationTypes.Loader;
 import org.netbeans.editor.BaseDocument;
@@ -31,12 +32,8 @@ import org.netbeans.editor.Utilities;
  */
 public class AnnotationTestUtilities extends TestCase {
     
-    /*package private*/ static void register() {
-        AnnotationTypes.getTypes().registerLoader(new LoaderImpl());
-    }
-    
-    /*package private*/ static final String NAME_TEST_ANNOTATION_DESC1 = "org-netbeans-modules-java-parser_annotation_err";
-    /*package private*/ static final String NAME_TEST_ANNOTATION_DESC2 = "org-netbeans-modules-java-parser_annotation_warn";
+    /*package private*/ static final String NAME_TEST_ANNOTATION_DESC1 = "test-annotation-1";
+    /*package private*/ static final String NAME_TEST_ANNOTATION_DESC2 = "test-annotation-2";
     
     /*package private*/ static final String SD_TEST_ANNOTATION_DESC1 = "Test1";
     /*package private*/ static final String SD_TEST_ANNOTATION_DESC2 = "Test2";
@@ -79,14 +76,6 @@ public class AnnotationTestUtilities extends TestCase {
         
     }
     
-    /*package private*/ static class TestAnnotationType extends AnnotationType {
-        
-        public TestAnnotationType() {
-            setVisible(true);
-        }
-        
-    }
-    
     /*package private*/ static class TestAnnotationDesc2 extends AnnotationDesc {
         
         private BaseDocument doc;
@@ -124,24 +113,4 @@ public class AnnotationTestUtilities extends TestCase {
         
     }
     
-    /*package private*/ static class LoaderImpl implements Loader {
-        public void saveSetting(String settingName, Object value) {
-        }
-
-        public void saveType(AnnotationType type) {
-        }
-
-        public void loadTypes() {
-            Map type = new HashMap();
-            
-            type.put(NAME_TEST_ANNOTATION_DESC1, new TestAnnotationType());
-            type.put(NAME_TEST_ANNOTATION_DESC2, new TestAnnotationType());
-            
-            AnnotationTypes.getTypes().setTypes(type);
-        }
-
-        public void loadSettings() {
-        }
-        
-    }
 }

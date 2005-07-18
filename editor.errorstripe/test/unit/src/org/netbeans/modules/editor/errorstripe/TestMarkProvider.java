@@ -14,8 +14,8 @@
 package org.netbeans.modules.editor.errorstripe;
 
 import java.util.List;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
-import org.netbeans.modules.editor.errorstripe.spi.UpToDateStatus;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 
 /**
  *
@@ -52,11 +52,11 @@ public class TestMarkProvider extends MarkProvider {
         firePropertyChange(PROP_MARKS, fireOld ? old : null, fireNue ? this.marks : null);
     }
     
-    public void setUpToDate(UpToDateStatus upToDate) {
-        UpToDateStatus old = this.upToDate;
-        
-        this.upToDate = upToDate;
-        
-        firePropertyChange(PROP_UP_TO_DATE, old, upToDate);
-    }
+//    public void setUpToDate(UpToDateStatus upToDate) {
+//        UpToDateStatus old = this.upToDate;
+//        
+//        this.upToDate = upToDate;
+//        
+//        firePropertyChange(PROP_UP_TO_DATE, old, upToDate);
+//    }
 }

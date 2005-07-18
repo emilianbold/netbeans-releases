@@ -12,10 +12,9 @@
  */
 
 package org.netbeans.modules.editor.errorstripe;
-
-import javax.swing.text.Document;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProviderCreator;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
 
 /**
  *
@@ -26,12 +25,21 @@ public class TestMarkProviderCreator implements MarkProviderCreator {
     private MarkProvider provider;
     
     /** Creates a new instance of TestMarkProviderCreator */
-    public TestMarkProviderCreator(MarkProvider provider) {
+    private TestMarkProviderCreator() {
+    }
+    
+    public void setProvider(MarkProvider provider) {
         this.provider = provider;
     }
 
-    public MarkProvider createMarkProvider(Document document) {
+    public MarkProvider createMarkProvider(JTextComponent document) {
         return provider;
+    }
+    
+    private static final TestMarkProviderCreator INSTANCE = new TestMarkProviderCreator();
+    
+    public static final TestMarkProviderCreator getDefault() {
+        return INSTANCE;
     }
     
 }

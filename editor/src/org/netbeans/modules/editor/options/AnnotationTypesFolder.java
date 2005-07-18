@@ -144,6 +144,7 @@ public class AnnotationTypesFolder extends FolderInstance{
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_USE_HIHGLIGHT_COLOR, type.isUseHighlightColor() ? "true" : "false"); // NOI18N
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_USE_WAVE_UNDERLINE_COLOR, type.isUseWaveUnderlineColor() ? "true" : "false"); // NOI18N
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_INHERIT_FOREGROUND_COLOR, type.isInheritForegroundColor() ? "true" : "false"); // NOI18N
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_USE_CUSTOM_SIDEBAR_COLOR, type.isUseCustomSidebarColor() ? "true" : "false"); // NOI18N
         typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_TYPE, type.isWholeLine() ? "line" : "linepart"); // NOI18N
         if (type.getProp(AnnotationType.PROP_GLYPH_URL) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_GLYPH, type.getGlyph().toExternalForm());
@@ -155,6 +156,8 @@ public class AnnotationTypesFolder extends FolderInstance{
 
         if (type.getProp(AnnotationType.PROP_FOREGROUND_COLOR) != null)// && !type.isInheritForegroundColor())
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_FOREGROUND, "0x"+Integer.toHexString(type.getForegroundColor().getRGB() & 0x00FFFFFF)); // NOI18N
+        if (type.getProp(AnnotationType.PROP_CUSTOM_SIDEBAR_COLOR) != null)// && !type.isUseCustomSidebarColor())
+            typeElem.setAttribute(AnnotationTypeProcessor.ATTR_CUSTOM_SIDEBAR_COLOR, "0x"+Integer.toHexString(type.getCustomSidebarColor().getRGB() & 0x00FFFFFF)); // NOI18N
         if (type.getProp(AnnotationType.PROP_ACTIONS_FOLDER) != null)
             typeElem.setAttribute(AnnotationTypeProcessor.ATTR_TYPE_ACTIONS, (String)type.getProp(AnnotationType.PROP_ACTIONS_FOLDER));
         
@@ -180,6 +183,11 @@ public class AnnotationTypesFolder extends FolderInstance{
                 combsElem.appendChild(combElem);
             }
         }
+        
+        //extended properties:
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_SEVERITY, type.getSeverity().getName());
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_BROWSEABLE, Boolean.toString(type.isBrowseable()));
+        typeElem.setAttribute(AnnotationTypeProcessor.ATTR_PRIORITY, Integer.toString(type.getPriority()));
         
         doc.getDocumentElement().normalize();
         

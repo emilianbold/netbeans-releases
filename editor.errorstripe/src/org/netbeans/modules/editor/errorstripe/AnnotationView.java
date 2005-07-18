@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
@@ -39,6 +38,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -49,13 +49,16 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.errorstripe.spi.Mark;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProvider;
-import org.netbeans.modules.editor.errorstripe.spi.MarkProviderCreator;
-import org.netbeans.modules.editor.errorstripe.spi.UpToDateStatus;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
+import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.openide.ErrorManager;
-import org.netbeans.modules.editor.errorstripe.spi.Status;
+import org.netbeans.modules.editor.errorstripe.privatespi.Status;
+import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -65,15 +68,18 @@ import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AnnotationView extends JComponent implements FoldHierarchyListener, MouseListener, MouseMotionListener, PropertyChangeListener, DocumentListener {
+public class AnnotationView extends JComponent implements FoldHierarchyListener, MouseListener, MouseMotionListener, DocumentListener, PropertyChangeListener {
     
     /*package private*/ static final ErrorManager ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.editor.errorstripe.AnnotationView"); // NOI18N
+    
+    /*package private*/ static final ErrorManager TIMING_ERR = ErrorManager.getDefault().getInstance("org.netbeans.modules.editor.errorstripe.AnnotationView.timing"); // NOI18N
     
     private static final int STATUS_BOX_SIZE = 7;
     private static final int THICKNESS = STATUS_BOX_SIZE + 6;
@@ -91,24 +97,28 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     private static final Color STATUS_UP_PART_COLOR = Color.WHITE;
     private static final Color STATUS_DOWN_PART_COLOR = new Color(180, 180, 180);
     
-    private List/*<MarkProviderCreator>*/ creators;
-    private List/*<MarkProvider>*/ providers;
+    private static final int QUIET_TIME = 100;
     
-    private List/*<Mark>*/ currentMarks = null;
-    private SortedMap/*<Mark>*/ marksMap = null;
+    private final RequestProcessor.Task repaintTask;
+    private final RepaintTask           repaintTaskRunnable;
     
-    public AnnotationView(JTextComponent pane) {
-        this(pane, null);
-    }
+    private AnnotationViewData data;
+    
+//    public AnnotationView(JTextComponent pane) {
+//        this(pane, null);
+//    }
     
     /** Creates a new instance of AnnotationViewBorder */
-    public AnnotationView(JTextComponent pane, List/*<MarkProviderCreator>*/ creators) {
+    public AnnotationView(JTextComponent pane/*, List/ *<MarkProviderCreator>* / creators*/) {
         this.pane = pane;
-        this.creators = creators;
         
         FoldHierarchy.get(pane).addFoldHierarchyListener(this);
         
         pane.addPropertyChangeListener(this);
+        
+        repaintTask = RequestProcessor.getDefault().create(repaintTaskRunnable = new RepaintTask());
+        
+        data = new AnnotationViewDataImpl(this, pane);
         
         updateForNewDocument();
         
@@ -120,7 +130,12 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         setToolTipText(org.openide.util.NbBundle.getBundle(AnnotationView.class).getString("TP_ErrorStripe"));
     }
     
+    /*package private for tests*/AnnotationViewData getData() {
+        return data;
+    }
+    
     private synchronized void updateForNewDocument() {
+        data.unregister();
         Document newDocument = pane.getDocument();
         
         if (!(newDocument instanceof BaseDocument)) {
@@ -129,142 +144,12 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             this.doc = (BaseDocument) pane.getDocument();
             this.doc.addDocumentListener(this);
         }
-            
-        if (this.creators == null) {
-            this.providers = gatherProviders(pane);
-        } else {
-            List providers = new ArrayList();
-            
-            for (Iterator c = creators.iterator(); c.hasNext(); ) {
-                MarkProviderCreator creator = (MarkProviderCreator) c.next();
-                MarkProvider provider = creator.createMarkProvider(this.doc);
-                
-                if (provider != null)
-                    providers.add(provider);
-            }
-            
-            this.providers = providers;
-        }
         
-        addListenersToProviders();
+        data.register(this.doc);
+//        gatherProviders(pane);
+//        addListenersToProviders();
     }
-    
-    private static List gatherProviders(JTextComponent pane) {
-        try {
-            List result = new ArrayList();
-            BaseKit kit = Utilities.getKit(pane);
-            
-            if (kit == null)
-                return Collections.EMPTY_LIST;
-            
-            String content = kit.getContentType();
-            BaseDocument document = (BaseDocument) pane.getDocument();
-            FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/base/Services"); // NOI18N
-            FileObject contentFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + content + "/Services"); // NOI18N
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "baseFolder = " + baseFolder );
-            }
-            
-            DataObject baseDO = baseFolder != null ? DataObject.find(baseFolder) : null;
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "baseDO = " + baseDO );
-            }
-            
-            Lookup baseLookup = baseFolder != null ? new FolderLookup((DataFolder) baseDO).getLookup() : Lookup.EMPTY;
-            
-            if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ERR.log(ErrorManager.INFORMATIONAL, "contentFolder = " + contentFolder );
-            }
-            
-            DataObject contentDO = contentFolder != null ? DataObject.find(contentFolder) : null;
-            Lookup contentLookup = contentFolder != null ? new FolderLookup((DataFolder) contentDO).getLookup() : Lookup.EMPTY;
-            
-            Lookup lookup = new ProxyLookup(new Lookup[] {baseLookup, contentLookup});
-            
-            Result creators = lookup.lookup(new Template(MarkProviderCreator.class));
-            
-            for (Iterator i = creators.allInstances().iterator(); i.hasNext(); ) {
-                MarkProviderCreator creator = (MarkProviderCreator) i.next();
-                
-                if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    ERR.log(ErrorManager.INFORMATIONAL, "creator = " + creator );
-                }
-                
-                MarkProvider provider = creator.createMarkProvider(document);
-                
-                if (provider != null)
-                    result.add(provider);
-            }
-            
-            return result;
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-            return Collections.EMPTY_LIST;
-        }
-    }
-    
-    //TODO: remove after not used
-    private void addListenersToProviders() {
-        for (Iterator p = providers.iterator(); p.hasNext(); ) {
-            MarkProvider provider = (MarkProvider) p.next();
-            
-            SPIAccessor.getDefault().addPropertyChangeListener(provider, this);
-        }
-    }
-    
-    /*package private*/ static List/*<Mark>*/ createMergedMarks(List/*<MarkProvider>*/ providers) {
-        List result = new ArrayList();
         
-        for (Iterator p = providers.iterator(); p.hasNext(); ) {
-            MarkProvider provider = (MarkProvider) p.next();
-            
-            result.addAll(provider.getMarks());
-        }
-        
-        return result;
-    }
-    
-    /*package private for tests*/synchronized List/*<Mark>*/ getMergedMarks() {
-        if (currentMarks == null) {
-            currentMarks = createMergedMarks(providers);
-        }
-        
-        return currentMarks;
-    }
-    
-    /*package private*/ static List/*<Mark>*/ getStatusesForLineImpl(int line, SortedMap marks) {
-        List inside = (List) marks.get(new Integer(line));
-        
-        if (inside == null)
-            return Collections.EMPTY_LIST;
-        
-        return inside;
-    }
-    
-    /*package private*/ Mark getMainMarkForBlock(int startLine, int endLine) {
-        return getMainMarkForBlockImpl(startLine, endLine, getMarkMap());
-    }
-    
-    /*package private*/ static Mark getMainMarkForBlockImpl(int startLine, int endLine, SortedMap marks) {
-        int current = startLine - 1;
-        Mark found = null;
-        
-        while ((current = findNextUsedLine(current, marks)) != Integer.MAX_VALUE && current <= endLine) {
-            for (Iterator i = getStatusesForLineImpl(/*doc, */current, marks).iterator(); i.hasNext(); ) {
-                Mark newMark = (Mark) i.next();
-                
-                if (found == null || newMark.getStatus().compareTo(found.getStatus()) > 0) {
-                    found = newMark;
-                }
-            }
-            current++;
-        }
-        
-        return found;
-    }
-    
     /*package private for tests*/int[] getLinesSpan(int currentLine) {
         double position  = modelToView(currentLine);
         
@@ -274,10 +159,10 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int    startLine = currentLine;
         int    endLine   = currentLine;
         
-        while (position == modelToView(startLine - 1))//TODO startLine > 0
+        while (position == modelToView(startLine - 1) && startLine > 0)
             startLine--;
         
-        while (position == modelToView(endLine + 1))//TODO endLine < line count
+        while ((endLine + 1) < Utilities.getRowCount(doc) && position == modelToView(endLine + 1))
             endLine++;
         
         return new int[] {startLine, endLine};
@@ -314,19 +199,20 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     private void drawGlobalStatus(Graphics g) {
-        UpToDateStatus type = computeTotalStatusType();
+        UpToDateStatus type = data.computeTotalStatusType();
         Color resultingColor;
         
         if (type == UpToDateStatus.UP_TO_DATE_DIRTY) {
                 drawOneColorGlobalStatus(g, Color.GRAY);
         } else {
             if (type == UpToDateStatus.UP_TO_DATE_PROCESSING) {
-                Status totalStatus = computeTotalStatus();
-                
-                drawInProgressGlobalStatus(g, Status.getDefaultColor(totalStatus));
+                drawOneColorGlobalStatus(g, Color.GRAY);
+//                Status totalStatus = data.computeTotalStatus();
+//                
+//                drawInProgressGlobalStatus(g, Status.getDefaultColor(totalStatus));
             } else {
                 if (type == UpToDateStatus.UP_TO_DATE_OK) {
-                    Status totalStatus = computeTotalStatus();
+                    Status totalStatus = data.computeTotalStatus();
                     
                     drawOneColorGlobalStatus(g, Status.getDefaultColor(totalStatus));
                 } else {
@@ -336,84 +222,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         }
     }
     
-    /*package private*/ static int findNextUsedLine(int from, SortedMap/*<Mark>*/ marks) {
-        SortedMap next = marks.tailMap(new Integer(from + 1));
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.findNextUsedLine from: " + from);
-            ERR.log("AnnotationView.findNextUsedLine marks: " + marks);
-            ERR.log("AnnotationView.findNextUsedLine next: " + next);
-        }
-        
-        if (next.isEmpty()) {
-            return Integer.MAX_VALUE;
-        }
-        
-        Integer nextLine = (Integer) next.firstKey();
-        
-        return nextLine.intValue();
-    }
-    
-    private void registerMark(Mark mark) {
-        int[] span = mark.getAssignedLines();
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.registerMark mark: " + mark);
-            ERR.log("AnnotationView.registerMark lines from-to: " + span[0] + "-" + span[1]);
-        }
-        
-        for (int line = span[0]; line <= span[1]; line++) {
-            Integer lineInt = new Integer(line);
-            
-            List inside = (List) marksMap.get(lineInt);
-            
-            if (inside == null) {
-                marksMap.put(lineInt, inside = new ArrayList());
-            }
-            
-            inside.add(mark);
-        }
-    }
-    
-    private void unregisterMark(Mark mark) {
-        int[] span = mark.getAssignedLines();
-        
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.unregisterMark mark: " + mark);
-            ERR.log("AnnotationView.unregisterMark lines from-to: " + span[0] + "-" + span[1]);
-        }
-        
-        for (int line = span[0]; line <= span[1]; line++) {
-            Integer lineInt = new Integer(line);
-            
-            List inside = (List) marksMap.get(lineInt);
-            
-            if (inside != null) {
-                inside.remove(mark);
-                
-                if (inside.size() == 0) {
-                    marksMap.remove(lineInt);
-                }
-            }
-        }
-    }
-    
-    /*package private for tests*/synchronized SortedMap getMarkMap() {
-        if (marksMap == null) {
-            List/*<Mark>*/ marks = getMergedMarks();
-            marksMap = new TreeMap();
-            
-            for (Iterator i = marks.iterator(); i.hasNext(); ) {
-                Mark mark = (Mark) i.next();
-                
-                registerMark(mark);
-            }
-        }
-        
-        return marksMap;
-    }
-    
     public void paintComponent(Graphics g) {
+//        Thread.dumpStack();
         long startTime = System.currentTimeMillis();
         super.paintComponent(g);
         
@@ -423,9 +233,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         
         g.fillRect(0, 0, getWidth(), getHeight());
         
-        SortedMap marks = getMarkMap();
+//        SortedMap marks = getMarkMap();
         
-        int annotatedLine = findNextUsedLine(-1, marks);
+        int annotatedLine = data.findNextUsedLine(-1);
         
         while (annotatedLine != Integer.MAX_VALUE) {
 //            System.err.println("annotatedLine = " + annotatedLine );
@@ -433,7 +243,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
             int   startLine = lineSpan[0];
             int   endLine   = lineSpan[1];
             
-            Mark m = getMainMarkForBlock(startLine, endLine);
+            Mark m = data.getMainMarkForBlock(startLine, endLine);
             
             if (m != null) {
                 Status s = m.getStatus();
@@ -453,7 +263,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 }
             }
             
-            annotatedLine = findNextUsedLine(endLine, marks);
+            annotatedLine = data.findNextUsedLine(endLine);
         }
         
         drawGlobalStatus(g);
@@ -462,63 +272,54 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         
         long end = System.currentTimeMillis();
         
-        if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log("AnnotationView.paintComponent consumed: " + (end - startTime));
+        if (TIMING_ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
+            TIMING_ERR.log("AnnotationView.paintComponent consumed: " + (end - startTime));
         }
-    }
-    
-    /*package private for tests*/Status computeTotalStatus() {
-        Status targetStatus = Status.STATUS_OK;
-        Collection/*<Mark>*/ marks = getMergedMarks();
-        
-        for (Iterator m = marks.iterator(); m.hasNext(); ) {
-            Mark mark = (Mark) m.next();
-            Status s = mark.getStatus();
-            
-            targetStatus = Status.getCompoundStatus(s, targetStatus);
-        }
-        
-        return targetStatus;
-    }
-    
-    /*package private for tests*/UpToDateStatus computeTotalStatusType() {
-        UpToDateStatus statusType = UpToDateStatus.UP_TO_DATE_OK;
-        
-        for (Iterator p = providers.iterator(); p.hasNext(); ) {
-            MarkProvider provider = (MarkProvider) p.next();
-            UpToDateStatus newType = provider.getUpToDate();
-            
-            if (newType.compareTo(statusType) > 0) {
-                statusType = newType;
-            }
-        }
-        
-        return statusType;
     }
 
-    private void fullRepaint() {
+    /*private*/ void fullRepaint() {
         fullRepaint(false);
     }
     
-    private void fullRepaint(final boolean clearMarksCache) {
-        //Fix for #54193:
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (clearMarksCache) {
-                    synchronized (AnnotationView.this) {
-                        currentMarks = null;
-                        marksMap = null;
-                    }
-                }
-                
-                invalidate();
-                repaint();
-            }
-        });
+    /*private*/ void fullRepaint(final boolean clearMarksCache) {
+        synchronized (repaintTaskRunnable) {
+            repaintTaskRunnable.setClearMarksCache(clearMarksCache);
+            repaintTask.schedule(QUIET_TIME);
+        }
     }
     
-    public void changedAll() {
-        fullRepaint(true);
+    private class RepaintTask implements Runnable {
+        private boolean clearMarksCache;
+
+        public void setClearMarksCache(boolean clearMarksCache) {
+            this.clearMarksCache |= clearMarksCache;
+        }
+        
+        private synchronized boolean readAndDestroyClearMarksCache() {
+            boolean result = clearMarksCache;
+            
+            clearMarksCache = false;
+            
+            return result;
+        }
+
+        public void run() {
+            final boolean clearMarksCache = readAndDestroyClearMarksCache();
+            
+            //Fix for #54193:
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    if (clearMarksCache) {
+                        synchronized (AnnotationView.this) {
+                            data.clear();
+                        }
+                    }
+                    
+                    invalidate();
+                    repaint();
+                }
+            });
+        }
     }
     
     private void documentChange() {
@@ -533,35 +334,61 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         return getHeight() - HEIGHT_OFFSET - HEIGHT_LOWER_OFFSET;
     }
     
-    private Rectangle[] modelToViewCache = null;
+    private int[] modelToViewCache = null;
     private int lines = -1;
     private int height = -1;
     
-    private synchronized Rectangle getModelToViewImpl(int line) {
-        try {
-            if (modelToViewCache == null || height != pane.getHeight() || lines != Utilities.getRowCount(doc)) {
-                modelToViewCache = new Rectangle[Utilities.getRowCount(doc) + 2];
-                lines = Utilities.getRowCount(doc);
-                height = pane.getHeight();
-            }
+    private int getYFromPos(int offset) throws BadLocationException {
+        TextUI ui = pane.getUI();
+        int result;
+        
+        if (ui instanceof BaseTextUI) {
+            result = ((BaseTextUI) ui).getYFromPos(offset);
+        } else {
+            Rectangle r = pane.modelToView(offset);
             
-            Rectangle result = modelToViewCache[line + 1];
-            
-            if (result == null) {
-                int lineOffset = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), line);
-                
-                modelToViewCache[line + 1] = result = pane.modelToView(lineOffset);
-            }
-            
+            result = r != null ? r.y : 0;
+        }
+        
+        if (result == 0) {
+            return -1;
+        } else {
             return result;
-        } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-            return null;
         }
     }
     
+    private synchronized int getModelToViewImpl(int line) throws BadLocationException {
+        int docLines = Utilities.getRowCount(doc);
+        
+        if (modelToViewCache == null || height != pane.getHeight() || lines != docLines) {
+            modelToViewCache = new int[Utilities.getRowCount(doc) + 2];
+            lines = Utilities.getRowCount(doc);
+            height = pane.getHeight();
+        }
+        
+        if (line >= docLines)
+            return -1;
+        
+        int result = modelToViewCache[line + 1];
+        
+        if (result == 0) {
+            int lineOffset = Utilities.getRowStartFromLineOffset((BaseDocument) pane.getDocument(), line);
+            
+            modelToViewCache[line + 1] = result = getYFromPos(lineOffset);
+        }
+        
+        if (result == (-1))
+            result = 0;
+        
+        return result;
+    }
+    
     /*package private*/ double modelToView(int line) {
-            Rectangle r = getModelToViewImpl(line);
+        try {
+            int r = getModelToViewImpl(line);
+            
+            if (r == (-1))
+                return -1.0;
             
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: line=" + line); // NOI18N
@@ -571,20 +398,20 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                 ERR.log(ErrorManager.INFORMATIONAL, "AnnotationView.modelToView: getUsableHeight()=" + getUsableHeight()); // NOI18N
             }
             
-            if (r == null) {
-                return -1;
-            }
-            
             if (getComponentHeight() <= getUsableHeight()) {
                 //1:1 mapping:
-                return r.getY() + HEIGHT_OFFSET;
+                return r + HEIGHT_OFFSET;
             } else {
-                double position = r.getY() / getComponentHeight();
+                double position = r / getComponentHeight();
                 int    blocksCount = (int) (getUsableHeight() / (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE));
                 int    block = (int) (position * blocksCount);
                 
                 return block * (PIXELS_FOR_LINE + LINE_SEPARATOR_SIZE) + HEIGHT_OFFSET;
             }
+        } catch (BadLocationException e) {
+            ErrorManager.getDefault().notify(e);
+            return -1.0;
+        }
     }
     
     private static final int VIEW_TO_MODEL_IMPORTANCE = ErrorManager.INFORMATIONAL;
@@ -655,7 +482,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int   endLine    = lineSpan[1];
         
         if (startLine != (-1)) {
-            return getMainMarkForBlock(startLine, endLine);
+            return data.getMainMarkForBlock(startLine, endLine);
         }
         
         return null;
@@ -765,17 +592,9 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         int y = event.getY();
         
         if (y <= HEIGHT_OFFSET) {
-            int errors = 0;
-            int warnings = 0;
-            Collection/*<Mark>*/ marks = getMergedMarks();
-            
-            for (Iterator m = marks.iterator(); m.hasNext(); ) {
-                Mark mark = (Mark) m.next();
-                Status s = mark.getStatus();
-                    
-                errors += s == Status.STATUS_ERROR ? 1 : 0;
-                warnings += s == Status.STATUS_WARNING ? 1 : 0;
-            }
+            int[] errWar = data.computeErrorsAndWarnings();
+            int errors = errWar[0];
+            int warnings = errWar[1];
             
             if (errors == 0 && warnings == 0) {
                 return NbBundle.getBundle(AnnotationView.class).getString("TP_NoErrors"); // NOI18N
@@ -820,55 +639,6 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         fullRepaint();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if ("marks".equals(evt.getPropertyName())) {
-            synchronized (this) {
-                Collection nue = (Collection) evt.getNewValue();
-                Collection old = (Collection) evt.getOldValue();
-                
-                if (nue == null && evt.getSource() instanceof MarkProvider)
-                    nue = ((MarkProvider) evt.getSource()).getMarks();
-                
-                if (old != null && nue != null) {
-                    List added = new ArrayList(nue);
-                    List removed = new ArrayList(old);
-                    
-                    added.removeAll(old);
-                    removed.removeAll(nue);
-                    
-                    if (marksMap != null) {
-                        for (Iterator i = removed.iterator(); i.hasNext(); ) {
-                            unregisterMark((Mark) i.next());
-                        }
-                        
-                        for (Iterator i = added.iterator(); i.hasNext(); ) {
-                            registerMark((Mark) i.next());
-                        }
-                    }
-                    
-                    if (currentMarks != null) {
-                        currentMarks.removeAll(removed);
-                        currentMarks.addAll(added);
-                    }
-                    
-                    fullRepaint(false);
-                } else {
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "For performance reasons, the providers should fill both old and new value in property changes. Problematic event: " + evt);
-                    fullRepaint(true);
-                }
-                return ;
-            }
-        }
-        
-        if (evt.getSource() == this.pane && "document".equals(evt.getPropertyName())) {
-            updateForNewDocument();
-            changedAll();
-            return ;
-        }
-        
-        changedAll();
-    }
-
     public void removeUpdate(DocumentEvent e) {
         documentChange();
     }
@@ -881,4 +651,13 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         //ignored...
     }
 
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource() == this.pane && "document".equals(evt.getPropertyName())) {
+            updateForNewDocument();
+            return ;
+        }
+        
+        fullRepaint();
+    }
+    
 }
