@@ -23,14 +23,14 @@ public class RMIAuthenticatedUser {
     
     private String name;
     private String password;
-    private String access = "readonly";
+    private String access = "readonly";// NOI18N
     
     /** Creates a new instance of RMIAuthenticatedUser */
     public RMIAuthenticatedUser() {
     }
     
     private static boolean isValidKey(String key) {
-       if(key == null || key.equals("")) return false;
+       if(key == null || key.equals("")) return false;// NOI18N
         
        boolean precedingBackslash = false;
        char[] val = key.toCharArray();
@@ -79,7 +79,7 @@ public class RMIAuthenticatedUser {
     }
     
     private String cleanPassword() {  
-       if(password == null || password.equals("")) return null; 
+       if(password == null || password.equals("")) return null; // NOI18N
        return password;
     }
     

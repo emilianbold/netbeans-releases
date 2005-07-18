@@ -79,7 +79,7 @@ public class MBeanAttribute {
         this.name = attrName;
         this.typeName = attrType;
         this.access = attrAccess;
-        this.description = "";
+        this.description = ""; // NOI18N
         this.getter = null;
         this.setter = null;
     }

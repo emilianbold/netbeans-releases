@@ -64,19 +64,19 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
     /** name of panel &quot;Name &amp; Location&quot; */
     private final String nameTarget = NbBundle.getMessage(
             JMXConfigWizardIterator.class,
-            "LBL_panel_Target");  
+            "LBL_panel_Target");  // NOI18N
     
     private final String nameRMI = NbBundle.getMessage(
             JMXConfigWizardIterator.class,
-            "LBL_RMI_Panel");  
+            "LBL_RMI_Panel");  // NOI18N
     
     private final String nameSNMP = NbBundle.getMessage(
             JMXConfigWizardIterator.class,
-            "LBL_SNMP_Panel");  
+            "LBL_SNMP_Panel");  // NOI18N
     
     private final String nameOther = NbBundle.getMessage(
             JMXConfigWizardIterator.class,
-            "LBL_OTHER_Panel");  
+            "LBL_OTHER_Panel");  // NOI18N
     
     /** index of the current panel */
     private int current;
@@ -257,42 +257,42 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
 
         String [] panelNames =  new String [] {
           NbBundle.getMessage(JMXConfigWizardIterator.class,
-                  "LBL_panel_chooseFileType"),
+                  "LBL_panel_chooseFileType"),// NOI18N
           NbBundle.getMessage(JMXConfigWizardIterator.class,
-                  "LBL_panel_Target"),
+                  "LBL_panel_Target"),// NOI18N
           NbBundle.getMessage(JMXConfigWizardIterator.class,
-                  "LBL_RMI_Panel"),
+                  "LBL_RMI_Panel"),// NOI18N
           NbBundle.getMessage(JMXConfigWizardIterator.class,
-                  "LBL_SNMP_Panel"),
+                  "LBL_SNMP_Panel"),// NOI18N
           NbBundle.getMessage(JMXConfigWizardIterator.class,
-                  "LBL_OTHER_Panel"),
+                  "LBL_OTHER_Panel"),// NOI18N
           };
 
         ((javax.swing.JComponent)getTargetPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); 
+                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
         ((javax.swing.JComponent)getTargetPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); 
+                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); // NOI18N
         ((javax.swing.JComponent)getRMIPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); 
+                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
         ((javax.swing.JComponent)getRMIPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); 
+                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(1)); // NOI18N
         ((javax.swing.JComponent)getSNMPPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); 
+                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
         ((javax.swing.JComponent)getSNMPPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); 
+                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
         ((javax.swing.JComponent)getOtherPanel().getComponent()).
-                putClientProperty("WizardPanel_contentData", panelNames); 
+                putClientProperty("WizardPanel_contentData", panelNames); // NOI18N
         ((javax.swing.JComponent)getOtherPanel().getComponent()).
-                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(3)); 
+                putClientProperty("WizardPanel_contentSelectedIndex", new Integer(3)); // NOI18N
         
         wiz.putProperty(WizardConstants.RMI_PORT, 
-                Integer.valueOf(bundle.getString("RMI_Port_Default")));
+                Integer.valueOf(bundle.getString("RMI_Port_Default")));// NOI18N
         wiz.putProperty(WizardConstants.SNMP_PORT, 
-                Integer.valueOf(bundle.getString("SNMP_Port_Default")));
+                Integer.valueOf(bundle.getString("SNMP_Port_Default")));// NOI18N
         wiz.putProperty(WizardConstants.SNMP_TRAP_PORT, 
-                Integer.valueOf(bundle.getString("SNMP_Trap_Port_Default")));
-        wiz.putProperty(WizardConstants.SNMP_INTERFACES, 
-                bundle.getString("SNMP_Interface_Default"));
+                Integer.valueOf(bundle.getString("SNMP_Trap_Port_Default")));// NOI18N
+        wiz.putProperty(WizardConstants.SNMP_INTERFACES,
+                bundle.getString("SNMP_Interface_Default"));// NOI18N
         
     }
 
@@ -323,7 +323,7 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                 
         } catch (Exception ex) {
             WizardHelpers.logErrorMessage(
-                    "Management Configuration generation ", ex);
+                    "Management Configuration generation ", ex);// NOI18N
         }
                
         return Collections.singleton(createdFile);

@@ -22,7 +22,7 @@ public class FeaturesDeployer {
     private static boolean runOnSun() {    
         if(enable == null)  {
             try {
-                Class.forName("com.sun.jmx.mbeanserver.JmxMBeanServer");
+                Class.forName("com.sun.jmx.mbeanserver.JmxMBeanServer");// NOI18N
                 enable = Boolean.TRUE;
             }catch(Throwable e) {
                 enable = Boolean.FALSE;
@@ -39,7 +39,7 @@ public class FeaturesDeployer {
      */
     public static String enableLocal() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableLocalManagementAction.instance" :
+            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableLocalManagementAction.instance" : // NOI18N
             null;
     }
     
@@ -49,7 +49,7 @@ public class FeaturesDeployer {
      */
     public static String debugLocal() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugLocalManagementAction.instance" :
+            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugLocalManagementAction.instance" : // NOI18N
             null;
     }
      
@@ -59,7 +59,7 @@ public class FeaturesDeployer {
      */
     public static String enableRemote() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableRemoteManagementAction.instance" :
+            "Actions/Management/org-netbeans-modules-jmx-runtime-EnableRemoteManagementAction.instance" : // NOI18N
             null;
     }
       
@@ -69,7 +69,7 @@ public class FeaturesDeployer {
      */
     public static String debugRemote() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugRemoteManagementAction.instance" :
+            "Actions/Management/org-netbeans-modules-jmx-runtime-DebugRemoteManagementAction.instance" : // NOI18N
             null;
     }
     
@@ -79,7 +79,7 @@ public class FeaturesDeployer {
       */
      public static String launchJConsole() {
         return runOnSun() ?
-            "Actions/Management/org-netbeans-modules-jmx-jconsole-LaunchAction.instance" :
+            "Actions/Management/org-netbeans-modules-jmx-jconsole-LaunchAction.instance" : // NOI18N
             null;
     }
      
@@ -89,7 +89,7 @@ public class FeaturesDeployer {
      */
     public static String enableManagementProperties() {
         return runOnSun() ?
-            "Management/Templates/management.properties" :
+            "Management/Templates/management.properties" : // NOI18N
             null;
     }
 }

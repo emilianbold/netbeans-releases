@@ -184,8 +184,8 @@ public class RMIPanel extends javax.swing.JPanel {
                     
                 case 2: {
                     JComboBox access = new JComboBox();
-                    access.setName("access");
-                    access.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "readonly", "readwrite" }));
+                    access.setName( "access");// NOI18N
+                    access.setModel(new javax.swing.DefaultComboBoxModel(new String[] {  "readonly",  "readwrite" }));// NOI18N
                     Object obj = getModel().getValueAt(row,column);
                     if(obj == null)
                         access.setSelectedIndex(0);
@@ -208,7 +208,7 @@ public class RMIPanel extends javax.swing.JPanel {
             
             if (column == 2) {
                 JComboBox access = new JComboBox();
-                access.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "readonly", "readwrite" }));
+                access.setModel(new javax.swing.DefaultComboBoxModel(new String[] {  "readonly",  "readwrite" }));// NOI18N
                 access.setEditable(false);
                 access.setSelectedIndex(0);
                 return new AccessRenderer(access);
@@ -296,12 +296,12 @@ public class RMIPanel extends javax.swing.JPanel {
         tableNameJLabel.setText(WizardConstants.CONFIG_TABLE_CREDENTIALS);
         
         //Table
-        final String[] columnNames = { bundle.getString("LBL_TABLE_ROLE"),
-                                       bundle.getString("LBL_TABLE_PASSWORD"),
-                                       bundle.getString("LBL_TABLE_ACCESS") };
+        final String[] columnNames = { bundle.getString("LBL_TABLE_ROLE"),// NOI18N
+                                       bundle.getString("LBL_TABLE_PASSWORD"),// NOI18N
+                                       bundle.getString("LBL_TABLE_ACCESS") };// NOI18N
         tableModel = new AuthTableModel();
         authTable = new AuthTable(tableModel);
-        authTable.setName("authTable");
+        authTable.setName( "authTable");// NOI18N
         authTable.setPreferredSize(new Dimension(400, 100));
         authTable.setRowSelectionAllowed(true);
         authTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -325,8 +325,8 @@ public class RMIPanel extends javax.swing.JPanel {
         //AddAuthTableListener listener = new AddAuthTableListener(tableModel, removeAuth);
         //addAuth.addActionListener(listener);
         
-        Mnemonics.setLocalizedText(addAuth, bundle.getString("LBL_RMI_ADD_AUTH"));
-        Mnemonics.setLocalizedText(removeAuth, bundle.getString("LBL_RMI_REMOVE_AUTH"));
+        Mnemonics.setLocalizedText(addAuth, bundle.getString("LBL_RMI_ADD_AUTH"));// NOI18N
+        Mnemonics.setLocalizedText(removeAuth, bundle.getString("LBL_RMI_REMOVE_AUTH"));// NOI18N
         
         removeAuth.setEnabled(false);
         addAuth.setEnabled(false);
@@ -386,7 +386,7 @@ public class RMIPanel extends javax.swing.JPanel {
         
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigPanel.class,
-                "LBL_RMI_Panel"));
+                 "LBL_RMI_Panel"));
     }
     
     
@@ -771,9 +771,9 @@ public class RMIPanel extends javax.swing.JPanel {
             if(getPanel().authSelected)
                 val = getPanel().tableModel.isValid();
             
-            String msg = "";
+            String msg =  "";// NOI18N
             if(!val)
-                msg = getPanel().bundle.getString("LBL_State_Invalid_User");
+                msg = getPanel().bundle.getString("LBL_State_Invalid_User");// NOI18N
             
             setErrorMsg(msg);
             return val;

@@ -19,9 +19,9 @@ package org.netbeans.modules.jmx;
  */
 public class MBeanOperationParameter {
     
-    private String paramName        = "";
-    private String paramType        = "";
-    private String paramDescription = "";
+    private String paramName        = "";// NOI18N
+    private String paramType        = "";// NOI18N
+    private String paramDescription = "";// NOI18N
     
     /**
      * Constructor

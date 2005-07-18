@@ -53,7 +53,7 @@ public class LaunchAction extends CallableSystemAction {
         OutputConsole console;
         public RunAction() {
             String str = NbBundle.getMessage(LaunchAction.class,
-                    "LBL_ActionName");
+                    "LBL_ActionName");// NOI18N
             console = new OutputConsole(str);
         }
         
@@ -65,33 +65,33 @@ public class LaunchAction extends CallableSystemAction {
             try {
                 JConsoleSettings settings = JConsoleSettings.getDefault();
                 String cp = settings.getClassPath();
-                String url = settings.getDefaultUrl() == null ? "" : settings.getDefaultUrl();
+                String url = settings.getDefaultUrl() == null ? "" : settings.getDefaultUrl();// NOI18N
                 String polling = String.valueOf(settings.getPolling());
-                String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions();
-                String tile = !settings.getTile() ? "-notile" : "";
-                String javahome = System.getProperty("jdk.home");
-                String fileSep = System.getProperty("file.separator");
-                String cpSep = System.getProperty("path.separator");
+                String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions();// NOI18N
+                String tile = !settings.getTile() ? "-notile" : "";// NOI18N
+                String javahome = System.getProperty("jdk.home");// NOI18N
+                String fileSep = System.getProperty("file.separator");// NOI18N
+                String cpSep = System.getProperty("path.separator");// NOI18N
                 
-                String commonCmdLine  = javahome + fileSep + "bin" + fileSep +"java" + " "+ vmOptions + " " + 
-                        "-classpath ";
+                String commonCmdLine  = javahome + fileSep + "bin" + fileSep +"java" + " "+ vmOptions + " " + // NOI18N
+                        "-classpath ";// NOI18N
                 
-                String enclosing = "";
+                String enclosing = "";// NOI18N
                 
-                String os = System.getProperty("os.name");
+                String os = System.getProperty("os.name");// NOI18N
                 
-                if(os.startsWith("Win"))
-                    enclosing = "\"";
+                if(os.startsWith("Win"))// NOI18N
+                    enclosing = "\"";// NOI18N
                 
-                String classpath = enclosing + cp + cpSep + javahome + fileSep + "lib" + 
-                                               fileSep + "jconsole.jar" + enclosing;
+                String classpath = enclosing + cp + cpSep + javahome + fileSep + "lib" + // NOI18N
+                                               fileSep + "jconsole.jar" + enclosing;// NOI18N
                     
                 String cmdLine = commonCmdLine + classpath + 
-                                 " sun.tools.jconsole.JConsole -interval="  + 
-                                 polling + " " + tile + " " + url;
+                                 " sun.tools.jconsole.JConsole -interval="  + // NOI18N
+                                 polling + " " + tile + " " + url;// NOI18N
                 
                 String msg1 = NbBundle.getMessage(LaunchAction.class,
-                        "LBL_ActionStartingMessage");
+                        "LBL_ActionStartingMessage");// NOI18N
                 console.message(msg1);
                 console.message(cmdLine);
                 
@@ -106,7 +106,7 @@ public class LaunchAction extends CallableSystemAction {
                 
                 
                 String msg2 = NbBundle.getMessage(LaunchAction.class,
-                        "LBL_ActionStartedMessage");
+                        "LBL_ActionStartedMessage");// NOI18N
                 //console.moveToFront();
                 
                 
@@ -133,12 +133,12 @@ public class LaunchAction extends CallableSystemAction {
     // action caption
     public String getName() {
         return (String)NbBundle.getMessage(LaunchAction.class,
-                "LBL_ActionName");
+                "LBL_ActionName");// NOI18N
     }
     
     
     protected String iconResource() {
-        return "org/netbeans/modules/jmx/resources/console.png";
+        return "org/netbeans/modules/jmx/resources/console.png";// NOI18N
     }
     
     protected boolean asynchronous() {
@@ -148,7 +148,7 @@ public class LaunchAction extends CallableSystemAction {
     public synchronized void performAction() {
         if(isStarted()) {
             String msg = NbBundle.getMessage(LaunchAction.class,
-                              "LBL_ActionAlreadyStartedMessage");
+                              "LBL_ActionAlreadyStartedMessage");// NOI18N
             console.message(msg);
             return;
         }
@@ -172,7 +172,7 @@ public class LaunchAction extends CallableSystemAction {
     synchronized void stopped() {
         started = false;
         String msg = NbBundle.getMessage(LaunchAction.class,
-                     "LBL_ActionStoppedMessage");
+                     "LBL_ActionStoppedMessage");// NOI18N
         console.message(msg);
         console = null;
     }

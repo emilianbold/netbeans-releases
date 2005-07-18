@@ -105,8 +105,8 @@ public class AgentGenerator
              Method initMethod = WizardHelpers.getMethod(clazz,
                      WizardConstants.PROP_AGENT_INIT_METHOD_NAME);
              // keep the first line of the body text
-             String[] bodyParts = initMethod.getBodyText().split("\n");
-             String textWithoutSampleCode = "\n" + bodyParts[2] + "\n\n";
+             String[] bodyParts = initMethod.getBodyText().split("\n");// NOI18N
+             String textWithoutSampleCode = "\n" + bodyParts[2] + "\n\n";// NOI18N
              initMethod.setBodyText(textWithoutSampleCode);
         } finally {
             JavaModel.getJavaRepository().endTrans();

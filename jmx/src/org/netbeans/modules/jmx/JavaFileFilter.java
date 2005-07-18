@@ -48,8 +48,8 @@ public class JavaFileFilter extends FileFilter {
 	    }
 	    String extension = getExtension(f);
 	    if(extension != null && filters.get(extension) != null &&
-                (filters.get(extension) != "java" &&
-                    filters.get(extension) != "class")) {
+                (filters.get(extension) != "java" && // NOI18N
+                    filters.get(extension) != "class")) { // NOI18N
 		return true;
 	    };
 	}
@@ -89,7 +89,7 @@ public class JavaFileFilter extends FileFilter {
      * @return String the description
      */
     public String getDescription() {
-	return "Java/Class files";
+	return "Java/Class files"; // NOI18N
     }
 }
 

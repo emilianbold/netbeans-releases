@@ -29,7 +29,7 @@ public class MBeanOperation {
     private String name;
     private Method method;
     private String description;
-    private String returnTypeName = "";
+    private String returnTypeName = "";// NOI18N
     private ArrayList<MBeanOperationParameter> parameters = null;
     private ArrayList<MBeanOperationException> exceptions = null;
     
@@ -45,7 +45,7 @@ public class MBeanOperation {
         for (Iterator<JavaClass> it = exceptions.iterator(); it.hasNext();) {
             JavaClass excep = it.next();
             exceptArray.add(
-                    new MBeanOperationException(excep.getName(), ""));
+                    new MBeanOperationException(excep.getName(), ""));// NOI18N
         }
         this.exceptions = exceptArray;
         //inits parameters
@@ -55,8 +55,8 @@ public class MBeanOperation {
         for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
             Parameter param = it.next();
             paramArray.add(
-                    new MBeanOperationParameter("param"+ i, 
-                        param.getType().getName(), ""));
+                    new MBeanOperationParameter("param"+ i, // NOI18N
+                        param.getType().getName(), ""));// NOI18N
             i++;
         }
         this.parameters = paramArray;
@@ -93,8 +93,8 @@ public class MBeanOperation {
         
         for (int i = 0; i < parameters.size(); i++) {
              current = getParameter(i);
-             if (current.getParamName().equals(""))
-                 current.setParamName("p"+i);
+             if (current.getParamName().equals(""))// NOI18N
+                 current.setParamName("p"+i);// NOI18N
         }
     }
     
@@ -149,7 +149,7 @@ public class MBeanOperation {
      */
     public void addParameter(MBeanOperationParameter param) {
         if (parameters == null)
-            throw new IllegalStateException("This operation has no params list.");
+            throw new IllegalStateException("This operation has no params list.");// NOI18N
         this.parameters.add(param);
     }
     
@@ -159,7 +159,7 @@ public class MBeanOperation {
      */
     public void removeParameter(MBeanOperationParameter param) {
         if (parameters == null)
-            throw new IllegalStateException("This operation has no params list.");
+            throw new IllegalStateException("This operation has no params list.");// NOI18N
         this.parameters.remove(param);
     }
     
@@ -169,7 +169,7 @@ public class MBeanOperation {
      */
     public void removeParameter(int index) {
         if (parameters == null)
-            throw new IllegalStateException("This operation has no params list.");
+            throw new IllegalStateException("This operation has no params list.");// NOI18N
         this.parameters.remove(index);
     }
     
@@ -181,7 +181,7 @@ public class MBeanOperation {
      */
     public MBeanOperationParameter getParameter(int index) {
         if (parameters == null)
-            throw new IllegalStateException("This operation has no params list.");
+            throw new IllegalStateException("This operation has no params list.");// NOI18N
         return parameters.get(index);
     }
     
@@ -208,16 +208,16 @@ public class MBeanOperation {
      * @return String the string containing the parameter couples
      */
     public String getSignature() {
-        String paramName = "";
-        String paramType = "";
-        String paramString = "";
+        String paramName = "";// NOI18N
+        String paramType = "";// NOI18N
+        String paramString = "";// NOI18N
         for(int i = 0; i < parameters.size(); i++) {
             paramName = parameters.get(i).getParamName();
             paramType = parameters.get(i).getParamType();
-            paramString += paramType + " " + paramName;
+            paramString += paramType + " " + paramName;// NOI18N
             
             if (i < parameters.size() -1){
-                paramString += ",";
+                paramString += ",";// NOI18N
             }
         }
         return paramString;
@@ -230,14 +230,14 @@ public class MBeanOperation {
      * @return String the concat string of parameter types
      */
     public String getSimpleSignature() {
-        String paramType = "";
-        String paramString = "";
+        String paramType = "";// NOI18N
+        String paramString = "";// NOI18N
         for(int i = 0; i < parameters.size(); i++) {
             paramType = parameters.get(i).getParamType();
             paramString += paramType;
             
             if (i < parameters.size() -1){
-                paramString += ",";
+                paramString += ",";// NOI18N
             }
         }
         return paramString;
@@ -249,7 +249,7 @@ public class MBeanOperation {
      */
     public void addException(MBeanOperationException excep) {
         if (exceptions == null)
-            throw new IllegalStateException("This operation has no exceptions list.");
+            throw new IllegalStateException("This operation has no exceptions list.");// NOI18N
         this.exceptions.add(excep);
     }
     
@@ -260,7 +260,7 @@ public class MBeanOperation {
      */
     public void removeException(MBeanOperationException excep) {
         if (exceptions == null)
-            throw new IllegalStateException("This operation has no exceptions list.");
+            throw new IllegalStateException("This operation has no exceptions list.");// NOI18N
         this.exceptions.remove(excep);
     }
     
@@ -270,7 +270,7 @@ public class MBeanOperation {
      */
     public void removeException(int index) {
         if (exceptions == null)
-            throw new IllegalStateException("This operation has no exceptions list.");
+            throw new IllegalStateException("This operation has no exceptions list.");// NOI18N
         this.exceptions.remove(index);
     }
     
@@ -282,7 +282,7 @@ public class MBeanOperation {
      */
     public MBeanOperationException getException(int index) {
         if (exceptions == null)
-            throw new IllegalStateException("This operation has no exceptions list.");
+            throw new IllegalStateException("This operation has no exceptions list.");// NOI18N
         return exceptions.get(index);
     }
     
@@ -311,13 +311,13 @@ public class MBeanOperation {
      */
     
     public String getExceptionClasses() {
-        String excepClassAndDescription = "";
+        String excepClassAndDescription = "";// NOI18N
         for (int i = 0; i < exceptions.size(); i++) {
             excepClassAndDescription += 
                     exceptions.get(i).getExceptionClass();
             
             if (i < exceptions.size() -1)
-                excepClassAndDescription += ",";
+                excepClassAndDescription += ",";// NOI18N
         }
         return excepClassAndDescription;
     }
@@ -333,7 +333,7 @@ public class MBeanOperation {
         String[] classes = copyString.split(WizardConstants.EXCEPTIONS_SEPARATOR);
         
         for (int i = 0; i < classes.length; i++) {
-            addException(new MBeanOperationException(classes[i],""));
+            addException(new MBeanOperationException(classes[i],""));// NOI18N
         }
     }
     

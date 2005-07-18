@@ -79,8 +79,7 @@ public class AgentPanel extends javax.swing.JPanel {
         mainSelected = mainJCheckBox.isSelected();
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(AgentPanel.class, 
-                                         "LBL_Agent_Panel"));                                
+        setName(NbBundle.getMessage(AgentPanel.class, "LBL_Agent_Panel"));  //NOI18N                              
     }
     
     private static boolean shouldEnableMainProjectClass() {
@@ -231,7 +230,7 @@ public class AgentPanel extends javax.swing.JPanel {
          * @return <CODE>HelpCtx</CODE> the corresponding help context.
          */
         public HelpCtx getHelp() {
-           return new HelpCtx("jmx_agent_app");  
+           return new HelpCtx("jmx_agent_app"); //NOI18N
         }
       
     } 

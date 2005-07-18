@@ -39,7 +39,7 @@ public class WizardConstants
     //Used for generation of a JMX  Agent
     public static final String AGENT_TEMPLATE_CLASS             = "Agent"; // NOI18N
     public static final String MAIN_METHOD_NAME                 = "main"; // NOI18N
-    public static final String PROP_AGENT_DEFAULT_NAME          = "JMXAgent";
+    public static final String PROP_AGENT_DEFAULT_NAME          = "JMXAgent";// NOI18N
     public static final String PROP_AGENT_INIT_METHOD_NAME      = "init"; // NOI18N
     public static final String PROP_AGENT_MAIN_METHOD_SELECTED  = 
             "wizdata.agentMainMethodSelected"; // NOI18N
@@ -76,158 +76,158 @@ public class WizardConstants
             "wizdata.managerUserPassword"; // NOI18N
     public static final String PROP_MANAGER_FREEFORM_URL = 
         "wizdata.managerUrl"; // NOI18N
-    public static final Integer MANAGER_MAX_PORT_NUMBER = 65535; // NOI18N
+    public static final Integer MANAGER_MAX_PORT_NUMBER = 65535;
     
     // project hierarchy layout for code generation
-    static public final String SRC_DIR  = "src";
-    static public final String ETC_DIR  = "etc";
-    static public final String TEST_DIR = "test";
+    static public final String SRC_DIR  = "src";// NOI18N
+    static public final String ETC_DIR  = "etc";// NOI18N
+    static public final String TEST_DIR = "test";// NOI18N
 
-    static public final String JAVA_EXT             = "java";
-    static public final String PROPERTIES_EXT       = "properties";
-    static public final String ACCESS_EXT           = "access";
-    static public final String PASSWORD_EXT         = "password";
-    static public final String MBEAN_ITF_SUFFIX     = "MBean";
-    static public final String JUNIT_TEST_SUFFIX    = "Test";
-    static public final String AGENT_ITF_SUFFIX     = "Agent";
-    public static final String MBEAN_SUPPORT_SUFFIX = "DynamicSupport";
+    static public final String JAVA_EXT             = "java";// NOI18N
+    static public final String PROPERTIES_EXT       = "properties";// NOI18N
+    static public final String ACCESS_EXT           = "access";// NOI18N
+    static public final String PASSWORD_EXT         = "password";// NOI18N
+    static public final String MBEAN_ITF_SUFFIX     = "MBean";// NOI18N
+    static public final String JUNIT_TEST_SUFFIX    = "Test";// NOI18N
+    static public final String AGENT_ITF_SUFFIX     = "Agent";// NOI18N
+    public static final String MBEAN_SUPPORT_SUFFIX = "DynamicSupport";// NOI18N
     
-    static public final String GETTER_PREFIX     = "get";
-    static public final String SETTER_PREFIX     = "set";
-    static public final String PARAM_NAME_PREFIX = "p";
-    static public final String ATTR_RET_NAME     = "value";
+    static public final String GETTER_PREFIX     = "get";// NOI18N
+    static public final String SETTER_PREFIX     = "set";// NOI18N
+    static public final String PARAM_NAME_PREFIX = "p";// NOI18N
+    static public final String ATTR_RET_NAME     = "value";// NOI18N
 
-    static public final String ATTR_ACCESS_READ_WRITE = "Read / Write";
-    static public final String ATTR_ACCESS_READ_ONLY  = "ReadOnly";
-    static public final String ATTR_ACCESS_WRITE_ONLY  = "WriteOnly";
+    static public final String ATTR_ACCESS_READ_WRITE = "Read / Write";// NOI18N
+    static public final String ATTR_ACCESS_READ_ONLY  = "ReadOnly";// NOI18N
+    static public final String ATTR_ACCESS_WRITE_ONLY  = "WriteOnly";// NOI18N
     
-    static public final String ATTR_DESCR_DEFVALUE_PREFIX = "NewAttribute"; 
-    static public final String ATTR_DESCR_DEFVALUE_SUFFIX = " Description";
-    static public final String ATTR_NAME_DEFVALUE         = "NewAttribute";
+    static public final String ATTR_DESCR_DEFVALUE_PREFIX = "NewAttribute"; // NOI18N
+    static public final String ATTR_DESCR_DEFVALUE_SUFFIX = " Description";// NOI18N
+    static public final String ATTR_NAME_DEFVALUE         = "NewAttribute";// NOI18N
     
-    static public final String METH_NAME_DEFVALUE         = "newOperation";
-    static public final String METH_DESCR_DEFVALUE_PREFIX = "newOperation";
-    static public final String METH_DESCR_DEFVALUE_SUFFIX = " Description";
+    static public final String METH_NAME_DEFVALUE         = "newOperation";// NOI18N
+    static public final String METH_DESCR_DEFVALUE_PREFIX = "newOperation";// NOI18N
+    static public final String METH_DESCR_DEFVALUE_SUFFIX = " Description";// NOI18N
     
-    static public final String METH_PARAM_NAME_DEFVALUE         = "parameter";
-    static public final String METH_PARAM_DESCR_DEFVALUE_PREFIX = "parameter";
-    static public final String METH_PARAM_DESCR_DEFVALUE_SUFFIX = " Description";
+    static public final String METH_PARAM_NAME_DEFVALUE         = "parameter";// NOI18N
+    static public final String METH_PARAM_DESCR_DEFVALUE_PREFIX = "parameter";// NOI18N
+    static public final String METH_PARAM_DESCR_DEFVALUE_SUFFIX = " Description";// NOI18N
     
-    static public final String METH_EXCEP_CLASS_DEFVALUE = "java.lang.Exception"; 
-    static public final String METH_EXCEP_DESCR_DEFVALUE = "Exception description"; 
+    static public final String METH_EXCEP_CLASS_DEFVALUE = "java.lang.Exception"; // NOI18N
+    static public final String METH_EXCEP_DESCR_DEFVALUE = "Exception description"; // NOI18N
     
-    static public final String NOTIF_DESCR_DEFVALUE = "NewNotification Description";
+    static public final String NOTIF_DESCR_DEFVALUE = "NewNotification Description";// NOI18N
     
-    static public final String NOTIF_TYPE_DEFVALUE         = ""; 
-    static public final String NOTIF_TYPE_ATTRIBUTE_CHANGE = "ATTRIBUTE_CHANGE";
+    static public final String NOTIF_TYPE_DEFVALUE         = ""; // NOI18N
+    static public final String NOTIF_TYPE_ATTRIBUTE_CHANGE = "ATTRIBUTE_CHANGE";// NOI18N
     
     public static final String ATTRIBUTECHANGE_TYPE = 
-            "AttributeChangeNotification.ATTRIBUTE_CHANGE";
+            "AttributeChangeNotification.ATTRIBUTE_CHANGE";// NOI18N
     public static final String ATTRIBUTECHANGE_NOTIFICATION = 
-            "javax.management.AttributeChangeNotification";
-    public static final String NOTIFICATION = "javax.management.Notification";
+            "javax.management.AttributeChangeNotification";// NOI18N
+    public static final String NOTIFICATION = "javax.management.Notification";// NOI18N
     
     public static final String STANDARD_MBEAN_CLASS = 
-            "javax.management.StandardMBean";
+            "javax.management.StandardMBean";// NOI18N
     
-    static public final String MBEAN_POPUP_EDIT_BUTTON = "Edit";
-    static public final String MBEAN_DESCR_DEFVALUE    = " Description";
+    static public final String MBEAN_POPUP_EDIT_BUTTON = "Edit";// NOI18N
+    static public final String MBEAN_DESCR_DEFVALUE    = " Description";// NOI18N
     static public final String JUNIT_TEST_CLASS_NAME_DEFVALUE = 
-            "NewJMXResourceTest";        
-    static public final String MBEAN_NAME_DEFVALUE = "NewJMXResource";
+            "NewJMXResourceTest";        // NOI18N
+    static public final String MBEAN_NAME_DEFVALUE = "NewJMXResource";// NOI18N
     
     // MBean types
-    static public final String MBEAN_STANDARDMBEAN = "Standard";
-    static public final String MBEAN_DYNAMICMBEAN  = "Dynamic";
-    static public final String MBEAN_EXTENDED      = "Extended";
+    static public final String MBEAN_STANDARDMBEAN = "Standard";// NOI18N
+    static public final String MBEAN_DYNAMICMBEAN  = "Dynamic";// NOI18N
+    static public final String MBEAN_EXTENDED      = "Extended";// NOI18N
     
     // Attributes stored on the template wizard:
     /** type String. */
 
     // information of the MBean panel
-    public static final String PROP_MBEAN_DESCRIPTION            = "wizdata.mbeanDescription"; 
-    public static final String PROP_MBEAN_TYPE                   = "wizdata.mbeanType";        
-    public static final String PROP_JUNIT_SELECTED               = "wizdata.junitSelected";
+    public static final String PROP_MBEAN_DESCRIPTION            = "wizdata.mbeanDescription"; // NOI18N
+    public static final String PROP_MBEAN_TYPE                   = "wizdata.mbeanType";       // NOI18N 
+    public static final String PROP_JUNIT_SELECTED               = "wizdata.junitSelected";// NOI18N
     public static final String PROP_ATTR_NB                      = "wizdata.attributeNb"; // NOI18N
     public static final String PROP_ATTR_NAME                    = "wizdata.attributeName"; // NOI18N
     public static final String PROP_ATTR_TYPE                    = "wizdata.attributeType"; // NOI18N
-    public static final String PROP_ATTR_DESCR                   = "wizdata.attributeDescription"; 
+    public static final String PROP_ATTR_DESCR                   = "wizdata.attributeDescription"; // NOI18N
     public static final String PROP_METHOD_NB                    = "wizdata.methodNb"; // NOI18N
     public static final String PROP_METHOD_NAME                  = "wizdata.methodName"; // NOI18N
     public static final String PROP_METHOD_TYPE                  = "wizdata.methodType"; // NOI18N
     public static final String PROP_METHOD_PARAM                 = "wizdata.methodParamType"; // NOI18N
-    public static final String PROP_METHOD_EXCEP                 = "wizdata.methodException"; 
-    public static final String PROP_METHOD_DESCR                 = "wizdata.methodDescription"; 
-    public static final String PROP_NOTIF_NB                     = "wizdata.notifNb"; 
-    public static final String PROP_NOTIF_CLASS                  = "wizdata.notifClass"; 
-    public static final String PROP_NOTIF_DESCR                  = "wizdata.notifDescription"; 
-    public static final String PROP_NOTIF_TYPE                   = "wizdata.notifType"; 
-    public static final String PROP_JUNIT_CLASSNAME              = "wizdata.junitClassName"; 
-    public static final String PROP_JUNIT_LOCATION               = "wizdata.junitLocation"; 
-    public static final String PROP_JUNIT_PACKAGE                = "wizdata.junitPackage"; 
-    public static final String PROP_JUNIT_SETUP_SELECTED         = "wizdata.junitSetupSelected";
-    public static final String PROP_JUNIT_TEARDOWN_SELECTED      = "wizdata.junitTeardownSelected";
-    public static final String PROP_JUNIT_DEFMETHBODIES_SELECTED = "wizdata.junitDefMethBodiesSelected";
-    public static final String PROP_JUNIT_JAVADOC_SELECTED       = "wizdata.junitJavadocSelected";
-    public static final String PROP_JUNIT_HINT_SELECTED          = "wizdata.junitHintSelected";
+    public static final String PROP_METHOD_EXCEP                 = "wizdata.methodException"; // NOI18N
+    public static final String PROP_METHOD_DESCR                 = "wizdata.methodDescription"; // NOI18N
+    public static final String PROP_NOTIF_NB                     = "wizdata.notifNb"; // NOI18N
+    public static final String PROP_NOTIF_CLASS                  = "wizdata.notifClass"; // NOI18N
+    public static final String PROP_NOTIF_DESCR                  = "wizdata.notifDescription"; // NOI18N
+    public static final String PROP_NOTIF_TYPE                   = "wizdata.notifType"; // NOI18N
+    public static final String PROP_JUNIT_CLASSNAME              = "wizdata.junitClassName"; // NOI18N
+    public static final String PROP_JUNIT_LOCATION               = "wizdata.junitLocation"; // NOI18N
+    public static final String PROP_JUNIT_PACKAGE                = "wizdata.junitPackage"; // NOI18N
+    public static final String PROP_JUNIT_SETUP_SELECTED         = "wizdata.junitSetupSelected";// NOI18N
+    public static final String PROP_JUNIT_TEARDOWN_SELECTED      = "wizdata.junitTeardownSelected";// NOI18N
+    public static final String PROP_JUNIT_DEFMETHBODIES_SELECTED = "wizdata.junitDefMethBodiesSelected";// NOI18N
+    public static final String PROP_JUNIT_JAVADOC_SELECTED       = "wizdata.junitJavadocSelected";// NOI18N
+    public static final String PROP_JUNIT_HINT_SELECTED          = "wizdata.junitHintSelected";// NOI18N
     
 
     /** type boolean. */
     public static final String PROP_ATTR_RW = "wizdata.attributeRW"; // NOI18N
     
-    public static final String PARAMETER_SEPARATOR  = ","; 
-    public static final String EXCEPTIONS_SEPARATOR = ",";
+    public static final String PARAMETER_SEPARATOR  = ","; // NOI18N
+    public static final String EXCEPTIONS_SEPARATOR = ",";// NOI18N
     
-    public static final String EMPTY_STRING = " ";
-    public static final String EMPTYSTRING = "";
+    public static final String EMPTY_STRING = " ";// NOI18N
+    public static final String EMPTYSTRING = "";// NOI18N
 
     /** Supported type names */
-    public static final String BOOLEAN_OBJ_NAME     = "Boolean";
-    public static final String BOOLEAN_OBJ_FULLNAME = "java.lang.Boolean";
-    public static final String BOOLEAN_NAME         = "boolean";
-    public static final String BYTE_OBJ_NAME        = "Byte";
-    public static final String BYTE_OBJ_FULLNAME    = "java.lang.Byte";
-    public static final String BYTE_NAME            = "byte";
-    public static final String CHAR_OBJ_NAME        = "Character";
-    public static final String CHAR_OBJ_FULLNAME    = "java.lang.Character";
-    public static final String CHAR_NAME            = "char";
-    public static final String DATE_OBJ_NAME        = "Date";
-    public static final String DATE_OBJ_FULLNAME    = "java.util.Date";
-    public static final String INTEGER_OBJ_NAME     = "Integer";
-    public static final String INTEGER_OBJ_FULLNAME = "java.lang.Integer";
-    public static final String INT_NAME             = "int";
-    public static final String LONG_OBJ_NAME        = "Long";
-    public static final String LONG_OBJ_FULLNAME    = "java.lang.Long";
-    public static final String LONG_NAME            = "long";
-    public static final String FLOAT_OBJ_NAME       = "Float";
-    public static final String FLOAT_OBJ_FULLNAME   = "java.lang.Float";
-    public static final String FLOAT_NAME           = "float";
-    public static final String DOUBLE_OBJ_NAME      = "Double";
-    public static final String DOUBLE_OBJ_FULLNAME  = "java.lang.Double";
-    public static final String DOUBLE_NAME          = "double";
-    public static final String OBJECT_NAME          = "Object";
-    public static final String OBJECT_FULLNAME      = "java.lang.Object";
-    public static final String OBJECTNAME_NAME      = "ObjectName";
+    public static final String BOOLEAN_OBJ_NAME     = "Boolean";// NOI18N
+    public static final String BOOLEAN_OBJ_FULLNAME = "java.lang.Boolean";// NOI18N
+    public static final String BOOLEAN_NAME         = "boolean";// NOI18N
+    public static final String BYTE_OBJ_NAME        = "Byte";// NOI18N
+    public static final String BYTE_OBJ_FULLNAME    = "java.lang.Byte";// NOI18N
+    public static final String BYTE_NAME            = "byte";// NOI18N
+    public static final String CHAR_OBJ_NAME        = "Character";// NOI18N
+    public static final String CHAR_OBJ_FULLNAME    = "java.lang.Character";// NOI18N
+    public static final String CHAR_NAME            = "char";// NOI18N
+    public static final String DATE_OBJ_NAME        = "Date";// NOI18N
+    public static final String DATE_OBJ_FULLNAME    = "java.util.Date";// NOI18N
+    public static final String INTEGER_OBJ_NAME     = "Integer";// NOI18N
+    public static final String INTEGER_OBJ_FULLNAME = "java.lang.Integer";// NOI18N
+    public static final String INT_NAME             = "int";// NOI18N
+    public static final String LONG_OBJ_NAME        = "Long";// NOI18N
+    public static final String LONG_OBJ_FULLNAME    = "java.lang.Long";// NOI18N
+    public static final String LONG_NAME            = "long";// NOI18N
+    public static final String FLOAT_OBJ_NAME       = "Float";// NOI18N
+    public static final String FLOAT_OBJ_FULLNAME   = "java.lang.Float";// NOI18N
+    public static final String FLOAT_NAME           = "float";// NOI18N
+    public static final String DOUBLE_OBJ_NAME      = "Double";// NOI18N
+    public static final String DOUBLE_OBJ_FULLNAME  = "java.lang.Double";// NOI18N
+    public static final String DOUBLE_NAME          = "double";// NOI18N
+    public static final String OBJECT_NAME          = "Object";// NOI18N
+    public static final String OBJECT_FULLNAME      = "java.lang.Object";// NOI18N
+    public static final String OBJECTNAME_NAME      = "ObjectName";// NOI18N
     public static final String OBJECTNAME_FULLNAME  = 
-            "javax.management.ObjectName";
-    public static final String STRING_OBJ_NAME      = "String";
-    public static final String STRING_OBJ_FULLNAME  = "java.lang.String";
-    public static final String VOID_NAME            = "void";
-    public static final String VOID_OBJ_FULLNAME    = "java.lang.Void";
-    public static final String VOID_RET_TYPE        = "void";
+            "javax.management.ObjectName";// NOI18N
+    public static final String STRING_OBJ_NAME      = "String";// NOI18N
+    public static final String STRING_OBJ_FULLNAME  = "java.lang.String";// NOI18N
+    public static final String VOID_NAME            = "void";// NOI18N
+    public static final String VOID_OBJ_FULLNAME    = "java.lang.Void";// NOI18N
+    public static final String VOID_RET_TYPE        = "void";// NOI18N
     
-    public static final String NULL = "null";
-    public static final String CLASS_EXT = ".class";
+    public static final String NULL = "null";// NOI18N
+    public static final String CLASS_EXT = ".class";// NOI18N
     
     //key words of java
-    public static final String PACKAGE_NAME  = "package";
+    public static final String PACKAGE_NAME  = "package";// NOI18N
     
     //Used for generation of a JMX management configuration
-    public static final String PROP_CONFIG_FILE_PATH = "wizdata.configFilePath";
+    public static final String PROP_CONFIG_FILE_PATH = "wizdata.configFilePath";// NOI18N
     public static final String RMI_ACCESS_FILE       = "wizdata.rmiAccessFile"; // NOI18N
     public static final String RMI_PASSWORD_FILE     = "wizdata.rmiPassFile"; // NOI18N
-    public static final String RMI_SELECTED          = "wizdata.rmiSelected";
-    public static final String RMI_PORT              = "wizdata.rmiPort";
+    public static final String RMI_SELECTED          = "wizdata.rmiSelected";// NOI18N
+    public static final String RMI_PORT              = "wizdata.rmiPort";// NOI18N
     public static final String RMI_AUTHENTICATE  = 
             "wizdata.rmiAuthenticate"; // NOI18N
     public static final String RMI_AUTHENTICATED_USERS =
@@ -261,12 +261,12 @@ public class WizardConstants
     public static final String OTHER_PROP_VALUE = 
             "wizdata.otherPropValue"; // NOI18N
     
-    public static final String CONFIG_TABLE_CREDENTIALS = "Allowed Credentials:";
+    public static final String CONFIG_TABLE_CREDENTIALS = "Allowed Credentials:";// NOI18N
     
     public static final String DESC                 = "_DESC_"; // NOI18N
     public static final String IMMUTABLE_CODE_BEGIN = "GEN-BEGIN:"; // NOI18N
     public static final String IMMUTABLE_CODE_END   = "GEN-END:"; // NOI18N
     
     public static final String WIZARD_ERROR_MESSAGE = 
-            "WizardPanel_errorMessage";
+            "WizardPanel_errorMessage";// NOI18N
 }

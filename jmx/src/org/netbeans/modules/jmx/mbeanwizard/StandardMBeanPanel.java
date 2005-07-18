@@ -80,7 +80,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                }
            }
         });
-        mbeanDescriptionJTextField.setName("mbeanDescriptionJTextField");
+        mbeanDescriptionJTextField.setName( "mbeanDescriptionJTextField");
         // attach a documentlistener to the class text field to update the panel
         // each time the user fills something in to make sure it is not empty
         classSelectionJTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -449,10 +449,10 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         public boolean fileNotExists() {
             if (WizardHelpers.fileExists(
                     getPanel().generatedFileJTextField.getText())) {
-                setErrorMsg("The file " + 
+                setErrorMsg( "The file " + 
                         WizardHelpers.getFileName(
                             getPanel().generatedFileJTextField.getText()) +
-                        " already exists.");
+                         " already exists.");
               return false;
             }
             return true;
@@ -470,7 +470,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          public boolean isFromExistingClassValid() {
              
              if (getPanel().classSelectionJTextField.isEnabled() && 
-                     !getPanel().classSelectionJTextField.getText().equals("")) 
+                     !getPanel().classSelectionJTextField.getText().equals( "")) 
              {
                  
                  String fullClassName = getPanel().
@@ -494,16 +494,16 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                  
                  if ((mbeanClass == null) || 
                          (mbeanClass.getClass().getName().startsWith(
-                         "org.netbeans.jmi.javamodel.UnresolvedClass"))) {
-                     setErrorMsg("The specified class does not exist");
+                          "org.netbeans.jmi.javamodel.UnresolvedClass"))) {
+                     setErrorMsg( "The specified class does not exist");
                      
                      return false;
                     }  
              } else {
                  //condition on checked box but empty resource to load
                  if (getPanel().classSelectionJTextField.isEnabled() && 
-                     getPanel().classSelectionJTextField.getText().equals("")) {
-                     setErrorMsg("Specify an Existing class");
+                     getPanel().classSelectionJTextField.getText().equals( "")) {
+                     setErrorMsg( "Specify an Existing class");
                      return false;
                  }
              }
@@ -584,8 +584,8 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             if (!descHasChanged()) {
                 String mbeanName = (String)
                         wizard.getProperty(WizardConstants.PROP_MBEAN_NAME);
-                if ((mbeanName == null) || (mbeanName.equals(""))) {
-                    mbeanName = "MBean";
+                if ((mbeanName == null) || (mbeanName.equals( ""))) {
+                    mbeanName =  "MBean";
                 }
                 String desc = mbeanName + WizardConstants.MBEAN_DESCR_DEFVALUE;
                 getPanel().mbeanDescriptionJTextField.setText(desc);
@@ -667,10 +667,10 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 }
                 getPanel().generatedFileJTextField.setText(mbeanFilePath + 
                         File.separator + mbeanName +
-                        suffix + "." + WizardConstants.JAVA_EXT);
+                        suffix +  "." + WizardConstants.JAVA_EXT);
 
             } else {
-                getPanel().generatedFileJTextField.setText("");
+                getPanel().generatedFileJTextField.setText( "");
             }
             
             
@@ -678,7 +678,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 templateWiz.getProperty (WizardConstants.PROP_MBEAN_DESCRIPTION);
             if (desc == null) {
                 if (mbeanName == null) {
-                    desc = "MBean" + WizardConstants.MBEAN_DESCR_DEFVALUE;
+                    desc =  "MBean" + WizardConstants.MBEAN_DESCR_DEFVALUE;
                 } else {
                     desc = mbeanName + WizardConstants.MBEAN_DESCR_DEFVALUE;
                 }
@@ -712,11 +712,11 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             }
             // storage of the description field
             String description = getPanel().mbeanDescriptionJTextField.getText();
-            if ( (description != null) && (!description.equals("")) ) {
+            if ( (description != null) && (!description.equals( "")) ) {
                 wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION, 
                         description);
             } else {
-                wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION, "");
+                wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION,  "");
             }
             // storage of the existing class to wrap if there is one
             if (getPanel().mbeanFromExistingClass) {
@@ -765,7 +765,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         }
         
         public HelpCtx getHelp() {
-           return new HelpCtx("jmx_instrumenting_app");  
+           return new HelpCtx( "jmx_instrumenting_app");  
         } 
     }
 }

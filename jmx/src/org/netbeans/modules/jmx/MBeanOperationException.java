@@ -19,8 +19,8 @@ package org.netbeans.modules.jmx;
  */
 public class MBeanOperationException {
     
-    private String excepClass = "";
-    private String excepDescription = "";
+    private String excepClass = "";// NOI18N
+    private String excepDescription = "";// NOI18N
     
     
     /**

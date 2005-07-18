@@ -111,7 +111,7 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
             initializeComponents(steps, 0);
 
         } catch (Exception ex) {
-            WizardHelpers.logErrorMessage("initialize", ex);
+            WizardHelpers.logErrorMessage("initialize", ex);// NOI18N
         }
     }
     
@@ -127,9 +127,9 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
             size--;
         String[] steps = new String[size];
         if (!wizardIntegrated) {
-            steps[0] = new String("Choose File Type"); // should be added by netbeans
+            steps[0] = new String("Choose File Type"); // NOI18N // should be added by netbeans
         }
-        steps[size - 1] = bundle.getString("LBL_Agent");
+        steps[size - 1] = bundle.getString("LBL_Agent");// NOI18N
         return steps;
     }
 
@@ -175,7 +175,7 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
     {
         jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);
+        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);// NOI18N
     }
     
     public void uninitialize(TemplateWizard wiz)
@@ -206,16 +206,16 @@ public class JMXAgentIterator implements TemplateWizard.Iterator {
                     Resource agentRc = JavaModel.getResource(agentFile);
                     JavaClass agentClass = WizardHelpers.getJavaClass(agentRc,
                             agentFile.getName());
-                    J2SEProjectType.overwriteProperty(project, "main.class", agentClass.getName());
+                    J2SEProjectType.overwriteProperty(project, "main.class", agentClass.getName());// NOI18N
                 }
             } catch (Exception ex) {
-                WizardHelpers.logErrorMessage("Setting project Main Class failure : ", ex);
+                WizardHelpers.logErrorMessage("Setting project Main Class failure : ", ex);// NOI18N
             }
             
             return set;
                 
         } catch (Exception ex) {
-            WizardHelpers.logErrorMessage("Agent generation failure : ", ex);
+            WizardHelpers.logErrorMessage("Agent generation failure : ", ex);// NOI18N
             return Collections.EMPTY_SET;
         }
         

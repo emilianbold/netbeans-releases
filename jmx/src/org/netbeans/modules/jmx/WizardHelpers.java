@@ -312,9 +312,9 @@ public class WizardHelpers
         return resultType;
     }
     
-    private static final String TYPE = ".TYPE";
-    private static final String CLASS = ".class";
-    private static final String GETNAME = ".getName()";
+    private static final String TYPE = ".TYPE";// NOI18N
+    private static final String CLASS = ".class";// NOI18N
+    private static final String GETNAME = ".getName()";// NOI18N
     
     /**
      * Returns the full type name code needed of the type.
@@ -469,21 +469,21 @@ public class WizardHelpers
      * @return <CODE>String</CODE> code which returns the corresponding default value.
      */
     public static String getDefaultValue(String type) {
-        String resultValue = "null";
+        String resultValue = "null";// NOI18N
         if (type.equals(WizardConstants.BOOLEAN_NAME)) {
-            resultValue = "false";
+            resultValue = "false";// NOI18N
         } else if (type.equals(WizardConstants.BYTE_NAME)) {
-            resultValue = "(byte)0";
+            resultValue = "(byte)0";// NOI18N
         } else if (type.equals(WizardConstants.CHAR_NAME)) {
-            resultValue = "(char)0";
+            resultValue = "(char)0";// NOI18N
         } else if (type.equals(WizardConstants.INT_NAME)) {
-            resultValue = "0";
+            resultValue = "0";// NOI18N
         } else if (type.equals(WizardConstants.LONG_NAME)) {
-            resultValue = "0";
+            resultValue = "0";// NOI18N
         } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
-            resultValue = "0";
+            resultValue = "0";// NOI18N
         } else if (type.equals(WizardConstants.FLOAT_NAME)) {
-            resultValue = "0";
+            resultValue = "0";// NOI18N
         }
         return resultValue;
     }
@@ -520,7 +520,7 @@ public class WizardHelpers
         for (int i = 0 ; i < projectSrcGroups.length ; i++ ) {
             FileObject srcFolder = projectSrcGroups[i].getRootFolder();
             if (srcFolder.equals(packageFolder)) {
-                return "";
+                return "";// NOI18N
             }
             DataFolder srcGroupDataObj = 
                     DataFolder.findFolder(srcFolder);
@@ -537,9 +537,9 @@ public class WizardHelpers
                     String srcFolderPathTemp = srcFolderPath.replace(
                             File.separatorChar, '/');
                     packageName = packageFolderPathTemp.replaceFirst(
-                            srcFolderPathTemp,"");
-                    if (packageName.indexOf("/")==0) {
-                        packageName = packageName.replaceFirst("/","");
+                            srcFolderPathTemp,"");// NOI18N
+                    if (packageName.indexOf("/")==0) {// NOI18N
+                        packageName = packageName.replaceFirst("/","");// NOI18N
                     }
                     packageName = packageName.replace('/', '.');
                 }
@@ -561,14 +561,14 @@ public class WizardHelpers
             FileObject srcFolder = projectSrcGroups[i].getRootFolder();
             String srcFolderPath = FileUtil.toFile(srcFolder).getAbsolutePath();
             if (srcFolderPath.equals(packagePath)) {
-                return "";
+                return "";// NOI18N
             }
             if (packagePath.startsWith(srcFolderPath)) {
                 packageName = 
                         packagePath.replace(File.separatorChar, '/').replaceFirst(
-                        srcFolderPath.replace(File.separatorChar, '/'),"");
+                        srcFolderPath.replace(File.separatorChar, '/'),"");// NOI18N
                 if (packageName.indexOf('/')==0) {
-                    packageName = packageName.replaceFirst("/","");
+                    packageName = packageName.replaceFirst("/","");// NOI18N
                 }
                 packageName = packageName.replace('/', '.');
                 return packageName;
@@ -612,12 +612,12 @@ public class WizardHelpers
      * @return <CODE>String</CODE> reversed package name.
      */
     public static String reversePackageName(String packageName) {
-        String[] parts = packageName.replace('.', '/').split("/");
+        String[] parts = packageName.replace('.', '/').split("/");// NOI18N
         StringBuffer result = new StringBuffer();
         for (int i = 0; i < parts.length; i++) {
             result.append(parts[parts.length -1 - i]);
             if (i != parts.length - 1)
-                result.append(".");
+                result.append(".");// NOI18N
         }
         return result.toString();
     }
@@ -628,11 +628,11 @@ public class WizardHelpers
      * @return <CODE>String[]</CODE> an array of param types.
      */
     public static String[] getSignature(String completeSignature) {
-        int signBegin = completeSignature.lastIndexOf("(");
-        int signEnd = completeSignature.lastIndexOf(")");
+        int signBegin = completeSignature.lastIndexOf("(");// NOI18N
+        int signEnd = completeSignature.lastIndexOf(")");// NOI18N
         String[] params = completeSignature.substring(
-                signBegin + 1, signEnd).split(",");
-        if ((params.length == 1) && (params[0].equals("")))
+                signBegin + 1, signEnd).split(",");// NOI18N
+        if ((params.length == 1) && (params[0].equals("")))// NOI18N
             params = new String[] {};
         return params;
     }
@@ -657,7 +657,7 @@ public class WizardHelpers
      * @return <CODE>String</CODE> package name of this class.
      */
     public static String getPackageName(String className) {
-        String packageName = "";
+        String packageName = "";// NOI18N
         int indexPoint = className.lastIndexOf('.');
         if (indexPoint != -1) {
             packageName = className.substring(0,indexPoint);
@@ -676,13 +676,13 @@ public class WizardHelpers
         String locationPath = getProjectLocation(wiz);
 
         if (locationPath == null) {
-            throw new Exception("Project Location is null");
+            throw new Exception("Project Location is null");// NOI18N
         }
         
         wiz.putProperty(WizardConstants.PROP_PROJECT_LOCATION, locationPath);
 
         FileObject targetFolder = Templates.getTargetFolder(wiz);
-        String target = "";
+        String target = "";// NOI18N
 
         if (targetFolder != null) {
             String targetPath = File.separatorChar  + targetFolder.getPath();
@@ -713,7 +713,7 @@ public class WizardHelpers
     public static void logInfoMessage(String message)
     {
         ErrorManager.getDefault().log(ErrorManager.WARNING, 
-                                      "JMX Module : " + message);
+                                      "JMX Module : " + message);// NOI18N
     }
 
     /**
@@ -726,17 +726,17 @@ public class WizardHelpers
     {
         if (message != null) {
             if (ex != null) {
-                System.out.println("JMX Module : " + message + 
-                                   " exception : " + ex.toString());
+                System.out.println("JMX Module : " + message + // NOI18N
+                                   " exception : " + ex.toString());// NOI18N
             } else {
-                System.out.println("JMX Module : " + message);
+                System.out.println("JMX Module : " + message);// NOI18N
             }
         }
     
         if (ex != null) {
             ErrorManager.getDefault().notify(ex);
         } else {
-            Exception e = new Exception("JMX Module : " + message);
+            Exception e = new Exception("JMX Module : " + message);// NOI18N
             ErrorManager.getDefault().notify(e);
         }
     }
@@ -760,8 +760,8 @@ public class WizardHelpers
      */
     public static String capitalizeFirstLetter(String name)
     {
-        if (name.equals("")) {
-            return "";
+        if (name.equals("")) {// NOI18N
+            return "";// NOI18N
         } else {
             String temp  = name.trim();
             String temp1 = temp.substring(0, 1);
@@ -778,8 +778,8 @@ public class WizardHelpers
      */
     public static String forceFirstLetterLowerCase(String name)
     {
-        if (name.equals("")) {
-            return "";
+        if (name.equals("")) {// NOI18N
+            return "";// NOI18N
         } else {
             String temp  = name.trim();
             String temp1 = temp.substring(0, 1);
@@ -803,11 +803,11 @@ public class WizardHelpers
          throws IOException                           
     {
         String outputName = new String(path + File.separatorChar +
-                                       filename + "." + extension);
+                                       filename + "." + extension);// NOI18N
         // keep folder object
         FileObject folder = createDir(path);
         FileObject createdFile = FileUtil.createData(folder, 
-                filename + "." + extension);
+                filename + "." + extension);// NOI18N
         FileLock lock = createdFile.lock();
         OutputStream os = createdFile.getOutputStream(lock);
         PrintStream ps = new PrintStream(os);
@@ -834,7 +834,7 @@ public class WizardHelpers
     {
         // keep folder object
         FileObject createdFile = FileUtil.createData(folder, 
-                filename + "." + extension);
+                filename + "." + extension);// NOI18N
         FileLock lock = createdFile.lock();
         OutputStream os = createdFile.getOutputStream(lock);
         PrintStream ps = new PrintStream(os);
@@ -857,7 +857,7 @@ public class WizardHelpers
         File dir = new File(dirPath);
         if (!dir.exists()) {
             if (!dir.mkdirs())
-                throw new IOException("Impossible to create " + dirPath);
+                throw new IOException("Impossible to create " + dirPath);// NOI18N
         }
 
         FileObject dirFO = FileUtil.toFileObject(dir);
@@ -948,20 +948,20 @@ public class WizardHelpers
         
         File mbeanFile = new File(locationPath + File.separatorChar + 
                                   name + WizardConstants.MBEAN_ITF_SUFFIX  + 
-                                  "." + WizardConstants.JAVA_EXT);
+                                  "." + WizardConstants.JAVA_EXT);// NOI18N
 
         if (mbeanFile.exists())
             return true;
         
         File supportFile = new File(locationPath + File.separatorChar + 
                                   name + WizardConstants.MBEAN_SUPPORT_SUFFIX  + 
-                                  "." + WizardConstants.JAVA_EXT);
+                                  "." + WizardConstants.JAVA_EXT);// NOI18N
 
         if (supportFile.exists())
             return true;
         
         File implfile = new File(locationPath + File.separatorChar + 
-                                  name + "." + WizardConstants.JAVA_EXT);
+                                  name + "." + WizardConstants.JAVA_EXT);// NOI18N
 
         if (implfile.exists())
             return true; 
@@ -1057,7 +1057,7 @@ public class WizardHelpers
         int response = javax.swing.JOptionPane.showConfirmDialog(
                                             null,
                                             content,
-                                            "Erreur",
+                                            "Error",// NOI18N
                                             javax.swing.JOptionPane.OK_OPTION,
                                             javax.swing.JOptionPane.ERROR_MESSAGE);
     }
@@ -1353,7 +1353,7 @@ public class WizardHelpers
         for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
             signature.append(it.next().getType().getName());
             if (it.hasNext())
-                signature.append(",");
+                signature.append(",");// NOI18N
         }
         return signature.toString();
     }
@@ -1400,13 +1400,13 @@ public class WizardHelpers
      * @param toParse <code>int</code> the parameter in the model to parse
      */
     public static void printOperationExceptionModel(AbstractJMXTableModel model, int toParse) {
-        System.out.println("************* PARSE START *****************");
+        System.out.println("************* PARSE START *****************");// NOI18N
         
         for (int i = 0; i < model.size(); i++) {
             ArrayList<MBeanOperationException> excepts = (ArrayList<MBeanOperationException>)
                                                                 model.getValueAt(i, toParse);
             for(int j = 0; j < excepts.size(); j++)
-                System.out.println("Value of row " +i+ ": " + excepts.get(j).getExceptionClass());
+                System.out.println("Value of row " +i+ ": " + excepts.get(j).getExceptionClass());// NOI18N
         }
     }
     

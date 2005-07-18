@@ -41,20 +41,20 @@ public class ConfigGenerator
 {
     // string which represents the date and time of the creation
     private final String CURRENT_DATE = new Date().toString();
-    private final static String COMMENT = new String("# ");
-    private static final String FALSE = new String("false");
-    private static final String TRUE = new String("true");
-    private static final String FILEPATH = new String("filepath");
-    private static final String INET = new String("<InetAddress>");
-    private static final String CYPHER_SUITES = new String("<cypher-suites>");
+    private final static String COMMENT = new String("# ");// NOI18N
+    private static final String FALSE = new String("false");// NOI18N
+    private static final String TRUE = new String("true");// NOI18N
+    private static final String FILEPATH = new String("filepath");// NOI18N
+    private static final String INET = new String("<InetAddress>");// NOI18N
+    private static final String CYPHER_SUITES = new String("<cypher-suites>");// NOI18N
     private static final String PROTOCOL_VER = 
-            new String("<protocol-versions>");
-    private static final String CONFIG_NAME = 
-            new String("<config-name>");
+            new String("<protocol-versions>");// NOI18N
+    private static final String CONFIG_NAME =
+            new String("<config-name>");// NOI18N
     private static final String PORT_NUMBER = 
-            new String("<port-number>");
+            new String("<port-number>");// NOI18N
     private static final String TRAP_PORT_NUMBER = 
-            new String("<trap-destination-port-number>");
+            new String("<trap-destination-port-number>");// NOI18N
 
     
     private String rmiAccessFile;
@@ -110,18 +110,18 @@ public class ConfigGenerator
                 WizardConstants.RMI_SSL_CLIENT_AUTHENTICATE);
         String sslProtocolsFinded = (String) wiz.getProperty(
                 WizardConstants.RMI_SSL_PROTOCOLS);
-        if ((sslProtocolsFinded == null) || (sslProtocolsFinded.equals(""))) {
+        if ((sslProtocolsFinded == null) || (sslProtocolsFinded.equals(""))) {// NOI18N
             sslProtocolsSelected = false;
-            sslProtocols = "";
+            sslProtocols = "";// NOI18N
         } else {
             sslProtocolsSelected = true;
             sslProtocols = sslProtocolsFinded;
         }
         String sslTlsCipherFinded = (String) wiz.getProperty(
                 WizardConstants.RMI_SSL_TLS_CIPHER);
-        if ((sslTlsCipherFinded == null) || (sslTlsCipherFinded.equals(""))) {
+        if ((sslTlsCipherFinded == null) || (sslTlsCipherFinded.equals(""))) {// NOI18N
             sslTlsCipherSelected = false;
-            sslTlsCipher = "";
+            sslTlsCipher = "";// NOI18N
         } else {
             sslTlsCipherSelected = true;
             sslTlsCipher = sslTlsCipherFinded;
@@ -148,9 +148,9 @@ public class ConfigGenerator
         String snmpInterfacesFinded = (String) wiz.getProperty(
                 WizardConstants.SNMP_INTERFACES);
         if ((snmpInterfacesFinded == null) 
-                || (snmpInterfacesFinded.equals(""))) {
+                || (snmpInterfacesFinded.equals(""))) {// NOI18N
             snmpInterfacesSelected = false;
-            snmpInterfaces = "";
+            snmpInterfaces = "";// NOI18N
         } else {
             snmpInterfacesSelected = true;
             snmpInterfaces = snmpInterfacesFinded;
@@ -159,9 +159,9 @@ public class ConfigGenerator
         String snmpAclFileFinded = (String) wiz.getProperty(
                 WizardConstants.SNMP_ACL_FILE);
         if ((snmpAclFileFinded == null) 
-                || (snmpAclFileFinded.equals(""))) {
+                || (snmpAclFileFinded.equals(""))) {// NOI18N
             snmpAclFileSelected = false;
-            snmpAclFile = "";
+            snmpAclFile = "";// NOI18N
         } else {
             snmpAclFileSelected = true;
             snmpAclFile = snmpAclFileFinded;
@@ -193,7 +193,7 @@ public class ConfigGenerator
         ResourceBundle bundle = NbBundle.getBundle(JMXConfigWizardIterator.class);   
         FileObject mgtTemplate = Templates.getTemplate( wiz );
         InputStream is = ((java.net.URL)mgtTemplate.
-                getAttribute("accessTemplate")).openStream();   
+                getAttribute("accessTemplate")).openStream();   // NOI18N
         StringBuffer accessContent = new StringBuffer();
         int ch;
         while( (ch = is.read( )) != -1 )
@@ -204,8 +204,8 @@ public class ConfigGenerator
                 for(int i = 0; i < rmiAuthenticatedUsers.size(); i++) {
                     RMIAuthenticatedUser r = 
                             (RMIAuthenticatedUser) rmiAuthenticatedUsers.get(i);
-                    accessContent.append((r.getName() == null ? "" : r.getName()) + " " +
-                                         (r.getAccess() == null ? "" : r.getAccess()) + "\n");
+                    accessContent.append((r.getName() == null ? "" : r.getName()) + " " +// NOI18N
+                                         (r.getAccess() == null ? "" : r.getAccess()) + "\n");// NOI18N
                 }
             }
         }
@@ -219,7 +219,7 @@ public class ConfigGenerator
         ResourceBundle bundle = NbBundle.getBundle(JMXConfigWizardIterator.class);   
         FileObject mgtTemplate = Templates.getTemplate( wiz );
         InputStream is = ((java.net.URL)mgtTemplate.
-                getAttribute("passwordTemplate")).openStream();   
+                getAttribute("passwordTemplate")).openStream();   // NOI18N
         StringBuffer passwordContent = new StringBuffer();
         int ch;
         while( (ch = is.read( )) != -1 )
@@ -230,12 +230,12 @@ public class ConfigGenerator
                 for(int i = 0; i < rmiAuthenticatedUsers.size(); i++) {
                     RMIAuthenticatedUser r =
                             (RMIAuthenticatedUser) rmiAuthenticatedUsers.get(i);
-                    passwordContent.append((r.getName() == null ? "" : r.getName()) + " " +
-                            (r.getPassword() == null ? "" : r.getPassword()) + "\n");
+                    passwordContent.append((r.getName() == null ? "" : r.getName()) + " " +// NOI18N
+                            (r.getPassword() == null ? "" : r.getPassword()) + "\n");// NOI18N
                 }
             }
             ManagementDialogs.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));
+                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));// NOI18N
             
         }
         
@@ -250,40 +250,40 @@ public class ConfigGenerator
         optionsArgs[0] = Templates.getTargetName(wiz);
         optionsArgs[1] = CURRENT_DATE;
         if (rmiSelected && rmiPortSelected) {
-            optionsArgs[2] = "";
+            optionsArgs[2] = "";// NOI18N
             optionsArgs[3] = String.valueOf(rmiPort);
         } else {
             optionsArgs[2] = COMMENT;
             optionsArgs[3] = PORT_NUMBER;
         }
         if (snmpSelected && snmpPortSelected) {
-            optionsArgs[4] = "";
+            optionsArgs[4] = "";// NOI18N
             optionsArgs[5] = String.valueOf(snmpPort);
         } else {
             optionsArgs[4] = COMMENT;
             optionsArgs[5] = PORT_NUMBER;
         }
         if (threadMonitor) {
-            optionsArgs[6] = "";
+            optionsArgs[6] = "";// NOI18N
         } else {
             optionsArgs[6] = COMMENT;
         }
         if (snmpSelected && snmpTrapPortSelected) {
-            optionsArgs[7] = "";
+            optionsArgs[7] = "";// NOI18N
             optionsArgs[8] = String.valueOf(snmpTrapPort);
         } else {
             optionsArgs[7] = COMMENT;
             optionsArgs[8] = TRAP_PORT_NUMBER;
         }
         if (snmpSelected && snmpInterfacesSelected) {
-            optionsArgs[9] = "";
+            optionsArgs[9] = "";// NOI18N
             optionsArgs[10] = snmpInterfaces;
         } else {
             optionsArgs[9] = COMMENT;
             optionsArgs[10] = INET;
         }
         if (snmpSelected) {
-            optionsArgs[11] = "";
+            optionsArgs[11] = "";// NOI18N
             if (snmpAclSelected) {
                 optionsArgs[12] = TRUE;
             } else {
@@ -294,14 +294,14 @@ public class ConfigGenerator
             optionsArgs[12] = FALSE;
         }
         if (snmpSelected && snmpAclSelected && snmpAclFileSelected) {
-            optionsArgs[13] = "";
+            optionsArgs[13] = "";// NOI18N
             optionsArgs[14] = snmpAclFile;
         } else {
             optionsArgs[13] = COMMENT;
             optionsArgs[14] = FILEPATH;
         }
         if (rmiSelected) {
-            optionsArgs[15] = "";
+            optionsArgs[15] = "";// NOI18N
             if (sslSelected) {
                 optionsArgs[16] = TRUE;
             } else {
@@ -312,21 +312,21 @@ public class ConfigGenerator
             optionsArgs[16] = FALSE;
         }
         if (rmiSelected && sslSelected && sslTlsCipherSelected) {
-            optionsArgs[17] = "";
+            optionsArgs[17] = "";// NOI18N
             optionsArgs[18] = sslTlsCipher;
         } else {
             optionsArgs[17] = COMMENT;
             optionsArgs[18] = CYPHER_SUITES;
         }
         if (rmiSelected && sslSelected && sslProtocolsSelected) {
-            optionsArgs[19] = "";
+            optionsArgs[19] = "";// NOI18N
             optionsArgs[20] = sslProtocols;
         } else {
             optionsArgs[19] = COMMENT;
             optionsArgs[20] = PROTOCOL_VER;
         }
         if (rmiSelected && sslSelected) {
-            optionsArgs[21] = "";
+            optionsArgs[21] = "";// NOI18N
             if (sslReqClientAuth) {
                 optionsArgs[22] = TRUE;
             } else {
@@ -337,7 +337,7 @@ public class ConfigGenerator
             optionsArgs[22] = TRUE;
         }
         if (rmiSelected) {
-            optionsArgs[23] = "";
+            optionsArgs[23] = "";// NOI18N
             if (rmiAuthenticate) {
                 optionsArgs[24] = TRUE;
             } else {
@@ -349,18 +349,18 @@ public class ConfigGenerator
         }
         optionsArgs[25] = COMMENT;
         optionsArgs[26] = CONFIG_NAME;
-        optionsArgs[27] = "";
+        optionsArgs[27] = "";// NOI18N
         optionsArgs[28] = 
              FileUtil.toFile(Templates.getTargetFolder(
                 wiz)).getAbsolutePath().replace(File.separatorChar, '/') + '/' +
                 Templates.getTargetName(wiz) +
-             "." + WizardConstants.PASSWORD_EXT;
-        optionsArgs[29] = "";
+             "." + WizardConstants.PASSWORD_EXT;// NOI18N
+        optionsArgs[29] = "";// NOI18N
         optionsArgs[30] = 
              FileUtil.toFile(Templates.getTargetFolder(
                 wiz)).getAbsolutePath().replace(File.separatorChar, '/') + 
              '/' + Templates.getTargetName(wiz) +
-             "." + WizardConstants.ACCESS_EXT;
+             "." + WizardConstants.ACCESS_EXT;// NOI18N
         return formMgtProp.format(optionsArgs);
     }
     

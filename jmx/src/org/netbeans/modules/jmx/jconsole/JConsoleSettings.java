@@ -41,14 +41,13 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
         
         setPolling(4);
         setTile(Boolean.TRUE);
-        cp = System.getProperty("java.class.path");
+        cp = System.getProperty("java.class.path");// NOI18N
         setClassPath(cp);
     }
 
     public String displayName ()
     {
-        // NOI18N
-        return "JConsole settings";
+        return "JConsole settings";// NOI18N
     }    
 
     public static JConsoleSettings getDefault () 

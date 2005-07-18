@@ -19,7 +19,7 @@ package org.netbeans.modules.jmx;
  */
 public class MBeanNotificationType {
     
-    private String type = "";
+    private String type = "";// NOI18N
     
     /**
      * Default constructor

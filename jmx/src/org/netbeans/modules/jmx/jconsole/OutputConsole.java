@@ -84,7 +84,7 @@ public class OutputConsole implements CookieObserver
         boolean wasFocusTaken = io.isFocusTaken();
         io.select();
         io.setFocusTaken(true);
-        ow.write("\r");
+        ow.write("\r");// NOI18N
         io.setFocusTaken(wasFocusTaken);
     }
 

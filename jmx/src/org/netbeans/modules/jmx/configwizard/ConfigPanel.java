@@ -58,7 +58,7 @@ public class ConfigPanel extends javax.swing.JPanel
         
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigPanel.class, 
-                                    "LBL_Config_Panel"));        
+                                     "LBL_Config_Panel")); // NOI18N       
     }
     
     /** This method is called from within the constructor to
@@ -179,20 +179,20 @@ public class ConfigPanel extends javax.swing.JPanel
         {
             if (WizardHelpers.fileExists(
                     getPanel().rmiAccessFileJTextField.getText())) {
-                setErrorMsg("The file " + 
+                setErrorMsg( "The file " + // NOI18N
                         WizardHelpers.getFileName(
                             getPanel().rmiAccessFileJTextField.getText()) +
-                        " already exists.");
+                         " already exists.");// NOI18N
                 return false;
             } else if (WizardHelpers.fileExists(
                     getPanel().rmiPasswordFileJTextField.getText())) {
-                setErrorMsg("The file " + 
+                setErrorMsg( "The file " + // NOI18N
                         WizardHelpers.getFileName(
                             getPanel().rmiPasswordFileJTextField.getText()) +
-                        " already exists.");
+                         " already exists.");// NOI18N
                 return false;
             } 
-            setErrorMsg("");
+            setErrorMsg( "");// NOI18N
             return true;
         }
         
@@ -276,13 +276,13 @@ public class ConfigPanel extends javax.swing.JPanel
             String filePath = (String) 
                 templateWiz.getProperty(WizardConstants.PROP_CONFIG_FILE_PATH);
             String targetName = templateWiz.getTargetName();
-            String rmiAccessFileName = "";
-            String rmiPasswordFileName = "";
+            String rmiAccessFileName =  "";// NOI18N
+            String rmiPasswordFileName =  "";// NOI18N
             if ((targetName != null) && (filePath != null)) {
                 rmiAccessFileName = filePath + File.separator + targetName +
-                        "." + WizardConstants.ACCESS_EXT;
+                         "." + WizardConstants.ACCESS_EXT;// NOI18N
                 rmiPasswordFileName = filePath + File.separator + targetName + 
-                        "." + WizardConstants.PASSWORD_EXT;
+                         "." + WizardConstants.PASSWORD_EXT;// NOI18N
             }
             getPanel().rmiAccessFileJTextField.setText(rmiAccessFileName);
             getPanel().rmiPasswordFileJTextField.setText(rmiPasswordFileName);
@@ -302,7 +302,7 @@ public class ConfigPanel extends javax.swing.JPanel
         }
               
         public HelpCtx getHelp() {
-           return new HelpCtx("mgt_properties");  
+           return new HelpCtx( "mgt_properties");  // NOI18N
         }   
         
     }

@@ -21,8 +21,8 @@ import java.util.ArrayList;
  */
 public class MBeanNotification {
     
-    private String notificationClass = "";
-    private String notificationDescription = "";
+    private String notificationClass = ""; // NOI18N
+    private String notificationDescription = ""; // NOI18N
     private ArrayList<MBeanNotificationType> notificationType = null;
     
     /**
@@ -129,12 +129,12 @@ public class MBeanNotification {
      * @return String the string containing all notification types
      */
     public String getNotificationTypeClasses() {
-        String notifTypeClass = "";
+        String notifTypeClass = ""; // NOI18N
         for (int i = 0; i < notificationType.size(); i++) {
             notifTypeClass += notificationType.get(i).getNotificationType();
             
             if (i < notificationType.size() -1)
-                notifTypeClass += ",";
+                notifTypeClass += ","; // NOI18N
         }
         return notifTypeClass;
     }
