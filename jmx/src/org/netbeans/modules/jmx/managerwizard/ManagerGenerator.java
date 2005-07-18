@@ -122,14 +122,14 @@ public class ManagerGenerator
     private String[] fillSampleCode() {
         String[] temp = new String[1];
         
-        temp[0] = "\n" +
-                  "/* *** SAMPLE MBEAN NAME DISCOVERY *** */ \n" +
-                  "/* \n" +
-                  " Set resultSet = \n" +
-                  "    manager.getMBeanServerConnection().queryNames(null, null);\n" +
-                  " for(Iterator i = resultSet.iterator(); i.hasNext();) {\n" +
-                  "     System.out.println(\"MBean name: \" + i.next());\n" +
-                  " }\n" +
+        temp[0] = "\n" +// NOI18N
+                  "/* *** SAMPLE MBEAN NAME DISCOVERY *** */ \n" +// NOI18N
+                  "/* \n" +// NOI18N
+                  " Set resultSet = \n" +// NOI18N
+                  "    manager.getMBeanServerConnection().queryNames(null, null);\n" +// NOI18N
+                  " for(Iterator i = resultSet.iterator(); i.hasNext();) {\n" +// NOI18N
+                  "     System.out.println(\"MBean name: \" + i.next());\n" +// NOI18N
+                  " }\n" +// NOI18N
                   "*/\n";// NOI18N
         
         return temp;
@@ -144,15 +144,15 @@ public class ManagerGenerator
         if (isSecurityChecked) {
             if (isSampleCredential) {
                 connectionTemplate[0] =
-                        "/* *** SAMPLE CREDENTIALS *** */ \n" +
-                        "/* Replace userName and userPassword with your parameters.  \n" +
-                        " * Provide env parameter when calling JMXConnectorFactory.connect(url, env) \n" +
-                        "//RMI Authentication \n" +
-                        "Map env = new HashMap(); \n" +
-                        "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +
-                        "userName\", \"" +
-                        "userPassword" +
-                        "\"});\n" +
+                        "/* *** SAMPLE CREDENTIALS *** */ \n" +// NOI18N
+                        "/* Replace userName and userPassword with your parameters.  \n" +// NOI18N
+                        " * Provide env parameter when calling JMXConnectorFactory.connect(url, env) \n" +// NOI18N
+                        "//RMI Authentication \n" +// NOI18N
+                        "Map env = new HashMap(); \n" +// NOI18N
+                        "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
+                        "userName\", \"" +// NOI18N
+                        "userPassword" +// NOI18N
+                        "\"});\n" +// NOI18N
                         "*/ \n";// NOI18N
             } else { //user credential selected
                 String userName = (String)wiz.getProperty(
@@ -160,11 +160,11 @@ public class ManagerGenerator
                 String userPassword = (String)wiz.getProperty(
                         WizardConstants.PROP_MANAGER_USER_PASSWORD);
                 connectionTemplate[0] = 
-                    "//RMI Authentication \n" +
-                    "Map env = new HashMap(); \n" +
-                    "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +
-                                userName + "\", \"" +
-                                userPassword + 
+                    "//RMI Authentication \n" +// NOI18N
+                    "Map env = new HashMap(); \n" +// NOI18N
+                    "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
+                                userName + "\", \"" +// NOI18N
+                                userPassword + // NOI18N
                                 "\"});\n";// NOI18N
             }
         } else // security box unchecked
@@ -186,16 +186,16 @@ public class ManagerGenerator
             //        "\"" + "," +
             //       (String)wiz.getProperty(WizardConstants.PROP_MANAGER_PORT) +
             //        ",\"/jndi/rmi://jmxrmi\");"; // NOI18N
-            connectionTemplate[1] = "//Create JMX Agent URL \n" +
-                    "JMXServiceURL url = new JMXServiceURL(\"service:jmx:rmi:///jndi/rmi://" +
-                    (String)wiz.getProperty(WizardConstants.PROP_MANAGER_HOST)+":"+
-                    (String)wiz.getProperty(WizardConstants.PROP_MANAGER_PORT)+"/jmxrmi" +
+            connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
+                    "JMXServiceURL url = new JMXServiceURL(\"service:jmx:rmi:///jndi/rmi://" +// NOI18N
+                    (String)wiz.getProperty(WizardConstants.PROP_MANAGER_HOST)+":"+// NOI18N
+                    (String)wiz.getProperty(WizardConstants.PROP_MANAGER_PORT)+"/jmxrmi" +// NOI18N
                     "\");";// NOI18N
         } else {
             if (isCustomUrl) {
                 //generation of a free form URL
-                connectionTemplate[1] = "//Create JMX Agent URL \n" +
-                         "JMXServiceURL url = new JMXServiceURL(\""+
+                connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
+                         "JMXServiceURL url = new JMXServiceURL(\""+// NOI18N
                          (String)wiz.getProperty(
                              WizardConstants.PROP_MANAGER_FREEFORM_URL) + "\");";// NOI18N
             } else
@@ -206,8 +206,8 @@ public class ManagerGenerator
     private void fillConnector(WizardDescriptor wiz) {
         
         // custom initialisation of code to be generated
-        connectionTemplate[2] = "\n //Connect the JMXConnector \n" +
-                      "connector = " +
+        connectionTemplate[2] = "\n //Connect the JMXConnector \n" +// NOI18N
+                      "connector = " +// NOI18N
                        "JMXConnectorFactory.connect(url, null);";// NOI18N
         
         if (isSecurityChecked) {
@@ -215,8 +215,8 @@ public class ManagerGenerator
                     WizardConstants.PROP_MANAGER_USER_CREDENTIAL_SELECTED);
             if (isUserCredential) {
                 // only if SecurityChecked and UserCredential, the code changes
-            connectionTemplate[2] = "\n //Connect the JMXConnector \n" +
-                      "connector = " +
+            connectionTemplate[2] = "\n //Connect the JMXConnector \n" +// NOI18N
+                      "connector = " +// NOI18N
                       "JMXConnectorFactory.connect(url, env);";// NOI18N
             }
         }
@@ -225,7 +225,7 @@ public class ManagerGenerator
     private void replaceTags(JavaClass clazz, WizardDescriptor wiz) {
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            Method connectMethod = WizardHelpers.getMethod(clazz, "connect");
+            Method connectMethod = WizardHelpers.getMethod(clazz, "connect");// NOI18N
             String bodyText = connectMethod.getBodyText();
             
             //Boolean isSecurityChecked = (Boolean)wiz.getProperty(
