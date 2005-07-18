@@ -174,13 +174,7 @@ public class Controller { //XXX public only for debug access to logging code
         if (result != null) {
             win.setSelectedTab(result);
         }
-//
-//        if (!activateContainer) {
-//            win.requestVisibleForNewTab();
-//        } else {
-//            win.requestActiveForNewTab();
-//        }
-//        
+
         return result;
     }
 
@@ -1044,7 +1038,12 @@ public class Controller { //XXX public only for debug access to logging code
                 }
                 if (!win.isOpened()) {
                     win.open();
-                    win.requestVisible();
+                }
+                //#60960 creating component doesn't make the tabs visible, do it in select (also #58738)
+                if (!io.isFocusTaken()) {
+                    win.requestVisibleForNewTab();
+                } else {
+                    win.requestActiveForNewTab();
                 }
                 if (win.getSelectedTab() != tab) {
                     if (tab.getParent() == null) {
