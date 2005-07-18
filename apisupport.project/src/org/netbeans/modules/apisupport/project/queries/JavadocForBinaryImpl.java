@@ -42,19 +42,11 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
     
     private final NbModuleProject project;
     
-    /** Default constructor for lookup. */
-    public JavadocForBinaryImpl() {
-        project = null;
-    }
-    
     public JavadocForBinaryImpl(NbModuleProject project) {
         this.project = project;
     }
 
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
-        if (project == null) {
-            return null;
-        }
         if (!binaryRoot.equals(Util.urlForJar(project.getModuleJarLocation()))) {
             return null;
         }
