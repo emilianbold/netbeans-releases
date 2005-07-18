@@ -95,7 +95,6 @@ public class AddNotifAction extends CookieAction {
     }
     
     public String getName () {
-        return NbBundle.getMessage (AddNotifAction.class, 
-                "LBL_Action_AddMBeanNotification"); // NOI18N
+        return NbBundle.getMessage(AddNotifAction.class,"LBL_Action_AddMBeanNotification"); // NOI18N
     }
 }

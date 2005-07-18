@@ -102,7 +102,6 @@ public class RegisterMBeanAction extends CookieAction {
     }
     
     public String getName () {
-        return NbBundle.getMessage (RegisterMBeanAction.class, 
-                "LBL_Action_RegisterMBean"); // NOI18N
+        return NbBundle.getMessage (RegisterMBeanAction.class, "LBL_Action_RegisterMBean"); // NOI18N
     }
 }

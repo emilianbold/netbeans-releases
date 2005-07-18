@@ -113,7 +113,6 @@ public class AddOpAction extends CookieAction {
     }
     
     public String getName () {
-        return NbBundle.getMessage (AddOpAction.class, 
-                "LBL_Action_AddMBeanOperation"); // NOI18N
+        return NbBundle.getMessage(AddOpAction.class,"LBL_Action_AddMBeanOperation"); // NOI18N
     }
 }

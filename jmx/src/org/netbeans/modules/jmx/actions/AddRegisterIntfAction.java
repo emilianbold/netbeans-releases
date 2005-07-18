@@ -95,7 +95,6 @@ public class AddRegisterIntfAction extends CookieAction {
     }
     
     public String getName () {
-        return NbBundle.getMessage (AddNotifAction.class, 
-                "LBL_Action_AddMBeanRegistrationIntf"); // NOI18N
+        return NbBundle.getMessage(AddRegisterIntfAction.class,"LBL_Action_AddMBeanRegistrationIntf"); // NOI18N
     }
 }
