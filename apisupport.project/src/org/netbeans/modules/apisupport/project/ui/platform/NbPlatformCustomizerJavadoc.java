@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import javax.swing.JFileChooser;
@@ -22,10 +21,10 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
 
 /**
  * Represents <em>Javadoc</em> tab in the NetBeans platforms customizer.
@@ -212,14 +211,9 @@ final class NbPlatformCustomizerJavadoc extends JPanel {
         });
         int ret = chooser.showOpenDialog(this);
         if (ret == JFileChooser.APPROVE_OPTION) {
-            try {
-                URL newUrl = chooser.getSelectedFile().toURI().toURL();
-                model.addJavadocRoot(newUrl);
-                javadocList.setSelectedValue(newUrl, true);
-            } catch (IOException e) {
-                // tell the user that something goes wrong
-                ErrorManager.getDefault().notify(ErrorManager.USER, e);
-            }
+            URL newUrl = Util.urlForDirOrJar(FileUtil.normalizeFile(chooser.getSelectedFile()));
+            model.addJavadocRoot(newUrl);
+            javadocList.setSelectedValue(newUrl, true);
         }
     }//GEN-LAST:event_addZipFolder
     
