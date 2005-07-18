@@ -28,6 +28,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/UITests.class"/>
                 <include name="org/netbeans/modules/jmx/test/configwizard/ConfigWizardValidation.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/RunUnitMBeanTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/managerwizard/CreateManagerProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/managerwizard/ConstructManager.class"/>
             </patternset>
         </testset>
     </testbag>
