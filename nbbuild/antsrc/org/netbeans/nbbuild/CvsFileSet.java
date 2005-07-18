@@ -129,7 +129,9 @@ public class CvsFileSet extends FileSet {
                                     } else if (subst.equals("-kb")) {
                                         tb[1].add(name);
                                     } else {
+                                        /* Don't know why, but getProject() stoped working, returns null :-(
                                         getProject().log(efile + ":" + lineNumber + ": warning: strange key subst mode: " + subst, Project.MSG_WARN);
+                                        */
                                         if (subst.equals("-ko")) {
                                             // Treat it like -kkv.
                                             tb[0].add(name);
