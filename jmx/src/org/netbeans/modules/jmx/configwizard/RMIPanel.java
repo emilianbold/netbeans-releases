@@ -787,8 +787,7 @@ public class RMIPanel extends javax.swing.JPanel {
          */
         private void setErrorMsg(String message) {
             if (wiz != null) {
-                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, 
-                        message);    //NOI18N
+                wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, message); 
             }
         }
         

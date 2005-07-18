@@ -52,8 +52,7 @@ public class LaunchAction extends CallableSystemAction {
     class RunAction implements Runnable {
         OutputConsole console;
         public RunAction() {
-            String str = NbBundle.getMessage(LaunchAction.class,
-                    "LBL_ActionName");// NOI18N
+            String str = NbBundle.getMessage(LaunchAction.class, "LBL_ActionName");// NOI18N
             console = new OutputConsole(str);
         }
         
@@ -90,8 +89,7 @@ public class LaunchAction extends CallableSystemAction {
                                  " sun.tools.jconsole.JConsole -interval="  + // NOI18N
                                  polling + " " + tile + " " + url;// NOI18N
                 
-                String msg1 = NbBundle.getMessage(LaunchAction.class,
-                        "LBL_ActionStartingMessage");// NOI18N
+                String msg1 = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStartingMessage");// NOI18N
                 console.message(msg1);
                 console.message(cmdLine);
                 
@@ -105,8 +103,7 @@ public class LaunchAction extends CallableSystemAction {
                 started();
                 
                 
-                String msg2 = NbBundle.getMessage(LaunchAction.class,
-                        "LBL_ActionStartedMessage");// NOI18N
+                String msg2 = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStartedMessage");// NOI18N
                 //console.moveToFront();
                 
                 
@@ -132,8 +129,7 @@ public class LaunchAction extends CallableSystemAction {
     
     // action caption
     public String getName() {
-        return (String)NbBundle.getMessage(LaunchAction.class,
-                "LBL_ActionName");// NOI18N
+        return (String)NbBundle.getMessage(LaunchAction.class,"LBL_ActionName");// NOI18N
     }
     
     
@@ -147,8 +143,7 @@ public class LaunchAction extends CallableSystemAction {
     
     public synchronized void performAction() {
         if(isStarted()) {
-            String msg = NbBundle.getMessage(LaunchAction.class,
-                              "LBL_ActionAlreadyStartedMessage");// NOI18N
+            String msg = NbBundle.getMessage(LaunchAction.class,"LBL_ActionAlreadyStartedMessage");// NOI18N
             console.message(msg);
             return;
         }
@@ -171,8 +166,7 @@ public class LaunchAction extends CallableSystemAction {
     
     synchronized void stopped() {
         started = false;
-        String msg = NbBundle.getMessage(LaunchAction.class,
-                     "LBL_ActionStoppedMessage");// NOI18N
+        String msg = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStoppedMessage");// NOI18N
         console.message(msg);
         console = null;
     }

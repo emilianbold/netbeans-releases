@@ -55,8 +55,7 @@ public class StepProblemMessage implements WizardDescriptor.Panel {
         if (panel == null) {
             panel = new JPanel(new GridBagLayout());
             JLabel lblProject = new JLabel(
-                    NbBundle.getMessage(StepProblemMessage.class,
-                                        "LBL_Project"));                //NOI18N
+                    NbBundle.getMessage(StepProblemMessage.class, "LBL_Project"));                //NOI18N
             JTextField tfProject = new JTextField(
                     ProjectUtils.getInformation(project).getDisplayName());
             JComponent message = createMultilineLabel(msg);
@@ -67,11 +66,9 @@ public class StepProblemMessage implements WizardDescriptor.Panel {
 
             AccessibleContext accContext = tfProject.getAccessibleContext();
             accContext.setAccessibleName(
-                    NbBundle.getMessage(StepProblemMessage.class,
-                                        "AD_Name_Project_name"));       //NOI18N
+                    NbBundle.getMessage(StepProblemMessage.class, "AD_Name_Project_name"));       //NOI18N
             accContext.setAccessibleDescription(
-                    NbBundle.getMessage(StepProblemMessage.class,
-                                        "AD_Descr_Project_name"));      //NOI18N
+                    NbBundle.getMessage(StepProblemMessage.class, "AD_Descr_Project_name"));      //NOI18N
 
             GridBagConstraints gbc = new GridBagConstraints();
 

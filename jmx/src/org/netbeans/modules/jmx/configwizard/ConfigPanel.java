@@ -57,8 +57,7 @@ public class ConfigPanel extends javax.swing.JPanel
                      bundle.getString("LBL_RMI_Password_File"));//NOI18N
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigPanel.class, 
-                                     "LBL_Config_Panel")); // NOI18N       
+        setName(NbBundle.getMessage(ConfigPanel.class, "LBL_Config_Panel")); // NOI18N       
     }
     
     /** This method is called from within the constructor to
@@ -239,7 +238,7 @@ public class ConfigPanel extends javax.swing.JPanel
         private void setErrorMsg(String message) {
             if (templateWiz != null) {
                 templateWiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, 
-                        message);    //NOI18N
+                                        message);
             }
         }
         
