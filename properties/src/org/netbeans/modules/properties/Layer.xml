@@ -45,7 +45,15 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="OpenAction.instance">
                         <attr name="instanceClass" stringvalue="org.openide.actions.OpenAction"/>
                     </file>
-                    <attr boolvalue="true" name="OpenAction.instance/Separator1.instance" />
+                    <attr boolvalue="true" name="OpenAction.instance/Separator0.instance" />
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+                    </file>
+                    <attr boolvalue="true" name="Separator0.instance/FileSystemAction.instance" />
+                    <file name="FileSystemAction.instance">
+                        <attr name="instanceClass" stringvalue="org.openide.actions.FileSystemAction" />
+                    </file>
+                    <attr boolvalue="true" name="FileSystemAction.instance/Separator1.instance" />
                     <file name="Separator1.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
                     </file>
