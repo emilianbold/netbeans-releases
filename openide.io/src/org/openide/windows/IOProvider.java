@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,10 +34,15 @@ public abstract class IOProvider {
 
     /**
      * Get the default I/O provider.
+     * <p>
      * Normally this is taken from {@link Lookup#getDefault} but if there is no
      * instance in lookup, a fallback instance is created which just uses the
      * standard system I/O streams. This is useful for unit tests and perhaps
      * for standalone usage of various libraries.
+     * <p>
+     * Assuming you want to ensure that a real output window implementation is actually
+     * installed and enabled, you must require the token <code>org.openide.windows.IOProvider</code>
+     * from the module calling this method.
      * @return the default instance (never null)
      */
     public static IOProvider getDefault() {
