@@ -42,12 +42,6 @@ class PDFOpenSupport implements OpenCookie {
      *             if the specified file does not exist or is not a plain file
      */
     public PDFOpenSupport(File f) {
-        if (!f.isFile()) {
-            String msg = NbBundle.getMessage(PDFOpenSupport.class,
-                                             "EXC_no_such_pdf",         //NOI18N
-                                             f.getPath());
-            throw new IllegalArgumentException(msg);
-        }
         this.f = f;
     }
 
