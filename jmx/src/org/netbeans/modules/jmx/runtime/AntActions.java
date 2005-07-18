@@ -174,19 +174,19 @@ public class AntActions {
     }
     
     private static void enableLocalManagement(Project project) {
-       handleLocalManagement(project, "run-management");
+       handleLocalManagement(project, "run-management");// NOI18N
     }
     
     private static void debugLocalManagement(Project project) {
-       handleLocalManagement(project, "debug-management");
+       handleLocalManagement(project, "debug-management");// NOI18N
     }
     
     private static void enableRemoteManagement(Project project) {
-        handleRemoteManagement(project, "run-management");
+        handleRemoteManagement(project, "run-management");// NOI18N
     }
     
     private static void debugRemoteManagement(Project project) {
-        handleRemoteManagement(project, "debug-management");
+        handleRemoteManagement(project, "debug-management");// NOI18N
     }
     
    
@@ -235,34 +235,34 @@ public class AntActions {
             //Add property to ant execution context
             Properties props = new Properties();
             if(rmiPort != null)
-                props.setProperty("com.sun.management.jmxremote.port", rmiPort.toString());
+                props.setProperty("com.sun.management.jmxremote.port", rmiPort.toString());// NOI18N
             if(configFile != null)
-                props.setProperty("com.sun.management.config.file", configFile);
+                props.setProperty("com.sun.management.config.file", configFile);// NOI18N
             
             //We need a port to poll the process
             if(rmiPort == null) {
                Properties p = new Properties();
                File f = new File(configFile);
                p.load(new FileInputStream(f));
-               rmiPort = new Integer(p.getProperty("com.sun.management.jmxremote.port"));
+               rmiPort = new Integer(p.getProperty("com.sun.management.jmxremote.port"));// NOI18N
             }
                 
             //Should be set to "" if no auto connect
-            String msg = "";
-            String url = "localhost:" + rmiPort;
+            String msg = "";// NOI18N
+            String url = "localhost:" + rmiPort;// NOI18N
             
             if(launchJConsole)
-                msg = NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole");
+                msg = NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole");// NOI18N
             else
-                msg = NbBundle.getMessage(AntActions.class, "MSG_EnablingRemoteManagement");
+                msg = NbBundle.getMessage(AntActions.class, "MSG_EnablingRemoteManagement");// NOI18N
             
-            String managementArgs = " -Dcom.sun.management.jmxremote.port=" + rmiPort + " " +         
-                                    (configFile == null ? "-Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false" : "-Dcom.sun.management.config.file=" + "\""+configFile+"\"");
+            String managementArgs = " -Dcom.sun.management.jmxremote.port=" + rmiPort + " " +   // NOI18N      
+                                    (configFile == null ? "-Dcom.sun.management.jmxremote.authenticate=false  -Dcom.sun.management.jmxremote.ssl=false" : "-Dcom.sun.management.config.file=" + "\""+configFile+"\"");// NOI18N
             
-            props.setProperty("management.jvmargs", managementArgs);
+            props.setProperty("management.jvmargs", managementArgs);// NOI18N
             
-            props.setProperty("connecting.jconsole.msg", msg);
-            props.setProperty("jconsole.managed.process.url", url);
+            props.setProperty("connecting.jconsole.msg", msg);// NOI18N
+            props.setProperty("jconsole.managed.process.url", url);// NOI18N
             
             
             //Run the run-management target. Run the app with remote mgt enabled
@@ -278,7 +278,7 @@ public class AntActions {
             }
         
         }catch(Exception e) {
-            System.out.println("EXCEPTION "+ e.toString());
+            System.out.println(e.toString());
             e.printStackTrace();
         }
     }
@@ -294,10 +294,10 @@ public class AntActions {
         try {
             //Add property to ant execution context
             Properties props = new Properties();
-            String managementArgs = "-Dcom.sun.management.jmxremote -Djmx.process.virtual.pid=" + key;
-            props.setProperty("management.jvmargs", managementArgs);
-            props.setProperty("connecting.jconsole.msg", NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole"));
-            props.setProperty("jconsole.managed.process.url", "");
+            String managementArgs = "-Dcom.sun.management.jmxremote -Djmx.process.virtual.pid=" + key;// NOI18N
+            props.setProperty("management.jvmargs", managementArgs);// NOI18N
+            props.setProperty("connecting.jconsole.msg", NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole"));// NOI18N
+            props.setProperty("jconsole.managed.process.url", "");// NOI18N
             
             //Run the run-lcl-mgt target. Run the app with lsocal mgt enabled
             ExecutorTask t = runTarget(project, target, props);
@@ -306,11 +306,11 @@ public class AntActions {
             //Such task will launch JCOnsole only if run target doesn't fail AND
             // A connector is found in shared memory.
             RequestProcessor rp = new RequestProcessor();
-            JConsoleAction action = new JConsoleAction("jmx.process.virtual.pid=" +
+            JConsoleAction action = new JConsoleAction("jmx.process.virtual.pid=" + // NOI18N
                     key, project, t);
             rp.post(action);
         }catch(Exception e) {
-            System.out.println("EXCEPTION "+ e.toString());
+            System.out.println(e.toString());
             e.printStackTrace();
         }
     }
@@ -352,19 +352,19 @@ public class AntActions {
             //Access to settings
             JConsoleSettings settings = JConsoleSettings.getDefault();
             String polling = String.valueOf(settings.getPolling());
-            String tile = !settings.getTile() ? "-notile" : "";
-            String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions();
+            String tile = !settings.getTile() ? "-notile" : ""; // NOI18N
+            String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions(); // NOI18N
             Properties props = new Properties();
-            t.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_FoundProcessToConnectTo"));
+            t.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_FoundProcessToConnectTo"));// NOI18N
             
-            props.setProperty("jconsole.settings.vmoptions", vmOptions);
-            props.setProperty("jconsole.settings.polling", polling);
-            props.setProperty("jconsole.settings.notile", tile);
+            props.setProperty("jconsole.settings.vmoptions", vmOptions);// NOI18N
+            props.setProperty("jconsole.settings.polling", polling);// NOI18N
+            props.setProperty("jconsole.settings.notile", tile);// NOI18N
             
-            props.setProperty("jconsole.managed.process.url", url);
-            ExecutorTask jt = runTarget(project, "-connect-jconsole", props);
+            props.setProperty("jconsole.managed.process.url", url);// NOI18N
+            ExecutorTask jt = runTarget(project, "-connect-jconsole", props);// NOI18N
             t.getInputOutput().select();
-            jt.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_DisplayingJConsole"));
+            jt.getInputOutput().getErr().println(NbBundle.getMessage(AntActions.class, "MSG_DisplayingJConsole"));// NOI18N
             //jt.getInputOutput().closeInputOutput();
             
             //Killing both ways. First killed, kill the other
@@ -391,13 +391,13 @@ public class AntActions {
         public void run() {
             try {
                 if(t.isFinished()) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingJConsole"));
+                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingJConsole"));// NOI18N
                 }
                 
                 int pid = findPID((String) key, t);
                 
                 if(pid == -1) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingJConsole"));
+                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingJConsole"));// NOI18N
                     return;
                 }
                 String url = String.valueOf(pid);
@@ -416,23 +416,23 @@ public class AntActions {
         private String host;
         public JConsoleRemoteAction(Integer rmiPort, Project project, ExecutorTask t) {
             super(rmiPort, project, t);
-            this.host = "localhost";
+            this.host = "localhost";// NOI18N
         }
         
         public void run() {
             try {
                 if(t.isFinished()) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingRemoteJConsole"));
+                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingRemoteJConsole"));// NOI18N
                 }
                 
                 try {
                     tryConnect((Integer) key, host, t);
                 }catch(Exception e) {
-                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingRemoteJConsole"));
+                    handleApplicationDied(t, NbBundle.getMessage(AntActions.class, "MSG_ErrorConnectingRemoteJConsole"));// NOI18N
                     return;
                 }
                
-                String url = host + ":" + key;
+                String url = host + ":" + key;// NOI18N
                 connectJConsole(url);
             }catch(Exception e) {
                 e.printStackTrace();
@@ -445,11 +445,11 @@ public class AntActions {
    * Use tools.jar to findout launched process.
    */  
     private static void tryConnect(Integer port, String host, ExecutorTask t) throws Exception {
-        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + 
-                                              port +  "/jmxrmi");
+        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + host + ":" + // NOI18N
+                                              port +  "/jmxrmi");// NOI18N
         while(true) {
             if(t.isFinished())
-                throw new Exception("Process is already dead");
+                throw new Exception("Process is already dead");// NOI18N
             
             try {
                 JMXConnectorFactory.connect(url);
@@ -493,7 +493,7 @@ public class AntActions {
               }
               Thread.sleep(1000);
           } catch (Exception x) {
-              System.out.println("Error, you should clean <tmp dir>/hsperfdata_<yourname>/" + vm + " file");
+              System.out.println("Error, you should clean <tmp dir>/hsperfdata_<yourname>/" + vm + " file");// NOI18N
               x.printStackTrace();
           }
         }

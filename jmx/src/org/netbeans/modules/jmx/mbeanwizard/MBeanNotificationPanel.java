@@ -62,7 +62,7 @@ public class MBeanNotificationPanel extends JPanel {
         
         initComponents();
         String str = NbBundle.getMessage(MBeanNotificationPanel.class,
-                "LBL_Notification_Panel");
+                "LBL_Notification_Panel");// NOI18N
         setName(str);
     }
     
@@ -71,7 +71,7 @@ public class MBeanNotificationPanel extends JPanel {
         notificationModel = new MBeanNotificationTableModel();
         notificationTable = new NotificationTable(ancestorPanel, 
                 notificationModel);
-        notificationTable.setName("notificationTable");
+        notificationTable.setName("notificationTable");// NOI18N
     }
     
     private void initComponents() {
@@ -89,8 +89,8 @@ public class MBeanNotificationPanel extends JPanel {
                 NbBundle.getMessage(MBeanNotificationPanel.class,
                 "BUTTON_rem_notification"));//NOI18N
         
-        notifAddJButton.setName("notifAddJButton");
-        notifRemJButton.setName("notifRemJButton");
+        notifAddJButton.setName("notifAddJButton");// NOI18N
+        notifRemJButton.setName("notifRemJButton");// NOI18N
         
         //remove button should first be disabled
         notifRemJButton.setEnabled(false);
@@ -168,13 +168,13 @@ public class MBeanNotificationPanel extends JPanel {
             wiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
             String mbeanPackageName = (String)
             wiz.getProperty(WizardConstants.PROP_MBEAN_PACKAGE_NAME);
-            String defaultTypeValue = "";
+            String defaultTypeValue = "";// NOI18N
             if ((mbeanPackageName != null) && (mbeanName != null)) {
-                if (mbeanPackageName.equals("")) {
-                    defaultTypeValue = mbeanName + "." + "type";
+                if (mbeanPackageName.equals("")) {// NOI18N
+                    defaultTypeValue = mbeanName + "." + "type";// NOI18N
                 } else {
-                    defaultTypeValue = mbeanPackageName + "." + mbeanName + "."
-                            + "type";
+                    defaultTypeValue = mbeanPackageName + "." + mbeanName + "."// NOI18N
+                            + "type";// NOI18N
                 }
             }
             defaultTypeValue = defaultTypeValue.toLowerCase();
@@ -224,7 +224,7 @@ public class MBeanNotificationPanel extends JPanel {
          * @return HelpCtxt
          */
         public HelpCtx getHelp() {
-            return new HelpCtx("jmx_instrumenting_app");
+            return new HelpCtx("jmx_instrumenting_app");// NOI18N
         }
     }
     

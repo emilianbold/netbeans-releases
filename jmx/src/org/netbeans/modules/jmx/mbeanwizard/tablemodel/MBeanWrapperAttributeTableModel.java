@@ -39,11 +39,11 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
         
         columnNames = new String[5];
         
-        String ss = bundle.getString("LBL_AttrSelection");
-        String sn = bundle.getString("LBL_AttrName");
-        String st = bundle.getString("LBL_AttrType");
-        String sa = bundle.getString("LBL_AttrAccess");
-        String sd = bundle.getString("LBL_AttrDescription");
+        String ss = bundle.getString("LBL_AttrSelection");// NOI18N
+        String sn = bundle.getString("LBL_AttrName");// NOI18N
+        String st = bundle.getString("LBL_AttrType");// NOI18N
+        String sa = bundle.getString("LBL_AttrAccess");// NOI18N
+        String sd = bundle.getString("LBL_AttrDescription");// NOI18N
         
         columnNames[IDX_ATTR_SELECTION]              = ss;
         columnNames[super.IDX_ATTR_NAME +1]          = sn;
@@ -64,8 +64,8 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
             case 2: return attr.getTypeName();
             case 3: return attr.getAccess();
             case 4: return attr.getDescription();
-            default: System.out.println("Error getValueAt " +
-                    "MBeanWrapperAttributeTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "MBeanWrapperAttributeTableModel " + col);// NOI18N
             break;
         }
         return null;
@@ -85,8 +85,8 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
                 break;
                 case 4: attr.setDescription((String)aValue);
                 break;
-                default: System.out.println("Error setValueAt " +
-                        "MBeanWrapperAttributeTableModel " + columnIndex);
+                default: System.out.println("Error setValueAt " +// NOI18N
+                        "MBeanWrapperAttributeTableModel " + columnIndex);// NOI18N
                 break;
             }
         }

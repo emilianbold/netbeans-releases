@@ -40,9 +40,9 @@ public class OperationParameterTableModel extends AbstractJMXTableModel{
         data = new ArrayList();
 
         columnNames = new String[3];
-        String sopn = bundle.getString("LBL_OperationParameterName");
-        String sopt = bundle.getString("LBL_OperationParameterType");
-        String sopd = bundle.getString("LBL_OperationParameterDescription");
+        String sopn = bundle.getString("LBL_OperationParameterName");// NOI18N
+        String sopt = bundle.getString("LBL_OperationParameterType");// NOI18N
+        String sopd = bundle.getString("LBL_OperationParameterDescription");// NOI18N
         
         columnNames[IDX_OP_PARAM_NAME]        = sopn;
         columnNames[IDX_OP_PARAM_TYPE]        = sopt;        
@@ -92,8 +92,8 @@ public class OperationParameterTableModel extends AbstractJMXTableModel{
             case 0: return param.getParamName();
             case 1: return param.getParamType();
             case 2: return param.getParamDescription();
-            default: System.out.println("Error getValueAt " +
-                    "OperationParameterTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "OperationParameterTableModel " + col);// NOI18N
                 break;
         }
         return null;
@@ -113,8 +113,8 @@ public class OperationParameterTableModel extends AbstractJMXTableModel{
                 break;
                 case 2: param.setParamDescription((String)aValue);
                 break;
-                default: System.out.println("Error setValueAt " +
-                        "OperationParameterTableModel " + columnIndex);
+                default: System.out.println("Error setValueAt " +// NOI18N
+                        "OperationParameterTableModel " + columnIndex);// NOI18N
                 break;    
             }
         }

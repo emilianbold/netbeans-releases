@@ -57,7 +57,7 @@ public class ProjectUtilities {
       public void perform(Project project) {
         ProjectUtilities.mainProject = project;
       }
-    }, "", null);
+    }, "", null);// NOI18N
   }
 
 

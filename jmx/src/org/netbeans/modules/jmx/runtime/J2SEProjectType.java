@@ -45,35 +45,35 @@ import java.util.Iterator;
 
 public class J2SEProjectType {
 
-  private static final String J2SE_PROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/j2se-project/1";
-  private static final String J2SE_PROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/j2se-project/2";
+  private static final String J2SE_PROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/j2se-project/1";// NOI18N
+  private static final String J2SE_PROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/j2se-project/2";// NOI18N
 
-  private static final String STANDARD_IMPORT_STRING = "<import file=\"nbproject/build-impl.xml\"/>";
-  private static final String MANAGEMENT_IMPORT_STRING = "<import file=\"nbproject/management-build-impl.xml\"/>";
-  private static final String MANAGEMENT_NAME_SPACE = "http://www.netbeans.org/ns/jmx/1";
+  private static final String STANDARD_IMPORT_STRING = "<import file=\"nbproject/build-impl.xml\"/>";// NOI18N
+  private static final String MANAGEMENT_IMPORT_STRING = "<import file=\"nbproject/management-build-impl.xml\"/>";// NOI18N
+  private static final String MANAGEMENT_NAME_SPACE = "http://www.netbeans.org/ns/jmx/1";// NOI18N
 
   public static boolean isProjectTypeSupported(Project project) {
     AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
     if (aux == null) {
-      System.err.println("Auxiliary Configuration is null for Project: "+project);
+      System.err.println("Auxiliary Configuration is null for Project: " + project);// NOI18N
       return false;
     }
-    Element e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_40, true);
-    if (e== null) e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_41, true);
+    Element e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_40, true);// NOI18N
+    if (e== null) e = aux.getConfigurationFragment("data", J2SE_PROJECT_NAMESPACE_41, true); // NOI18N
     return (e != null);
   }
 
   public static boolean checkProjectCanBeManaged(Project project) {
       Properties pp = getProjectProperties(project);
-      String mainClass = pp.getProperty("main.class");
+      String mainClass = pp.getProperty("main.class");// NOI18N
       boolean res = false;
-      if (mainClass != null && !"".equals(mainClass)) {
+      if (mainClass != null && !"".equals(mainClass)) {// NOI18N
         FileObject fo = findFileForClass(mainClass, true);
         if (fo != null) res = true;
       }
       if (!res) {
         ManagementDialogs.getDefault().notify(
-        new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProjectType.class, "ERR_MainClassNotSet"), NotifyDescriptor.WARNING_MESSAGE));
+        new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProjectType.class, "ERR_MainClassNotSet"), NotifyDescriptor.WARNING_MESSAGE));// NOI18N
        
         return false;
       }
@@ -104,23 +104,20 @@ public class J2SEProjectType {
   }
  
   public static boolean checkProjectIsModifiedForManagement(Project project) {
-    Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data", MANAGEMENT_NAME_SPACE, true);
+    Element e = ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).getConfigurationFragment("data", MANAGEMENT_NAME_SPACE, true);// NOI18N
     if (e != null) return true; // already modified, nothing more to do
 
     if (ManagementDialogs.getDefault().notify(
         new NotifyDescriptor.Confirmation (
-            "This is the first time this project is to be managed. This module needs to modify the project build script to enable management.\n" +
-            "A simple import will be created in the project build.xml, the original will be backed up as build-before-management.xml\n" +
-            "Do you wish to perform this change and continue?\n\n" +
-            "If you have not performed custom edits to your project's build script, click \"OK\"",
+            NbBundle.getMessage(J2SEProjectType.class, "WARN_BUILD_UPDATE"), // NOI18N
             NotifyDescriptor.OK_CANCEL_OPTION)
         ) != NotifyDescriptor.OK_OPTION)
     {
         return false; // cancelled by the user
     }
 
-    Element mgtFragment = XMLUtil.createDocument("ignore", null, null, null).createElementNS(MANAGEMENT_NAME_SPACE, "data");
-    mgtFragment.setAttribute("version", "0.4");
+    Element mgtFragment = XMLUtil.createDocument("ignore", null, null, null).createElementNS(MANAGEMENT_NAME_SPACE, "data");// NOI18N
+    mgtFragment.setAttribute("version", "0.4");// NOI18N
     ((AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class)).putConfigurationFragment(mgtFragment, true);
     try {
       ProjectManager.getDefault().saveProject(project);
@@ -131,7 +128,7 @@ public class J2SEProjectType {
 
     try {
       GeneratedFilesHelper gfh = new GeneratedFilesHelper(project.getProjectDirectory());
-      gfh.refreshBuildScript("nbproject/management-build-impl.xml", J2SEProjectType.class.getResource("management-build-impl.xsl"), false);
+      gfh.refreshBuildScript("nbproject/management-build-impl.xml", J2SEProjectType.class.getResource("management-build-impl.xsl"), false);// NOI18N
     } catch (IOException e1) {
       return false;
     }
@@ -141,7 +138,7 @@ public class J2SEProjectType {
     if (buildScript == null) {
       ManagementDialogs.getDefault().notify(
           new NotifyDescriptor.Message (
-              "Cannot find the project build.xml file.",
+             NbBundle.getMessage(J2SEProjectType.class, "ERR_BUILD_NOT_FOUND"), // NOI18N
               NotifyDescriptor.ERROR_MESSAGE)
           );
       return false;
@@ -150,7 +147,7 @@ public class J2SEProjectType {
     if (!ProjectUtilities.backupBuildScript(project)) {
       if (ManagementDialogs.getDefault().notify(
           new NotifyDescriptor.Confirmation (
-              "The project build script cannot be backed up. Do you want to continue anyway?",
+              NbBundle.getMessage(J2SEProjectType.class, "ERR_BUILD_NOT_BACKUP"), // NOI18N
               NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE)
           ) != NotifyDescriptor.OK_OPTION)
       {
@@ -164,28 +161,26 @@ public class J2SEProjectType {
       // notify the user that the build script cannot be modified, and he should perform the change himself
       ManagementDialogs.getDefault().notify(
           new NotifyDescriptor.Message (
-              "The project build.xml file cannot be automatically modified for management. You need to manually insert the following import clause in it:\n" +
-              "<import file=\"nbproject/management-build-impl.xml\"/>\n" +
-              "Please perform this change and start management again.",
+              NbBundle.getMessage(J2SEProjectType.class, "ERR_BUILD_NOT_UPDATED"), // NOI18N
               NotifyDescriptor.WARNING_MESSAGE)
           );
       return false;
     }
-    String indent = "";
+    String indent = "";// NOI18N
     int idx = importIndex-1;
     while (idx >= 0) {
-      if (buildScript.charAt(idx) == ' ') indent = " " + indent;
-      else if (buildScript.charAt(idx) == '\t') indent = "\t" + indent;
+      if (buildScript.charAt(idx) == ' ') indent = " " + indent;// NOI18N
+      else if (buildScript.charAt(idx) == '\t') indent = "\t" + indent;// NOI18N
       else break;
       idx--;
     }
     newDataBuffer.append(buildScript.substring(0, importIndex+STANDARD_IMPORT_STRING.length()+1));
-    newDataBuffer.append("\n");
+    newDataBuffer.append("\n");// NOI18N
     newDataBuffer.append(indent);
     newDataBuffer.append(MANAGEMENT_IMPORT_STRING);
     newDataBuffer.append(buildScript.substring(importIndex+STANDARD_IMPORT_STRING.length()+1));
 
-    FileObject buildFile = project.getProjectDirectory().getFileObject("build.xml");
+    FileObject buildFile = project.getProjectDirectory().getFileObject("build.xml");// NOI18N
     FileLock lock = null;
     PrintWriter writer = null;
     try {
@@ -234,7 +229,7 @@ public class J2SEProjectType {
     Properties props = new Properties();
     FileObject privatePropsFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
     FileObject projectPropsFile = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-    File userPropsFile = InstalledFileLocator.getDefault().locate("build.properties", null, false);
+    File userPropsFile = InstalledFileLocator.getDefault().locate("build.properties", null, false);// NOI18N
 
     // the order is 1. private, 2. project, 3. user to reflect how Ant handles property definitions (immutable, once set property value cannot be changed)
     if (privatePropsFile != null) {

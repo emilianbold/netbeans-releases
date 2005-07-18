@@ -66,7 +66,7 @@ public class NotificationTypePopup extends AbstractPopup{
         readSettings();
         
         setDimensions(NbBundle.getMessage(NotificationTypePopup.class,
-                "LBL_NotificationType_Popup"));
+                "LBL_NotificationType_Popup"));// NOI18N
     }
     
     protected void initJTable() {
@@ -74,27 +74,27 @@ public class NotificationTypePopup extends AbstractPopup{
         popupTableModel = new NotificationTypeTableModel(
                 notifTableModel.getDefaultTypeValue());
         popupTable = new NotificationTypePopupTable(popupTableModel);
-        popupTable.setName("notifPopupTable");
+        popupTable.setName("notifPopupTable");// NOI18N
     }
     
     protected void initComponents() {
         
         addJButton = instanciatePopupButton(NotificationTypePopup.class,
-                "LBL_Notification_addType");
+                "LBL_Notification_addType");// NOI18N
         removeJButton = instanciatePopupButton(NotificationTypePopup.class,
-                "LBL_Notification_remType");
+                "LBL_Notification_remType");// NOI18N
         closeJButton = instanciatePopupButton(NotificationTypePopup.class,
-                "LBL_Notification_close");
+                "LBL_Notification_close");// NOI18N
         
         addJButton.addActionListener(
             new AddTableRowListener(popupTable,popupTableModel,removeJButton));
-        addJButton.setName("addNotifTypeJButton");
+        addJButton.setName("addNotifTypeJButton");// NOI18N
         removeJButton.addActionListener(
             new RemTableRowListener(popupTable,popupTableModel,removeJButton));
-        removeJButton.setName("remNotifTypeJButton");
+        removeJButton.setName("remNotifTypeJButton");// NOI18N
         closeJButton.addActionListener(new ClosePopupButtonListener(
                 this,textFieldToFill));
-        closeJButton.setName("closeNotifTypeJButton");
+        closeJButton.setName("closeNotifTypeJButton");// NOI18N
         
         definePanels(new JButton[] {addJButton,
                 removeJButton,
@@ -132,8 +132,8 @@ public class NotificationTypePopup extends AbstractPopup{
         //navigation
         popupTable.editingStopped(new ChangeEvent(this));
         
-        String notifTypeString = "";
-        String notifTypeContent = "";
+        String notifTypeString = "";// NOI18N
+        String notifTypeContent = "";// NOI18N
         ArrayList<MBeanNotificationType> mbnt = 
                 new ArrayList<MBeanNotificationType>();
         
@@ -145,11 +145,11 @@ public class NotificationTypePopup extends AbstractPopup{
             
             notifTypeContent = notifType.getNotificationType();
             
-            if (notifTypeContent != "")
+            if (notifTypeContent != "")// NOI18N
                 notifTypeString += notifTypeContent;
             
             if (i < popupTableModel.size() -1)
-                notifTypeString += ",";
+                notifTypeString += ",";// NOI18N
             
             // fills the arraylist with the exceptions to store
             mbnt.add(notifType);

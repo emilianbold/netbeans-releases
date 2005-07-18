@@ -40,12 +40,12 @@ public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
         
         columnNames = new String[6];
         
-        String ss = bundle.getString("LBL_MethodSelected");
-        String sn = bundle.getString("LBL_MethodName");
-        String st = bundle.getString("LBL_MethodReturnType");
-        String sp = bundle.getString("LBL_MethodParamType");
-        String se = bundle.getString("LBL_MethodExceptionType");
-        String sd = bundle.getString("LBL_MethodDescription");
+        String ss = bundle.getString("LBL_MethodSelected");// NOI18N
+        String sn = bundle.getString("LBL_MethodName");// NOI18N
+        String st = bundle.getString("LBL_MethodReturnType");// NOI18N
+        String sp = bundle.getString("LBL_MethodParamType");// NOI18N
+        String se = bundle.getString("LBL_MethodExceptionType");// NOI18N
+        String sd = bundle.getString("LBL_MethodDescription");// NOI18N
         
         columnNames[IDX_METH_SELECTION]              = ss;
         columnNames[super.IDX_METH_NAME +1]          = sn;
@@ -67,8 +67,8 @@ public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
             case 3: return oper.getSignature();
             case 4: return oper.getExceptionClasses();
             case 5: return oper.getDescription();
-            default: System.out.println("Error getValueAt " +
-                    "MBeanWrapperOperationTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "MBeanWrapperOperationTableModel " + col);// NOI18N
             break;
         }
         return null;
@@ -94,8 +94,8 @@ public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
                         **/
                 case 5: oper.setDescription((String)aValue);
                 break;
-                default: System.out.println("Error setValueAt " +
-                        "MBeanWrapperOperationTableModel " + columnIndex);
+                default: System.out.println("Error setValueAt " +// NOI18N
+                        "MBeanWrapperOperationTableModel " + columnIndex);// NOI18N
                 break;
             }
         }

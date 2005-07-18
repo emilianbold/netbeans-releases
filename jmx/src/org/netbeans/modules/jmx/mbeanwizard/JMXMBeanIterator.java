@@ -108,17 +108,17 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         this.wiz = wiz;
 
         steps = new String[6];
-        steps[0] = new String("Choose File Type"); // should be added by netbeans
+        steps[0] = new String("Choose File Type"); // NOI18N // should be added by netbeans
         
         
         
-        steps[1] = bundle.getString("LBL_Standard_Panel");
+        steps[1] = bundle.getString("LBL_Standard_Panel");// NOI18N
         
-        steps[2] = bundle.getString("LBL_Wrapper_Panel");
+        steps[2] = bundle.getString("LBL_Wrapper_Panel");// NOI18N
         
-        steps[3] = bundle.getString("LBL_Attribute_Panel");
-        steps[4] = bundle.getString("LBL_Notification_Panel");
-        steps[5] = bundle.getString("LBL_JUnit_Panel");   
+        steps[3] = bundle.getString("LBL_Attribute_Panel");// NOI18N
+        steps[4] = bundle.getString("LBL_Notification_Panel");// NOI18N
+        steps[5] = bundle.getString("LBL_JUnit_Panel");   // NOI18N
         
         // end of work around 
 
@@ -136,7 +136,7 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
             initializeComponents(steps, 0);
 
         } catch (Exception ex) {
-            WizardHelpers.logErrorMessage("initialize", ex);
+            WizardHelpers.logErrorMessage("initialize", ex);// NOI18N
         }
     }
     
@@ -160,11 +160,11 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         this.wiz = (TemplateWizard) wiz;
 
         steps = new String[5];
-        steps[0] = bundle.getString("LBL_Standard_Panel");
-        steps[1] = bundle.getString("LBL_Wrapper_Panel");
-        steps[2] = bundle.getString("LBL_Attribute_Panel");
-        steps[3] = bundle.getString("LBL_Notification_Panel");
-        steps[4] = bundle.getString("LBL_JUnit_Panel");
+        steps[0] = bundle.getString("LBL_Standard_Panel");// NOI18N
+        steps[1] = bundle.getString("LBL_Wrapper_Panel");// NOI18N
+        steps[2] = bundle.getString("LBL_Attribute_Panel");// NOI18N
+        steps[3] = bundle.getString("LBL_Notification_Panel");// NOI18N
+        steps[4] = bundle.getString("LBL_JUnit_Panel");// NOI18N
 
         return steps;
     }
@@ -205,7 +205,7 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         mbeanPanel = new WizardPanelWithoutReadSettings(
                 delegateMBeanPanel,mbeanOptionsPanel);
         mbeanPanel.getComponent().setName(
-                bundle.getString("LBL_Standard_Panel"));
+                bundle.getString("LBL_Standard_Panel"));// NOI18N
         initializeComponent(steps,panelOffset + 0,
                 (JComponent)mbeanPanel.getComponent());
         ((StandardMBeanPanel.StandardMBeanWizardPanel) mbeanOptionsPanel).
@@ -258,7 +258,7 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
     {
         jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);
+        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);// NOI18N
     }
     
     /**
@@ -294,7 +294,7 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
             return gen.generateMBean(wizard).getCreated();
                 
         } catch (Exception ex) {
-            WizardHelpers.logErrorMessage("MBean generation ", ex);
+            WizardHelpers.logErrorMessage("MBean generation ", ex);// NOI18N
             return Collections.EMPTY_SET;
         }
     }

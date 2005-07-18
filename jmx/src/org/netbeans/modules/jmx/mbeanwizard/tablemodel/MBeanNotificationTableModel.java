@@ -27,7 +27,7 @@ public class MBeanNotificationTableModel extends AbstractJMXTableModel {
     public static final int IDX_NOTIF_CLASS                = 0;
     public static final int IDX_NOTIF_DESCRIPTION          = 1;
     public static final int IDX_NOTIF_TYPE                 = 2;
-    private String defaultTypeValue = "";
+    private String defaultTypeValue = "";// NOI18N
     
     /**
      * Constructor
@@ -41,9 +41,9 @@ public class MBeanNotificationTableModel extends AbstractJMXTableModel {
         
         columnNames = new String[3];
         
-        String sc = bundle.getString("LBL_NotificationClass");
-        String sd = bundle.getString("LBL_NotificationDescription");
-        String st = bundle.getString("LBL_NotificationType");
+        String sc = bundle.getString("LBL_NotificationClass");// NOI18N
+        String sd = bundle.getString("LBL_NotificationDescription");// NOI18N
+        String st = bundle.getString("LBL_NotificationType");// NOI18N
         
         columnNames[IDX_NOTIF_CLASS]        = sc;
         columnNames[IDX_NOTIF_DESCRIPTION]  = sd;
@@ -96,8 +96,8 @@ public class MBeanNotificationTableModel extends AbstractJMXTableModel {
             case 0: return notif.getNotificationClass();
             case 1: return notif.getNotificationDescription();
             case 2: return notif.getNotificationTypeList();
-            default: System.out.println("Error getValueAt " +
-                    "MBeanMethodTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "MBeanMethodTableModel " + col);// NOI18N
             break;
         }
         return null;
@@ -117,8 +117,8 @@ public class MBeanNotificationTableModel extends AbstractJMXTableModel {
                 case 2: notif.setNotificationTypeList(
                         (ArrayList<MBeanNotificationType>)aValue);
                 break;
-                default: System.out.println("Error setValueAt " +
-                        "MBeanMethodTableModel " + columnIndex);
+                default: System.out.println("Error setValueAt " +// NOI18N
+                        "MBeanMethodTableModel " + columnIndex);// NOI18N
                 break;
             }
         }

@@ -67,28 +67,28 @@ public class OperationExceptionPopup extends AbstractPopup{
         readSettings();
         
         setDimensions(NbBundle.getMessage(OperationExceptionPopup.class,
-                "LBL_OperationException_Popup"));
+                "LBL_OperationException_Popup"));// NOI18N
     }
     
     protected void initJTable() {
         
         popupTableModel = new OperationExceptionTableModel();
         popupTable = new OperationExceptionPopupTable(popupTableModel);
-        popupTable.setName("ExcepPopupTable");
+        popupTable.setName("ExcepPopupTable");// NOI18N
     }
     
     protected void initComponents() {
         
         addJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationException_addException");
+                "LBL_OperationException_addException");// NOI18N
         removeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationException_remException");
+                "LBL_OperationException_remException");// NOI18N
         closeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationException_close");
+                "LBL_OperationException_close");// NOI18N
         
-        addJButton.setName("addExceptionJButton");
-        removeJButton.setName("remExceptionJButton");
-        closeJButton.setName("closeJButton");
+        addJButton.setName("addExceptionJButton");// NOI18N
+        removeJButton.setName("remExceptionJButton");// NOI18N
+        closeJButton.setName("closeJButton");// NOI18N
         
         //remove button should first be remove
         removeJButton.setEnabled(false);
@@ -104,7 +104,7 @@ public class OperationExceptionPopup extends AbstractPopup{
                      ManagementDialogs.getDefault().notify(
                         new NotifyDescriptor.Message(NbBundle.getMessage(
                              OperationExceptionPopup.class, 
-                             "ERR_InheritanceConflict"), 
+                             "ERR_InheritanceConflict"), // NOI18N
                              NotifyDescriptor.ERROR_MESSAGE));
                 } else {
                     textFieldToFill.setText(storeSettings());
@@ -147,9 +147,9 @@ public class OperationExceptionPopup extends AbstractPopup{
         //stores all values from the table in the model even with keyboard navigation
         popupTable.editingStopped(new ChangeEvent(this));
         
-        String excepString = "";
-        String excepName = "";
-        String excepDescription = "";
+        String excepString = "";// NOI18N
+        String excepName = "";// NOI18N
+        String excepDescription = "";// NOI18N
         // create a new list of exceptions to fill
         ArrayList<MBeanOperationException> mboe = 
                 new ArrayList<MBeanOperationException>();
@@ -161,11 +161,11 @@ public class OperationExceptionPopup extends AbstractPopup{
             excepName = popupEx.getExceptionClass();
             excepDescription = popupEx.getExceptionDescription();
             
-            if (excepName != "")
+            if (excepName != "")// NOI18N
                 excepString += excepName;
             
             if (i < popupTableModel.size() -1)
-                excepString += ",";
+                excepString += ",";// NOI18N
 
             // fills the arraylist with the exceptions to store
             mboe.add(popupEx);
@@ -179,8 +179,8 @@ public class OperationExceptionPopup extends AbstractPopup{
     
     private boolean existsSameException() {
         // prevents from having two or more exception with the same name
-        String excepName = "";
-        String excepString = "";
+        String excepName = "";// NOI18N
+        String excepString = "";// NOI18N
         
         for (int i = 0 ; i < popupTableModel.size() ; i++) {
             //excepName = (String)popupTableModel.getValueAt(i,
@@ -190,7 +190,7 @@ public class OperationExceptionPopup extends AbstractPopup{
             if (excepString.contains(excepName))
                 return true;
             else {
-                if (excepName != "")
+                if (excepName != "")// NOI18N
                     excepString += excepName;
             }
         }

@@ -106,13 +106,13 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         buttonPanel.setLayout(new GridLayout(1, 1, 5, 0));
 
         cancelJButton = new JButton(NbBundle.getMessage(AbstractPopup.class,
-                "LBL_Generic_Cancel"));
+                "LBL_Generic_Cancel"));// NOI18N
         cancelJButton.setMargin(new Insets(cancelJButton.getMargin().top, 12,
                 cancelJButton.getMargin().bottom, 12));
         winWidth = 
                 winWidth + (int) cancelJButton.getPreferredSize().getWidth();
         
-        cancelJButton.setName("cancelJButton");
+        cancelJButton.setName("cancelJButton");// NOI18N
         cancelJButton.addActionListener(this);
         for (int i = 0; i < popupButtons.length; i++) {
             ((JButton)popupButtons[i]).setMargin(

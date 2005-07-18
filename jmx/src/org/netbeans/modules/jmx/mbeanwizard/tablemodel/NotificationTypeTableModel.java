@@ -28,7 +28,7 @@ import org.openide.util.NbBundle;
 public class NotificationTypeTableModel extends AbstractJMXTableModel{
     
     public static final int IDX_NOTIF_TYPE          = 0;
-    private String defaultTypeValue = "";
+    private String defaultTypeValue = "";// NOI18N
     
     /**
      * Constructor
@@ -41,7 +41,7 @@ public class NotificationTypeTableModel extends AbstractJMXTableModel{
         bundle = NbBundle.getBundle(OperationParameterTableModel.class);
         data = new ArrayList();
         columnNames = new String[1];
-        String sopn = bundle.getString("LBL_NotificationType");
+        String sopn = bundle.getString("LBL_NotificationType");// NOI18N
         columnNames[IDX_NOTIF_TYPE]        = sopn;
         this.defaultTypeValue = defaultTypeValue;
     }
@@ -83,8 +83,8 @@ public class NotificationTypeTableModel extends AbstractJMXTableModel{
         MBeanNotificationType notifType = (MBeanNotificationType)data.get(row);
         switch(col) {
             case 0: return notifType.getNotificationType();
-            default: System.out.println("Error getValueAt " +
-                    "NotificationTypeTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "NotificationTypeTableModel " + col);// NOI18N
             break;
         }
         return null;
@@ -100,8 +100,8 @@ public class NotificationTypeTableModel extends AbstractJMXTableModel{
             switch(columnIndex) {
                 case 0: notifType.setNotificationType((String)aValue);
                 break;
-                default: System.out.println("Error setValueAt " +
-                        "MBeanAttributeTableModel " + columnIndex);
+                default: System.out.println("Error setValueAt " +// NOI18N
+                        "MBeanAttributeTableModel " + columnIndex);// NOI18N
                 break;
             }
         }

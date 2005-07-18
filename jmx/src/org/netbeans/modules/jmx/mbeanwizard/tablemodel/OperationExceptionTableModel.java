@@ -39,8 +39,8 @@ public class OperationExceptionTableModel extends AbstractJMXTableModel{
         bundle = NbBundle.getBundle(OperationExceptionTableModel.class);
         data = new ArrayList();
         columnNames = new String[2];
-        String sen = bundle.getString("LBL_ExceptionClass");
-        String sed = bundle.getString("LBL_ExceptionDescription");
+        String sen = bundle.getString("LBL_ExceptionClass");// NOI18N
+        String sed = bundle.getString("LBL_ExceptionDescription");// NOI18N
         columnNames[IDX_EXCEPTION_NAME] = sen;
         columnNames[IDX_EXCEPTION_DESCR] = sed;
     }
@@ -84,8 +84,8 @@ public class OperationExceptionTableModel extends AbstractJMXTableModel{
         switch(col) {
             case 0: return excep.getExceptionClass();
             case 1: return excep.getExceptionDescription();
-            default: System.out.println("Error getValueAt " +
-                    "OperationExceptionTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "OperationExceptionTableModel " + col);// NOI18N
                 break;
         }
         return null;
@@ -103,8 +103,8 @@ public class OperationExceptionTableModel extends AbstractJMXTableModel{
                 break;
             case 1: excep.setExceptionDescription((String)aValue);
                 break;
-            default: System.out.println("Error setValueAt " +
-                    "OperationExceptionTableModel " + columnIndex);
+            default: System.out.println("Error setValueAt " +// NOI18N
+                    "OperationExceptionTableModel " + columnIndex);// NOI18N
                 break;    
             }
         }

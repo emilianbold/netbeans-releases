@@ -42,11 +42,11 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
         
         columnNames = new String[4];
         
-        String sn = bundle.getString("LBL_AttrName");
+        String sn = bundle.getString("LBL_AttrName");// NOI18N
         
-        String st = bundle.getString("LBL_AttrType");
-        String sa = bundle.getString("LBL_AttrAccess");
-        String sd = bundle.getString("LBL_AttrDescription");
+        String st = bundle.getString("LBL_AttrType");// NOI18N
+        String sa = bundle.getString("LBL_AttrAccess");// NOI18N
+        String sd = bundle.getString("LBL_AttrDescription");// NOI18N
         
         columnNames[IDX_ATTR_NAME]          = sn;
         columnNames[IDX_ATTR_TYPE]          = st;
@@ -91,8 +91,8 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
             case 1: return attr.getTypeName();
             case 2: return attr.getAccess();
             case 3: return attr.getDescription();
-            default: System.out.println("Error getValueAt " +
-                    "MBeanAttributeTableModel " + col);
+            default: System.out.println("Error getValueAt " +// NOI18N
+                    "MBeanAttributeTableModel " + col);// NOI18N
             break;
         }
         return null;
@@ -113,8 +113,8 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
                 break;
                 case 3: attr.setDescription((String)aValue);
                 break;
-                default: System.out.println("Error setValueAt " +
-                        "MBeanAttributeTableModel " + columnIndex);
+                default: System.out.println("Error setValueAt " +// NOI18N
+                        "MBeanAttributeTableModel " + columnIndex);// NOI18N
                 break;
             }
         }

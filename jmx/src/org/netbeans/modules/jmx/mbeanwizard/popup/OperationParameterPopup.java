@@ -68,29 +68,29 @@ public class OperationParameterPopup extends AbstractPopup{
         readSettings();
         
         setDimensions(NbBundle.getMessage(OperationParameterPopup.class,
-                "LBL_OperationParameter_Popup"));
+                "LBL_OperationParameter_Popup"));// NOI18N
     }
     
     protected void initJTable() {
         
         popupTableModel = new OperationParameterTableModel();
         popupTable = new OperationParameterPopupTable(popupTableModel);
-        popupTable.setName("ParamPopupTable");
+        popupTable.setName("ParamPopupTable");// NOI18N
     }
     
     protected void initComponents() {
         initJTable();
         
         addJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationParameter_addParam");
+                "LBL_OperationParameter_addParam");// NOI18N
         removeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationParameter_remParam");
+                "LBL_OperationParameter_remParam");// NOI18N
         closeJButton = instanciatePopupButton(OperationExceptionPopup.class,
-                "LBL_OperationParameter_close");
+                "LBL_OperationParameter_close");// NOI18N
         
-        addJButton.setName("addParamJButton");
-        removeJButton.setName("remParamJButton");
-        closeJButton.setName("closeJButton");
+        addJButton.setName("addParamJButton");// NOI18N
+        removeJButton.setName("remParamJButton");// NOI18N
+        closeJButton.setName("closeJButton");// NOI18N
         
         //remove button should first be disabled
         removeJButton.setEnabled(false);
@@ -154,10 +154,10 @@ public class OperationParameterPopup extends AbstractPopup{
         //keyboard navigation
         popupTable.editingStopped(new ChangeEvent(this));
         
-        String paramString = "";
-        String paramName = "";
-        String paramType = "";
-        String paramDescr = "";
+        String paramString = "";// NOI18N
+        String paramName = "";// NOI18N
+        String paramType = "";// NOI18N
+        String paramDescr = "";// NOI18N
         ArrayList<MBeanOperationParameter> mbop = 
                 new ArrayList<MBeanOperationParameter>();
         
@@ -170,11 +170,11 @@ public class OperationParameterPopup extends AbstractPopup{
             paramDescr = popupParam.getParamDescription();
             
             
-            if ((paramName != "") && (paramType != ""))
-                paramString += paramType + " " + paramName;
+            if ((paramName != "") && (paramType != ""))// NOI18N
+                paramString += paramType + " " + paramName;// NOI18N
             
             if (i < popupTableModel.size() -1)
-                paramString += ",";
+                paramString += ",";// NOI18N
             
             // fills the arraylist with the exceptions to store
             mbop.add(popupParam);
