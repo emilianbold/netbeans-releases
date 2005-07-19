@@ -116,4 +116,7 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
         putProperty (PROP_URL, url, true);
     }
     
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx("jconsole_standalone");
+    }
 }
