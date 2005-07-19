@@ -194,6 +194,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/completion</project>
                 <project>../editor/fold</project>
                 <project>../editor/lib</project>
+                <project>../editor/mimelookup</project>
                 <project>../editor/plain</project>
                 <project>../editor/plain/lib</project>
                 <project>../editor/util</project>

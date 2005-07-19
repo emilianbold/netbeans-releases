@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.editor.mimelookup/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/mimelookup/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Layer: org/netbeans/modules/editor/mimelookup/resources/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/editor/mimelookup/EditorMimeLookupModule.class
