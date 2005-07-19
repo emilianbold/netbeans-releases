@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,6 @@ package org.netbeans.modules.debugger.jpda.expr;
 import com.sun.jdi.*;
 
 import java.util.*;
-import java.lang.reflect.InvocationTargetException;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.openide.util.NbBundle;
@@ -33,7 +32,7 @@ import org.openide.util.NbBundle;
  */
 public class Evaluator implements JavaParserVisitor {
     
-    private static boolean      verbose = 
+    private static final boolean      verbose = 
         System.getProperty ("netbeans.debugger.noInvokeMethods") != null;
 
     private Expression              expression;
@@ -47,7 +46,6 @@ public class Evaluator implements JavaParserVisitor {
     private SimpleNode              currentNode;
     private String                  currentPackage;
     private Operators               operators;
-    private Method                  forName;
 
     Evaluator(Expression expression, EvaluationContext context) {
         this.expression = expression;
@@ -1428,6 +1426,7 @@ public class Evaluator implements JavaParserVisitor {
             switch (token.kind) {
 
             case JavaParser.INTEGER_LITERAL:
+                // XXX might be simpler to use Long.decode()
                 String  name    = token.image.toLowerCase();
                 boolean isLong  = name.endsWith("l");
                 long    value;
@@ -1439,7 +1438,7 @@ public class Evaluator implements JavaParserVisitor {
                 if (name.startsWith("0x")) {
                     value = Long.parseLong(name.substring(2), 16);
                 }
-                else if (name.length() > 1 && name.startsWith("0")) {
+                else if (name.length() > 1 && name.charAt(0) == '0') {
                     value = Long.parseLong(name.substring(1), 8);
                 }
                 else {

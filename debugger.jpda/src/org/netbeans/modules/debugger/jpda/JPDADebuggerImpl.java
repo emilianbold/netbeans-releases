@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,11 +30,9 @@ import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
-import com.sun.jdi.request.StepRequest;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.IllegalThreadStateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +53,6 @@ import org.netbeans.api.debugger.Properties;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationException;
-import org.netbeans.modules.debugger.jpda.models.JPDAThreadGroupImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
@@ -722,15 +719,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
     }
     
-    private void printThreads () {
-        List l = virtualMachine.allThreads ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
-            ThreadReference tr = (ThreadReference) l.get (i);
-            System.out.println("  " + tr.name () + " : " + tr.suspendCount () + " : " + tr.isSuspended ());
-        }
-    }
-
     /**
      * Used by ContinueActionProvider & StepActionProvider.
      */

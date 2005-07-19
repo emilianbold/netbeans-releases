@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,6 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
 import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.jdi.request.StepRequest;
@@ -24,13 +23,11 @@ import com.sun.jdi.request.StepRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 import org.openide.util.RequestProcessor;
@@ -45,9 +42,6 @@ import org.openide.util.RequestProcessor;
 abstract class JPDADebuggerActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     
-    private static boolean verbose = 
-        System.getProperty ("netbeans.debugger.jdievents") != null;
-
     private JPDADebuggerImpl debugger;
     
     /** The ReqeustProcessor used by action performers. */

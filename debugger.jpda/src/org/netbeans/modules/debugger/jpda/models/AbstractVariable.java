@@ -299,7 +299,7 @@ public class AbstractVariable implements ObjectVariable {
                     methodsByName (methodName);
                 int j, jj = l.size ();
                 for (j = 0; j < jj; j++)
-                    if ( ((Method) l.get (j)).isAbstract () == false &&
+                    if ( !((Method) l.get (j)).isAbstract () &&
                          ((Method) l.get (j)).argumentTypeNames ().size () == 0
                     ) {
                         method = (Method) l.get (j);
@@ -604,7 +604,7 @@ public class AbstractVariable implements ObjectVariable {
                 default:
                     sb.append (s.charAt (i));
             }
-        return new String (sb);
+        return sb.toString();
     }
     
     private static String convertToCharInitializer (String s) {
@@ -636,7 +636,7 @@ public class AbstractVariable implements ObjectVariable {
                 default:
                     sb.append (s.charAt (i));
             }
-        return new String (sb);
+        return sb.toString();
     }
 }
 

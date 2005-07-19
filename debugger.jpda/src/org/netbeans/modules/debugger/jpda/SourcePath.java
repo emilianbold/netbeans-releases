@@ -7,8 +7,8 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
- * Micro//S ystems, Inc. All Rights Reserved.
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda;
 
@@ -16,18 +16,13 @@ import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.StackFrame;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.debugger.jpda.LocalVariable;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 
@@ -416,6 +411,8 @@ public class SourcePath {
     }
 
     private static class CompoundAnnotation {
+        CompoundAnnotation () {}
+        
         Object annotation1;
         Object annotation2;
     }

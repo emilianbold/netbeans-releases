@@ -535,6 +535,8 @@ public class EditorContextBridge {
     }
     
     private static class CompoundAnnotation {
+        public CompoundAnnotation() {}
+        
         Object annotation1;
         Object annotation2;
     }

@@ -7,12 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.actions;
 
-import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
@@ -26,7 +25,6 @@ import java.util.*;
 import org.netbeans.api.debugger.ActionsManager;
 
 
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -53,12 +51,11 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider
 implements Executor, Runnable, PropertyChangeListener {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
-    private static boolean ssverbose = 
+    private static final boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
     
         
     private StepRequest stepRequest;
-    private ThreadReference tr;
     private String position;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
