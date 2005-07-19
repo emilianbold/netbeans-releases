@@ -65,6 +65,7 @@ public class WrapperAttributeTable extends AttributeTable{
                  public void actionPerformed(ActionEvent evt) {
                      getModel().setValueAt(selBox.isSelected(), row, column);
                      ((AbstractJMXTableModel)getModel()).fireTableDataChanged();
+                     wiz.event();
                  }
              });
              //return new DefaultCellEditor(selBox);
