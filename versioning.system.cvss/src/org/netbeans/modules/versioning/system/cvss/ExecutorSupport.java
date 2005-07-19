@@ -95,8 +95,10 @@ public abstract class ExecutorSupport implements CVSListener  {
         } catch (Throwable e) {
             failure = e;
             String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), cmd.getDisplayName());
-            clientRuntime.log(msg + "\n"); // NOI18N
-            clientRuntime.logError(e);
+            if (clientRuntime != null) {
+                clientRuntime.log(msg + "\n"); // NOI18N
+                clientRuntime.logError(e);
+            }
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }

@@ -235,6 +235,7 @@ public class CvsVersioningSystem {
             try {
                 root = detectCvsRoot(cmd);
             } catch (NotVersionedException e) {
+                if (options == null) return null;
                 root = options.getCVSRoot();
             }
         }
