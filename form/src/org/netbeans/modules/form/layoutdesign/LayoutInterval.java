@@ -804,4 +804,23 @@ public final class LayoutInterval implements LayoutConstants {
 
         return posT - posL;
     }
+    
+    /**
+     * Creates clone of the given interval. Doesn't clone content of groups.
+     *
+     * @param interval interval to be cloned.
+     * @return shallow clone of the interval.
+     */
+    static LayoutInterval cloneInterval(LayoutInterval interval) {
+        LayoutInterval clone = new LayoutInterval(interval.getType());
+        clone.setAlignment(interval.getAlignment());
+        clone.setAttributes(interval.getAttributes());
+        clone.setComponent(interval.getComponent());
+        if (interval.getType() == PARALLEL) {
+            clone.setGroupAlignment(interval.getGroupAlignment());
+        }
+        clone.setSizes(interval.getMinimumSize(), interval.getPreferredSize(), interval.getMaximumSize());
+        return clone;
+    }
+    
 }

@@ -29,6 +29,7 @@ import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.project.*;
+import org.netbeans.modules.form.layoutdesign.*;
 
 /**
  * Support class for copy/cut/paste operations in form editor.
@@ -216,25 +217,37 @@ class CopySupport {
                     LayoutSupportManager layoutSupport =
                         visualCont.getLayoutSupport();
 
-                    RADVisualComponent[] compArray = new RADVisualComponent[] {
-                        (RADVisualComponent) sourceComponent };
-                    LayoutConstraints[] constrArray = new LayoutConstraints[] {
-                        layoutSupport.getStoredConstraints(compArray[0]) };
+                    if (layoutSupport == null) {
+                        visualCont.add(sourceComponent);
+                        LayoutModel layoutModel = visualCont.getFormModel().getLayoutModel();
+                        LayoutComponent parent = layoutModel.getLayoutComponent(visualCont.getId());
+                        boolean isContainer = sourceComponent instanceof RADVisualContainer;
+                        LayoutComponent layoutComponent = layoutModel.getLayoutComponent(sourceComponent.getId());
+                        if (layoutComponent == null) {
+                            layoutComponent = new LayoutComponent(sourceComponent.getId(), isContainer);
+                        }
+                        layoutModel.addNewComponent(layoutComponent, parent);
+                    } else {
+                        RADVisualComponent[] compArray = new RADVisualComponent[] {
+                            (RADVisualComponent) sourceComponent };
+                        LayoutConstraints[] constrArray = new LayoutConstraints[] {
+                            layoutSupport.getStoredConstraints(compArray[0]) };
 
-                    try {
-                        layoutSupport.acceptNewComponents(compArray,
-                                                          constrArray,
-                                                          -1);
-                    }
-                    catch (RuntimeException ex) {
-                        // layout support does not accept the component
-                        org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-                        return transferable;
-                    }
+                        try {
+                            layoutSupport.acceptNewComponents(compArray,
+                                                              constrArray,
+                                                              -1);
+                        }
+                        catch (RuntimeException ex) {
+                            // layout support does not accept the component
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                            return transferable;
+                        }
 
-                    // add the component to the target container
-                    visualCont.add(sourceComponent);
-                    layoutSupport.addComponents(compArray, constrArray, -1);
+                        // add the component to the target container
+                        visualCont.add(sourceComponent);
+                        layoutSupport.addComponents(compArray, constrArray, -1);
+                    }
                     targetForm.fireComponentAdded(sourceComponent, false);
                 }
                 else {

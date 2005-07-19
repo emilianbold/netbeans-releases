@@ -63,14 +63,18 @@ public class LayoutModel implements LayoutConstants {
     // supposing none of removing components is a parent of another
     public void removeComponents(String[] componentIds) {
         for (int i=0; i < componentIds.length; i++) {
-            LayoutComponent comp = getLayoutComponent(componentIds[i]);
-            if (comp != null) {
-                boolean wasRoot = (comp.getParent() == null);
-                removeComponent(comp);
-                if (!wasRoot) {
-                    for (int j=0; j < DIM_COUNT; j++) {
-                        removeInterval(comp.getLayoutInterval(j));
-                    }
+            removeComponentAndIntervals(componentIds[i], true);
+        }
+    }
+
+    public void removeComponentAndIntervals(String compId, boolean recursively) {
+        LayoutComponent comp = getLayoutComponent(compId);
+        if (comp != null) {
+            boolean wasRoot = (comp.getParent() == null);
+            removeComponent(comp, recursively);
+            if (!wasRoot) {
+                for (int j=0; j < DIM_COUNT; j++) {
+                    removeInterval(comp.getLayoutInterval(j));
                 }
             }
         }
@@ -146,6 +150,13 @@ public class LayoutModel implements LayoutConstants {
     Iterator getAllComponents() {
         return idToComponents.values().iterator();
     }
+    
+    public void addNewComponent(LayoutComponent component, LayoutComponent parent) {
+        for (int i=0; i<DIM_COUNT; i++) {
+            addInterval(component.getLayoutInterval(i), parent.getLayoutRoot(i), -1);
+        }
+        addComponent(component, parent, -1);
+    }
 
     // Note this method does not care about adding the layout intervals of the
     // component, it must be done in advance.
@@ -168,10 +179,14 @@ public class LayoutModel implements LayoutConstants {
         fireEvent(ev);
     }
 
+    void removeComponent(LayoutComponent component) {
+        removeComponent(component, true);
+    }
+    
     // Low level removal - removes the component from parent, unregisters it,
     // records the change for undo/redo, and fires an event. Does nothing to
     // the layout intervals of the component.
-    void removeComponent(LayoutComponent component) {
+    void removeComponent(LayoutComponent component, boolean fromModel) {
         int index;
         LayoutComponent parent = component.getParent();
         if (parent != null) {
@@ -180,7 +195,9 @@ public class LayoutModel implements LayoutConstants {
         else {
             index = -1;
         }
-        unregisterComponent(component, true);
+        if (fromModel) {
+            unregisterComponent(component, true);
+        }
 
         // record undo/redo and fire event
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REMOVED);
@@ -279,6 +296,53 @@ public class LayoutModel implements LayoutConstants {
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_SIZE_CHANGED);
         ev.setSize(interval, oldMin, oldPref, oldMax, min, pref, max);
         addChange(ev);
+    }
+    
+    public void copyModelFrom(LayoutModel sourceModel, Map/*<String,String>*/ sourceToTargetIds,
+            String sourceContainerId, String targetContainerId) {
+        LayoutComponent sourceContainer = sourceModel.getLayoutComponent(sourceContainerId);
+        LayoutComponent targetContainer = getLayoutComponent(targetContainerId);
+        if (targetContainer == null) {
+            targetContainer = new LayoutComponent(targetContainerId, true);
+            addRootComponent(targetContainer);
+        } else if (!targetContainer.isLayoutContainer()) {
+            changeComponentToContainer(targetContainerId);
+        }
+        // Create LayoutComponents
+        Iterator iter = sourceToTargetIds.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            String targetId = (String)entry.getValue();
+            LayoutComponent targetLC = getLayoutComponent(targetId);
+            if (targetLC == null) {
+                String sourceId = (String)entry.getKey();
+                LayoutComponent sourceLC = sourceModel.getLayoutComponent(sourceId);
+                targetLC = new LayoutComponent(targetId, sourceLC.isLayoutContainer());
+                addComponent(targetLC, targetContainer, -1);
+            }
+        }
+        // Copy LayoutIntervals
+        for (int dim=0; dim<DIM_COUNT; dim++) {
+            LayoutInterval sourceInterval = sourceContainer.getLayoutRoot(dim);
+            LayoutInterval targetInterval = targetContainer.getLayoutRoot(dim);
+            copyInterval(sourceInterval, targetInterval, sourceToTargetIds);
+        }
+    }
+    
+    private void copyInterval(LayoutInterval sourceInterval, LayoutInterval targetInterval, Map/*<String,String>*/ sourceToTargetIds) {
+        Iterator iter = sourceInterval.getSubIntervals();
+        while (iter.hasNext()) {
+            LayoutInterval sourceSub = (LayoutInterval)iter.next();
+            LayoutInterval targetSub = LayoutInterval.cloneInterval(sourceSub);
+            if (sourceSub.isComponent()) {
+                String compId = (String)sourceToTargetIds.get(sourceSub.getComponent().getId());
+                LayoutComponent comp = getLayoutComponent(compId);
+                targetSub.setComponent(comp);
+            } else if (sourceSub.isGroup()) {
+                copyInterval(sourceSub, targetSub, sourceToTargetIds);
+            }
+            addInterval(targetSub, targetInterval, -1);
+        }
     }
 
     // -----

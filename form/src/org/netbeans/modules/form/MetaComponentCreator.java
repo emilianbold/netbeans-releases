@@ -294,13 +294,33 @@ public class MetaComponentCreator {
         if (targetPlacement == TARGET_MENU)
             newMetaComp = addMenuComponent(compClass, targetComp);
 
-        else if (targetPlacement == TARGET_VISUAL)
+        else if (targetPlacement == TARGET_VISUAL) {
             newMetaComp = addVisualComponent(compClass, targetComp, constraints);
-
-        else if (targetPlacement == TARGET_OTHER)
+            RADVisualContainer targetCont = (RADVisualContainer)targetComp;
+            if (java.awt.Window.class.isAssignableFrom(compClass) ||
+                java.applet.Applet.class.isAssignableFrom(compClass)) {
+                targetCont = null;
+            }
+            if ((targetCont != null) && (targetCont.getLayoutSupport() == null)) {
+                createAndAddLayoutComponent((RADVisualComponent)newMetaComp, targetCont);
+            }
+        } else if (targetPlacement == TARGET_OTHER)
             newMetaComp = addOtherComponent(compClass, targetComp);
 
         return newMetaComp;
+    }
+    
+    private void createAndAddLayoutComponent(RADVisualComponent radComp, RADVisualContainer targetCont) {
+        LayoutModel layoutModel = formModel.getLayoutModel();
+        LayoutComponent layoutComp = layoutModel.getLayoutComponent(radComp.getId());
+        if (layoutComp == null) {
+            boolean isContainer = radComp instanceof RADVisualContainer;
+            layoutComp = new LayoutComponent(radComp.getId(), isContainer);
+        }
+        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+        LayoutComponent parent = layoutModel.getLayoutComponent(targetCont.getId());    
+        layoutModel.addNewComponent(layoutComp, parent);
+        formModel.addUndoableEdit(ue);
     }
 
     private RADComponent copyComponent2(RADComponent sourceComp,
@@ -343,8 +363,14 @@ public class MetaComponentCreator {
             RADVisualComponent newVisual = (RADVisualComponent) newMetaComp;
             Object constraints;
             if (targetComp != null) {
-                constraints = ((RADVisualContainer)targetComp)
-                    .getLayoutSupport().getStoredConstraints(newVisual);
+                RADVisualContainer targetCont = (RADVisualContainer)targetComp;
+                LayoutSupportManager layoutSupport = targetCont.getLayoutSupport();
+                if (layoutSupport == null) {
+                    constraints = null;
+                    createAndAddLayoutComponent(newVisual, targetCont);
+                } else {
+                    constraints = layoutSupport.getStoredConstraints(newVisual);
+                }
             }
             else constraints = null;
 
@@ -537,9 +563,23 @@ public class MetaComponentCreator {
 
                 LayoutSupportManager sourceLayout =
                     ((RADVisualContainer)sourceComp).getLayoutSupport();
-
-                ((RADVisualContainer)newComp).getLayoutSupport()
-                    .copyLayoutDelegateFrom(sourceLayout, newComps);
+                
+                if (sourceLayout != null) {
+                    RADVisualContainer newCont = (RADVisualContainer)newComp;
+                    newCont.setOldLayoutSupport(true);
+                    newCont.getLayoutSupport()
+                        .copyLayoutDelegateFrom(sourceLayout, newComps);
+                } else {
+                    Map sourceToTargetIds = new HashMap(sourceSubs.length);
+                    for (int i=0; i<sourceSubs.length; i++) {
+                        sourceToTargetIds.put(sourceSubs[i].getId(), newSubs[i].getId());
+                    }
+                    LayoutModel sourceLayoutModel = sourceComp.getFormModel().getLayoutModel();
+                    String sourceContainerId = sourceComp.getId();
+                    String targetContainerId = newComp.getId();
+                    formModel.getLayoutModel().copyModelFrom(sourceLayoutModel, sourceToTargetIds,
+                        sourceContainerId, targetContainerId);
+                }
             }
         }
 

@@ -353,7 +353,7 @@ public class FormModel
     public void removeComponent(RADComponent metacomp, boolean fromModel) {
         Object layoutStartMark = layoutModel.getChangeMark();
         UndoableEdit ue = layoutModel.getUndoableEdit();
-        removeLayoutComponentsRecursively(metacomp);
+        removeLayoutComponentsRecursively(metacomp, fromModel);
         removeComponentImpl(metacomp, fromModel);
         // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
         if (!layoutStartMark.equals(layoutModel.getChangeMark())) {
@@ -403,14 +403,14 @@ public class FormModel
         ev.setCodeChange(codeStructureMark1, codeStructureMark2);
     }
     
-    private void removeLayoutComponentsRecursively(RADComponent metacomp) {
-        if (metacomp instanceof ComponentContainer) {
+    private void removeLayoutComponentsRecursively(RADComponent metacomp, boolean fromModel) {
+        if (fromModel && (metacomp instanceof ComponentContainer)) {
             RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
             for (int i=0; i<comps.length; i++) {
-                removeLayoutComponentsRecursively(comps[i]);
+                removeLayoutComponentsRecursively(comps[i], fromModel);
             }
         }
-        layoutModel.removeComponents(new String[] { metacomp.getId() });        
+        layoutModel.removeComponentAndIntervals(metacomp.getId(), fromModel);
     }
 
     void updateMapping(RADComponent metacomp, boolean register) {

@@ -5318,6 +5318,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
         else {
+            if (parent.getParent() == null) return; // Component placed directly in the root interval
             assert parent.isParallel() && parent.getSubIntervalCount() > 0;
 
             int groupAlign = parent.getGroupAlignment();
