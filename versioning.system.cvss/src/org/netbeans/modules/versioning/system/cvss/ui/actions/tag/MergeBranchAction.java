@@ -47,6 +47,11 @@ public class MergeBranchAction extends AbstractSystemAction {
         return "CTL_MenuItem_MergeBranch";
     }
 
+    // disabled for q-build, not finished yet
+    public boolean isEnabled() {
+        return false;
+    }
+
     protected int getFileEnabledStatus() {
         return enabledForStatus;
     }

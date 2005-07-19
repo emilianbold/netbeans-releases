@@ -17,6 +17,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
@@ -57,6 +58,7 @@ public class RTagExecutor extends ExecutorSupport {
             ErrorManager.getDefault().notify(e);
             return null;
         }
+        if (options == null) options = new GlobalOptions();
         
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         AdminHandler ah = cvs.getAdminHandler();
@@ -66,7 +68,9 @@ public class RTagExecutor extends ExecutorSupport {
         for (int i = 0; i < splitRoots.length; i++) {
             File [] files = splitRoots[i];
             String [] modules = new String[files.length];
+            GlobalOptions currentOptions = (GlobalOptions) options.clone();
             try {
+                currentOptions.setCVSRoot(Utils.getCVSRootFor(files[0]));
                 modules[i] = ah.getRepositoryForDirectory(files[i].getAbsolutePath(), "").substring(1);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
@@ -76,7 +80,7 @@ public class RTagExecutor extends ExecutorSupport {
             command.setModules(modules);
             String commandContext = MessageFormat.format(loc.getString("MSG_RTagExecutor_CmdContext"), new Object [] { Integer.toString(files.length) });
             command.setDisplayName(MessageFormat.format(cmd.getDisplayName(), new Object [] { commandContext }));
-            executors[i] = new RTagExecutor(cvs, command, options);
+            executors[i] = new RTagExecutor(cvs, command, currentOptions);
             executors[i].execute();
         }
         return executors;
