@@ -14,15 +14,9 @@
 package org.netbeans.modules.junit.output;
 
 import java.io.IOException;
-import java.io.PipedReader;
-import java.io.PipedWriter;
-import java.io.Reader;
 import java.io.StringReader;
-import java.io.Writer;
-import java.util.regex.Pattern;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;

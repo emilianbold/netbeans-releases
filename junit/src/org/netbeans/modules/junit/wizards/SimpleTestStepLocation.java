@@ -696,27 +696,6 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
     
     /**
      */
-    private static String getComponentDescription(Component c) {
-
-        //PENDING - temporary method
-        
-        if (c == null) {
-            return "<none>";
-        }
-        StringBuffer buf = new StringBuffer(40);
-        buf.append(c.getClass().getName());
-        if (c instanceof AbstractButton) {
-            buf.append(" - ");
-            buf.append(((AbstractButton) c).getText());
-        } else if (c instanceof JLabel) {
-            buf.append(" - ");
-            buf.append(((JLabel) c).getText());
-        }
-        return buf.toString();
-    }
-    
-    /**
-     */
     private void tfClassToTestFocusLost(FocusEvent e) {
         final Component allowFocusGain = focusGainAllowedFor;
         focusGainAllowedFor = null;
@@ -1945,7 +1924,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
      * There is one instance of this class per each JComponent
      * in the {@link #mnemonicBlocked} array.
      */
-    private class ActionMappingInfo {
+    private static class ActionMappingInfo {
         /** action key for action which activates the component */
         String actionKey;
         /** original action mapped to the actionKey */
@@ -2202,6 +2181,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
      * <!-- PENDING -->
      */
     private class ClsNameDocumentFilter extends DocumentFilter {
+        public ClsNameDocumentFilter () {}
+        
         public void replace(DocumentFilter.FilterBypass bypass,
                             int offset,
                             int length,
@@ -2243,6 +2224,8 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
      * <!-- PENDING -->
      */
     private class ClsNameNavigationFilter extends NavigationFilter {
+        public ClsNameNavigationFilter () {}
+        
         public void setDot(NavigationFilter.FilterBypass bypass,
                            int dot,
                            Position.Bias bias) {
@@ -2261,7 +2244,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel {
                 super.moveDot(bypass, dot, bias);
             }
         }
-        private void ensureCursorInRange() {
+        public void ensureCursorInRange() {
             if (srcGroupNameDisplayed) {
                 if (tfClassToTest.getCaretPosition() > classNameLength) {
                     tfClassToTest.setCaretPosition(classNameLength);

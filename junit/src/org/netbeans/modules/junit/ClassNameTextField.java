@@ -249,7 +249,7 @@ public final class ClassNameTextField extends JTextField {
 
         /**
          */
-        private TextListener() {
+        public TextListener() {
             status = determineStatus();
             length = ClassNameTextField.this.getText().length();
         }

@@ -38,8 +38,8 @@ public final class TestCreator {
     static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
     static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";
     
-    static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
-    static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";
+//    static private final String GENERATED_SUITE_BLOCK_START                = "--JUNIT:";
+//    static private final String GENERATED_SUITE_BLOCK_END                  = ":JUNIT--";
     static private final String METHOD_NAME_SETUP = "setUp";            //NOI18N
     static private final String METHOD_NAME_TEARDOWN = "tearDown";      //NOI18N
     static private final String CLASS_COMMENT_LINE1 = "TestCreator.javaClass.addTestsHereComment.l1";
@@ -383,15 +383,6 @@ public final class TestCreator {
         this.generateMainMethod = generate;
     }
     
-    
-    private static String arrayToString(Object[] array) {
-        String result=array.getClass().getName()+":";
-        for (int i=0; i<array.length; i++) {
-            result+=array[i]+" ";
-        }
-        return result;
-    }
-    
     /**
      * Implements equality by attributes of a wrapped Import.
      */
@@ -427,7 +418,6 @@ public final class TestCreator {
      
         private final Resource srcRc, tstRc;
         private final JavaModelPackage tgtPkg;
-        private final String tstPkgName;
         private final String tstPkgNameDot;
         private final List/*<Import>*/ tstImports;
         /** */
@@ -442,7 +432,6 @@ public final class TestCreator {
             
             tgtPkg = (JavaModelPackage) tstRc.refImmediatePackage();
             tstPkgNameDot = tstRc.getPackageName() + '.';
-            tstPkgName = tstPkgNameDot.substring(0, tstPkgNameDot.length() - 1);
             tstImports = tstRc.getImports();
             clsNames = new HashMap/*<String>*/(20);
         }
@@ -1274,7 +1263,6 @@ public final class TestCreator {
                 StringBuffer buf = new StringBuffer(60);
                 buf.append(defTypeName).append('<');
 
-                String paramName;
                 buf.append(getTypeNameString((Type) typeParams.get(0)));
                 if (typeParams.size() > 1) {
                     Iterator/*<Type>*/ i = typeParams.iterator();
@@ -1729,8 +1717,9 @@ public final class TestCreator {
         int spt = org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.getIndentSpace(); // spaces per tab
         String tabString;
         if (org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.isExpandTab()) {
-            tabString = "";
-            for (int i = 0; i<spt; i++) tabString += " ";
+            char [] arr = new char[spt];
+            Arrays.fill(arr, ' ');
+            tabString = new String(arr);
         } else
             tabString = "\t";
         

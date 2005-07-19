@@ -438,6 +438,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      * Listener object that listens on state changes of some check-boxes.
      */
     private final class CheckBoxListener implements ItemListener {
+        public CheckBoxListener () {}
         
         public void itemStateChanged(ItemEvent e) {
             final Object source = e.getSource();
@@ -910,6 +911,8 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
      */
     private final class LocationChooserRenderer
             extends DefaultListCellRenderer {
+        public LocationChooserRenderer () {}
+        
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
@@ -1056,34 +1059,6 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
         }
     }
 
-    /**
-     * Removes an ampersand character (<code>'&amp;'</code>)
-     * marking a mnemonic character from a given string.
-     * This method determines position of the marking ampersand using method
-     * <code>Mnemonics.findMnemonicAmpersand(...)</code>.
-     *
-     * @param  strWithAmpersand  string from which the ampersand character
-     *                           should be removed
-     * @return  string with the marking ampersand character removed;
-     *          or the passed string (instance) if no marking ampersand
-     *          was found
-     * @see  org.openide.awt.Mnemonics#findMnemonicAmpersand
-     */
-    private String removeMnemonicAmpersand(String strWithAmpersand) {
-        assert strWithAmpersand != null;
-        
-        int position = Mnemonics.findMnemonicAmpersand(strWithAmpersand);
-        switch (position) {
-            case -1:
-                return strWithAmpersand;
-            case 0:
-                return strWithAmpersand.substring(1);
-            default:
-                return strWithAmpersand.substring(0, position)
-                       + strWithAmpersand.substring(position + 1);
-        }
-    }
-    
     private JLabel lblClassToTestValue;
     private ClassNameTextField tfClassName;
     private JTextArea txtAreaMessage;

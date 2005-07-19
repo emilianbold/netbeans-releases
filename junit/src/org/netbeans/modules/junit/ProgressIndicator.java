@@ -88,7 +88,7 @@ class ProgressIndicator {
     /**
      */
     synchronized void createAndShowDialog() {
-        String msg = NbBundle.getMessage(JUnitProgress.class,
+        String msg = NbBundle.getMessage(ProgressIndicator.class,
                                "LBL_generator_progress_title"); //NOI18N
         progressPanel = new JUnitProgress(msg);
         

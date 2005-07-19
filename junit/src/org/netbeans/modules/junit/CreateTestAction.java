@@ -399,22 +399,6 @@ public class CreateTestAction extends TestAction {
             return fo;
         }
         
-        private static void ensureFolder(URL url) throws java.io.IOException {
-            if (url.getProtocol().equals("file")) { // NOI18N
-                String path = url.getPath();
-                ensureFolder(new File(path));
-            }
-        }
-        
-        private static FileObject ensureFolder(File file)
-                throws java.io.IOException {
-            File parent = file.getParentFile();
-            String name = file.getName();
-            FileObject pfo = FileUtil.toFileObject(parent);
-            if (pfo == null) pfo = ensureFolder(parent);
-            return pfo.createFolder(name);
-        }
-        
         public static DataObject createSuiteTest(
                 final TestCreator testCreator,
                 ClassPath testClassPath,

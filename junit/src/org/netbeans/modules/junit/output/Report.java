@@ -67,13 +67,6 @@ final class Report {
     
     /**
      */
-    private static String getTestID(String testClsName, String testMethodName) {
-        return testClsName + '.' + testMethodName;
-    }
-    
-    
-    /**
-     */
     static final class Testcase {
         String className;
         String name;

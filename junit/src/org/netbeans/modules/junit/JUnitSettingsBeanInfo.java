@@ -153,7 +153,6 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
         private LinkedList  displays = new LinkedList();
         private LinkedList  values = new LinkedList();
         private String      defaultDisplay = NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_value_not_found");
-        private String      defaultValue = "";
 
         public String[] getTags () {
             TreeSet t = new TreeSet(displays);
@@ -201,7 +200,6 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             }
             if (IS_DEFAULT == (type & IS_DEFAULT)) {
                 defaultDisplay = display;
-                defaultValue = value;
             }
         }
         

@@ -157,7 +157,7 @@ public final class GuiUtils {
             return chkBoxes;
         }
         
-        ResourceBundle bundle = NbBundle.getBundle(JUnitCfgOfCreate.class);
+        ResourceBundle bundle = NbBundle.getBundle(GuiUtils.class);
         for (int i = 0; i < ids.length; i++) {
             String id = ids[i];
             
