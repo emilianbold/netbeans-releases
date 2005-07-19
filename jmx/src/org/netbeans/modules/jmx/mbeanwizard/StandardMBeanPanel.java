@@ -234,7 +234,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 12, 0);
@@ -249,7 +249,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 12, 0);
@@ -495,7 +495,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                  if ((mbeanClass == null) || 
                          (mbeanClass.getClass().getName().startsWith(
                            "org.netbeans.jmi.javamodel.UnresolvedClass"))) {// NOI18N
-                     setErrorMsg(  "The specified class does not exist");// NOI18N
+                     setErrorMsg(  "The specified class does not exist.");// NOI18N
                      
                      return false;
                     }  
@@ -503,7 +503,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                  //condition on checked box but empty resource to load
                  if (getPanel().classSelectionJTextField.isEnabled() && 
                      getPanel().classSelectionJTextField.getText().equals(  "")) {// NOI18N
-                     setErrorMsg(  "Specify an Existing class");// NOI18N
+                     setErrorMsg(  "Specify an Existing class.");// NOI18N
                      return false;
                  }
              }
