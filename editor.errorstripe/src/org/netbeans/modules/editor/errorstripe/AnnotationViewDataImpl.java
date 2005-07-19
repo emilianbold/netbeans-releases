@@ -103,8 +103,8 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             
             String content = kit.getContentType();
             BaseDocument document = (BaseDocument) pane.getDocument();
-            FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/base/Services"); // NOI18N
-            FileObject contentFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + content + "/Services"); // NOI18N
+            FileObject baseFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/base/UpToDateStatusProvider"); // NOI18N
+            FileObject contentFolder = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + content + "/UpToDateStatusProvider"); // NOI18N
             
             if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
                 ERR.log(ErrorManager.INFORMATIONAL, "baseFolder = " + baseFolder );
