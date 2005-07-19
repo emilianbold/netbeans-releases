@@ -27,8 +27,6 @@ import com.sun.jdi.Value;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -345,7 +343,7 @@ public class LocalsTreeModel implements TreeModel {
         private JPDADebugger debugger;
         private WeakReference model;
         
-        private Listener (
+        public Listener (
             LocalsTreeModel tm,
             JPDADebugger debugger
         ) {
