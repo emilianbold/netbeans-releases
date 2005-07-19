@@ -15,17 +15,26 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -142,7 +151,7 @@ public class Util {
             throw new AssertionError(e);
         }
     }
-
+    
     /**
      * Creates a URL for the root of a JAR on disk.
      */
@@ -226,6 +235,134 @@ public class Util {
         }
         // also be sure there is no '.' left at the end of the cnb
         return normalizedCNB.toString().replaceAll("\\.$", ""); // NOI18N
+    }
+    
+    /**
+     * Search for an appropriate localized bundle (i.e.
+     * OpenIDE-Module-Localizing-Bundle) entry in the given
+     * <code>manifest</code> taking into account branding and localization
+     * (using {@link NbBundle#getLocalizingSuffixes}) and returns an
+     * appropriate <em>valid</em> {@link LocalizedBundleInfo} instance. By
+     * <em>valid</em> it's meant that a found localized bundle contains at
+     * least a display name. If <em>valid</em> bundle is not found
+     * <code>null</code> is returned.
+     * 
+     * @param sourceDir source directory to be used for as a <em>searching
+     *        path</em> for the bundle
+     * @param manifest manifest the bundle's path should be extracted from
+     * @return localized bundle info for the given project or <code>null</code>
+     */
+    public static LocalizedBundleInfo findLocalizedBundleInfo(FileObject sourceDir, Manifest manifest) {
+        LocalizedBundleInfo locInfo = null;
+        String locBundleResource =
+                ManifestManager.getInstance(manifest, false).getLocalizingBundle();
+        try {
+            if (locBundleResource != null) {
+                for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
+                    String resource = (String) it.next();
+                    FileObject bundleFO = sourceDir.getFileObject(resource);
+                    if (bundleFO != null) {
+                        LocalizedBundleInfo supposedLI;
+                        supposedLI = LocalizedBundleInfo.load(bundleFO);
+                        if (supposedLI.getDisplayName() != null) {
+                            supposedLI.setPath(FileUtil.toFile(bundleFO).getAbsolutePath());
+                            locInfo = supposedLI;
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return locInfo;
+    }
+    
+    /**
+     * Actually deletages to {@link #findLocalizedBundleInfo(FileObject, Manifest)}.
+     */
+    public static LocalizedBundleInfo findLocalizedBundleInfo(File projectDir) {
+        FileObject sourceDir = FileUtil.toFileObject(new File(projectDir, "src"));
+        FileObject manifestFO = FileUtil.toFileObject(new File(projectDir, "manifest.mf"));
+
+        LocalizedBundleInfo locInfo = null;
+        Manifest mf = getManifest(manifestFO);
+        if (sourceDir != null && mf != null) {
+            locInfo = findLocalizedBundleInfo(sourceDir, mf);
+        }
+        return locInfo;
+    }
+    
+    /**
+     * The same as {@link #findLocalizedBundleInfo(FileObject, Manifest)} but
+     * searching in the given JAR representing a NetBeans module.
+     */
+    public static LocalizedBundleInfo findLocalizedBundleInfo(JarFile binaryProject) {
+        LocalizedBundleInfo locInfo = null;
+        try {
+            Manifest mf = binaryProject.getManifest();
+            if (mf != null) {
+                String locBundleResource =
+                        ManifestManager.getInstance(mf, false).getLocalizingBundle();
+                if (locBundleResource != null) {
+                    for (Iterator it = getPossibleResources(locBundleResource); it.hasNext(); ) {
+                        String resource = (String) it.next();
+                        ZipEntry entry = binaryProject.getEntry(resource);
+                        if (entry != null) {
+                            InputStream bundleIS = binaryProject.getInputStream(entry);
+                            try {
+                                LocalizedBundleInfo supposedLI = LocalizedBundleInfo.load(bundleIS);
+                                if (supposedLI.getDisplayName() != null) {
+                                    locInfo = supposedLI;
+                                    break;
+                                }
+                            } finally {
+                                bundleIS.close();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return locInfo;
+    }
+    
+    private static Iterator getPossibleResources(String locBundleResource) {
+        String locBundleResourceBase, locBundleResourceExt;
+        int idx = locBundleResource.lastIndexOf('.');
+        if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
+            locBundleResourceBase = locBundleResource.substring(0, idx);
+            locBundleResourceExt = locBundleResource.substring(idx);
+        } else {
+            locBundleResourceBase = locBundleResource;
+            locBundleResourceExt = "";
+        }
+        Collection/*<String>*/ resources = new LinkedHashSet();
+        for (Iterator it = NbBundle.getLocalizingSuffixes(); it.hasNext(); ) {
+            String suffix = (String) it.next();
+            String resource = locBundleResourceBase + suffix + locBundleResourceExt;
+            resources.add(resource);
+            resources.add(resource);
+        }
+        return resources.iterator();
+    }
+    
+    private static Manifest getManifest(FileObject manifestFO) {
+        if (manifestFO != null) {
+            try {
+                InputStream is = manifestFO.getInputStream();
+                try {
+                    return new Manifest(is);
+                } finally {
+                    is.close();
+                }
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        return null;
     }
     
 }

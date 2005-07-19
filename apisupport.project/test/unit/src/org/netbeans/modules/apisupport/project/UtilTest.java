@@ -13,6 +13,12 @@
 
 package org.netbeans.modules.apisupport.project;
 
+import java.io.File;
+import java.util.jar.JarFile;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.openide.filesystems.FileObject;
+
 /**
  * Tests {@link Util}.
  *
@@ -24,7 +30,7 @@ public class UtilTest extends TestBase {
         super(name);
     }
     
-    public void testDebugFix() throws Exception {
+    public void testNormalizeCNB() throws Exception {
         assertEquals("space test", "spacetest", Util.normalizeCNB("space test"));
         assertEquals("slash test", "slashtest", Util.normalizeCNB("slash\\test"));
         assertEquals("lowercase test", "org.capital.test", Util.normalizeCNB("org.Capital.test"));
@@ -32,4 +38,37 @@ public class UtilTest extends TestBase {
         assertEquals("org.example.hmmmm.misc.test339", Util.normalizeCNB("org.example.hmMMm.misc. TEst3*3=9"));
     }
     
+    public void testFindLocalizedBundleInfoFromNetBeansOrgModule() throws Exception {
+        FileObject dir = nbroot.getFileObject("apisupport/project");
+        assertNotNull("have apisupport/project checked out", dir);
+        NbModuleProject apisupport = (NbModuleProject) ProjectManager.getDefault().findProject(dir);
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(
+                apisupport.getSourceDirectory(), apisupport.getManifest());
+        assertApiSupportInfo(info);
+    }
+    
+    public void testFindLocalizedBundleInfoFromSourceDirectory() throws Exception {
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file("apisupport/project"));
+        assertApiSupportInfo(info);
+    }
+    
+    public void testFindLocalizedBundleInfoFromBinaryModule() throws Exception {
+        File apisupportF = file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-apisupport-project.jar");
+        JarFile apisupportJar = new JarFile(apisupportF);
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(apisupportJar);
+        assertApiSupportInfo(info);
+    }
+    
+    private void assertApiSupportInfo(LocalizedBundleInfo info) {
+        assertNotNull("info loaded", info);
+        // XXX ignore this for now, but be careful when editing the module's properties :)
+        assertEquals("display name", "NetBeans Module Projects", info.getDisplayName());
+        assertEquals("category", "Developing NetBeans", info.getCategory());
+        assertEquals("short description", "Defines an Ant-based project type for NetBeans modules.", info.getShortDescription());
+        assertEquals("long description", "Defines a project type for NetBeans " +
+                "modules, useful for developing plug-in extensions to NetBeans. " +
+                "Provides the logical view for modules, supplies the classpath " +
+                "used for code completion, integrates with the NetBeans build " +
+                "system (using Ant), etc.", info.getLongDescription());
+    }
 }

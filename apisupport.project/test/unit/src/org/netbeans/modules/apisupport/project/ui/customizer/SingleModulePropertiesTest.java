@@ -19,6 +19,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -55,7 +56,7 @@ public class SingleModulePropertiesTest extends TestBase {
                 "src/org/netbeans/examples/modules/misc/Bundle.properties");
         
         assertNotNull(props.getActivePlatform());
-        assertEquals("four properties should is set", 4, props.getBundleProperties().size());
+        assertNotNull("loading bundle info", props.getBundleInfo());
         assertEquals("cnb", "org.netbeans.examples.modules.misc", props.getCodeNameBase());
         assertNull("no impl. version", props.getImplementationVersion());
         assertTrue("jar file", props.getJarFile().endsWith("org-netbeans-examples-modules-misc.jar"));
@@ -80,15 +81,41 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
     }
     
+//    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
+//        long startTotal = System.currentTimeMillis();
+//        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),
+//                "src/org/netbeans/modules/apisupport/project/Bundle.properties");
+//        long start = System.currentTimeMillis();
+//        props.reloadModuleListInfo();
+//        System.err.println("Reloading of module list: " + (System.currentTimeMillis() - start) + "msec");
+//        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
+//    }
+//    
+//    public void testReloadBinaryModulueListSpeedHid() throws Exception {
+//        long startTotal = System.currentTimeMillis();
+//        SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
+//                "src/org/netbeans/examples/modules/misc/Bundle.properties");
+//        long start = System.currentTimeMillis();
+//        props.reloadModuleListInfo();
+//        System.err.println("Time to reload module list: " + (System.currentTimeMillis() - start) + "msec");
+//        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
+//    }
+    
     private SingleModuleProperties loadProperties(FileObject dirFO, String propsRelPath) throws IOException {
+//        long start = System.currentTimeMillis();
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(dirFO);
-        
+//        System.err.println("Loading of project " + FileUtil.toFile(dirFO).getAbsolutePath() + ": " + (System.currentTimeMillis() - start) + "msec");
+        FileObject bundleF0 = FileUtil.toFileObject(
+                file(FileUtil.toFile(dirFO), propsRelPath));
+//        start = System.currentTimeMillis();
+        LocalizedBundleInfo locInfo = LocalizedBundleInfo.load(bundleF0);
         SingleModuleProperties props = new SingleModuleProperties(
                 p.getHelper(),
                 p.evaluator(),
                 (SuiteProvider) p.getLookup().lookup(SuiteProvider.class),
                 false,
-                propsRelPath); // NOI18N
+                locInfo);
+//        System.err.println("Loading of properties: " + (System.currentTimeMillis() - start) + "msec");
         return props;
     }
 }

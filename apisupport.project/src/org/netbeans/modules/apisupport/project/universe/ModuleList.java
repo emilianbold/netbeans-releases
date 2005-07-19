@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,20 +27,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.JarFileSystem;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.netbeans.modules.apisupport.project.*;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Represents list of known modules.
@@ -812,47 +810,19 @@ public final class ModuleList {
         return new HashSet(entries.values());
     }
     
-    // XXX Similar (and better) code is in the NbModuleProject.findLocalizedBundlePath()
-    // move to some utils
-    static LocalizedBundleInfo loadBundleInfo(File sourceLocation) {
-        LocalizedBundleInfo bundleInfo = null;
-        try {
-            File manifest = new File(sourceLocation, "manifest.mf");
-            if (manifest.exists()) {
-                ManifestManager mm = ManifestManager.getInstance(manifest, false);
-                String locBundle = mm.getLocalizingBundle();
-                if (locBundle != null) {
-                    File locBundleFile = new File(
-                        new File(sourceLocation, "src"), locBundle); // NOI18N
-                    if (locBundleFile.exists()) {
-                        bundleInfo = LocalizedBundleInfo.load(FileUtil.toFileObject(locBundleFile));
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-        }
+    static LocalizedBundleInfo loadBundleInfo(File projectDir) {
+        LocalizedBundleInfo bundleInfo = Util.findLocalizedBundleInfo(projectDir);
         return bundleInfo == null ? LocalizedBundleInfo.EMPTY : bundleInfo;
     }
-
-    // XXX Similar (and better) code is in the NbModuleProject.findLocalizedBundlePath()
+    
     static LocalizedBundleInfo loadBundleInfoFromBinary(File jarLocation) {
         LocalizedBundleInfo bundleInfo = null;
         try {
-            ManifestManager mm = ManifestManager.getInstanceFromJAR(jarLocation);
-            String locBundle = mm.getLocalizingBundle();
-            if (locBundle != null) {
-                JarFileSystem jfs = new JarFileSystem();
-                jfs.setJarFile(jarLocation);
-                FileObject locBundleF0 = jfs.getRoot().getFileObject(locBundle);
-                bundleInfo = LocalizedBundleInfo.load(locBundleF0);
-            }
+            bundleInfo = Util.findLocalizedBundleInfo(new JarFile(jarLocation));
         } catch (IOException e) {
-            Util.err.notify(ErrorManager.INFORMATIONAL, e);
-        } catch (PropertyVetoException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
         return bundleInfo == null ? LocalizedBundleInfo.EMPTY : bundleInfo;
     }
-
+    
 }

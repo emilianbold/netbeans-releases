@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -245,7 +246,7 @@ public class NbModuleProjectGenerator {
         FileObject bundleFO = createFileObject(
                 projectDir, "src" + File.separator + bundlePath); // NOI18N
         EditableProperties props = new EditableProperties(true);
-        props.put("OpenIDE-Module-Name", name); // NOI18N
+        props.put(LocalizedBundleInfo.NAME, name); // NOI18N
         NbModuleProjectGenerator.storeProperties(bundleFO, props);
     }
     

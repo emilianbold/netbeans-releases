@@ -42,6 +42,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.De
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.RequiredTokenListModel;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -106,8 +107,7 @@ final class SingleModuleProperties extends ModuleProperties {
     private SuiteProvider suiteProvider;
     private ProjectXMLManager projectXMLManager;
     private ManifestManager manifestManager;
-    private EditableProperties locBundleProps;
-    private String locBundlePropsPath;
+    private LocalizedBundleInfo bundleInfo;
     
     // keeps current state of the user changes
     private String majorReleaseVersion;
@@ -141,15 +141,11 @@ final class SingleModuleProperties extends ModuleProperties {
      * Creates a new instance of SingleModuleProperties
      */
     SingleModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator,
-            SuiteProvider sp, boolean isStandalone, String locBundlePropsPath) {
+            SuiteProvider sp, boolean isStandalone, LocalizedBundleInfo bundleInfo) {
         super(helper, evaluator);
         this.suiteProvider = sp;
         this.manifestManager = ManifestManager.getInstance(getManifestFile(), false);
-        this.locBundlePropsPath = locBundlePropsPath;
-        this.locBundleProps = locBundlePropsPath == null ? new EditableProperties() :
-            helper.getProperties(locBundlePropsPath);
-
-        
+        this.bundleInfo = bundleInfo;
         this.isStandalone = isStandalone;
         this.originalPlatform = this.platform = NbPlatform.getPlatformByID(
                 evaluator.getProperty("nbplatform.active")); // NOI18N
@@ -165,8 +161,8 @@ final class SingleModuleProperties extends ModuleProperties {
         return DEFAULTS;
     }
     
-    EditableProperties getBundleProperties() {
-        return locBundleProps;
+    LocalizedBundleInfo getBundleInfo() {
+        return bundleInfo;
     }
     
     // ---- READ ONLY start
@@ -409,11 +405,6 @@ final class SingleModuleProperties extends ModuleProperties {
         return publicPackages;
     }
     
-    /**
-     * Stores cached properties. This is called when the user press <em>OK</em>
-     * button in the properties customizer. If <em>Cancel</em> button is
-     * pressed properties will not be saved,.
-     */
     void storeProperties() throws IOException {
         super.storeProperties();
         
@@ -421,8 +412,8 @@ final class SingleModuleProperties extends ModuleProperties {
         storeManifestChanges();
         
         // store localized info
-        if (locBundlePropsPath != null) {
-            getHelper().putProperties(locBundlePropsPath, locBundleProps);
+        if (bundleInfo.getPath() != null) {
+            bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
         
         // Store project.xml changes
@@ -558,7 +549,7 @@ final class SingleModuleProperties extends ModuleProperties {
      * Prepare all ModuleDependencies from this module's universe. Also prepare
      * all categories.
      */
-    private boolean reloadModuleListInfo() {
+    boolean reloadModuleListInfo() {
         if (isActivePlatformValid()) {
             try {
                 SortedSet/*<String>*/ allCategories = new TreeSet(Collator.getInstance());

@@ -30,6 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -52,7 +53,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
-    private final String locBundlePropsPath;
+    private final LocalizedBundleInfo bundleInfo;
     private final boolean isStandalone;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
@@ -66,12 +67,13 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
     
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
-            PropertyEvaluator evaluator, boolean isStandalone, String locBundlePropsPath) {
+            PropertyEvaluator evaluator, boolean isStandalone,
+            LocalizedBundleInfo bundleInfo) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
         this.isStandalone = isStandalone;
-        this.locBundlePropsPath = locBundlePropsPath;
+        this.bundleInfo = bundleInfo;
     }
     
     /** Show customizer with the first category selected. */
@@ -92,7 +94,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             return;
         } else {
             this.moduleProps = new SingleModuleProperties(helper, evaluator,
-                    getSuiteProvider(), isStandalone, locBundlePropsPath);
+                    getSuiteProvider(), isStandalone, bundleInfo);
             init();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {

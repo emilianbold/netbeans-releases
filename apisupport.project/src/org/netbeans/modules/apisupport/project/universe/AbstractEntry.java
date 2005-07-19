@@ -39,7 +39,7 @@ abstract class AbstractEntry implements ModuleEntry {
     
     public String getLocalizedName() {
         if (localizedName == null) {
-            localizedName = getBundleInfo().getLocalizedName();
+            localizedName = getBundleInfo().getDisplayName();
             if (localizedName == null) {
                 localizedName = getCodeNameBase();
             }

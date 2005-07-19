@@ -14,15 +14,10 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.beans.PropertyChangeListener;
-import java.text.BreakIterator;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.util.Utilities;
+import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 
 /**
  * Represents <em>Display</em> panel in Netbeans Module customizer.
@@ -43,17 +38,20 @@ final class CustomizerDisplay extends JPanel implements
     }
     
     public void store() {
-        storeToProperties();
+        getBundle().setDisplayName(nameValue.getText());
+        getBundle().setCategory((String) categoryValue.getSelectedItem());
+        getBundle().setShortDescription(shortDescValue.getText());
+        getBundle().setLongDescription(longDescValue.getText());
     }
     
-    private EditableProperties getBundle() {
-        return modProps.getBundleProperties();
+    private LocalizedBundleInfo getBundle() {
+        return modProps.getBundleInfo();
     }
     
     private void readFromProperties() {
-        UIUtil.setText(nameValue, getBundle().getProperty("OpenIDE-Module-Name")); // NOI18N
-        UIUtil.setText(shortDescValue, getBundle().getProperty("OpenIDE-Module-Short-Description")); // NOI18N
-        longDescValue.setText(getBundle().getProperty("OpenIDE-Module-Long-Description")); // NOI18N
+        UIUtil.setText(nameValue, getBundle().getDisplayName());
+        UIUtil.setText(shortDescValue, getBundle().getShortDescription());
+        longDescValue.setText(getBundle().getLongDescription());
         fillUpCategoryValue();
         categoryValue.setSelectedItem(getCategory());
     }
@@ -71,47 +69,8 @@ final class CustomizerDisplay extends JPanel implements
     }
     
     private String getCategory() {
-        String category = getBundle().getProperty("OpenIDE-Module-Display-Category"); // NOI18N
+        String category = getBundle().getCategory();
         return category != null ? category : ""; // NOI18N
-    }
-    
-    private void storeToProperties() {
-        storeOneProperty("OpenIDE-Module-Name", nameValue.getText(), false); // NOI18N
-        storeOneProperty("OpenIDE-Module-Display-Category", (String) categoryValue.getSelectedItem(), false); // NOI18N
-        storeOneProperty("OpenIDE-Module-Short-Description", shortDescValue.getText(), false); // NOI18N
-        storeOneProperty("OpenIDE-Module-Long-Description", longDescValue.getText(), true); // NOI18N
-    }
-    
-    private void storeOneProperty(String name, String value, boolean split) {
-        if (Utilities.compareObjects(value, getBundle().getProperty(name))) {
-            return;
-        }
-        if (value != null) {
-            value = value.trim();
-        }
-        if (value != null && value.length() > 0) {
-            if (split) {
-                getBundle().setProperty(name, splitBySentence(value));
-            } else {
-                getBundle().setProperty(name, value);
-            }
-        } else {
-            getBundle().remove(name);
-        }
-    }
-    
-    private static String[] splitBySentence(String text) {
-        List/*<String>*/ sentences = new ArrayList();
-        // Use Locale.US since the customizer is setting the default (US) locale text only:
-        BreakIterator it = BreakIterator.getSentenceInstance(Locale.US);
-        it.setText(text);
-        int start = it.first();
-        int end;
-        while ((end = it.next()) != BreakIterator.DONE) {
-            sentences.add(text.substring(start, end));
-            start = end;
-        }
-        return (String[]) sentences.toArray(new String[sentences.size()]);
     }
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {

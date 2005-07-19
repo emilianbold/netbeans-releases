@@ -13,63 +13,174 @@
 
 package org.netbeans.modules.apisupport.project.universe;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
+import java.io.OutputStream;
+import java.text.BreakIterator;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
-final class LocalizedBundleInfo {
+/**
+ * Represents localized information for a NetBeans module usually loaded from a
+ * <em>Bundle.properties</em> specified in a module's manifest. It is actaully
+ * back up by {@link EditableProperties} so any changes to this instance will
+ * behave exactly as specified in {@link EditableProperties} javadoc during
+ * storing.
+ *
+ * @author Martin Krauskopf
+ */
+public final class LocalizedBundleInfo {
     
-    static final LocalizedBundleInfo EMPTY = new LocalizedBundleInfo(null, null, null, null);
+    public static final String NAME = "OpenIDE-Module-Name"; // NOI18N
+    public static final String DISPLAY_CATEGORY = "OpenIDE-Module-Display-Category"; // NOI18N
+    public static final String SHORT_DESCRIPTION = "OpenIDE-Module-Short-Description"; // NOI18N
+    public static final String LONG_DESCRIPTION = "OpenIDE-Module-Long-Description"; // NOI18N
     
-    private final String localizedName;
-    private final String category;
-    private final String longDescription;
-    private final String shortDescription;
+    static final LocalizedBundleInfo EMPTY = new LocalizedBundleInfo(new EditableProperties(true));
     
-    /** Simle factory method. */
-    static LocalizedBundleInfo load(FileObject bundleFO) throws IOException {
+    private EditableProperties props;
+    private String path;
+    
+    /** Simple factory method. */
+    public static LocalizedBundleInfo load(FileObject bundleFO) throws IOException {
         if (bundleFO == null) {
             return null;
         }
         InputStream bundleIS = bundleFO.getInputStream();
         try {
-            Properties p = new Properties();
-            p.load(bundleIS);
-            LocalizedBundleInfo bundleInfo = new LocalizedBundleInfo(
-                    p.getProperty("OpenIDE-Module-Name"), // NOI18N
-                    p.getProperty("OpenIDE-Module-Display-Category"), // NOI18N
-                    p.getProperty("OpenIDE-Module-Short-Description"), // NOI18N
-                    p.getProperty("OpenIDE-Module-Long-Description")); // NOI18N
-            return bundleInfo;
+            LocalizedBundleInfo info = load(bundleIS);
+            File f = FileUtil.toFile(bundleFO);
+            if (f != null) {
+                info.setPath(f.getAbsolutePath());
+            }
+            return info;
         } finally {
             bundleIS.close();
         }
     }
     
+    /** Simple factory method. */
+    public static LocalizedBundleInfo load(InputStream bundleIS) throws IOException {
+        EditableProperties props = new EditableProperties();
+        props.load(bundleIS);
+        return new LocalizedBundleInfo(props);
+    }
+    
     /** Use factory method instead. */
-    private LocalizedBundleInfo(String localizedName, String category,
-            String shortDescription, String longDescription) {
-        this.localizedName = localizedName;
-        this.category = category;
-        this.shortDescription = shortDescription;
-        this.longDescription = longDescription;
+    private LocalizedBundleInfo(EditableProperties props) {
+        this.props = props;
     }
     
-    String getLocalizedName() {
-        return localizedName;
+    public void store() throws IOException {
+        if (getPath() == null) {
+            throw new IllegalStateException("First you must call " // NOI18N
+                    + getClass().getName() + ".setPath()"); // NOI18N
+        }
+        FileObject bundleFO = FileUtil.toFileObject(new File(getPath()));
+        FileLock lock = bundleFO.lock();
+        try {
+            OutputStream os = bundleFO.getOutputStream(lock);
+            try {
+                props.store(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
     
-    String getCategory() {
-        return category;
+    /**
+     * Converts entries this instance represents into {@link
+     * EditableProperties}.
+     */
+    public EditableProperties toEditableProperties() {
+        return props;
     }
     
-    String getShortDescription() {
-        return shortDescription;
+    public String getDisplayName() {
+        return props.getProperty(NAME);
     }
     
-    String getLongDescription() {
-        return longDescription;
+    public void setDisplayName(String name) {
+        this.setProperty(NAME, name, false);
     }
     
+    public String getCategory() {
+        return props.getProperty(DISPLAY_CATEGORY);
+    }
+    
+    public void setCategory(String category) {
+        this.setProperty(DISPLAY_CATEGORY, category, false);
+    }
+    
+    public String getShortDescription() {
+        return props.getProperty(SHORT_DESCRIPTION);
+    }
+    
+    public void setShortDescription(String shortDescription) {
+        this.setProperty(SHORT_DESCRIPTION, shortDescription, false);
+    }
+    
+    public String getLongDescription() {
+        return props.getProperty(LONG_DESCRIPTION);
+    }
+    
+    public void setLongDescription(String longDescription) {
+        this.setProperty(LONG_DESCRIPTION, longDescription, true);
+    }
+    
+    public String getPath() {
+        return path;
+    }
+    
+    public void setPath(String path) {
+        this.path = path;
+    }
+    
+    private void setProperty(String name, String value, boolean split) {
+        if (Utilities.compareObjects(value, props.getProperty(name))) {
+            return;
+        }
+        if (value != null) {
+            value = value.trim();
+        }
+        if (value != null && value.length() > 0) {
+            if (split) {
+                props.setProperty(name, splitBySentence(value));
+            } else {
+                props.setProperty(name, value);
+            }
+        } else {
+            props.remove(name);
+        }
+    }
+    
+    private static String[] splitBySentence(String text) {
+        List/*<String>*/ sentences = new ArrayList();
+        // Use Locale.US since the customizer is setting the default (US) locale text only:
+        BreakIterator it = BreakIterator.getSentenceInstance(Locale.US);
+        it.setText(text);
+        int start = it.first();
+        int end;
+        while ((end = it.next()) != BreakIterator.DONE) {
+            sentences.add(text.substring(start, end));
+            start = end;
+        }
+        return (String[]) sentences.toArray(new String[sentences.size()]);
+    }
+
+    public String toString() {
+        return "LocalizedBundleInfo[" + getDisplayName() + "; " + // NOI18N
+            getCategory() + "; " + // NOI18N
+            getShortDescription() + "; " + // NOI18N
+            getLongDescription() + "]"; // NOI18N
+    }
 }

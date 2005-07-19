@@ -149,7 +149,10 @@ abstract class ModuleProperties {
     /**
      * Stores cached properties. This is called when the user press <em>OK</em>
      * button in the properties customizer. If <em>Cancel</em> button is
-     * pressed properties will not be saved.
+     * pressed properties will not be saved. Be sure this method is called
+     * whitin {@link ProjectManager#mutex}. However, you are well advised to
+     * explicitly enclose a <em>complete</em> operation within write access to
+     * prevent race conditions.
      */
     void storeProperties() throws IOException {
         // Store changes into in nbproject/project.properties
