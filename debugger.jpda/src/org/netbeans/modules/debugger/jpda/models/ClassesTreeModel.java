@@ -7,32 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.ClassLoaderReference;
-import com.sun.jdi.ClassNotLoadedException;
-import com.sun.jdi.ClassType;
-import com.sun.jdi.Field;
-import com.sun.jdi.IncompatibleThreadStateException;
-import com.sun.jdi.InvalidStackFrameException;
-import com.sun.jdi.LocalVariable;
-import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveType;
-import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
-import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 
 import java.beans.PropertyChangeEvent;
@@ -41,18 +26,13 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
-import java.util.WeakHashMap;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -185,8 +165,8 @@ public class ClassesTreeModel implements TreeModel {
         // null => list of class loaders
         // ClassLoaderReference -> list of packages & ReferenceTypes
         // package name -> list of packages & ReferenceTypes
-    private Comparator comparator = new PackageComarator ();
-    private Comparator comparator1 = new ClassLoaderComarator ();
+    private Comparator comparator = new PackageComparator ();
+    private Comparator comparator1 = new ClassLoaderComparator ();
     static final Integer NULL_CLASS_LOADER = new Integer (11);
     
     
@@ -311,7 +291,7 @@ public class ClassesTreeModel implements TreeModel {
         private JPDADebugger debugger;
         private WeakReference model;
         
-        private Listener (
+        public Listener (
             ClassesTreeModel tm,
             JPDADebugger debugger
         ) {
@@ -390,7 +370,9 @@ public class ClassesTreeModel implements TreeModel {
         }
     }
     
-    private static class PackageComarator implements Comparator {
+    private static class PackageComparator implements Comparator {
+        public PackageComparator () {}
+        
         public int compare (Object o1, Object o2) {
             if (o1 instanceof Object[]) {
                 if (o2 instanceof Object[])
@@ -405,7 +387,9 @@ public class ClassesTreeModel implements TreeModel {
         }
     }
     
-    private static class ClassLoaderComarator implements Comparator {
+    private static class ClassLoaderComparator implements Comparator {
+        public ClassLoaderComparator () {}
+        
         public int compare (Object o1, Object o2) {
             if (o1 == NULL_CLASS_LOADER) {
                 if (o2 == NULL_CLASS_LOADER)
