@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,9 +15,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ClassType;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.Type;
 
-import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.Super;
 
 
