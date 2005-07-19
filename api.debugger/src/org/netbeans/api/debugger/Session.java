@@ -66,8 +66,8 @@ import java.util.List;
  *        new instance of Session (see method
  *        {@link org.netbeans.spi.debugger.SessionProvider#getServices}).
  *      </li>
- *      <li>Register service provider in Manifest-inf/debugger/{{@link 
- *        #getTypeID}} folder. See Debugger SPI for more information about
+ *      <li>Register service provider in Manifest-inf/debugger/&lt;type ID&gt;
+ *        folder. See Debugger SPI for more information about
  *        registration.</li>
  *    </ul>
  *

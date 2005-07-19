@@ -105,6 +105,12 @@ import org.netbeans.spi.debugger.SessionProvider;
  */
 public final class DebuggerManager {
     
+    // TODO: deprecate all these properties. They are useless, since there are
+    //       dedicated methods in DebuggerManagerListener
+    
+    // OR: Remove DebuggerManagerListener and use just the properties.
+    // - probably not possible because of initBreakpoints() method.
+    
     /** Name of property for the set of breakpoints in the system. */
     public static final String                PROP_BREAKPOINTS_INIT = "breakpointsInit"; // NOI18N
     
@@ -739,6 +745,7 @@ public final class DebuggerManager {
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).watchRemoved 
                 (watch);
+            // TODO: fix nonsense double firing
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
 
@@ -749,6 +756,7 @@ public final class DebuggerManager {
             for (i = 0; i < k; i++) {
                 ((DebuggerManagerListener) l1.elementAt (i)).watchRemoved 
                     (watch);
+                // TODO: fix nonsense double firing
                 ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
             }
         }

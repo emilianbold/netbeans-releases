@@ -26,17 +26,17 @@ public interface ActionsManagerListener extends EventListener {
 
     /** 
      * Property name constant for 
-     * {@link #actionPerformed(DebuggerEngine,Object,boolean)} event. 
+     * {@link #actionPerformed(Object)} event.
      * It should be use as a propertyName argument in 
-     * {@link DebuggerEngine#addEngineListener(String,DebuggerEngineListener)}
+     * {@link ActionsManager#addActionsManagerListener(String,ActionsManagerListener)}
      * call, if you would like to receive this event notification.
      */
     public static final String              PROP_ACTION_PERFORMED = "actionPerformed"; // NOI18N
     /** 
      * Property name constant for 
-     * {@link #actionStateChanged(DebuggerEngine,Object,boolean)} event. 
+     * {@link #actionPerformed(Object)} event.
      * It should be use as a propertyName argument in 
-     * {@link DebuggerEngine#addEngineListener(String,DebuggerEngineListener)}
+     * {@link ActionsManager#addActionsManagerListener(String,ActionsManagerListener)}
      * call, if you would like to receive this event notification.
      */
     public static final String              PROP_ACTION_STATE_CHANGED = "actionStateChanged"; // NOI18N

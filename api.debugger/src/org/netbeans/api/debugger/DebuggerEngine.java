@@ -36,12 +36,12 @@ import java.util.*;
  *    {@link org.netbeans.spi.debugger.ActionsProvider}) can be registerred to 
  *    DebuggerEngine during a start of debugger. See 
  *    {@link org.netbeans.spi.debugger.ActionsProvider}.
- *    DebuggerEngine can be used to call some debugger action 
+ *    ActionsManager can be used to call some debugger action 
  *    ({@link ActionsManager#doAction}) and to distinguish availability of action 
  *    ({@link ActionsManager#isEnabled}).
  *    Example how to call Kill Action on this engine:
  *    <pre>
- *    engine.getActionsManager ().doAction (DebuggerEngine.ACTION_KILL);</pre>
+ *    engine.getActionsManager ().doAction (ActionsManager.ACTION_KILL);</pre>
  *
  * <br>
  * <b>Support for aditional services:</b>
@@ -55,8 +55,8 @@ import java.util.*;
  *        new instance of DebuggerEngine (see method
  *        {@link org.netbeans.spi.debugger.DebuggerEngineProvider#getServices}).
  *      </li>
- *      <li>Register service provider in Manifest-inf/debugger/{{@link 
- *        #getTypeID}} folder. See Debugger SPI for more information about
+ *      <li>Register service provider in Manifest-inf/debugger/&lt;type ID&gt;
+ *        folder. See Debugger SPI for more information about
  *        registration.</li>
  *    </ul>
  *
@@ -64,7 +64,7 @@ import java.util.*;
  * <b>Support for listening:</b>
  *    DebuggerEngine propagates all changes to two type of listeners - general
  *    {@link java.beans.PropertyChangeListener} and specific
- *    {@link DebuggerEngineListener}.
+ *    {@link ActionsManagerListener}.
  *
  * <br>
  * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
@@ -82,7 +82,7 @@ import java.util.*;
  * {@link DebuggerManager#startDebugging}.
  *
  * DebuggerEngine is removed automatically from {@link DebuggerManager} when the 
- * the last action is ({@link #ACTION_KILL}).
+ * the last action is ({@link ActionsManager#ACTION_KILL}).
  *
  * </td></tr><tr><td align="left" valign="top" width="1%"><font size="+1">
  * <b>Evolution</b></font></td><td>
