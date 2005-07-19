@@ -54,7 +54,7 @@ public class UtilTest extends TestBase {
     
     public void testFindLocalizedBundleInfoFromSourceDirectory1() throws Exception {
         LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file(extexamplesF, "suite3/dummy-project"));
-        assertNotNull(info);
+        assertNull(info);
     }
     
     public void testFindLocalizedBundleInfoFromBinaryModule() throws Exception {
