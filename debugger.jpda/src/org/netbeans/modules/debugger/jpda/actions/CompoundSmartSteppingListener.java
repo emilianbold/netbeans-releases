@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.actions;
@@ -15,8 +15,6 @@ package org.netbeans.modules.debugger.jpda.actions;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;

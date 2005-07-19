@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,16 +24,11 @@ import com.sun.jdi.event.AccessWatchpointEvent;
 import com.sun.jdi.request.AccessWatchpointRequest;
 import com.sun.jdi.request.ModificationWatchpointRequest;
 
-import java.util.Iterator;
-import java.util.List;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.util.Executor;
-
 
 /**
 * Implementation of breakpoint on method.

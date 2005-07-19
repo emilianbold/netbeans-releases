@@ -7,32 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
-
-import com.sun.jdi.ThreadReference;
-import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.ClassPrepareEvent;
-import com.sun.jdi.event.ClassUnloadEvent;
 import com.sun.jdi.event.Event;
-import com.sun.jdi.request.ClassPrepareRequest;
-import com.sun.jdi.request.ClassUnloadRequest;
 
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-
-import org.netbeans.modules.debugger.jpda.util.Executor;
-
 
 /**
 * Implementation of breakpoint on method.
