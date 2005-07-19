@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.Value;
 
 import java.beans.PropertyChangeEvent;
@@ -23,11 +22,9 @@ import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
 import java.util.*;
 
-import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -43,8 +40,6 @@ import org.netbeans.modules.debugger.jpda.expr.Expression;
 import org.netbeans.modules.debugger.jpda.expr.ParseException;
 
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-
 
 /**
  * @author   Jan Jancura
@@ -56,14 +51,11 @@ public class WatchesModel implements TreeModel {
         (System.getProperty ("netbeans.debugger.viewrefresh") != null) &&
         (System.getProperty ("netbeans.debugger.viewrefresh").indexOf ('w') >= 0);
 
-    private static boolean      USE_CACHE = false;
-    
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
     private Vector              listeners = new Vector ();
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
-    private WeakHashMap         watchToExpression = new WeakHashMap();
     private Map                 watchToValue = new WeakHashMap(); // <node (expression), JPDAWatch>
 
     
