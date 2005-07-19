@@ -63,8 +63,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private ProjectCustomizer.Category categories[];
     private ProjectCustomizer.CategoryComponentProvider panelProvider;
     
-    // Keeps already displayed dialogs to prevent double creation
-    private static Map/*<Project,Dialog>*/ displayedDialogs = new HashMap();
+    /** Keeps reference to a dialog for this customizer. */
+    private Dialog dialog;
     
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, boolean isStandalone,
@@ -88,14 +88,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     
     /** Show customizer with preselected category and subcategory. */
     public void showCustomizer(String preselectedCategory, String preselectedSubCategory) {
-        Dialog dialog = (Dialog) displayedDialogs.get(project);
         if (dialog != null) {
             dialog.setVisible(true);
             return;
         } else {
-            this.moduleProps = new SingleModuleProperties(helper, evaluator,
-                    getSuiteProvider(), isStandalone, bundleInfo);
-            init();
+            if (moduleProps == null) { // first initialization
+                moduleProps = new SingleModuleProperties(helper, evaluator,
+                        getSuiteProvider(), isStandalone, bundleInfo);
+                init();
+            }
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
                     if (preselectedCategory.equals(categories[i].getName())) {
@@ -115,8 +116,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             dialog.setTitle(MessageFormat.format(
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle"), // NOI18N
                     new Object[] { ProjectUtils.getInformation(project).getDisplayName() }));
-                    
-            displayedDialogs.put(project, dialog);
             dialog.setVisible(true);
         }
     }
@@ -219,8 +218,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
             }
             save();
             
-            // Close & dispose the the dialog
-            Dialog dialog = (Dialog) displayedDialogs.get(project);
+            // Close & dispose the dialog
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -229,13 +227,12 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         
         // remove dialog for this customizer's project
         public void windowClosed(WindowEvent e) {
-            displayedDialogs.remove(project);
+            dialog = null;
         }
         
         public void windowClosing(WindowEvent e) {
             // Dispose the dialog otherwise the
             // {@link WindowAdapter#windowClosed} may not be called
-            Dialog dialog = (Dialog) displayedDialogs.get(project);
             if (dialog != null) {
                 dialog.setVisible(false);
                 dialog.dispose();
