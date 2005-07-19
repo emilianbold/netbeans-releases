@@ -166,6 +166,7 @@ public class AbstractVariable implements ObjectVariable {
             // compute only requested elements
             Type type = v.type ();
             ReferenceType rt = (ReferenceType) type;
+            if (to == 0) to = ((ArrayReference) v).length();
             Field[] elements = getFieldsOfArray (
                     (ArrayReference) v, 
                     ((ArrayType) rt).componentTypeName (),
