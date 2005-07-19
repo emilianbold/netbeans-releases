@@ -27,12 +27,12 @@ import org.netbeans.modules.editor.hints.borrowed.EditorUtilities;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
 import org.netbeans.modules.editor.hints.spi.ChangeInfo;
-import org.netbeans.modules.editor.hints.spi.FeatureResolver;
 import org.netbeans.modules.editor.hints.spi.Hint;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -331,11 +331,11 @@ public class HintsUI implements MouseListener, KeyListener {
             ChangeInfo changes = h.implement();
             if (changes != null && changes.size() > 0) {
                 ChangeInfo.Change change = changes.get(0);
-                File file = fileForChange (change, c);
+                FileObject file = change.getFileObject();
                 if (file != null) {
                     try {
                         DataObject dob = 
-                            DataObject.find (FileUtil.toFileObject(file));
+                            DataObject.find (file);
                         
                         EditCookie ck = 
                             (EditCookie) dob.getCookie(EditCookie.class);
@@ -366,40 +366,17 @@ public class HintsUI implements MouseListener, KeyListener {
                     }
                 }
                 
-                int start = change.getStart();
-                int end = change.getEnd();
-                if (start != -1) {
-                    c.setSelectionStart(start);
+                Position start = change.getStart();
+                Position end = change.getEnd();
+                if (start != null) {
+                    c.setSelectionStart(start.getOffset());
                 }
-                if (end != -1) {
-                    c.setSelectionEnd(end);
+                if (end != null) {
+                    c.setSelectionEnd(end.getOffset());
                 }
             }
         } finally {
             gp.setCursor (cur);
         }
-    }
-    
-    private static File fileForChange(ChangeInfo.Change change, JTextComponent c) {
-        Object feature = change.getFeature();
-        if (feature instanceof File) {
-            return (File) feature;
-        }
-        if (feature == null) {
-            return null;
-        }
-        BaseKit kit = Utilities.getKit(c);
-        if (kit == null) {
-            return null;
-        }
-        Lookup lookup = EditorUtilities.getMimeLookup(kit.getContentType());
-        Lookup.Result result = lookup.lookup(new Lookup.Template(FeatureResolver.class));
-        for (Iterator i=result.allInstances().iterator(); i.hasNext();) {
-            FeatureResolver resolver = (FeatureResolver) i.next();
-            if (resolver.accept (feature)) {
-                return resolver.toFile (feature);
-            }
-        }
-        return null;
     }
 }
