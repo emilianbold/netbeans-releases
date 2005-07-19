@@ -117,6 +117,6 @@ public class JConsoleSettings extends SystemOption implements ChangeListener
     }
     
     public HelpCtx getHelpCtx () {
-        return new HelpCtx("jconsole_standalone");
+        return new HelpCtx("jconsole_standalone"); // NOI18N
     }
 }
