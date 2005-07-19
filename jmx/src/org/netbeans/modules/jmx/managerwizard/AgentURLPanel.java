@@ -204,7 +204,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         internalJPanel.add(jmxURLJTextField, gridBagConstraints);
 
         buttonGroup1.add(jmxAgentURLJRadioButton);
@@ -221,7 +221,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         internalJPanel.add(jmxAgentURLJRadioButton, gridBagConstraints);
 
         buttonGroup1.add(rmiJMXAgentJRadioButton);
@@ -239,7 +239,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         internalJPanel.add(rmiJMXAgentJRadioButton, gridBagConstraints);
 
         hostJLabel.setLabelFor(hostJTextField);
@@ -265,7 +265,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         internalJPanel.add(hostJTextField, gridBagConstraints);
 
         portJTextField.setMinimumSize(new java.awt.Dimension(90, 20));
@@ -284,7 +284,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         internalJPanel.add(portJTextField, gridBagConstraints);
 
         portJLabel.setLabelFor(portJTextField);
@@ -293,7 +293,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 33, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 33, 0, 0);
         internalJPanel.add(portJLabel, gridBagConstraints);
 
         rmiUserNameJLabel.setLabelFor(rmiUserNameJTextField);
@@ -313,7 +313,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 55, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 55, 12, 0);
         internalJPanel.add(rmiPasswordJLabel, gridBagConstraints);
 
         rmiPasswordJTextField.setEnabled(false);
@@ -330,7 +330,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 12);
         internalJPanel.add(rmiPasswordJTextField, gridBagConstraints);
 
         rmiUserNameJTextField.setEnabled(false);
@@ -347,7 +347,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         internalJPanel.add(rmiUserNameJTextField, gridBagConstraints);
 
         jmxURLJLabel.setLabelFor(jmxURLJTextField);
@@ -374,7 +374,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         internalJPanel.add(securityJCheckBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -383,7 +383,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
         internalJPanel.add(credentialJSeparator, gridBagConstraints);
 
         buttonGroup2.add(userCredentialsJRadioButton);
@@ -400,7 +400,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 33, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 33, 0, 0);
         internalJPanel.add(userCredentialsJRadioButton, gridBagConstraints);
 
         buttonGroup2.add(codeExampleJRadioButton);
