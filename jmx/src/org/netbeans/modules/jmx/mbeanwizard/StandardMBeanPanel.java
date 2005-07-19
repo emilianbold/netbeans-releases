@@ -120,6 +120,34 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_Standard_Panel"));// NOI18N
+        
+        // Accessibility      
+        generatedFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_GENERATED_FILE"));// NOI18N
+        generatedFileJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_GENERATED_FILE_DESCRIPTION"));// NOI18N
+        mbeanDescriptionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_DESCRIPTION"));// NOI18N
+        mbeanDescriptionJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_DESCRIPTION_DESCRIPTION"));// NOI18N
+        
+        mbeanDecriptionJLabel.setLabelFor(mbeanDescriptionJTextField);
+        
+        fromExistingClassJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS"));// NOI18N
+        fromExistingClassJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_DESCRIPTION"));// NOI18N
+        classSelectionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE"));// NOI18N
+        classSelectionJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE_DESCRIPTION"));// NOI18N
+        standardMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_STANDARD_MBEAN"));// NOI18N
+        standardMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_STANDARD_MBEAN_DESCRIPTION"));// NOI18N
+        extendedMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_EXTENDED_MBEAN"));// NOI18N
+        extendedMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_EXTENDED_MBEAN_DESCRIPTION"));// NOI18N
+        dynamicMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_DYNAMIC_MBEAN"));// NOI18N
+        dynamicMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_DYNAMIC_MBEAN_DESCRIPTION"));// NOI18N
+        mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION"));// NOI18N
+        mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_DESCRIPTION"));// NOI18N
+        preRegisterParamJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION_KEEP"));// NOI18N
+        preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
+        
+        
+        
+        
+     
     }
         
     /** This method is called from within the constructor to
