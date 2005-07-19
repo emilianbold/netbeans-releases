@@ -8,7 +8,7 @@
  *
  * The Original Code is the HTTP Javadoc Filesystem.
  * The Initial Developer of the Original Code is Jeffrey A. Keyser.
- * Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2002.
+ * Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2005.
  * All Rights Reserved.
  *
  * Contributor(s): Jeffrey A. Keyser.
@@ -87,9 +87,7 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (FileSystem.class) };
         } catch (IntrospectionException ie) {
-            if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
-                ie.printStackTrace( );                
-            }            
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }
@@ -97,23 +95,10 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
     
     /**
      *  Returns an icon image for this bean.
-     *
      *  @since 1.0
      */
     public Image getIcon (int kind) {
-
-        switch( kind ) {
-            
-            case ICON_COLOR_16x16:
-            default:
-                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
-            case ICON_COLOR_32x32:
-                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32C.gif" );    // NOI18N
-            case ICON_MONO_16x16:
-                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16M.gif" );    // NOI18N
-            case ICON_MONO_32x32:
-                return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon32M.gif" );    // NOI18N
-        }
+        return Utilities.loadImage( "org/netbeans/modules/javadoc/httpfs/resources/BeanIcon16C.gif" );    // NOI18N
     }
 
 }
