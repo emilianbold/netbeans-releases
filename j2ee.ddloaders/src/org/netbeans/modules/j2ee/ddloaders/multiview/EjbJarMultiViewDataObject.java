@@ -473,17 +473,18 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         } else {
             openView(0);
         }
-        final SectionNodeView sectionView = (SectionNodeView) getActiveMVElement().getSectionView();
-        final Node root = sectionView.getRoot();
-        final SectionNode node = ((SectionNode) root.getChildren().getNodes()[0]).getNodeForElement(element);
-        if (node != null) {
-            Utils.runInAwtDispatchThread(new Runnable() {
-                public void run() {
+        Utils.runInAwtDispatchThread(new Runnable() {
+            public void run() {
+                final SectionNodeView sectionView =
+                        (SectionNodeView) EjbJarMultiViewDataObject.this .getActiveMVElement().getSectionView();
+                final Node root = sectionView.getRoot();
+                final SectionNode node = ((SectionNode) root.getChildren().getNodes()[0]).getNodeForElement(element);
+                if (node != null) {
                     sectionView.openPanel(node);
-                    ((SectionNodeInnerPanel)node.getSectionNodePanel().getInnerPanel()).focusData(element);
+                    ((SectionNodeInnerPanel) node.getSectionNodePanel().getInnerPanel()).focusData(element);
                 }
-            });
-        }
+            }
+        });
     }
 
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {
