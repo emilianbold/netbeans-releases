@@ -261,8 +261,6 @@ public class WizardConstants
     public static final String OTHER_PROP_VALUE = 
             "wizdata.otherPropValue"; // NOI18N
     
-    public static final String CONFIG_TABLE_CREDENTIALS = "Allowed Credentials:";// NOI18N
-    
     public static final String DESC                 = "_DESC_"; // NOI18N
     public static final String IMMUTABLE_CODE_BEGIN = "GEN-BEGIN:"; // NOI18N
     public static final String IMMUTABLE_CODE_END   = "GEN-END:"; // NOI18N

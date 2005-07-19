@@ -293,15 +293,13 @@ public class RMIPanel extends javax.swing.JPanel {
         bundle = NbBundle.getBundle(ConfigPanel.class);
         initComponents();
         
-        tableNameJLabel.setText(WizardConstants.CONFIG_TABLE_CREDENTIALS);
-        
         //Table
         final String[] columnNames = { bundle.getString("LBL_TABLE_ROLE"),// NOI18N
                                        bundle.getString("LBL_TABLE_PASSWORD"),// NOI18N
                                        bundle.getString("LBL_TABLE_ACCESS") };// NOI18N
         tableModel = new AuthTableModel();
         authTable = new AuthTable(tableModel);
-        authTable.setName( "authTable");// NOI18N
+        authTable.setName("authTable");// NOI18N
         authTable.setPreferredSize(new Dimension(400, 100));
         authTable.setRowSelectionAllowed(true);
         authTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -325,6 +323,7 @@ public class RMIPanel extends javax.swing.JPanel {
         //AddAuthTableListener listener = new AddAuthTableListener(tableModel, removeAuth);
         //addAuth.addActionListener(listener);
         
+        Mnemonics.setLocalizedText(tableNameJLabel, bundle.getString("LBL_Authenticate_Table_Name"));// NOI18N
         Mnemonics.setLocalizedText(addAuth, bundle.getString("LBL_RMI_ADD_AUTH"));// NOI18N
         Mnemonics.setLocalizedText(removeAuth, bundle.getString("LBL_RMI_REMOVE_AUTH"));// NOI18N
         
@@ -387,6 +386,46 @@ public class RMIPanel extends javax.swing.JPanel {
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(ConfigPanel.class,
                  "LBL_RMI_Panel"));
+        
+         //Accessibility
+        rMIJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_ENABLE_RMI")); // NOI18N
+        rMIJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_ENABLE_RMI_DESCRIPTION"));// NOI18N
+        
+        rMIPortJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_PORT")); // NOI18N
+        rMIPortJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_PORT_DESCRIPTION"));// NOI18N
+        
+        rMIPortJLabel.setLabelFor(rMIPortJTextField);
+        
+        authJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_AUTHENTICATION")); // NOI18N
+        authJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_AUTHENTICATION_DESCRIPTION")); // NOI18N
+        
+        authTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_AUTHENTICATION_TABLE")); // NOI18N
+        authTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_AUTHENTICATION_TABLE_DESCRIPTION")); // NOI18N
+        
+        tableNameJLabel.setLabelFor(authTable);
+        
+        addAuth.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_AUTHENTICATION_ADD")); // NOI18N
+        addAuth.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_AUTHENTICATION_ADD_DESCRIPTION")); // NOI18N
+        
+        removeAuth.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_AUTHENTICATION_REMOVE")); // NOI18N
+        removeAuth.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_AUTHENTICATION_REMOVE_DESCRIPTION")); // NOI18N
+        
+        sslJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_SSL")); // NOI18N
+        sslJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_SSL_DESCRIPTION")); // NOI18N
+        
+        sslProtocolJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_SSL_PROTOCOL")); // NOI18N
+        sslProtocolJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_SSL_PROTOCOL_DESCRIPTION")); // NOI18N
+        
+        sslProtocolJLabel.setLabelFor(sslProtocolJTextField);
+        
+        sslCipherJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_SSL_CIPHER")); // NOI18N
+        sslCipherJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_SSL_CIPHER_DESCRIPTION")); // NOI18N
+        
+        sslCipherJLabel.setLabelFor(sslCipherJTextField);
+        
+        sslClientAuthJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_SSL_CLIENT")); // NOI18N
+        sslClientAuthJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_SSL_CLIENT_DESCRIPTION")); // NOI18N
+        
     }
     
     

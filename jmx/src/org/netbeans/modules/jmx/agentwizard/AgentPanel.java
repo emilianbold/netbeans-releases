@@ -79,7 +79,18 @@ public class AgentPanel extends javax.swing.JPanel {
         mainSelected = mainJCheckBox.isSelected();
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(AgentPanel.class, "LBL_Agent_Panel"));  //NOI18N                              
+        setName(NbBundle.getMessage(AgentPanel.class, "LBL_Agent_Panel"));  //NOI18N
+        
+         // Accessibility
+        mainJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_CREATE_MAIN_METHOD"));// NOI18N
+        mainJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_CREATE_MAIN_METHOD_DESCRIPTION"));// NOI18N
+        
+        mainClassJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SET_MAIN_CLASS"));// NOI18N
+        mainClassJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SET_MAIN_CLASS_DESCRIPTION"));// NOI18N
+        
+        codeExampleJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_GENERATE_SAMPLE"));// NOI18N
+        codeExampleJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_GENERATE_SAMPLE_DESCRIPTION"));// NOI18N
+
     }
     
     private static boolean shouldEnableMainProjectClass() {

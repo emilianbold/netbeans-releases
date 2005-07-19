@@ -128,7 +128,35 @@ public class SNMPPanel extends javax.swing.JPanel {
                         
                     }
                 });
+         //Accessibility       
+        sNMPJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP")); // NOI18N
+        sNMPJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_DESCRIPTION")); // NOI18N
         
+        sNMPPortJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_PORT")); // NOI18N
+        sNMPPortJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_PORT_DESCRIPTION")); // NOI18N
+        
+        sNMPPortJLabel.setLabelFor(sNMPPortJTextField);
+        
+        interfaceJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_INTERFACE")); // NOI18N
+        interfaceJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_INTERFACE_DESCRIPTION")); // NOI18N
+        
+        interfaceJLabel.setLabelFor(interfaceJTextField);
+        
+        trapPortJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_TRAP")); // NOI18N
+        trapPortJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_TRAP_DESCRIPTION")); // NOI18N
+        
+        sNMPTrapPortJLabel.setLabelFor(trapPortJTextField);
+        
+        aclJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_ACL")); // NOI18N
+        aclJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_ACL_DESCRIPTION")); // NOI18N
+        
+        aclFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_ACL_FILE")); // NOI18N
+        aclFileJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_ACL_FILE_DESCRIPTION")); // NOI18N
+        
+        customACL.setLabelFor(aclFileJTextField);
+        
+        aclFileJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_ACL_FILE_BROWSE")); // NOI18N
+        aclFileJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_ACL_FILE_BROWSE_DESCRIPTION")); // NOI18N
     }
     
     /**
