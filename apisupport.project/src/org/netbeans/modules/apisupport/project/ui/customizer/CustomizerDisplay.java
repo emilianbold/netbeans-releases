@@ -28,20 +28,31 @@ final class CustomizerDisplay extends JPanel implements
         ComponentFactory.StoragePanel, PropertyChangeListener {
     
     private SingleModuleProperties modProps;
+    private boolean disabled;
     
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties modProps) {
         this.modProps = modProps;
+        this.disabled = getBundle() == null;
         initComponents();
-        readFromProperties();
+        if (disabled) {
+            nameValue.setEnabled(false);
+            categoryValue.setEnabled(false);
+            shortDescValue.setEnabled(false);
+            longDescValue.setEnabled(false);
+        } else {
+            readFromProperties();
+        }
         modProps.addPropertyChangeListener(this);
     }
     
     public void store() {
-        getBundle().setDisplayName(nameValue.getText());
-        getBundle().setCategory((String) categoryValue.getSelectedItem());
-        getBundle().setShortDescription(shortDescValue.getText());
-        getBundle().setLongDescription(longDescValue.getText());
+        if (!disabled) {
+            getBundle().setDisplayName(nameValue.getText());
+            getBundle().setCategory((String) categoryValue.getSelectedItem());
+            getBundle().setShortDescription(shortDescValue.getText());
+            getBundle().setLongDescription(longDescValue.getText());
+        }
     }
     
     private LocalizedBundleInfo getBundle() {

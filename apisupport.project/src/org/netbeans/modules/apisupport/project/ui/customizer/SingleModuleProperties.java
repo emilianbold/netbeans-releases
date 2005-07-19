@@ -412,7 +412,7 @@ final class SingleModuleProperties extends ModuleProperties {
         storeManifestChanges();
         
         // store localized info
-        if (bundleInfo.getPath() != null) {
+        if (bundleInfo != null && bundleInfo.getPath() != null) {
             bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
         
@@ -594,6 +594,9 @@ final class SingleModuleProperties extends ModuleProperties {
      * of a jar file.
      */
     private void addNonEmptyPackages(Set/*<String>*/ pkgs, FileObject root, String ext, boolean isJarRoot) {
+        if (root == null) {
+            return;
+        }
         for (Enumeration en1 = root.getFolders(true); en1.hasMoreElements(); ) {
             FileObject subDir = (FileObject) en1.nextElement();
             for (Enumeration en2 = subDir.getData(false); en2.hasMoreElements(); ) {

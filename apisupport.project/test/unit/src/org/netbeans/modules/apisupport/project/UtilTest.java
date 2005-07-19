@@ -52,6 +52,11 @@ public class UtilTest extends TestBase {
         assertApiSupportInfo(info);
     }
     
+    public void testFindLocalizedBundleInfoFromSourceDirectory1() throws Exception {
+        LocalizedBundleInfo info = Util.findLocalizedBundleInfo(file(extexamplesF, "suite3/dummy-project"));
+        assertNotNull(info);
+    }
+    
     public void testFindLocalizedBundleInfoFromBinaryModule() throws Exception {
         File apisupportF = file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-apisupport-project.jar");
         JarFile apisupportJar = new JarFile(apisupportF);
