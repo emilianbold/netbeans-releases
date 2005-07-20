@@ -278,6 +278,7 @@ public final class NbPlatformCustomizer extends JPanel {
         initPanel(info, wd, 1);
         wd.setTitleFormat(new java.text.MessageFormat("{1}")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
+        dialog.setTitle(getMessage("CTL_AddNetbeansPlatformTitle")); // NOI18N
         dialog.setVisible(true);
         dialog.toFront();
         if (wd.getValue() == WizardDescriptor.FINISH_OPTION) {
