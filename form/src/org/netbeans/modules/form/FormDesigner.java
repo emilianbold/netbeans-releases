@@ -197,8 +197,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         handleLayer.setViewOnly(formModel.isReadOnly());
         componentLayer.setDesignerSize(getStoredDesignerSize());
 
-        layoutDesigner = new LayoutDesigner(formModel.getLayoutModel(),
+        // Beans without layout model doesn't require layout designer
+        if (formModel.getLayoutModel() != null) {
+            layoutDesigner = new LayoutDesigner(formModel.getLayoutModel(),
                                             new LayoutMapper());
+        }
         
         updateWholeDesigner();
         
@@ -293,6 +296,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void updateComponentLayer() {
+        if (getLayoutDesigner() == null) return;
         componentLayer.revalidate();
 
         // after the components are layed out, sync the layout designer

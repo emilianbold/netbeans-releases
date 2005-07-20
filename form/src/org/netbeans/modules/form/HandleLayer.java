@@ -898,6 +898,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     // Check the mouse cursor if it is at position where a component or the
     // designer can be resized. Change mouse cursor accordingly.
     private void checkResizing(MouseEvent e) {
+        if (formDesigner.getTopDesignComponent() == null) return; // bean forms
         int resizing = checkComponentsResizing(e);
         if (resizing == 0) {
             resizing = checkDesignerResizing(e);
@@ -1668,7 +1669,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         // ctor for adding new
         ComponentDrag() {
-            convertPoint = convertPointFromComponent(0, 0, formDesigner.getTopVisualContainer());
+            if (formDesigner.getTopVisualContainer() == null) {
+                convertPoint = new Point(0,0);
+            } else {
+                convertPoint = convertPointFromComponent(0, 0, formDesigner.getTopVisualContainer());
+            }
         }
 
         // ctor for moving and resizing
@@ -2308,10 +2313,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     movingBounds = new Rectangle[] { new Rectangle(0, 0, size.width, size.height) };
                 }
 
-                formDesigner.getLayoutDesigner().startAdding(
-                        layoutComponents,
-                        new Rectangle[] { new Rectangle(0, 0, size.width, size.height) },
-                        hotSpot);
+                if (formDesigner.getLayoutDesigner() != null) {
+                    formDesigner.getLayoutDesigner().startAdding(
+                            layoutComponents,
+                            new Rectangle[] { new Rectangle(0, 0, size.width, size.height) },
+                            hotSpot);
+                }
 
                 newDrag = oldDrag = true;
             }
@@ -2356,16 +2363,18 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
                 if (movingComponents != null) { // there is a precreated visual component
                     addedComponent = movingComponents[0];
-                    createLayoutUndoableEdit();
-                    formDesigner.getLayoutDesigner().endMoving(newLayout);
-                    LayoutComponent layoutComponent =
-                            getComponentCreator().getPrecreatedLayoutComponent();
-                    if (layoutComponent.isLayoutContainer()) {
-                        if (!newLayout) { // always add layout container to the model 
-                            getLayoutModel().addRootComponent(layoutComponent);
+                    if (getLayoutModel() != null) { // Some beans don't have layout
+                        createLayoutUndoableEdit();
+                        formDesigner.getLayoutDesigner().endMoving(newLayout);
+                        LayoutComponent layoutComponent =
+                                getComponentCreator().getPrecreatedLayoutComponent();
+                        if (layoutComponent.isLayoutContainer()) {
+                            if (!newLayout) { // always add layout container to the model 
+                                getLayoutModel().addRootComponent(layoutComponent);
+                            }
                         }
+                        placeLayoutUndoableEdit();
                     }
-                    placeLayoutUndoableEdit();
                     getComponentCreator().addPrecreatedComponent(
                                             targetContainer, constraints);
                 }
@@ -2400,7 +2409,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
             }
             else {
-                formDesigner.getLayoutDesigner().endMoving(false);
+                if (formDesigner.getLayoutDesigner() != null) {
+                    formDesigner.getLayoutDesigner().endMoving(false);
+                }
                 getComponentCreator().releasePrecreatedComponent();
             }
             return true;
