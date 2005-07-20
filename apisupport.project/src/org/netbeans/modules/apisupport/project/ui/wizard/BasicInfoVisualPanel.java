@@ -371,6 +371,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(separator2, gridBagConstraints);
 
+        mainProject.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_SetAsMainProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
