@@ -344,7 +344,7 @@ public final class OpenProjectList {
         try {
             
             FileObject fo = FileUtil.toFileObject(projectDir);
-            if (fo != null) {
+            if (fo != null && /* #60518 */ fo.isFolder()) {
                 return ProjectManager.getDefault().findProject(fo);
             } else {
                 return null;
