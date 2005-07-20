@@ -496,7 +496,7 @@ public final class NbPlatform implements Comparable {
             set.toArray(entries);
             return entries;
         } catch (IOException e) {
-            Util.err.notify(ErrorManager.EXCEPTION, e);
+            Util.err.notify(e);
             return new ModuleEntry[0];
         }
     }
