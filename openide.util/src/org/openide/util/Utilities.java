@@ -2597,8 +2597,13 @@ widthcheck:  {
                 }
                 Component[] comps = AWTBridge.getDefault().convertComponents(item);
                 for (int v = 0; v < comps.length;v++) {
-                    if ((comps[v] == null || comps[v] instanceof JSeparator) && menu.getComponentCount() > 0 && menu.getComponent(menu.getComponentCount() - 1) instanceof JSeparator) {
+                    Component comp = comps[v];
+                    if (comp == null) {
+                        comp = new JSeparator();
+                    }
+                    if (comps[v] instanceof JSeparator && menu.getComponentCount() > 0 && menu.getComponent(menu.getComponentCount() - 1) instanceof JSeparator) {
 //                                System.out.println("ignorring separator");
+                        //TODO improve condition.
                     } else {
 //                                System.out.println("is not=" + comps[v].getClass());
                         menu.add(comps[v]);
