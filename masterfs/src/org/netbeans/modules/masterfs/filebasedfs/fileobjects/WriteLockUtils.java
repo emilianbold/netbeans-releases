@@ -54,7 +54,7 @@ public class WriteLockUtils {
         return isActiveLockFile;
     }
     
-    static File getAssociatedLockFile(File file)  {
+    public static File getAssociatedLockFile(File file)  {
         try {
             file = file.getCanonicalFile();
         } catch (IOException iex) {
