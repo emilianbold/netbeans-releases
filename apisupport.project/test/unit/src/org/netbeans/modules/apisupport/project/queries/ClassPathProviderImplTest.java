@@ -14,6 +14,8 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -36,6 +39,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.*;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 // XXX test GPR usage
 
@@ -450,6 +458,65 @@ public class ClassPathProviderImplTest extends TestBase {
         assertTrue("got changes again", l.changed.contains(ClassPath.PROP_ROOTS));
         expectedRoots.add(urlForJar("nbbuild/netbeans/lib/fnord.jar"));
         assertEquals("right COMPILE classpath after changing project.properties", expectedRoots, urlsOfCp(cp));
+    }
+    
+    public void testBinaryOriginAbsolutePath() throws Exception {
+        File jmfhome = new File(getWorkDir(), "jmfhome");
+        File audioviewer = copyFolder(file("platform/samples/audio-files"));
+        // Make it a standalone module so we can copy it:
+        File pp = new File(audioviewer, "nbproject/private/private.properties".replace('/', File.separatorChar));
+        pp.getParentFile().mkdirs();
+        OutputStream os = new FileOutputStream(pp);
+        try {
+            Properties p = new Properties();
+            p.setProperty("jmf.home", jmfhome.getAbsolutePath());
+            p.store(os, null);
+        } finally {
+            os.close();
+        }
+        pp = new File(audioviewer, "nbproject/private/platform-private.properties".replace('/', File.separatorChar));
+        pp.getParentFile().mkdirs();
+        os = new FileOutputStream(pp);
+        try {
+            Properties p = new Properties();
+            p.setProperty("netbeans.dest.dir", file("nbbuild/netbeans").getAbsolutePath());
+            p.store(os, null);
+        } finally {
+            os.close();
+        }
+        File px = new File(audioviewer, "nbproject/project.xml".replace('/', File.separatorChar));
+        Document doc = XMLUtil.parse(new InputSource(px.toURI().toString()), false, true, null, null);
+        NodeList nl = doc.getDocumentElement().getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED, "data");
+        assertEquals(1, nl.getLength());
+        Element data = (Element) nl.item(0);
+        // XXX insert at position 1, between <c-n-b> and <m-d>:
+        data.appendChild(doc.createElementNS(NbModuleProjectType.NAMESPACE_SHARED, "standalone"));
+        os = new FileOutputStream(px);
+        try {
+            XMLUtil.write(doc, os, "UTF-8");
+        } finally {
+            os.close();
+        }
+        FileObject audioviewerFO = FileUtil.toFileObject(audioviewer);
+        Project p = ProjectManager.getDefault().findProject(audioviewerFO);
+        assertNotNull(p);
+        FileObject src = audioviewerFO.getFileObject("src");
+        ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
+        assertNotNull("have a COMPILE classpath", cp);
+        Set/*<String>*/ expectedRoots = new TreeSet();
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-actions.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-text.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-windows.jar"));
+        File lib = new File(jmfhome, "lib");
+        expectedRoots.add(Util.urlForJar(new File(lib, "jmf.jar")).toExternalForm());
+        expectedRoots.add(Util.urlForJar(new File(lib, "mediaplayer.jar")).toExternalForm());
+        assertEquals("right COMPILE classpath incl. absolute locations of JARs",
+            expectedRoots.toString(), urlsOfCp(cp).toString());
     }
     
     private void assertClassPathsHaveTheSameResources(ClassPath actual, ClassPath expected) {
