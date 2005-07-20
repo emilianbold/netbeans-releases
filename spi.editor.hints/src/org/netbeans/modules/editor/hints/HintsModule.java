@@ -12,16 +12,8 @@
  */
 
 package org.netbeans.modules.editor.hints;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-import javax.swing.Action;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsNames;
-import org.netbeans.editor.SettingsUtil;
+
 import org.openide.modules.ModuleInstall;
-
-
 
 /**
  * Module installation class for HintsModule.

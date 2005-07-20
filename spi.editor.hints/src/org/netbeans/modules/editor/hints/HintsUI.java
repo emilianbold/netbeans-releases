@@ -14,16 +14,15 @@
 package org.netbeans.modules.editor.hints;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.text.*;
-import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.Utilities;
-import org.netbeans.modules.editor.hints.borrowed.EditorUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.modules.editor.hints.borrowed.ListCompletionView;
 import org.netbeans.modules.editor.hints.borrowed.ScrollCompletionPane;
 import org.netbeans.modules.editor.hints.spi.ChangeInfo;
@@ -33,10 +32,8 @@ import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 

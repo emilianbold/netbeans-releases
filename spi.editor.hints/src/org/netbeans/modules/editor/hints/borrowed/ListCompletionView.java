@@ -18,7 +18,6 @@ import java.util.List;
 import javax.swing.*;
 
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.openide.awt.HtmlRenderer;
 
 /**
