@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -42,6 +41,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -71,7 +71,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
     }
 
     protected void refresh( Lookup context ) {
-        EventQueue.invokeLater(new Runnable() {
+        // #59615: update synch if possible; only replan if not already in EQ.
+        Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
                 setDisplayName(NAME);
