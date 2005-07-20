@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
@@ -24,6 +25,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,9 +49,18 @@ public final class NbPlatformCustomizer extends JPanel {
     
     public static void showCustomizer() {
         NbPlatformCustomizer customizer = new NbPlatformCustomizer();
+        JButton closeButton = new JButton();
+        Mnemonics.setLocalizedText(closeButton,
+                NbBundle.getMessage(NbPlatformCustomizer.class, "CTL_Close"));
         DialogDescriptor descriptor = new DialogDescriptor(
                 customizer,
-                getMessage("CTL_NbPlatformManager_Title")); // NOI18N
+                getMessage("CTL_NbPlatformManager_Title"), // NOI18N
+                true,
+                new Object[] {closeButton},
+                closeButton,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);
         dlg.dispose();
@@ -251,7 +262,7 @@ public final class NbPlatformCustomizer extends JPanel {
     }//GEN-LAST:event_removePlatform
     
     // XXX I hope there is a better way how to control Wizard Panel's headers
-    // then this terrible hack (when you want to use array of panels - not 
+    // then this terrible hack (when you want to use array of panels - not
     // iterator)
     private static class PointlessIterator extends WizardDescriptor.ArrayIterator {
         PointlessIterator(WizardDescriptor.Panel[] panels) { super(panels); }
