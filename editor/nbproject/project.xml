@@ -131,6 +131,14 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>4.11</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>                
            </module-dependencies>
             <public-packages>
                 <package>org.netbeans.modules.editor</package>

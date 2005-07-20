@@ -33,6 +33,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.Keymap;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -225,10 +226,11 @@ public class NbEditorKit extends ExtKit {
             JPopupMenu pm = createPopupMenu(component);
             List l;
             EditorUI ui = Utilities.getEditorUI(component);            
-            BaseOptions bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
-            if (bo != null){
-                l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup"), true); // NOI18N
-            }else{
+            MimeLookup lookup = MimeLookup.getMimeLookup(NbEditorKit.this.getContentType());
+            PopupActions pa = (PopupActions)lookup.lookup(PopupActions.class);
+            if (pa != null){
+                l = pa.getPopupActions();
+            } else {            
                 l = (List)Settings.getValue(Utilities.getKitClass(component),
                     (ui == null || ui.hasExtComponent())
                         ? ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST
