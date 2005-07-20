@@ -84,6 +84,17 @@ public class OperationParameterPopup extends AbstractPopup{
         removeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_remParam"));// NOI18N
         closeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_close"));// NOI18N
      
+        //Accessibility
+        removeJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_REMOVE_PARAMETER"));// NOI18N
+        removeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_REMOVE_PARAMETER_DESCRIPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_ADD_PARAMETER"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_ADD_PARAMETER_DESCRIPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_CLOSE_PARAMETER"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_CLOSE_PARAMETER_DESCRIPTION"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_PARAMETER_TABLE"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_PARAMETER_TABLE_DESCRIPTION"));// NOI18N
+        
+        
         addJButton.setName("addParamJButton");// NOI18N
         removeJButton.setName("remParamJButton");// NOI18N
         closeJButton.setName("closeJButton");// NOI18N

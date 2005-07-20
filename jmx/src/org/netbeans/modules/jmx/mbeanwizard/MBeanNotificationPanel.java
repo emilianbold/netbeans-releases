@@ -105,6 +105,15 @@ public class MBeanNotificationPanel extends JPanel {
         
         add(notifJTableScrollPanel, BorderLayout.CENTER);
         add(notifJPanel, BorderLayout.SOUTH);
+        
+        //Accessibility
+        notifRemJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_NOTIFICATION"));// NOI18N
+        notifRemJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_NOTIFICATION_DESCRIPTION"));// NOI18N
+        notifAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_NOTIFICATION"));// NOI18N
+        notifAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_NOTIFICATION_DESCRIPTION"));// NOI18N
+        notificationTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_NOTIFICATION_TABLE"));// NOI18N
+        notificationTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_NOTIFICATION_TABLE_DESCRIPTION"));// NOI18N
+        
     }
     
     /**

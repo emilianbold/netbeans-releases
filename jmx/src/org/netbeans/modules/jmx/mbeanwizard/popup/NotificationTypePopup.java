@@ -82,6 +82,17 @@ public class NotificationTypePopup extends AbstractPopup{
         removeJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_remType"));// NOI18N
         closeJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_close"));// NOI18N
         
+        //Accessibility
+        removeJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_REMOVE_NOTIFICATION_TYPE"));// NOI18N
+        removeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_REMOVE_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_ADD_NOTIFICATION_TYPE"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_ADD_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_CLOSE_NOTIFICATION_TYPE"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_CLOSE_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_NOTIFICATION_TYPE_TABLE"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_NOTIFICATION_TYPE_TABLE_DESCRIPTION"));// NOI18N
+        
+        
         addJButton.addActionListener(
             new AddTableRowListener(popupTable,popupTableModel,removeJButton));
         addJButton.setName("addNotifTypeJButton");// NOI18N

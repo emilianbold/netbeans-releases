@@ -83,6 +83,18 @@ public class OperationExceptionPopup extends AbstractPopup{
         removeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_remException"));// NOI18N
         closeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_close"));// NOI18N
         
+        
+        //Accessibility
+        removeJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_REMOVE_EXCEPTION"));// NOI18N
+        removeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_REMOVE_EXCEPTION_DESCRIPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_ADD_EXCEPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_ADD_EXCEPTION_DESCRIPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_CLOSE_EXCEPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_CLOSE_EXCEPTION_DESCRIPTION"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_EXCEPTION_TABLE"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_EXCEPTION_TABLE_DESCRIPTION"));// NOI18N
+        
+        
         addJButton.setName("addExceptionJButton");// NOI18N
         removeJButton.setName("remExceptionJButton");// NOI18N
         closeJButton.setName("closeJButton");// NOI18N
