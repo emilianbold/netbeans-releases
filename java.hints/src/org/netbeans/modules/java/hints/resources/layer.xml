@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-java">
-                <folder name="Services">
+                <folder name="Hints">
                     <file name="org-netbeans-modules-java-hints-JavaHintsProvider.instance"/>
                 </folder>
             </folder>
