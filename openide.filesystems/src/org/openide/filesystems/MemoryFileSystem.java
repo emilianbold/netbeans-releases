@@ -12,6 +12,7 @@
  */
 package org.openide.filesystems;
 
+import java.lang.ref.Reference;
 import org.openide.filesystems.*;
 import org.openide.filesystems.AbstractFileSystem.*;
 
@@ -61,38 +62,49 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
 
             if (resources[i].endsWith("/")) {
                 // folder
-                e(resources[i]).data = null;
+                getOrCreateEntry(resources[i]).data = null;
             } else {
-                e(resources[i]).data = new byte[0];
+                getOrCreateEntry(resources[i]).data = new byte[0];
             }
         }
     }
 
     /** finds entry for given name */
-    private Entry e(String n) {
+    private Entry getOrCreateEntry(String n) {
         if ((n.length() > 0) && (n.charAt(0) == '/')) {
             n = n.substring(1);
         }
 
         Entry x = (Entry) entries.get(n);
 
-        if (x == null) {
+        if (x == null || !isValidEntry(n)) {
             x = new Entry();
             entries.put(n, x);
         }
 
         return x;
     }
-
+    
     /** finds whether there already is this name */
-    private boolean is(String n) {
+    private boolean isValidEntry(String n) {
+        boolean isValidReference = false;
+        
         if ((n.length() > 0) && (n.charAt(0) == '/')) {
             n = n.substring(1);
         }
 
         Entry x = (Entry) entries.get(n);
+        
+        if (x != null) {
+            FileObject fo = null;
+            Reference ref = findReference(n);
+            if (ref != null) {
+                fo = (FileObject)ref.get();
+                isValidReference = (fo != null) ? fo.isValid() : true;
+            } 
+        }
 
-        return x != null;
+        return (isValidReference);
     }
 
     public String getDisplayName() {
@@ -104,7 +116,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public Enumeration attributes(String name) {
-        return is(name) ? Collections.enumeration(e(name).attrs.keySet()) : org.openide.util.Enumerations.empty();
+        return isValidEntry(name) ? Collections.enumeration(getOrCreateEntry(name).attrs.keySet()) : org.openide.util.Enumerations.empty();
     }
 
     public String[] children(String f) {
@@ -144,19 +156,19 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public void createData(String name) throws IOException {
-        if (is(name)) {
+        if (isValidEntry(name)) {
             throw new IOException("File already exists");
         }
 
-        e(name).data = new byte[0];
+        getOrCreateEntry(name).data = new byte[0];
     }
 
     public void createFolder(String name) throws java.io.IOException {
-        if (is(name)) {
+        if (isValidEntry(name)) {
             throw new IOException("File already exists");
         }
 
-        e(name).data = null;
+        getOrCreateEntry(name).data = null;
     }
 
     public void delete(String name) throws IOException {
@@ -169,11 +181,11 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public boolean folder(String name) {
-        return e(name).data == null;
+        return getOrCreateEntry(name).data == null;
     }
 
     public InputStream inputStream(String name) throws java.io.FileNotFoundException {
-        byte[] arr = e(name).data;
+        byte[] arr = getOrCreateEntry(name).data;
 
         if (arr == null) {
             arr = new byte[0];
@@ -183,7 +195,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public java.util.Date lastModified(String name) {
-        java.util.Date d = e(name).last;
+        java.util.Date d = getOrCreateEntry(name).last;
 
         return (d == null) ? created : d;
     }
@@ -195,7 +207,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public String mimeType(String name) {
-        return (String) e(name).attrs.get("mimeType");
+        return (String) getOrCreateEntry(name).attrs.get("mimeType");
     }
 
     public OutputStream outputStream(final String name)
@@ -204,8 +216,8 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
             public void close() throws IOException {
                 super.close();
 
-                e(name).data = toByteArray();
-                e(name).last = new Date();
+                getOrCreateEntry(name).data = toByteArray();
+                getOrCreateEntry(name).last = new Date();
             }
         }
 
@@ -213,7 +225,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public Object readAttribute(String name, String attrName) {
-        return is(name) ? e(name).attrs.get(attrName) : null;
+        return isValidEntry(name) ? getOrCreateEntry(name).attrs.get(attrName) : null;
     }
 
     public boolean readOnly(String name) {
@@ -222,11 +234,11 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
 
     public void rename(String oldName, String newName)
     throws IOException {
-        if (!is(oldName)) {
+        if (!isValidEntry(oldName)) {
             throw new IOException("The file to rename does not exist.");
         }
 
-        if (is(newName)) {
+        if (isValidEntry(newName)) {
             throw new IOException("Cannot rename to existing file");
         }
 
@@ -234,7 +246,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
             newName = newName.substring(1);
         }
 
-        Entry e = e(oldName);
+        Entry e = getOrCreateEntry(oldName);
         entries.remove(oldName);
         entries.put(newName, e);
     }
@@ -243,7 +255,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
     }
 
     public long size(String name) {
-        byte[] d = e(name).data;
+        byte[] d = getOrCreateEntry(name).data;
 
         return (d == null) ? 0 : d.length;
     }
@@ -253,7 +265,7 @@ final class MemoryFileSystem extends AbstractFileSystem implements Info, Change,
 
     public void writeAttribute(String name, String attrName, Object value)
     throws IOException {
-        e(name).attrs.put(attrName, value);
+        getOrCreateEntry(name).attrs.put(attrName, value);
     }
 
     static final class Entry {
