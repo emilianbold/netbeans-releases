@@ -99,8 +99,6 @@ public final class Module extends ModuleInfo {
     private SpecificationVersion specVers;
     /** currently active module classloader */
     private ClassLoader classloader = null;
-    /** module classloaders that might have been created before */
-    private final Set oldClassLoaders = new WeakSet(3); // Set<OneModuleClassLoader>
     /** localized properties, only non-null if requested from disabled module */
     private Properties localizedProps;
     /** public packages, may be null */
@@ -1041,7 +1039,6 @@ public final class Module extends ModuleInfo {
             Util.err.annotate(ioe, iae);
             throw ioe;
         }
-        oldClassLoaders.add(classloader);
     }
     
     /** Turn off the classloader and release all resources. */
@@ -1071,12 +1068,6 @@ public final class Module extends ModuleInfo {
     
     /** Notify the module that it is being deleted. */
     void destroy() {
-        // #21114: try to release all JAR locks
-        Iterator it = oldClassLoaders.iterator();
-        while (it.hasNext()) {
-            OneModuleClassLoader l = (OneModuleClassLoader)it.next();
-            l.releaseLocks();
-        }
         moduleJARs.remove(jar);
     }
     

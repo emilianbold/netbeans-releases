@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -179,12 +179,12 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         return v.elements();
     }
-
-    /** Try to release any JAR locks held by this classloader.
-     * @see "#21114"
-     */
-    public final void releaseLocks() {
-        if (deadJars != null) throw new IllegalStateException("Already had dead JARs: " + deadJars); // NOI18N
+    
+    public void destroy() {
+        super.destroy ();
+        
+        // #21114 : try to release any JAR locks held by this classloader
+        assert deadJars == null : "Already had dead JARs: " + deadJars;
         deadJars = new HashSet(); // Set<JarFile>
         try {
             for (int i = 0; i < sources.length; i++) {
@@ -242,7 +242,7 @@ public class JarClassLoader extends ProxyClassLoader {
             JarClassLoader.notify(0, ioe);
         }
     }
-    
+
     /** Delete any temporary JARs we were holding on to.
      * Also close any other JARs in our list.
      */
