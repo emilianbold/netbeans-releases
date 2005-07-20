@@ -32,11 +32,11 @@ public interface TableModelFilter extends Model {
      * Returns filterred value to be displayed in column <code>columnID</code>
      * and row <code>node</code>. Column ID is defined in by 
      * {@link ColumnModel#getID}, and rows are defined by values returned from 
-     * {@TreeModel#getChildren}. You should not throw UnknownTypeException
+     * {@link TreeModel#getChildren}. You should not throw UnknownTypeException
      * directly from this method!
      *
      * @param   original the original table model
-     * @param   node a object returned from {@TreeModel#getChildren} for this row
+     * @param   node a object returned from {@link TreeModel#getChildren} for this row
      * @param   columnID a id of column defined by {@link ColumnModel#getID}
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.getValueAt (...)</code> method call only!
@@ -55,7 +55,7 @@ public interface TableModelFilter extends Model {
      * directly from this method!
      *
      * @param  original the original table model
-     * @param  node a object returned from {@TreeModel#getChildren} for this row
+     * @param  node a object returned from {@link TreeModel#getChildren} for this row
      * @param  columnID a id of column defined by {@link ColumnModel#getID}
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.isReadOnly (...)</code> method call only!
@@ -72,11 +72,11 @@ public interface TableModelFilter extends Model {
      * Changes a value displayed in column <code>columnID</code>
      * and row <code>node</code>. Column ID is defined in by 
      * {@link ColumnModel#getID}, and rows are defined by values returned from 
-     * {@TreeModel#getChildren}. You should not throw UnknownTypeException
+     * {@link TreeModel#getChildren}. You should not throw UnknownTypeException
      * directly from this method!
      *
      * @param  original the original table model
-     * @param  node a object returned from {@TreeModel#getChildren} for this row
+     * @param  node a object returned from {@link TreeModel#getChildren} for this row
      * @param  columnID a id of column defined by {@link ColumnModel#getID}
      * @param  value a new value of variable on given position
      * @throws  UnknownTypeException this exception can be thrown from 

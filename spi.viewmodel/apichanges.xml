@@ -99,8 +99,6 @@ Microsystems, Inc. All Rights Reserved.
                         ...
                     }
         </description>
-        <class package="org.netbeans.spi.viewmodel" name="ComputingException" />
-        <class package="org.netbeans.spi.viewmodel" name="NoInformationException" />
         <issue number="53073"/>
     </change>
     <change>

@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.25"
   module="View Model"
   author="jjancura@netbeans.org"
 >
@@ -39,14 +39,8 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The debuggercore/<api name="ViewModel" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
- module (View Model) allows to share one TreeTableView among different modules. 
-
-
-
-See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
- <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
-for more information.
+The debuggercore/<api name="ViewModel" type="export" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@" group="java"/>
+ module (View Model) allows to share one TreeTableView among different modules.
 </answer>
 
 <!--
@@ -65,7 +59,10 @@ for more information.
         </question>
 -->
 <answer id="arch-overall">
-See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
+Support for tree table view. The view is described via models - TreeModel,
+TableModel and NodeModel. Filters can be applied to each model - TreeModelFilter,
+TableModelFilter and NodeModelFilter. The view listens on changes in the models
+and filters and updates itself accordingly.
 </answer>
         
 <!--
@@ -77,7 +74,7 @@ See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Pr
         </question>
 -->
 <answer id="arch-usecases">
-See <a href="http://debuggercore.netbeans.org/docs/api/UseCases.html">Usecases</a>.
+Used by debugger to display various information - threads, call stack, variables, etc.
 </answer>
         
 <!--
@@ -92,7 +89,8 @@ See <a href="http://debuggercore.netbeans.org/docs/api/UseCases.html">Usecases</
         </question>
 -->
 <answer id="arch-time">
-See <a href="http://debuggercore.netbeans.org/plans/NB40Plan.html">Integration Plan</a>.
+10/26/2003 - Basic Debugger Core API ready for integration
+04/01/2004 - Final review of Debugger Core &amp; Java Debugger API, merge to trunk.
 </answer>
         
 <!--
@@ -128,7 +126,7 @@ We would like to test 100% of our APIs.
         </question>
 -->
 <answer id="dep-jre">
-    Needs at least JRE 1.3.
+    Needs at least JRE 1.4.
 </answer>
 
 
@@ -826,5 +824,71 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.spi.viewmodel/2
 </answer>
 
 
+
+
+
+
+<!--
+        <question id="arch-where" when="init">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  No.
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  No.
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  No.
+ </answer>
 
 </api-answers>

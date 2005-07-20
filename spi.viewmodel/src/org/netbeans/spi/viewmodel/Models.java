@@ -74,20 +74,12 @@ public final class Models {
     
     
     /**
-     * Creates a new instances of TreeTableView
-     * for given {@link org.netbeans.spi.viewmodel.TreeModel},
-     * {@link org.netbeans.spi.viewmodel.TreeModel},
-     * {@link org.netbeans.spi.viewmodel.NodeModel},
-     * {@link org.netbeans.spi.viewmodel.NodeActionsProvider} and
-     * list of {@link org.netbeans.spi.viewmodel.ColumnModel}s.
+     * Creates a new instance of TreeTableView
+     * for given {@link org.netbeans.spi.viewmodel.Models.CompoundModel}.
      *
-     * @param treeModel a tree model instance
-     * @param nodeModel a node model instance
-     * @param tableModel a table model instance
-     * @param nodeActionsProvider a node actions provider instance
-     * @param columnModels a list of ColumnModel instances
+     * @param compoundModel a compound model instance
      *
-     * @return new instance of complete model
+     * @return new instance of complete model view
      */
     public static JComponent createView (
         CompoundModel compoundModel
@@ -101,11 +93,7 @@ public final class Models {
      * Set given models to given view instance.
      *
      * @param view a view instance - must be an instance created by {@link #createView} method.
-     * @param treeModel a tree model instance
-     * @param nodeModel a node model instance
-     * @param tableModel a table model instance
-     * @param nodeActionsProvider a node actions provider instance
-     * @param columnModels a list of ColumnModel instances
+     * @param compoundModel a compound model instance
      */
     public static void setModelsToView (
         final JComponent view,
@@ -278,8 +266,9 @@ public final class Models {
      * Returns {@link javax.swing.Action} for given parameters.
      *
      * @param displayName a display name for action
-     * @param node a node the action should by applied to
      * @param performer a performer for action
+     * @param multiselectionType The type of the multiselection - one of the
+     *        MULTISELECTION_TYPE_* constants.
      *
      * @return a new instance of {@link javax.swing.Action} for given parameters
      */
@@ -484,15 +473,15 @@ public final class Models {
 
     /**
      * Support interface for 
-     * {@link #createAction(String,Object,Models.ActionPerformer)} method.
+     * {@link #createAction(String,Models.ActionPerformer,int)} method.
      */
     public static interface ActionPerformer {
 
         /**
-         * Returns enabled property state for given set of nodes.
+         * Returns enabled property state for given node.
          *
-         * @param nodes nodes the action shouuld be applied to
-         * @return enabled property state for given set of nodes
+         * @param node the node the action shouuld be applied to
+         * @return enabled property state for given node
          *
          * @see #createAction(String,Models.ActionPerformer,int)
          */
@@ -2080,11 +2069,10 @@ public final class Models {
         }
         
         /**
-         * Returns <code>true</code> if given node is expanded in given view.
+         * Returns <code>true</code> if given node is expanded.
          *
-         * @param view a view created by this Models class
          * @param node a node to be checked
-         * @return <code>true</code> if given node is expanded in given view
+         * @return <code>true</code> if given node is expanded
          */
         public boolean isExpanded (
             Object node
@@ -2093,9 +2081,8 @@ public final class Models {
         }
 
         /**
-         * Expands given list of nodes in given view.
+         * Expands given list of nodes.
          *
-         * @param view a view created by this Models class
          * @param node a list of nodes to be expanded
          */
         public void expandNode (
@@ -2105,9 +2092,8 @@ public final class Models {
         }
 
         /**
-         * Collapses given node in given view.
+         * Collapses given node.
          *
-         * @param view a view created by this Models class
          * @param node a node to be expanded
          */
         public void collapseNode (
