@@ -287,7 +287,7 @@ final class SingleModuleProperties extends ModuleProperties {
                         }
                     });
                 } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+                    ErrorManager.getDefault().notify(ioe);
                     dependencyListModel = ComponentFactory.getInvalidDependencyListModel();
                 }
             } else {
@@ -566,21 +566,25 @@ final class SingleModuleProperties extends ModuleProperties {
                 universeDependencies = Collections.unmodifiableSortedSet(allDependencies);
                 return true;
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+                ErrorManager.getDefault().notify(ioe);
             }
         }
         return false;
     }
 
     private void addNonEmptyPackagesFromJar(Set/*<String>*/ pkgs, File jarFile) {
+        if (!jarFile.isFile()) {
+            // Broken classpath entry, perhaps.
+            return;
+        }
         try {
             JarFileSystem jfs = new JarFileSystem();
             jfs.setJarFile(jarFile);
             addNonEmptyPackages(pkgs, jfs.getRoot(), "class", true);
         } catch (PropertyVetoException pve) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, pve);
+            ErrorManager.getDefault().notify(pve);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ioe);
+            ErrorManager.getDefault().notify(ioe);
         }
         
     }
