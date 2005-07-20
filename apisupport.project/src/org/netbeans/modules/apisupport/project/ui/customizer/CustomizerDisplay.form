@@ -115,7 +115,7 @@
             <Component class="javax.swing.JTextArea" name="longDescValue">
               <Properties>
                 <Property name="lineWrap" type="boolean" value="true"/>
-                <Property name="rows" type="int" value="4"/>
+                <Property name="rows" type="int" value="10"/>
                 <Property name="wrapStyleWord" type="boolean" value="true"/>
               </Properties>
             </Component>

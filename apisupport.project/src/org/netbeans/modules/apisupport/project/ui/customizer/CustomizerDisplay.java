@@ -177,7 +177,7 @@ final class CustomizerDisplay extends JPanel implements
         hackPanel.setLayout(new java.awt.BorderLayout());
 
         longDescValue.setLineWrap(true);
-        longDescValue.setRows(4);
+        longDescValue.setRows(10);
         longDescValue.setWrapStyleWord(true);
         longDescValueSP.setViewportView(longDescValue);
 
