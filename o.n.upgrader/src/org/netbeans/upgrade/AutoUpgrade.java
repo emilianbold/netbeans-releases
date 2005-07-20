@@ -7,19 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.upgrade;
-
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -37,15 +32,6 @@ import org.openide.util.NbBundle;
  */
 public final class AutoUpgrade {
 
-    /** Shows the import dialog if there is no folder under the Projects
-     * subfolder of system default filesystem. This condition is met during
-     * the first start only.
-     * 
-     * @return true when and only when the dialog was displayed and user has canceled it,
-     * false otherwise (upgrade is done or not needed).
-     */
-    //public static boolean handleUpgrade (SplashOutput splash) {
-    
     public static void main (String[] args) throws Exception {
         String[] version = new String[1];
         File sourceFolder = checkPrevious (version);
@@ -59,7 +45,7 @@ public final class AutoUpgrade {
     
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
-    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/4.0", ".netbeans/3.6", "jstudio_6me_user" });
+    final static private List VERSION_TO_CHECK = Arrays.asList (new String[] { ".netbeans/4.1", ".netbeans/4.0", ".netbeans/3.6", "jstudio_6me_user" });
     
     static private File checkPrevious (String[] version) {
         boolean exists;
@@ -100,8 +86,8 @@ public final class AutoUpgrade {
             NbBundle.getMessage (AutoUpgrade.class, "MSG_Confirmation_Title") // NOI18N
         );
         d.setModal (true);
-        d.show ();
-          
+        d.setVisible (true);
+
         return new Integer (JOptionPane.YES_OPTION).equals (p.getValue ());
     }
     
@@ -161,14 +147,12 @@ public final class AutoUpgrade {
         
 
         File userdir = new File(System.getProperty ("netbeans.user", "")); // NOI18N
-
         
         java.util.Set includeExclude;
         try {
-                Reader r = new InputStreamReader (
-                AutoUpgrade.class.getResourceAsStream ("copy" + oldVersion), // NOI18N
-                "utf-8"
-            );
+            Reader r = new InputStreamReader (
+                    AutoUpgrade.class.getResourceAsStream ("copy" + oldVersion), // NOI18N
+                    "utf-8"); // NOI18N
             includeExclude = IncludeExclude.create (r);
             r.close ();
         } catch (IOException ex) {
