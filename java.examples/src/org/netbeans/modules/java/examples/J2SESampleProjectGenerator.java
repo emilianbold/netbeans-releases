@@ -98,7 +98,7 @@ public class J2SESampleProjectGenerator {
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
-                File f = new File(targetFolder, ent.getName());
+                File f = new File(targetFolder, ent.getName().replace('/', File.separatorChar));
                 if (ent.isDirectory()) {
                     f.mkdirs();
                 } else {
