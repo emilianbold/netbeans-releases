@@ -14,9 +14,7 @@
 package org.netbeans.modules.websvc.spi.webservices;
 
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.webservices.WebServicesSupportAccessor;
-import org.netbeans.modules.websvc.webservices.WebServicesClientSupportAccessor;
 
 /**
  * Most general way to create {@link WebServicesSupport} instances.
@@ -32,10 +30,6 @@ public final class WebServicesSupportFactory {
 
     public static WebServicesSupport createWebServicesSupport(WebServicesSupportImpl spiWebServicesSupport) {
         return WebServicesSupportAccessor.DEFAULT.createWebServicesSupport(spiWebServicesSupport);
-    }
-	
-    public static WebServicesClientSupport createWebServicesClientSupport(WebServicesClientSupportImpl spiWebServicesClientSupport) {
-        return WebServicesClientSupportAccessor.DEFAULT.createWebServicesClientSupport(spiWebServicesClientSupport);
     }
 	
 }

@@ -28,9 +28,6 @@ public interface WebServicesConstants {
     public static final String WebServiceServlet_PREFIX = "WSServlet_";//NOI18N
 
     public static final String WSDL_FOLDER = "wsdl"; // NOI18N
-    public static final String WEB_SERVICE_CLIENTS = "web-service-clients"; //NOI18N
-    public static final String WEB_SERVICE_CLIENT = "web-service-client"; //NOI18N
-    public static final String WEB_SERVICE_CLIENT_NAME = "web-service-client-name"; //NOI18N
     public static final String WEB_SERVICE_STUB_TYPE = "web-service-stub-type"; //NOI18N
     public static final String CLIENT_SOURCE_URL = "client-source-url"; //NOI18N
     public static final String WSCOMPILE="wscompile"; //NOI18N

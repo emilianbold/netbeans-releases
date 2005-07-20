@@ -21,6 +21,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,7 +37,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
+import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 
 
 /** Host for WsCompile features editor for editing the features enabled for
@@ -50,7 +51,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     implements PropertyChangeListener, HelpCtx.Provider { // WebCustomizer.Panel, WebCustomizer.ValidatingPanel
     
     private EjbJarProjectProperties ejbJarProperties;
-    private WsCompileEditorSupport.Panel wsCompileEditor;
+    private WsCompileClientEditorSupport.Panel wsCompileEditor;
 
     private List serviceSettings;
     
@@ -90,23 +91,23 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
         removeAll(); // !PW is this necessary?
         add(component);
 
-        component.addPropertyChangeListener(WsCompileEditorSupport.PROP_FEATURES_CHANGED, this);
+        component.addPropertyChangeListener(WsCompileClientEditorSupport.PROP_FEATURES_CHANGED, this);
     }
 
     public void removeNotify() {
         super.removeNotify();
 
         JPanel component = wsCompileEditor.getComponent();
-        component.removePropertyChangeListener(WsCompileEditorSupport.PROP_FEATURES_CHANGED, this);
+        component.removePropertyChangeListener(WsCompileClientEditorSupport.PROP_FEATURES_CHANGED, this);
     }
 
     public void initValues() {
         if(wsCompileEditor == null) {
-            WsCompileEditorSupport editorSupport = (WsCompileEditorSupport) Lookup.getDefault().lookup(WsCompileEditorSupport.class);
+            WsCompileClientEditorSupport editorSupport = (WsCompileClientEditorSupport) Lookup.getDefault().lookup(WsCompileClientEditorSupport.class);
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
 
-        wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_CLIENT);
+        wsCompileEditor.initValues(serviceSettings);
     }   
 
     /*public void validatePanel() throws WizardValidationException {
@@ -116,7 +117,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel
     }*/
 
     public void propertyChange(PropertyChangeEvent evt) {
-        WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
+        WsCompileClientEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileClientEditorSupport.FeatureDescriptor) evt.getNewValue();
         String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
         ejbJarProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
     }

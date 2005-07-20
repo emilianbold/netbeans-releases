@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.websvc.spi.webservices;
 
 import org.netbeans.modules.websvc.api.webservices.WebServicesView;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientView;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -25,7 +24,5 @@ import org.openide.filesystems.FileObject;
 public interface WebServicesViewProvider {
     
     public WebServicesView findWebServicesView(FileObject file);
-
-	public WebServicesClientView findWebServicesClientView(FileObject file);
-	
+    
 }

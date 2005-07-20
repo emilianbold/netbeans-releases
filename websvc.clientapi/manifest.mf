@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.websvc.clientapi
+OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/client/Bundle.properties
+

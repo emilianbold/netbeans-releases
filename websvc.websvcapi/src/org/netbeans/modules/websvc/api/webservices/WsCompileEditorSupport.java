@@ -33,9 +33,6 @@ public interface WsCompileEditorSupport {
     public static final String PROP_OPTIMIZE_CHANGED = "optimizeChanged";
     public static final String PROP_VERBOSE_CHANGED = "verboseChanged";
     
-    public static final int TYPE_SERVICE = 1;
-    public static final int TYPE_CLIENT = 2;
-    
     public WsCompileEditorSupport.Panel getWsCompileSupport();
     
     public interface Panel {
@@ -46,7 +43,7 @@ public interface WsCompileEditorSupport {
         
         /** Call to initialize the properties in the editor panel
          */
-        public void initValues(List/*ServiceSettings*/ settings, int type);
+        public void initValues(List/*ServiceSettings*/ settings);
         
         /** Validation entry point.
          */

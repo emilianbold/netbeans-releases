@@ -20,8 +20,8 @@ import org.openide.filesystems.FileUtil;
 
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportProvider;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesClientSupportProvider;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 
 

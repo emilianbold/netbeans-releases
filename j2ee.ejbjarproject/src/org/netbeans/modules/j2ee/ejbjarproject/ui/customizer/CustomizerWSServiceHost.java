@@ -103,7 +103,7 @@ public class CustomizerWSServiceHost extends javax.swing.JPanel implements Prope
             wsCompileEditor = editorSupport.getWsCompileSupport();
         }
 
-        wsCompileEditor.initValues(serviceSettings, WsCompileEditorSupport.TYPE_SERVICE);
+        wsCompileEditor.initValues(serviceSettings);
     }   
 
     /*public void validatePanel() throws WizardValidationException {

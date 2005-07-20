@@ -41,6 +41,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -85,7 +86,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.openide.NotifyDescriptor;
 
@@ -110,6 +111,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private WebServicesSupport apiWebServicesSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
     private EjbJarWebServicesSupport ejbJarWebServicesSupport;
+    private EjbJarWebServicesClientSupport ejbJarWebServicesClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private PropertyHelper propertyHelper;
@@ -184,8 +186,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         ejbModule = new EjbJarProvider(this, helper);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
+        ejbJarWebServicesClientSupport = new EjbJarWebServicesClientSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport(ejbJarWebServicesSupport);
-        apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport(ejbJarWebServicesSupport);
+        apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(ejbJarWebServicesClientSupport);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
         classpathExtender = new EjbJarProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
@@ -820,6 +823,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             "Templates/J2EE/RelatedCMP", // NOI18N                    
             "Templates/J2EE/Message", //NOI18N
             "Templates/WebServices/WebService", // NOI18N
+            "Templates/WebServices/WebServiceClient", // NOI18N
             "Templates/WebServices/MessageHandler", // NOI18N
             "Templates/Classes/Class.java" // NOI18N
         };

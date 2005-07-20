@@ -14,9 +14,7 @@
 package org.netbeans.modules.websvc.spi.webservices;
 
 import org.netbeans.modules.websvc.api.webservices.WebServicesView;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientView;
 import org.netbeans.modules.websvc.webservices.WebServicesViewAccessor;
-import org.netbeans.modules.websvc.webservices.WebServicesClientViewAccessor;
 
 /**
  * Most general way to create {@link WebServicesView} instances.
@@ -32,10 +30,6 @@ public final class WebServicesViewFactory {
 
     public static WebServicesView createWebServicesView(WebServicesViewImpl spiWebServicesView) {
         return WebServicesViewAccessor.DEFAULT.createWebServicesView(spiWebServicesView);
-    }
-	
-    public static WebServicesClientView createWebServicesClientView(WebServicesClientViewImpl spiWebServicesClientView) {
-        return WebServicesClientViewAccessor.DEFAULT.createWebServicesClientView(spiWebServicesClientView);
     }
 	
 }

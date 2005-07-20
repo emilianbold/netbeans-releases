@@ -27,6 +27,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -87,7 +88,7 @@ import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.modules.web.project.ui.BrokenServerSupport;
 
@@ -109,6 +110,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     private CopyOnSaveSupport css;
     private WebModule apiWebModule;
     private WebProjectWebServicesSupport webProjectWebServicesSupport;
+    private WebProjectWebServicesClientSupport webProjectWebServicesClientSupport;
     private WebServicesSupport apiWebServicesSupport;
     private WebServicesClientSupport apiWebServicesClientSupport;
     private WebContainerImpl enterpriseResourceSupport;
@@ -242,8 +244,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         webModule = new ProjectWebModule (this, updateHelper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
         webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
+        webProjectWebServicesClientSupport = new WebProjectWebServicesClientSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
-        apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (webProjectWebServicesSupport);
+        apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (webProjectWebServicesClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         classPathExtender = new WebProjectClassPathExtender(this, updateHelper, evaluator(), refHelper);
         lookup = createLookup(aux);
@@ -293,7 +296,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             helper.createCacheDirectoryProvider(),
             spp,
             new ProjectWebModuleProvider (),
-			new ProjectWebServicesSupportProvider(),
+            new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
             new WebActionProvider( this, this.updateHelper ),
@@ -353,8 +356,6 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         return this.testRoots;
     }
 
-    
-    
     File getTestClassesDirectory() {
         String testClassesDir = evaluator().getProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR);
         if (testClassesDir == null) {
@@ -371,13 +372,13 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         return apiWebModule;
     }
     
-	WebServicesSupport getAPIWebServicesSupport () {
-		return apiWebServicesSupport;
-	}	
-    
-	WebServicesClientSupport getAPIWebServicesClientSupport () {
-		return apiWebServicesClientSupport;
-	}	
+    WebServicesSupport getAPIWebServicesSupport () {
+            return apiWebServicesSupport;
+    }	
+
+    WebServicesClientSupport getAPIWebServicesClientSupport () {
+            return apiWebServicesClientSupport;
+    }
 
     public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
     }    

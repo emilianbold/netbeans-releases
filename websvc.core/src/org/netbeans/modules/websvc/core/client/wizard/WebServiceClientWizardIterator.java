@@ -38,8 +38,8 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
-import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.core.Utilities;
 
 /** Wizard for adding web service clients to an application
@@ -142,7 +142,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         final byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
-        StubDescriptor stubDescriptor = (StubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
+        ClientStubDescriptor stubDescriptor = (ClientStubDescriptor) wiz.getProperty(WizardProperties.CLIENT_STUB_TYPE);
 
         String sourceUrl;
         FileObject sourceWsdlFile = null;

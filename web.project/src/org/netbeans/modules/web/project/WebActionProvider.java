@@ -33,6 +33,7 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
@@ -70,7 +71,7 @@ import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
-import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -473,8 +474,8 @@ class WebActionProvider implements ActionProvider {
                 //we store all ws client names into hash set for later fast searching
                 HashSet scNames = new HashSet();
                 for (Iterator scIt = serviceClients.iterator(); scIt.hasNext(); ) {
-                    WsCompileEditorSupport.ServiceSettings serviceClientSettings = 
-                            (WsCompileEditorSupport.ServiceSettings)scIt.next();
+                    WsCompileClientEditorSupport.ServiceSettings serviceClientSettings = 
+                            (WsCompileClientEditorSupport.ServiceSettings)scIt.next();
                     scNames.add(serviceClientSettings.getServiceName());
                 }
                 
