@@ -89,11 +89,10 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 
             </module-dependencies>
-            <public-packages>
-<!-- no public packages
+            <friend-packages>
+                <friend>org.netbeans.modules.java.hints</friend>
                 <package>org.netbeans.modules.editor.hints.spi</package>
--->
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
