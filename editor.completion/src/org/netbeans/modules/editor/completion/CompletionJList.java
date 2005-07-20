@@ -218,7 +218,17 @@ public class CompletionJList extends JList {
             // of the widest item).
             // Therefore the item's render width is taken from the viewport's width.
             int itemRenderWidth = ((JViewport)CompletionJList.this.getParent()).getWidth();
-            item.render(g, getFont(), getForeground(), getBackground(),
+            Color bgColor = getBackground();
+            Color fgColor = getForeground();
+            int height = getHeight();
+
+            // Clear the background
+            g.setColor(bgColor);
+            g.fillRect(0, 0, itemRenderWidth, height);
+            g.setColor(fgColor);
+
+            // Render the item
+            item.render(g, getFont(), getForeground(), bgColor,
                     itemRenderWidth, getHeight(), selected);
         }
         
