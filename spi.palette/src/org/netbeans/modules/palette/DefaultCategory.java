@@ -30,6 +30,7 @@ import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.modules.palette.ui.DnDSupport;
+import org.openide.ErrorManager;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.PasteType;
@@ -207,7 +208,6 @@ public class DefaultCategory implements Category, NodeListener {
             }
             Index order = (Index)categoryNode.getCookie( Index.class );
             if( null == order ) {
-                System.out.println( "No index cookie");
                 return false;
             }
             order.move( sourceIndex, targetIndex );
@@ -275,7 +275,7 @@ public class DefaultCategory implements Category, NodeListener {
                 return true;
             }
         } catch( IOException ioE ) {
-            ioE.printStackTrace();
+            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
         }
         return false;
     }

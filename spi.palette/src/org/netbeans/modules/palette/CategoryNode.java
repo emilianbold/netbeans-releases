@@ -147,25 +147,9 @@ class CategoryNode extends FilterNode {
         return NO_PROPERTIES;
     }
 
-//    public HelpCtx getHelpCtx() {
-//        //TODO revisit this
-//        return new HelpCtx("gui.options.component-palette"); // NOI18N
-//    }
-
-
     public boolean canDestroy() {
         return !Utils.isReadonly( getOriginal() );
     }
-    
-    //this does not work because refactoring wraps our dnd dataflavor
-//    public PasteType getDropType(Transferable t, int action, int index) {
-//        //System.out.println( "Drop type for: " + t + ", action="+action+", index="+index);
-//        
-//        if( !t.isDataFlavorSupported( DndSupport.itemDataFlavor ) )
-//            return null;
-//        
-//        return super.getDropType( t, action, index );
-//    }
     
     private static class Children extends FilterNode.Children {
 

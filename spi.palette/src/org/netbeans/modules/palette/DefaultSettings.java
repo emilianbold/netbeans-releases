@@ -252,7 +252,6 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
 
     private void load() {
         try {
-            long start = System.currentTimeMillis();
             FileObject fo = findSettingsFile(); 
             if( null == fo || !fo.isValid() || !fo.canRead() )
                 return;
@@ -270,7 +269,6 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
             
             reader.parse(input);
             stream.close();
-            //System.out.println( "Loading palette settings took: " + (System.currentTimeMillis()-start) );
             
         } catch( SAXException saxE ) {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, saxE );
