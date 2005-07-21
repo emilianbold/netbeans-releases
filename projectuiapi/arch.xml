@@ -926,12 +926,10 @@ Microsystems, Inc. All Rights Reserved.
   </api>
   <api group="layer" name="ProjectActions" type="export" category="official">
    <p>
-    Providers of generic project actions can register action and JSeparator
-    instances and s in a special folder <code>Projects/Actions</code>. So if any module wishes
-    to extend, hide or reorder some of them it can just register its actions there.    
+    Providers of generic project actions can register <code>Action</code> and <code>JSeparator</code>
+    instances in a special folder <code>Projects/Actions/</code>. So if any module wishes
+    to extend, hide or reorder some of them it can just register its actions there. Example:
    </p>
-  </api>
-    Revieved as issue <a href="http://tasklist.netbeans.org/issues/show_bug.cgi?id=57874">#57874</a>. Example code:
     <pre>
     &lt;folder name="Projects" &gt;
         &lt;folder name="Actions" &gt;
@@ -941,6 +939,7 @@ Microsystems, Inc. All Rights Reserved.
         &lt;/folder&gt;
     &lt;/folder&gt;
     </pre>
+  </api>
   
   <!-- XXX link to Javadoc or something with definitions -->
   <api group="layer" name="Templates" type="export" category="official">

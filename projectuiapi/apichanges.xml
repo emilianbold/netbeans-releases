@@ -75,6 +75,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="ProjectActions">
+            <api name="general"/>
+            <summary>Ability to extend project context menus</summary>
+            <version major="1" minor="7"/>
+            <date day="5" month="5" year="2005"/>
+            <author login="pkuzel"/>
+            <compatibility addition="yes" semantic="incompatible">
+                <p>
+                    Existing project types need to add support for the new folder
+                    in order to comply with the guideline.
+                </p>
+            </compatibility>
+            <description>
+                Defined a folder <code>Projects/Actions/</code> which may hold
+                actions to be added to the context menu of any project type.
+            </description>
+            <issue number="57874"/>
+        </change>
 
         <change id="action-delete-added">
             <api name="general"/>
