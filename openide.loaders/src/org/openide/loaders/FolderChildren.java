@@ -220,7 +220,7 @@ implements PropertyChangeListener, ChangeListener {
 
     /** Display name */
     public String toString () {
-        return folder.getPrimaryFile ().toString ();
+        return (folder != null) ? folder.getPrimaryFile ().toString () : super.toString();
     }
     
     /**

@@ -17,19 +17,16 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.URI;
 import junit.framework.AssertionFailedError;
-
-import junit.textui.TestRunner;
 import org.openide.filesystems.FileSystem;
-import java.util.Enumeration;
 import java.io.File;
 
 import org.openide.nodes.Node;
-import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.Repository;
 import org.netbeans.junit.*;
 import org.openide.filesystems.*;
 
 import org.openide.loaders.FolderInstanceTest.ErrManager;
+import org.openide.util.Utilities;
 
 /** Test things about shadows and broken shadows, etc.
  * @author Jaroslav Tulach
@@ -102,6 +99,60 @@ implements java.net.URLStreamHandlerFactory {
             return FileUtil.nbfsURLStreamHandler ();
         }
         return null;
+    }
+    
+    public void testCreateTheShadow61175() throws Exception {
+        if (!Utilities.isUnix()) {
+            return;
+        }
+        
+        final LocalFileSystem lfs = new LocalFileSystem() {
+            public Status getStatus() {
+                return new TestStatus(this);
+            }
+            
+            class TestStatus implements FileSystem.Status {
+                FileSystem lfs;
+                TestStatus(FileSystem lfs) {
+                    this.lfs = lfs;
+                }
+                public String annotateName(String name, java.util.Set files) {
+                    if (files.size() > 0) {
+                        try {
+                            FileSystem fs = ((FileObject)files.toArray()[0]).getFileSystem();
+                            assertEquals(fs, lfs);
+                        } catch(FileStateInvalidException fsx) {}
+                        
+                    }
+                    return name;
+                }
+                
+                public java.awt.Image annotateIcon(java.awt.Image icon, int iconType, java.util.Set files) {
+                    return icon;
+                }
+            }
+        };
+        
+        
+        lfs.setRootDirectory(new File("/"));
+        Repository.getDefault().addFileSystem(lfs);
+        
+        
+        DataFolder what  = DataFolder.findFolder(lfs.getRoot());
+        assertNotNull(what);
+        FileObject whereFo = Repository.getDefault().getDefaultFileSystem().getRoot();
+        assertNotNull(whereFo);
+        
+        DataFolder where = DataFolder.findFolder(whereFo);
+        assertNotNull(where);
+        
+        DataShadow shade = what.createShadow(where);
+        assertNotNull(shade);
+        
+        Node node= shade.getNodeDelegate();
+        assertNotNull(node);
+        node.getIcon (java.beans.BeanInfo.ICON_COLOR_16x16);
+        
     }
     
     public void testBrokenShadow55115 () throws Exception {
