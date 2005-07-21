@@ -167,6 +167,16 @@ public final class PaletteController {
     }
     
     /**
+     * Select a new item in the palette window.
+     *
+     * @param category Lookup of the category that contains the item to be selected.
+     * @param item Item's lookup.
+     */
+    public void setSelectedItem( Lookup category, Lookup item ) {
+        model.setSelectedItem( category, item );
+    }
+    
+    /**
      * @return Lookup representing the category of currently selected item. 
      * The lookup is empty if no item is currently selected.
      */
@@ -179,16 +189,13 @@ public final class PaletteController {
      * Clear selection in palette (i.e. no item is selected)
      */
     public void clearSelection() {
-        model.setSelectedItem( null, null );
-    }
-
-    /**
-     * Reset palette contents to its default state.
-     */
-    public void resetPalette() {
-        model.reset();
+        model.clearSelection();
     }
     
+    /**
+     * Refresh the list of categories and items, e.g. when PaletteFilter conditions
+     * have changed.
+     */
     public void refresh() {
         model.refresh();
     }

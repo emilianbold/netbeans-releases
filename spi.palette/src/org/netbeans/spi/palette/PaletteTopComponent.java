@@ -125,7 +125,7 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
         }
     }
     
-    final public static class ResolvableHelper implements java.io.Serializable {
+    final static class ResolvableHelper implements java.io.Serializable {
         static final long serialVersionUID = 7424646018839457788L;
         public Object readResolve() {
             return PaletteTopComponent.getDefault();

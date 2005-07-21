@@ -25,7 +25,7 @@ import java.util.EventListener;
 import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteActions;
-import org.netbeans.spi.palette.TransferableCustomizer;
+import org.netbeans.spi.palette.DragAndDropHandler;
 
 import org.openide.*;
 import org.openide.actions.*;
@@ -118,7 +118,7 @@ class ItemNode extends FilterNode {
     }
     
     private void customizeTransferable( ExTransferable t ) {
-        TransferableCustomizer tp = getTransferableProvider();
+        DragAndDropHandler tp = getTransferableProvider();
         if( null != tp ) {
             tp.customize( t, getLookup() );
         }
@@ -146,12 +146,12 @@ class ItemNode extends FilterNode {
         return (PaletteActions)root.getLookup().lookup( PaletteActions.class );
     }
 
-    private TransferableCustomizer getTransferableProvider() {
+    private DragAndDropHandler getTransferableProvider() {
         Node category = getParentNode();
         assert null != category;
         Node root = category.getParentNode();
         assert null != root;
-        return (TransferableCustomizer)root.getLookup().lookup( TransferableCustomizer.class );
+        return (DragAndDropHandler)root.getLookup().lookup( DragAndDropHandler.class );
     }
     
     public Action getPreferredAction() {

@@ -26,6 +26,7 @@ import javax.swing.Action;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.CategoryListener;
 import org.netbeans.modules.palette.Item;
+import org.netbeans.spi.palette.DragAndDropHandler;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.modules.palette.ui.DnDSupport;
@@ -217,16 +218,36 @@ public class DefaultCategory implements Category, NodeListener {
     }
 
     public boolean dragOver( DropTargetDragEvent e ) {
-        return e.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR );
+        boolean res = e.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR );
+        DragAndDropHandler handler = getDragAndDropHandler();
+        if( null != handler ) {
+            res |= handler.canDrop( getLookup(), e.getCurrentDataFlavors(), e.getDropAction() );
+        }
+        return res;
     }
 
-    public boolean dropItemAt( Transferable dropItem, Item target, boolean dropBefore ) {
+    public boolean dropItem( Transferable dropItem, int dndAction, Item target, boolean dropBefore ) {
         int targetIndex = itemToIndex( target );
         if( !dropBefore ) {
             targetIndex++;
         }
+        DragAndDropHandler handler = getDragAndDropHandler();
+        boolean res;
+        if( null != handler ) {
+            res = handler.doDrop( getLookup(), dropItem, dndAction, targetIndex );
+        } else {
+            res = performDefaultDrop( dropItem, dndAction, target, dropBefore, targetIndex );
+        }
+        return res;
+    }
+    
+    private DragAndDropHandler getDragAndDropHandler() {
+        return (DragAndDropHandler)categoryNode.getLookup().lookup( DragAndDropHandler.class );
+    }
+    
+    private boolean performDefaultDrop( Transferable dropItem, int dndAction, Item target, boolean dropBefore, int targetIndex ) {
         try {
-            PasteType paste = categoryNode.getDropType( dropItem, NodeTransfer.CLIPBOARD_CUT, targetIndex );
+            PasteType paste = categoryNode.getDropType( dropItem, dndAction, targetIndex );
             if( null != paste ) {
                 Item[] itemsBefore = getItems();
                 paste.paste();
@@ -255,7 +276,6 @@ public class DefaultCategory implements Category, NodeListener {
             }
         } catch( IOException ioE ) {
             ioE.printStackTrace();
-            return false;
         }
         return false;
     }

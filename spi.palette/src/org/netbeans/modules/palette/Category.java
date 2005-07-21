@@ -66,7 +66,7 @@ public interface Category {
     
     boolean moveItem( Item source, Item target, boolean moveBefore );
     
-    boolean dropItemAt( Transferable dropItem, Item target, boolean dropBefore );
+    boolean dropItem( Transferable dropItem, int dndAction, Item target, boolean dropBefore );
     
     boolean dragOver( DropTargetDragEvent e );
 }

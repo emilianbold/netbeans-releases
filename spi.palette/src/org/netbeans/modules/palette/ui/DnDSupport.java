@@ -159,8 +159,15 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             if( targetCategory == dragSourceCategory && null != draggingItem ) {
                 res = targetCategory.moveItem( draggingItem, targetItem, dropBefore );
             } else if( null != targetCategory ) {
-                Transferable t = null == draggingItem ? dtde.getTransferable() : draggingItem.cut();
-                res = targetCategory.dropItemAt( t, targetItem, dropBefore );
+                Transferable t;
+                if( null != draggingItem ) {
+                    //internal drag'n'drop - an item is being moved from a different category
+                    t = draggingItem.cut();
+                } else {
+                    //a new item is being dropped to the palette from e.g. editor area
+                    t = dtde.getTransferable();
+                }
+                res = targetCategory.dropItem( t, dtde.getDropAction(), targetItem, dropBefore );
             }
             dtde.dropComplete( res );
         }
@@ -266,6 +273,8 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
                 removeDropLine();
                 targetItem = null;
                 return;
+            } else {
+                dtde.acceptDrag( dtde.getDropAction() );
             }
 
             if( target instanceof CategoryList ) {

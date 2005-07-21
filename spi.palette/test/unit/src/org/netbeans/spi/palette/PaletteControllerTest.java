@@ -65,7 +65,7 @@ public class PaletteControllerTest extends TestCase {
      */
     public void testAddPropertyChangeListener() {
         //make sure nothing is selected by default
-        model.setSelectedItem( null, null );
+        model.clearSelection();
         
         MyPropertyChangeListener myListener = new MyPropertyChangeListener();
         controller.addPropertyChangeListener( myListener );
@@ -73,13 +73,13 @@ public class PaletteControllerTest extends TestCase {
         Category cat = model.getCategories()[0];
         Item item = cat.getItems()[0];
         
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
         
         assertEquals( PaletteController.PROP_SELECTED_ITEM, myListener.getPropertyName() );
         assertEquals( item.getLookup(), myListener.getValue() );
         
         myListener.clear();
-        model.setSelectedItem( null, null );
+        model.clearSelection();
 
         assertEquals( PaletteController.PROP_SELECTED_ITEM, myListener.getPropertyName() );
         assertEquals( Lookup.EMPTY, myListener.getValue() );
@@ -90,7 +90,7 @@ public class PaletteControllerTest extends TestCase {
      */
     public void testRemovePropertyChangeListener() {
         //make sure nothing is selected by default
-        model.setSelectedItem( null, null );
+        model.clearSelection();
         
         MyPropertyChangeListener myListener = new MyPropertyChangeListener();
         controller.addPropertyChangeListener( myListener );
@@ -98,14 +98,14 @@ public class PaletteControllerTest extends TestCase {
         Category cat = model.getCategories()[0];
         Item item = cat.getItems()[0];
         
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
         
         assertEquals( PaletteController.PROP_SELECTED_ITEM, myListener.getPropertyName() );
         assertEquals( item.getLookup(), myListener.getValue() );
         
         controller.removePropertyChangeListener( myListener );
         myListener.clear();
-        model.setSelectedItem( null, null );
+        model.clearSelection();
 
         assertEquals( null, myListener.getPropertyName() );
         assertEquals( null, myListener.getValue() );
@@ -116,23 +116,23 @@ public class PaletteControllerTest extends TestCase {
      */
     public void testGetSelectedItem() {
         //make sure nothing is selected by default
-        model.setSelectedItem( null, null );
+        model.clearSelection();
         
         assertEquals( Lookup.EMPTY, controller.getSelectedItem() );
         
         Category cat = model.getCategories()[0];
         Item item = cat.getItems()[0];
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
         
         assertEquals( item.getLookup(), controller.getSelectedItem() );
         
         cat = model.getCategories()[3];
         item = cat.getItems()[5];
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
 
         assertEquals( item.getLookup(), controller.getSelectedItem() );
 
-        model.setSelectedItem( null, null );
+        model.clearSelection();
 
         assertEquals( Lookup.EMPTY, controller.getSelectedItem() );
     }
@@ -142,29 +142,29 @@ public class PaletteControllerTest extends TestCase {
      */
     public void testGetSelectedCategory() {
         //make sure nothing is selected by default
-        model.setSelectedItem( null, null );
+        model.clearSelection();
         
         assertEquals( Lookup.EMPTY, controller.getSelectedItem() );
         
         Category cat = model.getCategories()[0];
         Item item = cat.getItems()[0];
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
         
         assertEquals( cat.getLookup(), controller.getSelectedCategory() );
         
         cat = model.getCategories()[0];
         item = cat.getItems()[5];
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
 
         assertEquals( cat.getLookup(), controller.getSelectedCategory() );
 
         cat = model.getCategories()[4];
         item = cat.getItems()[6];
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
 
         assertEquals( cat.getLookup(), controller.getSelectedCategory() );
 
-        model.setSelectedItem( null, null );
+        model.clearSelection();
 
         assertEquals( Lookup.EMPTY, controller.getSelectedCategory() );
     }
@@ -174,13 +174,13 @@ public class PaletteControllerTest extends TestCase {
      */
     public void testClearSelection() {
         //make sure nothing is selected by default
-        model.setSelectedItem( null, null );
+        model.clearSelection();
         
         assertEquals( Lookup.EMPTY, controller.getSelectedItem() );
         
         Category cat = model.getCategories()[0];
         Item item = cat.getItems()[0];
-        model.setSelectedItem( cat, item );
+        model.setSelectedItem( cat.getLookup(), item.getLookup() );
         
         assertEquals( cat.getLookup(), controller.getSelectedCategory() );
         

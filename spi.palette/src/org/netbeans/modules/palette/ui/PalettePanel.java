@@ -175,18 +175,19 @@ public class PalettePanel extends JPanel implements Scrollable {
         revalidate();
     }
     
-    public void resetPalette() {
-        if( null != model ) {
-            model.reset();
-        }
+    public void doRefresh() {
+        if( null != controller )
+            controller.refresh();
     }
-
+    
     public void refresh () {
         Runnable runnable = new Runnable() {
             public void run() {
                 synchronized( lock ) {
+                    setVisible( false );
                     CategoryDescriptor[] paletteCategoryDescriptors = computeDescriptors( null != model ? model.getCategories() : null );
                     setDescriptors (paletteCategoryDescriptors);
+                    setVisible( true );
                 }
             }
         };
@@ -210,7 +211,10 @@ public class PalettePanel extends JPanel implements Scrollable {
         }
         selectedCategory = category;
         if( null != model ) {
-            model.setSelectedItem( category, item );
+            if( null == category || null == item )
+                model.clearSelection();
+            else
+                model.setSelectedItem( category.getLookup(), item.getLookup() );
         }
     }
     

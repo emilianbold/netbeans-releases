@@ -56,10 +56,6 @@ public class ProxyModel implements Model {
         original.refresh();
     }
 
-    public void setSelectedItem(Category category, Item item) {
-        original.setSelectedItem( category, item );
-    }
-
     public Action[] getActions() {
         return original.getActions();
     }
@@ -84,8 +80,12 @@ public class ProxyModel implements Model {
         return original.getSelectedItem();
     }
 
-    public void reset() {
-        original.reset();
+    public void setSelectedItem(Lookup category, Lookup item) {
+        original.setSelectedItem( category, item );
+    }
+
+    public void clearSelection() {
+        original.clearSelection();
     }
 
 }

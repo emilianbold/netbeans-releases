@@ -63,13 +63,31 @@ public class DefaultModel implements Model, NodeListener {
         this.rootNode.addNodeListener( this );
     }
 
-    public void setSelectedItem( Category category, Item item ) {
+    public void setSelectedItem( Lookup category, Lookup item ) {
+        Category cat = null;
+        Item it = null;
+        if( null != category ) {
+            Node catNode = (Node)category.lookup( Node.class );
+            if( null != catNode ) {
+                cat = new DefaultCategory( catNode );
+            }
+        }
+        if( null != item ) {
+            Node itNode = (Node)item.lookup( Node.class );
+            if( null != itNode ) {
+                it = new DefaultItem( itNode );
+            }
+        }
+        
         Item oldValue = selectedItem;
-        this.selectedItem = item;
-        this.selectedCategory = category;
+        this.selectedItem = it;
+        this.selectedCategory = cat;
         propertySupport.firePropertyChange( Model.PROP_SELECTED_ITEM, oldValue, selectedItem );
     }
-
+    
+    public void clearSelection() {
+        setSelectedItem( null, null );
+    }
     public Action[] getActions() {
         return rootNode.getActions( false );
     }
@@ -145,11 +163,6 @@ public class DefaultModel implements Model, NodeListener {
     public void propertyChange(PropertyChangeEvent evt) {
     }
 
-    public void reset() {
-        categories = null;
-        fireCategoriesChanged( null, false );
-    }
-    
     private void fireCategoriesChanged( Category[] changedCategories, boolean added ) {
         ModelListener[] listeners;
         synchronized( modelListeners ) {
@@ -183,7 +196,7 @@ public class DefaultModel implements Model, NodeListener {
     }
 
     public void refresh() {
-        setSelectedItem( null, null );
+        clearSelection();
         categories = null;
         rootNode.refreshChildren();
     }

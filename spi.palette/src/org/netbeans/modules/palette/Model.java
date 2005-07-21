@@ -63,12 +63,12 @@ public interface Model {
      * @param category New category to be selected or null.
      * @param item New item to be selected or null.
      */
-    void setSelectedItem( Category category, Item item );
+    void setSelectedItem( Lookup category, Lookup item );
     
     /**
-     * Reset the model to its default state.
+     * Ensure no item is selected.
      */
-    void reset();
+    void clearSelection();
     
     void refresh();
     

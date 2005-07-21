@@ -104,13 +104,6 @@ public final class Utils {
         return category;
     }
 
-    public static boolean isNodeVisible( Settings settings, Node categoryNode ) {
-        return true;
-    }
-    
-    public static void setNodeVisible( Settings settings, Node categoryNode, boolean visible ) {
-    }
-    
     /**
      * An action to create a new palette category.
      */
@@ -135,7 +128,6 @@ public final class Utils {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        
     }
     
     /**
@@ -220,7 +212,7 @@ public final class Utils {
         }
         
         public void actionPerformed(ActionEvent event) {
-            PalettePanel.getDefault().resetPalette();
+            PalettePanel.getDefault().doRefresh();
         }
         
     }

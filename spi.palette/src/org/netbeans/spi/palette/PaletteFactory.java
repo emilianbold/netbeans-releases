@@ -63,19 +63,20 @@ public final class PaletteFactory {
      * @param rootFolderName Name of palette's root folder, its sub-folders are categories.
      * @param customActions Import actions for palette customizer.
      * @param filter A filter that can dynamically hide some categories and items.
-     * @param customizer Add custom DataFlavors to the Transferable of items being dragged from
-     * the palette to editor window. Can be null to use the default PaletteController.ITEM_DATA_FLAVOR.
+     * @param dndHandler Handle drop of new items into palette window and add 
+     * custom DataFlavors to the Transferable of items being dragged from
+     * the palette to editor window. Can be null.
      */
     public static PaletteController createPalette( String rootFolderName, 
                                                    PaletteActions customActions,
                                                    PaletteFilter filter,
-                                                   TransferableCustomizer customizer ) 
+                                                   DragAndDropHandler dndHandler ) 
             throws IOException {
         
         assert null != rootFolderName;
         
         DataFolder paletteFolder = DataFolder.findFolder( getPaletteFolder( rootFolderName ) );
-        return createPalette( paletteFolder.getNodeDelegate(), customActions, filter, customizer );
+        return createPalette( paletteFolder.getNodeDelegate(), customActions, filter, dndHandler );
     }
     
     
@@ -98,14 +99,14 @@ public final class PaletteFactory {
      * their children are palette items.
      * @param customActions Import actions for palette customizer.
      * @param filter A filter that can dynamically hide some categories and items. Can be null.
-     * @param customizer Add custom DataFlavors to the Transferable of items being dragged from
-     * the palette to editor window. Can be null to use the default PaletteController.ITEM_DATA_FLAVOR.
-     * Can be null.
+     * @param dndHandler Handle drop of new items into palette window and add 
+     * custom DataFlavors to the Transferable of items being dragged from
+     * the palette to editor window. Can be null.
      */
     public static PaletteController createPalette( Node paletteRoot, 
                                                    PaletteActions customActions,
                                                    PaletteFilter filter,
-                                                   TransferableCustomizer customizer )
+                                                   DragAndDropHandler dndHandler )
             throws IOException {
         
         assert null != paletteRoot;
@@ -115,8 +116,8 @@ public final class PaletteFactory {
         lookupObjects.add( customActions );
         if( null != filter )
             lookupObjects.add( filter );
-        if( null != customizer )
-            lookupObjects.add( customizer );
+        if( null != dndHandler )
+            lookupObjects.add( dndHandler );
         
         RootNode root = new RootNode( paletteRoot, Lookups.fixed( lookupObjects.toArray() ) );
         Model model = createModel( root );

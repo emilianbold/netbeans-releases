@@ -204,11 +204,6 @@ class CategoryDescriptor implements CategoryListener {
         return palettePanel;
     }
 
-
-    public void setItemsTransferHandler (TransferHandler transferHandler) {
-        itemsList.setTransferHandler (transferHandler);
-    }
-
     public void categoryModified( Category category ) {
         categoryButton.updateProperties();
         categoryButton.repaint ();
