@@ -1,0 +1,4 @@
+./make-linux
+./make-solaris-sparc
+./make-solaris-x86
+./make-windows

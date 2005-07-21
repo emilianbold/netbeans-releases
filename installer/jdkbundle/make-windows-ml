@@ -1,0 +1,1 @@
+ant -Dismp.home=$IS_HOME -Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_04-fcs-bin-b05-windows-i586-p-03_jun_2005.exe -Dbundled.jvm=$JVM_PATH/is-j2re1_4_2_07-windows-i586.exe build-windows-ml

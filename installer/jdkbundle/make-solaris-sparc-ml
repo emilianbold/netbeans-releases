@@ -1,0 +1,1 @@
+ant -Dismp.home=$IS_HOME -Djdk.installer=$JDK_INSTALLER_PATH/jdk-1_5_0_04-fcs-bin-b05-solaris-sparc-03_jun_2005.sh -Dbundled.jvm=$JVM_PATH/is-j2re1_4_2_07-solaris-sparc.bin build-solaris-sparc-ml
