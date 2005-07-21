@@ -36,6 +36,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -105,7 +106,8 @@ public final class SuiteCustomizer implements CustomizerProvider {
             }
             OptionListener listener = new OptionListener();
             dialog = ProjectCustomizer.createCustomizerDialog(categories,
-                    panelProvider, preselectedCategory, listener, null);
+                    panelProvider, preselectedCategory, listener,
+                    new HelpCtx(SuiteCustomizer.class));
             dialog.addWindowListener(listener);
             dialog.setTitle(MessageFormat.format(
                     NbBundle.getMessage(SuiteCustomizer.class, "LBL_SuiteCustomizerTitle"), // NOI18N

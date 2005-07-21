@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * Second panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -55,4 +56,9 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
         }
         return visualPanel;
     }
+    
+    public HelpCtx getHelp() {
+        return new HelpCtx(BasicConfWizardPanel.class);
+    }
+    
 }

@@ -32,6 +32,7 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -344,6 +345,7 @@ public class CustomizerLibraries extends JPanel {
         DialogDescriptor descriptor = new DialogDescriptor(editPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_EditModuleDependencyTitle")); // NOI18N
+        descriptor.setHelpCtx(new HelpCtx(EditDependencyPanel.class));
         Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
@@ -368,6 +370,7 @@ public class CustomizerLibraries extends JPanel {
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
                 "CTL_AddModuleDependencyTitle"));// NOI18N
+        descriptor.setHelpCtx(new HelpCtx(AddModulePanel.class));
         descriptor.setClosingOptions(new Object[0]);
         final Dialog d = DialogDisplayer.getDefault().createDialog(descriptor);
         descriptor.setButtonListener(new ActionListener() {

@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 import java.awt.Component;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardPanel;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * Second panel from <em>Adding New Platform</em> wizard panels. Allows user to
@@ -48,4 +49,9 @@ final class PlatformInfoWizardPanel extends BasicWizardPanel {
         }
         return visualPanel;
     }
+    
+    public HelpCtx getHelp() {
+        return new HelpCtx(PlatformInfoWizardPanel.class);
+    }
+    
 }

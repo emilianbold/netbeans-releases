@@ -26,6 +26,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,7 +60,7 @@ public final class NbPlatformCustomizer extends JPanel {
                 new Object[] {closeButton},
                 closeButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                null,
+                new HelpCtx(NbPlatformCustomizer.class),
                 null);
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);

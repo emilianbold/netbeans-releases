@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
@@ -35,7 +36,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
     
     /** Representing visual component for this step. */
     private BasicInfoVisualPanel visualPanel;
-
+    
     private boolean isSuiteWizard;
     
     /** Creates a new instance of BasicInfoWizardPanel */
@@ -57,4 +58,9 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
         }
         return visualPanel;
     }
+    
+    public HelpCtx getHelp() {
+        return new HelpCtx(BasicInfoWizardPanel.class);
+    }
+    
 }
