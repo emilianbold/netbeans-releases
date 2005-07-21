@@ -15,6 +15,7 @@ OpenIDE-Module-Module-Dependencies:
  org.openide.src > 1.5, 
  org.netbeans.api.java/1, 
  org.netbeans.modules.dbschema/1 = 2,
+ org.openide.dialogs > 6.2,
  org.netbeans.modules.j2ee.sun.dd/1 = 1
 Class-Path: ext/persistence-tool-support.jar 
 
