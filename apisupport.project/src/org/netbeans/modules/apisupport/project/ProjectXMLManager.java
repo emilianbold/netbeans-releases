@@ -58,7 +58,7 @@ public final class ProjectXMLManager {
     private static final String DATA = "data"; // NOI18N
     private static final String DEPENDENCY = "dependency"; // NOI18N
     private static final String FRIEND = "friend"; // NOI18N
-    private static final String FRIEND_PACKAGES= "friend-packages"; // NOI18N
+    private static final String FRIEND_PACKAGES = "friend-packages"; // NOI18N
     private static final String IMPLEMENTATION_VERSION = "implementation-version"; // NOI18N
     private static final String MODULE_DEPENDENCIES = "module-dependencies"; // NOI18N
     private static final String PACKAGE = "package"; // NOI18N
@@ -306,13 +306,14 @@ public final class ProjectXMLManager {
         removePublicAndFriends();
         Element confData = getConfData();
         Document doc = confData.getOwnerDocument();
-        Element publicPackages = createModuleElement(doc, ProjectXMLManager.PUBLIC_PACKAGES);
-        confData.appendChild(publicPackages);
+        Element publicPackagesEl = createModuleElement(doc, ProjectXMLManager.PUBLIC_PACKAGES);
+        confData.appendChild(publicPackagesEl);
         for (int i = 0; i < newPackages.length; i++) {
-            publicPackages.appendChild(
+            publicPackagesEl.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, newPackages[i]));
         }
         helper.putPrimaryConfigurationData(confData, true);
+        publicPackages = null; // XXX cleaner would be to listen on changes in helper
     }
     
     /**
@@ -335,6 +336,7 @@ public final class ProjectXMLManager {
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, packages[i]));
         }
         helper.putPrimaryConfigurationData(confData, true);
+        publicPackages = null;
     }
     
     /**

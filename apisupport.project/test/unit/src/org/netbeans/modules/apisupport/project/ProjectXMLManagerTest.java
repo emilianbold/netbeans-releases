@@ -320,11 +320,11 @@ public class ProjectXMLManagerTest extends TestBase {
         });
         assertTrue("replace public packages", result.booleanValue());
         ProjectManager.getDefault().saveProject(miscProject);
-        ManifestManager.PackageExport[] newPublicPackages = getNewMiscPXM().getPublicPackages();
+        ManifestManager.PackageExport[] newPublicPackages = miscPXM.getPublicPackages();
         assertEquals("number of new public packages", 2, newPublicPackages.length);
 //        assertEquals("added package", "org.netbeans.examples.modules", newPublicPackages[0].getPackage());
 //        assertEquals("added package", "org.netbeans.examples.modules.misc", newPublicPackages[1].getPackage());
-        assertNull("there must not be friend", getNewMiscPXM().getFriends());
+        assertNull("there must not be friend", miscPXM.getFriends());
     }
     
     public void testReplaceFriendPackages() throws Exception {
