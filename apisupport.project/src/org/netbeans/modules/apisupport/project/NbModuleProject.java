@@ -696,6 +696,14 @@ public final class NbModuleProject implements Project {
 	return javacSource;
     }
     
+    /**
+     * Run the open hook.
+     * For use from unit tests.
+     */
+    public void open() {
+        ((OpenedHook) getLookup().lookup(OpenedHook.class)).projectOpened();
+    }
+    
     private final class Info implements ProjectInformation {
         
         Info() {}

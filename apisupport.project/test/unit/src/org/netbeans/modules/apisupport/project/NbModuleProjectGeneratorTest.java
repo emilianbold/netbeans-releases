@@ -70,11 +70,9 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "default"); // platform id
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
-        Project p = ProjectManager.getDefault().findProject(fo);
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + targetPrjDir, p);
-        NbModuleProject.OpenedHook hook = (NbModuleProject.OpenedHook) p.getLookup().lookup(NbModuleProject.OpenedHook.class);
-        assertNotNull("has an OpenedHook", hook);
-        hook.projectOpened(); // protected but can use package-private access
+        p.open();
         // check generated module
         for (int i=0; i < BASIC_CREATED_FILES.length; i++) {
             assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
@@ -107,11 +105,9 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 suiteDir); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
-        Project moduleProjectRel = ProjectManager.getDefault().findProject(fo);
+        NbModuleProject moduleProjectRel = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + targetPrjDir, moduleProjectRel);
-        NbModuleProject.OpenedHook hook = (NbModuleProject.OpenedHook) moduleProjectRel.getLookup().lookup(NbModuleProject.OpenedHook.class);
-        assertNotNull("has an OpenedHook", hook);
-        hook.projectOpened(); // protected but can use package-private access
+        moduleProjectRel.open();
         // check generated module
         for (int i=0; i < BASIC_CREATED_FILES.length; i++) {
             assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
@@ -134,11 +130,9 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 suiteDir); // platform id
         fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
-        Project moduleProjectAbs = ProjectManager.getDefault().findProject(fo);
+        NbModuleProject moduleProjectAbs = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + targetPrjDir, moduleProjectAbs);
-        hook = (NbModuleProject.OpenedHook) moduleProjectAbs.getLookup().lookup(NbModuleProject.OpenedHook.class);
-        assertNotNull("has an OpenedHook", hook);
-        hook.projectOpened(); // protected but can use package-private access
+        moduleProjectAbs.open();
         // check generated module
         for (int i=0; i < BASIC_CREATED_FILES.length; i++) {
             assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
