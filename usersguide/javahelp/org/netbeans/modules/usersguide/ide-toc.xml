@@ -341,6 +341,7 @@
     <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />
     <tocitem text="Running an Ant Script" target="ant_running" />
+    <tocitem text="Debugging an Ant Script" target="ant_debugging" />
     <tocitem text="Creating a Shortcut to a Target" target="ant_shortcut" />
     <tocitem text="Configuring Ant Settings" target="ant_settings" />
     <tocitem text="Switching Ant Versions" target="ant_version" />

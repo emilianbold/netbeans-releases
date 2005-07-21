@@ -325,6 +325,7 @@ the Options window:-->
 <mapID target="ant_tasks-classpath" url="ant/ant_tasks-classpath.html" />
 <mapID target="ant_version" url="ant/ant_version.html" />
 <mapID target="ant_exp-classpath" url="ant/exp-classpath.html" />
+<mapID target="ant_debugging" url="ant/ant_debugging.html" />
 
 <!--configure/modules/shortcuts targets:-->
 
