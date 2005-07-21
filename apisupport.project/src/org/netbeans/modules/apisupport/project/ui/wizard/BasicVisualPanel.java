@@ -53,9 +53,8 @@ public abstract class BasicVisualPanel extends JPanel {
      * See {@link BasicWizardPanel#propertyChange} for what happens further.
      */
     protected void setValid(Boolean newValid) {
-        Boolean oldValid = valid;
-        valid = newValid;
-        firePropertyChange("valid", oldValid, newValid); // NOI18N
+        this.valid = newValid;
+        firePropertyChange("valid", Boolean.valueOf(!newValid.booleanValue()), newValid); // NOI18N
     }
     
     /**

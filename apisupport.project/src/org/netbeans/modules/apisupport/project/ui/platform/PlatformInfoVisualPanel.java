@@ -30,16 +30,13 @@ import org.openide.util.NbBundle;
  */
 public class PlatformInfoVisualPanel extends BasicVisualPanel {
     
+    private boolean attached;
+    
     /** Creates new form BasicInfoVisualPanel */
     public PlatformInfoVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
         setName(NbPlatformCustomizer.INFO_STEP);
-        plafNameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                checkForm();
-            }
-        });
     }
     
     void refreshData() {
@@ -53,9 +50,13 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     }
     
     private void checkForm() {
-        if (plafNameValue.getText().trim().equals("")) {
+        String plafName = plafNameValue.getText().trim();
+        if (plafName.equals("")) {
             setErrorMessage(NbBundle.getMessage(PlatformInfoVisualPanel.class,
                     "MSG_BlankPlatformName")); // NOI18N
+        } else if (!NbPlatform.isLabelValid(plafName)) {
+            setErrorMessage(NbBundle.getMessage(PlatformInfoVisualPanel.class,
+                    "MSG_NameIsAlreadyUsed")); // NOI18N
         } else {
             setErrorMessage(null);
         }
@@ -64,6 +65,18 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     void storeData() {
         getSetting().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
                 plafNameValue.getText().trim());
+    }
+    
+    public void addNotify() {
+        super.addNotify();
+        if (!attached) {
+            plafNameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+                public void insertUpdate(DocumentEvent e) {
+                    checkForm();
+                }
+            });
+            attached = true;
+        }
     }
     
     /** This method is called from within the constructor to

@@ -57,7 +57,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
             getSetting().putProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY,
                     file.getAbsolutePath());
             getSetting().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
-                    plafLabelValue.getText().trim());
+                    plafLabelValue.getText());
         } // when wizard is cancelled file is null
     }
     
@@ -67,17 +67,30 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
             File plafDir = platformChooser.getSelectedFile();
             if (/* #60133 */ plafDir != null && NbPlatform.isPlatformDirectory(plafDir)) {
                 try {
-                    plafLabelValue.setText(NbPlatform.computeDisplayName(plafDir));
+                    setPlafLabel(NbPlatform.computeDisplayName(plafDir));
                 } catch (IOException e) {
-                    plafLabelValue.setText(plafDir.getAbsolutePath());
+                    setPlafLabel(plafDir.getAbsolutePath());
                 }
-                plafLabelValue.setCaretPosition(0);
+                if (!NbPlatform.isLabelValid(plafLabelValue.getText())) {
+                    setErrorMessage(NbBundle.getMessage(PlatformChooserVisualPanel.class,
+                            "MSG_NameIsAlreadyUsedGoToNext")); // NOI18N
+                } else {
+                    setErrorMessage(null);
+                }
                 setValid(Boolean.TRUE);
             } else {
+                setErrorMessage(null);
                 setValid(Boolean.FALSE);
-                plafLabelValue.setText(null);
+                setPlafLabel(null);
+                storeData();
             }
         }
+    }
+    
+    private void setPlafLabel(String label) {
+        plafLabelValue.setText(label);
+        plafLabelValue.setCaretPosition(0);
+        storeData();
     }
     
     /** This method is called from within the constructor to

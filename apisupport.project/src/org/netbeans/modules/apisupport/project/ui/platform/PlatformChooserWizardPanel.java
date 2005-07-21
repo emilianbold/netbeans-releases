@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.Component;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardPanel;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -51,7 +52,7 @@ final class PlatformChooserWizardPanel extends BasicWizardPanel implements Wizar
     }
 
     public boolean isFinishPanel() {
-        return isValid();
+        return NbPlatform.isLabelValid((String) getSettings().getProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY));
     }
     
 }
