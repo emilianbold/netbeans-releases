@@ -69,9 +69,11 @@ public class VariablesNodeModel implements NodeModel {
             return "super"; // NOI18N
         if (o instanceof This)
             return "this"; // NOI18N
-        if (o.equals ("NoInfo")) // NOI18N
-            return NbBundle.getBundle (VariablesNodeModel.class).getString 
-                ("CTL_No_Info");
+        if (o == "NoInfo") // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info");
+        if (o == "No current thread") { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
+        }
         String str = o.toString();
         if (str.startsWith("SubArray")) { // NOI18N
             int index = str.indexOf('-');
@@ -148,8 +150,11 @@ public class VariablesNodeModel implements NodeModel {
                     "CTL_LocalsModel_Column_Descr_SubArray",
                     str.substring(8, index), str.substring(index + 1));
         }
-        if (o.equals ("NoInfo"))
-            return null;
+        if (o == "NoInfo") // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "CTL_No_Info_descr");
+        if (o == "No current thread") { // NOI18N
+            return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
+        }
         throw new UnknownTypeException (o);
     }
     
@@ -170,7 +175,7 @@ public class VariablesNodeModel implements NodeModel {
             return FIELD;
         if (o.toString().startsWith("SubArray")) // NOI18N
             return LOCAL;
-        if (o.equals ("NoInfo")) // NOI18N
+        if (o == "NoInfo" || o == "No current thread") // NOI18N
             return null;
         throw new UnknownTypeException (o);
     }
