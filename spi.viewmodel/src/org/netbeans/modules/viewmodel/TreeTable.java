@@ -302,6 +302,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     
     public boolean isExpanded (Object node) {
         Node n = currentTreeModelRoot.findNode (node);
+        if (n == null) return false; // Something what does not exist is not expanded ;-)
         return treeTable.isExpanded (n);
     }
 
