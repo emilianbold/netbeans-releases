@@ -155,9 +155,16 @@ public final class PaletteUtils {
         if( null == item ) {
             getPalette().clearSelection();
         } else {
-            Lookup lkp = item.getNode().getLookup();
-            Lookup categoryLkp = item.getNode().getParentNode().getLookup();
-            getPalette().setSelectedItem( categoryLkp, lkp );
+            Node[] categories = getCategoryNodes( getPaletteNode(), false );
+            for( int i=0; i<categories.length; i++ ) {
+                Node[] items = getItemNodes( categories[i], true );
+                for( int j=0; j<items.length; j++ ) {
+                    PaletteItem formItem = (PaletteItem)items[j].getLookup().lookup( PaletteItem.class );
+                    if( item.equals( formItem ) ) {
+                        getPalette().setSelectedItem( categories[i].getLookup(), items[j].getLookup() );
+                    }
+                }
+            }
         }
     }
     

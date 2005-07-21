@@ -184,10 +184,8 @@ public class PalettePanel extends JPanel implements Scrollable {
         Runnable runnable = new Runnable() {
             public void run() {
                 synchronized( lock ) {
-                    setVisible( false );
                     CategoryDescriptor[] paletteCategoryDescriptors = computeDescriptors( null != model ? model.getCategories() : null );
                     setDescriptors (paletteCategoryDescriptors);
-                    setVisible( true );
                 }
             }
         };
@@ -219,7 +217,7 @@ public class PalettePanel extends JPanel implements Scrollable {
     }
     
     private void setSelectedItemFromModel( Category category, Item item ) {
-        if( category != selectedCategory ) {
+        if( null != selectedCategory && !selectedCategory.equals( category ) ) {
             CategoryDescriptor selectedDescriptor = findDescriptorFor( selectedCategory );
             if( selectedDescriptor != null ) {
                 selectedDescriptor.setSelectedItem( null );
@@ -241,11 +239,18 @@ public class PalettePanel extends JPanel implements Scrollable {
         if( null != descriptors ) {
             for( int i= 0; i<descriptors.length; i++ ) {
                 CategoryDescriptor descriptor = descriptors[i];
-                if( descriptor.getCategory () == category )
+                if( descriptor.getCategory().equals( category ) )
                     return descriptor;
             }
         }
         return null;
+    }
+    
+    private void scrollToCategory( Category category ) {
+        CategoryDescriptor descriptor = findDescriptorFor( category );
+        if( null != descriptor ) {
+            scrollPane.scrollRectToVisible( descriptor.getButton().getBounds() );
+        }
     }
 
     /**
@@ -371,6 +376,14 @@ public class PalettePanel extends JPanel implements Scrollable {
             modelListener = new ModelListener() {
                 public void categoriesAdded( Category[] addedCategories ) {
                     PalettePanel.this.refresh();
+//                    if( null != addedCategories && addedCategories.length > 0 ) {
+//                        final Category newCategory = addedCategories[0];
+//                        SwingUtilities.invokeLater( new Runnable() {
+//                            public void run() {
+//                                scrollToCategory( newCategory );
+//                            }
+//                        });
+//                    }
                 }
 
                 public void categoriesRemoved( Category[] removedCategories ) {

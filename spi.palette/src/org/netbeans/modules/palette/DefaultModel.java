@@ -69,13 +69,13 @@ public class DefaultModel implements Model, NodeListener {
         if( null != category ) {
             Node catNode = (Node)category.lookup( Node.class );
             if( null != catNode ) {
-                cat = new DefaultCategory( catNode );
+                cat = findCategory( catNode );
             }
         }
-        if( null != item ) {
+        if( null != item && null != cat ) {
             Node itNode = (Node)item.lookup( Node.class );
             if( null != itNode ) {
-                it = new DefaultItem( itNode );
+                it = findItem( cat, itNode );//new DefaultItem( itNode );
             }
         }
         
@@ -243,5 +243,25 @@ public class DefaultModel implements Model, NodeListener {
 
     public String getName() {
         return rootNode.getName();
+    }
+
+    private Category findCategory( Node node ) {
+        Category[] cats = getCategories();
+        for( int i=0; i<cats.length; i++ ) {
+            Node catNode = (Node)cats[i].getLookup().lookup( Node.class );
+            if( null != catNode && catNode.equals( node ) )
+                return cats[i];
+        }
+        return null;
+    }
+    
+    private Item findItem( Category category, Node node ) {
+        Item[] items = category.getItems();
+        for( int i=0; i<items.length; i++ ) {
+            Node itNode = (Node)items[i].getLookup().lookup( Node.class );
+            if( null != itNode && itNode.equals( node ) )
+                return items[i];
+        }
+        return null;
     }
 }
