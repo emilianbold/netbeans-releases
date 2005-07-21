@@ -246,10 +246,23 @@ public class PalettePanel extends JPanel implements Scrollable {
         return null;
     }
     
-    private void scrollToCategory( Category category ) {
-        CategoryDescriptor descriptor = findDescriptorFor( category );
-        if( null != descriptor ) {
-            scrollPane.scrollRectToVisible( descriptor.getButton().getBounds() );
+    private void scrollToCategory( final Category category ) {
+        Runnable runnable = new Runnable() {
+            public void run() {
+                synchronized( lock ) {
+                    CategoryDescriptor descriptor = findDescriptorFor( category );
+                    if( null != descriptor ) {
+                        scrollPane.validate();
+                        Point loc = descriptor.getComponent().getLocation();
+                        scrollPane.getViewport().setViewPosition( loc );
+                    }
+                }
+            }
+        };
+        if( SwingUtilities.isEventDispatchThread() ) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater( runnable );
         }
     }
 
@@ -376,14 +389,9 @@ public class PalettePanel extends JPanel implements Scrollable {
             modelListener = new ModelListener() {
                 public void categoriesAdded( Category[] addedCategories ) {
                     PalettePanel.this.refresh();
-//                    if( null != addedCategories && addedCategories.length > 0 ) {
-//                        final Category newCategory = addedCategories[0];
-//                        SwingUtilities.invokeLater( new Runnable() {
-//                            public void run() {
-//                                scrollToCategory( newCategory );
-//                            }
-//                        });
-//                    }
+                    if( null != addedCategories && addedCategories.length > 0 ) {
+                        PalettePanel.this.scrollToCategory(addedCategories[0] );
+                    }
                 }
 
                 public void categoriesRemoved( Category[] removedCategories ) {
