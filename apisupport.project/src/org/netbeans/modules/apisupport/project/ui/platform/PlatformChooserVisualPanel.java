@@ -69,6 +69,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
                 } catch (IOException e) {
                     plafLabelValue.setText(plafDir.getAbsolutePath());
                 }
+                plafLabelValue.setCaretPosition(0);
                 setValid(Boolean.TRUE);
             } else {
                 setValid(Boolean.FALSE);
@@ -87,16 +88,19 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         infoPanel = new javax.swing.JPanel();
         inner = new javax.swing.JPanel();
         plafLabel = new javax.swing.JLabel();
-        plafLabelValue = new javax.swing.JLabel();
+        plafLabelValue = new javax.swing.JTextField();
         platformChooser = new javax.swing.JFileChooser();
 
-        infoPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        infoPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 6, 0));
 
         inner.setLayout(new java.awt.GridLayout(2, 1, 0, 6));
 
+        plafLabel.setLabelFor(plafLabelValue);
         org.openide.awt.Mnemonics.setLocalizedText(plafLabel, org.openide.util.NbBundle.getMessage(PlatformChooserVisualPanel.class, "LBL_PlatformName_P"));
         inner.add(plafLabel);
 
+        plafLabelValue.setColumns(15);
+        plafLabelValue.setEditable(false);
         inner.add(plafLabelValue);
 
         infoPanel.add(inner);
@@ -115,7 +119,7 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     private javax.swing.JPanel infoPanel;
     private javax.swing.JPanel inner;
     private javax.swing.JLabel plafLabel;
-    private javax.swing.JLabel plafLabelValue;
+    private javax.swing.JTextField plafLabelValue;
     private javax.swing.JFileChooser platformChooser;
     // End of variables declaration//GEN-END:variables
 }
