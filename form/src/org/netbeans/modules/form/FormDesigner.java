@@ -602,9 +602,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private void updateAlignmentPalette() {
         if (!FormEditor.isNaturalLayoutEnabled()) return;
         if (alignmentPalette == null) {
+            Rectangle hBounds = handleLayer.getBounds();
+            // Handle layer not laid out yet - will be notified later again
+            if (hBounds.width == 0) return;
             alignmentPalette = new AlignmentPalette();
             handleLayer.add(alignmentPalette);
-            Rectangle hBounds = handleLayer.getBounds();
             Dimension size = alignmentPalette.getPreferredSize();
             alignmentPalette.setBounds(hBounds.x + hBounds.width - size.width - 10,
                 hBounds.y + hBounds.height - size.height - 10, size.width, size.height);
@@ -1784,8 +1786,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 setBorder(null);
                 setBounds(AP_BORDER + 15*(horizontal ? 0 : 1), AP_BORDER + AP_TITLE, 15, 15);
                 border = new Area(new Rectangle(0, 0, 15, 15));
+                char code = (horizontal ? 'h' : 'v');
                 setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/form/resources/spring_" // NOI18N
-                    + (horizontal ? "h" : "v") + ".gif"))); // NOI18N
+                    + code + ".gif"))); // NOI18N
+                setToolTipText(NbBundle.getMessage(FormDesigner.class, "CTL_ResizeButton_" + code)); // NOI18N
             }
 
             public AlignmentButton(int alignment) {
@@ -1793,33 +1797,39 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 setOpaque(false);
                 int[] x = null;
                 int[] y = null;
+                char code = ' ';
                 switch (alignment) {
                     case SwingConstants.TOP:
                         setBounds(0, AP_TITLE, AP_WIDTH+1, AP_BORDER+1);
                         x = new int[] {0, AP_WIDTH, AP_WIDTH - AP_BORDER, AP_BORDER};
                         y = new int[] {0, 0, AP_BORDER, AP_BORDER};
                         arrow = new Area(new Polygon(new int[] {6, 0, 3}, new int[] {4, 4, 1}, 3));
+                        code = 'u';
                         break;
                     case SwingConstants.BOTTOM:
                         setBounds(0, AP_TITLE + AP_HEIGHT - AP_BORDER, AP_WIDTH+1, AP_BORDER+1);
                         x = new int[] {0, AP_WIDTH, AP_WIDTH - AP_BORDER, AP_BORDER};
                         y = new int[] {AP_HEIGHT, AP_HEIGHT, AP_HEIGHT - AP_BORDER, AP_HEIGHT - AP_BORDER};
                         arrow = new Area(new Polygon(new int[] {0, 6, 3}, new int[] {2, 2, 5}, 3));
+                        code = 'd';
                         break;
                     case SwingConstants.LEFT:                    
                         setBounds(0, AP_TITLE, AP_BORDER+1, AP_HEIGHT+1);
                         x = new int[] {0, 0, AP_BORDER, AP_BORDER};
                         y = new int[] {0, AP_HEIGHT, AP_HEIGHT - AP_BORDER, AP_BORDER};
                         arrow = new Area(new Polygon(new int[] {4, 4, 1}, new int[] {5, -1, 2}, 3));
+                        code = 'l';
                         break;
                     case SwingConstants.RIGHT:
                         setBounds(AP_WIDTH - AP_BORDER, AP_TITLE, AP_BORDER+1, AP_HEIGHT+1);
                         x = new int[] {AP_WIDTH, AP_WIDTH, AP_WIDTH - AP_BORDER, AP_WIDTH - AP_BORDER};
                         y = new int[] {0, AP_HEIGHT, AP_HEIGHT - AP_BORDER, AP_BORDER};
                         arrow = new Area(new Polygon(new int[] {2, 2, 5}, new int[] {5, -1, 2}, 3));
+                        code = 'r';
                         break;
                     default: assert false;
                 }
+                setToolTipText(NbBundle.getMessage(FormDesigner.class, "CTL_AlignmentButton_" + code)); // NOI18N
                 Shape s1 = new RoundRectangle2D.Double(0, AP_TITLE, AP_WIDTH, AP_HEIGHT, 2*AP_BORDER, 2*AP_BORDER);
                 Shape s2 = new Polygon(x, y, 4);                
                 Area a = new Area(s2);

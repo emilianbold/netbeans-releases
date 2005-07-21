@@ -211,13 +211,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[++i].setDisplayName(bundle.getString("PROP_FORMDESIGNER_BORDER_COLOR")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_FORMDESIGNER_BORDER_COLOR")); // NOI18N
 
-            desc[++i].setDisplayName(bundle.getString("PROP_SHOW_COMPONENT_NAMES")); // NOI18N
-            desc[i].setShortDescription(bundle.getString("HINT_SHOW_COMPONENT_NAMES")); // NOI18N
-            
-            desc[++i].setDisplayName(bundle.getString("PROP_PALETTE_ICON_SIZE")); // NOI18N
-            desc[i].setShortDescription(bundle.getString("HINT_PALETTE_ICON_SIZE")); // NOI18N
-            desc[i].setPropertyEditorClass(PaletteIconSizeEditor.class);
-
             desc[++i].setDisplayName(bundle.getString("PROP_VARIABLES_LOCAL")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_VARIABLES_LOCAL")); // NOI18N
             desc[i].setExpert(true);
@@ -285,20 +278,5 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             });
         }
     }
-    
-    public final static class PaletteIconSizeEditor
-        extends org.netbeans.modules.form.editors.EnumEditor {
 
-        public PaletteIconSizeEditor() {
-            super(new Object[] {
-                FormUtils.getBundleString("CTL_PALETTE_ICON_SIZE_16x16"), // NOI18N
-                new Integer(BeanInfo.ICON_COLOR_16x16),
-                "", // NOI18N
-                FormUtils.getBundleString("CTL_PALETTE_ICON_SIZE_32x32"), // NOI18N
-                new Integer(BeanInfo.ICON_COLOR_32x32),
-                "", // NOI18N                
-            });
-        }
-    }
-    
 }
