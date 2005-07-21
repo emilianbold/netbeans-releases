@@ -16,12 +16,12 @@ package org.netbeans.modules.form.actions;
 import java.util.ArrayList;
 import java.awt.event.*;
 import javax.swing.*;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.palette.PaletteItem;
-import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.*;
 
 /**
@@ -100,7 +100,7 @@ public class SelectLayoutAction extends CallableSystemAction {
     }
 
     private static PaletteItem[] getAllLayouts() {
-        PaletteItem[] allItems = CPManager.getDefault().getAllItems();
+        PaletteItem[] allItems = PaletteUtils.getAllItems();
         ArrayList layoutsList = new ArrayList();
         for (int i = 0; i < allItems.length; i++) {
             if (allItems[i].isLayout()) {

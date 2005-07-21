@@ -118,14 +118,6 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        FormLoaderSettings.class,
                                        "getFormDesignerBorderColor", // NOI18N
                                        "setFormDesignerBorderColor"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_SHOW_COMPONENTS_NAMES,
-                                       FormLoaderSettings.class,
-                                       "getShowComponentsNames", // NOI18N
-                                       "setShowComponentsNames"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_PALETTE_ICON_SIZE,
-                                       FormLoaderSettings.class,
-                                       "getPaletteIconSize", // NOI18N
-                                       "setPaletteIconSize"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_VARIABLES_LOCAL,
                                        FormLoaderSettings.class,
                                        "getVariablesLocal", // NOI18N

@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="Tools">
-            <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/JavaPlatformsCustomizerAction.instance" boolvalue="true"/>
+            <attr name="Separator1.instance/JavaPlatformsCustomizerAction.instance" boolvalue="true"/>
             <attr name="JavaPlatformsCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
             <file name="JavaPlatformsCustomizerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction"/>

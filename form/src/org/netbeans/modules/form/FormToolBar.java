@@ -20,7 +20,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.BeanInfo;
 import java.util.*;
-import java.util.List;
 
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
@@ -201,7 +200,7 @@ class FormToolBar extends JToolBar {
         paletteButton.setSelected(mode == FormDesigner.MODE_ADD);
 
         if (addLabel.isVisible()) {
-            PaletteItem item = CPManager.getDefault().getSelectedItem();
+            PaletteItem item = PaletteUtils.getSelectedItem();
             if (item != null && mode == FormDesigner.MODE_ADD) {
                 addLabel.setIcon(
                     new ImageIcon(item.getNode().getIcon(BeanInfo.ICON_COLOR_16x16)));
@@ -287,13 +286,13 @@ class FormToolBar extends JToolBar {
                 return false;
 
             PaletteItem item = (PaletteItem) nodes[0].getCookie(PaletteItem.class);
-            CPManager.getDefault().setSelectedItem(item);
+            PaletteUtils.selectItem( item );
             return true;
         }
 
         /** Handles closing of PaletteMenuView popup */
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            if (CPManager.getDefault().getSelectedItem() == null)
+            if( PaletteUtils.getSelectedItem() == null )
                 formDesigner.toggleSelectionMode();
         }
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {

@@ -18,7 +18,6 @@ import java.awt.event.*;
 import java.awt.geom.*;
 import java.util.*;
 import java.util.List;
-import java.io.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
@@ -37,10 +36,10 @@ import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.ExplorerManager;
 
-import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.wizard.ConnectionWizard;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.*;
+import org.netbeans.modules.form.palette.PaletteUtils;
 
 /**
  * This is a TopComponent subclass holding the form designer. It consist of two
@@ -135,7 +134,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         FormDataObject formDataObject = formEditor.getFormDataObject();
         associateLookup(new ProxyLookup(new Lookup[] {
             ExplorerUtils.createLookup(explorerManager, map),
-            Lookups.fixed(new Object[] { formDataObject }),
+            Lookups.fixed(new Object[] { formDataObject,  PaletteUtils.getPalette() }),
             // should not affect selected nodes, but should provide cookies etc.
             new NoNodeLookup(formDataObject.getNodeDelegate().getLookup())
         }));
@@ -442,17 +441,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     void toggleSelectionMode() {
         setDesignerMode(MODE_SELECT);
-        CPManager.getDefault().setSelectedItem(null);
+        PaletteUtils.clearPaletteSelection();
     }
 
     void toggleConnectionMode() {
         setDesignerMode(MODE_CONNECT);
-        CPManager.getDefault().setSelectedItem(null);
+        PaletteUtils.clearPaletteSelection();
     }
 
     void toggleAddMode() {
         setDesignerMode(MODE_ADD);
-        CPManager.getDefault().setSelectedItem(null);
+        PaletteUtils.clearPaletteSelection();
     }
 
     // -------

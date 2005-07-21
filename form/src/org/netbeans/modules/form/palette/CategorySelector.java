@@ -32,7 +32,7 @@ class CategorySelector extends JPanel implements ExplorerManager.Provider {
 
     CategorySelector() {
         explorerManager = new ExplorerManager();
-        explorerManager.setRootContext(PaletteNode.getPaletteNode());
+        explorerManager.setRootContext(PaletteUtils.getPaletteNode());
 
         ListView listView = new ListView();
         // Issue 50703 - restore the default scroll pane's border

@@ -30,6 +30,7 @@ import org.openide.explorer.*;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
+import org.openide.nodes.Node.PropertySet;
 
 /**
  * A property editor for swing border class.
@@ -258,7 +259,7 @@ public final class BorderEditor extends PropertyEditorSupport
             ArrayList bordersList = new ArrayList(10);
             Node selectNode = null;
 
-            PaletteItem[] items = CPManager.getDefault().getAllItems();
+            PaletteItem[] items = PaletteUtils.getAllItems();
             for (int i = 0; i < items.length; i++) {
                 PaletteItem paletteItem = items[i];
                 if (!paletteItem.isBorder())

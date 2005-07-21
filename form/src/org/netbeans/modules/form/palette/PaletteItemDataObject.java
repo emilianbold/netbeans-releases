@@ -365,26 +365,6 @@ class PaletteItemDataObject extends MultiDataObject {
             // TODO badged icon for invalid item?
         }
 
-        public Action[] getActions(boolean context) {
-            if (actions == null) {
-                Node categoryNode = PaletteItemDataObject.this.getFolder().getNodeDelegate();
-                actions = new Action[] {
-                    new PaletteUtils.ShowNamesAction(),
-                    new PaletteUtils.ChangeIconSizeAction(),
-                    null,
-                    new PaletteUtils.CutBeanAction(this),
-                    new PaletteUtils.CopyBeanAction(this),
-                    new PaletteUtils.PasteBeanAction(categoryNode),
-                    null,
-                    new PaletteUtils.RemoveBeanAction(this),
-                    null,
-                    new PaletteUtils.ReorderCategoryAction(categoryNode)
-                };
-            }
-            return actions;
-        }
-
-
         // TODO properties
         public Node.PropertySet[] getPropertySets() {
             return NO_PROPERTIES;

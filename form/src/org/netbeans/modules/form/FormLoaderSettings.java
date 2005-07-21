@@ -84,10 +84,6 @@ public class FormLoaderSettings extends SystemOption {
 
     /** Property name of the toolBarPalette property */
     public static final String PROP_PALETTE_IN_TOOLBAR = "toolBarPalette"; // NOI18N
-    /** Property name of the showComponentsNames property */
-    public static final String PROP_SHOW_COMPONENTS_NAMES = "showComponentsNames"; // NOI18N
-    /** Property name of the paletteIconSize property. */
-    public static final String PROP_PALETTE_ICON_SIZE = "paletteIconSize"; // NOI18N
     /** Property name of the foldGeneratedCode property. */
     public static final String PROP_FOLD_GENERATED_CODE = "foldGeneratedCode"; // NOI18N
 
@@ -522,30 +518,6 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_PALETTE_IN_TOOLBAR,
                            oldValue ? Boolean.TRUE : Boolean.FALSE,
                            value ?  Boolean.TRUE : Boolean.FALSE);
-    }
-
-    public boolean getShowComponentsNames() {
-        return showComponentsNames;
-    }
-
-    public void setShowComponentsNames(boolean value) {
-        if (value == showComponentsNames) return;
-        showComponentsNames = value;
-        firePropertyChange(PROP_SHOW_COMPONENTS_NAMES,
-                           !value ? Boolean.TRUE : Boolean.FALSE,
-                           value ? Boolean.TRUE : Boolean.FALSE);
-    }
-    
-    public int getPaletteIconSize() {
-        return paletteIconSize;
-    }
-    
-    public void setPaletteIconSize(int size) {
-        if (size == paletteIconSize) return;
-        int oldSize = paletteIconSize;
-        paletteIconSize = size;
-        firePropertyChange(PROP_PALETTE_ICON_SIZE,
-            new Integer(oldSize), new Integer(size));
     }
 
     /** Getter for the formDesignerBackgroundColor option */

@@ -58,7 +58,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <folder name="Form">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <file name="org-netbeans-modules-form-actions-PaletteAction.instance" />
                 <file name="org-netbeans-modules-form-actions-InspectorAction.instance" />
             </folder>
         </folder>
@@ -70,25 +69,17 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Form">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <file name="PaletteAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-PaletteAction.instance"/>
-                </file>
-                <attr name="PaletteAction.shadow/InspectorAction.shadow" boolvalue="true" />
                 <file name="InspectorAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
                 </file>
             </folder>
             <attr name="Form/Debugger" boolvalue="true" />
         </folder>
-
-        <folder name="Tools">
-            <attr name="Separator1.instance/org-netbeans-modules-form-actions-InstallBeanAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
-            <attr name="org-netbeans-modules-form-actions-InstallBeanAction.instance/Separator2.instance" boolvalue="true" />
-        </folder>
     </folder>
 
-    <folder name="Palette">
+    <folder name="FormDesignerPalette">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
+            
         <folder name="Swing">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
 
@@ -220,7 +211,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Borders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-            <attr name="hidden_category" boolvalue="true" />
+            <attr name="isVisible" boolvalue="false" />
 
             <file name="EmptyBorder.palette_item" url="palette/EmptyBorder.palette_item" />
             <file name="LineBorder.palette_item" url="palette/LineBorder.palette_item" />
@@ -475,22 +466,16 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="navigator">
                 <file name="ComponentInspector.wstcref" url="windowmanager/inspector/ComponentInspector.wstcref" />
             </folder>
-            <file name="palette.wsmode" url="windowmanager/palette.wsmode" />
-            <folder name="palette">
-                <file name="ComponentPalette.wstcref" url="windowmanager/palette/ComponentPalette.wstcref" />
-            </folder>
         </folder>
 
         <folder name="Components">
             <file name="ComponentInspector.settings" url="components/ComponentInspector.settings" />
-            <file name="ComponentPalette.settings" url="components/ComponentPalette.settings" />
         </folder>
 
         <folder name="Groups">
             <file name="form.wsgrp" url="groups/form.wsgrp" />
             <folder name="form">
                 <file name="ComponentInspector.wstcgrp" url="groups/form/ComponentInspector.wstcgrp" />
-                <file name="ComponentPalette.wstcgrp" url="groups/form/ComponentPalette.wstcgrp" />
             </folder>
         </folder>
 

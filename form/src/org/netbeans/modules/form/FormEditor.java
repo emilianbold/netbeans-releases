@@ -18,6 +18,8 @@ import java.beans.*;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.*;
+import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.*;
 import org.openide.awt.UndoRedo;
@@ -27,7 +29,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Mutex;
 import org.openide.windows.*;
 
-import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 
@@ -721,7 +722,7 @@ public class FormEditor {
 
         paletteListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (CPManager.PROP_SELECTEDITEM.equals(evt.getPropertyName())) {
+                if (PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())) {
                     Iterator iter = openForms.keySet().iterator();
                     while (iter.hasNext()) {
                         FormModel formModel = (FormModel)iter.next();
@@ -746,12 +747,12 @@ public class FormEditor {
             }
         };
 
-        CPManager.getDefault().addPropertyChangeListener(paletteListener);
+        PaletteUtils.getPalette().addPropertyChangeListener(paletteListener);
     }
 
     private static void detachPaletteListener() {
         if (paletteListener != null) {
-            CPManager.getDefault().removePropertyChangeListener(paletteListener);
+            PaletteUtils.getPalette().removePropertyChangeListener(paletteListener);
             paletteListener = null;
         }
     }

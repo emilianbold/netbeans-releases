@@ -39,7 +39,7 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
     private static int maxHeight = Utilities.getUsableScreenBounds().height - 25;
 
     public PaletteMenuView(NodeAcceptor acceptor) {
-        this(PaletteNode.getPaletteNode(), acceptor);
+        this(PaletteUtils.getPaletteNode(), acceptor);
     }
 
     public PaletteMenuView(Node node, NodeAcceptor acceptor) {
@@ -94,7 +94,7 @@ public class PaletteMenuView extends org.openide.awt.JMenuPlus {
             }
             else {
                 JMenuItem empty = new JMenuItem(
-                    CPManager.getBundle().getString("CTL_EmptyPaletteMenu")); // NOI18N
+                    PaletteUtils.getBundleString("CTL_EmptyPaletteMenu")); // NOI18N
                 empty.setEnabled(false);
                 add(empty);
             }

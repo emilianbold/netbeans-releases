@@ -22,6 +22,8 @@ import javax.swing.*;
 import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.modules.form.palette.PaletteUtils;
+import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -32,11 +34,11 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.form.palette.CPManager;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
+import org.openide.util.Lookup;
 
 /**
  * A transparent layer (glass pane) handling user operations in designer (mouse
@@ -806,8 +808,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 //                repaint();
         }
 
-        if (done)
+        if( done ) {
             draggingEnded = true;
+        }
 
         return done;
     }
@@ -1327,11 +1330,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     public void mouseEntered(MouseEvent e) {
         if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
             formDesigner.requestActive();
-            StatusDisplayer.getDefault().setStatusText(
-                FormUtils.getFormattedBundleString(
-                    "FMT_MSG_AddingComponent", // NOI18N
-                    new String[] { CPManager.getDefault().getSelectedItem()
-                                               .getNode().getDisplayName() }));
+            PaletteItem item = PaletteUtils.getSelectedItem();
+            if( null != item ) {
+                StatusDisplayer.getDefault().setStatusText(
+                    FormUtils.getFormattedBundleString(
+                        "FMT_MSG_AddingComponent", // NOI18N
+                        new String[] { item.getNode().getDisplayName() }));
+            }
         }
     }
 
@@ -1492,10 +1497,16 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             lastYPosDiff = p.y - lastMousePosition.y;
         }
         if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
+            PaletteItem item = PaletteUtils.getSelectedItem();
+            if( null == item ) {
+                if( null != draggedComponent ) {
+                    endDragging( e );
+                }
+                return;
+            }
             if (draggedComponent == null) {
                 // first move event, pre-create visual component to be added
-                draggedComponent = new NewComponentDrag(
-                      CPManager.getDefault().getSelectedItem());
+                draggedComponent = new NewComponentDrag( item );
             }
             draggedComponent.move(e);
             repaint();
@@ -2463,10 +2474,19 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 method.setAccessible(true);
                 Transferable transferable = (Transferable)method.invoke(context, new Object[0]);
                 Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
-                if (node == null) return;
-                NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                if (newComponentDrop != null) {
-                    PaletteItem item = newComponentDrop.getPaletteItem();
+                if( null != node ) {
+                    NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
+                    if (newComponentDrop != null) {
+                        PaletteItem item = newComponentDrop.getPaletteItem();
+                        if (item != null) {
+                            draggedComponent = new NewComponentDrag(item);
+                            draggedComponent.move(dtde.getLocation(), 0);
+                            repaint();                    
+                        }
+                    }
+                } else if( dtde.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
+                    Lookup itemLookup = (Lookup)transferable.getTransferData( PaletteController.ITEM_DATA_FLAVOR );
+                    PaletteItem item = (PaletteItem)itemLookup.lookup( PaletteItem.class );
                     if (item != null) {
                         draggedComponent = new NewComponentDrag(item);
                         draggedComponent.move(dtde.getLocation(), 0);
@@ -2505,6 +2525,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 draggingEnded = true;
                 NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
                 newComponentDrop.componentAdded(getFormModel(), id);
+                PaletteUtils.clearPaletteSelection();
+            } else if( dtde.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
+                System.out.println( "Item dropped" );
             }
         }
 
