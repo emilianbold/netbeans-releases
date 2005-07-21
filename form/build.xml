@@ -12,18 +12,5 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="form">
-
     <import file="../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <copy todir="${cluster}/modules">
-            <fileset dir="release/modules"/>
-        </copy>
-        <copy todir="${cluster}/sources">
-            <fileset dir="release/sources"/>
-        </copy>
-    </target>
-
 </project>

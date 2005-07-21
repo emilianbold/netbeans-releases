@@ -49,8 +49,24 @@ Microsystems, Inc. All Rights Reserved.
         <property name="jar-excludes" value="**/*.java,**/*.form,**/package.html,**/doc-files/"/>
     </target>
 
-    <target name="files-init" depends="basic-init">
-        <patternset id="module.files" includes="${extra.module.files}">
+    <target name="-release.dir">
+        <property name="release.dir" location="release"/>
+        <condition property="has.release.dir">
+            <available file="${release.dir}"/>
+        </condition>
+    </target>
+    <target name="-release.files" depends="-release.dir" if="has.release.dir">
+        <pathconvert pathsep="," property="release.files">
+            <path>
+                <fileset dir="${release.dir}"/>
+            </path>
+            <map from="${release.dir}${file.separator}" to=""/>
+        </pathconvert>
+    </target>
+    <target name="files-init" depends="basic-init,-release.files">
+        <property name="release.files" value=""/>
+        <property name="extra.module.files" value=""/>
+        <patternset id="module.files" includes="${release.files},${extra.module.files}">
             <include name="${module.jar}"/>
             <include name="${javahelp.jar}" if="has.javahelp"/>
             <include name="config/Modules/${code.name.base.dashes}.xml"/>
@@ -126,7 +142,7 @@ Microsystems, Inc. All Rights Reserved.
         </jarwithmoduleattributes>
     </target>
     
-    <!-- Can insert extra stuff in here, like release, etc.: -->
+    <!-- Can insert extra stuff in here: -->
     <target name="netbeans-extra"/>
 
     <target name="module-xml-regular" if="is.regular">
@@ -161,7 +177,16 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${module.auto.deps.xml}" tofile="${cluster}/config/ModuleAutoDeps/${code.name.base.dashes}.xml"/>
     </target>
 
-    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps">
+    <target name="release" depends="files-init" if="has.release.dir">
+        <mkdir dir="${cluster}"/>
+        <copy todir="${cluster}">
+            <fileset dir="${release.dir}">
+                <patternset includes="${release.files}"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="netbeans" depends="init,jar,netbeans-extra,module-xml-regular,module-xml-autoload,module-xml-eager,javahelp,module-auto-deps,release">
         <genlist outputfiledir="${cluster}" module="${module.jar}">
             <fileset dir="${cluster}">
                 <patternset refid="module.files"/>

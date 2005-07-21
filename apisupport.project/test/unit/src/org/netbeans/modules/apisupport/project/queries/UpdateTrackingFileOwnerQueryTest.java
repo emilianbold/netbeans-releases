@@ -43,6 +43,8 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
         assertOwnership("ant", "nbbuild/netbeans/ide5/update_tracking/org-apache-tools-ant-module.xml");
         // Different pattern match ("modules/ext/jh*.jar"):
         assertOwnership("core/javahelp", "nbbuild/netbeans/platform5/modules/ext/jh-2.0_02.jar");
+        // Use of release dir:
+        assertOwnership("extbrowser", "nbbuild/netbeans/ide5/modules/lib/extbrowser.dll");
     }
     
     public void testOwnershipExternal() throws Exception {

@@ -263,6 +263,7 @@ public final class ModuleList {
      * config/ModuleAutoDeps/*.xml, ant/nblib/*.jar, modules/docs/*.jar (cf. common.xml#files-init).
      * Additionally, ${extra.module.files} if defined is parsed. Literal entries (no wildcards) are
      * always included; entries with Ant-style wildcards are included if matches can be found on disk.
+     * And anything in the release/ directory is added.
      */
     private static Set/*<File>*/ findSourceNBMFiles(ModuleEntry entry, PropertyEvaluator eval) throws IOException {
         Set/*<File>*/ files = new HashSet();
@@ -306,6 +307,16 @@ public final class ModuleList {
                         }
                     }
                 }
+            }
+        }
+        File src = entry.getSourceLocation();
+        assert src != null && src.isDirectory() : entry;
+        // XXX handle overrides of release.dir
+        File releaseDir = new File(src, "release"); // NOI18N
+        if (releaseDir.isDirectory()) {
+            String[] releaseFiles = scanDirForFiles(releaseDir);
+            for (int i = 0; i < releaseFiles.length; i++) {
+                findSourceNBMFilesMaybeAdd(files, cluster, releaseFiles[i]);
             }
         }
         return files;
