@@ -60,7 +60,6 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
 
     /** Ignore own changes. */
     private boolean ignoreChange = false;
-    private static final boolean NO_POPUP_PLACEMENT_HACK = Boolean.getBoolean("netbeans.popup.no_hack"); // NOI18N
 
     private static ActivationManager activationManager = null;
 
@@ -374,23 +373,6 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     /** Shows given popup on given coordinations and takes care about the
      * situation when menu can exceed screen limits */
     private static void showPopupMenu (JPopupMenu popup, Point p, Component comp) {
-        if (NO_POPUP_PLACEMENT_HACK) {
-            popup.show(comp, p.x, p.y);
-            return;
-        }
-
-        SwingUtilities.convertPointToScreen (p, comp);
-        Dimension popupSize = popup.getPreferredSize ();
-        Rectangle screenBounds = Utilities.getUsableScreenBounds(comp.getGraphicsConfiguration());
-
-        if (p.x + popupSize.width > screenBounds.x + screenBounds.width) {
-            p.x = screenBounds.x + screenBounds.width - popupSize.width;
-        }
-        if (p.y + popupSize.height > screenBounds.y + screenBounds.height) {
-            p.y = screenBounds.y + screenBounds.height - popupSize.height;
-        }
-
-        SwingUtilities.convertPointFromScreen (p, comp);
         popup.show(comp, p.x, p.y);
     }
 
