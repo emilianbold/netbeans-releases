@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
+import org.openide.awt.Actions;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuListener;
@@ -61,9 +62,9 @@ public class BranchesMenu extends AbstractAction implements Presenter.Menu, Pres
 
     private void fillMenu(JPopupMenu menu) {
         menu.removeAll();
-        menu.add(new JMenuItem(SystemAction.get(BranchAction.class)));
-        menu.add(new JMenuItem(SystemAction.get(SwitchBranchAction.class)));
-        menu.add(new JMenuItem(SystemAction.get(MergeBranchAction.class)));
+        menu.add(new Actions.MenuItem(SystemAction.get(BranchAction.class), true));
+        menu.add(new Actions.MenuItem(SystemAction.get(SwitchBranchAction.class), true));
+        menu.add(new Actions.MenuItem(SystemAction.get(MergeBranchAction.class), true));
     }
 
     public void popupMenuCanceled(PopupMenuEvent e) {

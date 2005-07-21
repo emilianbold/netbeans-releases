@@ -20,19 +20,23 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.Actions;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.api.project.Project;
 
+import javax.swing.*;
 import java.text.MessageFormat;
 import java.io.File;
 import java.util.MissingResourceException;
 
 /**
+ * Base for all context-sensitive CVS actions.
  * 
  * @author Maros Sandor
  */
-public abstract class AbstractSystemAction extends SystemAction {
+public abstract class AbstractSystemAction extends SystemAction implements DynamicMenuContent {
 
     /**
      * @return bundle key base name
@@ -43,6 +47,14 @@ public abstract class AbstractSystemAction extends SystemAction {
     protected AbstractSystemAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+
+    public JComponent[] getMenuPresenters() {
+        return new JComponent[] { new Actions.MenuItem(this, true) };
+    }
+
+    public JComponent[] synchMenuPresenters(JComponent[] items) {
+        return new JComponent[] { new Actions.MenuItem(this, true) };
     }
 
     /**
