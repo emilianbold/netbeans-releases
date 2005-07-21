@@ -235,17 +235,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     }
     
     private void attachDocumentListeners() {
-        DocumentListener fieldsDL = new DocumentListener() {
+        DocumentListener fieldsDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkForm(); }
-            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-            public void changedUpdate(DocumentEvent e) {}
         };
         nameValue.getDocument().addDocumentListener(fieldsDL);
         locationValue.getDocument().addDocumentListener(fieldsDL);
-        locationValue.getDocument().addDocumentListener(new DocumentListener() {
+        locationValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { wasLocationUpdate = true; }
-            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-            public void changedUpdate(DocumentEvent e) {}
         });
     }
     

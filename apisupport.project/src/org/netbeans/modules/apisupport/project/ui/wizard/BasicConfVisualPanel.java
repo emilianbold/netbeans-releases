@@ -17,6 +17,7 @@ import java.util.StringTokenizer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.WizardDescriptor;
 
 /**
@@ -52,20 +53,14 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         initComponents();
         this.data = (NewModuleProjectData) getSetting().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
-        cnbDL = new DocumentListener() {
+        cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }
-            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-            public void changedUpdate(DocumentEvent e) {}
         };
-        layerDL = new DocumentListener() {
+        layerDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
-            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-            public void changedUpdate(DocumentEvent e) {}
         };
-        bundleDL = new DocumentListener() {
+        bundleDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { wasBundleUpdated = true; checkBundle(); }
-            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-            public void changedUpdate(DocumentEvent e) {}
         };
     }
     

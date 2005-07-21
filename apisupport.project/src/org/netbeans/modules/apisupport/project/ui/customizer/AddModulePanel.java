@@ -28,7 +28,6 @@ import javax.swing.InputMap;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
@@ -36,6 +35,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.ErrorManager;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -64,14 +64,10 @@ final class AddModulePanel extends JPanel {
                 showDescription();
             }
         });
-        filterValue.getDocument().addDocumentListener(new DocumentListener() {
+        filterValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 search();
             }
-            public void removeUpdate(DocumentEvent e) {
-                search();
-            }
-            public void changedUpdate(DocumentEvent e) {}
         });
         // Make basic navigation commands from the list work from the text field.
         String[] listNavCommands = {

@@ -24,7 +24,6 @@ import javax.swing.JCheckBox;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
@@ -64,12 +63,10 @@ final class CustomizerVersioning extends NbPropertyPanel {
         regularMod.setSelected(true);
         autoloadMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD));
         eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));
-        implVerValue.getDocument().addDocumentListener(new DocumentListener() {
+        implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
             }
-            public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
-            public void changedUpdate(DocumentEvent e) {}
         });
         friendsList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
@@ -428,8 +425,8 @@ final class CustomizerVersioning extends NbPropertyPanel {
     
     private void addFriend(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFriend
         NotifyDescriptor.InputLine desc =  new NotifyDescriptor.InputLine(
-                getMessaage("LBL_FriendToBeAdded"), // NOI18N
-                getMessaage("CTL_AddNewFriend_Title"));  // NOI18N
+                getMessage("LBL_FriendToBeAdded"), // NOI18N
+                getMessage("CTL_AddNewFriend_Title"));  // NOI18N
         DialogDisplayer.getDefault().notify(desc);
         if (desc.getValue() == DialogDescriptor.OK_OPTION) {
             String pkgToAdd = desc.getInputText().trim();
@@ -441,7 +438,7 @@ final class CustomizerVersioning extends NbPropertyPanel {
         friendsList.requestFocus();
     }//GEN-LAST:event_addFriend
     
-    private String getMessaage(String key) {
+    private String getMessage(String key) {
         return NbBundle.getMessage(CustomizerVersioning.class, key);
     }
     

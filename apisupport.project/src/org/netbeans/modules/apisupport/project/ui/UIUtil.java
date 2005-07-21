@@ -14,6 +14,8 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.io.File;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -36,7 +38,7 @@ public final class UIUtil {
         }
         ProjectChooser.setProjectsFolder(folder);
     }
-
+    
     /**
      * Calls {@link #setProjectChooserDir} with the <code>fileOrFolder</code>'s
      * parent if it isn't <code>null</code>. Otherwise fallbacks to
@@ -47,10 +49,10 @@ public final class UIUtil {
             return;
         }
         File parent = fileOrFolder.getParentFile();
-        setProjectChooserDir(parent != null ? parent : 
+        setProjectChooserDir(parent != null ? parent :
             (fileOrFolder.isDirectory() ? fileOrFolder : null));
     }
-
+    
     /**
      * Set the <code>text</code> for the <code>textComp</code> and set its
      * carret position to the end of the text.
@@ -58,6 +60,19 @@ public final class UIUtil {
     public static void setText(JTextComponent textComp, String text) {
         textComp.setText(text);
         textComp.setCaretPosition(text == null ? 0 : text.length());
+    }
+
+    /** 
+     * Convenient class for listening to document changes. Use it if you don't
+     * care what exact change really happened. {@link #removeUpdate} and {@link
+     * #changedUpdate} just delegates to {@link #insertUpdate}. So everything
+     * what is need to be notified about document changes is to override {@link
+     * #insertUpdate} method.
+     */
+    public static class DocumentAdapter implements DocumentListener {
+        public void insertUpdate(DocumentEvent e) {}
+        public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
+        public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
     }
 }
 
