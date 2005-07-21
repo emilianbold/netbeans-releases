@@ -96,7 +96,7 @@ public class NbModuleProjectGenerator {
         if (ProjectManager.getDefault().findProject(dirFO) != null) {
             throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
         }
-        createBuildXML(dirFO, cnb, nborg);
+        createNetBeansOrgBuildXML(dirFO, cnb, nborg);
         createProjectXML(dirFO, cnb, NbModuleTypeProvider.NETBEANS_ORG);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
@@ -122,7 +122,7 @@ public class NbModuleProjectGenerator {
      * Creates basic <em>build.xml</em> or whatever
      * <code>GeneratedFilesHelper.BUILD_XML_PATH</code> is pointing to.
      */
-    private static void createBuildXML(FileObject projectDir, String cnb,
+    private static void createNetBeansOrgBuildXML(FileObject projectDir, String cnb,
             File nborg) throws IOException {
         FileObject buildScript = NbModuleProjectGenerator.createFileObject(
                 projectDir, GeneratedFilesHelper.BUILD_XML_PATH);
