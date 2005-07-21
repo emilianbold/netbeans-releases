@@ -15,9 +15,12 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicVisualPanel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * Second panel from <em>Adding New Platform</em> wizard panels. Allows user to
@@ -32,6 +35,11 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
         super(setting);
         initComponents();
         setName(NbPlatformCustomizer.INFO_STEP);
+        plafNameValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                checkForm();
+            }
+        });
     }
     
     void refreshData() {
@@ -41,7 +49,16 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
         } catch (IOException e) {
             plafNameValue.setText(destDir);
         }
-        setValid(Boolean.TRUE); // always valid
+        checkForm();
+    }
+    
+    private void checkForm() {
+        if (plafNameValue.getText().trim().equals("")) {
+            setErrorMessage(NbBundle.getMessage(PlatformInfoVisualPanel.class,
+                    "MSG_BlankPlatformName")); // NOI18N
+        } else {
+            setErrorMessage(null);
+        }
     }
     
     void storeData() {
