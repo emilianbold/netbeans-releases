@@ -25,6 +25,7 @@ package org.netbeans.modules.jmx.test.jconsole;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.File;
 import javax.swing.JButton;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -47,7 +48,14 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  */
 public class J2SEProject extends JellyTestCase {
     private static String PROJECT_NAME="SampleProjectToTestJ2SEProjectIntegration";
-            
+    private static String ORIGINAL_TMP_FILE;
+    
+    static {
+        //We need it to help tools.jar API to findout the local connector
+        //This is an horrible hack! But no way to make it work without /var/tmp/ tmp file
+        ORIGINAL_TMP_FILE = System.getProperty("java.io.tmpdir.default") + File.separator;
+    }
+    
     /** Creates a new instance of BundleKeys */
     public J2SEProject(String name) {
         super(name);
@@ -90,11 +98,17 @@ public class J2SEProject extends JellyTestCase {
     }
     
     public void runWithJConsole() {
+        String current = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", ORIGINAL_TMP_FILE);
         doItLocal("Run Main Project With Local Management", "run-management");
+        System.setProperty("java.io.tmpdir", current);
     }
     
     public void debugWithJConsole() {
+        String current = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", ORIGINAL_TMP_FILE);
         doItLocal("Debug Main Project With Local Management", "debug-management");
+        System.setProperty("java.io.tmpdir", current);
     }
     
     public void runWithRemoteManagement() {
@@ -171,12 +185,15 @@ public class J2SEProject extends JellyTestCase {
        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
       // push "Open" toolbar button in "System" toolbar
       mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), action).push();
+      
     }
     
     private void trackAndKillJConsole(String target) {
       //Access output and synchronize on it
       OutputTabOperator oto = new OutputTabOperator(target);
+      System.out.println("*********************** WAITING FOR TEXT Found manageable process ... ************");
       oto.waitText("Found manageable process, connecting JConsole to process...");
+      System.out.println("*********************** TEXT FOUND ************");
       OutputTabOperator oto2 = new OutputTabOperator("-connect-jconsole");
       oto2.waitText("jconsole  -interval=4");
       //Now we can kill
@@ -189,6 +206,10 @@ public class J2SEProject extends JellyTestCase {
       for(int i = 0; i < child.length; i++) {
         System.out.println(child[i]);
       }
+      //Little tempo to kill once stabilized state
+      try {
+          Thread.sleep(2000);
+      }catch(Exception e) {}
       node.callPopup().pushMenu("Terminate Process");
     }
 }
