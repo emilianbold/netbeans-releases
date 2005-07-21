@@ -808,7 +808,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 //                repaint();
         }
 
-        if( done ) {
+        if (done) {
             draggingEnded = true;
         }
 
@@ -2425,6 +2425,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
                 getComponentCreator().releasePrecreatedComponent();
             }
+            formDesigner.toggleSelectionMode();
             return true;
         }
 
@@ -2517,17 +2518,17 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         
         public void drop(java.awt.dnd.DropTargetDropEvent dtde) {
             if (draggedComponent != null) {
-                Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
                 NewComponentDrag newComponentDrag = ((NewComponentDrag)draggedComponent);
                 newComponentDrag.end(dtde.getLocation(), 0);
                 String id = newComponentDrag.addedComponent.getId();
                 draggedComponent = null;
                 draggingEnded = true;
-                NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                newComponentDrop.componentAdded(getFormModel(), id);
-                PaletteUtils.clearPaletteSelection();
-            } else if( dtde.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
-                System.out.println( "Item dropped" );
+                Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
+                if (node != null) {
+                    NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
+                    newComponentDrop.componentAdded(getFormModel(), id);
+                }
+                formDesigner.toggleSelectionMode();
             }
         }
 
