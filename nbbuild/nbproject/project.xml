@@ -172,6 +172,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/javahelp</project>
                 <project>../core/multiview</project>
                 <project>../core/output2</project>
+                <project>../core/palette</project>
                 <project>../core/progress</project>
                 <project>../core/settings</project>
                 <project>../core/startup</project>
@@ -192,6 +193,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor</project>
                 <project>../editor/bookmarks</project>
                 <project>../editor/completion</project>
+                <project>../editor/errorstripe</project>
+                <project>../editor/errorstripe/api</project>
                 <project>../editor/fold</project>
                 <project>../editor/lib</project>
                 <project>../editor/mimelookup</project>
@@ -316,6 +319,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/project</project>
                 <project>../web/servletapi24</project>
                 <project>../web/webapi</project>
+                <project>../websvc/clientapi</project>
                 <project>../websvc/core</project>
                 <project>../websvc/dev</project>
                 <project>../websvc/registry</project>
