@@ -181,19 +181,32 @@ public class Utils {
             File rootFile = FileUtil.toFile(srcRootFo);
             FileInformation fi = cache.getStatus(rootFile);
             if ((fi.getStatus() & includingFolderStatus) == 0) return false;
+            File srcRootFile = FileUtil.toFile(srcRootFo);
             try {
-                getCVSRootFor(FileUtil.toFile(srcRootFo));
+                getCVSRootFor(srcRootFile);
             } catch (IOException e) {
                 // the folder is not under a versioned root
                 continue;
             }
+            boolean containsSubprojects = false;
             FileObject [] rootChildren = srcRootFo.getChildren();
+            Set projectFiles = new HashSet(rootChildren.length);
             for (int i = 0; i < rootChildren.length; i++) {
                 FileObject rootChildFo = rootChildren[i];
                 if (CvsVersioningSystem.FILENAME_CVS.equals(rootChildFo.getNameExt())) continue;
                 if (sourceGroup.contains(rootChildFo)) {
-                    files.add(FileUtil.toFile(rootChildFo));
+                    projectFiles.add(FileUtil.toFile(rootChildFo));
+                } else {
+                    int status = cache.getStatus(FileUtil.toFile(rootChildFo)).getStatus(); 
+                    if (status != FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                        containsSubprojects = true;
+                    }
                 }
+            }
+            if (containsSubprojects) {
+                files.addAll(projectFiles);
+            } else {
+                files.add(srcRootFile);
             }
         }
         return true;
