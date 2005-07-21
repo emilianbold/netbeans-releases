@@ -153,7 +153,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   
   <target name="all-java/storagebuilder" depends="init">
     <antcall target="build-one-cluster-dependencies" inheritall="false">
-      <param name="one.cluster.dependencies" value="nb.cluster.platform,nb.cluster.ide.extra,nb.cluster.ide"/>
+      <param name="one.cluster.dependencies" value="nb.cluster.platform,nb.cluster.ide"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <echo message="Building java/storagebuilder library..."/>
