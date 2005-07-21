@@ -265,8 +265,8 @@ Microsystems, Inc. All Rights Reserved.
                   <attr name="hidden"
                   boolvalue="true"/>
             </file>
-            <attr name="LaunchAction.shadow/Remote Management" boolvalue="true"/>
-            <folder name="Remote Management">
+            <attr name="LaunchAction.shadow/RemoteManagement" boolvalue="true"/>
+            <folder name="RemoteManagement">
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/Folder.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.runtime.Bundle" />
                 <file name="EnableRemoteManagementAction.shadow">
