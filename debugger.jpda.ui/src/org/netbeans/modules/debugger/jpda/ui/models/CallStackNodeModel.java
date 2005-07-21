@@ -73,6 +73,10 @@ public class CallStackNodeModel implements NodeModel {
                     null
                 );
             return getCSFName (session, sf, false);
+        } else if ("No current thread" == o) {
+            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
+        } else if ("Thread is running" == o) {
+            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning");
         } else
         throw new UnknownTypeException (o);
     }
@@ -85,6 +89,10 @@ public class CallStackNodeModel implements NodeModel {
         if (o instanceof CallStackFrame) {
             CallStackFrame sf = (CallStackFrame) o;
             return getCSFName (session, sf, true);
+        } else if ("No current thread" == o) {
+            return NbBundle.getMessage(CallStackNodeModel.class, "NoCurrentThread");
+        } else if ("Thread is running" == o) {
+            return NbBundle.getMessage(CallStackNodeModel.class, "ThreadIsRunning");
         } else
         throw new UnknownTypeException (o);
     }
