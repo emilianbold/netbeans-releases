@@ -196,6 +196,22 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                   <code-name-base>org.netbeans.modules.java.editor</code-name-base>
+                   <build-prerequisite/>
+                   <compile-dependency/>
+                   <run-dependency>
+                       <release-version>1</release-version>
+                   </run-dependency>
+               </dependency>            
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
 		<package>org.netbeans.modules.j2ee.common</package>
