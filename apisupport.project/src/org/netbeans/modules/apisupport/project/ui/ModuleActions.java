@@ -107,9 +107,7 @@ public final class ModuleActions implements ActionProvider {
         if (testactions) {
             actions.add(null);
         }
-        if (project.supportsJavadoc()) {
-            actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, "Generate Javadoc", null));
-        }
+        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, "Generate Javadoc", null));
         // Prefer to always show it, for discoverability: if (project.evaluator().getProperty("javadoc.arch") != null)
         actions.add(createGlobalAction(project, new String[] {"arch-nb"}, "Generate Architecture Description"));
         actions.add(null);
@@ -117,12 +115,7 @@ public final class ModuleActions implements ActionProvider {
             actions.add(createCheckBundleAction(project, "Check for Unused Bundle Keys"));
             actions.add(null);
         }
-        if (isNetBeansOrg) {
-            // Currently no generic binding.
-            actions.add(createGlobalAction(project, new String[] {"reload"}, "Install/Reload in Target Platform"));
-        } else {
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Install/Reload in Target Platform", null));
-        }
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Install/Reload in Target Platform", null));
         actions.add(createGlobalAction(project, new String[] {"nbm"}, "Create NBM"));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
@@ -186,14 +179,8 @@ public final class ModuleActions implements ActionProvider {
         globalCommands.put(ActionProvider.COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_REBUILD, new String[] {"clean", "netbeans"}); // NOI18N
         globalCommands.put(ActionProvider.COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-        if (isNetBeansOrg) {
-            // Too dangerous in this case?
-        } else {
-            globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"reload"}); // NOI18N
-        }
-        if (project.supportsJavadoc()) {
-            globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
-        }
+        globalCommands.put(ActionProvider.COMMAND_RUN, new String[] {"reload"}); // NOI18N
+        globalCommands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc-nb"}); // NOI18N
         if (project.supportsUnitTests()) {
             globalCommands.put(ActionProvider.COMMAND_TEST, new String[] {"test"}); // NOI18N
         }
@@ -263,6 +250,9 @@ public final class ModuleActions implements ActionProvider {
             return files != null && files.length == 1 && findBuildXml(project) != null;
         } else {
             // other actions are global
+            if (command.equals(JavaProjectConstants.COMMAND_JAVADOC) && !project.supportsJavadoc()) {
+                return false;
+            }
             return findBuildXml(project) != null;
         }
     }
