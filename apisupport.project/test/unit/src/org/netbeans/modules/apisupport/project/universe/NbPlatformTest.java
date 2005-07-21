@@ -191,4 +191,11 @@ public class NbPlatformTest extends TestBase {
         assertEquals("custom label", "Some Label 1", NbPlatform.getPlatformByID("custom1").getLabel());
     }
     
+    public void testIsLabelValid() throws Exception {
+        NbPlatform def = NbPlatform.getPlatformByID("default");
+        assertFalse("already used label", NbPlatform.isLabelValid(def.getLabel()));
+        assertFalse("null label", NbPlatform.isLabelValid(null));
+        assertTrue("valid label", NbPlatform.isLabelValid("whatever"));
+    }
+    
 }

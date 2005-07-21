@@ -572,6 +572,24 @@ public final class NbPlatform implements Comparable {
             jf.close();
         }
     }
+
+    /**
+     * Returns whether the given label (see {@link #getLabel}) is valid.
+     * <em>Valid</em> label must be non-null and must not be used by any
+     * already defined platform.
+     */
+    public static boolean isLabelValid(String supposedLabel) {
+        if (supposedLabel == null) {
+            return false;
+        }
+        for (Iterator it = NbPlatform.getPlatforms().iterator(); it.hasNext(); ) {
+            String label = ((NbPlatform) it.next()).getLabel();
+            if (supposedLabel.equals(label)) {
+                return false;
+            }
+        }
+        return true;
+    }
     
     public int compareTo(Object o) {
         return Collator.getInstance().compare(
