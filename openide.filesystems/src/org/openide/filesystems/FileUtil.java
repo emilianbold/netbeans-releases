@@ -77,40 +77,6 @@ public final class FileUtil extends Object {
     /* mapping of file extensions to content-types */
     private static java.util.Dictionary map = new java.util.Hashtable();
 
-    static {
-        setMIMEType("uu", "application/octet-stream"); // NOI18N
-        setMIMEType("exe", "application/octet-stream"); // NOI18N
-        setMIMEType("ps", "application/postscript"); // NOI18N
-        setMIMEType("zip", "application/zip"); // NOI18N
-        setMIMEType("class", "application/octet-stream"); // Sun uses application/java-vm // NOI18N
-        setMIMEType("jar", "application/x-jar"); // NOI18N
-        setMIMEType("sh", "application/x-shar"); // NOI18N
-        setMIMEType("tar", "application/x-tar"); // NOI18N
-        setMIMEType("snd", "audio/basic"); // NOI18N
-        setMIMEType("au", "audio/basic"); // NOI18N
-        setMIMEType("wav", "audio/x-wav"); // NOI18N
-        setMIMEType("htm", "text/html"); // NOI18N
-        setMIMEType("html", "text/html"); // NOI18N
-        setMIMEType("xml", "text/xml"); // NOI18N
-        setMIMEType("xsl", "text/xml"); // NOI18N
-        setMIMEType("xsd", "text/xml"); // NOI18N
-        setMIMEType("dtd", "text/x-dtd"); // NOI18N
-        setMIMEType("css", "text/css"); // NOI18N
-        setMIMEType("text", "text/plain"); // NOI18N
-        setMIMEType("pl", "text/plain"); // NOI18N
-        setMIMEType("txt", "text/plain"); // NOI18N
-        setMIMEType("properties", "text/plain"); // NOI18N
-        setMIMEType("java", "text/x-java"); // NOI18N
-
-        // mime types from Jetty web server
-        setMIMEType("ra", "audio/x-pn-realaudio"); // NOI18N
-        setMIMEType("ram", "audio/x-pn-realaudio"); // NOI18N
-        setMIMEType("rm", "audio/x-pn-realaudio"); // NOI18N
-        setMIMEType("rpm", "audio/x-pn-realaudio"); // NOI18N
-        setMIMEType("mov", "video/quicktime"); // NOI18N
-        setMIMEType("jsp", "text/plain"); // NOI18N
-    }
-
     /** Cache for {@link #isArchiveFile(FileObject)}. */
     private static final Map /*<FileObject,boolean>*/ archiveFileCache = new WeakHashMap();
 
@@ -855,7 +821,7 @@ public final class FileUtil extends Object {
     * @param ext the extension: <code>"jar"</code>, <code>"zip"</code>, etc.
     * @return the MIME type for the extension, or <code>null</code> if the extension is unrecognized
     * @deprecated in favour of {@link #getMIMEType(FileObject) getMIMEType(FileObject)} as MIME cannot
-    * be generaly detected by a file object extension.
+    * be generally detected by file object extension.
     */
     public static String getMIMEType(String ext) {
         String s = (String) map.get(ext);
