@@ -736,4 +736,15 @@ right now the IDs don't seem towork:-->
 <mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xml_editor-props.html" />
 <mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xml_editor-props.html" />
 
+<!-- API Support Project section -->
+<mapID target="org.netbeans.modules.apisupport.project.ui.SuiteCustomizer" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformInfoWizardPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="pending.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="pending.html" />
+
 </map>
