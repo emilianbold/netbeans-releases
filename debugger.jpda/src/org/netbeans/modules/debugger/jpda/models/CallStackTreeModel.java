@@ -79,14 +79,9 @@ public class CallStackTreeModel implements TreeModel {
             // 3) encapsulate them to CallStackFrameImpls
             int i, k = ch.length, j = from;
             CallStackFrameImpl[] r = new CallStackFrameImpl [k];
-            String threadName = threadRef.name ();
-            for (i = 0; i < k; i++) {
-                String id = "" + ch [i];
-                try {
-                    id = threadName + ":" + j;
-                } catch (InvalidStackFrameException e) {
-                    // sf was obsoleted -> use default id
-                }
+            String threadName = threadRef.name () + ":";
+            for (i = 0; i < k; i++, j++) {
+                String id = threadName + j;
                 // StackFrame of the same thread with the same index should 
                 // be "equal"
                 r [i] = new CallStackFrameImpl (
@@ -96,7 +91,6 @@ public class CallStackTreeModel implements TreeModel {
                     id,
                     j
                 );
-                j++;
             }
             return r;
         } else
