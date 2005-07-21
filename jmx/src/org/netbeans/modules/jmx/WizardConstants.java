@@ -55,10 +55,10 @@ public class WizardConstants
             "wizdata.managerMainClassSelected"; // NOI18N
     public static final String PROP_MANAGER_SAMPLE_CODE_SELECTED  = 
             "wizdata.managerSampleCodeSelected"; // NOI18N
-    public static final String PROP_MANAGER_RMI_URL_SELECTED  = 
-            "wizdata.managerRmiUrlSelected"; // NOI18N
-    public static final String PROP_MANAGER_FREEFORM_URL_SELECTED  = 
-            "wizdata.managerFreeFormUrlSelected"; // NOI18N
+    //public static final String PROP_MANAGER_RMI_URL_SELECTED  = 
+    //        "wizdata.managerRmiUrlSelected"; // NOI18N
+    //public static final String PROP_MANAGER_FREEFORM_URL_SELECTED  = 
+    //        "wizdata.managerFreeFormUrlSelected"; // NOI18N
     public static final String PROP_MANAGER_SECURITY_SELECTED  = 
             "wizdata.managerSecuritySelected"; // NOI18N
     public static final String PROP_MANAGER_CREDENTIAL_SAMPLE_SELECTED  = 
@@ -66,15 +66,15 @@ public class WizardConstants
     public static final String PROP_MANAGER_USER_CREDENTIAL_SELECTED  = 
             "wizdata.userCredentialSelected"; // NOI18N
     
-    public static final String PROP_MANAGER_HOST = 
-            "wizdata.managerHost"; // NOI18N
-    public static final String PROP_MANAGER_PORT = 
-            "wizdata.managerPort"; // NOI18N
+    //public static final String PROP_MANAGER_HOST = 
+    //        "wizdata.managerHost"; // NOI18N
+    //public static final String PROP_MANAGER_PORT = 
+    //        "wizdata.managerPort"; // NOI18N
     public static final String PROP_MANAGER_USER_NAME = 
             "wizdata.managerUserName"; // NOI18N
     public static final String PROP_MANAGER_USER_PASSWORD = 
             "wizdata.managerUserPassword"; // NOI18N
-    public static final String PROP_MANAGER_FREEFORM_URL = 
+    public static final String PROP_MANAGER_AGENT_URL = 
         "wizdata.managerUrl"; // NOI18N
     public static final Integer MANAGER_MAX_PORT_NUMBER = 65535;
     

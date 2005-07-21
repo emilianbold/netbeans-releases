@@ -173,34 +173,11 @@ public class ManagerGenerator
     
     private void fillURL(WizardDescriptor wiz) {
         
-        Boolean isRmiUrl = (Boolean)wiz.getProperty(
-                            WizardConstants.PROP_MANAGER_RMI_URL_SELECTED);
-        Boolean isCustomUrl = (Boolean)wiz.getProperty(
-                    WizardConstants.PROP_MANAGER_FREEFORM_URL_SELECTED);
-        
-        if (isRmiUrl) {
-            //a rmi url is to generate
-            //connectionTemplate[1] = "//Create JMX Agent URL \n" +
-            //        "JMXServiceURL url = new JMXServiceURL(\"rmi\"," + "\"" +
-            //        (String)wiz.getProperty(WizardConstants.PROP_MANAGER_HOST) +
-            //        "\"" + "," +
-            //       (String)wiz.getProperty(WizardConstants.PROP_MANAGER_PORT) +
-            //        ",\"/jndi/rmi://jmxrmi\");"; // NOI18N
-            connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
-                    "JMXServiceURL url = new JMXServiceURL(\"service:jmx:rmi:///jndi/rmi://" +// NOI18N
-                    (String)wiz.getProperty(WizardConstants.PROP_MANAGER_HOST)+":"+// NOI18N
-                    (String)wiz.getProperty(WizardConstants.PROP_MANAGER_PORT)+"/jmxrmi" +// NOI18N
-                    "\");";// NOI18N
-        } else {
-            if (isCustomUrl) {
-                //generation of a free form URL
-                connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
-                         "JMXServiceURL url = new JMXServiceURL(\""+// NOI18N
-                         (String)wiz.getProperty(
-                             WizardConstants.PROP_MANAGER_FREEFORM_URL) + "\");";// NOI18N
-            } else
-                connectionTemplate[1] = WizardConstants.EMPTYSTRING;
-        }
+        //generation of a free form URL
+        connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
+                "JMXServiceURL url = new JMXServiceURL(\""+// NOI18N
+                (String)wiz.getProperty(
+            WizardConstants.PROP_MANAGER_AGENT_URL) + "\");";// NOI18N
     }
     
     private void fillConnector(WizardDescriptor wiz) {
