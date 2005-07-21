@@ -85,7 +85,8 @@ public class RegisterMBeanAction extends CookieAction {
         try {
             if (cfg.standardMBeanSelected()) {
                 generator.generate(cfg.getJavaClass(),cfg.getMBeanObjectName(),
-                        cfg.getClassName(), cfg.getInterfaceName());
+                        cfg.getClassName(), cfg.getInterfaceName(), 
+                        cfg.getConstructorSignature());
             } else {
                 generator.generate(cfg.getJavaClass(), cfg.getMBeanClass(),
                         cfg.getMBeanObjectName(), cfg.getConstructorSignature());
