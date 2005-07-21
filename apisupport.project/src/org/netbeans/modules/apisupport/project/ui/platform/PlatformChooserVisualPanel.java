@@ -56,6 +56,8 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
         if (file != null) {
             getSetting().putProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY,
                     file.getAbsolutePath());
+            getSetting().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
+                    plafLabelValue.getText().trim());
         } // when wizard is cancelled file is null
     }
     

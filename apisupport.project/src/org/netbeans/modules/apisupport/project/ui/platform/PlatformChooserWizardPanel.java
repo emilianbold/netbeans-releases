@@ -24,7 +24,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class PlatformChooserWizardPanel extends BasicWizardPanel {
+final class PlatformChooserWizardPanel extends BasicWizardPanel implements WizardDescriptor.FinishablePanel {
     
     /** Representing visual component for this step. */
     private PlatformChooserVisualPanel visualPanel;
@@ -48,6 +48,10 @@ final class PlatformChooserWizardPanel extends BasicWizardPanel {
     
     public HelpCtx getHelp() {
         return new HelpCtx(PlatformChooserWizardPanel.class);
+    }
+
+    public boolean isFinishPanel() {
+        return isValid();
     }
     
 }
