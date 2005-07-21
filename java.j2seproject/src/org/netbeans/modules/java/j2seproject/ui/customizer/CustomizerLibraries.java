@@ -28,7 +28,7 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
-import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
+import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -147,7 +147,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        J2SEPhysicalViewProvider viewProvider = (J2SEPhysicalViewProvider) uiProperties.getProject().getLookup().lookup(J2SEPhysicalViewProvider.class);
+        J2SELogicalViewProvider viewProvider = (J2SELogicalViewProvider) uiProperties.getProject().getLookup().lookup(J2SELogicalViewProvider.class);
         //Update the state of project's node if needed
         viewProvider.testBroken();
     }

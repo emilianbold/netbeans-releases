@@ -32,7 +32,7 @@ import org.netbeans.modules.java.j2seproject.queries.CompiledSourceForBinaryQuer
 import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
-import org.netbeans.modules.java.j2seproject.ui.J2SEPhysicalViewProvider;
+import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -135,7 +135,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             helper.createCacheDirectoryProvider(),
             spp,
             new J2SEActionProvider( this, this.updateHelper ),
-            new J2SEPhysicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
+            new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
@@ -348,8 +348,8 @@ public final class J2SEProject implements Project, AntProjectListener {
                     return null;
                 }
             });
-            J2SEPhysicalViewProvider physicalViewProvider = (J2SEPhysicalViewProvider)
-                J2SEProject.this.getLookup().lookup (J2SEPhysicalViewProvider.class);
+            J2SELogicalViewProvider physicalViewProvider = (J2SELogicalViewProvider)
+                J2SEProject.this.getLookup().lookup (J2SELogicalViewProvider.class);
             if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
