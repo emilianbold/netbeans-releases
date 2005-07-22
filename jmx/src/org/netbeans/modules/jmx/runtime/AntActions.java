@@ -71,6 +71,12 @@ public class AntActions {
                 "iconBase", // NOI18N
                 "org/netbeans/modules/jmx/resources/run_project.png" //NOI18N
                 );
+        
+        //Needed in Tools|Options|...| ToolBars action icons
+        a.putValue (
+            Action.SMALL_ICON, 
+            new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/resources/run_project.png")) // NOI18N        
+                );
         return a;
     }
     
@@ -120,6 +126,11 @@ public class AntActions {
         a.putValue(
                 "iconBase", // NOI18N
                 "org/netbeans/modules/jmx/resources/debug_project.png" // NOI18N
+                );
+        //Needed in Tools|Options|...| ToolBars action icons
+        a.putValue (
+            Action.SMALL_ICON, 
+            new ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/resources/debug_project.png")) // NOI18N        
                 );
         return a;
     }
