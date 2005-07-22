@@ -48,7 +48,15 @@ public final class LocalizedBundleInfo {
     private EditableProperties props;
     private String path;
     
-    /** Simple factory method. */
+    /**
+     * Returns instances initialized by data in the given {@link FileObject}.
+     * Note that instances created by this factory method are automatically
+     * storable (i.e. {@link #store} and {@link #reload} can be called) if the
+     * given object represents a regular {@link File}.
+     * @param bundleFO {@link FileObject} representing localizing bundle.
+     *        Usually <em>bundle.properties</em> or its branded version.
+     * @return instance representing data in the given bundle
+     */
     public static LocalizedBundleInfo load(FileObject bundleFO) throws IOException {
         if (bundleFO == null) {
             return null;
@@ -66,7 +74,15 @@ public final class LocalizedBundleInfo {
         }
     }
     
-    /** Simple factory method. */
+    /**
+     * Returns instances initialized by data in the given {@link FileObject}.
+     * Instances created by this factory method are not storable (i.e. {@link
+     * #store} and {@link #reload} cannot be called) until the {@link #setPath}
+     * is called upon this object.
+     * @param bundleIS input stream representing localizing bundle. Usually
+     *        <em>bundle.properties</em> or its branded version.
+     * @return instance representing data in the given bundle
+     */
     public static LocalizedBundleInfo load(InputStream bundleIS) throws IOException {
         EditableProperties props = new EditableProperties();
         props.load(bundleIS);
@@ -78,6 +94,11 @@ public final class LocalizedBundleInfo {
         this.props = props;
     }
     
+    /**
+     * Reload data of this localizing bundle info from the file previously set
+     * by path. If the {@link #setPath} hasn't been called before an {@link
+     * IllegalStateException} will be thrown.
+     */
     public void reload() throws IOException {
         if (getPath() == null) {
             throw new IllegalStateException("First you must call " // NOI18N
@@ -94,6 +115,11 @@ public final class LocalizedBundleInfo {
         }
     }
     
+    /**
+     * Reload this localizing bundle into from the file specified by previously
+     * set path. If the {@link setPath} hasn't been called before an {@link
+     * IllegalStateException} will be thrown.
+     */
     public void store() throws IOException {
         if (getPath() == null) {
             throw new IllegalStateException("First you must call " // NOI18N
@@ -157,6 +183,10 @@ public final class LocalizedBundleInfo {
         return path;
     }
     
+    /**
+     * After calling this methods instance become <em>storable</em>. So methods
+     * {@link #store} and {@link #reload} can be called.
+     */
     public void setPath(String path) {
         this.path = path;
     }

@@ -27,11 +27,8 @@ import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
