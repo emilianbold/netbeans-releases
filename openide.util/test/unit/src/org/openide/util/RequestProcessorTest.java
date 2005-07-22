@@ -735,11 +735,12 @@ public class RequestProcessorTest extends NbTestCase {
                 try {
                     wait ();
                     log.log("in runnable " + name + " after second wait, not interrupted");
+                    checkAfter = Thread.interrupted();
                 } catch (InterruptedException ex) {
                     log.log("in runnable " + name + " after second wait, interrupted");
+                    checkAfter = true;
                 }
                 
-                checkAfter = Thread.interrupted();
                 log.log("in runnable " + name + " checkAfter: " + checkAfter);
                 
                 notifyAll ();
