@@ -12,6 +12,7 @@
  */
 package org.openide.text;
 
+import java.awt.Component;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -966,6 +967,26 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         initializeCloneableEditor(ed);
 
         return ed;
+    }
+    
+    /**
+     * Wraps the editor component in a custom component, allowing for creating
+     * more complicated user interfaces which contain the editor UI in 
+     * an arbitrary place. 
+     *
+     * <p>The default implementation merely returns the passed 
+     * <code>editorComponent</code> parameter.</p> 
+     *
+     * @param editorComponent the component containing the editor 
+     *        (usually not the JEditorPane, but some its ancestor).
+     * 
+     * @return a component containing <code>editorComponent</code> or
+     *         <code>editorComponent</code> itself.
+     *
+     * @since 6.3
+     */
+    protected Component wrapEditorComponent(Component editorComponent) {
+        return editorComponent;
     }
 
     /** Should test whether all data is saved, and if not, prompt the user

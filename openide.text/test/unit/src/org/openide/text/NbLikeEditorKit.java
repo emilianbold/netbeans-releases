@@ -24,12 +24,12 @@ import javax.swing.undo.UndoManager;
  *
  * @author  Jaroslav Tulach
  */
-final class NbLikeEditorKit extends DefaultEditorKit {
+class NbLikeEditorKit extends DefaultEditorKit {
     public javax.swing.text.Document createDefaultDocument() {
         return new Doc ();
     }
 
-    private final class Doc extends PlainDocument
+    class Doc extends PlainDocument
     implements NbDocument.WriteLockable, StyledDocument {
 //    implements NbDocument.PositionBiasable, NbDocument.WriteLockable,
 //    NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocument.Annotatable {

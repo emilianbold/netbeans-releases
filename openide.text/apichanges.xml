@@ -17,6 +17,22 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="text">Text API</apidef>
 </apidefs>
 <changes>
+    <change id="CloneableEditorSupport-wrapEditorComponent">
+        <api name="text"/>
+        <summary>Added CloneableEditorSupport.wrapEditorComponent</summary>
+        <version major="6" minor="4"/>
+        <date day="22" month="07" year="2005"/>
+        <author login="abadea"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+        <description>
+            <p>A <code>wrapEditorComponent</code> method has been added to
+            CloneableEditorSupport allowing to wrap the editor component
+            in another component.</p>
+        </description>
+        <class package="org.openide.text" name="CloneableEditorSupport"/>
+        <class package="org.openide.text" name="CloneableEditor"/>
+        <issue number="60922"/>
+    </change>
     <change id="annotations-error-stripe">
         <api name="text"/>
         <summary>Annotation type extended with <code>severity</code>, <code>custom_sidebar_color</code>, <code>browsable</code> and <code>priority</code>

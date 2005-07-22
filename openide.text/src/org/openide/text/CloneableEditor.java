@@ -225,13 +225,13 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
                 ); // NOI18N
             }
 
-            add(customComponent, BorderLayout.CENTER);
+            add(support.wrapEditorComponent(customComponent), BorderLayout.CENTER);
         } else { // not custom editor
 
             // remove default JScrollPane border, borders are provided by window system
             JScrollPane noBorderPane = new JScrollPane(pane);
             pane.setBorder(null);
-            add(noBorderPane, BorderLayout.CENTER);
+            add(support.wrapEditorComponent(noBorderPane), BorderLayout.CENTER);
         }
 
         if (doc instanceof NbDocument.CustomToolbar) {

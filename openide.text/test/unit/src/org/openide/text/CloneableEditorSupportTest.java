@@ -157,6 +157,14 @@ implements CloneableEditorSupport.Env {
         assertGC ("Document can dissapear", ref);
     }
 
+    /**
+     * Tests that the wrapEditorComponent() method returns the passed
+     * parameter (doesn't wrap the passed component in some additional UI).
+     */
+    public void testWrapEditorComponent() {
+        javax.swing.JPanel panel = new javax.swing.JPanel();
+        assertSame(support.wrapEditorComponent(panel), panel);
+    }
     
     private void compareStreamWithString(InputStream is, String s) throws Exception{
         int i;
