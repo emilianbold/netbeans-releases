@@ -26,6 +26,7 @@ import org.netbeans.modules.jmx.mbeanwizard.table.OperationParameterPopupTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.jmx.FireEvent;
@@ -132,9 +133,8 @@ public class OperationParameterPopup extends AbstractPopup{
     protected void readSettings() {
         if(methodModel.size() != 0) {
             //gets the current parameter list from the current operation
-            ArrayList<MBeanOperationParameter> opParam = 
-                    (ArrayList<MBeanOperationParameter>)
-                        methodModel.getOperation(editedRow).getParametersList();
+            List<MBeanOperationParameter> opParam = 
+                    methodModel.getOperation(editedRow).getParametersList();
             
             for (int i = 0; i < opParam.size(); i++) {
                 popupTableModel.addRow();
@@ -165,7 +165,7 @@ public class OperationParameterPopup extends AbstractPopup{
         String paramName = "";// NOI18N
         String paramType = "";// NOI18N
         String paramDescr = "";// NOI18N
-        ArrayList<MBeanOperationParameter> mbop = 
+        List<MBeanOperationParameter> mbop = 
                 new ArrayList<MBeanOperationParameter>();
         
         for (int i = 0 ; i < popupTableModel.size(); i++) {

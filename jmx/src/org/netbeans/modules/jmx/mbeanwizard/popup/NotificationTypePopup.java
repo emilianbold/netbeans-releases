@@ -19,6 +19,7 @@ import org.netbeans.modules.jmx.mbeanwizard.listener.ClosePopupButtonListener;
 import org.netbeans.modules.jmx.mbeanwizard.listener.RemTableRowListener;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
@@ -113,9 +114,8 @@ public class NotificationTypePopup extends AbstractPopup{
     protected void readSettings() {
         if(notifTableModel.size() != 0) {
             //get the notification type list for the current notification
-            ArrayList<MBeanNotificationType> notifTypes =
-                    (ArrayList<MBeanNotificationType>)
-          notifTableModel.getNotification(editedRow).getNotificationTypeList();
+            List<MBeanNotificationType> notifTypes =
+                notifTableModel.getNotification(editedRow).getNotificationTypeList();
             
             
             for (int i = 0; i < notifTypes.size(); i++) {

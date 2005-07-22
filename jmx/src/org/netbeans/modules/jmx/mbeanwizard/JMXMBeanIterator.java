@@ -34,10 +34,10 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
-import org.netbeans.modules.jmx.mbeanwizard.generator.MBeanGeneratorControl;
 import org.netbeans.modules.jmx.FinishableDelegatedWizardPanel;
 import org.netbeans.modules.jmx.WizardPanelWithoutReadSettings;
 import org.netbeans.modules.jmx.StepProblemMessage;
+import org.netbeans.modules.jmx.mbeanwizard.generator.GeneratorControler;
 
 /**
  *
@@ -289,9 +289,8 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
  
         // mbean generation 
         try {
-            MBeanGeneratorControl gen = new MBeanGeneratorControl();
-
-            return gen.generateMBean(wizard).getCreated();
+            
+            return GeneratorControler.generate(wizard).getCreated();
                 
         } catch (Exception ex) {
             WizardHelpers.logErrorMessage("MBean generation ", ex);// NOI18N

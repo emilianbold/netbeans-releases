@@ -30,8 +30,8 @@ public class MBeanOperation {
     private Method method;
     private String description;
     private String returnTypeName = "";// NOI18N
-    private ArrayList<MBeanOperationParameter> parameters = null;
-    private ArrayList<MBeanOperationException> exceptions = null;
+    private List<MBeanOperationParameter> parameters = null;
+    private List<MBeanOperationException> exceptions = null;
     
     /** Creates a new instance of MBeanOperation */
     public MBeanOperation(Method method, String description) {
@@ -73,21 +73,27 @@ public class MBeanOperation {
      * @param operationDescription the description of that operation
      */
     public MBeanOperation(String operationName, String operationReturnType,
-            ArrayList<MBeanOperationParameter> operationParameters,
-            ArrayList<MBeanOperationException> operationExceptions,
+            List<MBeanOperationParameter> operationParameters,
+            List<MBeanOperationException> operationExceptions,
             String operationDescription) {
         
         this.name = operationName;
         this.returnTypeName = operationReturnType;
-        this.parameters = operationParameters;
-        this.exceptions = operationExceptions;
+        if (operationParameters == null)
+            this.parameters = new ArrayList();
+        else
+            this.parameters = operationParameters;
+        if (operationExceptions == null)
+            this.exceptions = new ArrayList();
+        else
+            this.exceptions = operationExceptions;
         this.description = operationDescription;
         this.method = null;
         
         forceParamName(this.parameters);
     }
 
-    private void forceParamName(ArrayList<MBeanOperationParameter> parameters) {
+    private void forceParamName(List<MBeanOperationParameter> parameters) {
         
         MBeanOperationParameter current;
         
@@ -189,7 +195,7 @@ public class MBeanOperation {
      * Sets the class variable to the current list of parameters
      * @param array the list of parameters to set for the current operation
      */
-    public void setParametersList(ArrayList<MBeanOperationParameter>
+    public void setParametersList(List<MBeanOperationParameter>
             array) {
         parameters = array;
     }
@@ -198,7 +204,7 @@ public class MBeanOperation {
      * Returns the whole parameter list for the current operation
      * @return ArrayList<MBeanOperationParameter> the list of parameters
      */
-    public ArrayList<MBeanOperationParameter> getParametersList() {
+    public List<MBeanOperationParameter> getParametersList() {
         return parameters;
     }
     
@@ -299,7 +305,7 @@ public class MBeanOperation {
      * Returns the whole exception list for the current operation
      * @return ArrayList<MBeanOperationException> the exception list
      */
-    public ArrayList<MBeanOperationException> getExceptionsList() {
+    public List<MBeanOperationException> getExceptionsList() {
         return exceptions;
     }
     

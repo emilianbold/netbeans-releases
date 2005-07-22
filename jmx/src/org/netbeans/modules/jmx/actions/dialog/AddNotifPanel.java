@@ -83,7 +83,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
         
         notificationModel = new MBeanNotificationTableModel();
         notificationModel.setDefaultTypeValue(
-                getMBeanClass().getName().toLowerCase() + WizardConstants.TYPE);
+                getMBeanClass().getName().toLowerCase() + ".type"); // NOI18N
         notificationTable = new NotificationTable(this, notificationModel);
         notificationTable.setName("notificationTable"); // NOI18N
         notificationTable.setBorder(new javax.swing.border.EtchedBorder());

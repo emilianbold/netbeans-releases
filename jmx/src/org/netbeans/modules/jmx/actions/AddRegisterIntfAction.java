@@ -23,7 +23,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
 import org.netbeans.modules.jmx.actions.dialog.AddRegistIntfPanel;
-import org.netbeans.modules.jmx.actions.generator.AddRegistIntfGenerator;
+import org.netbeans.modules.jmx.mbeanwizard.generator.AddRegistIntfGenerator;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 
@@ -82,7 +82,7 @@ public class AddRegisterIntfAction extends CookieAction {
         }
         AddRegistIntfGenerator generator = new AddRegistIntfGenerator();
         try {
-            generator.generate(cfg.getMBeanClass(),rc,cfg.getKeepRefSelected());
+            generator.update(cfg.getMBeanClass(),rc,cfg.getKeepRefSelected());
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {

@@ -23,7 +23,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
 import org.netbeans.modules.jmx.actions.dialog.AddNotifPanel;
-import org.netbeans.modules.jmx.actions.generator.AddNotifGenerator;
+import org.netbeans.modules.jmx.mbeanwizard.generator.AddNotifGenerator;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 
@@ -82,7 +82,7 @@ public class AddNotifAction extends CookieAction {
         }
         AddNotifGenerator generator = new AddNotifGenerator();
         try {
-            generator.generate(cfg.getMBeanClass(),rc,cfg.getNotifications());
+            generator.update(cfg.getMBeanClass(),rc,cfg.getNotifications());
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {

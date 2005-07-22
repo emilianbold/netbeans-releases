@@ -99,7 +99,7 @@ public class MBeanAttribute {
     public void setName(String name) {
         this.name = name;
     }
-
+    
     public boolean isReadable() {
         return (WizardConstants.ATTR_ACCESS_READ_ONLY.equals(access) ||
                 WizardConstants.ATTR_ACCESS_READ_WRITE.equals(access));

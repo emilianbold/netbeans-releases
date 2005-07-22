@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="ManagementFile">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
             
-            <file name="JMXClass.java" url="">
+            <file name="JMXClass.java" url="resources/templates/StandardMBean.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
                       stringvalue="org.netbeans.modules.jmx.Bundle"/>
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
                       
                 <attr name="templateWizardURL" 
                       urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/MBean.html"/>
-                                      
+                                               
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
 
@@ -122,7 +122,40 @@ Microsystems, Inc. All Rights Reserved.
                       urlvalue="nbres:/org/netbeans/modules/jmx/resources/templates/snmp.acl.template"/>
                       
                 <attr name="templateCategory" stringvalue="java-classes"/>
-             </file>            
+             </file>
+             
+             <file name="MBeanInterface.java" url="resources/templates/MBeanInterface.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                <attr name="hidden" boolvalue="true"/>
+                           
+                <attr name="templateCategory" stringvalue="java-classes"/>
+            </file>
+            <file name="DynamicSupportMBean.java" url="resources/templates/DynamicSupportMBean.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                <attr name="hidden" boolvalue="true"/>
+                           
+                <attr name="templateCategory" stringvalue="java-classes"/>
+            </file>
+            <file name="DynamicMBean.java" url="resources/templates/DynamicMBean.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                <attr name="hidden" boolvalue="true"/>
+                           
+                <attr name="templateCategory" stringvalue="java-classes"/>
+            </file> 
+            <file name="MBeanTest.java" url="resources/templates/MBeanTest.java.template">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                <attr name="hidden" boolvalue="true"/>
+                           
+                <attr name="templateCategory" stringvalue="java-classes"/>
+            </file>           
         </folder>  
     </folder>
     

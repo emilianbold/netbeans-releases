@@ -20,7 +20,7 @@ import javax.swing.JTextField;
 import javax.swing.event.CellEditorListener;
 
 import java.awt.Component;
-import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 
@@ -76,9 +76,8 @@ public class OperationParameterPanelEditor implements TableCellEditor {
     public Component getTableCellEditorComponent(JTable table, Object value, 
             boolean isSelected,
             int row, int column) {
-        ArrayList<MBeanOperationParameter> oText = 
-                (ArrayList<MBeanOperationParameter>)
-        table.getModel().getValueAt(row, column);
+        List<MBeanOperationParameter> oText = 
+                (List<MBeanOperationParameter>) table.getModel().getValueAt(row, column);
         String paramString = "";
         for (int i = 0; i < oText.size(); i++) {
             paramString += oText.get(i).getParamType() + " " + 

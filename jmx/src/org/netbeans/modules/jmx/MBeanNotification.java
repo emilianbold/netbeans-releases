@@ -14,6 +14,7 @@
 package org.netbeans.modules.jmx;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class which describes the structure of an MBean notification
@@ -23,7 +24,7 @@ public class MBeanNotification {
     
     private String notificationClass = ""; // NOI18N
     private String notificationDescription = ""; // NOI18N
-    private ArrayList<MBeanNotificationType> notificationType = null;
+    private List<MBeanNotificationType> notificationType = null;
     
     /**
      * Custom constructor
@@ -34,7 +35,7 @@ public class MBeanNotification {
      */
     public MBeanNotification(String notificationClass, 
             String notificationDescription,
-            ArrayList<MBeanNotificationType> notificationType) {
+            List<MBeanNotificationType> notificationType) {
         this.notificationClass = notificationClass;
         this.notificationDescription = notificationDescription;
         this.notificationType = notificationType;
@@ -119,7 +120,7 @@ public class MBeanNotification {
      * Returns the whole notification type list for the current notification
      * @return ArrayList<MBeanNotificationType> the notification type list
      */
-    public ArrayList<MBeanNotificationType> getNotificationTypeList() {
+    public List<MBeanNotificationType> getNotificationTypeList() {
         return notificationType;
     }
     

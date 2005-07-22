@@ -20,7 +20,7 @@ import javax.swing.JTextField;
 import javax.swing.event.CellEditorListener;
 
 import java.awt.Component;
-import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
 
@@ -77,9 +77,8 @@ public class OperationExceptionPanelEditor implements TableCellEditor {
             boolean isSelected,
             int row, int column) {
         
-        ArrayList<MBeanOperationException> oText = 
-                (ArrayList<MBeanOperationException>)
-                    table.getModel().getValueAt(row, column);
+        List<MBeanOperationException> oText = 
+                (List<MBeanOperationException>) table.getModel().getValueAt(row, column);
         String excepClassString = "";
         for (int i = 0; i < oText.size(); i++) {
             excepClassString += oText.get(i).getExceptionClass();

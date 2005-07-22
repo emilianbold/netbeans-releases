@@ -24,7 +24,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
 import org.netbeans.modules.jmx.actions.dialog.AddOperationsInfoPanel;
 import org.netbeans.modules.jmx.actions.dialog.AddOperationsPanel;
-import org.netbeans.modules.jmx.actions.generator.AddOperationsGenerator;
+import org.netbeans.modules.jmx.mbeanwizard.generator.StdMBeanClassGen;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 
@@ -98,9 +98,9 @@ public class AddOpAction extends CookieAction {
             }
         }
         
-        AddOperationsGenerator generator = new AddOperationsGenerator();
+        StdMBeanClassGen generator = new StdMBeanClassGen();
         try {
-            generator.generate(mbeanClass,rc,operations, opExist);
+            generator.updateOperations(mbeanClass,rc,operations, opExist);
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {

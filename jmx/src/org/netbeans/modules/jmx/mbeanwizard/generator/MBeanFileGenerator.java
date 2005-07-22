@@ -11,182 +11,61 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.generator;
-
-import org.openide.filesystems.FileObject;
-import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Iterator;
+import org.netbeans.jmi.javamodel.Import;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.jmi.javamodel.MultipartId;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.modules.jmx.MBeanAttribute;
+import org.netbeans.modules.jmx.MBeanDO;
+import org.netbeans.modules.jmx.MBeanOperation;
+import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.WizardConstants;
+import org.openide.filesystems.FileObject;
 
 /**
  * Generic MBean File generator.
  * @author thomas
  */
 public abstract class MBeanFileGenerator {
-  
-    /**
-     * Returns ObjectName import code.
-     * @return <CODE>String</CODE> code to generate
-     */
-    protected static final String getObjectNameImport() {
-        return "import javax.management.ObjectName;\n";
-    }
     
-    /**
-     * Returns Date import code.
-     * @return <CODE>String</CODE> code to generate
-     */
-    protected static final String getDateImport() {
-        return "import java.util.Date;\n";
-    }
+    public static final String METHOD_SIGNATURE_DEF =
+      "String[] methodSignature;\n\n"; // NOI18N 
+
+    public static final String METHOD_SIGNATURE =
+      "methodSignature = new String[] {\n"; // NOI18N 
     
-    /**
-     * Returns Properties import code.
-     * @return <CODE>String</CODE> code to generate
-     */
-    protected static final String getPropertiesImport() {
-        return "import java.util.Properties;\n";
-    }
-    
-    /**
-     * Returns begin code related to MBean notification.
-     * @return <CODE>String</CODE> code to generate
-     */
-    protected static final String getNotifBegin() { 
-        return new String(
-      "   /**\n" +
-      "    * MBean Notification support\n" +
-      "    * You shouldn't update these methods\n" +
-      "    */\n"+
-      "    // <editor-fold defaultstate=\"collapsed\" desc=\" Generated Code \">\n" +
-      "    public void addNotificationListener(NotificationListener listener,\n" +
-      "       NotificationFilter filter, Object handback)\n" + 
-      "       throws IllegalArgumentException {\n" +
-      "         broadcaster.addNotificationListener(listener, filter, handback);\n" +
-      "    }\n\n" +
-      "    public MBeanNotificationInfo[] getNotificationInfo() {\n" +
-      "         return new MBeanNotificationInfo[] {\n");
-    }
-    
-    /**
-     * Returns end code related to MBean notification.
-     * @param mBeanModel <CODE>MBeanModel</CODE> the MBean to generate
-     * @return <CODE>String</CODE> code to generate
-     */
-    protected static String getNotifEnd(MBeanModel mBeanModel) {
-        StringBuffer notifEnd = new StringBuffer();
-        notifEnd.append(
-      "                };\n" +
-      "    }\n\n" +
-      "    public void removeNotificationListener(NotificationListener listener)\n" + 
-      "       throws ListenerNotFoundException {\n" +
-      "         broadcaster.removeNotificationListener(listener);\n" +
-      "    }\n\n" +
-      "    public void removeNotificationListener(NotificationListener listener,\n" +
-      "       NotificationFilter filter, Object handback)\n" + 
-      "       throws ListenerNotFoundException {\n" +
-      "         broadcaster.removeNotificationListener(listener, filter, handback);\n" +
-      "    }\n" +
-      "    // </editor-fold> \n\n" +
-      "    private synchronized long getNextSeqNumber() {\n" +
-      "         return seqNumber++;\n" +
-      "    }\n\n" +
-      "    private long seqNumber;\n" +
-      "    private final NotificationBroadcasterSupport broadcaster =\n" +
-      "               new NotificationBroadcasterSupport();\n" +
-      "   \n");
-        if (mBeanModel.haveNotification()) {
-            MessageFormat formNotifTypeField = 
-                    new MessageFormat(getNotiftypeFieldPattern());
-            int index = 0;
-            for (int i = 0; i < mBeanModel.getNbNotifType(); i++) {
-                String notifType = mBeanModel.getNotifType(i);
-                if (!notifType.equals(WizardConstants.ATTRIBUTECHANGE_TYPE)) {
-                    if (index == 0) {
-                        notifEnd.append(
-      "    /**\n" +
-      "     * Notification types definitions. To use when creating JMX Notifications.\n" +
-      "     */\n");
-                    }
-                    Object[] notifTypeArgs = { String.valueOf(index),
-                                               notifType };
-                    notifEnd.append(
-                        formNotifTypeField.format(notifTypeArgs));
-                    index++;
-                }
-            }
-        }
-        return notifEnd.toString();
-    }
-    
-    /**
-     * Returns Code pattern for notification type field.
-     * {0} = notification type index
-     * {1} = notification type
-     * @return <CODE>String</CODE> code pattern to generate
-     */
-    protected static final String getNotiftypeFieldPattern() {
-        return new String(
-                "    private static final String NOTIF_TYPE_{0} = \"{1}\";\n");
-    }
-    
-    // MBeanNotificationInfo instantiation pattern
-    // {0} = notification type
-    // {1} = notification class
-    // {2} = notification description
-    private static final String MBEAN_NOTIF_INFO_PATTERN = 
-      "               new MBeanNotificationInfo(new String[] '{'\n" +
-      "                      {0}'}',\n" +
-      "                      {1}.class.getName(),\n" +
-      "                      \"{2}\")";
+    // {0} = operation name
+    // {1} = operation code
+    // {2} = operation name code to check
+    public static final String OPERATION_CHECK_PATTERN =
+      "if ({2}.equals(\"{0}\") && Arrays.equals(signature, methodSignature)) '{'\n" + // NOI18N 
+      "    {1}\n" + // NOI18N 
+      "'}'\n\n"; // NOI18N 
     
     /**
      * Generates all the files for the new MBean.
-     * @param mBeanModel <CODE>MBeanModel</CODE> the MBean to generate
+     * @param mbean <CODE>MBeanDO</CODE> the MBean to generate
      * @throws java.io.IOException <CODE>IOException</CODE>
      * @throws java.lang.Exception <CODE>Exception</CODE>
-     * @return * @return <CODE>FileObject</CODE> the generated file
+     * @return <CODE>FileObject</CODE> the generated file which is MBean class.
      */
-    public abstract FileObject generateMBean(MBeanModel mBeanModel)
+    public abstract FileObject generateMBean(MBeanDO mbean)
             throws java.io.IOException, Exception;
     
     /**
-     * Generates code for one standard mbean notification in Mbean class.
-     * @param notifIndex <CODE>int</CODE> MBean notification index
-     * @param mBeanModel <CODE>MBeanModel</CODE> the MBean to generate
+     * Returns the MBean class.
      */
-    protected void genMBeanNotifInfo(int notifIndex,
-                        MBeanModel mBeanModel) {
-        StringBuffer mBeanClassContent = mBeanModel.getMBeanClassContent();
-        MessageFormat notifInfo = 
-                new MessageFormat(MBEAN_NOTIF_INFO_PATTERN);
-        StringBuffer notifType = new StringBuffer();
-        for (int j = 0 ; j < mBeanModel.getNbNotifType(notifIndex) ; j++) {
-            if (!mBeanModel.getNotifClass(notifIndex).equals(
-                        WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
-                notifType.append("NOTIF_TYPE_" + 
-                        mBeanModel.getNotifTypeIndex(notifIndex,j));
-            } else {
-                notifType.append(mBeanModel.getNotifType(notifIndex,j));
-            }
-            if (j < mBeanModel.getNbNotifType(notifIndex) - 1) {
-                notifType.append(",\n                      ");
-            }
-        }
-        Object[] notifArguments = { notifType.toString(), 
-                mBeanModel.getNotifClass(notifIndex), 
-                mBeanModel.getNotifDesc(notifIndex) };
-        mBeanClassContent.append(notifInfo.format(notifArguments));
-        if ((mBeanModel.getNbNotif() > 1) 
-                && (notifIndex < (mBeanModel.getNbNotif() - 1))) {
-            mBeanClassContent.append(",");
-        }
-        newLine(mBeanClassContent);
-    }
+    public abstract JavaClass getMBeanClass();
     
     /**
      * Add the block close code to the StringBuffer.
      * @param sb <CODE>StringBuffer</CODE> the StringBuffer to complete
      */
-    protected void closeBloc(StringBuffer sb) {
+    public static void closeBloc(StringBuffer sb) {
         sb.append("}\n");
     }
     
@@ -194,8 +73,88 @@ public abstract class MBeanFileGenerator {
      * Add a new line code to the StringBuffer.
      * @param sb <CODE>StringBuffer</CODE> the StringBuffer to complete
      */
-    protected void newLine(StringBuffer sb) {
+    public static void newLine(StringBuffer sb) {
         sb.append("\n");
+    }
+    
+    public static void addManagementImport(Resource tgtRes){
+        JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
+        
+        // look for the import among all imports in the target file
+        Iterator it = tgtRes.getImports().iterator();
+        boolean found = false;
+        while (it.hasNext()) {
+            Import i = (Import) it.next();
+            if (i.getName().equals("javax.management") && // NOI18N
+                i.isStatic() == false &&
+                i.isOnDemand() == true) { found = true; break;}
+        }
+
+        if (!found) // not found
+            tgtRes.getImports().add(createManagementImport(pkg));
+        
+    }
+    
+    public static void addNeededImport(MBeanDO mbean, Resource mbeanRes) {
+        boolean dateImport = typeIsUsed(mbean, WizardConstants.DATE_OBJ_NAME);
+        if (dateImport)
+            addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
+    }
+    
+    public static boolean typeIsUsed(MBeanDO mbean, String type) {
+        for (Iterator<MBeanAttribute> it = mbean.getAttributes().iterator(); it.hasNext();) {
+            MBeanAttribute attribute = it.next();
+            if (WizardConstants.DATE_OBJ_NAME.equals(attribute.getTypeName())) 
+                return true;
+        }
+        for (Iterator<MBeanOperation> it = mbean.getOperations().iterator(); it.hasNext();) {
+            MBeanOperation operation = it.next();
+            if (WizardConstants.DATE_OBJ_NAME.equals(operation.getReturnTypeName())) 
+                return true;
+            for (int i = 0; i < operation.getParametersSize(); i++) {
+                MBeanOperationParameter param = operation.getParameter(i);
+                if (WizardConstants.DATE_OBJ_NAME.equals(param.getParamType())) 
+                    return true;
+            }
+        }
+        return false;
+    }
+    
+    public static void addImport(Resource tgtRes, String fullTypeName){
+        JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
+        
+        // look for the import among all imports in the target file
+        Iterator it = tgtRes.getImports().iterator();
+        boolean found = false;
+        while (it.hasNext()) {
+            Import i = (Import) it.next();
+            if (i.getName().equals(fullTypeName) &&
+                i.isStatic() == false &&
+                i.isOnDemand() == false) { found = true; break;}
+        }
+
+        if (!found) // not found
+            tgtRes.getImports().add(createImport(pkg,fullTypeName));
+        
+    }
+    
+    public static Import createImport(JavaModelPackage pkg, String fullTypeName) {
+        return pkg.getImport().createImport(fullTypeName,null, false, false);
+    }
+    
+    public static Import createManagementImport(JavaModelPackage pkg) {
+        return pkg.getImport().createImport("javax.management",null, false, true); // NOI18N
+    }
+    
+    public static Type getType(JavaModelPackage pkg, String typeName) {
+        return pkg.getType().resolve(typeName);
+    }
+    
+    public static MultipartId getTypeRef(JavaModelPackage pkg, String typeName) {
+        return pkg.getMultipartId().createMultipartId(
+                    typeName,
+                    null,
+                    Collections.EMPTY_LIST);
     }
     
 }

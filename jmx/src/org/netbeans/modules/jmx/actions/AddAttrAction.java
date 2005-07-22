@@ -26,7 +26,7 @@ import org.netbeans.modules.jmx.*;
 import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.actions.dialog.AddAttributesInfoPanel;
 import org.netbeans.modules.jmx.actions.dialog.AddAttributesPanel;
-import org.netbeans.modules.jmx.actions.generator.AddAttributesGenerator;
+import org.netbeans.modules.jmx.mbeanwizard.generator.StdMBeanClassGen;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.NbBundle;
 
@@ -106,9 +106,9 @@ public class AddAttrAction extends CookieAction {
             }
         }
         
-        AddAttributesGenerator generator = new AddAttributesGenerator();
+        StdMBeanClassGen generator = new StdMBeanClassGen();
         try {
-            generator.generate(mbeanClass,rc,attributes, attrMethods);
+            generator.updateAttributes(mbeanClass,rc,attributes, attrMethods);
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {

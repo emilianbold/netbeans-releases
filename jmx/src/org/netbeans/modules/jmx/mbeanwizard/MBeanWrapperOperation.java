@@ -13,10 +13,11 @@
 
 package org.netbeans.modules.jmx.mbeanwizard;
 
+import java.util.List;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.MBeanOperationException;
-import java.util.ArrayList;
+
 
 /**
  *
@@ -29,8 +30,8 @@ public class MBeanWrapperOperation extends MBeanOperation{
     /** Creates a new instance of MBeanWrapperOperation */
     public MBeanWrapperOperation(boolean selected, String operationName, 
             String operationReturnType,
-            ArrayList<MBeanOperationParameter> operationParameters,
-            ArrayList<MBeanOperationException> operationExceptions,
+            List<MBeanOperationParameter> operationParameters,
+            List<MBeanOperationException> operationExceptions,
             String operationDescription) {
         super(operationName,operationReturnType,operationParameters,
                 operationExceptions,operationDescription);

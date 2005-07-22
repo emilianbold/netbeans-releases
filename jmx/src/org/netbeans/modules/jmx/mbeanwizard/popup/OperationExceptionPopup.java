@@ -20,6 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
@@ -131,9 +132,8 @@ public class OperationExceptionPopup extends AbstractPopup{
         
         if(methodModel.size() != 0) {
             //get the exception list of the current operation
-            ArrayList<MBeanOperationException> panelExcepts =
-                    (ArrayList<MBeanOperationException>)
-            methodModel.getOperation(editedRow).getExceptionsList();
+            List<MBeanOperationException> panelExcepts =
+                    methodModel.getOperation(editedRow).getExceptionsList();
             
             for (int i = 0; i < panelExcepts.size(); i++) {
                  
