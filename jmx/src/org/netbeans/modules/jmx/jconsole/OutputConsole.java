@@ -87,5 +87,9 @@ public class OutputConsole implements CookieObserver
         ow.write("\r");// NOI18N
         io.setFocusTaken(wasFocusTaken);
     }
+    
+    public void close() {
+        io.closeInputOutput();
+    }
 
 }

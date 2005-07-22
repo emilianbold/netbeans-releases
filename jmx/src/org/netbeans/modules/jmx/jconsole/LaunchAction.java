@@ -51,17 +51,18 @@ public class LaunchAction extends CallableSystemAction {
     }
     class RunAction implements Runnable {
         OutputConsole console;
-        public RunAction() {
-            String str = NbBundle.getMessage(LaunchAction.class, "LBL_ActionName");// NOI18N
-            console = new OutputConsole(str);
+        public RunAction(OutputConsole console) {
+            this.console = console;
         }
         
+        /*      
         OutputConsole getConsole() {
             return console;
         }
-        
+        */
         public void run() {
             try {
+                
                 JConsoleSettings settings = JConsoleSettings.getDefault();
                 String cp = settings.getClassPath();
                 String url = settings.getDefaultUrl() == null ? "" : settings.getDefaultUrl();// NOI18N
@@ -90,12 +91,14 @@ public class LaunchAction extends CallableSystemAction {
                                  polling + " " + tile + " " + url;// NOI18N
                 
                 String msg1 = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStartingMessage");// NOI18N
+                
                 console.message(msg1);
+                
                 console.message(cmdLine);
                 
                 Process p =
                         Runtime.getRuntime().exec(cmdLine, null);
-                
+                task.addTaskListener(new RuntimeProcessNodeActionListener(p));
                 //Set err reader;
                 RequestProcessor rp = new RequestProcessor();
                 rp.post(new ErrReader(p.getErrorStream(), console));
@@ -150,10 +153,13 @@ public class LaunchAction extends CallableSystemAction {
         
         started();
         
-        RequestProcessor rp = new RequestProcessor();
-        RunAction action = new RunAction();
-        console = action.getConsole();
-        rp.post(action);
+        //RequestProcessor rp = new RequestProcessor();
+        console = new OutputConsole(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"));
+        RunAction action = new RunAction(console);
+        //console = action.getConsole();
+        //rp.post(action);
+        //In order to appear in Runtime|Processes list
+        task = org.openide.execution.ExecutionEngine.getDefault().execute(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"), action, org.openide.windows.InputOutput.NULL);
     }
     
     synchronized boolean isStarted() {
@@ -165,12 +171,33 @@ public class LaunchAction extends CallableSystemAction {
     }
     
     synchronized void stopped() {
+        if(!started) return;
         started = false;
         String msg = NbBundle.getMessage(LaunchAction.class,"LBL_ActionStoppedMessage");// NOI18N
         console.message(msg);
+        console.close();
         console = null;
     }
     
+    class RuntimeProcessNodeActionListener implements org.openide.util.TaskListener {
+        Process p;
+        
+        public RuntimeProcessNodeActionListener(Process p) {
+            this.p = p;
+        }
+        
+        public void taskFinished(org.openide.util.Task task) {
+            try {
+                // Check if process is dead
+              p.exitValue();
+            }catch(IllegalThreadStateException e) {
+                //Not dead, kill it
+                p.destroy();
+                stopped();
+            }
+        }
+    }
+    private org.openide.execution.ExecutorTask task;
     private boolean started;
     private OutputConsole console;
 }
