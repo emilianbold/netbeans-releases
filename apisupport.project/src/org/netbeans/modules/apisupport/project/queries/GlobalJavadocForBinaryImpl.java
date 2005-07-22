@@ -21,8 +21,10 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
@@ -48,7 +50,12 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
                 return null;
             }
             File binaryRootF = new File(FileUtil.getArchiveFile(binaryRoot).getFile());
-            String cnbdashes = FileUtil.toFileObject(binaryRootF).getName();
+            FileObject fo = FileUtil.toFileObject(binaryRootF);
+            if (fo == null) {
+                Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
+                return null;
+            }
+            String cnbdashes = fo.getName();
             final List/*<URL>*/ candidates = new ArrayList();
             URL[] roots = supposedPlaf.getJavadocRoots();
             for (int i = 0; i < roots.length; i++) {
