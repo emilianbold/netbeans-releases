@@ -53,7 +53,7 @@ if [ -f "${userdir}"/etc/netbeans.conf ] ; then
 fi
 
 netbeans_clusters=""
-for i in nb4.1 ide5 enterprise1 profiler1 mobility7.2 extra ; do
+for i in nb4.2 ide6 enterprise2 profiler1 mobility7.2 extra ; do
     if [ -d "$progdir/../$i" ] ; then
         netbeans_clusters="$netbeans_clusters:$progdir/../$i"
     fi
@@ -63,7 +63,7 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
 fi
 
-nbexec="$progdir"/../platform5/lib/nbexec
+nbexec="$progdir"/../platform6/lib/nbexec
 
 # in case of macosx, the apple.laf.useScreenMenuBar property should be ideally in the Info.plist file
 # but it doesn't get propagated into the executed java VM. 
