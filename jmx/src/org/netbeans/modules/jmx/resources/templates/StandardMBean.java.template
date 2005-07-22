@@ -1,0 +1,68 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Template.Classes;
+import javax.management.*;
+
+/**
+ * {1}Class __NAME__
+ * {0}
+ * @author __USER__
+ */
+public class __NAME__ implements __NAME__MBean {
+
+   /* Creates a new instance of __NAME__ */
+    public __NAME__() throws NotCompliantMBeanException {
+        super(__NAME__MBean.class);
+    }
+
+    /**
+     * Next are the methods to compute MBeanInfo.
+     * You shouldn't update these methods.
+     */
+    protected String getDescription(MBeanInfo info) {
+         return "{0}";
+    }
+
+    protected String getDescription(MBeanAttributeInfo info) {
+        String description = null;
+        {0}return description;
+    }
+
+    protected String getDescription(MBeanOperationInfo op,
+                                    MBeanParameterInfo param,
+                                    int sequence) {
+        {0}return null;
+    }
+
+    protected String getParameterName(MBeanOperationInfo op,
+                                      MBeanParameterInfo param,
+                                      int sequence) {
+        {0}return null;
+    }
+
+    protected String getDescription(MBeanOperationInfo info) {
+        String description = null;
+        {0}return description;
+    }
+
+    public MBeanInfo getMBeanInfo() {
+            MBeanInfo mbinfo = super.getMBeanInfo();
+            return new MBeanInfo(mbinfo.getClassName(),
+                                 mbinfo.getDescription(),
+                                 mbinfo.getAttributes(),
+                                 mbinfo.getConstructors(),
+                                 mbinfo.getOperations(),
+                                 getNotificationInfo());
+    }
+
+    public MBeanNotificationInfo[] getNotificationInfo() {
+         return new MBeanNotificationInfo[] {};
+    }
+
+}
+
+

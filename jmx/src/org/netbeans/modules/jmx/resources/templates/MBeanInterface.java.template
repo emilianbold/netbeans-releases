@@ -1,0 +1,19 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Template.Classes;
+
+/**
+ * Interface __NAME__
+ * {0}
+ * @author __USER__
+ */
+public interface __NAME__ 
+{
+
+}
+
+
