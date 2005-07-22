@@ -55,7 +55,7 @@ public class JConsole extends JellyTestCase {
     public void startJConsole() {
       MainWindowOperator mainWindow = MainWindowOperator.getDefault();
       // push "Open" toolbar button in "System" toolbar
-      mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), "Start JConsole...").push();
+      mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), "Start JConsole Management Console").push();
       OutputTabOperator oto = new OutputTabOperator("JConsole");
       System.out.println("*********************** WAITING FOR TEXT JConsole started ************");
       oto.waitText("JConsole started");
