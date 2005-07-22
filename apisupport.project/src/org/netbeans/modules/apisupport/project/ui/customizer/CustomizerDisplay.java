@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import javax.swing.JPanel;
@@ -24,7 +25,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
  *
  * @author mkrauskopf
  */
-final class CustomizerDisplay extends JPanel implements 
+final class CustomizerDisplay extends JPanel implements
         ComponentFactory.StoragePanel, PropertyChangeListener {
     
     private SingleModuleProperties modProps;
@@ -33,8 +34,13 @@ final class CustomizerDisplay extends JPanel implements
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties modProps) {
         this.modProps = modProps;
-        this.disabled = getBundle() == null;
         initComponents();
+        modProps.addPropertyChangeListener(this);
+        refresh();
+    }
+    
+    public void refresh() {
+        this.disabled = getBundle() == null;
         if (disabled) {
             nameValue.setEnabled(false);
             categoryValue.setEnabled(false);
@@ -43,7 +49,6 @@ final class CustomizerDisplay extends JPanel implements
         } else {
             readFromProperties();
         }
-        modProps.addPropertyChangeListener(this);
     }
     
     public void store() {
@@ -84,9 +89,12 @@ final class CustomizerDisplay extends JPanel implements
         return category != null ? category : ""; // NOI18N
     }
     
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        if (SingleModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
+    public void propertyChange(PropertyChangeEvent evt) {
+        String pName = evt.getPropertyName();
+        if (SingleModuleProperties.NB_PLATFORM_PROPERTY == pName) {
             fillUpCategoryValue();
+        } else if (SingleModuleProperties.PROPERTIES_REFRESHED == pName) {
+            refresh();
         }
     }
     

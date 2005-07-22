@@ -13,15 +13,25 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.EditableManifest;
+import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -29,7 +39,7 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Tests {@link SingleModuleProperties}. Actually also for some classes which
- * SuiteProperties utilizes - which doesn't mean they shouldn't be tested
+ * SingleModuleProperties utilizes - which doesn't mean they shouldn't be tested
  * individually :)
  *
  * @author Martin Krauskopf
@@ -57,12 +67,63 @@ public class SingleModulePropertiesTest extends TestBase {
         
         assertNotNull(props.getActivePlatform());
         assertNotNull("loading bundle info", props.getBundleInfo());
+        assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
         assertEquals("cnb", "org.netbeans.examples.modules.misc", props.getCodeNameBase());
         assertNull("no impl. version", props.getImplementationVersion());
         assertTrue("jar file", props.getJarFile().endsWith("org-netbeans-examples-modules-misc.jar"));
         assertEquals("major release version", "1", props.getMajorReleaseVersion());
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertTrue("suite directory", props.getSuiteDirectory().endsWith("suite2"));
+    }
+    
+    public void testThatPropertiesAreRefreshed() throws IOException {
+        SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
+                "src/org/netbeans/examples/modules/misc/Bundle.properties");
+        assertEquals("spec. version", "1.0", props.getSpecificationVersion());
+        assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
+        
+        // silently change manifest
+        InputStream is = new FileInputStream(props.getManifestFile());
+        EditableManifest em = new EditableManifest();
+        try {
+            em = new EditableManifest(is);
+        } finally {
+            is.close();
+        }
+        em.setAttribute(ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION, "1.1", null);
+        OutputStream os = new FileOutputStream(props.getManifestFile());
+        try {
+            em.write(os);
+        } finally {
+            os.close();
+        }
+        
+        // silently change bundle
+        EditableProperties ep = new EditableProperties();
+        is = new FileInputStream(props.getBundleInfo().getPath());
+        try {
+            ep.load(is);
+        } finally {
+            is.close();
+        }
+        ep.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
+        os = new FileOutputStream(props.getBundleInfo().getPath());
+        try {
+            ep.store(os);
+        } finally {
+            os.close();
+        }
+        
+        
+        assertEquals("there is no listener yet for manifest", "1.0", props.getSpecificationVersion());
+        assertEquals("there is no listener yet for bundle", "Misc", props.getBundleInfo().getDisplayName());
+        
+        // simple reload
+        props.refresh();
+        
+        // check that manifest has been reloaded
+        assertEquals("spec. version", "1.1", props.getSpecificationVersion());
+        assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
     }
     
     public void testGetPublicPackages() throws Exception {
@@ -90,7 +151,7 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Reloading of module list: " + (System.currentTimeMillis() - start) + "msec");
 //        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
 //    }
-//    
+//
 //    public void testReloadBinaryModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
@@ -118,4 +179,5 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Loading of properties: " + (System.currentTimeMillis() - start) + "msec");
         return props;
     }
+    
 }

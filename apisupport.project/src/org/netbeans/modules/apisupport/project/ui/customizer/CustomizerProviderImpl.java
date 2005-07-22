@@ -98,6 +98,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                         getSuiteProvider(), isStandalone, bundleInfo);
                 init();
             }
+			moduleProps.refresh();
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
                     if (preselectedCategory.equals(categories[i].getName())) {

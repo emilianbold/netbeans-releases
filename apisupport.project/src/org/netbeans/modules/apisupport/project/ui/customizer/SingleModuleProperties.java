@@ -106,7 +106,6 @@ final class SingleModuleProperties extends ModuleProperties {
     // helpers for storing and retrieving real values currently stored on the disk
     private SuiteProvider suiteProvider;
     private ProjectXMLManager projectXMLManager;
-    private ManifestManager manifestManager;
     private LocalizedBundleInfo bundleInfo;
     
     // keeps current state of the user changes
@@ -134,9 +133,11 @@ final class SingleModuleProperties extends ModuleProperties {
     private RequiredTokenListModel requiredTokensListModel;
     
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    
     public static final String NB_PLATFORM_PROPERTY = "NB_PLATFORM";
     public static final String DEPENDENCIES_PROPERTY = "MODULE_DEPENDENCIES";
-
+    public static final String PROPERTIES_REFRESHED = "PROPERTIES_REFRESHED";
+    
     /**
      * Creates a new instance of SingleModuleProperties
      */
@@ -144,17 +145,28 @@ final class SingleModuleProperties extends ModuleProperties {
             SuiteProvider sp, boolean isStandalone, LocalizedBundleInfo bundleInfo) {
         super(helper, evaluator);
         this.suiteProvider = sp;
-        this.manifestManager = ManifestManager.getInstance(getManifestFile(), false);
+        ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         this.bundleInfo = bundleInfo;
         this.isStandalone = isStandalone;
         this.originalPlatform = this.platform = NbPlatform.getPlatformByID(
                 evaluator.getProperty("nbplatform.active")); // NOI18N
+        this.requiredTokens = new TreeSet(
+                Arrays.asList(manifestManager.getRequiredTokens()));
+        refresh();
+    }
+    
+    void refresh() {
+        ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         this.majorReleaseVersion = manifestManager.getReleaseVersion();
         this.specificationVersion = manifestManager.getSpecificationVersion();
         this.implementationVersion = manifestManager.getImplementationVersion();
         this.provTokensString = manifestManager.getProvidedTokensString();
-        this.requiredTokens = new TreeSet(
-                Arrays.asList(manifestManager.getRequiredTokens()));
+        try {
+            this.bundleInfo.reload();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        firePropertyChange(PROPERTIES_REFRESHED, null, null);
     }
     
     Map/*<String, String>*/ getDefaultValues() {
@@ -533,7 +545,8 @@ final class SingleModuleProperties extends ModuleProperties {
         }
     }
     
-    private File getManifestFile() {
+    // package provide for unit test
+    File getManifestFile() {
         return getHelper().resolveFile(getEvaluator().getProperty("manifest.mf")); // NOI18N
     }
 

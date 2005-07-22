@@ -78,6 +78,22 @@ public final class LocalizedBundleInfo {
         this.props = props;
     }
     
+    public void reload() throws IOException {
+        if (getPath() == null) {
+            throw new IllegalStateException("First you must call " // NOI18N
+                    + getClass().getName() + ".setPath()"); // NOI18N
+        }
+        FileObject bundleFO = FileUtil.toFileObject(new File(getPath()));
+        InputStream bundleIS = bundleFO.getInputStream();
+        try {
+            EditableProperties ep = new EditableProperties();
+            ep.load(bundleIS);
+            this.props = ep;
+        } finally {
+            bundleIS.close();
+        }
+    }
+    
     public void store() throws IOException {
         if (getPath() == null) {
             throw new IllegalStateException("First you must call " // NOI18N
@@ -176,7 +192,7 @@ public final class LocalizedBundleInfo {
         }
         return (String[]) sentences.toArray(new String[sentences.size()]);
     }
-
+    
     public String toString() {
         return "LocalizedBundleInfo[" + getDisplayName() + "; " + // NOI18N
             getCategory() + "; " + // NOI18N

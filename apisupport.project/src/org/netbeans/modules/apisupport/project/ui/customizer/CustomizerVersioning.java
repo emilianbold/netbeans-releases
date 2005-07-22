@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerVersioning extends NbPropertyPanel {
+final class CustomizerVersioning extends NbPropertyPanel implements PropertyChangeListener {
     
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
@@ -47,19 +47,10 @@ final class CustomizerVersioning extends NbPropertyPanel {
     CustomizerVersioning(SingleModuleProperties props) {
         super(props);
         initComponents();
+        refresh();
         initPublicPackageTable();
         friendsList.setModel(props.getFriendListModel());
         UIUtil.setText(cnbValue, props.getCodeNameBase());
-        UIUtil.setText(majorRelVerValue, props.getMajorReleaseVersion());
-        UIUtil.setText(tokensValue, props.getProvidedTokens());
-        String specVersion = props.getSpecificationVersion();
-        if (null == specVersion || "".equals(specVersion)) { // NOI18N
-            appendImpl.setSelected(true);
-            UIUtil.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
-        } else {
-            UIUtil.setText(specificationVerValue, specVersion);
-        }
-        UIUtil.setText(implVerValue, props.getImplementationVersion());
         regularMod.setSelected(true);
         autoloadMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD));
         eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));
@@ -76,20 +67,27 @@ final class CustomizerVersioning extends NbPropertyPanel {
             }
         });
         removeFriendButton.setEnabled(false);
-        props.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (SingleModuleProperties.DEPENDENCIES_PROPERTY == evt.getPropertyName()) {
-                    updateAppendImpl();
-                }
-            }
-        });
+        props.addPropertyChangeListener(this);
         updateAppendImpl();
+    }
+    
+    public void refresh() {
+        UIUtil.setText(majorRelVerValue, props.getMajorReleaseVersion());
+        UIUtil.setText(tokensValue, props.getProvidedTokens());
+        String specVersion = props.getSpecificationVersion();
+        if (null == specVersion || "".equals(specVersion)) { // NOI18N
+            appendImpl.setSelected(true);
+            UIUtil.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
+        } else {
+            UIUtil.setText(specificationVerValue, specVersion);
+        }
+        UIUtil.setText(implVerValue, props.getImplementationVersion());
     }
     
     private void initPublicPackageTable() {
         publicPkgsTable.setModel(props.getPublicPackagesModel());
         publicPkgsTable.getColumnModel().getColumn(0).setMaxWidth(CHECKBOX_WIDTH + 20);
-        publicPkgsTable.setRowHeight(publicPkgsTable.getFontMetrics(publicPkgsTable.getFont()).getHeight() + 
+        publicPkgsTable.setRowHeight(publicPkgsTable.getFontMetrics(publicPkgsTable.getFont()).getHeight() +
                 (2 * publicPkgsTable.getRowMargin()));
         publicPkgsTable.setTableHeader(null);
         publicPkgsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -144,6 +142,15 @@ final class CustomizerVersioning extends NbPropertyPanel {
         props.setProvidedTokens(tokensValue.getText().trim());
         setBooleanProperty(SingleModuleProperties.IS_AUTOLOAD, autoloadMod.isSelected());
         setBooleanProperty(SingleModuleProperties.IS_EAGER, eagerMod.isSelected());
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        String pName = evt.getPropertyName();
+        if (SingleModuleProperties.DEPENDENCIES_PROPERTY == pName) {
+            updateAppendImpl();
+        } else if (SingleModuleProperties.PROPERTIES_REFRESHED == pName) {
+            refresh();
+        }
     }
     
     /** This method is called from within the constructor to
