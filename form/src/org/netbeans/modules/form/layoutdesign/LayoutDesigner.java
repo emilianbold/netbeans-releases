@@ -213,7 +213,7 @@ public class LayoutDesigner implements LayoutConstants {
                             }
                         }
 
-                        if (currentPref != LayoutRegion.UNKNOWN) { // not first resizing gap
+                        if (dirty && (currentPref != LayoutRegion.UNKNOWN)) { // not first resizing gap
                             imposeCurrentGapSize(sub, currentPref, dimension);
                         }
                     }
@@ -416,18 +416,21 @@ public class LayoutDesigner implements LayoutConstants {
 
                 // Determine intervals that should be added
                 LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
-                LayoutInterval[] childs = new LayoutInterval[components.length];
+                LayoutInterval[] children = new LayoutInterval[components.length];
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     if (components.length > 1) {
                         for (int i=0; i<components.length; i++) {
-                            childs[i] = components[i].getLayoutInterval(dim);
+                            children[i] = components[i].getLayoutInterval(dim);
                         }
-                        LayoutInterval parent = findCommonParent(childs);
+                        LayoutInterval parent = findCommonParent(children);
                         // Restriction of the layout model of the common parent
                         // in the original layout
                         addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
                     } else {
                         addingInts[dim] = components[0].getLayoutInterval(dim);
+                        if ((components[0].getParent() == null) && (addingInts[dim].getParent() != null)) {
+                            layoutModel.removeInterval(addingInts[dim]);
+                        }
                     }
                 }
 
@@ -448,7 +451,6 @@ public class LayoutDesigner implements LayoutConstants {
                 modelListener.deactivate(); // from now do not react on model changes
 
                 int overlapDim = getDimensionSolvingOverlap(positions);
-
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     LayoutInterval adding = addingInts[dim];
                     LayoutDragger.PositionDef pos1 = positions[dim];
@@ -650,7 +652,6 @@ public class LayoutDesigner implements LayoutConstants {
      * the replacement of the empty spaces.
      */
     private void integrateGap(LayoutInterval seqGroup, int size, int boundary) {
-        modelListener.deactivate();
         while ((seqGroup.getSubIntervalCount() > boundary)
             && seqGroup.getSubInterval(seqGroup.getSubIntervalCount()-1).isEmptySpace()) {
             layoutModel.removeInterval(seqGroup.getSubInterval(seqGroup.getSubIntervalCount()-1));
@@ -660,7 +661,6 @@ public class LayoutDesigner implements LayoutConstants {
             gap.setSize(size);
             layoutModel.addInterval(gap, seqGroup, -1);
         }
-        modelListener.activate();
     }
     
     /**
@@ -2292,7 +2292,6 @@ public class LayoutDesigner implements LayoutConstants {
     public void adjustComponentAlignment(LayoutComponent comp, int dimension, int alignment) {
         modelListener.deactivate();
         LayoutInterval interval = comp.getLayoutInterval(dimension);
-        assert !LayoutInterval.wantResize(interval, false);
         
         // Skip non-resizable groups
         LayoutInterval parent = interval.getParent();
@@ -2302,6 +2301,7 @@ public class LayoutDesigner implements LayoutConstants {
             }
             parent = parent.getParent();
         }
+        assert !LayoutInterval.wantResize(interval, false);
         
         boolean changed = false;
         parent = interval.getParent();
@@ -2587,25 +2587,32 @@ public class LayoutDesigner implements LayoutConstants {
                 layoutModel.setIntervalSize(interval, interval.getMinimumSize(), currSize, interval.getMaximumSize());
             }
         }
-        if (parent.isParallel()) {
-            if (resizing) {
-                int groupCurrSize = LayoutInterval.getIntervalCurrentSize(parent, dimension);
-                int currSize = LayoutInterval.getIntervalCurrentSize(interval, dimension);
-                // PENDING currSize could change if groupPrefSize != groupCurrSize
-                if (groupCurrSize != currSize) {
-                    LayoutInterval seqGroup = new LayoutInterval(SEQUENTIAL);
-                    int alignment = interval.getAlignment();
-                    layoutModel.setIntervalAlignment(interval, DEFAULT);
-                    seqGroup.setAlignment(alignment);
-                    int i = layoutModel.removeInterval(interval);
-                    layoutModel.addInterval(interval, seqGroup, -1);
-                    LayoutInterval space = new LayoutInterval(SINGLE);
-                    space.setSize(groupCurrSize - currSize);
-                    layoutModel.addInterval(space, seqGroup, (alignment == LEADING) ? -1 : 0);
-                    layoutModel.addInterval(seqGroup, parent, i);
+        LayoutInterval intr = interval;
+        LayoutInterval par = parent;
+        while (par != null) {
+            if (par.isParallel()) {
+                if (resizing) {
+                    int groupCurrSize = LayoutInterval.getIntervalCurrentSize(par, dimension);
+                    int currSize = LayoutInterval.getIntervalCurrentSize(intr, dimension);
+                    // PENDING currSize could change if groupPrefSize != groupCurrSize
+                    if (groupCurrSize != currSize) {
+                        LayoutInterval seqGroup = new LayoutInterval(SEQUENTIAL);
+                        int alignment = intr.getAlignment();
+                        layoutModel.setIntervalAlignment(intr, DEFAULT);
+                        seqGroup.setAlignment(alignment);
+                        int i = layoutModel.removeInterval(intr);
+                        layoutModel.addInterval(intr, seqGroup, -1);
+                        LayoutInterval space = new LayoutInterval(SINGLE);
+                        space.setSize(groupCurrSize - currSize);
+                        layoutModel.addInterval(space, seqGroup, (alignment == LEADING) ? -1 : 0);
+                        layoutModel.addInterval(seqGroup, par, i);
+                    }
                 }
             }
-        } else {
+            intr = par;
+            par = par.getParent();
+        }
+        if (parent.isSequential()) {
             if (resizing && !parentContentResizable) {
                 // PENDING currSize could change if groupPrefSize != groupCurrSize
                 int seqCurrSize = LayoutInterval.getIntervalCurrentSize(parent, dimension);

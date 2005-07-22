@@ -67,12 +67,12 @@ public class LayoutModel implements LayoutConstants {
         }
     }
 
-    public void removeComponentAndIntervals(String compId, boolean recursively) {
+    public void removeComponentAndIntervals(String compId, boolean fromModel) {
         LayoutComponent comp = getLayoutComponent(compId);
         if (comp != null) {
             boolean wasRoot = (comp.getParent() == null);
-            removeComponent(comp, recursively);
-            if (!wasRoot) {
+            removeComponent(comp, fromModel);
+            if (!wasRoot && fromModel) {
                 for (int j=0; j < DIM_COUNT; j++) {
                     removeInterval(comp.getLayoutInterval(j));
                 }
