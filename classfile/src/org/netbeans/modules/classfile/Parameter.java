@@ -41,7 +41,7 @@ public final class Parameter extends Field {
     }
 
     /** Creates new Parameter */
-    private Parameter(String name, String type, ClassFile classFile,
+    Parameter(String name, String type, ClassFile classFile,
             DataInputStream visibleAnnotations, DataInputStream invisibleAnnotations) {
         super(name, type, classFile);
         loadParameterAnnotations(visibleAnnotations, invisibleAnnotations);
