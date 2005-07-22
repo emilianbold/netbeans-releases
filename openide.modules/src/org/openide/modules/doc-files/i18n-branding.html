@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
               <dd><a href="#template-descs">Template descriptions</a></dd>
             </dl></dd>
         <dd><a href="#loc-file-names">Localized file names</a></dd>
+        <dd><a href="#layers">Localizing layers</a></dd>
         <dd><a href="#images">Images</a></dd>
         <dd><a href="#javahelp">Help documentation</a></dd>
         <dd><a href="#module-metainfo">Module names in manifest files</a></dd>
@@ -453,6 +454,20 @@ Not really very exciting.
 </table>
 </td></tr>
 </table>
+
+<h2><a name="layers">Localizing layers</a></h2>
+
+<p>
+ XML layers themselves can be localized in the expected way: <samp>layer_<i>LOCALE</i>.xml</samp> can contain
+ overrides of <samp>layer.xml</samp>. (You can add files or folders, or <q>mask</q> files or folders using
+ special <samp>*_hidden</samp> files, or just replace layer file contents with a variant.) Localizing layers in
+ this way is however quite rare and not nice to potential translators. Usually there is a better way, such as
+ using a single fixed layer entry and looking up localizable text in a separate <samp>Bundle.properties</samp>.
+</p>
+<p>
+ <a href="#branding">Branding</a> layers (see below) is however reasonably common, for example to hide unwanted
+ menu items in an application based on the NetBeans Platform.
+</p>
 
 <h2><a name="images">Images</a></h2>
 
