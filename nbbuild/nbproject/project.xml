@@ -292,6 +292,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../serverplugins/sun/appsrvbridge</project>
                 <project>../serverplugins/sun/sunddapi</project>
                 <project>../serverplugins/sun/sunddui</project>
+                <project>../serverplugins/jboss4</project>
                 <project>../tasklist/api</project>
                 <project>../tasklist/core</project>
                 <project>../tasklist/docscan</project>
