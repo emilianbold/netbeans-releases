@@ -40,6 +40,7 @@ public class OutputConsole implements CookieObserver
 
         // reuse the existing tab with same name if possible
         io = IOProvider.getDefault().getIO(name, false);
+        io.select();
         io.setFocusTaken (false);
         ow = io.getOut();
             try {
