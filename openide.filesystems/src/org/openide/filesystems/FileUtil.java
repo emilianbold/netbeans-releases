@@ -77,6 +77,13 @@ public final class FileUtil extends Object {
     /* mapping of file extensions to content-types */
     private static java.util.Dictionary map = new java.util.Hashtable();
 
+    static {
+        // Set up at least this one statically, because it is so basic;
+        // we do not want to rely on Lookup, MIMEResolver, declarative resolvers,
+        // XML layers, etc. just to find this.
+        setMIMEType("xml", "text/xml"); // NOI18N
+    }
+
     /** Cache for {@link #isArchiveFile(FileObject)}. */
     private static final Map /*<FileObject,boolean>*/ archiveFileCache = new WeakHashMap();
 
