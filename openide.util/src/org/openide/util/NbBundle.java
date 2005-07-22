@@ -86,7 +86,7 @@ public class NbBundle extends Object {
 
     /** Set the current branding token.
      * The permitted format, as a regular expression:
-     * <pre>/^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*$/</pre>
+     * <pre>[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*</pre>
      * <p class="nonnormative">
      * This is normally only called by NetBeans startup code and unit tests.
      * Currently the branding may be specified by passing the <code>--branding</code>
@@ -96,7 +96,9 @@ public class NbBundle extends Object {
      * @throws IllegalArgumentException if in an incorrect format
      */
     public static void setBranding(String bt) throws IllegalArgumentException {
-        // [PENDING] check its format here acc. to above regex
+        if (bt != null && !bt.matches("[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*")) { // NOI18N
+            throw new IllegalArgumentException("Malformed branding token: " + bt); // NOI18N
+        }
         brandingToken = bt;
     }
 
