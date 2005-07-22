@@ -95,9 +95,9 @@ public final class LocalizedBundleInfo {
     }
     
     /**
-     * Reload data of this localizing bundle info from the file previously set
-     * by path. If the {@link #setPath} hasn't been called before an {@link
-     * IllegalStateException} will be thrown.
+     * Reload data of this localizing bundle info from the file represented by
+     * previously set path. If the {@link #setPath} hasn't been called before
+     * an {@link IllegalStateException} will be thrown.
      */
     public void reload() throws IOException {
         if (getPath() == null) {
@@ -116,8 +116,8 @@ public final class LocalizedBundleInfo {
     }
     
     /**
-     * Reload this localizing bundle into from the file specified by previously
-     * set path. If the {@link setPath} hasn't been called before an {@link
+     * Reload this localizing bundle from the file specified by previously set
+     * path. If the {@link #setPath} hasn't been called before an {@link
      * IllegalStateException} will be thrown.
      */
     public void store() throws IOException {
