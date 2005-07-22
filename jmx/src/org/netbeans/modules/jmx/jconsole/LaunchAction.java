@@ -14,7 +14,6 @@ package org.netbeans.modules.jmx.jconsole;
 
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -22,13 +21,13 @@ import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.File;
-
+import javax.swing.Action;
 /**
  *
  * A test action
  *
  */
-public class LaunchAction extends CallableSystemAction {
+public class LaunchAction extends javax.swing.AbstractAction {
     
     class ErrReader implements Runnable {
         private BufferedReader reader;
@@ -126,25 +125,33 @@ public class LaunchAction extends CallableSystemAction {
         }
     }
     
+    public LaunchAction() {
+         putValue(Action.NAME,
+                  NbBundle.getMessage(LaunchAction.class,"LBL_ActionName")); // NOI18N
+         putValue(Action.SHORT_DESCRIPTION,
+                  NbBundle.getMessage(LaunchAction.class,"HINT_StartJConsole")); // NOI18N
+         putValue(
+                "iconBase", // NOI18N
+                "org/netbeans/modules/jmx/resources/console.png" //NOI18N
+                );
+        
+        //Needed in Tools|Options|...| ToolBars action icons
+         putValue (
+            Action.SMALL_ICON, 
+            new javax.swing.ImageIcon (org.openide.util.Utilities.loadImage("org/netbeans/modules/jmx/resources/console.png")) // NOI18N        
+                );
+    }
+    
     public org.openide.util.HelpCtx getHelpCtx() {
         return null;
-    }
-    
-    // action caption
-    public String getName() {
-        return (String)NbBundle.getMessage(LaunchAction.class,"LBL_ActionName");// NOI18N
-    }
-    
-    
-    protected String iconResource() {
-        return "org/netbeans/modules/jmx/resources/console.png";// NOI18N
     }
     
     protected boolean asynchronous() {
         return false;
     }
     
-    public synchronized void performAction() {
+    //public synchronized void performAction() {
+    public synchronized void actionPerformed(java.awt.event.ActionEvent evt) {
         if(isStarted()) {
             String msg = NbBundle.getMessage(LaunchAction.class,"LBL_ActionAlreadyStartedMessage");// NOI18N
             console.message(msg);
