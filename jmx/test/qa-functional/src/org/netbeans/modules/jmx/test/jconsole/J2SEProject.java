@@ -1,16 +1,4 @@
 /*
- * J2SEProject.java
- *
- * Created on July 20, 2005, 11:58 AM
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
- */
-
-package org.netbeans.modules.jmx.test.jconsole;
-
-/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -22,6 +10,8 @@ package org.netbeans.modules.jmx.test.jconsole;
  * Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
+package org.netbeans.modules.jmx.test.jconsole;
 
 import java.awt.Component;
 import java.awt.Container;
