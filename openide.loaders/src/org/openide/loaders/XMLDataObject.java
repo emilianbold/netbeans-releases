@@ -1472,28 +1472,9 @@ public class XMLDataObject extends MultiDataObject {
         */
         protected FileObject findPrimaryFile (FileObject fo) {
             String mime = fo.getMIMEType ();
-            if (MIME.equals(mime) || "application/xml".equals(mime)) {  //NOI18N
+            if (mime.endsWith("/xml") || mime.endsWith("+xml")) { // NOI18N
                 return fo;
             }
-            /* JST: I believe that this can be removed because XML_EXT should
-             * always be recognized as text/xml mime type 
-             *
-             * Cc.: Unforunatelly there are .xml configuration files
-             * that use "*+xml" suffixed MIME content type
-             * for lightweight data-object-subclass-less typing purposes.
-             * E.g. ProjectEnvironmentProviders are keyed by MIME type.
-             *
-             * It could be better to accept directly "+xml"s...
-             */
-            if ("xml".equals(fo.getExt())) {
-                return fo;
-            }            
-            
-            /** JST: Removed JSP should handle this in better way
-            if ("tld".equals(fo.getExt())) { // NOI18N
-                return fo; // JSP Tag Library Descriptor
-            }
-            */
             // not recognized
             return null;            
         }
@@ -1814,7 +1795,7 @@ public class XMLDataObject extends MultiDataObject {
     private final class PlainDataNode extends DataNode {
         public PlainDataNode() {
             super(XMLDataObject.this, Children.LEAF);
-            setIconBase("org/openide/loaders/xmlObject"); // NOI18N
+            setIconBaseWithExtension("org/openide/loaders/xmlObject.gif"); // NOI18N
         }
         public Action getPreferredAction() {
             return SystemAction.get(OpenAction.class);
