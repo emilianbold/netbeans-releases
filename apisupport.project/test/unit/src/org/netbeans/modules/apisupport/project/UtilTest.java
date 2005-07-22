@@ -58,7 +58,7 @@ public class UtilTest extends TestBase {
     }
     
     public void testFindLocalizedBundleInfoFromBinaryModule() throws Exception {
-        File apisupportF = file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-apisupport-project.jar");
+        File apisupportF = file("nbbuild/netbeans/ide6/modules/org-netbeans-modules-apisupport-project.jar");
         JarFile apisupportJar = new JarFile(apisupportF);
         LocalizedBundleInfo info = Util.findLocalizedBundleInfo(apisupportJar);
         assertApiSupportInfo(info);

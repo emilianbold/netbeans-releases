@@ -48,7 +48,7 @@ public class JavadocForBinaryImplTest extends TestBase {
     public void testJavadocForNetBeansOrgModules() throws Exception {
         // Have to load at least one module to get the scan going.
         ProjectManager.getDefault().findProject(FileUtil.toFileObject(file("ant")));
-        File beansJar = file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-beans.jar");
+        File beansJar = file("nbbuild/netbeans/ide6/modules/org-netbeans-modules-beans.jar");
         URL[] roots = JavadocForBinaryQuery.findJavadoc(Util.urlForJar(beansJar)).getRoots();
         URL[] expectedRoots = new URL[] {
             Util.urlForDir(file("nbbuild/build/javadoc/org-netbeans-modules-beans")),

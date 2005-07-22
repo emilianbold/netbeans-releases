@@ -32,19 +32,19 @@ public class UpdateTrackingFileOwnerQueryTest extends TestBase {
     
     public void testOwnershipNetBeansOrg() throws Exception {
         // Basic module:
-        assertOwnership("ant", "nbbuild/netbeans/ide5/modules/org-apache-tools-ant-module.jar");
+        assertOwnership("ant", "nbbuild/netbeans/ide6/modules/org-apache-tools-ant-module.jar");
         // Explicitly listed additions:
-        assertOwnership("ant", "nbbuild/netbeans/ide5/ant/nblib/bridge.jar");
+        assertOwnership("ant", "nbbuild/netbeans/ide6/ant/nblib/bridge.jar");
         // Pattern matches (here "ant/lib/"):
-        assertTrue("ant module built (cannot scan by pattern unless files exist)", file("nbbuild/netbeans/ide5/ant/lib/ant.jar").isFile());
-        assertOwnership("ant", "nbbuild/netbeans/ide5/ant/lib/ant.jar");
+        assertTrue("ant module built (cannot scan by pattern unless files exist)", file("nbbuild/netbeans/ide6/ant/lib/ant.jar").isFile());
+        assertOwnership("ant", "nbbuild/netbeans/ide6/ant/lib/ant.jar");
         // These two always included:
-        assertOwnership("ant", "nbbuild/netbeans/ide5/config/Modules/org-apache-tools-ant-module.xml");
-        assertOwnership("ant", "nbbuild/netbeans/ide5/update_tracking/org-apache-tools-ant-module.xml");
+        assertOwnership("ant", "nbbuild/netbeans/ide6/config/Modules/org-apache-tools-ant-module.xml");
+        assertOwnership("ant", "nbbuild/netbeans/ide6/update_tracking/org-apache-tools-ant-module.xml");
         // Different pattern match ("modules/ext/jh*.jar"):
-        assertOwnership("core/javahelp", "nbbuild/netbeans/platform5/modules/ext/jh-2.0_02.jar");
+        assertOwnership("core/javahelp", "nbbuild/netbeans/platform6/modules/ext/jh-2.0_02.jar");
         // Use of release dir:
-        assertOwnership("extbrowser", "nbbuild/netbeans/ide5/modules/lib/extbrowser.dll");
+        assertOwnership("extbrowser", "nbbuild/netbeans/ide6/modules/lib/extbrowser.dll");
     }
     
     public void testOwnershipExternal() throws Exception {

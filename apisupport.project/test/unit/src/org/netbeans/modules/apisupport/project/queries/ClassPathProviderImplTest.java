@@ -97,19 +97,19 @@ public class ClassPathProviderImplTest extends TestBase {
         Set/*<String>*/ expectedRoots = new TreeSet();
         // Keep up to date w/ changes in ant/nbproject/project.{xml,properties}:
         // ${module.classpath}:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-modules.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-options.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-windows.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-text.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-actions.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-execution.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-io.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-options.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-actions.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-execution.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
         assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
@@ -147,29 +147,29 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull("have a COMPILE classpath", cp);
         Set/*<String>*/ expectedRoots = new TreeSet();
         // Keep up to date w/ changes in java/javacore/nbproject/project.xml:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-api-java.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-modules-classfile.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-jmi-javamodel.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/javax-jmi-reflect.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-java.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-classfile.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-jmi-javamodel.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/javax-jmi-reflect.jar"));
         expectedRoots.add(urlForJar("mdr/external/jmi.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/javax-jmi-model.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/javax-jmi-model.jar"));
         expectedRoots.add(urlForJar("mdr/external/mof.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-api-mdr.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-modules-projectapi.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-netbeans-api-progress.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-modules-mdr.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-mdr.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectapi.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-mdr.jar"));
         expectedRoots.add(urlForJar("mdr/dist/mdr.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-modules-jmiutils.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-jmiutils.jar"));
         expectedRoots.add(urlForJar("mdr/jmiutils/dist/jmiutils.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-modules.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-windows.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-text.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
         expectedRoots.add(urlForJar("java/parser/dist/java-parser.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
         // xml/tools depends on xml/tax, which is not yet projectized, but exports a class path extension anyway.
@@ -177,22 +177,22 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull("have xml/tools/src", src);
         cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
-        assertNotNull("xml/tax built", nbroot.getFileObject("nbbuild/netbeans/ide5/modules/autoload/ext/tax.jar"));
+        assertNotNull("xml/tax built", nbroot.getFileObject("nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"));
         expectedRoots = new TreeSet();
         // Keep up to date w/ changes in xml/tools/nbproject/project.xml:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-api-java.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-api-xml.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-netbeans-modules-xml-core.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/autoload/xml-tax.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/autoload/ext/tax.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-text.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/modules/org-openide-src.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-java.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-xml.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-xml-core.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/autoload/xml-tax.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-openide-src.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
     }
     
@@ -206,24 +206,24 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForDir("ant/build/classes"));
         expectedRoots.add(urlForJar("ant/external/lib/ant.jar"));
         // ${module.classpath}:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-modules.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-options.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-windows.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-text.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-actions.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-execution.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-io.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-options.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-actions.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-execution.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
         assertEquals("right COMPILE classpath", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(srcbridge, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
         expectedRoots.add(urlForDir("ant/build/bridge-classes"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide5/ant/nblib/bridge.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/ant/nblib/bridge.jar"));
         assertEquals("right EXECUTE classpath (COMPILE plus classes plus JAR)", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(srcbridge, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
@@ -239,24 +239,24 @@ public class ClassPathProviderImplTest extends TestBase {
         Set/*<String>*/ expectedRoots = new TreeSet();
         // Keep up to date w/ changes in autoupdate/nbproject/project.{xml,properties}:
         // module.classpath:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-modules.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-explorer.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-compat.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-options.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-windows.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-actions.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-netbeans-core.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/core.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-explorer.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-compat.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-options.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-actions.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-core.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/core.jar"));
         // cp.extra:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/updater.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/updater.jar"));
         // module JAR:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-netbeans-modules-autoupdate.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-modules-autoupdate.jar"));
         expectedRoots.add(urlForJar("xtest/lib/junit.jar")); // note: in running IDE this is different! modules/ext/junit-3.8.1.jar
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
@@ -264,7 +264,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull("have an EXECUTE classpath", cp);
         expectedRoots.add(urlForDir("autoupdate/build/test/unit/classes"));
         // test.unit.run.cp.extra:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/boot.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/boot.jar"));
         assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
@@ -288,7 +288,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots = new TreeSet();
         expectedRoots.add(urlForJar(EEP + "/suite3/build/cluster/modules/org-netbeans-examples-modules-dummy.jar"));
         expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/random/modules/random.jar"));
-        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/ide5/modules/ext/junit-3.8.1.jar"));
+        expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/ide6/modules/ext/junit-3.8.1.jar"));
         expectedRoots.add(urlForJar(EEP + "/suite3/nbplatform/testtools/modules/org-netbeans-modules-nbjunit.jar"));
     }
     
@@ -417,7 +417,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull(ioEntry);
         copyOfMiscXMLManager.addDependencies(Collections.singleton(new ModuleDependency(ioEntry)));
         assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-io.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
         assertEquals("right COMPILE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
     }
     
@@ -432,7 +432,7 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull(ioEntry);
         copyOfMiscXMLManager.addDependencies(Collections.singleton(new ModuleDependency(ioEntry)));
         assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-io.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
         assertEquals("right EXECUTE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
     }
     
@@ -450,7 +450,7 @@ public class ClassPathProviderImplTest extends TestBase {
         copyOfMiscXMLManager.addDependencies(Collections.singleton(new ModuleDependency(ioEntry)));
         assertTrue("got changes", l.changed.contains(ClassPath.PROP_ROOTS));
         l.changed.clear();
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-io.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-io.jar"));
         assertEquals("right COMPILE classpath after changing project.xml", expectedRoots, urlsOfCp(cp));
         EditableProperties props = copyOfMiscProject.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("test.unit.cp.extra", "${netbeans.dest.dir}/lib/fnord.jar");
@@ -504,14 +504,14 @@ public class ClassPathProviderImplTest extends TestBase {
         ClassPath cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
         assertNotNull("have a COMPILE classpath", cp);
         Set/*<String>*/ expectedRoots = new TreeSet();
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-actions.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-text.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform5/modules/org-openide-windows.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-actions.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
         File lib = new File(jmfhome, "lib");
         expectedRoots.add(Util.urlForJar(new File(lib, "jmf.jar")).toExternalForm());
         expectedRoots.add(Util.urlForJar(new File(lib, "mediaplayer.jar")).toExternalForm());

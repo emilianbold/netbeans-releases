@@ -386,7 +386,7 @@ public final class NbModuleProject implements Project {
                 return f.getAbsolutePath();
             } else {
                 // External module with no ref to nb.org sources.
-                return "${netbeans.dest.dir}/ide5/modules/ext/junit-3.8.1.jar"; // NOI18N
+                return "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar"; // NOI18N
             }
         }
     }

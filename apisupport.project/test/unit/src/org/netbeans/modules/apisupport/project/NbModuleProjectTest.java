@@ -60,35 +60,35 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals("right manifest.mf", "manifest.mf", eval.getProperty("manifest.mf"));
         // Keep the following in synch with java/project/nbproject/project.xml etc.:
         String[] cp = {
-            "nbbuild/netbeans/ide5/modules/org-apache-tools-ant-module.jar",
-            "nbbuild/netbeans/platform5/core/org-openide-filesystems.jar",
-            "nbbuild/netbeans/platform5/lib/org-openide-util.jar",
-            "nbbuild/netbeans/platform5/lib/org-openide-modules.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-nodes.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-awt.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-options.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-actions.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-io.jar",
-            "nbbuild/netbeans/platform5/modules/org-openide-loaders.jar",
-            "nbbuild/netbeans/ide5/modules/org-netbeans-modules-java-platform.jar",
-            "nbbuild/netbeans/ide5/modules/org-netbeans-modules-project-ant.jar",
-            "nbbuild/netbeans/ide5/modules/org-netbeans-modules-project-libraries.jar",
-            "nbbuild/netbeans/ide5/modules/org-openidex-util.jar",
-            "nbbuild/netbeans/ide5/modules/org-netbeans-modules-projectapi.jar",
-            "nbbuild/netbeans/ide5/modules/org-netbeans-modules-projectuiapi.jar",
-            "nbbuild/netbeans/platform5/modules/org-netbeans-modules-queries.jar",
-            "nbbuild/netbeans/ide5/modules/org-netbeans-api-java.jar",
+            "nbbuild/netbeans/ide6/modules/org-apache-tools-ant-module.jar",
+            "nbbuild/netbeans/platform6/core/org-openide-filesystems.jar",
+            "nbbuild/netbeans/platform6/lib/org-openide-util.jar",
+            "nbbuild/netbeans/platform6/lib/org-openide-modules.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-nodes.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-awt.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-options.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-actions.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-io.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-loaders.jar",
+            "nbbuild/netbeans/ide6/modules/org-netbeans-modules-java-platform.jar",
+            "nbbuild/netbeans/ide6/modules/org-netbeans-modules-project-ant.jar",
+            "nbbuild/netbeans/ide6/modules/org-netbeans-modules-project-libraries.jar",
+            "nbbuild/netbeans/ide6/modules/org-openidex-util.jar",
+            "nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectapi.jar",
+            "nbbuild/netbeans/ide6/modules/org-netbeans-modules-projectuiapi.jar",
+            "nbbuild/netbeans/platform6/modules/org-netbeans-modules-queries.jar",
+            "nbbuild/netbeans/ide6/modules/org-netbeans-api-java.jar",
         };
         assertEquals("right module.classpath", createCP(cp), eval.getProperty("module.classpath"));
-        assertEquals("right core.dir", file("nbbuild/netbeans/platform5"),
+        assertEquals("right core.dir", file("nbbuild/netbeans/platform6"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("core.dir")));
-        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide5"),
+        assertEquals("right apisupport/project.dir", file("nbbuild/netbeans/ide6"),
             javaProjectProject.getHelper().resolveFile(eval.getProperty("apisupport/project.dir")));
-        assertEquals("right module JAR", file("nbbuild/netbeans/ide5/modules/org-netbeans-modules-java-project.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/ide6/modules/org-netbeans-modules-java-project.jar"),
             javaProjectProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
         eval = loadersProject.evaluator();
-        assertEquals("right module JAR", file("nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"),
+        assertEquals("right module JAR", file("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"),
             loadersProject.getHelper().resolveFile(eval.evaluate("${cluster}/${module.jar}")));
     }
     
@@ -121,7 +121,7 @@ public class NbModuleProjectTest extends TestBase {
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
         PropertyEvaluator eval = actionProject.evaluator();
         String[] cp = {
-            "nbbuild/netbeans/platform5/modules/org-openide-dialogs.jar",
+            "nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar",
             EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar",
         };
         assertEquals("right module.classpath", createCP(cp), eval.getProperty("module.classpath"));
