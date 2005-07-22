@@ -7,39 +7,44 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xsl.transform;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-
-import javax.servlet.*;
-import javax.servlet.http.*;
-
-import org.xml.sax.SAXParseException;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-
-import org.openide.util.SharedClassObject;
-import org.openide.util.HttpServer;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
-
-import org.netbeans.api.xml.cookies.*;
-import org.netbeans.spi.xml.cookies.*;
-
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
+import org.netbeans.api.xml.cookies.CookieMessage;
+import org.netbeans.api.xml.cookies.CookieObserver;
+import org.netbeans.api.xml.cookies.TransformableCookie;
+import org.netbeans.api.xml.cookies.XMLProcessorDetail;
 import org.netbeans.modules.xsl.utils.TransformUtil;
+import org.netbeans.spi.xml.cookies.DefaultXMLProcessorDetail;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
+import org.xml.sax.SAXParseException;
 
 /**
  *
  * @author  Libor Kramolis
- * @version 0.1
  */
 public class TransformServlet extends HttpServlet {
     private static final long serialVersionUID = 1632869007241230624L;    
@@ -81,7 +86,16 @@ public class TransformServlet extends HttpServlet {
         Observer notifier = new Observer();
         try {
             String guessOutputExt = TransformUtil.guessOutputExt (xslSource);
-            String mimeType = FileUtil.getMIMEType (guessOutputExt);
+            String mimeType;
+            if (guessOutputExt.equals("txt")) { // NOI18N
+                mimeType = "text/plain"; // NOI18N
+            } else if (guessOutputExt.equals("xml")) { // NOI18N
+                mimeType = "text/xml"; // NOI18N
+            } else if (guessOutputExt.equals("html")) { // NOI18N
+                mimeType = "text/html"; // NOI18N
+            } else {
+                mimeType = null;
+            }
 
             if ( mimeType != null ) {
                 response.setContentType (mimeType);
@@ -229,9 +243,9 @@ public class TransformServlet extends HttpServlet {
 
         try {
             URL url = new URL (systemId);
-            FileObject[] fos = URLMapper.findFileObjects (url);
-            if ( fos.length > 0 ) {
-                name = TransformUtil.getURLName (fos[0]);
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                name = TransformUtil.getURLName (fo);
             }
         } catch (Exception exc) {
             // ignore it -> use systemId
