@@ -16,7 +16,6 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.j2ee.jboss4</code-name-base>
-            <path>libs/jbplugin</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
@@ -117,9 +116,7 @@
                  in this module from another module, you'll
                  get a NoClassDefFoundException at runtime.
             -->
-            <public-packages>
-                <package>org.netbeans.modules.j2ee.jboss4</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
