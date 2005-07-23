@@ -66,6 +66,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Prope
                         if (m != null && m.isEnabled()) {
                             m = mgr.get("org.netbeans.modules.versioning.system.cvss");
                             if (m != null && m.isEnabled()) {
+                                if (!CvsVersioningSystem.getInstance().isActive()) return;
                                 programmaticDisable = true;
                                 mgr.disable(m);
                             }

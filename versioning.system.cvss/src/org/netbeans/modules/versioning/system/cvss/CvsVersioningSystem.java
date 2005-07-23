@@ -70,7 +70,9 @@ public class CvsVersioningSystem {
     private final Set   userIgnorePatterns = new HashSet();
     private boolean     userIgnorePatternsReset;
     private long        userIgnorePatternsTimestamp;
-    
+
+    private boolean     moduleActive;
+
     public static synchronized CvsVersioningSystem getInstance() {
         if (instance == null) {
             instance = new CvsVersioningSystem();
@@ -96,6 +98,14 @@ public class CvsVersioningSystem {
     }
 
     /**
+     * 
+     * @return true if old modules has been already disabled and this module was enabled, false otherwise
+     */
+    boolean isActive() {
+        return moduleActive;
+    }
+
+    /**
      * Disables old VCS modules. 
      */ 
     private void disableCurrentModules() {
@@ -113,6 +123,7 @@ public class CvsVersioningSystem {
                         if (modules.size() > 0) {
                             mgr.disable(modules);
                         }
+                        moduleActive = true;
                     }
                 });
             }
