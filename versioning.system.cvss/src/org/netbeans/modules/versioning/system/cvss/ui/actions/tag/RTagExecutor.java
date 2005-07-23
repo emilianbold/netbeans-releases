@@ -63,21 +63,32 @@ public class RTagExecutor extends ExecutorSupport {
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         AdminHandler ah = cvs.getAdminHandler();
 
+        RTagExecutor [] executors = new RTagExecutor[splitRoots.length];
         CommandDuplicator cloner = CommandDuplicator.getDuplicator(cmd);
-        RTagExecutor [] executors = new RTagExecutor[splitRoots.length]; 
+        Set remoteRepositories = new HashSet(roots.length);
         for (int i = 0; i < splitRoots.length; i++) {
             File [] files = splitRoots[i];
-            String [] modules = new String[files.length];
+            for (int j = 0; j < files.length; j++) {
+                File file = files[j];
+                File directory = file.isDirectory() ? file : file.getParentFile();
+                try {
+                    String repository = ah.getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1);
+                    remoteRepositories.add(repository);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                    return null;
+                }
+            }
             GlobalOptions currentOptions = (GlobalOptions) options.clone();
             try {
                 currentOptions.setCVSRoot(Utils.getCVSRootFor(files[0]));
-                modules[i] = ah.getRepositoryForDirectory(files[i].getAbsolutePath(), "").substring(1);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
                 return null;
             }
+
             RtagCommand command = (RtagCommand) cloner.duplicate();
-            command.setModules(modules);
+            command.setModules((String[]) remoteRepositories.toArray(new String[remoteRepositories.size()]));
             String commandContext = MessageFormat.format(loc.getString("MSG_RTagExecutor_CmdContext"), new Object [] { Integer.toString(files.length) });
             command.setDisplayName(MessageFormat.format(cmd.getDisplayName(), new Object [] { commandContext }));
             executors[i] = new RTagExecutor(cvs, command, currentOptions);
