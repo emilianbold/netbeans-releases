@@ -491,7 +491,8 @@ instance for example by view action. <code>findDefault</code> will call
 <code>WindowManager.findTopComponent</code>. As <code>WindowManager.findTopComponent</code>
 can return <code>null</code> <code>findDefault</code> should handle such case somehow
 eg. by calling of <code>getDefault</code>.
-There is simple example module openide/api/examples/windowsystem2/examplemodule01 in CVS
+There is a
+<a href="http://www.netbeans.org/source/browse/platform/samples/window-system-basic/">simple example module</a>
 where persistent singleton instance is defined in module layer as described here.
 
 <p>It is possible to use <code>writeReplace</code> and <code>readResolve</code> as well
