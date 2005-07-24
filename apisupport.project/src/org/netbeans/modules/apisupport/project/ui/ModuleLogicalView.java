@@ -14,6 +14,8 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -127,8 +129,17 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             setShortDescription("Project in " + FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
             
             setFiles(getProjectFiles());
+            pi.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
+                        RootNode.this.setDisplayName((String) evt.getNewValue());
+                    } else if (evt.getPropertyName() == ProjectInformation.PROP_NAME) {
+                        RootNode.this.setName((String) evt.getNewValue());
+                    }
+                }
+            });
         }
-
+        
         private Set getProjectFiles() {
             Set roots = new HashSet();
             Sources sources = (Sources) project.getLookup().lookup(Sources.class);

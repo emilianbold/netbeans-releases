@@ -21,7 +21,11 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -52,7 +56,7 @@ public final class LocalizedBundleInfo {
      * Returns instances initialized by data in the given {@link FileObject}.
      * Note that instances created by this factory method are automatically
      * storable (i.e. {@link #store} and {@link #reload} can be called) if the
-     * given object represents a regular {@link File}.
+     * given object represents a regular {@link java.io.File}.
      * @param bundleFO {@link FileObject} representing localizing bundle.
      *        Usually <em>bundle.properties</em> or its branded version.
      * @return instance representing data in the given bundle
@@ -61,17 +65,8 @@ public final class LocalizedBundleInfo {
         if (bundleFO == null) {
             return null;
         }
-        InputStream bundleIS = bundleFO.getInputStream();
-        try {
-            LocalizedBundleInfo info = load(bundleIS);
-            File f = FileUtil.toFile(bundleFO);
-            if (f != null) {
-                info.setPath(f.getAbsolutePath());
-            }
-            return info;
-        } finally {
-            bundleIS.close();
-        }
+        LocalizedBundleInfo info = new LocalizedBundleInfo(bundleFO);
+        return info;
     }
     
     /**
@@ -94,10 +89,38 @@ public final class LocalizedBundleInfo {
         this.props = props;
     }
     
+    /** Use factory method instead. */
+    private LocalizedBundleInfo(FileObject bundleFO) throws IOException {
+        InputStream bundleIS = bundleFO.getInputStream();
+        try {
+            EditableProperties props = new EditableProperties();
+            props.load(bundleIS);
+            this.props = props;
+            
+            File f = FileUtil.toFile(bundleFO);
+            if (f != null) {
+                this.setPath(f.getAbsolutePath());
+                bundleFO.addFileChangeListener(new FileChangeAdapter() {
+                    public void fileChanged(FileEvent fe) {
+                        try {
+                            LocalizedBundleInfo.this.reload();
+                        } catch (IOException e) {
+                            Util.err.log(ErrorManager.WARNING,
+                                    "Cannot reload localized bundle info " + // NOI18N
+                                    FileUtil.getFileDisplayName(fe.getFile()));
+                        }
+                    }
+                });
+            }
+        } finally {
+            bundleIS.close();
+        }
+    }
+    
     /**
      * Reload data of this localizing bundle info from the file represented by
      * previously set path. If the {@link #setPath} hasn't been called before
-     * an {@link IllegalStateException} will be thrown.
+     * an {@link java.lang.IllegalStateException} will be thrown.
      */
     public void reload() throws IOException {
         if (getPath() == null) {
@@ -105,20 +128,13 @@ public final class LocalizedBundleInfo {
                     + getClass().getName() + ".setPath()"); // NOI18N
         }
         FileObject bundleFO = FileUtil.toFileObject(new File(getPath()));
-        InputStream bundleIS = bundleFO.getInputStream();
-        try {
-            EditableProperties ep = new EditableProperties();
-            ep.load(bundleIS);
-            this.props = ep;
-        } finally {
-            bundleIS.close();
-        }
+        this.props = Util.loadProperties(bundleFO);
     }
     
     /**
      * Reload this localizing bundle from the file specified by previously set
      * path. If the {@link #setPath} hasn't been called before an {@link
-     * IllegalStateException} will be thrown.
+     * java.lang.IllegalStateException} will be thrown.
      */
     public void store() throws IOException {
         if (getPath() == null) {
@@ -225,8 +241,8 @@ public final class LocalizedBundleInfo {
     
     public String toString() {
         return "LocalizedBundleInfo[" + getDisplayName() + "; " + // NOI18N
-            getCategory() + "; " + // NOI18N
-            getShortDescription() + "; " + // NOI18N
-            getLongDescription() + "]"; // NOI18N
+                getCategory() + "; " + // NOI18N
+                getShortDescription() + "; " + // NOI18N
+                getLongDescription() + "]"; // NOI18N
     }
 }

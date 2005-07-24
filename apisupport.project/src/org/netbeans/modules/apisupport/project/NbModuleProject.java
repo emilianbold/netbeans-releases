@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -704,21 +705,34 @@ public final class NbModuleProject implements Project {
         ((OpenedHook) getLookup().lookup(OpenedHook.class)).projectOpened();
     }
     
+    /**
+     * Returns {@link LocalizedBundleInfo} for this project. For use from unit
+     * tests.
+     */
+    LocalizedBundleInfo getBundleInfo() {
+        return bundleInfo;
+    }
+    
     private final class Info implements ProjectInformation {
+        
+        private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
         
         Info() {}
         
         public String getName() {
             return getCodeNameBase();
         }
-
+        
         public String getDisplayName() {
-            if (infoDisplayName == null) {
-                infoDisplayName = bundleInfo != null ? bundleInfo.getDisplayName() : getName();
+            String newInfoDisplayName = bundleInfo != null ? bundleInfo.getDisplayName() : getName();
+            if (infoDisplayName == null || !newInfoDisplayName.equals(infoDisplayName)) {
+                String oldValue = infoDisplayName;
+                infoDisplayName = newInfoDisplayName;
+                firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, oldValue, infoDisplayName);
             }
             return infoDisplayName;
         }
-
+        
         public Icon getIcon() {
             return NB_PROJECT_ICON;
         }
@@ -727,10 +741,16 @@ public final class NbModuleProject implements Project {
             return NbModuleProject.this;
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        public void addPropertyChangeListener(PropertyChangeListener pchl) {
+            changeSupport.addPropertyChangeListener(pchl);
         }
         
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        public void removePropertyChangeListener(PropertyChangeListener pchl) {
+            changeSupport.removePropertyChangeListener(pchl);
+        }
+        
+        private void firePropertyChange(String propName, Object oldValue, Object newValue) {
+            changeSupport.firePropertyChange(propName, oldValue, newValue);
         }
         
     }

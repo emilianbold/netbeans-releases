@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,6 +25,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -110,8 +112,7 @@ public class SingleModulePropertiesTest extends TestBase {
         } finally {
             os.close();
         }
-        
-        
+
         assertEquals("there is no listener yet for manifest", "1.0", props.getSpecificationVersion());
         assertEquals("there is no listener yet for bundle", "Misc", props.getBundleInfo().getDisplayName());
         
@@ -120,6 +121,23 @@ public class SingleModulePropertiesTest extends TestBase {
         
         // check that manifest has been reloaded
         assertEquals("spec. version", "1.1", props.getSpecificationVersion());
+        assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
+    }
+    
+    public void testThatPropertiesListen() throws IOException {
+        SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
+                "src/org/netbeans/examples/modules/misc/Bundle.properties");
+        assertEquals("spec. version", "1.0", props.getSpecificationVersion());
+        assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
+        
+        FileObject bundleFO = FileUtil.toFileObject(new File(props.getBundleInfo().getPath()));
+        EditableProperties bundleEP = Util.loadProperties(bundleFO);
+        bundleEP.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
+        // let's fire a change
+        Util.storeProperties(bundleFO, bundleEP);
+
+        // check that manifest has been reloaded
+        assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
         assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
     }
     
