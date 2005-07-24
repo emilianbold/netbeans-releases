@@ -86,7 +86,7 @@ public class ResourceReferencesTableModel extends InnerTableModel {
     }
 
     public int addRow() {
-        String text = Utils.getBundleMessage("LBL_ReferenceName");
+        String text = Utils.getBundleMessage("LBL_ReferenceName_");
         String title = Utils.getBundleMessage("LBL_AddResourceReference");
         final NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(text, title);
         DialogDisplayer.getDefault().notify(inputLine);
