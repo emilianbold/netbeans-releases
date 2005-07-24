@@ -19,7 +19,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -112,33 +114,36 @@ public class SingleModulePropertiesTest extends TestBase {
         } finally {
             os.close();
         }
-
-        assertEquals("there is no listener yet for manifest", "1.0", props.getSpecificationVersion());
-        assertEquals("there is no listener yet for bundle", "Misc", props.getBundleInfo().getDisplayName());
         
         // simple reload
         props.refresh();
         
-        // check that manifest has been reloaded
+        // check that manifest and bundle has been reloaded
         assertEquals("spec. version", "1.1", props.getSpecificationVersion());
-        assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
+        assertEquals("display name should be changed", "Miscellaneous", props.getBundleInfo().getDisplayName());
     }
     
     public void testThatPropertiesListen() throws IOException {
-        SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
+        FileObject miscProjectFO = suite2FO.getFileObject("misc-project");
+        Project miscProject = ProjectManager.getDefault().findProject(miscProjectFO);
+        SingleModuleProperties props = loadProperties(miscProjectFO,
                 "src/org/netbeans/examples/modules/misc/Bundle.properties");
-        assertEquals("spec. version", "1.0", props.getSpecificationVersion());
-        assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
+        assertEquals("display name from ProjectInformation", "Misc",
+                ProjectUtils.getInformation(miscProject).getDisplayName());
+        assertEquals("display name from LocalizedBundleInfo", "Misc",
+                props.getBundleInfo().getDisplayName());
         
         FileObject bundleFO = FileUtil.toFileObject(new File(props.getBundleInfo().getPath()));
         EditableProperties bundleEP = Util.loadProperties(bundleFO);
         bundleEP.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
         // let's fire a change
         Util.storeProperties(bundleFO, bundleEP);
-
-        // check that manifest has been reloaded
-        assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
-        assertEquals("there is no listener yet for bundle", "Miscellaneous", props.getBundleInfo().getDisplayName());
+        
+        // display name should be refreshed
+        assertEquals("display name was refreshed in ProjectInformation", "Miscellaneous",
+                ProjectUtils.getInformation(miscProject).getDisplayName());
+        assertEquals("display name was refreshed in LocalizedBundleInfo", "Miscellaneous",
+                props.getBundleInfo().getDisplayName());
     }
     
     public void testGetPublicPackages() throws Exception {
