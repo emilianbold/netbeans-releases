@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -42,8 +43,12 @@ public abstract class TestBase extends NbTestCase {
     
     protected static String EEP = "apisupport/project/test/unit/data/example-external-projects";
     
+    /** Represents netbeans.org CVS tree this test is run in. */
     protected File nbrootF;
+
+    /** Represents netbeans.org CVS tree this test is run in. */
     protected FileObject nbroot;
+
     protected File extexamplesF;
     protected FileObject extexamples;
     protected File apisZip;
@@ -100,10 +105,18 @@ public abstract class TestBase extends NbTestCase {
         NbPlatform.reset();
     }
     
+    /**
+     * Just calls <code>File(root, path.replace('/', File.separatorChar));</code>
+     */
     protected File file(File root, String path) {
         return new File(root, path.replace('/', File.separatorChar));
     }
     
+    /**
+     * Calls in turn {@link #file(File, String)} with {@link #nbrootF} as the
+     * first parameter. So the returned path will be actually relative to the
+     * netbeans.org CVS tree this test is run in.
+     */
     protected File file(String path) {
         return file(nbrootF, path);
     }
@@ -182,4 +195,34 @@ public abstract class TestBase extends NbTestCase {
         
     }
     
+    /**
+     * Returns {@link NbModuleProject} created in the {@link
+     * #getWorkDir()}/prjDir with code name base default to <em>org.exmaple +
+     * dotted prjDir</em> which is also used as the <em>default</em> package so
+     * the layer and bundle are generated accordingly. Default module's display
+     * name is set to <em>Testing Module</em>. So final set of generated files
+     * for <em>module1</em> as the parameter may look like:
+     *
+     * <ul>
+     *   <li>module1/manifest.mf
+     *   <li>module1/nbproject/platform.properties
+     *   <li>module1/nbproject/project.xml
+     *   <li>module1/src/org/example/module1/resources/Bundle.properties
+     *   <li>module1/src/org/example/module1/resources/layer.xml
+     * </ul>
+     */
+    NbModuleProject generateStandaloneModule(String prjDir) throws IOException {
+        String prjDirDotted = prjDir.replace('/', '.');
+        File prjDirF = file(getWorkDir(), prjDir);
+        NbModuleProjectGenerator.createStandAloneModule(
+                prjDirF,
+                "org.example." + prjDirDotted, // cnb
+                "Testing Module", // display name
+                "org/example/" + prjDir + "/resources/Bundle.properties",
+                "org/example/" + prjDir + "/resources/layer.xml",
+                "default"); // platform id
+        FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
+        return (NbModuleProject) ProjectManager.getDefault().findProject(prjDirFO);
+    }
+
 }
