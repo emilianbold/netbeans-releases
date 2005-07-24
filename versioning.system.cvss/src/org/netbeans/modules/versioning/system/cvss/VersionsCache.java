@@ -14,21 +14,16 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.lib.cvsclient.command.CommandException;
-import org.netbeans.lib.cvsclient.command.PipedFileInformation;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
-import org.netbeans.lib.cvsclient.event.*;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.*;
-import java.text.MessageFormat;
 
 /**
  * Takes care about retrieving various revisions of a file and caching them locally. 
@@ -38,8 +33,6 @@ import java.text.MessageFormat;
  * @author Maros Sandor
  */
 public class VersionsCache {
-    
-    private static final ResourceBundle loc = NbBundle.getBundle(VersionsCache.class);
     
     /**
      * Constant representing the current working revision.
@@ -152,16 +145,14 @@ public class VersionsCache {
         return "#" + revision + "#" + baseFile.getName();        
     }
     
-    private File checkoutRemoteFile(File baseFile, String revision) throws IOException,
-            IllegalCommandException, CommandException, AuthenticationException, NotVersionedException {
+    private File checkoutRemoteFile(File baseFile, String revision) throws IOException {
         
         UpdateCommand cmd = new UpdateCommand();
         cmd.setRecursive(false); 
         cmd.setFiles(new File [] { baseFile });
         cmd.setPipeToOutput(true);
         if (!revision.equals(REVISION_HEAD)) cmd.setUpdateByRevision(revision);
-        cmd.setDisplayName(MessageFormat.format(loc.getString("MSG_VersionsCache_FetchingProgress"),
-                                                new Object [] { revision, baseFile.getName() }));
+        cmd.setDisplayName(NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName()));
 
         VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd);
         executor.execute();

@@ -36,8 +36,6 @@ import java.util.*;
  */
 public class UpdateExecutor extends ExecutorSupport {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(UpdateExecutor.class);
-    
     private Set     refreshedFiles;
     private boolean rwUpdate;
 
@@ -54,7 +52,7 @@ public class UpdateExecutor extends ExecutorSupport {
      */ 
     public static UpdateExecutor [] executeCommand(UpdateCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
-        if (cmd.getDisplayName() == null) cmd.setDisplayName(loc.getString("MSG_UpdateExecutor_CmdDisplayName"));
+        if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateExecutor_CmdDisplayName"));
         try {
             cmds = prepareBasicCommand(cmd);
         } catch (IOException e) {
@@ -130,8 +128,8 @@ public class UpdateExecutor extends ExecutorSupport {
         if (hasConflict) {
             JOptionPane.showMessageDialog(
                     null, 
-                    loc.getString("MSG_UpdateGeneratedConflicts_Prompt"),
-                    loc.getString("MSG_UpdateGeneratedConflicts_Title"),
+                    NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Prompt"),
+                    NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Title"),
                     JOptionPane.WARNING_MESSAGE
                     );
         }

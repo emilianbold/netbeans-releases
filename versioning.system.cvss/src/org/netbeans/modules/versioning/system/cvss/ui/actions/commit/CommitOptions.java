@@ -15,14 +15,10 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import org.openide.util.NbBundle;
 
-import java.util.*;
-
 /**
  * @author Maros Sandor
  */
 abstract class CommitOptions {
-    
-    private static final ResourceBundle loc = NbBundle.getBundle(CommitOptions.class);
     
     public static final CommitOptions ADD_TEXT = new Add("CTL_CommitOption_AddAsText");
     public static final CommitOptions ADD_BINARY = new Add("CTL_CommitOption_AddAsBinary");
@@ -37,7 +33,7 @@ abstract class CommitOptions {
     }
 
     public String toString() {
-        return loc.getString(bundleKey); 
+        return NbBundle.getMessage(CommitOptions.class, bundleKey);
     }
     
     static class Add extends CommitOptions {

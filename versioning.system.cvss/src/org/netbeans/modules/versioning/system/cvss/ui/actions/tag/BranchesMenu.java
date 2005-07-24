@@ -22,7 +22,6 @@ import javax.swing.*;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.PopupMenuEvent;
 import java.awt.event.ActionEvent;
-import java.util.ResourceBundle;
 
 /**
  * Container menu for branch actions.
@@ -31,10 +30,8 @@ import java.util.ResourceBundle;
  */
 public class BranchesMenu extends AbstractAction implements Presenter.Menu, Presenter.Popup, PopupMenuListener {
 
-    private static final ResourceBundle loc = NbBundle.getBundle(BranchesMenu.class);
-
     public BranchesMenu() {
-        super(loc.getString("CTL_MenuItem_BranchesMenu"));
+        super(NbBundle.getMessage(BranchesMenu.class, "CTL_MenuItem_BranchesMenu"));
     }
 
     public boolean isEnabled() {
@@ -56,7 +53,7 @@ public class BranchesMenu extends AbstractAction implements Presenter.Menu, Pres
     private JMenu createMenu() {
         JMenu menu = new JMenu(this);
         menu.getPopupMenu().addPopupMenuListener(this);
-        menu.setMnemonic(loc.getString("MNE_MenuItem_BranchesMenu").charAt(0));
+        menu.setMnemonic(NbBundle.getMessage(BranchesMenu.class, "MNE_MenuItem_BranchesMenu").charAt(0));
         return menu;
     }
 

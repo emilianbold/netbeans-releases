@@ -21,8 +21,6 @@ import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-import java.util.*;
 
 /**
  * Show differencies between the current working copy and repository version we started from. 
@@ -31,9 +29,7 @@ import java.util.*;
  */
 public class DiffAction extends AbstractSystemAction {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(DiffAction.class);
-    
-    private static final int enabledForStatus = 
+    private static final int enabledForStatus =
             FileInformation.STATUS_VERSIONED_CONFLICT |  
             FileInformation.STATUS_VERSIONED_MERGE | 
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY | 
@@ -54,7 +50,7 @@ public class DiffAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         File [] files = getFilesToProcess();
-        String title = MessageFormat.format(loc.getString("CTL_DiffDialogLocal_Title"), new Object [] { getContextDisplayName() }); 
+        String title = NbBundle.getMessage(DiffAction.class, "CTL_DiffDialogLocal_Title", getContextDisplayName());
         DiffExecutor executor = new DiffExecutor(files, title);
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {

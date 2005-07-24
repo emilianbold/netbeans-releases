@@ -41,8 +41,6 @@ import java.util.*;
  */
 public class CommitAction extends AbstractSystemAction {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
-    
     private static CommitCommand   commandTemplate = new CommitCommand();
     private static final int enabledForStatus = 
             FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
@@ -78,6 +76,7 @@ public class CommitAction extends AbstractSystemAction {
     }
 
     public static void invokeCommit(String contentTitle, File [] roots) {
+        ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         if (CvsVersioningSystem.getInstance().getFileTableModel(roots, FileInformation.STATUS_LOCAL_CHANGE).getNodes().length == 0) {
             JOptionPane.showMessageDialog(null, loc.getString("MSG_NoFilesToCommit_Prompt"), 
                                           loc.getString("MSG_NoFilesToCommit_Title"), JOptionPane.INFORMATION_MESSAGE);
@@ -133,6 +132,7 @@ public class CommitAction extends AbstractSystemAction {
      * @param commit
      */ 
     private static void refreshCommitDialog(CommitSettings settings, JButton commit) {
+        ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
         Set stickyTags = new HashSet();
         for (int i = 0; i < files.length; i++) {

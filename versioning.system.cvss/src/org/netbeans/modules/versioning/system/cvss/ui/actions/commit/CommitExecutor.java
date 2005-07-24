@@ -34,8 +34,6 @@ import java.io.IOException;
  */
 public class CommitExecutor extends ExecutorSupport {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(CommitExecutor.class);
-    
     private Set refreshedFiles;
 
     /**
@@ -51,6 +49,7 @@ public class CommitExecutor extends ExecutorSupport {
      */ 
     public static CommitExecutor [] executeCommand(CommitCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
+        ResourceBundle loc = NbBundle.getBundle(CommitExecutor.class);
         if (cmd.getDisplayName() == null) cmd.setDisplayName(loc.getString("MSG_CommitExecutor_CmdDisplayName"));
         try {
             cmds = prepareBasicCommand(cmd);

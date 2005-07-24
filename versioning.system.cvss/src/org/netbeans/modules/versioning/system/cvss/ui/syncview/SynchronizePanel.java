@@ -42,7 +42,6 @@ import java.util.*;
 import java.io.File;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.text.MessageFormat;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -54,8 +53,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     public static final String VAR_ENVIRONMENT_PREFIX = "ENVIRONMENT_VAR_";
     public static final String VAR_ENVIRONMENT_REMOVE_PREFIX = "ENVIRONMENT_REMOVE_VAR_";
     public static final String VAR_EXPERT_MODE = "EXPERT_MODE"; // NOI18N
-    
-    private static final ResourceBundle loc = NbBundle.getBundle(SynchronizePanel.class);
     
     private ExplorerManager             explorerManager;
     private final CvsSynchronizeTopComponent parentTopComponent;
@@ -85,7 +82,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         refreshTask = rp.create(new RefreshViewTask());
         explorerManager = new ExplorerManager ();
         displayStatuses = FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE;
-        noContentComponent.setLabel(loc.getString("MSG_No_Changes_All"));
+        noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_All"));
         syncTable = new SyncTable();
 
         initComponents();
@@ -203,7 +200,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             });
             return;
         }
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(loc.getString("MSG_Refreshing_Versioning_View"));
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
         ph.start();
         final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(rootFiles, displayStatuses));  // takes long
         if (nodes == null || Thread.interrupted()) {
@@ -225,10 +222,10 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
             }
             if (stickyCommon) {
                 tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                branchTitle = currentSticky.length() == 0 ? null : MessageFormat.format(loc.getString("CTL_VersioningView_BranchTitle_Single"), new Object [] { currentSticky });
+                branchTitle = currentSticky.length() == 0 ? null : NbBundle.getMessage(SynchronizePanel.class, "CTL_VersioningView_BranchTitle_Single", currentSticky);
             } else {
                 tableColumns = new String [] { SyncFileNode.COLUMN_NAME_NAME, SyncFileNode.COLUMN_NAME_STICKY, SyncFileNode.COLUMN_NAME_STATUS, SyncFileNode.COLUMN_NAME_PATH };
-                branchTitle = loc.getString("CTL_VersioningView_BranchTitle_Multi");
+                branchTitle = NbBundle.getMessage(SynchronizePanel.class, "CTL_VersioningView_BranchTitle_Multi");
             }
         } else {
             tableColumns = null;
@@ -302,7 +299,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {
-        String title = MessageFormat.format(loc.getString("CTL_DiffDialog_Title"), new Object [] { parentTopComponent.getContentTitle() });
+        String title = NbBundle.getMessage(SynchronizePanel.class, "CTL_DiffDialog_Title", parentTopComponent.getContentTitle());
         DiffExecutor exec = new DiffExecutor(rootFiles, title);
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             exec.showLocalDiff();
@@ -336,15 +333,15 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private void onDisplayedStatusChanged() {
         if (tgbLocal.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_LOCAL_CHANGE);
-            noContentComponent.setLabel(loc.getString("MSG_No_Changes_Local"));
+            noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_Local"));
         }
         else if (tgbRemote.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE);
-            noContentComponent.setLabel(loc.getString("MSG_No_Changes_Remote"));
+            noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_Remote"));
         }
         else if (tgbAll.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_REMOTE_CHANGE | FileInformation.STATUS_LOCAL_CHANGE);
-            noContentComponent.setLabel(loc.getString("MSG_No_Changes_All"));
+            noContentComponent.setLabel(NbBundle.getMessage(SynchronizePanel.class, "MSG_No_Changes_All"));
         }
     }
 

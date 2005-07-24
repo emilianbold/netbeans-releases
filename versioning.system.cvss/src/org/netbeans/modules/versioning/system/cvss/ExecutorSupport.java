@@ -55,8 +55,6 @@ import org.openide.xml.XMLUtil;
  */
 public abstract class ExecutorSupport implements CVSListener  {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(ExecutorSupport.class);
-    
     protected final FileStatusCache       cache;
     protected List                        toRefresh = new ArrayList(10);
     
@@ -178,7 +176,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                 toRefresh.clear();
                 clientRuntime.focusLog();
                 StringBuffer errorReport = new StringBuffer();
-                errorReport.append(loc.getString("MSG_CommandFailed_Prompt"));
+                errorReport.append(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"));
                 errorReport.append("\n\n");
                 for (Iterator i = errorMessages.iterator(); i.hasNext();) {
                     errorReport.append(i.next());
@@ -188,7 +186,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                     JOptionPane.showMessageDialog(
                             null, 
                             errorReport.toString(),
-                            loc.getString("MSG_CommandFailed_Title"),
+                            NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
                             JOptionPane.ERROR_MESSAGE
                             );
                 }
@@ -233,11 +231,11 @@ public abstract class ExecutorSupport implements CVSListener  {
         panel.add(label, BorderLayout.NORTH);
         panel.add(rootWizard.getPanel(), BorderLayout.CENTER);
 
-        String ok = loc.getString("CTL_Password_Action_Ok");
-        String cancel = loc.getString("CTL_Password_Action_Cancel");
+        String ok = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Ok");
+        String cancel = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Cancel");
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel, 
-                loc.getString("BK0004"), 
+                NbBundle.getMessage(ExecutorSupport.class, "BK0004"),
                 true, 
                 new Object [] { ok, cancel }, 
                 ok, 
@@ -297,7 +295,7 @@ public abstract class ExecutorSupport implements CVSListener  {
         }
         File [][] fileSets = splitFiles(files);
         if (fileSets.length == 1) {
-            String nfiles = MessageFormat.format(loc.getString("MSG_ExecutorSupport_CommandFiles"), new Object [] { Integer.toString(fileSets[0].length) });
+            String nfiles = NbBundle.getMessage(ExecutorSupport.class, "MSG_ExecutorSupport_CommandFiles", Integer.toString(fileSets[0].length));
             if (format != null) cmd.setDisplayName(MessageFormat.format(format, new Object [] { nfiles }));
             return new BasicCommand [] { cmd };
         }
@@ -307,7 +305,7 @@ public abstract class ExecutorSupport implements CVSListener  {
             BasicCommand bc = (BasicCommand) cloner.duplicate();
             bc.setFiles(fileSets[i]);
             commands[i] = bc;
-            String nfiles = MessageFormat.format(loc.getString("MSG_ExecutorSupport_CommandFiles"), new Object [] { Integer.toString(fileSets[i].length) });
+            String nfiles = NbBundle.getMessage(ExecutorSupport.class, "MSG_ExecutorSupport_CommandFiles", Integer.toString(fileSets[i].length));
             if (format != null) commands[i].setDisplayName(MessageFormat.format(format, new Object [] { nfiles }));
         }
         return commands;

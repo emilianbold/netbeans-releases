@@ -30,8 +30,6 @@ public class FileInformation implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private static final ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
-    
     /**
      * There is nothing known about the file, it may not even exist.
      */ 
@@ -329,6 +327,7 @@ public class FileInformation implements Serializable {
      * @return
      */ 
     public String getStatusText() {
+        ResourceBundle loc = NbBundle.getBundle(FileInformation.class);
         if (status == FileInformation.STATUS_UNKNOWN) {
             return loc.getString("CTL_FileInfoStatus_Unknown");            
         } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {

@@ -32,14 +32,13 @@ import java.io.File;
  */
 class CommitTableModel extends AbstractTableModel {
 
-    private static final ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
-
     /**
      * Defines labels for Versioning view table columns.
      */ 
     private static final Map columnLabels = new HashMap(5);
     {
-        columnLabels.put(CommitSettings.COLUMN_NAME_NAME, new String [] { 
+        ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
+        columnLabels.put(CommitSettings.COLUMN_NAME_NAME, new String [] {
                                           loc.getString("CTL_CommitTable_Column_File"), 
                                           loc.getString("CTL_CommitTable_Column_File")});
         columnLabels.put(CommitSettings.COLUMN_NAME_STICKY, new String [] { 

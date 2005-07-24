@@ -35,8 +35,6 @@ import java.io.IOException;
  */
 public class TagExecutor extends ExecutorSupport {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(TagExecutor.class);
-    
     /**
      * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
      * executed in the background. This method may split the original command into more commands if the original
@@ -50,7 +48,7 @@ public class TagExecutor extends ExecutorSupport {
      */ 
     public static TagExecutor [] executeCommand(TagCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
-        if (cmd.getDisplayName() == null) cmd.setDisplayName(loc.getString("MSG_TagExecutor_CmdDisplayName"));
+        if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(TagExecutor.class, "MSG_TagExecutor_CmdDisplayName"));
         try {
             cmds = prepareBasicCommand(cmd);
         } catch (IOException e) {

@@ -24,8 +24,6 @@ import org.openide.filesystems.FileUtil;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.*;
 
 /**
  * Open the Versioning status view for all projects
@@ -34,15 +32,13 @@ import java.util.*;
  */
 public class StatusProjectsAction extends SystemAction {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(StatusProjectsAction.class);
-
     public StatusProjectsAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N        
     }
 
     public String getName() {
-        return loc.getString("CTL_MenuItem_StatusProjects_Label");
+        return NbBundle.getMessage(StatusProjectsAction.class, "CTL_MenuItem_StatusProjects_Label");
     }
 
     public HelpCtx getHelpCtx() {
@@ -68,8 +64,7 @@ public class StatusProjectsAction extends SystemAction {
                 title = FileUtil.toFile(project.getProjectDirectory()).getName(); 
             }            
         } else {
-            title = MessageFormat.format(loc.getString("CTL_StatusProjects_WindowTitle"), 
-                                         new Object [] { Integer.toString(projects.length) });
+            title = NbBundle.getMessage(StatusProjectsAction.class, "CTL_StatusProjects_WindowTitle", Integer.toString(projects.length));
         }
         stc.setContentTitle(title);
         stc.setRoots(roots);

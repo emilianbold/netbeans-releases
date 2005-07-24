@@ -36,8 +36,6 @@ import java.text.MessageFormat;
  */
 public class RTagExecutor extends ExecutorSupport {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(RTagExecutor.class);
-    
     /**
      * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
      * executed in the background. This method may split the original command into more commands if the original
@@ -49,7 +47,7 @@ public class RTagExecutor extends ExecutorSupport {
      * @return array of executors that will execute the command (or array of splitted commands)
      */ 
     public static RTagExecutor [] executeCommand(RtagCommand cmd, File [] roots, GlobalOptions options) {
-        if (cmd.getDisplayName() == null) cmd.setDisplayName(loc.getString("MSG_RTagExecutor_CmdDisplayName"));
+        if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RTagExecutor.class, "MSG_RTagExecutor_CmdDisplayName"));
         
         File [][] splitRoots;
         try {
@@ -89,7 +87,7 @@ public class RTagExecutor extends ExecutorSupport {
 
             RtagCommand command = (RtagCommand) cloner.duplicate();
             command.setModules((String[]) remoteRepositories.toArray(new String[remoteRepositories.size()]));
-            String commandContext = MessageFormat.format(loc.getString("MSG_RTagExecutor_CmdContext"), new Object [] { Integer.toString(files.length) });
+            String commandContext = NbBundle.getMessage(RTagExecutor.class, "MSG_RTagExecutor_CmdContext", Integer.toString(files.length));
             command.setDisplayName(MessageFormat.format(cmd.getDisplayName(), new Object [] { commandContext }));
             executors[i] = new RTagExecutor(cvs, command, currentOptions);
             executors[i].execute();

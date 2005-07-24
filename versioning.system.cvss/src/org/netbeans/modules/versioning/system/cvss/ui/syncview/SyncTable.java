@@ -63,10 +63,6 @@ import java.io.File;
  */
 class SyncTable implements MouseListener, ListSelectionListener, AncestorListener {
 
-    private static final ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
-
-    private static final ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
-
     private NodeTableModel  tableModel;
     private JTable          table;
     private JScrollPane     component;
@@ -80,7 +76,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
      */ 
     private static final Map columnLabels = new HashMap(4);
     {
-        columnLabels.put(SyncFileNode.COLUMN_NAME_STICKY, new String [] { 
+        ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
+        columnLabels.put(SyncFileNode.COLUMN_NAME_STICKY, new String [] {
                                           loc.getString("CTL_VersioningView_Column_Sticky_Title"), 
                                           loc.getString("CTL_VersioningView_Column_Sticky_Desc")});
         columnLabels.put(SyncFileNode.COLUMN_NAME_NAME, new String [] { 
@@ -263,6 +260,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         </pre>
      */
     private JPopupMenu getPopup() {
+
+        ResourceBundle actionsLoc = NbBundle.getBundle(Annotator.class);
 
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;

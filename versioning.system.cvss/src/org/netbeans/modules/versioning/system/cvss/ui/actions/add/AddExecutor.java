@@ -23,7 +23,6 @@ import org.openide.util.NbBundle;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 
 /**
  * Executes a given 'add' command and refreshes file statuses.
@@ -31,8 +30,6 @@ import java.text.MessageFormat;
  * @author Maros Sandor
  */
 public class AddExecutor extends ExecutorSupport {
-
-    private static final ResourceBundle loc = NbBundle.getBundle(AddExecutor.class);
 
     /**
      * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
@@ -84,8 +81,8 @@ public class AddExecutor extends ExecutorSupport {
             int len = command.getFiles().length;
             String param = len == 1 ? 
                     command.getFiles()[0].getName() : 
-                    MessageFormat.format(loc.getString("MSG_AddExecutor_CmdDisplayXfiles"), new Object [] { Integer.toString(len)});
-            command.setDisplayName(MessageFormat.format(loc.getString("MSG_AddExecutor_CmdDisplayName"), new Object [] { param }));
+                    NbBundle.getMessage(AddExecutor.class, "MSG_AddExecutor_CmdDisplayXfiles", Integer.toString(len));
+            command.setDisplayName(NbBundle.getMessage(AddExecutor.class, "MSG_AddExecutor_CmdDisplayName", param));
             executors[i] = new AddExecutor(cvs, command, options);
             executors[i].execute();
         }

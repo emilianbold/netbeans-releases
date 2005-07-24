@@ -73,8 +73,6 @@ import java.text.MessageFormat;
  */
 final class AnnotationBar extends JComponent implements FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener {
 
-    private static final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
-
     private final JTextComponent textComponent;
 
     private final EditorUI editorUI;
@@ -276,6 +274,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
      */
     public void addNotify() {
         super.addNotify();
+        final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
         final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision"));
         diffMenu.addActionListener(new ActionListener() {

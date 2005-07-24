@@ -30,15 +30,13 @@ import java.util.*;
  */
 public class OpenVersioningAction extends StatusProjectsAction {
     
-    private static final ResourceBundle loc = NbBundle.getBundle(OpenVersioningAction.class);
-
     public OpenVersioningAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N        
     }
 
     public String getName() {
-        return loc.getString("BK0001");
+        return NbBundle.getMessage(OpenVersioningAction.class, "BK0001");
     }
 
     public HelpCtx getHelpCtx() {

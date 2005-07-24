@@ -26,7 +26,6 @@ import org.openide.filesystems.FileObject;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -37,8 +36,6 @@ import java.io.IOException;
  */
 public class GetCleanAction extends AbstractSystemAction {
 
-    private static final ResourceBundle loc = NbBundle.getBundle(GetCleanAction.class);
-    
     protected String getBaseName() {
         return "CTL_MenuItem_GetClean";
     }
@@ -51,8 +48,8 @@ public class GetCleanAction extends AbstractSystemAction {
     public void actionPerformed(ActionEvent ev) {
         int res = JOptionPane.showConfirmDialog(
                 null, 
-                loc.getString("CTL_RevertModifications_Prompt"), 
-                loc.getString("CTL_RevertModifications_Title"),
+                NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt"),
+                NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
         if (res != JOptionPane.YES_OPTION) return;

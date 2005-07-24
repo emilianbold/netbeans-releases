@@ -52,8 +52,6 @@ import java.awt.*;
  */
 public class Annotator {
 
-    private static final ResourceBundle loc = NbBundle.getBundle(Annotator.class);
-
     private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
     private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");            
     private static MessageFormat modifiedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
@@ -251,6 +249,7 @@ public class Annotator {
      */ 
     public static Action [] getActions() {
         File [] files = Utils.getActivatedFiles();
+        ResourceBundle loc = NbBundle.getBundle(Annotator.class);
         if (onlyFolders(files)) {
             return new Action [] {
                 new SystemActionBridge(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status")),

@@ -35,8 +35,6 @@ class Setup {
     public static final int DIFFTYPE_REMOTE    = 1;
     public static final int DIFFTYPE_ALL       = 2;
     
-    private static final ResourceBundle loc = NbBundle.getBundle(Setup.class);
-    
     public static final String REVISION_CURRENT = VersionsCache.REVISION_CURRENT;
     public static final String REVISION_HEAD    = VersionsCache.REVISION_HEAD;
     
@@ -59,6 +57,7 @@ class Setup {
         String revision = entry != null ? entry.getRevision() : null;
         if (revision != null && revision.charAt(0) == '-') revision = revision.substring(1);
 
+        ResourceBundle loc = NbBundle.getBundle(Setup.class);
         String firstTitle;
         String secondTitle;
         if (type == DIFFTYPE_ALL && status == FileInformation.STATUS_VERSIONED_MERGE) {
@@ -143,7 +142,7 @@ class Setup {
     static String getDisplayedRevision(File baseFile, String revision) {
         if (revision == REVISION_CURRENT) {
             FileInformation info = CvsVersioningSystem.getInstance().getStatusCache().getStatus(baseFile);
-            return MessageFormat.format(loc.getString("MSG_LocalRevision"), new Object [] { info.getEntry(baseFile).getRevision() });
+            return NbBundle.getMessage(Setup.class, "MSG_LocalRevision", info.getEntry(baseFile).getRevision());
         } else {
             return revision;
         }

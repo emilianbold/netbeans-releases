@@ -21,7 +21,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 import java.awt.BorderLayout;
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.*;
 
 /**
@@ -38,10 +37,9 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private long                    lastUpdateTimestamp;
     
     private static CvsSynchronizeTopComponent instance;
-    private static final ResourceBundle loc = NbBundle.getBundle(CvsSynchronizeTopComponent.class);
 
     public CvsSynchronizeTopComponent() {
-        setName(loc.getString("CTL_Synchronize_TopComponent_Title")); //NOI18N
+        setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title")); //NOI18N
         setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/ui/panels/resources/tc_sync.png"));  //NOI18N        
 //        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.CTRL_DOWN_MASK), "discard"); //NOI18N        
 //        getActionMap().put("discard", null);//NOI18N
@@ -129,14 +127,12 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private void updateTitle() {
         String age = computeAge(System.currentTimeMillis() - lastUpdateTimestamp);
         if (contentTitle == null) {
-            setName(loc.getString("CTL_Synchronize_TopComponent_Title")); //NOI18N
+            setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title")); //NOI18N
         } else {
             if (branchTitle == null) {
-                setName(MessageFormat.format(loc.getString(
-                        "CTL_Synchronize_TopComponent_MultiTitle"), new Object [] { contentTitle, age }));
+                setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_MultiTitle", contentTitle, age));
             } else {
-                setName(MessageFormat.format(loc.getString(
-                        "CTL_Synchronize_TopComponent_Title_ContentBranch"), new Object [] { contentTitle, branchTitle, age }));
+                setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title_ContentBranch", contentTitle, branchTitle, age));
             }
         }
     }
@@ -147,17 +143,17 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
 
     private String computeAge(long l) {
         if (lastUpdateTimestamp == 0) {
-            return loc.getString("CTL_Synchronize_TopComponent_AgeUnknown");
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeUnknown");
         } else if (l < 1000) {
-            return loc.getString("CTL_Synchronize_TopComponent_AgeCurrent");
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeCurrent");
         } else if (l < 1000 * 60) {
-            return MessageFormat.format(loc.getString("CTL_Synchronize_TopComponent_AgeSeconds"), new Object [] { Long.toString(l / 1000) });
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeSeconds", Long.toString(l / 1000));
         } else if (l < 1000 * 60 * 60) {
-            return MessageFormat.format(loc.getString("CTL_Synchronize_TopComponent_AgeMinutes"), new Object [] { Long.toString(l / 1000 / 60) });
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeMinutes", Long.toString(l / 1000 / 60));
         } else if (l < 1000 * 60 * 60 * 24) {
-            return MessageFormat.format(loc.getString("CTL_Synchronize_TopComponent_AgeHours"), new Object [] { Long.toString(l / 1000 / 60 / 60) });
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeHours", Long.toString(l / 1000 / 60 / 60));
         } else {
-            return MessageFormat.format(loc.getString("CTL_Synchronize_TopComponent_AgeDays"), new Object [] { Long.toString(l / 1000 / 60 / 60 / 24) });
+            return NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_AgeDays", Long.toString(l / 1000 / 60 / 60 / 24));
         }
     }
 
