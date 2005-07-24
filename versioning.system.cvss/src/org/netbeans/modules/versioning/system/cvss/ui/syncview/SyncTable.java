@@ -30,7 +30,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.DeleteLocalAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.SystemActionBridge;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
@@ -284,7 +284,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         menu.add(new JSeparator());
         item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), actionsLoc.getString("CTL_PopupMenuItem_Annotations")));
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(LogAction.class), actionsLoc.getString("CTL_PopupMenuItem_Log")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionsLoc.getString("CTL_PopupMenuItem_SearchHistory")));
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
         item = menu.add(new ExcludeFromCommitAction());

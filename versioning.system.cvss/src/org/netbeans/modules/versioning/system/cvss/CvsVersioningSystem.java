@@ -413,6 +413,9 @@ public class CvsVersioningSystem {
             return true;            
         }
         // TODO: HACKS begin
+        if ("properties".equalsIgnoreCase(fo.getExt())) {
+            return true;
+        }
         if ("mf".equalsIgnoreCase(fo.getExt())) {
             return true;            
         }

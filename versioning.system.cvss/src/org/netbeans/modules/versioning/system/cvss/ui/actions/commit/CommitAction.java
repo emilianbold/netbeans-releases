@@ -19,7 +19,9 @@ import org.openide.DialogDisplayer;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.command.KeywordSubstitutionOptions;
+import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.system.cvss.executor.RemoveExecutor;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
@@ -199,6 +201,7 @@ public class CommitAction extends AbstractSystemAction {
      * @param settings user settings
      */ 
     public static void executeCommit(CommitSettings settings) {
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         CommitSettings.CommitFile [] files = settings.getCommitFiles();
         List commitBucket = new ArrayList();
         List addDefaultBucket = new ArrayList();
@@ -208,6 +211,7 @@ public class CommitAction extends AbstractSystemAction {
         List addKoBucket = new ArrayList();
         List addKbBucket = new ArrayList();
         List addKvBucket = new ArrayList();
+        List removeBucket = new ArrayList();
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
             if (file.getOptions() == CommitOptions.EXCLUDE) continue;
@@ -215,6 +219,11 @@ public class CommitAction extends AbstractSystemAction {
                 addDefaultBucket.add(file.getNode().getFile());
             } else if (file.getOptions() == CommitOptions.ADD_BINARY) {
                 addKbBucket.add(file.getNode().getFile());
+            } else if (file.getOptions() == CommitOptions.COMMIT_REMOVE) {
+                int status = cache.getStatus(file.getNode().getFile()).getStatus();
+                if (status == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY) {
+                    removeBucket.add(file.getNode().getFile());
+                }
             }
             commitBucket.add(file.getNode().getFile());
         }
@@ -225,6 +234,7 @@ public class CommitAction extends AbstractSystemAction {
         executeAdd(addKoBucket, KeywordSubstitutionOptions.OLD_VALUES);
         executeAdd(addKbBucket, KeywordSubstitutionOptions.BINARY);
         executeAdd(addKvBucket, KeywordSubstitutionOptions.ONLY_VALUES);
+        executeRemove(removeBucket);
         executeCommit(commitBucket, settings.getCommitMessage());
     }
 
@@ -234,6 +244,14 @@ public class CommitAction extends AbstractSystemAction {
         cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
         cmd.setMessage(message);
         CommitExecutor [] executors = CommitExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+        ExecutorSupport.notifyError(executors);
+    }
+
+    private static void executeRemove(List bucket) {
+        if (bucket.size() == 0) return;
+        RemoveCommand cmd = new RemoveCommand();
+        cmd.setFiles((File []) bucket.toArray(new File[bucket.size()]));
+        RemoveExecutor [] executors = RemoveExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
         ExecutorSupport.notifyError(executors);
     }
 

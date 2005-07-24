@@ -23,8 +23,8 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.SystemActionBridge;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.ignore.IgnoreAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.AnnotationsAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction;
@@ -264,7 +264,9 @@ public class Annotator {
                 new SystemActionBridge(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch")),
                 new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
                 null,
-                new SystemActionBridge(SystemAction.get(IgnoreAction.class), 
+                new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),
+                null,
+                new SystemActionBridge(SystemAction.get(IgnoreAction.class),
                                        ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ? 
                                        loc.getString("CTL_PopupMenuItem_Unignore") : 
                                        loc.getString("CTL_PopupMenuItem_Ignore")),
@@ -283,7 +285,7 @@ public class Annotator {
                 new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
                 null,
                 new SystemActionBridge(SystemAction.get(AnnotationsAction.class), loc.getString("CTL_PopupMenuItem_Annotations")),
-                new SystemActionBridge(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log")),
+                new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),
                 null,
                 new SystemActionBridge(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean")),
                 new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts")),

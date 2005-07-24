@@ -31,6 +31,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.text.NbDocument;
 import org.openide.xml.XMLUtil;
 import org.openide.text.Annotation;
@@ -56,6 +57,7 @@ import java.io.CharConversionException;
 import java.io.File;
 import java.io.Reader;
 import java.io.IOException;
+import java.text.MessageFormat;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -70,6 +72,8 @@ import java.io.IOException;
  * @author Petr Kuzel
  */
 final class AnnotationBar extends JComponent implements FoldHierarchyListener, PropertyChangeListener, LogOutputListener, DocumentListener, ChangeListener, ActionListener {
+
+    private static final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
 
     private final JTextComponent textComponent;
 
@@ -273,7 +277,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
     public void addNotify() {
         super.addNotify();
         final JPopupMenu popupMenu = new JPopupMenu();
-        final JMenuItem diffMenu = new JMenuItem("Diff to Previous");
+        final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision"));
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (recentRevision != null) {
@@ -294,7 +298,21 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         });
         popupMenu.add(diffMenu);
 
-        JMenuItem menu = new JMenuItem("Close Annotations");
+        final JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_RollbackToRevision"));
+        rollbackMenu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        popupMenu.add(rollbackMenu);
+
+        JMenuItem menu = new JMenuItem(loc.getString("CTL_MenuItem_FindAssociateChanges"));
+        menu.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+        popupMenu.add(menu);
+
+        menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
         menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 annotated = false;
@@ -302,6 +320,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                 release();
             }
         });
+        popupMenu.add(new JSeparator());
         popupMenu.add(menu);
 
         this.addMouseListener(new MouseAdapter() {
@@ -316,12 +335,17 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             private void maybeShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     diffMenu.setVisible(false);
+                    rollbackMenu.setVisible(false);
                     if (recentRevision != null) {
                         String prevRevision = previousRevision(recentRevision);
                         if (prevRevision != null) {
-                            diffMenu.setText("Diff to " + prevRevision);
+                            String format = loc.getString("CTL_MenuItem_DiffToRevision");
+                            diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, prevRevision }));
                             diffMenu.setVisible(true);
                         }
+                        String format = loc.getString("CTL_MenuItem_RollbackToRevision");
+                        rollbackMenu.setText(MessageFormat.format(format, new Object [] { recentRevision }));
+                        rollbackMenu.setVisible(true);
                     }
                     popupMenu.show(e.getComponent(),
                                e.getX(), e.getY());
@@ -476,8 +500,9 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             Iterator it = elementAnnotations.values().iterator();
             while (it.hasNext()) {
                 AnnotateLine line = (AnnotateLine) it.next();
-                if (line.getRevision().length() > longestString.length()) {
-                    longestString = line.getRevision();
+                String displayName = line.getRevision() + " " + line.getAuthor();
+                if (displayName.length() > longestString.length()) {
+                    longestString = displayName;
                 }
             }
         }
@@ -517,16 +542,17 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         int line = rootElem.getElementIndex(view.getStartOffset());
 
         String annotation = "";  // NOi18N
+        AnnotateLine al = null;
         if (elementAnnotations != null) {
-            AnnotateLine al = getAnnotateLine(line);
+            al = getAnnotateLine(line);
             if (al != null) {
-                annotation = al.getRevision();
+                annotation = al.getRevision() + " " + al.getAuthor();
             }
         } else {
             annotation = elementAnnotationsSubstitute;
         }
 
-        if (annotation.equals(recentRevision)) {
+        if (al != null && al.getRevision().equals(recentRevision)) {
             g.setColor(selectedColor);
         } else {
             g.setColor(foregroundColor);
