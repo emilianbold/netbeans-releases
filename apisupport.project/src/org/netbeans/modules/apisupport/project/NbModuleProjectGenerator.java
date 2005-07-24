@@ -177,7 +177,7 @@ public class NbModuleProjectGenerator {
         EditableProperties props = new EditableProperties(true);
         props.setProperty("suite.dir", suiteLocation); // NOI18N
         FileObject suiteProperties = createFileObject(projectDir, suitePropertiesLocation);
-        storeProperties(suiteProperties, props);
+        Util.storeProperties(suiteProperties, props);
     }
     
     /** 
@@ -196,7 +196,7 @@ public class NbModuleProjectGenerator {
         } else {
             suiteGlobalPropFO = createFileObject(suiteGlobalPropsFile);
         }
-        EditableProperties globalProps = loadProperties(suiteGlobalPropFO);
+        EditableProperties globalProps = Util.loadProperties(suiteGlobalPropFO);
         String projectPropKey = "project." + projectDirF.getName(); // NOI18N
         if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
             // XXX the generating of relative path doesn't seem's too clever, check it
@@ -210,9 +210,9 @@ public class NbModuleProjectGenerator {
             } else {
                 suitePrivPropFO = createFileObject(suitePrivPropsFile);
             }
-            EditableProperties privProps= loadProperties(suitePrivPropFO);
+            EditableProperties privProps= Util.loadProperties(suitePrivPropFO);
             privProps.setProperty(projectPropKey, projectDirF.getAbsolutePath());
-            storeProperties(suitePrivPropFO, privProps);
+            Util.storeProperties(suitePrivPropFO, privProps);
         }
         String modulesProp = globalProps.getProperty("modules"); // NOI18N
         if (modulesProp == null) {
@@ -223,7 +223,7 @@ public class NbModuleProjectGenerator {
         }
         modulesProp += "${" + projectPropKey + "}"; // NOI18N
         globalProps.setProperty("modules", modulesProp.split("(?<=:)", -1)); // NOI18N
-        storeProperties(suiteGlobalPropFO, globalProps);
+        Util.storeProperties(suiteGlobalPropFO, globalProps);
     }
     
     private static void createPlatformProperties(FileObject projectDir, String platformID) throws IOException {
@@ -231,7 +231,7 @@ public class NbModuleProjectGenerator {
                 projectDir, NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH);
         EditableProperties props = new EditableProperties(true);
         props.put("nbplatform.active", platformID); // NOI18N
-        storeProperties(plafPropsFO, props);
+        Util.storeProperties(plafPropsFO, props);
     }
     
     private static void createManifest(FileObject projectDir, String cnb,
@@ -247,7 +247,7 @@ public class NbModuleProjectGenerator {
                 projectDir, "src" + File.separator + bundlePath); // NOI18N
         EditableProperties props = new EditableProperties(true);
         props.put(LocalizedBundleInfo.NAME, name); // NOI18N
-        NbModuleProjectGenerator.storeProperties(bundleFO, props);
+        Util.storeProperties(bundleFO, props);
     }
     
     private static void createLayer(FileObject projectDir, String layerPath) throws IOException {
@@ -327,36 +327,6 @@ public class NbModuleProjectGenerator {
             ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve" + // NOI18N
                     "file object for " + root.getAbsolutePath()); // NOI18N
         }
-    }
-
-    /** Just utility method to store <code>EditableProperties</code>. */
-    public static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
-        FileLock lock = propsFO.lock();
-        try {
-            OutputStream os = propsFO.getOutputStream(lock);
-            try {
-                props.store(os);
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
-    }
-    
-    /** Just utility method to load <code>EditableProperties</code>. */
-    private static EditableProperties loadProperties(FileObject propsFO) throws IOException {
-        InputStream is = null;
-        EditableProperties props = new EditableProperties(true);
-        try {
-            is = propsFO.getInputStream();
-            props.load(is);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-        return props;
     }
 
     /**

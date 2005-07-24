@@ -38,6 +38,7 @@ import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.DependencyListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.FriendListModel;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
@@ -134,9 +135,9 @@ final class SingleModuleProperties extends ModuleProperties {
     
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
-    public static final String NB_PLATFORM_PROPERTY = "NB_PLATFORM";
-    public static final String DEPENDENCIES_PROPERTY = "MODULE_DEPENDENCIES";
-    public static final String PROPERTIES_REFRESHED = "PROPERTIES_REFRESHED";
+    public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
+    public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
+    public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
     
     /**
      * Creates a new instance of SingleModuleProperties
@@ -487,12 +488,7 @@ final class SingleModuleProperties extends ModuleProperties {
         FileObject manifestFO = FileUtil.toFileObject(getManifestFile());
         EditableManifest em;
         if (manifestFO != null) {
-            InputStream is = manifestFO.getInputStream();
-            try {
-                em = new EditableManifest(is);
-            } finally {
-                is.close();
-            }
+            em = Util.loadManifest(manifestFO);
         } else { // manifest doesn't exist yet
             em = new EditableManifest();
             manifestFO = FileUtil.createData(
@@ -519,18 +515,7 @@ final class SingleModuleProperties extends ModuleProperties {
             result.append(reqTokens[i]);
         }
         setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_REQUIRES, result.toString());
-        
-        FileLock lock = manifestFO.lock();
-        try {
-            OutputStream os = manifestFO.getOutputStream(lock);
-            try {
-                em.write(os);
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+        Util.storeManifest(manifestFO, em);
     }
     
     // XXX should be something similar provided be EditableManifest?

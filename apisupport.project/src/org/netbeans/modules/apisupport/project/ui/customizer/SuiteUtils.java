@@ -29,6 +29,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -78,7 +79,7 @@ public class SuiteUtils {
         if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
             try {
                 // clean up a submodule
-
+                
                 // XXX after a few calls this finally calls
                 // AntProjectListener.configurationXmlChanged() which in turns
                 // tries to load subModule's classpath (see
@@ -88,7 +89,7 @@ public class SuiteUtils {
                 // to be solved somehow. Probably need more controll over the
                 // process or manually write or... ?
                 setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
-
+                
                 File subModuleF = FileUtil.toFile(subModule.getProjectDirectory());
                 FileObject fo = FileUtil.toFileObject(new File(subModuleF, "nbproject/suite.properties")); // NOI18N
                 if (fo != null) {
@@ -140,13 +141,13 @@ public class SuiteUtils {
         
         if (removeSubModule(projectProps, privateProps, suiteF, subModuleF)) {
             // store properties files to a disk
-            NbModuleProjectGenerator.storeProperties(projectPropsFO, projectProps);
+            Util.storeProperties(projectPropsFO, projectProps);
             if (privatePropsFO != null) {
-                NbModuleProjectGenerator.storeProperties(privatePropsFO, privateProps);
+                Util.storeProperties(privatePropsFO, privateProps);
             }
         }
     }
-
+    
     /**
      * Adjust <em>modules</em> property together with removing appropriate
      * other properties from <code>projectProps</code> and
@@ -299,5 +300,5 @@ public class SuiteUtils {
         ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module).getHelper());
         pxm.setModuleType(type);
     }
-
+    
 }

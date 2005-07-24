@@ -181,22 +181,12 @@ public final class ManifestManager {
      */
     static void createManifest(FileObject manifest, String cnb, String specVer,
             String bundlePath, String layerPath) throws IOException {
-        FileLock lock = manifest.lock();
-        try {
-            OutputStream os = manifest.getOutputStream(lock);
-            try {
-                EditableManifest em = new EditableManifest();
-                em.setAttribute(OPENIDE_MODULE, cnb, null);
-                em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
-                em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
-                em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
-                em.write(os);
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
+        EditableManifest em = new EditableManifest();
+        em.setAttribute(OPENIDE_MODULE, cnb, null);
+        em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
+        em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
+        em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
+        Util.storeManifest(manifest, em);
     }
     
     private static PackageExport[] parseExportedPackages(String exportsS) {

@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,7 +32,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -284,7 +287,7 @@ public class Util {
     public static LocalizedBundleInfo findLocalizedBundleInfo(File projectDir) {
         FileObject sourceDir = FileUtil.toFileObject(new File(projectDir, "src"));
         FileObject manifestFO = FileUtil.toFileObject(new File(projectDir, "manifest.mf"));
-
+        
         LocalizedBundleInfo locInfo = null;
         Manifest mf = getManifest(manifestFO);
         if (sourceDir != null && mf != null) {
@@ -327,6 +330,91 @@ public class Util {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
         return locInfo;
+    }
+    
+    /**
+     * Convenience method for loading {@link EditableProperties} from a {@link
+     * FileObject}. New items will alphabetizied by key.
+     *
+     * @param propsFO file representing properties file
+     * @exception FileNotFoundException if the file represented by the given
+     *            FileObject does not exists, is a folder rather than a regular
+     *            file or is invalid. i.e. as it is thrown by {@link
+     *            FileObject#getInputStream()}.
+     */
+    public static EditableProperties loadProperties(FileObject propsFO) throws IOException {
+        InputStream propsIS = propsFO.getInputStream();
+        EditableProperties props = new EditableProperties(true);
+        try {
+            props.load(propsIS);
+        } finally {
+            propsIS.close();
+        }
+        return props;
+    }
+    
+    /**
+     * Convenience method for storing {@link EditableProperties} into a {@link
+     * FileObject}.
+     *
+     * @param propsFO file representing where properties will be stored
+     * @param props properties to be stored
+     * @exception IOException if properties cannot be written to the file
+     */
+    public static void storeProperties(FileObject propsFO, EditableProperties props) throws IOException {
+        FileLock lock = propsFO.lock();
+        try {
+            OutputStream os = propsFO.getOutputStream(lock);
+            try {
+                props.store(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
+    
+    /**
+     * Convenience method for loading {@link EditableManifest} from a {@link
+     * FileObject}.
+     *
+     * @param manifestFO file representing manifest
+     * @exception FileNotFoundException if the file represented by the given
+     *            FileObject does not exists, is a folder rather than a regular
+     *            file or is invalid. i.e. as it is thrown by {@link
+     *            FileObject#getInputStream()}.
+     */
+    public static EditableManifest loadManifest(FileObject manifestFO) throws IOException {
+        InputStream mfIS = manifestFO.getInputStream();
+        try {
+            EditableManifest mf = new EditableManifest(mfIS);
+            return mf;
+        } finally {
+            mfIS.close();
+        }
+    }
+    
+    /**
+     * Convenience method for storing {@link EditableManifest} into a {@link
+     * FileObject}.
+     * 
+     * @param manifestFO file representing where manifest will be stored
+     * @param em manifest to be stored
+     * @exception IOException if manifest cannot be written to the file
+     */
+    public static void storeManifest(FileObject manifestFO, EditableManifest em) throws IOException {
+        FileLock lock = manifestFO.lock();
+        try {
+            OutputStream os = manifestFO.getOutputStream(lock);
+            try {
+                em.write(os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
     }
     
     private static Iterator getPossibleResources(String locBundleResource) {
