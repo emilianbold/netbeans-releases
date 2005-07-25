@@ -193,8 +193,23 @@ public class Translator {
             nbNotif = new Integer(strNbNotif).intValue();
         } 
         
-        if (nbNotif > 0)
-            mbean.setNotificationEmitter(true);
+        Boolean implNotifEmit = (Boolean)
+            wiz.getProperty(WizardConstants.PROP_IMPL_NOTIF_EMITTER);
+        if (implNotifEmit == null)
+            implNotifEmit = false;
+        mbean.setNotificationEmitter(implNotifEmit);
+        
+        Boolean genBroadcastDeleg = (Boolean)
+            wiz.getProperty(WizardConstants.PROP_GEN_BROADCAST_DELEGATION);
+        if (genBroadcastDeleg == null)
+            genBroadcastDeleg = false;
+        mbean.setGenBroadcastDeleg(genBroadcastDeleg);
+        
+        Boolean genSeqNumber = (Boolean)
+            wiz.getProperty(WizardConstants.PROP_GEN_SEQ_NUMBER);
+        if (genSeqNumber == null)
+            genSeqNumber = false;
+        mbean.setGenSeqNumber(genSeqNumber);
         
         List<MBeanNotification> notifs = new ArrayList();
         for (int i = 0 ; i < nbNotif ; i++) {

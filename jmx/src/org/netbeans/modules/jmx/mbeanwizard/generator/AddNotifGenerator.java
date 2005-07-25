@@ -48,6 +48,9 @@ public class AddNotifGenerator
       "             {1}.class.getName(),\n" + // NOI18N
       "             \"{2}\")"; // NOI18N
     
+    private static final String BODY_COMMENT = 
+            "//TODO add your code here\n"; // NOI18N
+    
     /**
      * Entry point to generate NotificationEmitter implementation for MBean.
      * @param mbeanClass <CODE>JavaClass</CODE> the MBean class to update
@@ -56,29 +59,35 @@ public class AddNotifGenerator
      * @throws java.io.IOException <CODE>IOException</CODE>
      * @throws java.lang.Exception <CODE>Exception</CODE>
      */
-    public void update(JavaClass mbeanClass, Resource mbeanRes, MBeanNotification[] notifs)
+    public void update(JavaClass mbeanClass, Resource mbeanRes, MBeanNotification[] notifs,
+            boolean genBroadcastDeleg, boolean genSeqNumber)
            throws java.io.IOException, Exception
     {
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             addManagementImport(mbeanRes);
             addNotificationEmitter(mbeanClass);
-            addAddNotifListMethod(mbeanClass);
+            addAddNotifListMethod(mbeanClass,genBroadcastDeleg);
             addGetNotifInfoMethod(mbeanClass,notifs);
-            addRemoveNotifListMethod1Param(mbeanClass);
-            addRemoveNotifListMethod(mbeanClass);
-            addFields(mbeanClass);
+            addRemoveNotifListMethod1Param(mbeanClass,genBroadcastDeleg);
+            addRemoveNotifListMethod(mbeanClass,genBroadcastDeleg);
+            if (genSeqNumber)
+                addGetSeqNumberMethod(mbeanClass);
+            addFields(mbeanClass,genBroadcastDeleg,genSeqNumber);
             addNotifTypes(mbeanClass,notifs);
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
     }
     
-    private void addAddNotifListMethod(JavaClass tgtClass) {
+    private void addAddNotifListMethod(JavaClass tgtClass, 
+            boolean genBroadcastDeleg) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
         String methodBody =
                 "broadcaster.addNotificationListener(listener, filter, handback);\n"; // NOI18N
+        if (!genBroadcastDeleg)
+            methodBody = BODY_COMMENT;
         
         ArrayList params = new ArrayList();
         Parameter listener = pkg.getParameter().createParameter("listener", // NOI18N
@@ -180,11 +189,14 @@ public class AddNotifGenerator
 
     }
     
-    private void addRemoveNotifListMethod1Param(JavaClass tgtClass) {
+    private void addRemoveNotifListMethod1Param(JavaClass tgtClass, 
+            boolean genBroadcastDeleg) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
         String methodBody =
                 "broadcaster.removeNotificationListener(listener);\n"; // NOI18N
+        if (!genBroadcastDeleg)
+            methodBody = BODY_COMMENT;
         
         ArrayList params = new ArrayList();
         Parameter listener = pkg.getParameter().createParameter("listener", // NOI18N
@@ -215,11 +227,14 @@ public class AddNotifGenerator
 
     }
     
-    private void addRemoveNotifListMethod(JavaClass tgtClass) {
+    private void addRemoveNotifListMethod(JavaClass tgtClass, 
+            boolean genBroadcastDeleg) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
         String methodBody =
                 "broadcaster.removeNotificationListener(listener, filter, handback);\n"; // NOI18N
+        if (!genBroadcastDeleg)
+            methodBody = BODY_COMMENT;
         
         ArrayList params = new ArrayList();
         Parameter listener = pkg.getParameter().createParameter("listener", // NOI18N
@@ -264,19 +279,47 @@ public class AddNotifGenerator
 
     }
     
-    private static void addFields(JavaClass tgtClass) {
+    private void addGetSeqNumberMethod(JavaClass tgtClass) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
-        Field seqNumber = pkg.getField().createField("seqNumber", Collections.EMPTY_LIST, // NOI18N
-                    Modifier.PRIVATE, null, null, false, 
+        
+        String methodBody = "return seqNumber++;\n"; // NOI18N
+        
+        Method method = pkg.getMethod().createMethod(
+                "getNextSeqNumber", // NOI18N
+                Collections.EMPTY_LIST,
+                Modifier.PRIVATE | Modifier.SYNCHRONIZED,
+                null, // javadoc text
+                null, // jvadoc
+                null, // object body
+                methodBody, // string body
+                Collections.EMPTY_LIST, // type params
+                Collections.EMPTY_LIST, // parameters
+                Collections.EMPTY_LIST, // exceptions
+                getTypeRef(pkg, "long"), // NOI18N
+                0);
+        tgtClass.getFeatures().add(method);
+
+    }
+    
+    private static void addFields(JavaClass tgtClass, boolean genBroadcastDeleg,
+            boolean genSeqNumber) {
+        JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
+        if (genBroadcastDeleg) {
+            Field seqNumber = pkg.getField().createField("seqNumber", Collections.EMPTY_LIST, // NOI18N
+                    Modifier.PRIVATE, null, null, false,
                     pkg.getMultipartId().createMultipartId("long", null, Collections.EMPTY_LIST), // NOI18N
                     0, null, null);
-        tgtClass.getFeatures().add(seqNumber);
-        Field broadcaster = pkg.getField().createField("broadcaster", Collections.EMPTY_LIST, // NOI18N
-                    Modifier.PRIVATE, null, null, true, 
+            tgtClass.getFeatures().add(seqNumber);
+        }
+        
+        if (genSeqNumber) {
+            Field broadcaster = pkg.getField().createField("broadcaster", Collections.EMPTY_LIST, // NOI18N
+                    Modifier.PRIVATE | Modifier.FINAL, null, null, true,
                     pkg.getMultipartId().createMultipartId(
-                        "NotificationBroadcasterSupport", null, Collections.EMPTY_LIST), // NOI18N
+                    "NotificationBroadcasterSupport", null, Collections.EMPTY_LIST), // NOI18N
                     0, null, "new NotificationBroadcasterSupport()"); // NOI18N
-        tgtClass.getFeatures().add(broadcaster);
+            tgtClass.getFeatures().add(broadcaster);
+        }
     }
     
     private void addNotifTypes(JavaClass tgtClass, MBeanNotification[] notifs) {

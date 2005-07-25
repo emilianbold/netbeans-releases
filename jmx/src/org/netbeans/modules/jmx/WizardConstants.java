@@ -158,6 +158,9 @@ public class WizardConstants
     public static final String PROP_METHOD_PARAM                 = "wizdata.methodParamType"; // NOI18N
     public static final String PROP_METHOD_EXCEP                 = "wizdata.methodException"; // NOI18N
     public static final String PROP_METHOD_DESCR                 = "wizdata.methodDescription"; // NOI18N
+    public static final String PROP_IMPL_NOTIF_EMITTER           = "wizdata.notifEmitter"; // NOI18N
+    public static final String PROP_GEN_BROADCAST_DELEGATION     = "wizdata.genBroadcastEmitter"; // NOI18N
+    public static final String PROP_GEN_SEQ_NUMBER               = "wizdata.genSeqNumber"; // NOI18N
     public static final String PROP_NOTIF_NB                     = "wizdata.notifNb"; // NOI18N
     public static final String PROP_NOTIF_CLASS                  = "wizdata.notifClass"; // NOI18N
     public static final String PROP_NOTIF_DESCR                  = "wizdata.notifDescription"; // NOI18N

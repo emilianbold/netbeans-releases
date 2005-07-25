@@ -35,6 +35,9 @@ public class MBeanDO {
     private boolean needObjectNameImport = false;
     private boolean notificationEmitter = false;
     private boolean implMBeanRegist = false;
+    private boolean genBroadcastDeleg = false;
+    private boolean genSeqNumber = false;
+    
     private DataFolder folder;
     private DataObject template;
     
@@ -136,5 +139,21 @@ public class MBeanDO {
 
     public void setImplMBeanRegist(boolean implMBeanRegist) {
         this.implMBeanRegist = implMBeanRegist;
+    }
+
+    public boolean isGenBroadcastDeleg() {
+        return genBroadcastDeleg;
+    }
+
+    public void setGenBroadcastDeleg(boolean genBroadcastDeleg) {
+        this.genBroadcastDeleg = genBroadcastDeleg;
+    }
+
+    public boolean isGenSeqNumber() {
+        return genSeqNumber;
+    }
+
+    public void setGenSeqNumber(boolean genSeqNumber) {
+        this.genSeqNumber = genSeqNumber;
     }
 }

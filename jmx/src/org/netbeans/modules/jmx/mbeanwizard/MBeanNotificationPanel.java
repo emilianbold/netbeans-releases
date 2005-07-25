@@ -24,6 +24,8 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import java.awt.Component;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 import javax.swing.event.*;
 
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
@@ -48,6 +50,13 @@ public class MBeanNotificationPanel extends JPanel {
     private MBeanNotificationTableModel notificationModel;
     private NotificationsWizardPanel wiz;
     
+    private JCheckBox implNotifEmitCheckBox;
+    private JCheckBox genDelegationCheckBox;
+    private JCheckBox genSeqNbCheckBox;
+    private JLabel notifTableLabel;
+    private JButton notifAddJButton;
+    private JButton notifRemJButton;
+    
     private JPanel ancestorPanel = null;
     
     /**
@@ -63,6 +72,9 @@ public class MBeanNotificationPanel extends JPanel {
         initComponents();
         String str = NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_Notification_Panel");// NOI18N
         setName(str);
+        
+        //init state
+        updateState();
     }
     
     private void initJTable() {
@@ -73,16 +85,98 @@ public class MBeanNotificationPanel extends JPanel {
         notificationTable.setName("notificationTable");// NOI18N
     }
     
+    void updateState() {
+        boolean implSelected = implNotifEmitCheckBox.isSelected();
+        genDelegationCheckBox.setEnabled(implSelected);
+        genSeqNbCheckBox.setEnabled(implSelected);
+        notifTableLabel.setEnabled(implSelected);
+        notificationTable.setEnabled(implSelected);
+        notifAddJButton.setEnabled(implSelected);
+        if (implSelected && (notificationModel.getRowCount() > 0))
+            notifRemJButton.setEnabled(true);
+        else if (!implSelected)
+            notifRemJButton.setEnabled(false);
+    }
+    
+    private JPanel initSelectionPanel() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        implNotifEmitCheckBox = new JCheckBox();
+        genDelegationCheckBox = new JCheckBox();
+        genSeqNbCheckBox = new JCheckBox();
+        notifTableLabel = new JLabel();
+        JPanel selectionPanel = new JPanel();
+        
+        selectionPanel.setLayout(new java.awt.GridBagLayout());
+        
+        implNotifEmitCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateState();
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
+        selectionPanel.add(implNotifEmitCheckBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 21, 0, 0);
+        selectionPanel.add(genDelegationCheckBox, gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 21, 0, 0);
+        selectionPanel.add(genSeqNbCheckBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 5, 0);
+        selectionPanel.add(notifTableLabel, gridBagConstraints);
+        notifTableLabel.setLabelFor(notificationTable);
+                
+        return selectionPanel;
+    }
+    
     private void initComponents() {
         initJTable();
+        JPanel selectionPanel = initSelectionPanel();
+        
+        Mnemonics.setLocalizedText(implNotifEmitCheckBox,
+                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_ImplementNotifEmitter"));//NOI18N
+        Mnemonics.setLocalizedText(genDelegationCheckBox,
+                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_GenBroadcasterDelegation"));//NOI18N
+        Mnemonics.setLocalizedText(genSeqNbCheckBox,
+                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_GenSeqNumberField"));//NOI18N
+        Mnemonics.setLocalizedText(notifTableLabel,
+                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_Notifications"));//NOI18N
         
         // defines a scrolol panel for the JTabel
         JScrollPane notifJTableScrollPanel = new JScrollPane(notificationTable);
         
-        JButton notifAddJButton = new JButton();
+        notifAddJButton = new JButton();
         Mnemonics.setLocalizedText(notifAddJButton,
                 NbBundle.getMessage(MBeanNotificationPanel.class,"BUTTON_add_notification"));//NOI18N
-        JButton notifRemJButton = new JButton();
+        notifRemJButton = new JButton();
         Mnemonics.setLocalizedText(notifRemJButton,
                 NbBundle.getMessage(MBeanNotificationPanel.class,"BUTTON_rem_notification"));//NOI18N
         
@@ -103,6 +197,7 @@ public class MBeanNotificationPanel extends JPanel {
         notifJPanel.add(notifAddJButton);
         notifJPanel.add(notifRemJButton);
         
+        add(selectionPanel, BorderLayout.NORTH);
         add(notifJTableScrollPanel, BorderLayout.CENTER);
         add(notifJPanel, BorderLayout.SOUTH);
         
@@ -185,6 +280,24 @@ public class MBeanNotificationPanel extends JPanel {
             }
             defaultTypeValue = defaultTypeValue.toLowerCase();
             getPanel().setDefaultTypeValue(defaultTypeValue);
+            
+            // update state
+            Boolean implNotifEmit = (Boolean) 
+                wiz.getProperty(WizardConstants.PROP_IMPL_NOTIF_EMITTER);
+            if (implNotifEmit == null)
+                implNotifEmit = false;
+            getPanel().setImplNotifEmit(implNotifEmit);
+            Boolean genBroadDeleg = (Boolean) 
+                wiz.getProperty(WizardConstants.PROP_GEN_BROADCAST_DELEGATION);
+            if (genBroadDeleg == null)
+                genBroadDeleg = false;
+            getPanel().setGenBroadcasterDelegation(genBroadDeleg);
+            Boolean genSeqNumber = (Boolean) 
+                wiz.getProperty(WizardConstants.PROP_GEN_SEQ_NUMBER);
+            if (genSeqNumber == null)
+                genSeqNumber = false;
+            getPanel().setGenSeqNb(genSeqNumber);
+            getPanel().updateState();
         }
         
         /**
@@ -203,6 +316,13 @@ public class MBeanNotificationPanel extends JPanel {
                     MBeanNotificationTableModel.IDX_NOTIF_DESCRIPTION)
                 getPanel().notificationTable.editingStopped(
                         new ChangeEvent(this));
+            
+            wiz.putProperty(WizardConstants.PROP_IMPL_NOTIF_EMITTER, 
+                    getPanel().isImplNotifEmit());
+            wiz.putProperty(WizardConstants.PROP_GEN_BROADCAST_DELEGATION,
+                    getPanel().genBroadcasterDelegation());
+            wiz.putProperty(WizardConstants.PROP_GEN_SEQ_NUMBER,
+                    getPanel().genSeqNb());
             
             // read the content of attributes table
             MBeanNotificationTableModel aModel = getPanel().notificationModel;
@@ -232,6 +352,30 @@ public class MBeanNotificationPanel extends JPanel {
         public HelpCtx getHelp() {
             return new HelpCtx("jmx_instrumenting_app");// NOI18N
         }
+    }
+
+    public boolean isImplNotifEmit() {
+        return implNotifEmitCheckBox.isSelected();
+    }
+
+    public boolean genBroadcasterDelegation() {
+        return genDelegationCheckBox.isSelected();
+    }
+
+    public boolean genSeqNb() {
+        return genSeqNbCheckBox.isSelected();
+    }
+    
+    public void setImplNotifEmit(boolean state) {
+        implNotifEmitCheckBox.setSelected(state);
+    }
+
+    public void setGenBroadcasterDelegation(boolean state) {
+        genDelegationCheckBox.setSelected(state);
+    }
+
+    public void setGenSeqNb(boolean state) {
+        genSeqNbCheckBox.setSelected(state);
     }
     
 }

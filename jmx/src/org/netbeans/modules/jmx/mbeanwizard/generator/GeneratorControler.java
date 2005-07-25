@@ -59,7 +59,8 @@ public class GeneratorControler {
             List notifList = mbeanDO.getNotifs();
             MBeanNotification[] notifs = (MBeanNotification[])
                 notifList.toArray(new MBeanNotification[notifList.size()]);
-            notifGenerator.update(mbeanClass, mbeanClass.getResource(), notifs);
+            notifGenerator.update(mbeanClass, mbeanClass.getResource(), notifs,
+                    mbeanDO.isGenBroadcastDeleg(), mbeanDO.isGenSeqNumber());
         }
         
         //add MBeanRegistration interface implementation

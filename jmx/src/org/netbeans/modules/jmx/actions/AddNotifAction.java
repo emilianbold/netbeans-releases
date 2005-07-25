@@ -82,7 +82,8 @@ public class AddNotifAction extends CookieAction {
         }
         AddNotifGenerator generator = new AddNotifGenerator();
         try {
-            generator.update(cfg.getMBeanClass(),rc,cfg.getNotifications());
+            generator.update(cfg.getMBeanClass(),rc,cfg.getNotifications(),
+                    cfg.getGenBroadcastDeleg(),cfg.getGenSeqNumber());
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {
