@@ -37,25 +37,31 @@ import org.netbeans.modules.j2ee.weblogic9.*;
  */
 public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     
-    /**
-     * Factory method for WSJ2eePlatformImpl. This method is used for 
-     * constructing the plugin-specific J2eePlatform object.
-     * 
-     * @param dm the server specific deployment manager that can be used as an
-     * additional source of information
-     */
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
+         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
         return new J2eePlatformImplImpl(dm);
     }
     
-    /**
-     * The plugin implementation of the J2eePlatform interface. It is used to 
-     * provide all kinds of information about the environment that the deployed
-     * application will run against, such as the set of .jsr files representing
-     * the j2ee implementation, which kinds of application the server may 
-     * contain, which j2ee specification version the server supports, etc.
-     */
     private static class J2eePlatformImplImpl extends J2eePlatformImpl {
+        
+        private static final String J2EE_API_DOC    = "docs/j2eeri-1_4-doc-api.zip";    // NOI18N
+        private static final Set MODULE_TYPES = new HashSet();
+        static {
+            MODULE_TYPES.add(J2eeModule.EAR);
+            MODULE_TYPES.add(J2eeModule.WAR);
+            MODULE_TYPES.add(J2eeModule.EJB);
+            MODULE_TYPES.add(J2eeModule.CONN);
+            MODULE_TYPES.add(J2eeModule.CLIENT);
+        }
+
+        private static final Set SPEC_VERSIONS = new HashSet();
+        static {
+            SPEC_VERSIONS.add(J2eeModule.J2EE_14);
+        }
+        
+        private String platformRoot;
+        
+        private LibraryImplementation[] libraries = null;
         
         /**
          * The platform icon's URL
@@ -69,101 +75,41 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          */
         WLDeploymentManager dm;
         
-        /**
-         * Creates a new instance of J2eePlatformImplImpl.
-         * 
-         * @param dm the server's deployment manager
-         */
         public J2eePlatformImplImpl(DeploymentManager dm) {
             this.dm = (WLDeploymentManager) dm;
+            platformRoot = this.dm.getInstanceProperties().getProperty(WLDeploymentFactory.SERVER_ROOT_ATTR);
         }
         
-        /**
-         * Defines whether the platform supports the named tool. Since it's
-         * unclear what actually a 'tool' is, currently it returns false.
-         * 
-         * @param toolName tool name
-         * 
-         * @return false
-         */
         public boolean isToolSupported(String toolName) {
             return false;
         }
         
-        /**
-         * Gets the classpath entries for the named tool. Since it's
-         * unclear what actually a 'tool' is, currently it returns an empty 
-         * array.
-         * 
-         * @param toolName tool name
-         * 
-         * @return an empty array of File
-         */
         public File[] getToolClasspathEntries(String toolName) {
             return new File[0];
         }
         
-        /**
-         * Specifies which versions of j2ee the server supports.
-         * 
-         * @return a Set with the supported versions
-         */
         public Set getSupportedSpecVersions() {
-            // init the set
-            Set result = new HashSet();
-            
-            // add j2ee 1.4
-            result.add(J2eeModule.J2EE_14);
-            
-            // return
-            return result;
+            return SPEC_VERSIONS;
         }
         
-        /** 
-         * Specifies which module types the server supports.
-         * 
-         * @return a Set the the supported module types
-         */
         public java.util.Set getSupportedModuleTypes() {
-            // init the set
-            Set result = new HashSet();
-            
-            // add supported modules
-            result.add(J2eeModule.EAR);
-            result.add(J2eeModule.WAR);
-            result.add(J2eeModule.EJB);
-            result.add(J2eeModule.CONN);
-            result.add(J2eeModule.CLIENT);
-            
-            // return
-            return result;
+            return MODULE_TYPES;
         }
         
-        /**
-         * Specifies the platform root directories. It's unclear where and why 
-         * it is used, for now returning the server home directory.
-         * 
-         * @return an array of files with a single entry - the server home 
-         *      directory
-         */
         public java.io.File[] getPlatformRoots() {
-            return new File[]{
-                    new File(dm.getInstanceProperties().getProperty(
-                            WLDeploymentFactory.SERVER_ROOT_ATTR))
-                    };
+            return new File[]{new File(platformRoot)};
         }
         
-        /**
-         * Gets the libraries that will be attached to the project for 
-         * compilation. A library includes a set of jar files, sources and 
-         * javadocs. As there may be multiple jars per library we create only 
-         * one.
-         * 
-         * @return an array of libraries
-         */
         public LibraryImplementation[] getLibraries() {
+            if (libraries == null) {
+                initLibraries();
+            }
+            return libraries;
+        }
+        
+        private void initLibraries() {
             // init the resulting array
-            LibraryImplementation[] libraries = new LibraryImplementation[1];
+            libraries = new LibraryImplementation[1];
             
             // create a new library
             LibraryImplementation library = new J2eeLibraryTypeProvider().
@@ -176,9 +122,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             // add the required jars to the library
             try {
                 List list = new ArrayList();
-                list.add(fileToUrl(new File(dm.getInstanceProperties().
-                        getProperty(WLDeploymentFactory.SERVER_ROOT_ATTR), 
-                        "server/lib/weblogic.jar")));                  // NOI18N
+                list.add(fileToUrl(new File(platformRoot, "server/lib/weblogic.jar"))); // NOI18N
                 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
@@ -188,9 +132,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             
             // add the created library to the array
             libraries[0] = library;
-            
-            // return
-            return libraries;
         }
         
         /**
@@ -222,15 +163,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
          * @return the resulting URI
          */
         private URL fileToUrl(File file) throws MalformedURLException {
-            // get the file's absolute URL
             URL url = file.toURI().toURL();
-            
-            // strip the jar's path and remain with the system resources URI
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
             }
-            
-            // return
             return url;
         }
     }

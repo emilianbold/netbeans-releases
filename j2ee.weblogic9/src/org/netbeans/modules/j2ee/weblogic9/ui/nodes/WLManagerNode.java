@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 import java.awt.*;
 
 import javax.enterprise.deploy.spi.*;
+import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 
 import org.openide.util.*;
 import org.openide.nodes.*;
@@ -248,6 +249,14 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
      */
     public boolean equals(Object obj) {
         return super.equals(obj);
+    }
+
+    public boolean hasCustomizer() {
+        return true;
+    }
+    
+    public Component getCustomizer() {
+        return new Customizer(new WLJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
     }
     
 }
