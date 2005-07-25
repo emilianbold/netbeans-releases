@@ -25,8 +25,11 @@ import org.netbeans.editor.ext.java.JCField;
 import org.netbeans.editor.ext.java.JCPackage;
 import org.netbeans.editor.ext.java.JavaCompletion;
 import org.netbeans.editor.ext.java.JavaCompletionQuery;
+import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.java.JCFinderFactory;
+import org.netbeans.modules.editor.java.JMIUtils;
+import org.netbeans.modules.editor.java.NbJMIResultItem;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 
 import org.openide.filesystems.FileObject;
@@ -136,24 +139,31 @@ public class AttrSupports extends Object {
          *  It sets itemLength and itemOffset variables as a side effect
          */
         private List completionResults (int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
-            
-            JCFinder finder = JCFinderFactory.getDefault().getGlobalFinder();
+            JMIUtils jmiutils = JMIUtils.get(sup.getDocument());
             String pkgName = "";    // NOI18N
-            JCPackage pkg = null;
+            JavaPackage pkg = null;
             String clsNamePart = valuePart;
             int lastDot = valuePart.lastIndexOf ('.');
             if (lastDot >= 0) {
                 pkgName = valuePart.substring (0, lastDot);
-                pkg = finder.getExactPackage(pkgName);
+                pkg = jmiutils.getExactPackage(pkgName);                
                 clsNamePart = (lastDot == valuePart.length ())? "": valuePart.substring (lastDot+1);    // NOI18N
             }
             itemOffset = offset - valuePart.length () + lastDot + 1;  // works even with -1
             itemLength = clsNamePart.length ();
             
             List res = new ArrayList();
-            res.addAll(finder.findPackages (valuePart, false, false)); // Find all possible packages // NOI18N
+            res.addAll(jmiutils.findPackages (valuePart, false, false, true)); // Find all possible packages // NOI18N
             if (pkg != null)
-                res.addAll(finder.findClasses(pkg, clsNamePart, false));
+                res.addAll(jmiutils.findClasses(pkg, clsNamePart, false, true, true, /*JavaClass context*/ null, true, false));
+            
+            //set substitute offset
+            Iterator i = res.iterator();
+            while(i.hasNext()) {
+                NbJMIResultItem jmiResultItem = (NbJMIResultItem)i.next();
+                jmiResultItem.setSubstituteOffset(itemOffset);
+            }
+            
             return res;
         }
              
