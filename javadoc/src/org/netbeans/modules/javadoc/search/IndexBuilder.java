@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -293,10 +293,10 @@ public class IndexBuilder implements Runnable, ChangeListener {
         }
     }
 
-    
     private synchronized static void scheduleTask() {
-        if (task == null)
-            task = RequestProcessor.getDefault().create(getDefault());
+        if (task == null) {
+            task = new RequestProcessor("Javadoc Index Builder").create(getDefault()); // NOI18N
+        }
         // Give it a small delay to avoid restarting too many times e.g. during
         // project switch:
         task.schedule(100);
