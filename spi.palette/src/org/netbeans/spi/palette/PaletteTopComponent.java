@@ -18,19 +18,10 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.palette.PaletteSwitch;
 import org.netbeans.modules.palette.Utils;
 import org.netbeans.modules.palette.ui.PalettePanel;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
@@ -59,7 +50,7 @@ final class PaletteTopComponent extends TopComponent implements PropertyChangeLi
     private PaletteTopComponent() {
         setName(Utils.getBundleString("CTL_Component_palette"));  // NOI18N
         setToolTipText(Utils.getBundleString("HINT_PaletteComponent"));
-        setIcon(Utilities.loadImage("org/netbeans/modules/form/resources/palette.png")); // NOI18N
+        setIcon(Utilities.loadImage("org/netbeans/modules/palette/resources/palette.png")); // NOI18N
         
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(505, 88));
