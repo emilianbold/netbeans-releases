@@ -34,7 +34,7 @@ public class ShowPaletteAction extends AbstractAction {
     public ShowPaletteAction() {
         putValue(NAME, Utils.getBundleString("CTL_PaletteAction") );
         putValue(SMALL_ICON, new ImageIcon(
-            Utilities.loadImage("org/netbeans/modules/form/resources/palette.png"))); // NOI18N
+            Utilities.loadImage("org/netbeans/modules/palette/resources/palette.png"))); // NOI18N
     }
 
 
