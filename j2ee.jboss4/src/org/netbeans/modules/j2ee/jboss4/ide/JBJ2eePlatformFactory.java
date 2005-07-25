@@ -109,6 +109,7 @@ class J2eePlatformImplImpl extends J2eePlatformImpl {
             }
             libraries[0] = library;
             
+            list = new ArrayList();
             library = libraryProvider.createLibrary();
             addFiles(new File (platformRoot, "lib"), list); //NOI18N
             
@@ -120,6 +121,11 @@ class J2eePlatformImplImpl extends J2eePlatformImpl {
                 addFiles(new File (platformRoot, "server/" + domain + "/lib"), list); //NOI18N
             }
             library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, list);
+            if (j2eeDoc != null) {
+                list = new ArrayList();
+                list.add(fileToUrl(j2eeDoc));
+                library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+            }
             libraries[1] = library;
 
         } catch (MalformedURLException e) {
