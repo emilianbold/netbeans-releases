@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   <property file="build.properties" />
   
   <property name="cluster.dir" location="mobility"/>
-  <property name="ismp.project" value="mobility.xml"/>
+  <property name="ismp.project" value="mobility"/>
   
   <target name="init" depends="set-buildnumber, set-installer.basename" unless="inited">
     <property name="inited" value="true" />
@@ -34,14 +34,20 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
-    <path id="ismp.cp">        
-        <pathelement path="${ismp.home}" />
-        <pathelement path="${ismp.home}/i18n" />
-        <fileset dir="${ismp.home}">
-          <include name="lib/*.jar"/>
-          <include name="ppk/*.jar"/>
-          <exclude name="lib/conversion.jar"/>
-        </fileset>        
+    <path id="ismp.cp">
+      <pathelement path="${ismp.home}"/>
+      <pathelement path="${ismp.home}/i18n"/>
+      <pathelement path="${ismp.home}/distributables/library/hsqldb.jar"/>
+      <pathelement path="${ismp.home}/Resources/idehtml"/>
+      <pathelement path="${ismp.home}/Resources/reslib/isus/us.jar"/>
+      <fileset dir="${ismp.home}">
+        <include name="lib/*.jar"/>
+        <include name="lib/ppk/*.jar"/>
+        <include name="distributables/platform/ext/*.jar"/>
+      </fileset>
+      <fileset dir="../lib">
+        <include name="dist/*.jar"/>
+      </fileset>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
@@ -49,16 +55,9 @@ Microsystems, Inc. All Rights Reserved.
   <macrodef name="transform-platform">
     <attribute name="ismp.project.suffix"/>
     <sequential>
-      <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="${ismp.project}" />
-        <arg value="-xsl" />
-        <arg value="@{ismp.project.suffix}.xsl"/>
-        <arg value="-saveas"/>
-        <arg value="build/${ismp.project}-@{ismp.project.suffix}"/>
-        <classpath>
-          <path refid="ismp.cp"/>
-        </classpath>
-      </java>
+      <style in="${ismp.project}.uip"
+             out="${ismp.project}-@{ismp.project.suffix}.uip"
+             style="@{ismp.project.suffix}.xsl"/>
     </sequential>
   </macrodef>
   
@@ -73,32 +72,25 @@ Microsystems, Inc. All Rights Reserved.
   <macrodef name="transform-ml">
     <attribute name="input.ismp.project"/>
     <sequential>
-      <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}" />
-        <arg value="-xsl" />
-        <arg value="../lib/ml.xsl"/>
-        <arg value="-saveas"/>
-        <arg value="@{input.ismp.project}-ml"/>
-        <classpath>
-          <path refid="ismp.cp"/>
-        </classpath>
-      </java>
+      <style in="@{input.ismp.project}.uip"
+             out="@{input.ismp.project}-ml.uip"
+             style="../lib/ml.xsl"/>
     </sequential>
   </macrodef>
   
   <target name="xsl-win32-ml" depends="init">
-    <transform-ml input.ismp.project="build/${ismp.project}-win32"/>
+    <transform-ml input.ismp.project="${ismp.project}-win32"/>
   </target>
   
   <target name="xsl-unix-ml" depends="init">
-    <transform-ml input.ismp.project="build/${ismp.project}-unix"/>
+    <transform-ml input.ismp.project="${ismp.project}-unix"/>
   </target>
   
   <macrodef name="build-installer">
     <attribute name="input.ismp.project"/>
     <sequential>
       <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}" />
+        <arg value="@{input.ismp.project}.uip" />
         <arg value="-build" />
         <arg value="-alias"/>
         <arg value="cluster.basedir=${basedir}"/>
@@ -113,25 +105,31 @@ Microsystems, Inc. All Rights Reserved.
   </macrodef>
   
   <target name="build-win32" depends="init, compile, xsl-win32">
-    <build-installer input.ismp.project="build/${ismp.project}-win32"/>
+    <build-installer input.ismp.project="${ismp.project}-win32"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+    <delete file="${ismp.project}-win32.uip"/>
   </target>
   
   <target name="build-win32-ml" depends="init, compile, xsl-win32, xsl-win32-ml">
-    <build-installer input.ismp.project="build/${ismp.project}-win32-ml"/>
+    <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
+    <delete file="${ismp.project}-win32.uip"/>
+    <delete file="${ismp.project}-win32-ml.uip"/>
   </target>
 
   <target name="build-unix" depends="init, compile, xsl-unix">
-    <build-installer input.ismp.project="build/${ismp.project}-unix"/>
+    <build-installer input.ismp.project="${ismp.project}-unix"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+    <delete file="${ismp.project}-unix.uip"/>
   </target>
   
   <target name="build-unix-ml" depends="init, compile, xsl-unix, xsl-unix-ml">
-    <build-installer input.ismp.project="build/${ismp.project}-unix-ml"/>
+    <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux-ml.jar"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
+    <delete file="${ismp.project}-unix.uip"/>
+    <delete file="${ismp.project}-unix-ml.uip"/>
   </target>
   
   <target name="compile" depends="init" description="compile custom beans and panels">
@@ -172,6 +170,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete dir="dist"/>
     <delete dir="build"/>
+    <delete dir="customcode/lib"/>
   </target>
   
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
