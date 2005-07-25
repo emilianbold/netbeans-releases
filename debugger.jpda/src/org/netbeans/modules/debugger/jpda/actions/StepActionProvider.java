@@ -14,6 +14,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.StepRequest;
@@ -100,8 +101,9 @@ implements Executor {
                         removeStepRequests (tr);
 
                         // 2) create new step request
-                        stepRequest = getDebuggerImpl ().getVirtualMachine ().
-                            eventRequestManager ().createStepRequest (
+                        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+                        if (vm == null) return ; // There's nothing to do without the VM.
+                        stepRequest = vm.eventRequestManager ().createStepRequest (
                                 tr,
                                 StepRequest.STEP_LINE,
                                 getJDIAction (action)
