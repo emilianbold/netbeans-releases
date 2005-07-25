@@ -21,9 +21,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
 
   <!-- Specific to Mac OS X installer -->
-  <property name="appname" value="NetBeans4.1dev"/>
-  <property name="appversion" value="4.1dev"/>
-  <property name="version" value="4.1dev"/>
+  <property name="appname" value="NetBeans4.2dev"/>
+  <property name="appversion" value="4.2dev"/>
+  <property name="version" value="4.2dev"/>
                                                                                                                                  
   <property name="app.dir" value="${appname}.app"/>
   <property name="build.dir" value="build"/>
@@ -45,17 +45,19 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
-        <pathelement path="${ismp.home}" />
-        <pathelement path="${ismp.home}/i18n" />
-        <fileset dir="${ismp.home}">
-          <include name="lib/*.jar"/>
-          <include name="ppk/*.jar"/>
-          <include name="lib/ppk/*.jar"/>
-          <exclude name="lib/conversion.jar"/>
-        </fileset>        
-        <fileset dir="../lib">
-          <include name="dist/*.jar"/>
-        </fileset>
+      <pathelement path="${ismp.home}"/>
+      <pathelement path="${ismp.home}/i18n"/>
+      <pathelement path="${ismp.home}/distributables/library/hsqldb.jar"/>
+      <pathelement path="${ismp.home}/Resources/idehtml"/>
+      <pathelement path="${ismp.home}/Resources/reslib/isus/us.jar"/>
+      <fileset dir="${ismp.home}">
+        <include name="lib/*.jar"/>
+        <include name="lib/ppk/*.jar"/>
+        <include name="distributables/platform/ext/*.jar"/>
+      </fileset>
+      <fileset dir="../lib">
+        <include name="dist/*.jar"/>
+      </fileset>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
@@ -73,37 +75,30 @@ Microsystems, Inc. All Rights Reserved.
   <macrodef name="transform-ml">
     <attribute name="input.ismp.project"/>
     <sequential>
-      <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}" />
-        <arg value="-xsl" />
-        <arg value="../lib/ml.xsl"/>
-        <arg value="-saveas"/>
-        <arg value="@{input.ismp.project}-ml"/>
-        <classpath>
-          <path refid="ismp.cp"/>
-        </classpath>
-      </java>
+      <style in="@{input.ismp.project}.uip"
+             out="@{input.ismp.project}-ml.uip"
+             style="../lib/ml.xsl"/>
     </sequential>
   </macrodef>
   
   <target name="xsl-linux-ml" depends="init">
-    <transform-ml input.ismp.project="as-linux.xml"/>
+    <transform-ml input.ismp.project="as-linux"/>
   </target>
   
   <target name="xsl-solaris-sparc-ml" depends="init">
-    <transform-ml input.ismp.project="as-solaris-sparc.xml"/>
+    <transform-ml input.ismp.project="as-solaris-sparc"/>
   </target>
   
   <target name="xsl-solaris-x86-ml" depends="init">
-    <transform-ml input.ismp.project="as-solaris-x86.xml"/>
+    <transform-ml input.ismp.project="as-solaris-x86"/>
   </target>
   
   <target name="xsl-windows-ml" depends="init">
-    <transform-ml input.ismp.project="as-windows.xml"/>
+    <transform-ml input.ismp.project="as-windows"/>
   </target>
   
   <target name="xsl-macosx-ml" depends="init">
-    <transform-ml input.ismp.project="as-macosx.xml"/>
+    <transform-ml input.ismp.project="as-macosx"/>
   </target>
   
   <macrodef name="build-installer">
@@ -111,7 +106,7 @@ Microsystems, Inc. All Rights Reserved.
     <attribute name="input.nb.dir" default="${nb.dir}"/>
     <sequential>
       <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}" />
+        <arg value="@{input.ismp.project}.uip" />
         <arg value="-build" />
         <arg value="-alias"/>
         <arg value="basedir=${basedir}"/>
@@ -138,8 +133,9 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="as-linux.xml"/>
+    <build-installer input.ismp.project="as-linux"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
+    <!--<move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>-->
   </target>
   
   <target name="build-linux-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-linux-ml">
@@ -147,9 +143,9 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="as-linux.xml-ml"/>
+    <build-installer input.ismp.project="as-linux-ml"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
-    <delete file="as-linux.xml-ml"/>
+    <delete file="as-linux-ml.uip"/>
   </target>
 
   <target name="build-solaris-sparc" depends="init, clean-build, compile, create-statefile">
@@ -157,8 +153,9 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="as-solaris-sparc.xml"/>
+    <build-installer input.ismp.project="as-solaris-sparc"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
+    <!--<move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc.jar"/>-->
   </target>
   
   <target name="build-solaris-sparc-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-solaris-sparc-ml">
@@ -166,8 +163,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="as-solaris-sparc.xml-ml"/>
-    <delete file="as-solaris-sparc.xml-ml"/>
+    <build-installer input.ismp.project="as-solaris-sparc-ml"/>
+    <delete file="as-solaris-sparc-ml.uip"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
   </target>
 
@@ -176,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="as-solaris-x86.xml"/>
+    <build-installer input.ismp.project="as-solaris-x86"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
   </target>
   
@@ -185,8 +182,8 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/as-unix-uninstall.template" tofile="build/scripts/as-unix-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="as-solaris-x86.xml-ml"/>
-    <delete file="as-solaris-x86.xml-ml"/>
+    <build-installer input.ismp.project="as-solaris-x86-ml"/>
+    <delete file="as-solaris-x86-ml.uip"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
   </target>
 
@@ -202,8 +199,9 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
-    <build-installer input.ismp.project="as-windows.xml"/>
+    <build-installer input.ismp.project="as-windows"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
+    <!--<move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win.jar"/>-->
   </target>
   
   <target name="build-windows-ml" depends="init-ml, clean-build, compile, create-statefile, xsl-windows-ml">
@@ -218,8 +216,8 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
-    <build-installer input.ismp.project="as-windows.xml-ml"/>
-    <delete file="as-windows.xml-ml"/>
+    <build-installer input.ismp.project="as-windows-ml"/>
+    <delete file="as-windows-ml.uip"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
   </target>
 
@@ -235,7 +233,7 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
-    <build-installer input.ismp.project="as-macosx.xml" input.nb.dir="${build.dir}/${app.dir}"/>
+    <build-installer input.ismp.project="as-macosx" input.nb.dir="${build.dir}/${app.dir}"/>
     <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx.jar"/>
   </target>
@@ -252,8 +250,8 @@ Microsystems, Inc. All Rights Reserved.
     </exec>
     <!-- Ant 'unzip' task does not work from unknown reason on AS Installer exe file so we use 'exec' task. -->
     <!-- <unzip src="${as.installer}" dest="build/scripts/as_setup"/> -->
-    <build-installer input.ismp.project="as-macosx.xml-ml" input.nb.dir="${build.dir}/${app.dir}"/>
-    <delete file="as-macosx.xml-ml"/>
+    <build-installer input.ismp.project="as-macosx-ml" input.nb.dir="${build.dir}/${app.dir}"/>
+    <delete file="as-macosx-ml.uip"/>
     <!--<move file="build/disk1/setupMac.command" tofile="dist/${installer.basename}-macosx.command"/>-->
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-macosx-ml.jar"/>
   </target>
@@ -310,6 +308,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete dir="dist"/>
+    <delete dir="customcode/lib"/>
   </target>
   
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
