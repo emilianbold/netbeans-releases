@@ -7,12 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import javax.swing.Icon;
 import org.openide.util.Lookup;
@@ -32,6 +33,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     private Class[] watch;
     private Lookup.Result results[];
     private boolean needsRefresh = true;
+    private boolean initialized = false;
         
     private static boolean refreshing = false;
     
@@ -55,6 +57,13 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
         }
         this.lookup = lookup;
         this.watch = watch;
+    }
+    
+    private void init () {
+        if (initialized) {
+            return ;
+        }
+        assert EventQueue.isDispatchThread () : "Cannot be called outside EQ!";
         this.results = new Lookup.Result[watch.length];
         // Needs to listen on changes in results
         for ( int i = 0; i < watch.length; i++ ) {
@@ -69,6 +78,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     /** Needs to override getValue in order to force refresh
      */
     public Object getValue( String key ) {
+        init ();
         if ( needsRefresh ) {
             doRefresh();
         }
@@ -78,6 +88,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     /** Needs to override isEnabled in order to force refresh
      */
     public boolean isEnabled() {
+        init ();
         if ( needsRefresh ) {
             doRefresh();
         }
@@ -85,6 +96,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     }
     
     public final void actionPerformed( ActionEvent e ) {
+        init ();
         actionPerformed( lookup );
     }
     
