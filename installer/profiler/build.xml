@@ -238,12 +238,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- Build library -->
   <target name="build-library" description="compile shared library">
-    <ant antfile="../lib/build.xml" target="jar" inheritAll="false"/>
+    <ant dir="../lib" target="jar" inheritAll="false"/>
   </target>
                                                                                                                                   
   <!-- Clean library -->
   <target name="clean-library" description="clean shared library">
-    <ant antfile="../lib/build.xml" target="clean" inheritAll="false"/>
+    <ant dir="../lib" target="clean" inheritAll="false"/>
   </target>
 
   <target name="run" depends="init" description="run the installer">
