@@ -5,8 +5,7 @@ Prerequisites
  - JDK 1.4.2 (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
- - Profiler cluster for all 4 supported platforms - content of profiler1
-   directory for Windows, Linux, Solaris Sparc, Solaris X86.
+ - Profiler cluster
 
 To build from command line run ant as usual with
 
@@ -14,25 +13,21 @@ To build from command line run ant as usual with
  -Dcluster.dir=i$HOME/profiler/linux
  -Dinstaller.basename=Profiler-20040622
 
-Build targets to build English (en) installers for supported platforms are
-as follows:
-build-linux - Linux - suffix '-linux' is appended to installer.basename
-build-solaris-sparc - Solaris Sparc - suffix '-solsparc'
-build-solaris-x86 - Solaris X86 - suffix '-solx86'
-build-windows - Windows - suffix '-win'
+Supported platforms are:
+1.Linux. Suffix '-linux' is added to installer.basename.
+2.Solaris Sparc. Suffix '-solsparc' is added.
+3.Solaris X86. Suffix '-solx86' is added.
+4.Windows. Suffix '-win' is added.
 
-Build targets for ML installers (Language support for Japanese (ja) and
-Simplified Chinese (zh) is added to English support ie. en,ja,zh support is
-present):
-build-linux-ml - Linux - suffix '-linux-ml' is appended to installer.basename
-build-solaris-sparc-ml - Solaris Sparc - suffix '-solsparc-ml'
-build-solaris-x86-ml - Solaris X86 - suffix '-solx86-ml'
-build-windows-ml - Windows - suffix '-win-ml'
+Default target is 'build'.
 
-As there is different command line option for every platform (different
-content is installed) it must be run separately for every platform.
+Target 'build' builds installers for 4 supported platforms with language
+support for English (en).
+
+Target 'build-ml' builds installers for 4 supported platforms with language
+support for English (an), Japanese (ja) and Simplified Chinese (zh).
+Suffix '-ml' is added to installer.basename.
 
 The installers will be generated and placed in the directory 'dist'.
 
-jar installers are also generated for i18n testing for every supported
-platform.
+jar installer is also generated for i18n testing.
