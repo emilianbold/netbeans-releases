@@ -56,6 +56,11 @@ public class CvsVersioningSystem {
 
     private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository";
     
+    /**
+     * Extensions to be treated as text although MIME type may suggest otherwise.
+     */ 
+    private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "xml", "html", "properties", "mf", "jhm", "hs", "form" }));
+    
     private final Map clientsCache = new HashMap();
     private final Map params = new HashMap();
 
@@ -401,7 +406,7 @@ public class CvsVersioningSystem {
         // TODO: Let user configure defaults
         return isText(file) ? KeywordSubstitutionOptions.DEFAULT : KeywordSubstitutionOptions.BINARY;    
     }
-
+    
     public boolean isText(File file) {
         // TODO: Let user configure defaults
         if (FILENAME_CVSIGNORE.equals(file.getName())) {
@@ -413,17 +418,7 @@ public class CvsVersioningSystem {
             return true;            
         }
         // TODO: HACKS begin
-        if ("properties".equalsIgnoreCase(fo.getExt())) {
-            return true;
-        }
-        if ("mf".equalsIgnoreCase(fo.getExt())) {
-            return true;            
-        }
-        if ("form".equalsIgnoreCase(fo.getExt())) {
-            return true;
-        }        
-        // TODO: HACKS end
-        return false;          
+        return textExtensions.contains(fo.getExt());
     }
     
     public void setParameter(Object key, Object value) {
