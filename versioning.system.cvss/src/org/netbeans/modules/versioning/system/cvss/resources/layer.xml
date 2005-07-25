@@ -195,6 +195,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-settings-MetadataAttic.settings" url="../settings/MetadataAttic.xml"/>
             <file name="org-netbeans-modules-versioning-system-cvss-settings-CvsModuleConfig.settings" url="../settings/CvsModuleConfig.xml"/>
         </folder>
+        <folder name="JavaHelp">
+            <file name="org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" url="helpset-decl.xml"/>
+            <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-netbeans-modules-versioning-system-cvss-resources-helpset.xml" boolvalue="true"/>
+        </folder>
     </folder>
 
     <folder name="Windows2">
