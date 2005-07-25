@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
         <api name="text"/>
         <summary>Added CloneableEditorSupport.wrapEditorComponent</summary>
         <version major="6" minor="4"/>
-        <date day="22" month="07" year="2005"/>
+        <date day="22" month="7" year="2005"/>
         <author login="abadea"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
         <description>
