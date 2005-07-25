@@ -240,7 +240,7 @@ public class LocalsTreeModel implements TreeModel {
                             to
                         );
                     } catch (AbsentInformationException ex) {
-                        return new String [] {"compiled without -g"};
+                        return new String [] {"NoInfo"};
                     }
                 } else {
                     Object[] avs = null;
