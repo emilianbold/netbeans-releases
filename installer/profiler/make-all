@@ -1,1 +1,1 @@
-ant -Dismp.home=$HOME/local/ismp50 -Dcluster.dir=$PROFILER_PATH $*
+ant -Dismp.home=$IS_HOME -Dcluster.dir=$PROFILER_PATH $*

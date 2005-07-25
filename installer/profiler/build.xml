@@ -24,17 +24,20 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
-    <path id="ismp.cp">        
-        <pathelement path="${ismp.home}" />
-        <pathelement path="${ismp.home}/i18n" />
-        <fileset dir="${ismp.home}">
-          <include name="lib/*.jar"/>
-          <include name="ppk/*.jar"/>
-          <exclude name="lib/conversion.jar"/>
-        </fileset>        
-        <fileset dir="../lib">
-          <include name="dist/*.jar"/>
-        </fileset>
+    <path id="ismp.cp">
+      <pathelement path="${ismp.home}"/>
+      <pathelement path="${ismp.home}/i18n"/>
+      <pathelement path="${ismp.home}/distributables/library/hsqldb.jar"/>
+      <pathelement path="${ismp.home}/Resources/idehtml"/>
+      <pathelement path="${ismp.home}/Resources/reslib/isus/us.jar"/>
+      <fileset dir="${ismp.home}">
+        <include name="lib/*.jar"/>
+        <include name="lib/ppk/*.jar"/>
+        <include name="distributables/platform/ext/*.jar"/>
+      </fileset>
+      <fileset dir="../lib">
+        <include name="dist/*.jar"/>
+      </fileset>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
@@ -52,63 +55,33 @@ Microsystems, Inc. All Rights Reserved.
   <macrodef name="transform-ml">
     <attribute name="input.ismp.project"/>
     <sequential>
-      <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}.xml" />
-        <arg value="-xsl" />
-        <arg value="../lib/ml.xsl"/>
-        <arg value="-saveas"/>
-        <arg value="@{input.ismp.project}-ml.xml"/>
-        <classpath>
-          <path refid="ismp.cp"/>
-        </classpath>
-      </java>
+      <style in="@{input.ismp.project}.uip"
+             out="@{input.ismp.project}-ml.uip"
+             style="../lib/ml.xsl"/>
     </sequential>
   </macrodef>
 
   <target name="xsl-unix-ml" depends="init">
     <transform-ml input.ismp.project="${ismp.project}-unix"/>
   </target>
-                                                                                                                                                  
+
   <target name="xsl-win32-ml" depends="init">
     <transform-ml input.ismp.project="${ismp.project}-win32"/>
   </target>
-  
-  <!--<target name="xsl-linux-ml" depends="init">
-    <transform-ml input.ismp.project="profiler-linux.xml"/>
-  </target>
-  
-  <target name="xsl-solaris-sparc-ml" depends="init">
-    <transform-ml input.ismp.project="profiler-solaris-sparc.xml"/>
-  </target>
-  
-  <target name="xsl-solaris-x86-ml" depends="init">
-    <transform-ml input.ismp.project="profiler-solaris-x86.xml"/>
-  </target>
-  
-  <target name="xsl-windows-ml" depends="init">
-    <transform-ml input.ismp.project="profiler-windows.xml"/>
-  </target>-->
-
+ 
   <macrodef name="transform-platform">
     <attribute name="ismp.project.suffix"/>
     <sequential>
-      <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="${ismp.project}.xml" />
-        <arg value="-xsl" />
-        <arg value="@{ismp.project.suffix}.xsl"/>
-        <arg value="-saveas"/>
-        <arg value="${ismp.project}-@{ismp.project.suffix}.xml"/>
-        <classpath>
-          <path refid="ismp.cp"/>
-        </classpath>
-      </java>
+      <style in="${ismp.project}.uip"
+             out="${ismp.project}-@{ismp.project.suffix}.uip"
+             style="@{ismp.project.suffix}.xsl"/>
     </sequential>
   </macrodef>
 
   <target name="xsl-win32" depends="init">
     <transform-platform ismp.project.suffix="win32"/>
   </target>
-                                                                                                                                                                 
+
   <target name="xsl-unix" depends="init">
     <transform-platform ismp.project.suffix="unix"/>
   </target>
@@ -117,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
     <attribute name="input.ismp.project"/>
     <sequential>
       <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}.xml"/>
+        <arg value="@{input.ismp.project}.uip"/>
         <arg value="-build"/>
         <arg value="-alias"/>
         <arg value="basedir=${basedir}"/>
@@ -134,93 +107,41 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-win32" depends="init, compile, xsl-win32">
     <build-installer input.ismp.project="${ismp.project}-win32"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
-    <delete file="${ismp.project}-win32.xml"/>
+    <delete file="${ismp.project}-win32.uip"/>
   </target>
-                                                                                                                                                                 
+
   <target name="build-win32-ml" depends="init, compile, xsl-win32, xsl-win32-ml">
     <build-installer input.ismp.project="${ismp.project}-win32-ml"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
-    <delete file="${ismp.project}-win32.xml"/>
-    <delete file="${ismp.project}-win32-ml.xml"/>
+    <delete file="${ismp.project}-win32.uip"/>
+    <delete file="${ismp.project}-win32-ml.uip"/>
   </target>
-                                                                                                                                                                 
+
   <target name="build-unix" depends="init, compile, xsl-unix">
     <build-installer input.ismp.project="${ismp.project}-unix"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
     <move file="build/disk1/setupSolarisx86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
-    <delete file="${ismp.project}-unix.xml"/>
+    <delete file="${ismp.project}-unix.uip"/>
   </target>
-                                                                                                                                                                 
+
   <target name="build-unix-ml" depends="init, compile, xsl-unix, xsl-unix-ml">
     <build-installer input.ismp.project="${ismp.project}-unix-ml"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
     <move file="build/disk1/setupSolarisx86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
-    <delete file="${ismp.project}-unix.xml"/>
-    <delete file="${ismp.project}-unix-ml.xml"/>
+    <delete file="${ismp.project}-unix.uip"/>
+    <delete file="${ismp.project}-unix-ml.uip"/>
   </target>
   
-  <!--<target name="build-linux" depends="init, compile">
-    <build-installer input.ismp.project="profiler-linux.xml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux.jar"/>
-    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
-  </target>
-  
-  <target name="build-linux-ml" depends="init, compile, xsl-linux-ml">
-    <build-installer input.ismp.project="profiler-linux.xml-ml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-linux-ml.jar"/>
-    <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
-    <delete file="profiler-linux.xml-ml"/>
-  </target>
-  
-  <target name="build-solaris-sparc" depends="init, compile">
-    <build-installer input.ismp.project="profiler-solaris-sparc.xml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc.jar"/>
-    <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
-  </target>
-  
-  <target name="build-solaris-sparc-ml" depends="init, compile, xsl-solaris-sparc-ml">
-    <build-installer input.ismp.project="profiler-solaris-sparc.xml-ml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solsparc-ml.jar"/>
-    <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
-    <delete file="profiler-solaris-sparc.xml-ml"/>
-  </target>
-  
-  <target name="build-solaris-x86" depends="init, compile">
-    <build-installer input.ismp.project="profiler-solaris-x86.xml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solx86.jar"/>
-    <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
-  </target>
-  
-  <target name="build-solaris-x86-ml" depends="init, compile, xsl-solaris-x86-ml">
-    <build-installer input.ismp.project="profiler-solaris-x86.xml-ml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-solx86-ml.jar"/>
-    <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
-    <delete file="profiler-solaris-x86.xml-ml"/>
-  </target>
-  
-  <target name="build-windows" depends="init, compile">
-    <build-installer input.ismp.project="profiler-windows.xml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win.jar"/>
-    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
-  </target>
-  
-  <target name="build-windows-ml" depends="init, compile, xsl-windows-ml">
-    <build-installer input.ismp.project="profiler-windows.xml-ml"/>
-    <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-win-ml.jar"/>
-    <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
-    <delete file="profiler-windows.xml-ml"/>
-  </target>-->
-
   <target name="build" depends="init, build-win32, build-unix" description="build the installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}.jar"/>
   </target>
-                                                                                                                                                                 
+
   <target name="build-ml" depends="init, build-win32-ml, build-unix-ml" description="build the multilanguage installers">
     <move file="build/disk1/setup.jar" tofile="dist/${installer.basename}-ml.jar"/>
   </target>
-  
+ 
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     
@@ -240,7 +161,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="build-library" description="compile shared library">
     <ant dir="../lib" target="jar" inheritAll="false"/>
   </target>
-                                                                                                                                  
+
   <!-- Clean library -->
   <target name="clean-library" description="clean shared library">
     <ant dir="../lib" target="clean" inheritAll="false"/>
@@ -269,6 +190,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete dir="dist"/>
     <delete dir="build"/>
+    <delete dir="customcode/lib"/>
   </target>
   
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
