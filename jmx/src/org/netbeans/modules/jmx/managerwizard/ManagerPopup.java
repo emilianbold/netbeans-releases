@@ -43,6 +43,8 @@ public class ManagerPopup extends javax.swing.JDialog {
         Mnemonics.setLocalizedText(okJButton,bundle.getString("LBL_okButton.text"));// NOI18N
         Mnemonics.setLocalizedText(cancelJButton,bundle.getString("LBL_Generic_Cancel"));// NOI18N
         
+        setName("ManagerPopup");
+        
         addListeners();
         setDimensions(NbBundle.getMessage(ManagerPopup.class,"LBL_RMIAgentURL_Popup"));// NOI18N
     }
@@ -130,6 +132,7 @@ public class ManagerPopup extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 0);
         rmiParameterPanel.add(rmiPortJLabel, gridBagConstraints);
 
+        rmiHostJTextField.setName("hostJTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
