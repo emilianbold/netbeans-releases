@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -354,7 +353,7 @@ public class CreatedModifiedFiles {
                     project.getProjectDirectory(),interfaceClassPath);
             
             String line = null;
-            LinkedList lines = new LinkedList();
+            List lines = new ArrayList();
             InputStream serviceIS = service.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(serviceIS));
             try {
