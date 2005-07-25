@@ -1,7 +1,7 @@
 Prerequisites
    
- - InstallShield MultiPlatform 5 (SP3)
- - Apache Ant 1.6.2
+ - InstallShield Universal 11
+ - Apache Ant 1.6.3
  - JDK 1.4.2_X (not JDK 1.5 which uses an incompatible classfile format)
  - external unzip utility on $PATH
  - Unix
