@@ -35,6 +35,7 @@ public class MBeanDO {
     private boolean needObjectNameImport = false;
     private boolean notificationEmitter = false;
     private boolean implMBeanRegist = false;
+    private boolean keepPreRegistRef = false;
     private boolean genBroadcastDeleg = false;
     private boolean genSeqNumber = false;
     
@@ -155,5 +156,13 @@ public class MBeanDO {
 
     public void setGenSeqNumber(boolean genSeqNumber) {
         this.genSeqNumber = genSeqNumber;
+    }
+
+    public boolean isKeepPreRegistRef() {
+        return keepPreRegistRef;
+    }
+
+    public void setKeepPreRegistRef(boolean keepPreRegistRef) {
+        this.keepPreRegistRef = keepPreRegistRef;
     }
 }
