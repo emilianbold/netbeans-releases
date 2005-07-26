@@ -34,6 +34,8 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
@@ -45,6 +47,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.apisupport.project.*;
 
@@ -250,9 +253,6 @@ public final class ModuleActions implements ActionProvider {
             return files != null && files.length == 1 && findBuildXml(project) != null;
         } else {
             // other actions are global
-            if (command.equals(JavaProjectConstants.COMMAND_JAVADOC) && !project.supportsJavadoc()) {
-                return false;
-            }
             return findBuildXml(project) != null;
         }
     }
@@ -397,6 +397,11 @@ public final class ModuleActions implements ActionProvider {
             p = new Properties();
             p.setProperty("fix.class", clazzSlash); // NOI18N
             buildScript = findBuildXml(project);
+        } else if (command.equals(JavaProjectConstants.COMMAND_JAVADOC) && !project.supportsJavadoc()) {
+            // #61372: warn the user, rather than disabling the action.
+            String msg = NbBundle.getMessage(ModuleActions.class, "ERR_javadoc_disabled");
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+            return;
         } else {
             p = null;
             targetNames = (String[])globalCommands.get(command);

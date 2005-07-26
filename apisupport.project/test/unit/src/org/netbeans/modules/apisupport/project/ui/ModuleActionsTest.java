@@ -50,23 +50,4 @@ public class ModuleActionsTest extends TestBase {
         assertTrue("Fix enabled on it", ap.isActionEnabled(JavaProjectConstants.COMMAND_DEBUG_FIX, Lookups.singleton(DataObject.find(actionsJava))));
     }
     
-    public void testJavadocPresenceAndEnablement() throws Exception {
-        File dir = getWorkDir();
-        NbModuleProjectGenerator.createStandAloneModule(dir, "x", "X", "x/Bundle.properties", "x/layer.xml", "default");
-        new FileOutputStream(new File(dir, "src/x/X.java".replace('/', File.separatorChar))).close();
-        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(dir));
-        assertNotNull(p);
-        p.open();
-        ActionProvider ap = (ActionProvider) p.getLookup().lookup(ActionProvider.class);
-        assertNotNull(ap);
-        assertTrue("have Javadoc action", Arrays.asList(ap.getSupportedActions()).contains(JavaProjectConstants.COMMAND_JAVADOC));
-        assertFalse("not yet enabled though (no public packages)", ap.isActionEnabled(JavaProjectConstants.COMMAND_JAVADOC, Lookup.EMPTY));
-        ProjectXMLManager mgr = new ProjectXMLManager(p.getHelper());
-        assertEquals("no pub pkgs yet", 0, mgr.getPublicPackages().length);
-        mgr.replacePublicPackages(new String[] {"x"});
-        assertEquals("now have pub pkgs", 1, mgr.getPublicPackages().length);
-        assertTrue("still have Javadoc action", Arrays.asList(ap.getSupportedActions()).contains(JavaProjectConstants.COMMAND_JAVADOC));
-        assertTrue("and now enabled (#61229)", ap.isActionEnabled(JavaProjectConstants.COMMAND_JAVADOC, Lookup.EMPTY));
-    }
-    
 }
