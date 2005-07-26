@@ -142,6 +142,7 @@ public class ManagerPopup extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 11);
         rmiParameterPanel.add(rmiHostJTextField, gridBagConstraints);
 
+        rmiPortJTextField.setName("portJTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -156,6 +157,7 @@ public class ManagerPopup extends javax.swing.JDialog {
 
         buttonPanel.setLayout(new java.awt.GridBagLayout());
 
+        okJButton.setName("okButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 0);

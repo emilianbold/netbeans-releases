@@ -69,6 +69,9 @@
           </Constraints>
         </Component>
         <Component class="javax.swing.JTextField" name="rmiPortJTextField">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="portJTextField"/>
+          </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
           </AuxValues>
@@ -90,6 +93,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
       <SubComponents>
         <Component class="javax.swing.JButton" name="okJButton">
+          <Properties>
+            <Property name="name" type="java.lang.String" value="okButton"/>
+          </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
           </AuxValues>
