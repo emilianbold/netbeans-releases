@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,10 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.VMDisconnectedException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -23,6 +27,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
@@ -33,6 +38,7 @@ import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -48,6 +54,8 @@ NodeActionsProviderFilter, TableModel, Constants {
     public static final String MONITOR =
         "org/netbeans/modules/debugger/resources/allInOneView/Monitor"; // NOI18N
 
+    private RequestProcessor evaluationRP = new RequestProcessor();
+    private final Collection modelListeners = new HashSet();
     
     // TreeView impl............................................................
     
@@ -180,33 +188,70 @@ NodeActionsProviderFilter, TableModel, Constants {
         return model.getDisplayName (o);
     }
     
-    public String getShortDescription (NodeModel model, Object o) throws 
+    private Map shortDescriptionMap = new HashMap();
+    
+    public String getShortDescription (final NodeModel model, final Object o) throws 
     UnknownTypeException {
-        if (o instanceof ContendedMonitor) {
-            ObjectVariable v = ((ContendedMonitor) o).variable;
-            try {
-                return "(" + v.getType () + ") " + v.getToStringValue ();
-            } catch (InvalidExpressionException ex) {
-                return ex.getLocalizedMessage ();
+        
+        synchronized (shortDescriptionMap) {
+            Object shortDescription = shortDescriptionMap.remove(o);
+            if (shortDescription instanceof String) {
+                return (String) shortDescription;
+            } else if (shortDescription instanceof UnknownTypeException) {
+                throw (UnknownTypeException) shortDescription;
             }
-        } else
-        if (o instanceof ThreadWithBordel) {
-            return model.getShortDescription (
-                ((ThreadWithBordel) o).originalThread
-            );
         }
-        if (o instanceof OwnedMonitors) {
-            return null;
-        } else
-        if (o instanceof ObjectVariable) {
-            ObjectVariable v = (ObjectVariable) o;
-            try {
-                return "(" + v.getType () + ") " + v.getToStringValue ();
-            } catch (InvalidExpressionException ex) {
-                return ex.getLocalizedMessage ();
+        
+        // Called from AWT - we need to postpone the work...
+        evaluationRP.post(new Runnable() {
+            public void run() {
+                Object shortDescription;
+                if (o instanceof ContendedMonitor) {
+                    ObjectVariable v = ((ContendedMonitor) o).variable;
+                    try {
+                        shortDescription = "(" + v.getType () + ") " + v.getToStringValue ();
+                    } catch (InvalidExpressionException ex) {
+                        shortDescription = ex.getLocalizedMessage ();
+                    }
+                } else
+                if (o instanceof ThreadWithBordel) {
+                    try {
+                        shortDescription = model.getShortDescription (
+                            ((ThreadWithBordel) o).originalThread
+                        );
+                    } catch (UnknownTypeException utex) {
+                        shortDescription = utex;
+                    }
+                } else
+                if (o instanceof OwnedMonitors) {
+                    shortDescription = "";
+                } else
+                if (o instanceof ObjectVariable) {
+                    ObjectVariable v = (ObjectVariable) o;
+                    try {
+                        shortDescription = "(" + v.getType () + ") " + v.getToStringValue ();
+                    } catch (InvalidExpressionException ex) {
+                        shortDescription = ex.getLocalizedMessage ();
+                    }
+                } else {
+                    try {
+                        shortDescription = model.getShortDescription (o);
+                    } catch (UnknownTypeException utex) {
+                        shortDescription = utex;
+                    }
+                }
+                
+                if (shortDescription != null && !"".equals(shortDescription)) {
+                    synchronized (shortDescriptionMap) {
+                        shortDescriptionMap.put(o, shortDescription);
+                    }
+                    fireModelChange(new ModelEvent.NodeChanged(MonitorModel.this,
+                        o, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
+                }
             }
-        } else
-        return model.getShortDescription (o);
+        });
+        
+        return ""; // NOI18N
     }
     
     public String getIconBase (NodeModel model, Object o) throws 
@@ -229,9 +274,25 @@ NodeActionsProviderFilter, TableModel, Constants {
     }
 
     public void addModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
     }
 
     public void removeModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
+    }
+    
+    private void fireModelChange(ModelEvent me) {
+        Object[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray();
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            ((ModelListener) listeners[i]).modelChanged(me);
+        }
     }
     
     

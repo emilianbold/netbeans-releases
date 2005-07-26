@@ -7,12 +7,16 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -24,11 +28,13 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -49,6 +55,9 @@ public class VariablesNodeModel implements NodeModel {
 
     
     private JPDADebugger debugger;
+    
+    private RequestProcessor evaluationRP = new RequestProcessor();
+    private final Collection modelListeners = new HashSet();
     
     
     public VariablesNodeModel (ContextProvider lookupProvider) {
@@ -86,8 +95,35 @@ public class VariablesNodeModel implements NodeModel {
         throw new UnknownTypeException (o);
     }
     
-    public String getShortDescription (Object o) 
-    throws UnknownTypeException {
+    private Map shortDescriptionMap = new HashMap();
+    
+    public String getShortDescription (final Object o) throws UnknownTypeException {
+        synchronized (shortDescriptionMap) {
+            Object shortDescription = shortDescriptionMap.remove(o);
+            if (shortDescription instanceof String) {
+                return (String) shortDescription;
+            } else if (shortDescription instanceof UnknownTypeException) {
+                throw (UnknownTypeException) shortDescription;
+            }
+        }
+        testKnown(o);
+        // Called from AWT - we need to postpone the work...
+        evaluationRP.post(new Runnable() {
+            public void run() {
+                Object shortDescription = getShortDescriptionSynch(o);
+                if (shortDescription != null && !"".equals(shortDescription)) {
+                    synchronized (shortDescriptionMap) {
+                        shortDescriptionMap.put(o, shortDescription);
+                    }
+                    fireModelChange(new ModelEvent.NodeChanged(VariablesNodeModel.this,
+                        o, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
+                }
+            }
+        });
+        return "";
+    }
+    
+    private String getShortDescriptionSynch (Object o) {
         if (o == TreeModel.ROOT)
             return NbBundle.getBundle(VariablesNodeModel.class).getString("CTL_LocalsModel_Column_Name_Desc");
         if (o instanceof Field) {
@@ -155,6 +191,20 @@ public class VariablesNodeModel implements NodeModel {
         if (o == "No current thread") { // NOI18N
             return NbBundle.getMessage(VariablesNodeModel.class, "NoCurrentThreadVar");
         }
+        return null;
+        //throw new UnknownTypeException (o);
+    }
+    
+    private void testKnown(Object o) throws UnknownTypeException {
+        if (o == TreeModel.ROOT) return ;
+        if (o instanceof Field) return ;
+        if (o instanceof LocalVariable) return ;
+        if (o instanceof Super) return ;
+        if (o instanceof This) return ;
+        String str = o.toString();
+        if (str.startsWith("SubArray")) return ; // NOI18N
+        if (o == "NoInfo") return ; // NOI18N
+        if (o == "No current thread") return ; // NOI18N
         throw new UnknownTypeException (o);
     }
     
@@ -181,8 +231,24 @@ public class VariablesNodeModel implements NodeModel {
     }
 
     public void addModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
     }
 
     public void removeModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
+    }
+    
+    private void fireModelChange(ModelEvent me) {
+        Object[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray();
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            ((ModelListener) listeners[i]).modelChanged(me);
+        }
     }
 }
