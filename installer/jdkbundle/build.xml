@@ -36,16 +36,19 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="set-ismp.cp" unless="ismp.cp-set">
     <path id="ismp.cp">        
-        <pathelement path="${ismp.home}" />
-        <pathelement path="${ismp.home}/i18n" />
-        <fileset dir="${ismp.home}">
-          <include name="lib/*.jar"/>
-          <include name="ppk/*.jar"/>
-          <exclude name="lib/conversion.jar"/>
-        </fileset>        
-        <fileset dir="../lib">
-          <include name="dist/*.jar"/>
-        </fileset>
+      <pathelement path="${ismp.home}"/>
+      <pathelement path="${ismp.home}/i18n"/>
+      <pathelement path="${ismp.home}/distributables/library/hsqldb.jar"/>
+      <pathelement path="${ismp.home}/Resources/idehtml"/>
+      <pathelement path="${ismp.home}/Resources/reslib/isus/us.jar"/>
+      <fileset dir="${ismp.home}">
+        <include name="lib/*.jar"/>
+        <include name="lib/ppk/*.jar"/>
+        <include name="distributables/platform/ext/*.jar"/>
+      </fileset>
+      <fileset dir="../lib">
+        <include name="dist/*.jar"/>
+      </fileset>
     </path>
     <property name="ismp.cp-set" value="true" />
   </target>
@@ -63,40 +66,33 @@ Microsystems, Inc. All Rights Reserved.
   <macrodef name="transform-ml">
     <attribute name="input.ismp.project"/>
     <sequential>
-      <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}" />
-        <arg value="-xsl" />
-        <arg value="../lib/ml.xsl"/>
-        <arg value="-saveas"/>
-        <arg value="@{input.ismp.project}-ml"/>
-        <classpath>
-          <path refid="ismp.cp"/>
-        </classpath>
-      </java>
+      <style in="@{input.ismp.project}.uip"
+             out="@{input.ismp.project}-ml.uip"
+             style="../lib/ml.xsl"/>
     </sequential>
   </macrodef>
   
   <target name="xsl-linux-ml" depends="init">
-    <transform-ml input.ismp.project="linux.xml"/>
+    <transform-ml input.ismp.project="jdk-linux"/>
   </target>
   
   <target name="xsl-solaris-sparc-ml" depends="init">
-    <transform-ml input.ismp.project="solaris-sparc.xml"/>
+    <transform-ml input.ismp.project="jdk-solaris-sparc"/>
   </target>
   
   <target name="xsl-solaris-x86-ml" depends="init">
-    <transform-ml input.ismp.project="solaris-x86.xml"/>
+    <transform-ml input.ismp.project="jdk-solaris-x86"/>
   </target>
   
   <target name="xsl-windows-ml" depends="init">
-    <transform-ml input.ismp.project="windows.xml"/>
+    <transform-ml input.ismp.project="jdk-windows"/>
   </target>
   
   <macrodef name="build-installer">
     <attribute name="input.ismp.project"/>
     <sequential>
       <java classname="com.installshield.isje.ISJE" fork="true">
-        <arg value="@{input.ismp.project}"/>
+        <arg value="@{input.ismp.project}.uip"/>
         <arg value="-build"/>
         <arg value="-alias"/>
         <arg value="basedir=${basedir}"/>
@@ -125,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="linux.xml"/>
+    <build-installer input.ismp.project="jdk-linux"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux.bin"/>
@@ -136,11 +132,11 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="linux.xml-ml"/>
+    <build-installer input.ismp.project="jdk-linux-ml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setuplinux.bin" tofile="dist/${installer.basename}-linux-ml.bin"/>
-    <delete file="linux.xml-ml"/>
+    <delete file="jdk-linux-ml.uip"/>
   </target>
 
   <target name="build-solaris-sparc" depends="init, compile">
@@ -148,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="solaris-sparc.xml"/>
+    <build-installer input.ismp.project="jdk-solaris-sparc"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc.bin"/>
@@ -159,11 +155,11 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="solaris-sparc.xml-ml"/>
+    <build-installer input.ismp.project="jdk-solaris-sparc-ml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisSparc.bin" tofile="dist/${installer.basename}-solsparc-ml.bin"/>
-    <delete file="solaris-sparc.xml-ml"/>
+    <delete file="jdk-solaris-sparc-ml.uip"/>
   </target>
 
   <target name="build-solaris-x86" depends="init, compile">
@@ -171,7 +167,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="solaris-x86.xml"/>
+    <build-installer input.ismp.project="jdk-solaris-x86"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86.bin"/>
@@ -182,11 +178,11 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/j2se-uninstall.template" tofile="build/scripts/_uninst/j2se-uninstall.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="solaris-x86.xml-ml"/>
+    <build-installer input.ismp.project="jdk-solaris-x86-ml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupSolarisX86.bin" tofile="dist/${installer.basename}-solx86-ml.bin"/>
-    <delete file="solaris-x86.xml-ml"/>
+    <delete file="jdk-solaris-x86-ml.uip"/>
   </target>
 
   <target name="build-windows" depends="init, compile">
@@ -194,7 +190,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="windows.xml"/>
+    <build-installer input.ismp.project="jdk-windows"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win.exe"/>
@@ -205,11 +201,11 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="scripts/custom-install-jre.template" tofile="build/scripts/_uninst/custom-install-jre.template"/>
     <copy file="${preparse.files}"
           tofile="build/storagebuilder/preparse-files.txt"/>
-    <build-installer input.ismp.project="windows.xml-ml"/>
+    <build-installer input.ismp.project="jdk-windows-ml"/>
     <delete dir="build/scripts"/>
     <delete dir="build/storagebuilder"/>
     <move file="build/disk1/setupwin32.exe" tofile="dist/${installer.basename}-win-ml.exe"/>
-    <delete file="windows.xml-ml"/>
+    <delete file="jdk-windows-ml.uip"/>
   </target>
  
   <target name="compile" depends="init, build-library" description="compile custom beans and panels">
@@ -260,6 +256,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete dir="dist"/>
     <delete dir="build"/>
+    <delete dir="customcode/lib"/>
   </target>
   
   <target name="ismp" depends="init, compile" description="launch ISMP IDE">
