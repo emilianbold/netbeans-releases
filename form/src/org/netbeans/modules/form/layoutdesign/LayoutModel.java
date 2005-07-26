@@ -283,7 +283,7 @@ public class LayoutModel implements LayoutConstants {
         addChange(ev);
     }
 
-    void setIntervalSize(LayoutInterval interval, int min, int pref, int max) {
+    public void setIntervalSize(LayoutInterval interval, int min, int pref, int max) {
         int oldMin = interval.getMinimumSize();
         int oldPref = interval.getPreferredSize();
         int oldMax = interval.getMaximumSize();
@@ -291,6 +291,22 @@ public class LayoutModel implements LayoutConstants {
             return; // no change
         }
         interval.setSizes(min, pref, max);
+        if (interval.isComponent()) {
+            LayoutComponent comp = interval.getComponent();
+            boolean horizontal = (interval == comp.getLayoutInterval(HORIZONTAL));
+            if (oldMin != min) {
+                comp.firePropertyChange(horizontal ? PROP_HORIZONTAL_MIN_SIZE : PROP_VERTICAL_MIN_SIZE,
+                    new Integer(oldMin), new Integer(min));
+            }
+            if (oldPref != pref) {
+                comp.firePropertyChange(horizontal ? PROP_HORIZONTAL_PREF_SIZE : PROP_VERTICAL_PREF_SIZE,
+                    new Integer(oldPref), new Integer(pref));
+            }
+            if (oldMax != max) {
+                comp.firePropertyChange(horizontal ? PROP_HORIZONTAL_MAX_SIZE : PROP_VERTICAL_MAX_SIZE,
+                    new Integer(oldMax), new Integer(max));
+            }
+        }
 
         // record undo/redo (don't fire event)
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_SIZE_CHANGED);

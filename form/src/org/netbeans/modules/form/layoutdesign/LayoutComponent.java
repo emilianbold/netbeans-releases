@@ -14,6 +14,8 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.awt.Rectangle;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.*;
 
 /**
@@ -53,6 +55,8 @@ public final class LayoutComponent implements LayoutConstants {
 
     // Subcomponents of this component.
     private java.util.List subComponents;
+    
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     // -----
     // setup
@@ -212,4 +216,18 @@ public final class LayoutComponent implements LayoutConstants {
             }
         }
     }
+    
+    // Listener support
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+    
+    void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        propertyChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
+    }
+    
 }

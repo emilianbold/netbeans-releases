@@ -85,4 +85,11 @@ public interface LayoutConstants {
 
 //    int MAX_OUT = Short.MAX_VALUE;
 //    int MIN_OUT = Short.MIN_VALUE;
+    String PROP_HORIZONTAL_MIN_SIZE = "horizontalMinSize"; // NOI18N
+    String PROP_HORIZONTAL_PREF_SIZE = "horizontalPrefSize"; // NOI18N
+    String PROP_HORIZONTAL_MAX_SIZE = "horizontalMaxSize"; // NOI18N
+    String PROP_VERTICAL_MIN_SIZE = "verticalMinSize"; // NOI18N
+    String PROP_VERTICAL_PREF_SIZE = "verticalPrefSize"; // NOI18N
+    String PROP_VERTICAL_MAX_SIZE = "verticalMaxSize"; // NOI18N
+
 }

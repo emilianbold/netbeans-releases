@@ -805,6 +805,39 @@ public final class LayoutInterval implements LayoutConstants {
         return posT - posL;
     }
     
+    public static LayoutInterval getAdjacentEmptySpace(LayoutComponent comp, int dimension, int direction) {
+        LayoutInterval interval = comp.getLayoutInterval(dimension);
+        LayoutInterval parent;
+        while ((parent = interval.getParent()) != null) {
+            if (parent.isSequential()) {
+                int index = parent.indexOf(interval);
+                if (direction == LEADING) {
+                    if (index == 0) {
+                        interval = parent;
+                    } else {
+                        LayoutInterval candidate = parent.getSubInterval(index-1);
+                        return candidate.isEmptySpace() ? candidate : null;
+                    }
+                } else {
+                    if (index == parent.getSubIntervalCount()-1) {
+                        interval = parent;
+                    } else {
+                        LayoutInterval candidate = parent.getSubInterval(index+1);
+                        return candidate.isEmptySpace() ? candidate : null;                        
+                    }
+                }
+            } else {
+                // PENDING how should we determine the space: isAlignedAtBorder, isPlacedAtBorder, any?
+                if (LayoutInterval.isPlacedAtBorder(interval, dimension, direction)) {
+                    interval = parent;
+                } else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+    
     /**
      * Creates clone of the given interval. Doesn't clone content of groups.
      *

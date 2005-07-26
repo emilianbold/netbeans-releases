@@ -157,14 +157,15 @@ public class RADComponentNode extends FormNode
             }
             else {
                 RADComponent topComp = component.getFormModel().getTopRADComponent();
-                if (component instanceof RADVisualContainer) {
-                    if (!((RADVisualContainer)component).hasDedicatedLayoutSupport()) {
-                        actions.add(SystemAction.get(SelectLayoutAction.class));
-                        actions.add(SystemAction.get(CustomizeLayoutAction.class));
-                        actions.add(null);
-                    }
-                    actions.add(SystemAction.get(AddAction.class));
+                boolean isContainer = component instanceof RADVisualContainer;
+                boolean dedicated = isContainer && ((RADVisualContainer)component).hasDedicatedLayoutSupport();
+                if (isContainer && !dedicated) {
+                    actions.add(SystemAction.get(SelectLayoutAction.class));
+                    actions.add(SystemAction.get(CustomizeLayoutAction.class));
                 }
+                actions.add(SystemAction.get(CustomizeEmptySpaceAction.class));
+                if (!isContainer || !dedicated) actions.add(null);
+                if (isContainer) actions.add(SystemAction.get(AddAction.class));
 
                 actions.add(SystemAction.get(EventsAction.class));
                 actions.add(null);

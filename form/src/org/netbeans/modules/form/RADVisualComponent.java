@@ -19,6 +19,7 @@ import javax.accessibility.*;
 
 import org.openide.nodes.*;
 
+import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutsupport.*;
 
 /**
@@ -27,6 +28,10 @@ import org.netbeans.modules.form.layoutsupport.*;
  */
 
 public class RADVisualComponent extends RADComponent {
+    private static final String PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE = "layoutComponentHorizontalSize"; // NOI18N
+    private static final String PROP_LAYOUT_COMPONENT_VERTICAL_SIZE = "layoutComponentVerticalSize"; // NOI18N
+    private static final String PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE = "layoutComponentHorizontalResizable"; // NOI18N
+    private static final String PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE = "layoutComponentVerticalResizable"; // NOI18N
 
     // -----------------------------------------------------------------------------
     // Private properties
@@ -245,6 +250,31 @@ public class RADVisualComponent extends RADComponent {
             LayoutConstraints constr = layoutSupport.getConstraints(this);
             if (constr != null)
                 constraintsProperties = constr.getProperties();
+        } else {
+            LayoutComponent component = getFormModel().getLayoutModel().getLayoutComponent(getId());
+            if (this != getFormModel().getTopRADComponent()) {
+                constraintsProperties = new Node.Property[] {
+                    new LayoutComponentSizeProperty(component, LayoutConstants.HORIZONTAL),
+                    new LayoutComponentSizeProperty(component, LayoutConstants.VERTICAL),
+                    new LayoutComponentResizableProperty(component, LayoutConstants.HORIZONTAL),
+                    new LayoutComponentResizableProperty(component, LayoutConstants.VERTICAL)
+                };
+                component.addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        String propName = evt.getPropertyName();
+                        RADComponentNode node = getNodeReference();
+                        if (LayoutConstants.PROP_HORIZONTAL_PREF_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE, null, null);
+                        } else if (LayoutConstants.PROP_VERTICAL_PREF_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_SIZE, null, null);
+                        } else if (LayoutConstants.PROP_HORIZONTAL_MAX_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
+                        } else if (LayoutConstants.PROP_VERTICAL_MAX_SIZE.equals(propName)) {
+                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
+                        }
+                    }
+                });
+            }
         }
 
         if (constraintsProperties == null) {
@@ -495,4 +525,145 @@ public class RADVisualComponent extends RADComponent {
             setBeanTypes(new Class[] { Accessible.class });
         }
     }
+    
+    /**
+     * Preferred size of the component in the layout.
+     */
+    private class LayoutComponentSizeProperty extends PropertySupport.ReadWrite {
+        private LayoutComponent component;
+        private int dimension;
+        
+        private LayoutComponentSizeProperty(LayoutComponent component, int dimension) {
+            super(dimension == LayoutConstants.HORIZONTAL ? PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE
+                : PROP_LAYOUT_COMPONENT_VERTICAL_SIZE, Integer.class, null, null);
+            boolean horizontal = dimension == LayoutConstants.HORIZONTAL;
+            setDisplayName(FormUtils.getBundleString(horizontal ?
+                "PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE" : "PROP_LAYOUT_COMPONENT_VERTICAL_SIZE")); // NOI18N
+            setShortDescription(FormUtils.getBundleString(horizontal ?
+                "HINT_LAYOUT_COMPONENT_HORIZONTAL_SIZE" : "HINT_LAYOUT_COMPONENT_VERTICAL_SIZE")); // NOI18N
+            this.component = component;
+            this.dimension = dimension;
+            setValue("canEditAsText", Boolean.TRUE); // NOI18N
+        }
+            
+        public void setValue(Object value) {
+            if (!(value instanceof Integer))
+                throw new IllegalArgumentException();
+            
+            Integer oldValue = (Integer)getValue();
+            Integer newValue = (Integer)value;
+            LayoutModel layoutModel = getFormModel().getLayoutModel();
+            LayoutInterval interval = component.getLayoutInterval(dimension);
+            layoutModel.setIntervalSize(interval, interval.getMinimumSize(false), newValue.intValue(), interval.getMaximumSize(false));
+            getNodeReference().firePropertyChangeHelper(
+                getName(), oldValue, newValue);
+            getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
+        }
+        
+        public Object getValue() {
+            int size = component.getLayoutInterval(dimension).getPreferredSize(false);
+            return new Integer(size);
+        }
+
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+        
+        public void restoreDefaultValue() {
+            setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
+        }
+        
+        public boolean isDefaultValue() {
+            return ((Integer)getValue()).intValue() == LayoutConstants.NOT_EXPLICITLY_DEFINED;
+        }
+        
+        public PropertyEditor getPropertyEditor() {
+            return new PropertyEditorSupport() {
+                private String notExplicitelyDefined = FormUtils.getBundleString("VALUE_SizeNotExplicitelyDefined"); // NOI18N
+                
+                public String[] getTags() {
+                    return new String[] {notExplicitelyDefined};
+                }
+
+                public String getAsText() {
+                    Integer value = (Integer)getValue();
+                    if (value.intValue() == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
+                        return notExplicitelyDefined;
+                    } else {
+                        return value.toString();
+                    }
+                }
+
+                public void setAsText(String str) {
+                    if (notExplicitelyDefined.equals(str)) {
+                        setValue(new Integer(LayoutConstants.NOT_EXPLICITLY_DEFINED));
+                    } else {
+                        try {
+                            setValue(new Integer(Integer.parseInt(str)));
+                        } 
+                        catch (NumberFormatException e) {} // ignore                        
+                    }
+                }
+            };
+        }
+        
+    }
+    
+    /**
+     * Property that determines whether the component should be resizable.
+     */
+    private class LayoutComponentResizableProperty extends PropertySupport.ReadWrite {
+        private LayoutComponent component;
+        private int dimension;
+        
+        private LayoutComponentResizableProperty(LayoutComponent component, int dimension) {
+            super(dimension == LayoutConstants.HORIZONTAL ? PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE
+                : PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE, Boolean.class, null, null);
+            boolean horizontal = dimension == LayoutConstants.HORIZONTAL;
+            setDisplayName(FormUtils.getBundleString(horizontal ?
+                "PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE" : "PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE")); // NOI18N
+            setShortDescription(FormUtils.getBundleString(horizontal ?
+                "HINT_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE" : "HINT_LAYOUT_COMPONENT_VERTICAL_RESIZABLE")); // NOI18N
+            this.component = component;
+            this.dimension = dimension;
+        }
+            
+        public void setValue(Object value) {
+            if (!(value instanceof Boolean))
+                throw new IllegalArgumentException();
+            
+            Boolean oldValue = (Boolean)getValue();
+            Boolean newValue = (Boolean)value;
+            boolean resizable = newValue.booleanValue();
+            LayoutModel layoutModel = getFormModel().getLayoutModel();
+            LayoutInterval interval = component.getLayoutInterval(dimension);
+            layoutModel.setIntervalSize(interval,
+                resizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
+                interval.getPreferredSize(false),
+                resizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
+            getNodeReference().firePropertyChangeHelper(
+                getName(), oldValue, newValue);
+            getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
+        }
+        
+        public Object getValue() {
+            int pref = component.getLayoutInterval(dimension).getPreferredSize(false);
+            int max = component.getLayoutInterval(dimension).getMaximumSize(false);
+            return Boolean.valueOf((max != pref) && (max != LayoutConstants.USE_PREFERRED_SIZE));
+        }
+
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+        
+        public void restoreDefaultValue() {
+            setValue(Boolean.FALSE);
+        }
+        
+        public boolean isDefaultValue() {
+            return getValue().equals(Boolean.FALSE);
+        }
+                
+    }
+
 }
