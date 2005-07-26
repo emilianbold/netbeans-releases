@@ -56,7 +56,8 @@ public class WLTailer extends Thread {
     public WLTailer(File file, String ioPanelName) {
         // save the parameters
         this.file = file;
-        this.io = IOProvider.getDefault().getIO(ioPanelName, true);
+        this.io = IOProvider.getDefault().getIO(ioPanelName, false);
+        io.select();
     }
     
     /**
@@ -68,7 +69,8 @@ public class WLTailer extends Thread {
     public WLTailer(InputStream inputStream, String ioPanelName) {
         // save the parameters
         this.inputStream = inputStream;
-        this.io = IOProvider.getDefault().getIO(ioPanelName, true);
+        this.io = IOProvider.getDefault().getIO(ioPanelName, false);
+        io.select();
     }
     
     /**

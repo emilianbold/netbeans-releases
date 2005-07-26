@@ -22,6 +22,7 @@ import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.weblogic9.*;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Node that will appear in the Server Registry and represent a concrete server 
@@ -45,6 +46,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     private static final String SERVER_ROOT = "serverRoot"; // NOI18N
     private static final String DOMAIN_ROOT = "domainRoot"; // NOI18N
     private static final String DEBUGGER_PORT = "debuggerPort"; // NOI18N
+    private static final String ADMIN_URL = "/console/login/LoginForm.jsp"; //NOI18N
     
     /**
      * Path to the node's icon that should reside in the class path
@@ -66,6 +68,17 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
                 
         // add the node itself to its cookie list
         getCookieSet().add(this);
+    }
+    
+    public String  getAdminURL() {
+         return "http://"+deploymentManager.getHost()+":"+deploymentManager.getPort()+ ADMIN_URL;
+    }
+    
+    public javax.swing.Action[] getActions(boolean context) {
+        javax.swing.Action[]  newActions = new javax.swing.Action[2] ;
+        newActions[0]=(null);        
+        newActions[1]= (SystemAction.get(ShowAdminToolAction.class));
+        return newActions;
     }
     
     /**
