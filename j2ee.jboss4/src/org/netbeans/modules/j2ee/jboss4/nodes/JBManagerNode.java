@@ -26,6 +26,7 @@ import java.net.URL;
 import org.netbeans.modules.j2ee.jboss4.ide.Customizer;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import java.awt.Component;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -33,11 +34,12 @@ import java.awt.Component;
  */
 public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
-    private DeploymentManager deploymentManager;
+    private JBDeploymentManager deploymentManager;
+    private static final String ADMIN_URL = "/web-console/"; //NOI18N
     
     public JBManagerNode(Children children, Lookup lookup) {
         super(children);
-        this.deploymentManager = (DeploymentManager) lookup.lookup(DeploymentManager.class);
+        this.deploymentManager = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
         getCookieSet().add(this);
     }
     
@@ -51,6 +53,17 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     public Component getCustomizer() {
         return new Customizer(new JBJ2eePlatformFactory().getJ2eePlatformImpl(deploymentManager));
+    }
+    
+    public String  getAdminURL() {
+         return "http://"+deploymentManager.getHost()+":"+deploymentManager.getPort()+ ADMIN_URL;
+    }
+    
+    public javax.swing.Action[] getActions(boolean context) {
+        javax.swing.Action[]  newActions = new javax.swing.Action[2] ;
+        newActions[0]=(null);        
+        newActions[1]= (SystemAction.get(ShowAdminToolAction.class));
+        return newActions;
     }
     
     public Sheet createSheet(){
