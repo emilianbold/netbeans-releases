@@ -261,9 +261,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.jmx.actions.RegisterMBeanAction" />
             </file>
         </folder>
-        <attr name="Management/Versioning" boolvalue="true"/>
-        <attr name="Management/Refactoring" boolvalue="true" />
-        <attr name="RunProject/Management" boolvalue="true" />
+        <attr name="Versioning/Management" boolvalue="true"/>
         <attr name="Management/Tools" boolvalue="true" />
         <folder name="RunProject">       
             <attr name="SystemFileSystem.icon" urlvalue="nbres:org/netbeans/modules/jmx/resources/empty.gif"/>          
