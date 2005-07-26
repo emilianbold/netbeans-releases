@@ -181,7 +181,7 @@ public class CreatedModifiedFiles {
      */
     public Operation bundleKeyDefaultBundle(String key, String value) {
         ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
-        String srcDir = project.getProjectDirectoryPath();
+        String srcDir = project.getSourceDirectoryPath();
         return new BundleKey(srcDir + "/" + mm.getLocalizingBundle(), // NOI18N
                 key, value);
     }
@@ -368,7 +368,7 @@ public class CreatedModifiedFiles {
         public AddLookupRegistration(String interfaceClass, String implClass) {
             this.interfaceClass = interfaceClass;
             this.implClass = implClass;
-            this.interfaceClassPath = project.getProjectDirectoryPath() +
+            this.interfaceClassPath = project.getSourceDirectoryPath() +
                     "/META-INF/services/" + interfaceClass; // NOI18N
             if (project.getProjectDirectory().getFileObject(interfaceClassPath) == null) {
                 getCreatedPathsSet().add(interfaceClassPath);
@@ -427,7 +427,7 @@ public class CreatedModifiedFiles {
         
         public void run() throws IOException {
             ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
-            String srcDir = project.getProjectDirectoryPath();
+            String srcDir = project.getSourceDirectoryPath();
             String layerFile = srcDir + "/" + mm.getLayer(); // NOI18N
             LayerUtil.createFile(project.getProjectDirectory(), layerFile,
                     layerPath, contentResourcePath);
@@ -440,7 +440,7 @@ public class CreatedModifiedFiles {
         
         public LayerOperation(LayerCallback callback) {
             ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
-            String srcDir = project.getProjectDirectoryPath();
+            String srcDir = project.getSourceDirectoryPath();
             getModifiedPathsSet().add(srcDir + "/" + mm.getLayer());
             this.callback = callback;
         }

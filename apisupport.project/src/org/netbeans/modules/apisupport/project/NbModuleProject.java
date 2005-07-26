@@ -237,7 +237,7 @@ public final class NbModuleProject implements Project {
     }
     
     /** Returns a relative path to a project's source directory. */
-    public String getProjectDirectoryPath() {
+    public String getSourceDirectoryPath() {
         return evaluator().getProperty("src.dir"); // NOI18N
     }
     
