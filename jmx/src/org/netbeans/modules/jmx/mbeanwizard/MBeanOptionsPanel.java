@@ -22,15 +22,23 @@ import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.awt.Mnemonics;
 
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.GenericWizardPanel;
 import java.awt.Container;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import javax.swing.JTextField;
 import org.netbeans.api.project.ProjectUtils;
-
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.jmi.javamodel.Resource;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -38,9 +46,9 @@ import org.netbeans.api.project.ProjectUtils;
  * Class handling the graphical part of the standard MBean wizard panel
  *
  */
-public class StandardMBeanPanel extends javax.swing.JPanel
+public class MBeanOptionsPanel extends javax.swing.JPanel
 {
-    private StandardMBeanWizardPanel wiz;
+    private MBeanOptionsWizardPanel wiz;
     private ResourceBundle bundle;
     
     // temporary: for now, the user can proceed to the next panel automaticely
@@ -49,19 +57,18 @@ public class StandardMBeanPanel extends javax.swing.JPanel
     private boolean updateNameRunning = false;
     private boolean mbeanFromExistingClass = false;
     private boolean mbeanRegIntfSelected = false;
-    //private static enum mbeanType {StandardMBean, DynamicMBean, ExtendedStandardMBean};
-    //private static mbeanType selectedMBeanType;
+    private static enum mbeanType {StandardMBean, DynamicMBean, ExtendedStandardMBean};
+    private static mbeanType selectedMBeanType;
     
     /**
      * Create the wizard panel component and set up some basic properties
      * @param wiz a wizard panel to fill with user information
      */
-    public StandardMBeanPanel (final StandardMBeanWizardPanel wiz) 
+    public MBeanOptionsPanel (final MBeanOptionsWizardPanel wiz) 
     {
         this.wiz = wiz;
         bundle = NbBundle.getBundle(StandardMBeanPanel.class);
         initComponents ();
-        /* A transferer dans l'autre fichier
         mbeanDescriptionJTextField.addFocusListener(new FocusListener() {
            private String description = null;
            public void focusGained(FocusEvent e) {
@@ -74,10 +81,8 @@ public class StandardMBeanPanel extends javax.swing.JPanel
            }
         });
         mbeanDescriptionJTextField.setName(  "mbeanDescriptionJTextField");// NOI18N
-         **/
         // attach a documentlistener to the class text field to update the panel
         // each time the user fills something in to make sure it is not empty
-        /*
         classSelectionJTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent evt) {
                 wiz.fireEvent(); 
@@ -89,14 +94,10 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 wiz.fireEvent();
             }
         });
-         Nexiste plus dans ce fichier*/
-        
-
-        // init flags // does not exist any more
-        //selectedMBeanType = mbeanType.StandardMBean;
+        // init flags
+        selectedMBeanType = mbeanType.StandardMBean;
         
         // init labels
-        /* Does not exist any more
         Mnemonics.setLocalizedText(generatedFileJLabel,
                      bundle.getString("LBL_mbean_other_created_interface"));//NOI18N
         Mnemonics.setLocalizedText(mbeanDecriptionJLabel,
@@ -116,12 +117,11 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                      bundle.getString("LBL_registrationCbx"));//NOI18N
         Mnemonics.setLocalizedText(preRegisterParamJCheckBox,
                      bundle.getString("LBL_preRegisterParamCbx"));//NOI18N
-        */
+        
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_Standard_Panel"));// NOI18N
         
-        // Accessibility   
-        /* Does not exist any more
+        // Accessibility      
         generatedFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_GENERATED_FILE"));// NOI18N
         generatedFileJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_GENERATED_FILE_DESCRIPTION"));// NOI18N
         mbeanDescriptionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_DESCRIPTION"));// NOI18N
@@ -143,7 +143,11 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_DESCRIPTION"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION_KEEP"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
-        */
+        
+        
+        
+        
+     
     }
         
     /** This method is called from within the constructor to
@@ -156,14 +160,246 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         java.awt.GridBagConstraints gridBagConstraints;
 
         mbeanTypeButtonGroup = new javax.swing.ButtonGroup();
+        northCenterPanel = new javax.swing.JPanel();
+        jSeparator1 = new javax.swing.JSeparator();
+        mbeanDecriptionJLabel = new javax.swing.JLabel();
+        mbeanDescriptionJTextField = new javax.swing.JTextField();
+        generatedFileJLabel = new javax.swing.JLabel();
+        generatedFileJTextField = new javax.swing.JTextField();
+        mbeanTypeJLabel = new javax.swing.JLabel();
+        standardMBeanJRadioButton = new javax.swing.JRadioButton();
+        extendedMBeanJRadioButton = new javax.swing.JRadioButton();
+        dynamicMBeanJRadioButton = new javax.swing.JRadioButton();
+        fromExistingClassJCheckBox = new javax.swing.JCheckBox();
+        classSelectionJTextField = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        mbeanRegistrationJCheckBox = new javax.swing.JCheckBox();
+        preRegisterParamJCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
+        northCenterPanel.setLayout(new java.awt.GridBagLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        northCenterPanel.add(jSeparator1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        northCenterPanel.add(mbeanDecriptionJLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
+        northCenterPanel.add(mbeanDescriptionJTextField, gridBagConstraints);
+
+        generatedFileJLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        generatedFileJLabel.setLabelFor(generatedFileJTextField);
+        generatedFileJLabel.setMaximumSize(new java.awt.Dimension(1000, 1000));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        northCenterPanel.add(generatedFileJLabel, gridBagConstraints);
+
+        generatedFileJTextField.setEditable(false);
+        generatedFileJTextField.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        generatedFileJTextField.setName("generatedFileJTextField");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
+        northCenterPanel.add(generatedFileJTextField, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        northCenterPanel.add(mbeanTypeJLabel, gridBagConstraints);
+
+        mbeanTypeButtonGroup.add(standardMBeanJRadioButton);
+        standardMBeanJRadioButton.setSelected(true);
+        standardMBeanJRadioButton.setName("StandardMBean");
+        standardMBeanJRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                standardMBeanJRadioButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
+        northCenterPanel.add(standardMBeanJRadioButton, gridBagConstraints);
+
+        mbeanTypeButtonGroup.add(extendedMBeanJRadioButton);
+        extendedMBeanJRadioButton.setName("ExtendedStandardMBean");
+        extendedMBeanJRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extendedStandardMBeanJRadioButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        northCenterPanel.add(extendedMBeanJRadioButton, gridBagConstraints);
+
+        mbeanTypeButtonGroup.add(dynamicMBeanJRadioButton);
+        dynamicMBeanJRadioButton.setName("DynamicMBean");
+        dynamicMBeanJRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dynamicMBeanJRadioButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        northCenterPanel.add(dynamicMBeanJRadioButton, gridBagConstraints);
+
+        fromExistingClassJCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fromExistingClassJCheckBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        northCenterPanel.add(fromExistingClassJCheckBox, gridBagConstraints);
+
+        classSelectionJTextField.setEnabled(false);
+        classSelectionJTextField.setMinimumSize(new java.awt.Dimension(4, 15));
+        classSelectionJTextField.setPreferredSize(new java.awt.Dimension(160, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        northCenterPanel.add(classSelectionJTextField, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        mbeanRegistrationJCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mbeanRegistrationJCheckBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(mbeanRegistrationJCheckBox, gridBagConstraints);
+
+        preRegisterParamJCheckBox.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
+        jPanel1.add(preRegisterParamJCheckBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        northCenterPanel.add(jPanel1, gridBagConstraints);
+
+        add(northCenterPanel, java.awt.BorderLayout.NORTH);
+
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void mbeanRegistrationJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mbeanRegistrationJCheckBoxActionPerformed
+        mbeanRegIntfSelected = mbeanRegistrationJCheckBox.isSelected();
+        preRegisterParamJCheckBox.setEnabled(mbeanRegIntfSelected);
+    }//GEN-LAST:event_mbeanRegistrationJCheckBoxActionPerformed
+
+    private void fromExistingClassJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fromExistingClassJCheckBoxActionPerformed
+        //disable the components which the user can't choose
+        mbeanFromExistingClass = fromExistingClassJCheckBox.isSelected();
+        
+        mbeanTypeJLabel.setEnabled(!mbeanFromExistingClass);
+        standardMBeanJRadioButton.setEnabled(!mbeanFromExistingClass);
+        dynamicMBeanJRadioButton.setEnabled(!mbeanFromExistingClass);
+        
+        extendedMBeanJRadioButton.setSelected(mbeanFromExistingClass);
+        classSelectionJTextField.setEnabled(mbeanFromExistingClass);
+        //browseJButton.setEnabled(mbeanFromExistingClass);
+        
+        wiz.storeSettings(wiz.templateWiz);
+        wiz.readSettings(wiz.templateWiz);
+        wiz.fireEvent();
+    }//GEN-LAST:event_fromExistingClassJCheckBoxActionPerformed
+
+    private void dynamicMBeanJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dynamicMBeanJRadioButtonActionPerformed
+        wiz.storeSettings(wiz.templateWiz);
+        wiz.readSettings(wiz.templateWiz);
+        wiz.fireEvent();
+    }//GEN-LAST:event_dynamicMBeanJRadioButtonActionPerformed
+
+    private void extendedStandardMBeanJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extendedStandardMBeanJRadioButtonActionPerformed
+        wiz.storeSettings(wiz.templateWiz);
+        wiz.readSettings(wiz.templateWiz);
+        wiz.fireEvent();
+    }//GEN-LAST:event_extendedStandardMBeanJRadioButtonActionPerformed
+
+    private void standardMBeanJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standardMBeanJRadioButtonActionPerformed
+        wiz.storeSettings(wiz.templateWiz);
+        wiz.readSettings(wiz.templateWiz);
+        wiz.fireEvent();
+    }//GEN-LAST:event_standardMBeanJRadioButtonActionPerformed
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField classSelectionJTextField;
+    private javax.swing.JRadioButton dynamicMBeanJRadioButton;
+    private javax.swing.JRadioButton extendedMBeanJRadioButton;
+    private javax.swing.JCheckBox fromExistingClassJCheckBox;
+    private javax.swing.JLabel generatedFileJLabel;
+    private javax.swing.JTextField generatedFileJTextField;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel mbeanDecriptionJLabel;
+    private javax.swing.JTextField mbeanDescriptionJTextField;
+    private javax.swing.JCheckBox mbeanRegistrationJCheckBox;
     private javax.swing.ButtonGroup mbeanTypeButtonGroup;
+    private javax.swing.JLabel mbeanTypeJLabel;
+    private javax.swing.JPanel northCenterPanel;
+    private javax.swing.JCheckBox preRegisterParamJCheckBox;
+    private javax.swing.JRadioButton standardMBeanJRadioButton;
     // End of variables declaration//GEN-END:variables
     
     /**
@@ -171,10 +407,10 @@ public class StandardMBeanPanel extends javax.swing.JPanel
      * Class handling the standard MBean wizard panel
      *
      */
-    public static class StandardMBeanWizardPanel extends GenericWizardPanel
+    public static class MBeanOptionsWizardPanel extends GenericWizardPanel
             implements org.openide.WizardDescriptor.FinishablePanel 
     {    
-        private StandardMBeanPanel panel = null;
+        private MBeanOptionsPanel panel = null;
         private String projectLocation   = null;
         private ResourceBundle bundle = null;
         private TemplateWizard templateWiz = null;
@@ -186,7 +422,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         /**
          * Constructor
          */
-        public StandardMBeanWizardPanel() {
+        public MBeanOptionsWizardPanel() {
         }
         
         /**
@@ -207,10 +443,10 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          */
         public String getProjectLocation() { return projectLocation; }
         
-        private StandardMBeanPanel getPanel() 
+        private MBeanOptionsPanel getPanel() 
         {
             if (panel == null) {
-                panel = new StandardMBeanPanel(this);
+                panel = new MBeanOptionsPanel(this);
             }
             return panel;
         }
@@ -220,20 +456,18 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          * Either Standard ExtendedStandard or Dynamic
          * @return mbeanType the mbean type
          */
-        /* does not exist any more *
         public mbeanType mbeanTypeSelected() {
             return getPanel().selectedMBeanType;
         }
-        */
+        
         /**
          * Method which returns whether the description has changed or not
          * @return descHasChanged true if the description has changed
          */
-        /* transfered
         public boolean descHasChanged() {
             return getPanel().descHasChanged;
         }
-        */
+
         /**
          * Method which enables the next button
          * @return boolean true if the information in the panel is sufficient 
@@ -241,15 +475,13 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          */
         public boolean isValid () {
             
-            //return (fileNotExists() && isFromExistingClassValid());
-            return true;
+            return (fileNotExists() && isFromExistingClassValid());
         }
         
         /**
          * Tests if the file already exists and displays an error message
          * @return boolean true if the file to be generated does not exist
          */
-        /* transfered
         public boolean fileNotExists() {
             if (WizardHelpers.fileExists(
                     getPanel().generatedFileJTextField.getText())) {
@@ -261,7 +493,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             }
             return true;
         }
-         */
         
         /**
          * Tests if the mbean has to wrap an existing resource
@@ -272,7 +503,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
          * @return boolean if the option to wrap a class as mbean is checked
          * and the class is accessible from the classpath
          */
-        /* transfered
          public boolean isFromExistingClassValid() {
              
              if (getPanel().classSelectionJTextField.isEnabled() && 
@@ -315,7 +545,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
              }
              return true;
         }
-         */
+         
         
         /**
          * Displays the given message in the wizard's message area.
@@ -329,12 +559,13 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                         message);    //NOI18N
             }
         }
-        
+/*        
         private String getProjectDisplayedName() {
             Project project = Templates.getProject(templateWiz);
             return ProjectUtils.getInformation(project).getDisplayName();
         }
-
+ **/
+/*
         private void initTargetComponentDef(Component root) {
             if (root.getClass().equals(JTextField.class)) {
                 JTextField rootTextField = (JTextField) root;
@@ -354,7 +585,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 }
             }
         }
-        
+*/    
         /**
          * Method which fires an event to notify that there was a change in the data
          */
@@ -376,17 +607,16 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             bundle = NbBundle.getBundle(JMXMBeanIterator.class);
             templateWiz = wizard;
             this.mbeanTargetWiz = mbeanTargetWiz;
-            initTargetComponentDef(mbeanTargetWiz.getComponent());
+            //initTargetComponentDef(mbeanTargetWiz.getComponent());
             mbeanTargetWiz.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
                     mbeanOptionsWiz.storeSettings(wizard);
                     mbeanOptionsWiz.readSettings(wizard);
-                    //updateMBeanDesc(wizard);
+                    updateMBeanDesc(wizard);
                 }
             });
         }
-        /*
-         * transfered
+        
         private void updateMBeanDesc(TemplateWizard wizard) {
             if (!descHasChanged()) {
                 String mbeanName = (String)
@@ -398,7 +628,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 getPanel().mbeanDescriptionJTextField.setText(desc);
             }
         }
-        */
         
         /**
          * Method which Called to read information from the wizard map in order to populate
@@ -409,16 +638,14 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         {
             
             templateWiz = (TemplateWizard) settings;
-            initTargetComponentDef(mbeanTargetWiz.getComponent());
+            //initTargetComponentDef(mbeanTargetWiz.getComponent());
             bundle = NbBundle.getBundle(JMXMBeanIterator.class);
             
             
             String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
             String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
             String descr = bundle.getString("LBL_mbean_description");// NOI18N
-            
-            /* transfered
-            
+
             int maxWidth = 0;
             Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, clzz);
             maxWidth = (int) getPanel().generatedFileJLabel.getSize().getWidth();
@@ -457,13 +684,12 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 getPanel().dynamicMBeanJRadioButton.setSelected(
                         mbeanType.equals(WizardConstants.MBEAN_DYNAMICMBEAN));
             }
-            */
+            
             String mbeanName = (String) 
                 templateWiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
             String mbeanFilePath = (String) 
                 templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
             
-            /* transfered
             if ((mbeanName != null) && (mbeanFilePath != null)) {
                 String suffix = null;
                 
@@ -483,9 +709,8 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             } else {
                 getPanel().generatedFileJTextField.setText(  "");// NOI18N
             }
-             **/
             
-            /* transfered
+            
             String desc = (String) 
                 templateWiz.getProperty (WizardConstants.PROP_MBEAN_DESCRIPTION);
             if (desc == null) {
@@ -497,7 +722,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             } 
             getPanel().mbeanDescriptionJTextField.setText(desc);
             updateMBeanDesc(templateWiz);
-             */
         }
         
         /**
@@ -507,7 +731,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
         public void storeSettings (Object settings) 
         {            
             TemplateWizard wiz = (TemplateWizard) settings;
-            
+            /*
             String mbeanName = mbeanNameTextField.getText();
             wiz.putProperty (WizardConstants.PROP_MBEAN_NAME, mbeanName);
             wiz.putProperty (WizardConstants.PROP_JUNIT_CLASSNAME, 
@@ -523,8 +747,6 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                 wiz.putProperty(WizardConstants.PROP_MBEAN_PACKAGE_PATH,
                         packName.replace('.', File.separatorChar));
             }
-            
-            /* transfered
             // storage of the description field
             String description = getPanel().mbeanDescriptionJTextField.getText();
             if ( (description != null) && (!description.equals(  "")) ) {// NOI18N
@@ -554,9 +776,9 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                             WizardConstants.MBEAN_EXTENDED);
                 }
             } 
-            */
+           */ 
         }    
-        /* transfered
+        
         private JavaClass getExistingClass() {
             String fullClassName = getPanel().
                     classSelectionJTextField.getText();
@@ -577,8 +799,9 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             JavaClass mbeanClass = (JavaClass) pkg.getJavaClass().resolve(
                     fullClassName);
             return mbeanClass;
+            
         }
-        */
+        
         public HelpCtx getHelp() {
            return new HelpCtx(  "jmx_instrumenting_app");  // NOI18N
         } 
