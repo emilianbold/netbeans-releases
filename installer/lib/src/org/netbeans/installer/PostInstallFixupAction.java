@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -104,9 +104,11 @@ public class PostInstallFixupAction extends ProductAction {
         
         //This file is used by IDE Update Center.
         String productID = Util.getStringPropertyValue("ProductID");
+        String nbClusterDir = resolveString
+        ("$L(org.netbeans.installer.Bundle,NetBeans.nbClusterDir)");
         if (productID != null) {
             try {
-                String fileName = nbInstallDir + sep + "nb4.1" + sep + "config" + sep + "productid";
+                String fileName = nbInstallDir + sep + nbClusterDir + sep + "config" + sep + "productid";
                 logEvent(this, Log.DBG, "create file: " + fileName + " content: '" + productID + "'");
                 fileService.createAsciiFile(fileName,new String[] { productID });
             }
@@ -135,7 +137,9 @@ public class PostInstallFixupAction extends ProductAction {
             
             deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
             deleteFiles(uninstallDir, new String[] {"install.log"});
-            deleteFiles(nbInstallDir, new String[] {"nb4.1" + sep + "config" + sep + "productid" });
+            String nbClusterDir = resolveString
+            ("$L(org.netbeans.installer.Bundle,NetBeans.nbClusterDir)");
+            deleteFiles(nbInstallDir, new String[] {nbClusterDir + sep + "config" + sep + "productid" });
             
             if (Util.isMacOSX()) {
                 deleteSymbolicLink();
