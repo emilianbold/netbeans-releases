@@ -58,7 +58,7 @@ public class NbModuleProjectGenerator {
         createPlatformProperties(dirFO, platformID);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
-        createLayer(dirFO, layerPath);
+        createLayerInSrc(dirFO, layerPath);
         createEmptyTestDir(dirFO);
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
@@ -75,7 +75,7 @@ public class NbModuleProjectGenerator {
         createSuiteProperties(dirFO, suiteDir);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
-        createLayer(dirFO, layerPath);
+        createLayerInSrc(dirFO, layerPath);
         createEmptyTestDir(dirFO);
         appendToSuite(dirFO, suiteDir);
         ModuleList.refresh();
@@ -100,7 +100,7 @@ public class NbModuleProjectGenerator {
         createProjectXML(dirFO, cnb, NbModuleTypeProvider.NETBEANS_ORG);
         createManifest(dirFO, cnb, bundlePath, layerPath);
         createBundle(dirFO, bundlePath, name);
-        createLayer(dirFO, layerPath);
+        createLayerInSrc(dirFO, layerPath);
         createEmptyTestDir(dirFO);
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
@@ -250,8 +250,12 @@ public class NbModuleProjectGenerator {
         Util.storeProperties(bundleFO, props);
     }
     
-    private static void createLayer(FileObject projectDir, String layerPath) throws IOException {
-        FileObject layerFO = createFileObject(projectDir, "src/" + layerPath); // NOI18N
+    private static void createLayerInSrc(FileObject projectDir, String layerPath) throws IOException {
+        createLayer(projectDir, "src/" + layerPath); // NOI18N
+    }
+
+    static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
+        FileObject layerFO = createFileObject(projectDir, layerPath); // NOI18N
         FileLock lock = layerFO.lock();
         try {
             InputStream is = NbModuleProjectGenerator.class.getResourceAsStream("ui/resources/layer_template.xml"); // NOI18N
@@ -268,6 +272,7 @@ public class NbModuleProjectGenerator {
         } finally {
             lock.releaseLock();
         }
+        return layerFO;
     }
     
     private static void createEmptyTestDir(FileObject projectDir) throws IOException {
