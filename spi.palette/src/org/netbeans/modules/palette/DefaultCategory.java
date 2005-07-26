@@ -148,8 +148,9 @@ public class DefaultCategory implements Category, NodeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        //TODO filter property change events
-        //notifyListeners();
+        if( Node.PROP_DISPLAY_NAME.equals( evt.getPropertyName() ) ) {
+            notifyListeners();
+        }
     }
 
     public boolean equals(Object obj) {
@@ -162,8 +163,8 @@ public class DefaultCategory implements Category, NodeListener {
     public Transferable getTransferable() {
         try {
             return categoryNode.drag();
-        } catch (IOException e) {
-            //TODO error handling
+        } catch( IOException ioE ) {
+            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
         }
         return null;
     }
