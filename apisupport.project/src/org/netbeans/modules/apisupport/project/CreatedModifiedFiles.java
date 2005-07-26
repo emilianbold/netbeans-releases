@@ -45,8 +45,8 @@ import org.openide.modules.SpecificationVersion;
  * <code>CreatedModifiedFiles</code> and <code>Operation</code> provide methods
  * to get sets of relative (to a project's base directory) paths which are
  * going to be created and/or modified. These sets may be obtained
- * <b>before</b> added operation are run so they can be e.g. shown by wizard
- * before any files are actually created.
+ * <strong>before</strong> added operation are run so they can be e.g. shown by
+ * wizard before any files are actually created.
  *
  * @author Martin Krauskopf
  */
@@ -171,7 +171,8 @@ public class CreatedModifiedFiles {
      *        pairs which will be applied on the stored file. Both a key and a
      *        value have to be a valid regular expression. See {@link
      *        java.lang.String#replaceAll(String, String)} and follow links in
-     *        its javadoc for more details.
+     *        its javadoc for more details. May be <code>null</code> (the same
+     *        as an empty map).
      */
     public Operation createFileWithSubstitutions(String path,
             URL content, Map/*<String,String>*/ tokens) {
@@ -210,7 +211,7 @@ public class CreatedModifiedFiles {
      * </pre>
      *
      * @param dataLoaderClass e.g. org/netbeans/modules/myprops/MyPropsLoader
-     *                        (<b>without</b> .class extension)
+     *        (<strong>without</strong> .class extension)
      */
     public Operation addLoaderSection(String dataLoaderClass) {
         return new AddLoaderSection(dataLoaderClass);
@@ -268,15 +269,23 @@ public class CreatedModifiedFiles {
      *        <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
      * @param contentResourcePath represents an <em>url</em> attribute of entry
      *        being created
-     * @param content <b>not used yet</b>
-     * @param localizedDisplayName <b>not used yet</b>
-     * @param substitutionTokens <b>not used yet</b>
+     * @param content became content of a file represented by the
+     *        contentResourcePath
+     * @param localizedDisplayName <strong>not used yet</strong>
+     * @param substitutionTokens map of <em>token to be replaced</em> - <em>by
+     *        what</em> pairs which will be applied on the stored
+     *        <code>content</code> file. Both a key and a value have to be a
+     *        valid regular expression. See {@link
+     *        java.lang.String#replaceAll(String, String)} and follow links in
+     *        its javadoc for more details. May be <code>null</code> (the same
+     *        as an empty map).
      * @return see {@link LayerCallback}
      */
     public LayerCallback createLayerEntry(String layerPath, String
             contentResourcePath, URL content, String localizedDisplayName,
             Map/*<String,String>*/ substitutionTokens) {
-        return new LayerEntry(layerPath, contentResourcePath);
+        return new LayerEntry(layerPath, contentResourcePath, content,
+                localizedDisplayName, substitutionTokens);
     }
     
     public LayerCallback orderLayerEntry(String layerPath, String
@@ -284,6 +293,10 @@ public class CreatedModifiedFiles {
         return null;
     }
     
+    // XXX think about to move the code below into separate class(es), factory
+    // or whatever. Also think about CreatedModifiedPathsProvider or something
+    // similar. Would make more sense since it could be used by all classes here
+    // (Operation, LayerCallback, CreatedModifiedFiles)
     
     private abstract class OperationBase implements Operation {
         
@@ -480,15 +493,29 @@ public class CreatedModifiedFiles {
         
         private String layerPath;
         private String contentResourcePath;
+        private URL content;
+        private String localizedDisplayName;
+        private Map/*<String,String>*/ tokens;
         
-        public LayerEntry(String layerPath, String contentResourcePath) {
+        // XXX "content" should be part of created files if it didn't exist before
+        // opeartion (this LayerCallback will be eventually converted into) is run
+        public LayerEntry(String layerPath, String contentResourcePath, URL content,
+                String localizedDisplayName, Map/*<String,String>*/ substitutionTokens) {
             this.layerPath = layerPath;
             this.contentResourcePath = contentResourcePath;
+            this.content = content;
+            this.localizedDisplayName = localizedDisplayName;
+            this.tokens = substitutionTokens;;
         }
         
-        public void run() throws IOException {
-            ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
+        public void run() throws IOException{
+            if (content != null) {
+                Operation cf = CreatedModifiedFiles.this.createFileWithSubstitutions(
+                        contentResourcePath, content, tokens);
+                cf.run();
+            }
             String srcDir = project.getSourceDirectoryPath();
+            ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
             String layerFile = srcDir + "/" + mm.getLayer(); // NOI18N
             LayerUtil.createFile(project.getProjectDirectory(), layerFile,
                     layerPath, contentResourcePath);

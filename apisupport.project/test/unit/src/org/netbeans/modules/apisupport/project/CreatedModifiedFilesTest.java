@@ -206,9 +206,31 @@ public class CreatedModifiedFilesTest extends TestBase {
                 null);
         cmf.add(cmf.layerOperation(lc));
         
+        String createMePath = "src/org/example/module1/resources/createMe.setting";
+        lc = cmf.createLayerEntry(
+                "Services/org-example-module1-Other.settings",
+                createMePath,
+                createFile(HTML_CONTENT),
+                null,
+                null);
+        cmf.add(cmf.layerOperation(lc));
+
+        String tokenMePath = "src/org/example/module1/resources/tokenMe.setting";
+        lc = cmf.createLayerEntry(
+                "Services/org-example-module1-Tokenized.settings",
+                tokenMePath,
+                createFile(HTML_CONTENT),
+                null,
+                TOKENS_MAP);
+        cmf.add(cmf.layerOperation(lc));
+
+        // XXX should assert cmf.getCreatedPaths() for the tokenMe.setting and
+        // createMe.setting (in the meantime would fail)
         assertRelativePath("src/org/example/module1/resources/layer.xml", cmf.getModifiedPaths());
         cmf.run();
-        
+
+        assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + tokenMePath));
+
         BufferedReader reader = new BufferedReader(new FileReader(
                 new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml")));
         String[] supposedContent = new String[] {
@@ -221,6 +243,8 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "</folder>",
                     "<folder name=\"Services\">",
                     "<file name=\"org-example-module1-Module1UI.settings\" url=\"module1ui.settings\"/>",
+                    "<file name=\"org-example-module1-Other.settings\" url=\"src/org/example/module1/resources/createMe.setting\"/>",
+                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"src/org/example/module1/resources/tokenMe.setting\"/>",
                     "</folder>",
                     "</filesystem>"
         };
@@ -276,6 +300,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     private void assertFileContent(String[] content, File file) throws IOException {
+        assertTrue("file exist and is a regular file", file.isFile());
         BufferedReader br = new BufferedReader(new FileReader(file));
         try {
             for (int i = 0; i < content.length; i++) {
