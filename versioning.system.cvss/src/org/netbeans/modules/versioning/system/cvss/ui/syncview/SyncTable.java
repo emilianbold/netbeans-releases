@@ -37,6 +37,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitActio
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ResolveConflictsAction;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.TableSorter;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
@@ -310,6 +311,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         item = menu.add(revertAction);
         Mnemonics.setLocalizedText(item, item.getText());
 
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionsLoc.getString("CTL_PopupMenuItem_ResolveConflicts")));
+        Mnemonics.setLocalizedText(item, item.getText());
+        
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
            ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus() == IgnoreAction.UNIGNORING ?
            actionsLoc.getString("CTL_PopupMenuItem_Unignore") :
