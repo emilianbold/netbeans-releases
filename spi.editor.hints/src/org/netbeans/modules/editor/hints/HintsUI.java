@@ -162,7 +162,7 @@ public class HintsUI implements MouseListener, KeyListener {
             ErrorManager.getDefault().notify (e);
             return;
         }
-        Point p = new Point(r.x, r.y );
+        Point p = new Point(r.x - comp.getX(), r.y );
          
         Dimension d = jc.getPreferredSize();
         
