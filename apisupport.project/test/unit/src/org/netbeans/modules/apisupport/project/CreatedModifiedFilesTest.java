@@ -18,9 +18,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedSet;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.LayerCallback;
@@ -28,38 +26,12 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Tests {@link CreatedModifiedFiles}.
  * @author Martin Krauskopf
  */
 public class CreatedModifiedFilesTest extends TestBase {
-    
-    protected void setUp() throws Exception {
-        clearWorkDir();
-        super.setUp();
-    }
-    
-    // XXX mkrauskopf: I may misunderstand something because I didn't find a
-    // beter way to register e.g. NB default resolver
-    private final static Map DTD_MAP = new HashMap();
-    static {
-        DTD_MAP.put("-//NetBeans//DTD Filesystem 1.0//EN", "org/openide/filesystems/filesystem.dtd");
-        DTD_MAP.put("-//NetBeans//DTD Filesystem 1.1//EN", "org/openide/filesystems/filesystem1_1.dtd");
-        LayerUtil.layerXMLEntityResolver = new EntityResolver() {
-            public InputSource resolveEntity(String pid, String sid) throws SAXException {
-                String publicURL = (String) DTD_MAP.get(pid);
-                if (publicURL != null) {
-                    publicURL = getClass().getClassLoader().getResource(publicURL).toExternalForm();
-                    return new InputSource(publicURL);
-                }
-                return new InputSource(sid);
-            }
-        };
-    }
     
     public CreatedModifiedFilesTest(String name) {
         super(name);
