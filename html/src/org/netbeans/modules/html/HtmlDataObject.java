@@ -7,19 +7,23 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.html;
 
 import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
 import org.openide.cookies.ViewCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataNode;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.UniFileLoader;
+import org.openide.nodes.Children;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
 
 /** Object that represents one html file.
 *
@@ -43,7 +47,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
     protected org.openide.nodes.Node createNodeDelegate () {
         DataNode n = new HtmlDataNode (this, Children.LEAF);
-        n.setIconBase ("org/netbeans/modules/html/htmlObject"); // NOI18N
+        n.setIconBaseWithExtension("org/netbeans/modules/html/htmlObject.gif"); // NOI18N
         return n;
     }
     
