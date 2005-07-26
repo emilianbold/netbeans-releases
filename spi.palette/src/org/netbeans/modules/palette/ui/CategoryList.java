@@ -330,28 +330,28 @@ public class CategoryList extends JList implements Autoscroll {
 
         private class ListMouseInputHandler extends MouseInputHandler {
 
+                int selIndex = -1;
+                
             public void mouseClicked(MouseEvent e) {
                 if( !list.isEnabled() )
                     return;
                 
-                int selIndex = getValidIndex( e.getPoint() );
-                
-                if( 1 == e.getClickCount() ) {
+                if( e.getClickCount() > 1 ) {
+                    selIndex = getValidIndex( e.getPoint() );
                     if( selIndex >= 0 ) {
-                        if( list.getSelectedIndex() == selIndex ) {
-                            list.clearSelection();
-                        } else {
-                            list.setSelectedIndex( selIndex );
-                        }
+                        list.setSelectedIndex( selIndex );
+                        Item item = (Item)list.getModel().getElementAt( selIndex );
+                        item.invokePreferredAction( e, "doubleclick" );
+                        e.consume();
                     }
-                } else {
-                    Item item = (Item)list.getModel().getElementAt( selIndex );
-                    item.invokePreferredAction( e, "doubleclick" );
                 }
-                e.consume();
             }
 
             public void mousePressed( MouseEvent e ) {
+                if( getValidIndex( e.getPoint() ) >= 0 ) {
+                    selIndex = list.getSelectedIndex ();
+                    super.mousePressed (e);
+                }
             }
 
             public void mouseDragged( MouseEvent e ) {
@@ -372,6 +372,11 @@ public class CategoryList extends JList implements Autoscroll {
             }
 
             public void mouseReleased( MouseEvent e ) {
+                if( getValidIndex( e.getPoint() ) >= 0) {
+                    super.mouseReleased (e);
+                    if( selIndex > -1 && list.getSelectedIndex () == selIndex )
+                        list.removeSelectionInterval( selIndex, selIndex );
+                }
             }
 
             private void setRolloverIndex (int index) {
