@@ -19,21 +19,25 @@ import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
+import org.netbeans.modules.jmx.mbeanwizard.MBeanAttributePanel.AttributesWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.CheckBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperDescriptionTextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JCheckBoxCellEditor;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.DefaultCellEditor;
 import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanWrapperAttribute;
+import org.netbeans.modules.jmx.mbeanwizard.listener.AttributeTextFieldKeyListener;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperComboBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
-
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.TextFieldRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 /**
  *
  * @author an156382
@@ -56,6 +60,9 @@ public class WrapperAttributeTable extends AttributeTable{
          if(row >= getRowCount())
              return null;
          
+         int editableRow = ((MBeanWrapperAttributeTableModel)getModel()).getFirstEditableRow();
+         boolean selection = (Boolean)getModel().getValueAt(row,0);
+         
          if (column == 0) { //selection
              final JCheckBox selBox = new JCheckBox();
              selBox.setSelected((Boolean)getModel().getValueAt(row,column));
@@ -70,53 +77,63 @@ public class WrapperAttributeTable extends AttributeTable{
              });
              //return new DefaultCellEditor(selBox);
              return new JCheckBoxCellEditor(selBox,this);
-         } else {/*
+         } else {
              if (column == 1) { //attribute name
                  JTextField nameField = new JTextField();
                  String o = (String)getModel().getValueAt(row,column);
                  nameField.setText(o);
-                 nameField.setEditable(false);
-                 nameField.setEnabled(false);
+                 //nameField.setEditable(false);
+                 //nameField.setEnabled(false);
                  nameField.addKeyListener(new AttributeTextFieldKeyListener());
                  return new JTextFieldCellEditor(nameField, this);
              } else {
                  if (column == 2) { //attribute type
-                     JTextField typeField = new JTextField();
-                     String o = (String)getModel().getValueAt(row,column);
-                     typeField.setText(o);
-                     typeField.setEditable(false);
-                     typeField.setEnabled(false);
-                     return new DefaultCellEditor(typeField);
-                 } else {*/
+                     if (row < editableRow) {
+                         JTextField typeField = new JTextField();
+                         String o = (String)getModel().getValueAt(row,column);
+                         typeField.setText(o);
+                         //typeField.setEditable(false);
+                         //typeField.setEnabled(false);
+                         return new DefaultCellEditor(typeField);
+                     } else {
+                         JComboBox jcb = WizardHelpers.instanciateTypeJComboBox();
+                         return new JComboBoxCellEditor(jcb, this);
+                     }
+                 } else {
                      if (column == 3) { //access mode
+                         
                          JComboBox jcb = new JComboBox();
                          // fills an MBean Attribute with the information in the model
-                         MBeanWrapperAttribute mba = ((MBeanWrapperAttributeTableModel) getModel()).getAttribute(row);
+                         MBeanWrapperAttribute mba = ((MBeanWrapperAttributeTableModel) getModel()).getWrapperAttribute(row);
                         /** test to fill the access JComboBox **/
-                        if (mba.isOriginalReadable())
-                            jcb.addItem(WizardConstants.ATTR_ACCESS_READ_ONLY);
-                        if (mba.isOriginalWritable())
-                            jcb.addItem(WizardConstants.ATTR_ACCESS_WRITE_ONLY);
-                        if (mba.isOriginalReadable() && mba.isOriginalWritable())
-                            jcb.addItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
-                         boolean selection = (Boolean)getModel().getValueAt(row,0);
+                         if (row < editableRow) {
+                             if (mba.isOriginalReadable())
+                                 jcb.addItem(WizardConstants.ATTR_ACCESS_READ_ONLY);
+                             if (mba.isOriginalWritable())
+                                 jcb.addItem(WizardConstants.ATTR_ACCESS_WRITE_ONLY);
+                             if (mba.isOriginalReadable() && mba.isOriginalWritable())
+                                 jcb.addItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
+                         } else {
+                             jcb = WizardHelpers.instanciateAccessJComboBox();
+                         }
                          jcb.setEditable(false);
-                         jcb.setEnabled(selection);
+                         jcb.setEnabled(true);
                          return new JComboBoxCellEditor(jcb, this);
                      } else {
                          if (column == 4) { //attribute description
                              JTextField descrField = new JTextField();
                              String o = (String)getModel().getValueAt(row,column);
                              descrField.setText(o);
-                             boolean selection = (Boolean)getModel().getValueAt(row,0);
-                             descrField.setEditable(selection);
-                             descrField.setEnabled(selection);
+                             descrField.setEnabled(true);
                              return new JTextFieldCellEditor(descrField, this);
                          }
                      }
                  }
+             }
+         }
          return super.getCellEditor(row,column-1);
      }
+       
      
      /**
      * Returns the cell renderer for the table according to the column
@@ -129,19 +146,34 @@ public class WrapperAttributeTable extends AttributeTable{
         if(row >= getRowCount())
             return null;
         
+        int editableRow = ((MBeanWrapperAttributeTableModel)getModel()).getFirstEditableRow();
+        
         if (column == 0) { //selection
-            JCheckBox cb = new JCheckBox();
-            cb.setSelected(true);
-            cb.setEnabled(true);
-            return new CheckBoxRenderer(cb);
+            if (row < editableRow) {
+                JCheckBox cb = new JCheckBox();
+                cb.setEnabled(true);
+                return new CheckBoxRenderer(cb);
+            } else
+                return new TextFieldRenderer(new JTextField());
         } else {
-            if ((column == 1)||(column == 2)) { //attribute Name
-                return new WrapperTextFieldRenderer(new JTextField(),false,false);
+            if (column == 1) { //attribute Name
+                if (row < editableRow)
+                    return new WrapperTextFieldRenderer(new JTextField(),true,false);
+                else
+                    return new WrapperTextFieldRenderer(new JTextField(),true,true);
             } else {
+                if (column == 2) {
+                    if (row < editableRow)
+                        return new WrapperTextFieldRenderer(new JTextField(),true,false);
+                    else {
+                        JComboBox jcb = WizardHelpers.instanciateTypeJComboBox();
+                        return new ComboBoxRenderer(jcb);
+                    }
+                } else {
                     if (column == 3) { //attribute access
                         JComboBox jcb = new JComboBox();
                         // fills an MBean Attribute with the information in the model
-                        MBeanWrapperAttribute mba = ((MBeanWrapperAttributeTableModel) getModel()).getAttribute(row);
+                        MBeanWrapperAttribute mba = ((MBeanWrapperAttributeTableModel) getModel()).getWrapperAttribute(row);
                         /** test to fill the access JComboBox **/
                         if (mba.isOriginalReadable())
                             jcb.addItem(WizardConstants.ATTR_ACCESS_READ_ONLY);
@@ -150,18 +182,15 @@ public class WrapperAttributeTable extends AttributeTable{
                         if (mba.isOriginalReadable() && mba.isOriginalWritable())
                             jcb.addItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
                         boolean selection = (Boolean)getModel().getValueAt(row,0);
-                        jcb.setEditable(false);
-                        jcb.setEnabled(selection);
-                        return new WrapperComboBoxRenderer(jcb, false, selection);
+                        return new WrapperComboBoxRenderer(jcb, selection, true);
                     } else {
                         if (column == 4) { //attribute description
                             JTextField txt = new JTextField();
                             boolean selection = (Boolean)getModel().getValueAt(row,0);
-                            txt.setEditable(selection);
-                            txt.setEnabled(selection);
                             //return new WrapperTextFieldRenderer(txt, selection, selection);
                             return new WrapperDescriptionTextFieldRenderer(
-                                    txt, selection, selection);
+                                    txt, true, selection);
+                            }
                         }
                     }
                 }
@@ -170,6 +199,17 @@ public class WrapperAttributeTable extends AttributeTable{
     }
     
     public boolean isCellEditable(int row, int col) {
-        return ((col == 0) || (col == 3) || (col == 4));
+        
+        int editableRow = ((MBeanWrapperAttributeTableModel)getModel()).getFirstEditableRow();
+        boolean isChecked = (Boolean)getModel().getValueAt(row,0);
+        
+        if (row < editableRow) {
+            if (isChecked)
+                return ((col == 0) || (col == 3) || (col == 4));
+            else
+                return (col ==0);
+        }
+        else
+            return (col != 0);
     }
 }
