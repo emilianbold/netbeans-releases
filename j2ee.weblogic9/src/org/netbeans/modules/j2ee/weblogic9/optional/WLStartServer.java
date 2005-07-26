@@ -480,7 +480,7 @@ public class WLStartServer extends StartServer {
 
                 // if the server did not start in the designated time limits
                 // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, NbBundle.getMessage(WLStartServer.class, "")); // NOI18N
+                serverProgress.notifyStart(StateType.FAILED, ""); // NOI18N
                 serverProcess.destroy();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
