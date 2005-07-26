@@ -18,7 +18,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="appname" value="NetBeans"/>
   <property name="appversion" value="4.2dev"/>
   <property name="version" value="4.2dev"/>
-  <property name="nbClusterDir" value="nb4.1"/>
+  <property name="nbClusterDir" value="nb4.2"/>
   
   <property name="appdir" value="${appname}.app"/>
   <property name="tarball-name" value="${appname}-macosx.tar.gz"/>
