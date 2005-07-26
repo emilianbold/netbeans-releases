@@ -166,25 +166,9 @@ public class WatchesModel implements TreeModel {
     }
     
     private void fireWatchesChanged () {
-
-        class NodeChildrenChanged extends ModelEvent.NodeChanged
-                                  implements javax.naming.ldap.ExtendedResponse {
-            private String id;
-            public NodeChildrenChanged(Object source, Object node, String id) {
-                super(source, node);
-                this.id = id;
-            }
-            public byte[] getEncodedValue() {
-                return null;
-            }
-            public String getID() {
-                return id;
-            }
-        }
-        
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
-        ModelEvent event = new NodeChildrenChanged(this, ROOT, org.openide.nodes.Node.PROP_LEAF);
+        ModelEvent event = new ModelEvent.NodeChanged(this, ROOT, ModelEvent.NodeChanged.CHILDREN_MASK);
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (event);
     }

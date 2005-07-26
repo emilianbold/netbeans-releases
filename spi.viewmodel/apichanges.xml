@@ -168,6 +168,22 @@ Microsystems, Inc. All Rights Reserved.
         </description>
         <issue number="57273"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>ModelEvent enhanced with more fine-grained changes</summary>
+        <version major="1" minor="6"/>
+        <date day="21" month="7" year="2005"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            NodeChanged events need to distinguish what node property has changed. Mask constant were added for
+            display name, icon, short description and children properties. By default, mask that aggregates all
+            these properties is used - to assure compatibility.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="ModelEvent" />
+        <issue number="60499"/>
+    </change>
+    
 
 </changes>
 

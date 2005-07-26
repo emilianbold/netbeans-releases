@@ -33,6 +33,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -252,8 +253,12 @@ public class TreeModelNode extends AbstractNode {
         task.schedule(0);
     }
     
-    void refresh (String id) {
-        if (id == Node.PROP_DISPLAY_NAME) {
+    void refresh (int changeMask) {
+        if (changeMask == 0xFFFFFFFF) {
+            refresh();
+            return ;
+        }
+        if ((ModelEvent.NodeChanged.DISPLAY_NAME_MASK & changeMask) != 0) {
             htmlDisplayName = null;
             try {
                 String name = model.getDisplayName (object);
@@ -270,7 +275,7 @@ public class TreeModelNode extends AbstractNode {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
-        } else if (id == Node.PROP_ICON) {
+        } else if ((ModelEvent.NodeChanged.ICON_MASK & changeMask) != 0) {
             try {
                 String iconBase = model.getIconBase (object);
                 if (iconBase != null)
@@ -281,9 +286,9 @@ public class TreeModelNode extends AbstractNode {
                 Throwable t = ErrorManager.getDefault().annotate(e, "Model: "+model);
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
             }
-        } else if (id == Node.PROP_SHORT_DESCRIPTION) {
+        } else if ((ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK & changeMask) != 0) {
             fireShortDescriptionChange(null, null);
-        } else if (id == Node.PROP_LEAF) {
+        } else if ((ModelEvent.NodeChanged.CHILDREN_MASK & changeMask) != 0) {
             getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     refreshTheChildren(false);

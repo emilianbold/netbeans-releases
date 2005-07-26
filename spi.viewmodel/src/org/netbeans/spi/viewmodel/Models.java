@@ -632,14 +632,9 @@ public final class Models {
     private static ModelEvent translateEvent(ModelEvent event, Object newSource) {
         ModelEvent newEvent;
         if (event instanceof ModelEvent.NodeChanged) {
-            if (event instanceof javax.naming.ldap.ExtendedResponse) {
-                newEvent = new NodeChangedEvent(newSource,
-                        ((ModelEvent.NodeChanged) event).getNode(),
-                        ((javax.naming.ldap.ExtendedResponse) event).getID());
-            } else {
-                newEvent = new ModelEvent.NodeChanged(newSource,
-                        ((ModelEvent.NodeChanged) event).getNode());
-            }
+            newEvent = new ModelEvent.NodeChanged(newSource,
+                    ((ModelEvent.NodeChanged) event).getNode(),
+                    ((ModelEvent.NodeChanged) event).getChange());
         } else if (event instanceof ModelEvent.TableValueChanged) {
             newEvent = new ModelEvent.TableValueChanged(newSource,
                     ((ModelEvent.TableValueChanged) event).getNode(),
@@ -650,26 +645,6 @@ public final class Models {
             newEvent = event;
         }
         return newEvent;
-    }
-    
-    private static class NodeChangedEvent extends ModelEvent.NodeChanged
-                                          implements javax.naming.ldap.ExtendedResponse {
-        
-        private String ID;
-        
-        public NodeChangedEvent(Object source, Object node, String ID) {
-            super(source, node);
-            this.ID = ID;
-        }
-        
-        public byte[] getEncodedValue() {
-            return null;
-        }
-
-        public String getID() {
-            return ID;
-        }
-        
     }
     
     /**
@@ -2354,8 +2329,12 @@ public final class Models {
          */
         public void addModelListener (ModelListener l) {
             treeModel.addModelListener (l);
-            nodeModel.addModelListener (l);
-            tableModel.addModelListener (l);
+            if (nodeModel != treeModel) {
+                nodeModel.addModelListener (l);
+            }
+            if (tableModel != treeModel && tableModel != nodeModel) {
+                tableModel.addModelListener (l);
+            }
         }
 
         /** 
@@ -2365,8 +2344,12 @@ public final class Models {
          */
         public void removeModelListener (ModelListener l) {
             treeModel.removeModelListener (l);
-            nodeModel.removeModelListener (l);
-            tableModel.removeModelListener (l);
+            if (nodeModel != treeModel) {
+                nodeModel.removeModelListener (l);
+            }
+            if (tableModel != treeModel && tableModel != nodeModel) {
+                tableModel.removeModelListener (l);
+            }
         }
 
         public String toString () {

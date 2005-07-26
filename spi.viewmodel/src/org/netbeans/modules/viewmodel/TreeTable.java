@@ -20,6 +20,7 @@ import java.beans.PropertyEditor;
 
 
 import java.util.*;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -37,7 +38,7 @@ import javax.swing.tree.TreeModel;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.explorer.ExplorerActions;
+import org.openide.explorer.ExplorerUtils;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -73,10 +74,6 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     private Models.CompoundModel model;
     
     
-    private ExplorerActions     explorerActions = new ExplorerActions ();
-    {explorerActions.setConfirmDelete (false);}
-    
-    
     public TreeTable () {
         setLayout (new BorderLayout ());
             treeTable = new MyTreeTable ();
@@ -87,6 +84,9 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
         treeTable.getTree ().addTreeExpansionListener (this);
+        ActionMap map = getActionMap();
+        map.put("delete", ExplorerUtils.actionDelete(getExplorerManager(), false));
+        
     }
     
     public void setModel (Models.CompoundModel model) {
@@ -163,10 +163,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             getAncestorOfClass (TopComponent.class, this);
         if (tc == null) return;
         if (propertyName.equals (TopComponent.Registry.PROP_CURRENT_NODES)) {
-            if (equalNodes ()) {
-                explorerActions.attach (getExplorerManager ());
-            } else
-                explorerActions.detach ();
+            ExplorerUtils.activateActions(getExplorerManager(), equalNodes());
         } else
         if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
             tc.setActivatedNodes ((Node[]) evt.getNewValue ());

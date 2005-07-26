@@ -166,8 +166,9 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         Object[] ch;
         VariablesFilter vf = getFilter (parent, true, new Runnable() {
             public void run() {
-                fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
-                                                     parent, org.openide.nodes.Node.PROP_LEAF));
+                fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
+                                                           parent,
+                                                           ModelEvent.NodeChanged.CHILDREN_MASK));
             }
         });
         if (vf == null) 
@@ -209,8 +210,9 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (parent, true, new Runnable() {
             public void run() {
-                fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
-                                                     parent, org.openide.nodes.Node.PROP_LEAF));
+                fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
+                                                           parent,
+                                                           ModelEvent.NodeChanged.CHILDREN_MASK));
             }
         });
         int count;
@@ -280,8 +282,8 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                     filteredDisplayName = utex.toString();
                 }
                 if (!filteredDisplayName.equals(unfilteredDisplayName[0])) {
-                    fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
-                            node, org.openide.nodes.Node.PROP_DISPLAY_NAME));
+                    fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
+                            node, ModelEvent.NodeChanged.DISPLAY_NAME_MASK));
                 }
             }
         });
@@ -309,8 +311,8 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                     filteredIconBase = utex.toString();
                 }
                 if (!filteredIconBase.equals(unfilteredIconBase[0])) {
-                    fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
-                            node, org.openide.nodes.Node.PROP_ICON));
+                    fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
+                            node, ModelEvent.NodeChanged.ICON_MASK));
                 }
             }
         });
@@ -338,8 +340,8 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                     filteredShortDescription = utex.toString();
                 }
                 if (!filteredShortDescription.equals(unfilteredShortDescription[0])) {
-                    fireModelChange(new NodeChangedEvent(VariablesTreeModelFilter.this,
-                            node, org.openide.nodes.Node.PROP_SHORT_DESCRIPTION));
+                    fireModelChange(new ModelEvent.NodeChanged(VariablesTreeModelFilter.this,
+                            node, ModelEvent.NodeChanged.SHORT_DESCRIPTION_MASK));
                 }
             }
         });
@@ -521,28 +523,6 @@ NodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             synchronized (evaluatedNodes) {
                 evaluatedNodes.remove(node);
             }
-        }
-        
-    }
-    
-    private static class NodeChangedEvent extends ModelEvent.NodeChanged implements javax.naming.ldap.ExtendedResponse {
-        // java.sql.Savepoint
-        // javax.naming.ldap.ExtendedResponse
-        // javax.print.attribute.Attribute
-        
-        private String ID;
-        
-        public NodeChangedEvent(Object source, Object node, String ID) {
-            super(source, node);
-            this.ID = ID;
-        }
-        
-        public byte[] getEncodedValue() {
-            return null;
-        }
-
-        public String getID() {
-            return ID;
         }
         
     }
