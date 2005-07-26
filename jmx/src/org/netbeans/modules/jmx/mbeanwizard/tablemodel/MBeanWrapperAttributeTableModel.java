@@ -28,6 +28,8 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
     //other idx inherited
     public static final int IDX_ATTR_SELECTION        = 0;
     
+    private int firstEditableRow = 0;
+    
     /**
      * Creates a new instance of MBeanWrapperAttributeTableModel 
      */
@@ -50,6 +52,16 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
         columnNames[super.IDX_ATTR_TYPE +1]          = st;
         columnNames[super.IDX_ATTR_ACCESS +1]        = sa;
         columnNames[super.IDX_ATTR_DESCRIPTION +1]   = sd;
+        
+        lastIndex=0; 
+    }
+    
+    public void setFirstEditableRow(int row) {
+        firstEditableRow = row;
+    }
+    
+    public int getFirstEditableRow() {
+        return firstEditableRow;
     }
     
     /**
@@ -81,6 +93,10 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
             switch(columnIndex) {
                 case 0: attr.setSelected((Boolean)aValue);
                 break;
+                case 1: attr.setName((String)aValue);
+                break;
+                case 2: attr.setTypeName((String)aValue);
+                break;
                 case 3: attr.setAccess((String)aValue);
                 break;
                 case 4: attr.setDescription((String)aValue);
@@ -92,33 +108,9 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
         }
     }
     
-    public MBeanWrapperAttribute getAttribute(int row) {
+    public MBeanWrapperAttribute getWrapperAttribute(int row) {
         return (MBeanWrapperAttribute) data.get(row);
     }
-    
-    //fake method for screenshots
-    /**
-     * Overriden method from superclass
-     *//*
-    public void addMyRows() {
-        
-        MBeanWrapperAttribute mba = new MBeanWrapperAttribute(
-                true,
-                "Count",
-                "int",
-                WizardConstants.ATTR_ACCESS_READ_WRITE,
-                "");
-        MBeanWrapperAttribute mba2 = new MBeanWrapperAttribute(
-                true,
-                "CloseOK",
-                "boolean",
-                WizardConstants.ATTR_ACCESS_READ_WRITE,
-                "");
-        data.add(mba);
-        data.add(mba2);
-        //table is informed about the change to update the view
-        this.fireTableDataChanged();
-    }*/
     
     public void addRow(MBeanAttribute attr) {
         MBeanWrapperAttribute mba = new MBeanWrapperAttribute(
@@ -127,6 +119,21 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
                 attr.getTypeName(),
                 attr.getAccess(),
                 attr.getDescription());
+        data.add(mba);
+        
+        //table is informed about the change to update the view
+        this.fireTableDataChanged();
+    }
+    
+    public void addRow() {
+        MBeanWrapperAttribute mba = new MBeanWrapperAttribute(
+                true,
+                WizardConstants.ATTR_NAME_DEFVALUE + lastIndex,
+                WizardConstants.STRING_OBJ_NAME,
+                WizardConstants.ATTR_ACCESS_READ_WRITE,
+                WizardConstants.ATTR_DESCR_DEFVALUE_PREFIX + lastIndex +
+                WizardConstants.ATTR_DESCR_DEFVALUE_SUFFIX);
+        lastIndex++;
         data.add(mba);
         
         //table is informed about the change to update the view

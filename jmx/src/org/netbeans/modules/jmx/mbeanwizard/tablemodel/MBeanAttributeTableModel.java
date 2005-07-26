@@ -28,7 +28,7 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
     public static final int IDX_ATTR_ACCESS      = 2;
     public static final int IDX_ATTR_DESCRIPTION = 3;
     
-    private int lastIndex;
+    protected int lastIndex;
     
     /**
      * Constructor
