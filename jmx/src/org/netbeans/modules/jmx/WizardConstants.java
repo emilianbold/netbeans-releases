@@ -27,6 +27,8 @@ public class WizardConstants
     public static final String PROP_MBEAN_PACKAGE_NAME  = "wizdata.mbeanPackageName"; // NOI18N
     public static final String PROP_MBEAN_PACKAGE_PATH  = "wizdata.mbeanPackagePath"; // NOI18N
     public static final String PROP_MBEAN_FILE_PATH  = "wizdata.mbeanFilePath"; // NOI18N
+    public static final String PROP_MBEAN_IMPL_REG_ITF = "wizdata.mbeanImplemRegItf"; // NOI18N
+    public static final String PROP_MBEAN_PRE_REG_PARAM = "wizdata.mbeanPreRegParam"; // NOI18N
     
     // properties to see if mbean wrapps existing ressource
     public static final String PROP_MBEAN_EXISTING_CLASS = "wizdata.mbeanExistingClass"; // NOI18N
