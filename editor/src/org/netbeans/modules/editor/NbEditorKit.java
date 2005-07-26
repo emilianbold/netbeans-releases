@@ -106,7 +106,12 @@ public class NbEditorKit extends ExtKit {
     }
 
     public Document createDefaultDocument() {
-        return new NbEditorDocument(this.getClass());
+        Document doc = new NbEditorDocument(this.getClass());
+        Object mimeType = doc.getProperty("mimeType"); //NOI18N
+        if (mimeType == null){
+            doc.putProperty("mimeType", getContentType()); //NOI18N
+        }
+        return doc;
     }
 
     /**
@@ -226,7 +231,12 @@ public class NbEditorKit extends ExtKit {
             JPopupMenu pm = createPopupMenu(component);
             List l;
             EditorUI ui = Utilities.getEditorUI(component);            
-            MimeLookup lookup = MimeLookup.getMimeLookup(NbEditorKit.this.getContentType());
+            Object mimeTypeObj = component.getDocument().getProperty("mimeType");  //NOI18N
+            String mimeType;
+            mimeType = (mimeTypeObj instanceof String) ? 
+                (String) mimeTypeObj :
+                NbEditorKit.this.getContentType();
+            MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
             PopupActions pa = (PopupActions)lookup.lookup(PopupActions.class);
             if (pa != null){
                 l = pa.getPopupActions();

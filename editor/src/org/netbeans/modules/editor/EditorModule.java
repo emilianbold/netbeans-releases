@@ -29,6 +29,7 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseDocument;
@@ -341,31 +342,8 @@ public class EditorModule extends ModuleInstall {
         }
 
         private Object findKit(String type) {
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance"); // NOI18N
-            if (fo == null) return null;
-
-            DataObject dobj;
-            try {
-                dobj = DataObject.find(fo);
-                final InstanceCookie cookie = (InstanceCookie)dobj.getCookie(InstanceCookie.class);
-                // #41968 - cookie.instanceClass() made as privileged
-                Class kitClass = (Class)java.security.AccessController.doPrivileged(
-                    new java.security.PrivilegedExceptionAction() {
-                        public Object run() throws Exception {
-                            return cookie.instanceClass();
-                        }
-                    }
-                );
-                    
-                if(EditorKit.class.isAssignableFrom(kitClass)) {
-                    return BaseKit.getKit(kitClass);
-                }
-            }
-            catch (DataObjectNotFoundException e) {}
-            catch (java.security.PrivilegedActionException e) {
-            }
-
-            return null;
+            MimeLookup lookup = MimeLookup.getMimeLookup(type);
+            return lookup.lookup(EditorKit.class);
         }
         
         private String getKitClassName(String type) {
