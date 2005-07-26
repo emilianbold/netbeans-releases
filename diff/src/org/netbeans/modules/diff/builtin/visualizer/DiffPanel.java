@@ -66,11 +66,6 @@ public class DiffPanel extends javax.swing.JPanel {
 
     private ArrayList closeListeners = new ArrayList();
 
-    /**
-     * Used for deserialization.
-     */
-    private boolean diffSetSuccess = true;
-
     static final long serialVersionUID =3683458237532937983L;
     private static final String PLAIN_TEXT_MIME = "text/plain";
 
