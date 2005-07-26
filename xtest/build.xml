@@ -173,4 +173,13 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="pes" target="clean"/>
   </target>
  
+  <!-- extension for building distribution with existing netbeans build -->
+  <target name="makedist-simple" depends="netbeans">
+     <zip zipfile="xtest-distribution.zip">     
+	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
+        <zipfileset dir="plugins" prefix="plugins" includes="**"/>
+        <zipfileset dir="." includes="dist_build.xml" fullpath="build.xml"/>
+        <zipfileset dir="." includes="standard-test-includes.txt,standard-test-excludes.txt"/>
+     </zip>
+  </target>
 </project>
