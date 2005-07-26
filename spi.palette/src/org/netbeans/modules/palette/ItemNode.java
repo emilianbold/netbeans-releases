@@ -124,20 +124,6 @@ class ItemNode extends FilterNode {
         }
     }
 
-    public boolean equals(Object o) {
-        // this is needed so Index.indexOf works properly
-        if (!(o instanceof Node))
-            return false;
-
-        DataObject do1 = (DataObject) getCookie(DataObject.class);
-        DataObject do2 = (DataObject) ((Node)o).getCookie(DataObject.class);
-        if( null != do1 && null != do2 ) {
-            return do1.equals(do2);
-        }
-        
-        return super.equals( o );
-    }
-    
     private PaletteActions getCustomActions() {
         Node category = getParentNode();
         assert null != category;

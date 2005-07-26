@@ -36,11 +36,6 @@ import org.openide.util.LookupListener;
  */
 class CategoryNode extends FilterNode {
     
-    private static final String categoryIcon16Res =
-        "org/netbeans/modules/form/resources/paletteCategory.gif"; // NOI18N
-    private static final String categoryIcon32Res =
-        "org/netbeans/modules/form/resources/paletteCategory32.gif"; // NOI18N
-
     static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
     
     static final String CAT_NAME = "categoryName"; // NOI18N
@@ -57,20 +52,6 @@ class CategoryNode extends FilterNode {
             if (catName instanceof String)
                 setName((String)catName, false);
         }
-    }
-
-    public boolean equals(Object o) {
-        // this is needed so Index.indexOf works properly
-        if( !(o instanceof Node) )
-            return false;
-
-        DataObject do1 = (DataObject) getCookie(DataObject.class);
-        DataObject do2 = (DataObject) ((Node)o).getCookie(DataObject.class);
-        if( null != do1 && null != do2 ) {
-            return do1.equals(do2);
-        }
-        
-        return super.equals( o );
     }
 
     // -------
@@ -105,16 +86,6 @@ class CategoryNode extends FilterNode {
 
     public String getShortDescription() {
         return getDisplayName();
-    }
-
-    public Image getIcon(int type) {
-        return Utilities.loadImage(type == java.beans.BeanInfo.ICON_COLOR_32x32
-                                || type == java.beans.BeanInfo.ICON_MONO_32x32 ?
-                                   categoryIcon32Res : categoryIcon16Res);
-    }
-
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
     }
 
     public Action[] getActions(boolean context) {

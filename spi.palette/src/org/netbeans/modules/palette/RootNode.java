@@ -43,12 +43,6 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public final class RootNode extends FilterNode {
     
-    /** Icon resources */
-    private static final String paletteIcon16Res =
-        "org/netbeans/modules/form/resources/palette.gif"; // NOI18N
-    private static final String paletteIcon32Res =
-        "org/netbeans/modules/form/resources/palette32.gif"; // NOI18N
-
     static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
 
     private Action[] actions;
@@ -64,16 +58,6 @@ public final class RootNode extends FilterNode {
     }
 
     // --------
-
-    public Image getIcon(int type) {
-        return Utilities.loadImage(type == java.beans.BeanInfo.ICON_COLOR_32x32
-                                || type == java.beans.BeanInfo.ICON_MONO_32x32 ?
-                                   paletteIcon32Res : paletteIcon16Res);
-    }
-
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
-    }
 
     public NewType[] getNewTypes() {
         return new NewType[] { new NewCategory() };
@@ -119,15 +103,9 @@ public final class RootNode extends FilterNode {
     }
 
 
-    public boolean equals(Object obj) {
-
-        return getOriginal().equals( obj );
-    }
-    
     public void refreshChildren() {
         ((Children)getChildren()).refreshNodes();
     }
-    
 
     // ------------
 
