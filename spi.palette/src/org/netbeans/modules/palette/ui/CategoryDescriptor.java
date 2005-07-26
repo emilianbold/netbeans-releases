@@ -114,6 +114,14 @@ class CategoryDescriptor implements CategoryListener {
         };
     }
 
+    void refresh() {
+        categoryButton.updateProperties();
+        categoryButton.repaint ();
+        if( isOpened() && resetItems ) {
+            computeItems();
+        }
+    }
+    
     void computeItems() {
         DefaultListModel newModel = new DefaultListModel();
         Item[] items = category.getItems();
@@ -205,10 +213,7 @@ class CategoryDescriptor implements CategoryListener {
     }
 
     public void categoryModified( Category category ) {
-        categoryButton.updateProperties();
-        categoryButton.repaint ();
-        if( isOpened() )
-            computeItems();
+        resetItems();
         palettePanel.refresh ();
     }
     

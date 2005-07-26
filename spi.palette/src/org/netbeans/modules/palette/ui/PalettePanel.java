@@ -105,6 +105,8 @@ public class PalettePanel extends JPanel implements Scrollable {
                 descriptor = new CategoryDescriptor( this, category );
                 descriptor.setShowNames( getShowItemNames() );
                 descriptor.setIconSize( getIconSize() );
+            } else {
+                descriptor.refresh();
             }
             descriptor.setWidth( getWidth() );
             descriptors[i] = descriptor;
@@ -184,6 +186,7 @@ public class PalettePanel extends JPanel implements Scrollable {
         Runnable runnable = new Runnable() {
             public void run() {
                 synchronized( lock ) {
+                    setCursor( Cursor.getPredefinedCursor( Cursor.WAIT_CURSOR ) );
                     CategoryDescriptor[] paletteCategoryDescriptors = computeDescriptors( null != model ? model.getCategories() : null );
                     setDescriptors (paletteCategoryDescriptors);
                     if( null != settings ) {
@@ -195,6 +198,7 @@ public class PalettePanel extends JPanel implements Scrollable {
                         Category category = model.getSelectedCategory();
                         setSelectedItemFromModel( category, item );
                     }
+                    setCursor( Cursor.getDefaultCursor() );
                 }
             }
         };
