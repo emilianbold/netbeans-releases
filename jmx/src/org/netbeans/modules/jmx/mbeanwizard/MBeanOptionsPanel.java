@@ -56,6 +56,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     private boolean descHasChanged = false;
     private boolean updateNameRunning = false;
     private boolean mbeanFromExistingClass = false;
+    private boolean preRegParamSelected = false;
     private boolean mbeanRegIntfSelected = false;
     private static enum mbeanType {StandardMBean, DynamicMBean, ExtendedStandardMBean};
     private static mbeanType selectedMBeanType;
@@ -143,11 +144,6 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_DESCRIPTION"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION_KEEP"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
-        
-        
-        
-        
-     
     }
         
     /** This method is called from within the constructor to
@@ -323,6 +319,12 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         jPanel1.add(mbeanRegistrationJCheckBox, gridBagConstraints);
 
         preRegisterParamJCheckBox.setEnabled(false);
+        preRegisterParamJCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                preRegisterParamJCheckBoxActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -342,6 +344,10 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void preRegisterParamJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_preRegisterParamJCheckBoxActionPerformed
+        preRegParamSelected = preRegisterParamJCheckBox.isSelected();
+    }//GEN-LAST:event_preRegisterParamJCheckBoxActionPerformed
 
     private void mbeanRegistrationJCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mbeanRegistrationJCheckBoxActionPerformed
         mbeanRegIntfSelected = mbeanRegistrationJCheckBox.isSelected();
@@ -415,7 +421,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         private ResourceBundle bundle = null;
         private TemplateWizard templateWiz = null;
         private JTextField mbeanNameTextField = null;
-        private JTextField createdFileTextField = null;
+        //private JTextField createdFileTextField = null;
         private JTextField projectTextField = null;
         private WizardDescriptor.Panel mbeanTargetWiz = null;
         
@@ -512,8 +518,9 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                  String fullClassName = getPanel().
                          classSelectionJTextField.getText();
                  
-                 String filePath = WizardHelpers.getFolderPath(
-                         createdFileTextField.getText());
+                 String filePath = //WizardHelpers.getFolderPath(
+                         //createdFileTextField.getText());
+                         (String)templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
                  
                  //gives an abstract representation of the directory
                  File file = new File(filePath);
@@ -543,6 +550,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                      return false;
                  }
              }
+             setErrorMsg(WizardConstants.EMPTYSTRING);
              return true;
         }
          
@@ -644,7 +652,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             
             String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
             String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
-            String descr = bundle.getString("LBL_mbean_description");// NOI18N
+            //String descr = bundle.getString("LBL_mbean_description");// NOI18N
 
             int maxWidth = 0;
             Mnemonics.setLocalizedText(getPanel().generatedFileJLabel, clzz);
@@ -731,11 +739,14 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         public void storeSettings (Object settings) 
         {            
             TemplateWizard wiz = (TemplateWizard) settings;
-            /*
-            String mbeanName = mbeanNameTextField.getText();
-            wiz.putProperty (WizardConstants.PROP_MBEAN_NAME, mbeanName);
+            
+            //String mbeanName = mbeanNameTextField.getText();
+            //wiz.putProperty (WizardConstants.PROP_MBEAN_NAME, mbeanName);
+            String mbeanName = (String)
+                            wiz.getProperty(WizardConstants.PROP_MBEAN_NAME);
             wiz.putProperty (WizardConstants.PROP_JUNIT_CLASSNAME, 
                     mbeanName + WizardConstants.JUNIT_TEST_SUFFIX);
+            /*
             Project project = Templates.getProject(wiz);
             if (createdFileTextField != null) {
                 String filePath = WizardHelpers.getFolderPath(
@@ -747,13 +758,14 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                 wiz.putProperty(WizardConstants.PROP_MBEAN_PACKAGE_PATH,
                         packName.replace('.', File.separatorChar));
             }
+             **/
             // storage of the description field
             String description = getPanel().mbeanDescriptionJTextField.getText();
             if ( (description != null) && (!description.equals(  "")) ) {// NOI18N
                 wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION, 
                         description);
             } else {
-                wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION,   "");// NOI18N
+                wiz.putProperty (WizardConstants.PROP_MBEAN_DESCRIPTION,"");// NOI18N
             }
             // storage of the existing class to wrap if there is one
             if (getPanel().mbeanFromExistingClass) {
@@ -776,16 +788,25 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                             WizardConstants.MBEAN_EXTENDED);
                 }
             } 
-           */ 
+           
+           // store wether to implement mbeanregistration interface
+           if (getPanel().mbeanRegIntfSelected) {
+                wiz.putProperty(WizardConstants.PROP_MBEAN_IMPL_REG_ITF, 
+                        getPanel().mbeanRegIntfSelected);
+                if (getPanel().preRegParamSelected) 
+                    wiz.putProperty(WizardConstants.PROP_MBEAN_PRE_REG_PARAM,  
+                        getPanel().preRegParamSelected);
+           }
+            
         }    
         
         private JavaClass getExistingClass() {
             String fullClassName = getPanel().
                     classSelectionJTextField.getText();
             
-            String filePath = WizardHelpers.getFolderPath(
-                    createdFileTextField.getText());
-            
+            String filePath = //WizardHelpers.getFolderPath(
+                    //createdFileTextField.getText());
+            (String)templateWiz.getProperty(WizardConstants.PROP_MBEAN_FILE_PATH);
             //gives an abstract representation of the directory
             File file = new File(filePath);
             FileObject fo = FileUtil.toFileObject(file);

@@ -413,9 +413,9 @@ public class StandardMBeanPanel extends javax.swing.JPanel
             bundle = NbBundle.getBundle(JMXMBeanIterator.class);
             
             
-            String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
-            String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
-            String descr = bundle.getString("LBL_mbean_description");// NOI18N
+            //String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
+            //String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
+            //String descr = bundle.getString("LBL_mbean_description");// NOI18N
             
             /* transfered
             
