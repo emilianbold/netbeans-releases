@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.util;
 
 import org.netbeans.lib.cvsclient.command.Command;
+import org.netbeans.lib.cvsclient.command.log.RlogCommand;
 import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
 import org.netbeans.lib.cvsclient.command.remove.RemoveCommand;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
@@ -31,6 +32,7 @@ public abstract class CommandDuplicator {
         if (src instanceof UpdateCommand) return new UpdateCloner((UpdateCommand) src);
         if (src instanceof RemoveCommand) return new RemoveCloner((RemoveCommand) src);
         if (src instanceof RtagCommand) return new RtagCloner((RtagCommand) src);
+        if (src instanceof RlogCommand) return new RlogCloner((RlogCommand) src);
         throw new IllegalArgumentException("Clone not supported for command type: " + src.getClass().getName());
     }
 
@@ -116,6 +118,30 @@ public abstract class CommandDuplicator {
             c.setTag(sample.getTag());
             c.setTagByDate(sample.getTagByDate());
             c.setTagByRevision(sample.getTagByRevision());
+            c.setRecursive(sample.isRecursive());
+            return c;
+        }
+    }
+
+    private static class RlogCloner extends CommandDuplicator {
+        private final RlogCommand sample;
+
+        public RlogCloner(RlogCommand sample) {
+            this.sample = sample;
+        }
+
+        public Command duplicate() {
+            RlogCommand c = new RlogCommand();
+            c.setDateFilter(c.getDateFilter());
+            c.setDefaultBranch(c.isDefaultBranch());
+            c.setHeaderAndDescOnly(c.isHeaderAndDescOnly());
+            c.setHeaderOnly(c.isHeaderOnly());
+            c.setNoTags(c.isNoTags());
+            c.setRevisionFilter(c.getRevisionFilter());
+            c.setStateFilter(c.getStateFilter());
+            c.setSuppressHeader(c.isSuppressHeader());
+            c.setUserFilter(c.getUserFilter());
+            c.setModules(sample.getModules());
             c.setRecursive(sample.isRecursive());
             return c;
         }

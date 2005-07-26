@@ -38,13 +38,10 @@ public class SearchHistoryTopComponent extends TopComponent {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
 
-    
     private void initComponents() {
         setLayout(new BorderLayout());
-        
-        SearchCriteriaPanel scp = new SearchCriteriaPanel();
-        
-        SearchHistoryPanel shp = new SearchHistoryPanel();
+        SearchCriteriaPanel scp = new SearchCriteriaPanel(roots);
+        SearchHistoryPanel shp = new SearchHistoryPanel(roots, scp);
         shp.setTopPanel(scp);
         add(shp);
     }

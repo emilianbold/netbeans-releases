@@ -21,6 +21,7 @@ import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
+import org.netbeans.lib.cvsclient.command.log.RlogCommand;
 import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
@@ -100,7 +101,7 @@ public class ClientRuntime {
             throws IllegalCommandException {
         
         File [] files = getCommandFiles(cmd);
-        if ((cmd instanceof CheckoutCommand) == false) {    // XXX
+        if ((cmd instanceof CheckoutCommand) == false && !(cmd instanceof RlogCommand)) {    // XXX
             ensureValidCommand(files);
         }
 
@@ -110,7 +111,9 @@ public class ClientRuntime {
         }
 
         Client client = createClient();
-        if ((cmd instanceof CheckoutCommand)) {    // XXX
+        if ((cmd instanceof RlogCommand)) {    // XXX
+        }
+        else if ((cmd instanceof CheckoutCommand)) {    // XXX
             BasicCommand bc = (BasicCommand) cmd;
             String path = bc.getFiles()[0].getAbsolutePath();
             client.setLocalPath(path);

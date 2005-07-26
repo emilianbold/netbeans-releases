@@ -13,6 +13,16 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
+import org.netbeans.lib.cvsclient.CVSRoot;
+import org.netbeans.lib.cvsclient.admin.AdminHandler;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector;
+
+import javax.swing.*;
+import java.io.IOException;
+import java.io.File;
+
 /**
  * Packages search criteria in Search History panel.
  *
@@ -20,12 +30,31 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
  */
 class SearchCriteriaPanel extends javax.swing.JPanel {
     
+    private final File[] roots;
+
     /** Creates new form SearchCriteriaPanel */
-    public SearchCriteriaPanel() {
+    public SearchCriteriaPanel(File [] roots) {
+        this.roots = roots;
         initComponents();
         setupComponents();
     }
 
+    public String getFrom() {
+        return cbUseFrom.isSelected() ? tfFrom.getText().trim() : null;
+    }
+
+    public String getTo() {
+        return cbUseTo.isSelected() ? tfTo.getText().trim() : null;
+    }
+    
+    public String getCommitMessage() {
+        return cbUseCommitMessage.isSelected() ? tfCommitMessage.getText().trim() : null;
+    }
+
+    public String getUsername() {
+        return cbUseCommitMessage1.isSelected() ? tfUsername.getText().trim() : null;
+    }
+    
     private void setupComponents() {
         refreshComponents();
     }
@@ -33,7 +62,9 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private void refreshComponents() {
         tfCommitMessage.setEnabled(cbUseCommitMessage.isSelected());
         tfFrom.setEnabled(cbUseFrom.isSelected());
+        bBrowseFrom.setEnabled(cbUseFrom.isSelected());
         tfTo.setEnabled(cbUseTo.isSelected());
+        bBrowseTo.setEnabled(cbUseTo.isSelected());
         tfUsername.setEnabled(cbUseCommitMessage1.isSelected());
     }
     
@@ -196,13 +227,34 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_refreshComponents
 
     private void onToBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onToBrowse
-// TODO add your handling code here:
+        onBrowse(tfTo);
     }//GEN-LAST:event_onToBrowse
 
     private void onFromBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onFromBrowse
-// TODO add your handling code here:
+        onBrowse(tfFrom);
     }//GEN-LAST:event_onFromBrowse
-    
+
+    private void onBrowse(JTextField destination) {
+        String module = null;
+        CVSRoot root = null;
+        for (int i = 0; i < roots.length; i++) {
+            try {
+                root = CVSRoot.parse(Utils.getCVSRootFor(roots[i]));
+                AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
+                module = ah.getRepositoryForDirectory(roots[i].getAbsolutePath(), "").substring(1);
+            } catch (IOException e) {
+                // no root for this file, try next
+            }
+        }
+        if (root == null) {
+            return;
+        }
+        BranchSelector selector = new BranchSelector();
+        String tag = selector.selectTag(root, module, null);
+        if (tag != null) {
+            destination.setText(tag);
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bBrowseFrom;

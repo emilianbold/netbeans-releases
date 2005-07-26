@@ -13,7 +13,11 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
+import org.openide.util.RequestProcessor;
+
 import javax.swing.*;
+import java.awt.Dimension;
+import java.io.File;
 
 /**
  * Contains all components of the Search History panel.
@@ -21,14 +25,28 @@ import javax.swing.*;
  * @author Maros Sandor
  */
 class SearchHistoryPanel extends javax.swing.JPanel {
+
+    private final File[]                roots;
+    private final SearchCriteriaPanel   criteria;
     
+    private SearchExecutor          currentSearch;
+    private RequestProcessor.Task   currentSearchTask;
+
     /** Creates new form SearchHistoryPanel */
-    public SearchHistoryPanel() {
+    public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
+        this.roots = roots;
+        this.criteria = criteria;
         initComponents();
         setupComponents();
     }
 
     private void setupComponents() {
+        int maxWidth = tbSummary.getPreferredSize().width;
+        if (tbDiff.getPreferredSize().width > maxWidth) maxWidth = tbDiff.getPreferredSize().width; 
+        if (bSearch.getPreferredSize().width > maxWidth) maxWidth = bSearch.getPreferredSize().width;
+        tbSummary.setPreferredSize(new Dimension(maxWidth, tbSummary.getPreferredSize().height));
+        tbDiff.setPreferredSize(new Dimension(maxWidth, tbDiff.getPreferredSize().height));
+        bSearch.setPreferredSize(new Dimension(maxWidth, bSearch.getPreferredSize().height));
         tbSummary.setSelected(true);
     }
 
@@ -36,6 +54,15 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         searchCriteriaPanel.removeAll();
         searchCriteriaPanel.add(panel);
         revalidate();
+    }
+
+    private synchronized void search() {
+        if (currentSearchTask != null) {
+            currentSearchTask.cancel();
+        }
+        currentSearch = new SearchExecutor(roots, criteria);
+        currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
+        currentSearchTask.schedule(0);
     }
     
     /** This method is called from within the constructor to
@@ -185,7 +212,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_onViewToggle
 
     private void onSearch(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSearch
-// TODO add your handling code here:
+        search();
     }//GEN-LAST:event_onSearch
     
     

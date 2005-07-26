@@ -18,8 +18,6 @@ import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.event.CVSListener;
 import org.netbeans.lib.cvsclient.command.*;
-import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
-import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.spi.VersioningListener;
@@ -245,7 +243,7 @@ public class CvsVersioningSystem {
      */
     public ClientRuntime getClientRuntime(Command cmd, GlobalOptions options) {
         String root;
-        if ( cmd instanceof CheckoutCommand || cmd instanceof ImportCommand) {
+        if (options != null && options.getCVSRoot() != null) {
             root = options.getCVSRoot();
         } else {
             try {
