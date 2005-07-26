@@ -54,8 +54,10 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
     
     private transient StandardMBeanPanel.StandardMBeanWizardPanel mbeanTemplatePanel;
     private transient MBeanOptionsPanel.MBeanOptionsWizardPanel mbeanOpPanel;
-    //private transient AlternStandardMBeanPanel.StandardMBeanWizardPanel mbeanOptionsPanel; 
-    private transient MBeanAttrAndMethodPanel.AttributesWizardPanel attributePanel;
+    //private transient MBeanAttrAndMethodPanel.AttributesWizardPanel attributePanel;
+    private transient MBeanAttributePanel.AttributesWizardPanel attributePanel;
+    private transient MBeanWrapperAttributePanel.WrapperAttributesWizardPanel wAttributePanel;
+    private transient MBeanOperationPanel.OperationWizardPanel operationPanel;
     private transient MBeanNotificationPanel.NotificationsWizardPanel notificationPanel;
     private transient MBeanJUnitPanel.JUnitWizardPanel junitOptionsPanel; 
     private transient TemplateWizard.Panel junitPanel;
@@ -116,9 +118,10 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         steps[1] = bundle.getString("LBL_Standard_Panel");// NOI18N
         steps[2] = bundle.getString("LBL_Standard_Options_Panel");// NOI18N
         
-        steps[3] = bundle.getString("LBL_Wrapper_Panel");// NOI18N
+        //steps[3] = bundle.getString("LBL_Wrapper_Panel");// NOI18N
         
-        steps[4] = bundle.getString("LBL_Attribute_Panel");// NOI18N
+        steps[3] = bundle.getString("LBL_Attribute_Panel");// NOI18N
+        steps[4] = bundle.getString("LBL_Operation_Panel");// NOI18N
         steps[5] = bundle.getString("LBL_Notification_Panel");// NOI18N
         steps[6] = bundle.getString("LBL_JUnit_Panel");   // NOI18N
         
@@ -164,8 +167,9 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         steps = new String[6];
         steps[0] = bundle.getString("LBL_Standard_Panel");// NOI18N
         steps[1] = bundle.getString("LBL_Standard_Options_Panel");// NOI18N
-        steps[2] = bundle.getString("LBL_Wrapper_Panel");// NOI18N
-        steps[3] = bundle.getString("LBL_Attribute_Panel");// NOI18N
+        //steps[2] = bundle.getString("LBL_Wrapper_Panel");// NOI18N
+        steps[2] = bundle.getString("LBL_Attribute_Panel");// NOI18N
+        steps[3] = bundle.getString("LBL_Operation_Panel");// NOI18N
         steps[4] = bundle.getString("LBL_Notification_Panel");// NOI18N
         steps[5] = bundle.getString("LBL_JUnit_Panel");// NOI18N
 
@@ -218,13 +222,28 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         initializeComponent(steps,panelOffset + 1,
                 (JComponent)mbeanOpPanel.getComponent());
         
-        wrapperPanel = new MBeanWrapperPanel.WrapperAttributesWizardPanel();
-        initializeComponent(steps,panelOffset + 2,
-                (JComponent)wrapperPanel.getComponent());
+        //wrapperPanel = new MBeanWrapperPanel.WrapperAttributesWizardPanel();
+        //initializeComponent(steps,panelOffset + 2,
+        //        (JComponent)wrapperPanel.getComponent());
         
-        attributePanel = new MBeanAttrAndMethodPanel.AttributesWizardPanel();
+        //attributePanel = new MBeanAttrAndMethodPanel.AttributesWizardPanel();
+        //initializeComponent(steps,panelOffset + 3,
+        //        (JComponent)attributePanel.getComponent());
+        
+        JavaClass isExistingRessource = (JavaClass)wiz.getProperty(
+                (WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+        
+        attributePanel = new MBeanAttributePanel.AttributesWizardPanel();
+        initializeComponent(steps,panelOffset + 2,
+            (JComponent)attributePanel.getComponent());
+      
+        wAttributePanel = new MBeanWrapperAttributePanel.WrapperAttributesWizardPanel();
+        initializeComponent(steps,panelOffset + 2,
+             (JComponent)wAttributePanel.getComponent());
+   
+        operationPanel = new MBeanOperationPanel.OperationWizardPanel();
         initializeComponent(steps,panelOffset + 3,
-                (JComponent)attributePanel.getComponent());
+                (JComponent)operationPanel.getComponent());
 
         notificationPanel = 
                 new MBeanNotificationPanel.NotificationsWizardPanel();
@@ -358,45 +377,54 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
      */
     public void nextPanel() {
         
+        JavaClass isExistingRessource = (JavaClass)wiz.getProperty(
+                (WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+        
         if (currentPanel == notificationPanel)
             currentPanel = getTestChooserPanel();
         else {
             if (currentPanel == mbeanPanel)
                 currentPanel = mbeanOpPanel;
             else {
-                if (currentPanel == mbeanOpPanel)
-                    currentPanel = wrapperPanel;
-                else {
-                    if (currentPanel == wrapperPanel)
+                if (currentPanel == mbeanOpPanel) {
+                    if (isExistingRessource == null)
                         currentPanel = attributePanel;
+                    else
+                        currentPanel = wAttributePanel;
+                } else {
+                    if ((currentPanel == attributePanel) || (currentPanel == wAttributePanel))
+                        currentPanel = operationPanel;
                     else {
-                        if (currentPanel == attributePanel)
+                        if (currentPanel == operationPanel)
                             currentPanel = notificationPanel;
                     }
-                }    
+                }
             }
         }
+        
     }
-    
+
 
     /**
      * Method reaffecting the current panel variable to the previous panel
      */
-    public void previousPanel ()
-    {
-        //JavaClass isExistingRessource = (JavaClass)wiz.getProperty(
-        //        (WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+    public void previousPanel() {
+        JavaClass isExistingRessource = (JavaClass)wiz.getProperty(
+                (WizardConstants.PROP_MBEAN_EXISTING_CLASS));
         
-        if (currentPanel == junitPanel) 
+        if (currentPanel == junitPanel)
             currentPanel = notificationPanel;
         else {
-            if (currentPanel == notificationPanel) 
-                currentPanel = attributePanel;
+            if (currentPanel == notificationPanel)
+                currentPanel = operationPanel;
             else {
-                if (currentPanel == attributePanel)
-                    currentPanel = wrapperPanel;
-                else {
-                    if (currentPanel == wrapperPanel)
+                if (currentPanel == operationPanel) {
+                    if (isExistingRessource == null)
+                        currentPanel = attributePanel;
+                    else
+                        currentPanel = wAttributePanel;
+                } else {
+                    if ((currentPanel == attributePanel) || (currentPanel == wAttributePanel))
                         currentPanel = mbeanOpPanel;
                     else {
                         if (currentPanel == mbeanOpPanel)
