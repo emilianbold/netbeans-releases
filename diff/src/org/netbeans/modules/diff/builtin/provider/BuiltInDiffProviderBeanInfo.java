@@ -15,7 +15,6 @@ package org.netbeans.modules.diff.builtin.provider;
 
 import java.beans.*;
 
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**

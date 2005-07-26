@@ -13,10 +13,8 @@
 
 package org.netbeans.modules.diff.builtin.provider;
 
-import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.List;
 
 import org.openide.util.NbBundle;
 
@@ -30,8 +28,6 @@ import org.netbeans.modules.diff.builtin.provider.io.LineIndexedAccess;
  * @author  Martin Entlicher
  */
 public class BuiltInDiffProvider extends DiffProvider {
-    
-    private static final int BUFF_LENGTH = 1024;
     
     /** Creates a new instance of BuiltInDiffProvider */
     public BuiltInDiffProvider() {

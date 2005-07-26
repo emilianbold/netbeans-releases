@@ -13,29 +13,18 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
-import javax.swing.JComponent;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Graphics;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Image;
 import java.util.*;
-import java.net.URL;
-import java.net.MalformedURLException;
-import java.awt.Toolkit;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import javax.swing.event.DocumentListener;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.*;
 import java.awt.FontMetrics;
 import java.awt.Insets;
-import java.awt.image.ImageObserver;
 
 import org.openide.util.NbBundle;
 
@@ -606,6 +595,7 @@ public class LinesComponent extends JComponent implements javax.accessibility.Ac
     }
     
     private static class EditorUIHelper extends EditorUI {
+        public EditorUIHelper () {}
         
         /** Gets the coloring map that can be shared by the components
           * with the same kit. Only the component coloring map is provided.

@@ -16,17 +16,11 @@ package org.netbeans.modules.diff.builtin;
 import java.awt.*;
 //import java.awt.event.ItemEvent;
 //import java.awt.event.ItemListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditorManager;
 import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyModel;

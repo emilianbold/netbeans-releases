@@ -251,12 +251,6 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         diffPanel.setDocument2(doc);
     }
     
-    private void setHighlight(StyledDocument doc, int line1, int line2, java.awt.Color color) {
-    }
-    
-    private void unhighlight(StyledDocument doc) {
-    }
-    
     public void unhighlightAll() {
         diffPanel.unhighlightAll();
     }
@@ -594,8 +588,5 @@ public class DiffComponent extends org.openide.windows.TopComponent {
          */
  
     }
-
-    private Boolean lineNumbersVisible = Boolean.FALSE;
-    
 
 }

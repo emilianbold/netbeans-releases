@@ -159,7 +159,7 @@ public class PatchAction extends NodeAction {
 
         ChooserListener listener = new PatchAction.ChooserListener(dialog,chooser);
 	chooser.addActionListener(listener);
-        dialog.show();
+        dialog.setVisible(true);
 
         return listener.getFile();
     }
@@ -189,11 +189,11 @@ public class PatchAction extends NodeAction {
             }
         }
         if (notFoundFileNames.size() > 0) {
-            String files = "";
+            StringBuffer files = new StringBuffer();
             for (int i = 0; i < notFoundFileNames.size(); i++) {
-                files += notFoundFileNames.get(i).toString();
+                files.append(notFoundFileNames.get(i).toString());
                 if (i < notFoundFileNames.size() - 1) {
-                    files += ", ";
+                    files.append(", ");
                 }
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(

@@ -20,8 +20,6 @@ import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
 import org.openide.windows.CloneableOpenSupport;
 
 import org.openide.util.NbBundle;
@@ -207,7 +205,6 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
         content.append(CONTEXT_MARK2B);
         content.append(diffInfo.getName2());
         content.append("\n");
-        int n1, n2, n3, n4;
         int contextNumLines = diffInfo.getContextNumLines();
         Difference[] diffs = diffInfo.getDifferences();
         BufferedReader br1 = new BufferedReader(diffInfo.createFirstReader());

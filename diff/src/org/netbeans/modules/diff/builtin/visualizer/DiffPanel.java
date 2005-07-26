@@ -16,7 +16,6 @@ package org.netbeans.modules.diff.builtin.visualizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 //import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -27,10 +26,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
-import org.openide.ErrorManager;
 
-import org.openide.util.HelpCtx;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.actions.CopyAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
@@ -45,14 +41,8 @@ import org.openide.util.actions.SystemAction;
  */
 public class DiffPanel extends javax.swing.JPanel {
 
-    // scroll 4 lines vertically
-    private static final double VERTICAL_SCROLL_NUM_LINES = 4.0;
-    // scroll 4 "lines" horizontally
-    private static final double HORIZONTAL_SCROLL_NUM_LINES = 4.0;
-    
 //    private AbstractDiff diff = null;
     private int totalHeight = 0;
-    private int additionalHeight = 0;
     private int totalLines = 0;
 
     //private java.awt.Color numBackgroundColor = new java.awt.Color(224, 224, 224);
@@ -63,8 +53,6 @@ public class DiffPanel extends javax.swing.JPanel {
     
     private LinesComponent linesComp1;
     private LinesComponent linesComp2;
-
-    private ArrayList closeListeners = new ArrayList();
 
     static final long serialVersionUID =3683458237532937983L;
     private static final String PLAIN_TEXT_MIME = "text/plain";
@@ -671,15 +659,6 @@ public class DiffPanel extends javax.swing.JPanel {
         numLineText.repaint();
     }
  */
-    
-    private void setScrollBarsIncrements() {
-        StyledDocument doc = (StyledDocument) jEditorPane1.getDocument();
-        int lineHeight = jEditorPane1.getSize().height/org.openide.text.NbDocument.findLineNumber(doc, doc.getEndPosition().getOffset());
-        jScrollPane1.getVerticalScrollBar().setUnitIncrement((int) (VERTICAL_SCROLL_NUM_LINES*lineHeight));
-        jScrollPane2.getVerticalScrollBar().setUnitIncrement((int) (VERTICAL_SCROLL_NUM_LINES*lineHeight));
-        jScrollPane1.getHorizontalScrollBar().setUnitIncrement((int) (HORIZONTAL_SCROLL_NUM_LINES*lineHeight));
-        jScrollPane2.getHorizontalScrollBar().setUnitIncrement((int) (HORIZONTAL_SCROLL_NUM_LINES*lineHeight));
-    }
     
     /**
      * Synchronize the font of line numbers with the editor's font.

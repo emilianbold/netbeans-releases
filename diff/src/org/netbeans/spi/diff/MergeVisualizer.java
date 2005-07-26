@@ -15,8 +15,6 @@ package org.netbeans.spi.diff;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;

@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.PushbackReader;
 import java.io.Reader;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -241,12 +240,12 @@ public class Patch extends Reader {
     }
     
     private static final String CONTEXT_MARK1B = "*** ";
-    private static final String CONTEXT_MARK1E = " ****";
+//    private static final String CONTEXT_MARK1E = " ****";
     private static final String CONTEXT_MARK2B = "--- ";
-    private static final String CONTEXT_MARK2E = " ----";
+//    private static final String CONTEXT_MARK2E = " ----";
     private static final String CONTEXT_MARK_DELIMETER = ",";
     private static final String DIFFERENCE_DELIMETER = "***************";
-    private static final String LINE_PREP = "  ";
+//    private static final String LINE_PREP = "  ";
     private static final String LINE_PREP_ADD = "+ ";
     private static final String LINE_PREP_REMOVE = "- ";
     private static final String LINE_PREP_CHANGE = "! ";
@@ -460,10 +459,10 @@ public class Patch extends Reader {
     
     private static final String UNIFIED_MARK = "@@";
     private static final String UNIFIED_MARK1 = "--- ";
-    private static final String UNIFIED_MARK2 = "+++ ";
+//    private static final String UNIFIED_MARK2 = "+++ ";
     private static final String LINE_PREP_UNIF_ADD = "+";
     private static final String LINE_PREP_UNIF_REMOVE = "-";
-    private static final String LINE_PREP_UNIF_CHANGE = null;
+//    private static final String LINE_PREP_UNIF_CHANGE = null;
 
     private static Difference[] parseUnifiedDiff(Reader in) throws IOException {
         BufferedReader br = new BufferedReader(in);

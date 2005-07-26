@@ -17,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
@@ -27,10 +26,8 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import org.openide.actions.CloseViewAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.SaveAction;
-import org.openide.util.HelpCtx;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
@@ -56,14 +53,8 @@ public class MergePanel extends javax.swing.JPanel {
     public static final String PROP_CAN_BE_SAVED = "canBeSaved"; // NOI18N
     public static final String PROP_CAN_NOT_BE_SAVED = "canNotBeSaved"; // NOI18N
     
-    // scroll 4 lines vertically
-    private static final double VERTICAL_SCROLL_NUM_LINES = 4.0;
-    // scroll 4 "lines" horizontally
-    private static final double HORIZONTAL_SCROLL_NUM_LINES = 4.0;
-    
 //    private AbstractDiff diff = null;
     private int totalHeight = 0;
-    private int additionalHeight = 0;
     private int totalLines = 0;
 
     private int horizontalScroll1ChangedValue = -1;
@@ -99,11 +90,6 @@ public class MergePanel extends javax.swing.JPanel {
     private SystemAction[] systemActions = new SystemAction[] { SaveAction.get(SaveAction.class),
                                                                 null,
                                                                 CloseMergeViewAction.get(CloseMergeViewAction.class) };
-
-    /**
-     * Used for deserialization.
-     */
-    private boolean diffSetSuccess = true;
 
     static final long serialVersionUID =3683458237532937983L;
     private static final String PLAIN_TEXT_MIME = "text/plain";
@@ -947,15 +933,6 @@ public class MergePanel extends javax.swing.JPanel {
         }
          */
         //        joinScrollBars();
-    }
-    
-    private void setScrollBarsIncrements() {
-        StyledDocument doc = (StyledDocument) jEditorPane1.getDocument();
-        int lineHeight = jEditorPane1.getSize().height/org.openide.text.NbDocument.findLineNumber(doc, doc.getEndPosition().getOffset());
-        jScrollPane1.getVerticalScrollBar().setUnitIncrement((int) (VERTICAL_SCROLL_NUM_LINES*lineHeight));
-        jScrollPane2.getVerticalScrollBar().setUnitIncrement((int) (VERTICAL_SCROLL_NUM_LINES*lineHeight));
-        jScrollPane1.getHorizontalScrollBar().setUnitIncrement((int) (HORIZONTAL_SCROLL_NUM_LINES*lineHeight));
-        jScrollPane2.getHorizontalScrollBar().setUnitIncrement((int) (HORIZONTAL_SCROLL_NUM_LINES*lineHeight));
     }
     
     private void addChangeListeners() {

@@ -99,16 +99,16 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         
         saveSources(r1, r2);
         initComponents ();
-        setName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "DiffComponent.title"));
+        setName(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "DiffComponent.title"));
         initActions();
         jSplitPane1.setResizeWeight(0.5);
         putClientProperty("PersistenceType", "Never");
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_DiffPanelA11yName"));  // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
-        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane1A11yName"));  // NOI18N
-        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
-        jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yName"));  // NOI18N
-        jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPanel.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "ACS_DiffPanelA11yName"));  // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "ACS_DiffPanelA11yDesc"));  // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "ACS_EditorPane1A11yName"));  // NOI18N
+        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "ACS_EditorPane1A11yDescr"));  // NOI18N
+        jEditorPane2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "ACS_EditorPane2A11yName"));  // NOI18N
+        jEditorPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffViewImpl.class, "ACS_EditorPane2A11yDescr"));  // NOI18N
 
         if (source1 == null) jEditorPane1.setVisible(false);
         if (source2 == null) jEditorPane2.setVisible(false);

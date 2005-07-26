@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.Map;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TabbedPaneUI;
 import org.openide.DialogDisplayer;
@@ -43,7 +42,6 @@ import org.openide.awt.JPopupMenuPlus;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.util.HelpCtx;
@@ -398,6 +396,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
     
     /** Popup menu reaction implementation */
     private class PopupMenuImpl extends MouseUtils.PopupMouseAdapter {
+        public PopupMenuImpl () {}
         
         /** Called when the seqeunce of mouse events should lead to actual
          *  showing of the popup menu. */
@@ -460,6 +459,7 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         }
         
         private class CloseCookieImpl extends Object implements CloseCookie {
+            public CloseCookieImpl () {}
         
             public boolean close() {
                 try {
