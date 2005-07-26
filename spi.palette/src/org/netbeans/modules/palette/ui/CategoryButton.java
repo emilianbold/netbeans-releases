@@ -29,8 +29,10 @@ class CategoryButton extends JCheckBox implements Autoscroll {
 
     private static final Icon openedIcon = (Icon)UIManager.get("Tree.expandedIcon"); // NOI18N
     private static final Icon closedIcon = (Icon)UIManager.get("Tree.collapsedIcon"); // NOI18N
-    static final Color BK_COLOR = UIManager.getColor("Aqua".equals(UIManager.getLookAndFeel().getID()) // NOI18N
-        ? "Table.selectionBackground" : "PropSheet.setBackground"); // NOI18N
+    static final Color BK_COLOR = "GTK".equals(UIManager.getLookAndFeel().getID()) // NOI18N
+        ? new Color( 184,207,229 ) 
+            : UIManager.getColor("Aqua".equals(UIManager.getLookAndFeel().getID()) // NOI18N
+                ? "Table.selectionBackground" : "PropSheet.setBackground"); // NOI18N
 
     private CategoryDescriptor descriptor;
     private Category category;
