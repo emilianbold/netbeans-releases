@@ -45,6 +45,10 @@
                         <label>src</label>
                         <location>src</location>
                     </source-folder>
+                    <source-folder style="packages">
+                        <label>customcode/src</label>
+                        <location>customcode/src</location>
+                    </source-folder>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
@@ -62,7 +66,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">${ismp.home}/lib/platform.jar:${ismp.home}/lib/product.jar:${ismp.home}/lib/wizard.jar:${ismp.home}/lib/xt.jar:${ismp.home}/ppk/linuxppk.jar:${ismp.home}/ppk/solarisppk.jar:${ismp.home}/ppk/win32ppk.jar</classpath>
+                <classpath mode="compile">${compile.classpath}</classpath>
                 <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
