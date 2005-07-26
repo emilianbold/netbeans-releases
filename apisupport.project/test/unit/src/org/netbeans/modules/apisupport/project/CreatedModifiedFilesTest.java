@@ -15,10 +15,17 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.LayerCallback;
@@ -32,6 +39,25 @@ import org.openide.filesystems.FileUtil;
  * @author Martin Krauskopf
  */
 public class CreatedModifiedFilesTest extends TestBase {
+
+    private static final String[] HTML_CONTENT = new String[] {
+        "<html>",
+        "<em>i am some template</em>",
+        "</html>"
+    };
+    
+    private static final Map TOKENS_MAP = new HashMap(2);
+    
+    static {
+        TOKENS_MAP.put("some", "a\\ nonsense");
+        TOKENS_MAP.put("\\<(\\/{0,1})em\\>", "<$1strong>");
+    }
+    
+    private static final String[] HTML_CONTENT_TOKENIZED = new String[] {
+        "<html>",
+        "<strong>i am a nonsense template</strong>",
+        "</html>"
+    };
     
     public CreatedModifiedFilesTest(String name) {
         super(name);
@@ -43,17 +69,18 @@ public class CreatedModifiedFilesTest extends TestBase {
         cmf.add(cmf.bundleKeyDefaultBundle(LocalizedBundleInfo.NAME, "Much Better Name"));
         cmf.add(cmf.bundleKey("src/custom.properties", "some.property", "some value"));
         cmf.add(cmf.addLoaderSection("org/example/module1/MyExtLoader"));
+        cmf.add(cmf.createFile("src/org/example/module1/resources/template.html", createFile(HTML_CONTENT)));
         cmf.add(cmf.addLookupRegistration(
                 "org.example.spi.somemodule.ProvideMe",
                 "org.example.module1.ProvideMeImpl"));
         
-        assertRelativePath(
-                "src/META-INF/services/org.example.spi.somemodule.ProvideMe",
+        assertRelativePaths(
+                new String[] {"src/META-INF/services/org.example.spi.somemodule.ProvideMe", "src/custom.properties", "src/org/example/module1/resources/template.html"},
                 cmf.getCreatedPaths());
         assertRelativePaths(
-                new String[] {"manifest.mf", "src/custom.properties", "src/org/example/module1/resources/Bundle.properties"},
+                new String[] {"manifest.mf", "src/org/example/module1/resources/Bundle.properties"},
                 cmf.getModifiedPaths());
-                
+
         cmf.run();
     }
     
@@ -80,7 +107,7 @@ public class CreatedModifiedFilesTest extends TestBase {
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation op = cmf.bundleKey("src/custom.properties", "some.property", "some value");
         
-        assertRelativePath("src/custom.properties", op.getModifiedPaths());
+        assertRelativePath("src/custom.properties", op.getCreatedPaths());
         
         cmf.add(op);
         cmf.run();
@@ -115,6 +142,38 @@ public class CreatedModifiedFilesTest extends TestBase {
         
         cmf.add(op);
         cmf.run();
+    }
+    
+    public void testCreateFile() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        
+        String templatePath = "src/org/example/module1/resources/template.html";
+        Operation op = cmf.createFile(templatePath, createFile(HTML_CONTENT));
+        
+        assertRelativePath(templatePath, op.getCreatedPaths());
+        
+        cmf.add(op);
+        cmf.run();
+        
+        assertFileContent(HTML_CONTENT, new File(getWorkDir(), "module1/" + templatePath));
+    }
+    
+    public void testCreateFileWithSubstitutions() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        
+        String templatePath = "src/org/example/module1/resources/template.html";
+        Operation op = cmf.createFileWithSubstitutions(templatePath, createFile(HTML_CONTENT), TOKENS_MAP);
+        
+        assertRelativePath(templatePath, op.getCreatedPaths());
+        
+        cmf.add(op);
+        cmf.run();
+        
+        assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + templatePath));
     }
     
     public void testCreateLayerEntry() throws Exception {
@@ -200,6 +259,32 @@ public class CreatedModifiedFilesTest extends TestBase {
     
     private void assertRelativePaths(String[] expectedPaths, SortedSet paths) {
         assertEquals("created, modified paths", Arrays.asList(expectedPaths).toString(), paths.toString());
+    }
+    
+    private URL createFile(String[] content) throws IOException {
+        File myTemplate = getWorkDir().createTempFile("myTemplate", "html");
+        OutputStream myTemplateOS = new FileOutputStream(myTemplate);
+        PrintWriter pw = new PrintWriter(myTemplateOS);
+        try {
+            for (int i = 0; i < content.length; i++) {
+                pw.println(content[i]);
+            }
+        } finally {
+            pw.close();
+        }
+        return myTemplate.toURI().toURL();
+    }
+    
+    private void assertFileContent(String[] content, File file) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        try {
+            for (int i = 0; i < content.length; i++) {
+                assertEquals("file content", content[i], br.readLine());
+            }
+            assertNull(br.readLine());
+        } finally {
+            br.close();
+        }
     }
     
 }

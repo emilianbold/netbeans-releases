@@ -100,13 +100,6 @@ public class CreatedModifiedFiles {
         }
     }
     
-//    private void addFiles(SortedSet/*<File>*/ fileSet, String[] relPaths) {
-//        for (int i = 0; i < relPaths.length; i++) {
-//            fileSet.add(FileUtil.toFile(
-//                    project.getProjectDirectory().getFileObject(relPaths[i])));
-//        }
-//    }
-    
     /**
      * Returns a sorted set of path which are going to created after this
      * {@link CreatedModifiedFiles} instance is run. Paths are relative to the
@@ -156,13 +149,33 @@ public class CreatedModifiedFiles {
         void run() throws IOException;
     }
     
+    /**
+     * Returns {@link Operation} for creating custom file in the project file
+     * hierarchy.
+     * @param path where a file to be created
+     * @param content content for the file being created
+     */
     public Operation createFile(String path, URL content) {
-        return null;
+        return new CreateFile(path, content);
     }
     
+    /**
+     * Returns an {@link Operation} for creating custom file in the project
+     * file hierarchy with an option to replace <em>token</em>s from a given
+     * <code>content</code> with custom string. The result will be stored into
+     * a file representing by a given <code>path</code>.
+     *
+     * @param path where a file to be created
+     * @param content content for the file being created
+     * @param tokens map of <em>token to be replaced</em> - <em>by what</em>
+     *        pairs which will be applied on the stored file. Both a key and a
+     *        value have to be a valid regular expression. See {@link
+     *        java.lang.String#replaceAll(String, String)} and follow links in
+     *        its javadoc for more details.
+     */
     public Operation createFileWithSubstitutions(String path,
             URL content, Map/*<String,String>*/ tokens) {
-        return null;
+        return new CreateFile(path, content, tokens);
     }
     
     /**
@@ -287,6 +300,14 @@ public class CreatedModifiedFiles {
             return (String[]) getCreatedPathsSet().toArray(s);
         }
         
+        protected void addCreatedOrModifiedPath(String relPath) {
+            if (project.getProjectDirectory().getFileObject(relPath) == null) {
+                getCreatedPathsSet().add(relPath);
+            } else {
+                getModifiedPathsSet().add(relPath);
+            }
+        }
+        
         protected SortedSet/*<String>*/ getCreatedPathsSet() {
             if (createdPaths == null) {
                 createdPaths = new TreeSet();
@@ -311,6 +332,53 @@ public class CreatedModifiedFiles {
         
     }
     
+    private final class CreateFile extends OperationBase {
+        
+        private String path;
+        private URL content;
+        private Map/*<String,String>*/ tokens;
+        
+        public CreateFile(String path, URL content) {
+            this(path, content, null);
+        }
+        
+        public CreateFile(String path, URL content, Map/*<String,String>*/ tokens) {
+            this.path = path;
+            this.content = content;
+            this.tokens = tokens;
+            addCreatedOrModifiedPath(path);
+        }
+
+        public void run() throws IOException {
+            FileObject targetFO = FileUtil.createData(project.getProjectDirectory(), path);
+            FileLock lock = targetFO.lock();
+            try {
+                PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
+                BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
+                InputStream is = content.openStream();
+                try {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        pw.println(tokens == null ? line : replaceTokens(line));
+                    }
+                } finally {
+                    br.close();
+                    pw.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+        }
+        
+        private String replaceTokens(String line) {
+            for (Iterator it = tokens.entrySet().iterator(); it.hasNext(); ) {
+                Map.Entry entry = (Map.Entry) it.next();
+                line = line.replaceAll((String) entry.getKey(), (String) entry.getValue());
+            }
+            return line;
+        }
+        
+    }
     
     private final class BundleKey extends OperationBase {
         
@@ -322,15 +390,12 @@ public class CreatedModifiedFiles {
             this.bundlePath = bundlePath;
             this.key = key;
             this.value = value;
-            getModifiedPathsSet().add(bundlePath);
+            addCreatedOrModifiedPath(bundlePath);
         }
         
         public void run() throws IOException {
             FileObject prjDir = project.getProjectDirectory();
-            FileObject bundleFO = prjDir.getFileObject(bundlePath);
-            if (bundleFO == null) {
-                bundleFO = FileUtil.createData(prjDir, bundlePath);
-            }
+            FileObject bundleFO = FileUtil.createData(prjDir, bundlePath);
             EditableProperties ep = Util.loadProperties(bundleFO);
             ep.setProperty(key, value);
             Util.storeProperties(bundleFO, ep);
@@ -370,11 +435,7 @@ public class CreatedModifiedFiles {
             this.implClass = implClass;
             this.interfaceClassPath = project.getSourceDirectoryPath() +
                     "/META-INF/services/" + interfaceClass; // NOI18N
-            if (project.getProjectDirectory().getFileObject(interfaceClassPath) == null) {
-                getCreatedPathsSet().add(interfaceClassPath);
-            } else {
-                getModifiedPathsSet().add(interfaceClassPath);
-            }
+            addCreatedOrModifiedPath(interfaceClassPath);
         }
         
         public void run() throws IOException {
