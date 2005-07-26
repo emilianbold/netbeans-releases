@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
@@ -50,12 +53,16 @@ final class EditDependencyPanel extends JPanel {
         if (anyAvailablePkg) {
             // XXX should show all subpackages in the case of recursion is set
             // to true instead of e.g. org/**
+            SortedSet/*<String>*/ packages = new TreeSet();
             for (int i = 0; i < pp.length; i++) {
-                model.addElement(pp[i].getPackage() + 
-                        (pp[i].isRecursive() ? "/**" : ""));
+                packages.add(pp[i].getPackage() + (pp[i].isRecursive() ? ".**" : "")); // NOI18N
+            }
+            Iterator it = packages.iterator();
+            while (it.hasNext()) {
+                model.addElement((String) it.next());
             }
         } else {
-            model.addElement("<empty>"); // NOI18N
+            model.addElement("<empty>"); // XXX I18N
         }
         availablePkg.setModel(model);
         versionChanged(null);
