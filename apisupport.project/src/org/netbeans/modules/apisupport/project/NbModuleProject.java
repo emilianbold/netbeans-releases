@@ -236,6 +236,11 @@ public final class NbModuleProject implements Project {
         return helper.getProjectDirectory();
     }
     
+    /** Returns a relative path to a project's source directory. */
+    public String getProjectDirectoryPath() {
+        return evaluator().getProperty("src.dir"); // NOI18N
+    }
+    
     // XXX get rid of this method. Use NbModuleProjectType.NbModuleType instead
     public int getModuleType() {
         Element data = getHelper().getPrimaryConfigurationData(true);
