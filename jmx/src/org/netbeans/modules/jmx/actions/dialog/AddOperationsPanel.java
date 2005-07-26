@@ -91,7 +91,8 @@ public class AddOperationsPanel extends javax.swing.JPanel
         operationTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(operationTable);
         operationTable.getSelectionModel().addListSelectionListener(this);
-       
+        opTableLabel.setLabelFor(operationTable);
+        
         //discovery of existing Operations
         MBeanOperation[] existOperations = Introspector.getOperations(currentClass);
         for (int i = 0; i < existOperations.length; i++)
@@ -106,6 +107,8 @@ public class AddOperationsPanel extends javax.swing.JPanel
                 operationTable, operationModel, removeButton,this));
         
         // init labels
+        Mnemonics.setLocalizedText(opTableLabel,
+                     bundle.getString("LBL_Operations")); // NOI18N
         Mnemonics.setLocalizedText(addButton,
                      bundle.getString("LBL_Button_AddOperation")); // NOI18N
         Mnemonics.setLocalizedText(removeButton,
@@ -225,17 +228,20 @@ public class AddOperationsPanel extends javax.swing.JPanel
         removeButton = new javax.swing.JButton();
         addButton = new javax.swing.JButton();
         stateLabel = new javax.swing.JLabel();
+        opTableLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(380, 300));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
         buttonsPanel.setLayout(new java.awt.BorderLayout());
@@ -260,7 +266,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -270,13 +276,22 @@ public class AddOperationsPanel extends javax.swing.JPanel
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 12);
         add(stateLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
+        add(opTableLabel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -287,6 +302,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel leftPanel;
+    private javax.swing.JLabel opTableLabel;
     private javax.swing.JButton removeButton;
     private javax.swing.JLabel stateLabel;
     // End of variables declaration//GEN-END:variables

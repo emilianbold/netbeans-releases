@@ -90,6 +90,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         attributeTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(attributeTable);
         attributeTable.getSelectionModel().addListSelectionListener(this);
+        attrTableLabel.setLabelFor(attributeTable);
        
         //discovery of existing Attributes
         MBeanAttribute[] existAttributes = Introspector.getAttributes(currentClass);
@@ -105,6 +106,8 @@ public class AddAttributesPanel extends javax.swing.JPanel
                 attributeTable, attributeModel, removeButton,this));
         
         // init labels
+        Mnemonics.setLocalizedText(attrTableLabel,
+                     bundle.getString("LBL_Attributes")); // NOI18N
         Mnemonics.setLocalizedText(addButton,
                      bundle.getString("LBL_Button_AddAttribute")); // NOI18N
         Mnemonics.setLocalizedText(removeButton,
@@ -215,17 +218,20 @@ public class AddAttributesPanel extends javax.swing.JPanel
         removeButton = new javax.swing.JButton();
         addButton = new javax.swing.JButton();
         stateLabel = new javax.swing.JLabel();
+        attrTableLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(380, 300));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
         buttonsPanel.setLayout(new java.awt.BorderLayout());
@@ -250,7 +256,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -260,7 +266,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -268,12 +274,22 @@ public class AddAttributesPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 12);
         add(stateLabel, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 12);
+        add(attrTableLabel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JLabel attrTableLabel;
     private javax.swing.JPanel buttonsPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel leftPanel;
