@@ -101,6 +101,19 @@ public class Translator {
         addOperations(wiz,mbean);
         addNotifications(wiz,mbean);
         
+        // retrieve informations about MBeanRegistration interface
+        Boolean implMBRegist = (Boolean) 
+            wiz.getProperty(WizardConstants.PROP_MBEAN_IMPL_REG_ITF);
+        if (implMBRegist == null)
+            implMBRegist = false;
+        mbean.setImplMBeanRegist(implMBRegist);
+        
+        Boolean keepRef = (Boolean) 
+            wiz.getProperty(WizardConstants.PROP_MBEAN_PRE_REG_PARAM); 
+        if (keepRef == null)
+            keepRef = false;
+        mbean.setKeepPreRegistRef(keepRef);
+        
         return mbean;
     }
     

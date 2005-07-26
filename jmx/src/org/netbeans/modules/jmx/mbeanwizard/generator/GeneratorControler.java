@@ -67,7 +67,8 @@ public class GeneratorControler {
         if (mbeanDO.implMBeanRegist()) {
             AddRegistIntfGenerator mbeanRegistGen = new AddRegistIntfGenerator();
             //TODO link to mbean wizard settings
-            mbeanRegistGen.update(mbeanClass, mbeanClass.getResource(),true);
+            mbeanRegistGen.update(mbeanClass, mbeanClass.getResource(),
+                    mbeanDO.isKeepPreRegistRef());
         }
         
         result.addCreated(createdFile);
