@@ -26,119 +26,126 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-  <folder name="Templates">
+    <folder name="Templates">
  
-    <attr name="Package/Ant" boolvalue="true"/>
-    <folder name="Ant">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-      <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
-      <file name="Project.xml" url="Project.xml_">
-        <attr name="template" boolvalue="true"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
-        <attr name="templateCategory" stringvalue="ant-script"/>
-      </file>
-      <attr name="Project.xml/CustomTask.java" boolvalue="true"/>
-      <file name="CustomTask.java" url="CustomTask_java">
-        <attr name="template" boolvalue="true"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <!-- XXX #44054: implies a runtime dep on java/project module: -->
-        <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-        <attr name="instantiatingIteratorURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
-        <attr name="templateCategory" stringvalue="ant-task"/>
-      </file>
+        <attr name="Package/Ant" boolvalue="true"/>
+        <folder name="Ant">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
+            <file name="Project.xml" url="Project.xml_">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/ProjectDescription.html"/>
+                <attr name="templateCategory" stringvalue="ant-script"/>
+            </file>
+            <attr name="Project.xml/CustomTask.java" boolvalue="true"/>
+            <file name="CustomTask.java" url="CustomTask_java">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+                <!-- XXX #44054: implies a runtime dep on java/project module: -->
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="instantiatingIteratorURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/CustomTaskDescription.html"/>
+                <attr name="templateCategory" stringvalue="ant-task"/>
+            </file>
+        </folder>
+        <attr name="Classes/Ant" boolvalue="true"/>
+        <attr name="Ant/Other" boolvalue="true"/>
+
     </folder>
-    <attr name="Classes/Ant" boolvalue="true"/>
-    <attr name="Ant/Other" boolvalue="true"/>
-
-  </folder>
-
-  <folder name="Services">
-
-    <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-    </file>
-
-    <!-- Recognize text/x-ant+xml: -->
-    <folder name="MIMEResolver">
-      <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-      </file>
-    </folder>
-
-    <folder name="Hidden">
-      <!-- To make the module nicer to debug, list the cookies it provides. -->
-      <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
-    </folder>
-
-  </folder>
-
-  <folder name="UI">
 
     <folder name="Services">
 
-      <folder name="Building">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-        <file name="org-apache-tools-ant-module-AntSettings.shadow">
-          <attr name="originalFile" stringvalue="Services/org-apache-tools-ant-module-AntSettings.settings"/>
+        <file name="org-apache-tools-ant-module-AntSettings.settings" url="AntSettings.settings">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
         </file>
-      </folder> <!-- Building -->
 
-    </folder> <!-- Services -->
-
-  </folder> <!-- UI -->
-
-  <!-- Lines marked as erroneous: -->
-  <folder name="Editors">
-    <folder name="AnnotationTypes">
-      <file name="org-apache-tools-ant-module-error.xml" url="error-annotation.xml"/>
-    </folder>
-  </folder>
-  
-  <folder name="Loaders">
-    <folder name="text">
-      <folder name="x-ant+xml">
-        <folder name="Actions">
-          <file name="org-openide-actions-OpenAction.instance"/>
-          <attr name="org-openide-actions-OpenAction.instance/org-apache-tools-ant-module-nodes-RunTargetsAction.instance" boolvalue="true"/>
-          <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance"/>
-          <attr name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-FileSystemAction.instance"/>
-          <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
-          <file name="sep-1.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-CutAction.instance"/>
-          <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-CopyAction.instance"/>
-          <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
-          <file name="sep-2.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-DeleteAction.instance"/>
-          <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-RenameAction.instance"/>
-          <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
-          <file name="sep-3.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-          <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
-          <file name="sep-4.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-ToolsAction.instance"/>
-          <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-PropertiesAction.instance"/>
+        <!-- Recognize text/x-ant+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+            </file>
         </folder>
-      </folder>
+
+        <folder name="Hidden">
+            <!-- To make the module nicer to debug, list the cookies it provides. -->
+            <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
+        </folder>
+
     </folder>
-  </folder>
+
+    <folder name="UI">
+
+        <folder name="Services">
+
+            <folder name="Building">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
+                <file name="org-apache-tools-ant-module-AntSettings.shadow">
+                    <attr name="originalFile" stringvalue="Services/org-apache-tools-ant-module-AntSettings.settings"/>
+                </file>
+            </folder> <!-- Building -->
+
+        </folder> <!-- Services -->
+
+    </folder> <!-- UI -->
+
+    <!-- Lines marked as erroneous: -->
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="org-apache-tools-ant-module-error.xml" url="error-annotation.xml"/>
+        </folder>
+        <folder name="text">
+            <folder name="x-ant+xml">
+                <folder name="Popup"> <!-- #20203 -->
+                    <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+  
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-ant+xml">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    <attr name="org-openide-actions-OpenAction.instance/org-apache-tools-ant-module-nodes-RunTargetsAction.instance" boolvalue="true"/>
+                    <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance"/>
+                    <attr name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>

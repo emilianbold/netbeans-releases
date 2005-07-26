@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,9 +15,12 @@ package org.apache.tools.ant.module.loader;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -28,7 +31,7 @@ import org.openide.nodes.Node;
 
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
-    public AntProjectDataObject(FileObject pf, AntProjectDataLoader loader) throws DataObjectExistsException {
+    public AntProjectDataObject(FileObject pf, AntProjectDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
         cookies.add (new AntProjectDataEditor (this));
@@ -39,6 +42,7 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
             MultiDataObject.Entry pe = getPrimaryEntry ();
             cookies.add (new AntActionInstance (proj));
         }
+        cookies.add(new CheckXMLSupport(DataObjectAdapters.inputSource(this)));
         addPropertyChangeListener (this);
     }
     

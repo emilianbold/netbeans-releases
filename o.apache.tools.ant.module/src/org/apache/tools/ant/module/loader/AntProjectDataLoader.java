@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
  */
 public class AntProjectDataLoader extends UniFileLoader {
 
-    private static final String REQUIRED_MIME = "text/x-ant+xml"; // NOI18N
+    public static final String REQUIRED_MIME = "text/x-ant+xml"; // NOI18N
     private static final String KNOWN_ANT_FILE = "org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
     private static final String KNOWN_ANT_FILE_OLD = "org.apache.tools.ant.module.AntProjectDataLoader.KNOWN_ANT_FILE"; // NOI18N
     private static final String KNOWN_ANT_FILENAME = "build.xml"; // NOI18N

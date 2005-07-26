@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * Contributor(s): Jesse Glick.
@@ -39,7 +39,7 @@ final class AntProjectDataEditor extends DataEditorSupport implements OpenCookie
 
     public AntProjectDataEditor (AntProjectDataObject obj) {
         super (obj, new AntEnv (obj));
-        setMIMEType ("text/xml"); // NOI18N
+        setMIMEType(AntProjectDataLoader.REQUIRED_MIME);
     }
 
     protected boolean notifyModified () {
