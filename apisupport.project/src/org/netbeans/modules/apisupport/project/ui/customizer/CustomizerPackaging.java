@@ -55,8 +55,6 @@ final class CustomizerPackaging extends NbPropertyPanel {
 
         license = new javax.swing.JLabel();
         licenseValue = new javax.swing.JTextField();
-        cluster = new javax.swing.JLabel();
-        clusterValue = new javax.swing.JComboBox();
         homePage = new javax.swing.JLabel();
         homePageValue = new javax.swing.JTextField();
         nbmPkgMetadata = new javax.swing.JLabel();
@@ -90,28 +88,6 @@ final class CustomizerPackaging extends NbPropertyPanel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
         add(licenseValue, gridBagConstraints);
 
-        cluster.setLabelFor(clusterValue);
-        org.openide.awt.Mnemonics.setLocalizedText(cluster, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_Cluster"));
-        cluster.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
-        add(cluster, gridBagConstraints);
-
-        clusterValue.setEditable(true);
-        clusterValue.setEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        add(clusterValue, gridBagConstraints);
-
         homePage.setLabelFor(homePageValue);
         org.openide.awt.Mnemonics.setLocalizedText(homePage, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_HomePage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -139,7 +115,7 @@ final class CustomizerPackaging extends NbPropertyPanel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         add(nbmPkgMetadata, gridBagConstraints);
 
-        author.setLabelFor(homePageValue);
+        author.setLabelFor(authorValue);
         org.openide.awt.Mnemonics.setLocalizedText(author, org.openide.util.NbBundle.getMessage(CustomizerPackaging.class, "LBL_Author"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -235,8 +211,6 @@ final class CustomizerPackaging extends NbPropertyPanel {
     private javax.swing.JLabel author;
     private javax.swing.JTextField authorValue;
     private javax.swing.JButton browseLicense;
-    private javax.swing.JLabel cluster;
-    private javax.swing.JComboBox clusterValue;
     private javax.swing.JLabel filler;
     private javax.swing.JLabel homePage;
     private javax.swing.JTextField homePageValue;
