@@ -7,35 +7,32 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.xml.cookies;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-
-import org.xml.sax.*;
-
+import java.io.Reader;
+import java.net.URL;
 import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
-
-import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.cookies.*;
-import org.openide.util.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileStateInvalidException;
-
 import org.netbeans.api.xml.parsers.DocumentInputSource;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.loaders.DataObject;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
 /**
  * Adapt <code>DataObject</code> to other common XML interfaces.
@@ -152,7 +149,7 @@ public final class DataObjectAdapters {
         String systemId = null;
         try {
             FileObject fileObject = dataObject.getPrimaryFile();
-            URL url = preferFileURL (fileObject);
+            URL url = fileObject.getURL();
             systemId = url.toExternalForm();
         } catch (FileStateInvalidException exc) {
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
@@ -162,28 +159,6 @@ public final class DataObjectAdapters {
         return systemId;
     }
 
-    /**
-     * If possible it finds "file:" URL if <code>fileObject</code> is on LocalFileSystem.
-     * @return URL of <code>fileObject</code>.
-     */
-    private static URL preferFileURL (FileObject fileObject) throws FileStateInvalidException {
-        URL fileURL = null;
-        File file = FileUtil.toFile (fileObject);
-        
-        if ( file != null ) {
-            try {
-                fileURL = file.toURL();
-            } catch (MalformedURLException exc) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
-
-                fileURL = fileObject.getURL();
-            }
-        } else {
-            fileURL = fileObject.getURL();
-        }
-        return fileURL;
-    }
-    
     private static synchronized SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
         if ( saxParserFactory == null ) {
             saxParserFactory = SAXParserFactory.newInstance();
