@@ -31,7 +31,6 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
@@ -136,23 +135,23 @@ public class CreatedModifiedFiles {
      * more information.
      */
     public interface Operation {
-
+        
         /**
-        * Returns sorted array of path which are going to modified after this
-        * {@link CreatedModifiedFiles} instance is run. Paths are relative to
-        * the project's base directory. It is available immediately after an
-        * operation instance is created.
-        */
+         * Returns sorted array of path which are going to modified after this
+         * {@link CreatedModifiedFiles} instance is run. Paths are relative to
+         * the project's base directory. It is available immediately after an
+         * operation instance is created.
+         */
         String[] getModifiedPaths();
-
+        
         /**
-        * Returns sorted array of path which are going to created after this
-        * {@link CreatedModifiedFiles} instance is run. Paths are relative to
-        * the project's base directory. It is available immediately after an
-        * operation instance is created.
-        */
+         * Returns sorted array of path which are going to created after this
+         * {@link CreatedModifiedFiles} instance is run. Paths are relative to
+         * the project's base directory. It is available immediately after an
+         * operation instance is created.
+         */
         String[] getCreatedPaths();
-
+        
         /** Perform this operation. */
         void run() throws IOException;
     }
@@ -182,7 +181,7 @@ public class CreatedModifiedFiles {
      */
     public Operation bundleKeyDefaultBundle(String key, String value) {
         ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
-        String srcDir = project.evaluator().getProperty("src.dir"); // NOI18N
+        String srcDir = project.getProjectDirectoryPath();
         return new BundleKey(srcDir + "/" + mm.getLocalizingBundle(), // NOI18N
                 key, value);
     }
@@ -224,24 +223,54 @@ public class CreatedModifiedFiles {
         return null;
     }
     
+    /**
+     * <em>Converts</em> a given {@link LayerCallback} into an {@link
+     * Operation} so it may be run within a {@link CreatedModifiedFiles}
+     * instance. Also methods for obtaining created and modified paths may be
+     * used on the returned instance.
+     *
+     * @param callback <code>LayerCallback</code> instance you want to wrap
+     * @return operation wrapping a given callback
+     */
     public Operation layerOperation(LayerCallback callback) {
-        return null;
+        return new LayerOperation(callback);
     }
     
+    /**
+     * Performs a project's layer related operation. It may also modify and/or
+     * create other files as well. See also {@link
+     * CreatedModifiedFiles#layerOperation(LayerCallback)}.
+     */
     public interface LayerCallback {
-        void run(FileSystem layer, FileSystem universe) throws IOException;
+        /** Perform this instance. */
+        void run() throws IOException;
     }
     
+    /**
+     * Creates an entry (<em>file</em> element) in the project's layer. Also
+     * may create and/or modify other files as it is needed.
+     *
+     * @param layerPath path in a project's layer. Folders which don't exist
+     *        yet will be created. (e.g.
+     *        <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
+     * @param contentResourcePath represents an <em>url</em> attribute of entry
+     *        being created
+     * @param content <b>not used yet</b>
+     * @param localizedDisplayName <b>not used yet</b>
+     * @param substitutionTokens <b>not used yet</b>
+     * @return see {@link LayerCallback}
+     */
     public LayerCallback createLayerEntry(String layerPath, String
             contentResourcePath, URL content, String localizedDisplayName,
             Map/*<String,String>*/ substitutionTokens) {
-        return null;
+        return new LayerEntry(layerPath, contentResourcePath);
     }
     
     public LayerCallback orderLayerEntry(String layerPath, String
             precedingItemName, String followingItemName) {
         return null;
     }
+    
     
     private abstract class OperationBase implements Operation {
         
@@ -339,7 +368,7 @@ public class CreatedModifiedFiles {
         public AddLookupRegistration(String interfaceClass, String implClass) {
             this.interfaceClass = interfaceClass;
             this.implClass = implClass;
-            this.interfaceClassPath = project.evaluator().getProperty("src.dir") + // NOI18N
+            this.interfaceClassPath = project.getProjectDirectoryPath() +
                     "/META-INF/services/" + interfaceClass; // NOI18N
             if (project.getProjectDirectory().getFileObject(interfaceClassPath) == null) {
                 getCreatedPathsSet().add(interfaceClassPath);
@@ -383,6 +412,41 @@ public class CreatedModifiedFiles {
                 lock.releaseLock();
             }
             
+        }
+    }
+    
+    private final class LayerEntry implements LayerCallback {
+        
+        private String layerPath;
+        private String contentResourcePath;
+        
+        public LayerEntry(String layerPath, String contentResourcePath) {
+            this.layerPath = layerPath;
+            this.contentResourcePath = contentResourcePath;
+        }
+        
+        public void run() throws IOException {
+            ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
+            String srcDir = project.getProjectDirectoryPath();
+            String layerFile = srcDir + "/" + mm.getLayer(); // NOI18N
+            LayerUtil.createFile(project.getProjectDirectory(), layerFile,
+                    layerPath, contentResourcePath);
+        }
+    }
+    
+    private final class LayerOperation extends OperationBase {
+        
+        private LayerCallback callback;
+        
+        public LayerOperation(LayerCallback callback) {
+            ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
+            String srcDir = project.getProjectDirectoryPath();
+            getModifiedPathsSet().add(srcDir + "/" + mm.getLayer());
+            this.callback = callback;
+        }
+        
+        public void run() throws IOException {
+            callback.run();
         }
     }
     
