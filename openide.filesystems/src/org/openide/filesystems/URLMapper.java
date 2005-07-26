@@ -90,9 +90,11 @@ public abstract class URLMapper {
     private static List /*<URLMapper>*/ cache;
 
     /** Find a good URL for this file object which works according to type:
-     * -inside this VM
-     * - inside this machine
-     * - from networked machines
+     * <ul>
+     * <li>inside this VM
+     * <li>inside this machine
+     * <li>from networked machines
+     * </ul>
      * @return a suitable URL, or null
      */
     public static URL findURL(FileObject fo, int type) {
@@ -135,9 +137,11 @@ public abstract class URLMapper {
     }
 
     /** Get a good URL for this file object which works according to type:
-     * -inside this VM
-     * - inside this machine
-     * - from networked machines
+     * <ul>
+     * <li>inside this VM
+     * <li>inside this machine
+     * <li>from networked machines
+     * </ul>
      * The implementation can't use neither {@link FileUtil#toFile} nor {@link FileUtil#toFileObject}
      * otherwise StackOverflowError maybe thrown.
      * @return a suitable URL, or null
