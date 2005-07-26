@@ -70,7 +70,7 @@ class CommitTable implements MouseListener, AncestorListener {
     private void setDefaultColumnSizes() {
         int width = table.getWidth();
         TableColumnModel columnModel = table.getColumnModel();
-        if (columnModel == null) return; 
+        if (columns == null || columnModel == null) return; // unsure when this methed will be called (component realization) 
         if (columnModel.getColumnCount() != columns.length) return; 
         if (columns.length == 4) {
             for (int i = 0; i < columns.length; i++) {
