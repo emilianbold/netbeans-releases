@@ -386,40 +386,24 @@ public class WizardHelpers
      */
     public static String getFullTypeName(String type) {
         String resultType = type;
-        if (type.equals(WizardConstants.BOOLEAN_NAME)) {
-            resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME + WizardConstants.TYPE;
-        } else if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
+        if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
             resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME;
-        } else if (type.equals(WizardConstants.BYTE_NAME)) {
-            resultType = WizardConstants.BYTE_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.BYTE_OBJ_NAME)) {
             resultType = WizardConstants.BYTE_OBJ_FULLNAME;
-        } else if (type.equals(WizardConstants.CHAR_NAME)) {
-            resultType = WizardConstants.CHAR_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.CHAR_OBJ_NAME)) {
             resultType = WizardConstants.CHAR_OBJ_FULLNAME;
-        } else if (type.equals(WizardConstants.INT_NAME)) {
-            resultType = WizardConstants.INTEGER_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.INTEGER_OBJ_NAME)) {
             resultType = WizardConstants.INTEGER_OBJ_FULLNAME;
-        } else if (type.equals(WizardConstants.LONG_NAME)) {
-            resultType = WizardConstants.LONG_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.LONG_OBJ_NAME)) {
             resultType = WizardConstants.LONG_OBJ_FULLNAME;
-        } else if (type.equals(WizardConstants.VOID_NAME)) {
-            resultType = WizardConstants.VOID_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.DATE_OBJ_NAME)) {
             resultType = WizardConstants.DATE_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
             resultType = WizardConstants.STRING_OBJ_FULLNAME;
         } else if (type.equals(WizardConstants.OBJECTNAME_NAME)) {
             resultType = WizardConstants.OBJECTNAME_FULLNAME;
-        } else if (type.equals(WizardConstants.FLOAT_NAME)) {
-            resultType = WizardConstants.FLOAT_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.FLOAT_OBJ_NAME)) {
             resultType = WizardConstants.FLOAT_OBJ_FULLNAME;
-        } else if (type.equals(WizardConstants.DOUBLE_NAME)) {
-            resultType = WizardConstants.DOUBLE_OBJ_FULLNAME + WizardConstants.TYPE;
         } else if (type.equals(WizardConstants.DOUBLE_OBJ_NAME)) {
             resultType = WizardConstants.DOUBLE_OBJ_FULLNAME;
         } else {
@@ -648,6 +632,8 @@ public class WizardHelpers
                 signBegin + 1, signEnd).split(",");// NOI18N
         if ((params.length == 1) && (params[0].equals("")))// NOI18N
             params = new String[] {};
+        for (int i = 0; i < params.length; i++)
+            params[i] = params[i].trim();
         return params;
     }
     

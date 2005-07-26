@@ -60,6 +60,7 @@ public class ManagementAllAction extends SystemAction implements Presenter.Menu,
                 SystemAction.get(AddOpAction.class),
                 SystemAction.get(AddNotifAction.class),
                 SystemAction.get(AddRegisterIntfAction.class),
+                SystemAction.get(GenJUnitTestAction.class),
                 null,
                 SystemAction.get(RegisterMBeanAction.class)
             };
