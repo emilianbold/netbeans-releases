@@ -15,6 +15,7 @@ package org.netbeans.installer;
 
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
+import com.installshield.util.MnemonicString;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
@@ -140,7 +141,12 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         logEvent(this, Log.DBG, "#### nbInstallDir: " + nbInstallDir);
         
 	nbLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbInstallDirectoryLabel)");
+        MnemonicString nbInputLabelMn = new MnemonicString(nbLabel);
+        nbLabel = nbInputLabelMn.toString();
         nbInputLabel = new JLabel(nbLabel);
+        if (nbInputLabelMn.isMnemonicSpecified()) {
+            nbInputLabel.setDisplayedMnemonic(nbInputLabelMn.getMnemonicChar());
+        }
 	nbInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(15, 25, 3, 0);
@@ -163,10 +169,16 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	gridBagConstraints.gridwidth = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
 	gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        nbInputLabel.setLabelFor(nbInstallDirTF);
         inputPanel.add(nbInstallDirTF, gridBagConstraints);
 
         String browseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.browseButtonLabel)");
+        MnemonicString browseMn = new MnemonicString(browseButtonText);
+        browseButtonText = browseMn.toString();
         nbBrowseButton = new JButton(browseButtonText);
+        if (browseMn.isMnemonicSpecified()) {
+            nbBrowseButton.setMnemonic(browseMn.getMnemonicChar());
+        }
 	nbBrowseButton.setActionCommand("nb");
         nbBrowseButton.addActionListener(this);
         gridBagConstraints = new GridBagConstraints();
