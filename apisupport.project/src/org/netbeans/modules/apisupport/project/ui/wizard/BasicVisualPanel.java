@@ -60,7 +60,7 @@ public abstract class BasicVisualPanel extends JPanel {
     /**
      * Convenience method for accessing Bundle resources from this package.
      */
-    String getMessage(String key) {
-        return NbBundle.getMessage(BasicVisualPanel.class, key);
+    public final String getMessage(String key) {
+        return NbBundle.getMessage(getClass(), key);
     }
 }

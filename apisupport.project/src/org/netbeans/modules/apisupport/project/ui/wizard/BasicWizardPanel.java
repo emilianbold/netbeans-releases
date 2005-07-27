@@ -66,8 +66,8 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
     /**
      * Convenience method for accessing Bundle resources from this package.
      */
-    protected String getMessage(String key) {
-        return NbBundle.getMessage(BasicWizardPanel.class, key);
+    protected final String getMessage(String key) {
+        return NbBundle.getMessage(getClass(), key);
     }
     
     public HelpCtx getHelp() {

@@ -39,6 +39,22 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             <attr name="APISupport/Samples" boolvalue="true"/>
         </folder>
+        
+        <!-- J2SE Library Descriptor -->
+        <!--
+        <attr name="JUnit/NetBeansModuleDevelopment" boolvalue="true"/>
+        <folder name="NetBeansModuleDevelopment">        
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>            
+            <file name="emptyLibraryDescriptor">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.createIterator"/>                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>                            
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>            
+        </folder>
+        -->
     </folder>
 
     <folder name="Menu">

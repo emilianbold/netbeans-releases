@@ -79,6 +79,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.ui.ModuleActions;
 import org.netbeans.modules.apisupport.project.ui.ModuleLogicalView;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 
 /**
  * A NetBeans module project.
@@ -220,7 +221,8 @@ public final class NbModuleProject implements Project {
             new CustomizerProviderImpl(this, getHelper(), evaluator(), 
                     getModuleType() == TYPE_STANDALONE, bundleInfo),
             new SuiteProviderImpl(),
-            typeProvider
+            typeProvider,
+            new PrivilegedTemplatesImpl()                    
       });
     }
     
@@ -886,4 +888,30 @@ public final class NbModuleProject implements Project {
         
     }
     
+    private static final class PrivilegedTemplatesImpl implements /*PrivilegedTemplates,*/ RecommendedTemplates {
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+        };
+        
+        private static final String[] RECOMENDED_TYPES = new String[] {         
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-beans",           // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "junit",                // NOI18N                    
+            "simple-files",          // NOI18N
+             "nbm-specific"         // NOI18N
+        };
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+
+        public String[] getRecommendedTypes() {
+            return RECOMENDED_TYPES;
+        }
+    }    
 }

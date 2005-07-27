@@ -36,7 +36,9 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,6 +76,7 @@ public final class SuiteProject implements Project {
             new SuiteActions(this),
             new SuiteLogicalView(this),
             new SuiteCustomizer(this, helper, eval),
+            new PrivilegedTemplatesImpl()
         });
     }
     
@@ -224,4 +227,30 @@ public final class SuiteProject implements Project {
         
     }
 
+    private static final class PrivilegedTemplatesImpl implements /*PrivilegedTemplates,*/ RecommendedTemplates {
+        
+        private static final String[] PRIVILEGED_NAMES = new String[] {
+        };
+        
+        private static final String[] RECOMENDED_TYPES = new String[] {         
+            "java-classes",         // NOI18N
+            "java-main-class",      // NOI18N
+            "java-beans",           // NOI18N
+            "oasis-XML-catalogs",   // NOI18N
+            "XML",                  // NOI18N
+            "ant-script",           // NOI18N
+            "ant-task",             // NOI18N
+            "junit",                // NOI18N                    
+            "simple-files"          // NOI18N
+        };
+        
+        public String[] getPrivilegedTemplates() {
+            return PRIVILEGED_NAMES;
+        }
+
+        public String[] getRecommendedTypes() {
+            return RECOMENDED_TYPES;
+        }
+    }    
+    
 }

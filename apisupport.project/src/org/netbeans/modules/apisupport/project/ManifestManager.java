@@ -138,7 +138,7 @@ public final class ManifestManager {
         return mm == null ? new ManifestManager() : mm;
     }
     
-    static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {
+    public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {
         Attributes attr = manifest.getMainAttributes();
         String codename = attr.getValue(OPENIDE_MODULE);
         String codenamebase = null;
