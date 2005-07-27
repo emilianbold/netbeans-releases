@@ -267,6 +267,15 @@ public final class ProjectXMLManager {
     }
     
     /**
+     * Adds given dependency.
+     */
+    public void addDependency(ModuleDependency md) {
+        Set s = new HashSet(1);
+        s.add(md);
+        addDependencies(s);
+    }
+    
+    /**
      * Adds given modules as module-dependencies for the project.
      */
     public void addDependencies(Set/*<ModuleDependency>*/ toAdd) {

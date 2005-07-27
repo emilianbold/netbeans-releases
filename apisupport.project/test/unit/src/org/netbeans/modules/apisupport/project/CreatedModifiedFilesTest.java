@@ -26,13 +26,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.LayerCallback;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 
 /**
  * Tests {@link CreatedModifiedFiles}.
@@ -176,66 +179,116 @@ public class CreatedModifiedFilesTest extends TestBase {
         assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + templatePath));
     }
     
+    public void testAddModuleDependency() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        
+        Operation op = cmf.addModuleDependency("org.apache.tools.ant.module", 3,
+                new SpecificationVersion("3.9"), true);
+        
+        assertRelativePath("nbproject/project.xml", op.getModifiedPaths());
+        
+        cmf.add(op);
+        cmf.run();
+        
+        ProjectXMLManager pxm = new ProjectXMLManager(project.getHelper());
+        Set deps = pxm.getDirectDependencies(NbPlatform.getDefaultPlatform());
+        assertEquals("one dependency", 1, deps.size());
+        ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
+        assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
+        assertEquals("release version", "3", antDep.getModuleEntry().getReleaseVersion());
+        assertEquals("specification version", "3.9", antDep.getSpecificationVersion());
+        assertTrue("compile dependeny", antDep.hasCompileDependency());
+        assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
+    }
+    
+    public void testOrderLayerEntry() throws Exception {
+        // also tested in testCreateLayerEntry where is also tested generated content
+        NbModuleProject project = generateStandaloneModule("module1");
+        
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        
+        Operation op = cmf.orderLayerEntry("Loaders/text/x-java/Actions",
+                "IAmSecond.instance", "IAmThird.instance");
+        
+        assertRelativePath("src/org/example/module1/resources/layer.xml", op.getModifiedPaths());
+        
+        cmf.add(op);
+        cmf.run();
+    }
+    
     public void testCreateLayerEntry() throws Exception {
         NbModuleProject project = generateStandaloneModule("module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        LayerCallback lc = cmf.createLayerEntry(
+        Operation layerOp = cmf.createLayerEntry(
                 "Menu/Tools/org-example-module1-BeepAction.instance",
                 null,
                 null,
                 null,
                 null);
-        lc.run();
+        layerOp.run();
         
-        lc = cmf.createLayerEntry(
+        layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Module1UI.settings",
                 "module1ui.settings",
                 null,
                 null,
                 null);
-        Operation layerOp = cmf.layerOperation(lc);
         cmf.add(layerOp);
         assertRelativePath("src/org/example/module1/resources/layer.xml", layerOp.getModifiedPaths());
         
-        lc = cmf.createLayerEntry(
+        layerOp = cmf.orderLayerEntry("Menu/Tools",
+                "org-example-module1-BeepAction.instance",
+                "org-example-module1-BlareAction.instance");
+        cmf.add(layerOp);
+        
+        layerOp = cmf.createLayerEntry(
                 "Menu/Tools/org-example-module1-BlareAction.instance",
                 null,
                 null,
                 null,
                 null);
-        cmf.add(cmf.layerOperation(lc));
+        cmf.add(layerOp);
         
         String createMePath = "src/org/example/module1/resources/createMe.setting";
-        lc = cmf.createLayerEntry(
+        layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Other.settings",
                 createMePath,
                 createFile(HTML_CONTENT),
                 null,
                 null);
-        cmf.add(cmf.layerOperation(lc));
+        cmf.add(layerOp);
 
         String tokenMePath = "src/org/example/module1/resources/tokenMe.setting";
-        lc = cmf.createLayerEntry(
+        layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Tokenized.settings",
                 tokenMePath,
                 createFile(HTML_CONTENT),
                 null,
                 TOKENS_MAP);
-        cmf.add(cmf.layerOperation(lc));
+        cmf.add(layerOp);
 
         String localizeAndTokenMePath = "src/org/example/module1/resources/localizeAndTokenMe.setting";
-        lc = cmf.createLayerEntry(
+        layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-LocalizedAndTokened.settings",
                 localizeAndTokenMePath,
                 createFile(HTML_CONTENT),
                 "Some Settings",
                 TOKENS_MAP);
-        cmf.add(cmf.layerOperation(lc));
+        cmf.add(layerOp);
 
-        // XXX should assert cmf.getCreatedPaths() for the tokenMe.setting and
-        // createMe.setting (in the meantime would fail)
-        assertRelativePath("src/org/example/module1/resources/layer.xml", cmf.getModifiedPaths());
+        assertRelativePaths(
+                new String[] {"src/org/example/module1/resources/Bundle.properties", "src/org/example/module1/resources/layer.xml"},
+                cmf.getModifiedPaths());
+        assertRelativePaths(
+                new String[] {
+                    "src/org/example/module1/resources/createMe.setting",
+                    "src/org/example/module1/resources/localizeAndTokenMe.setting",
+                    "src/org/example/module1/resources/tokenMe.setting"
+                },
+                cmf.getCreatedPaths());
         cmf.run();
 
         assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + tokenMePath));
@@ -248,6 +301,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "<folder name=\"Menu\">",
                     "<folder name=\"Tools\">",
                     "<file name=\"org-example-module1-BeepAction.instance\"/>",
+                    "<attr boolvalue=\"true\" name=\"org-example-module1-BeepAction.instance/org-example-module1-BlareAction.instance\"/>",
                     "<file name=\"org-example-module1-BlareAction.instance\"/>",
                     "</folder>",
                     "</folder>",
@@ -301,8 +355,8 @@ public class CreatedModifiedFilesTest extends TestBase {
         assertRelativePath(expectedPath, (String[]) paths.toArray(s));
     }
     
-    private void assertRelativePaths(String[] expectedPaths, SortedSet paths) {
-        assertEquals("created, modified paths", Arrays.asList(expectedPaths).toString(), paths.toString());
+    private void assertRelativePaths(String[] expectedPaths, String[] paths) {
+        assertEquals("created, modified paths", Arrays.asList(expectedPaths), Arrays.asList(paths));
     }
     
     private URL createFile(String[] content) throws IOException {
