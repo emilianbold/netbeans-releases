@@ -7,20 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.installer;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.plaf.FileChooserUI;
-import javax.swing.plaf.basic.BasicFileChooserUI;
 
 import com.installshield.util.Log;
 import com.installshield.util.LocalizedStringResolver;
@@ -34,7 +25,30 @@ import com.installshield.product.i18n.ProductResourcesConst;
 
 import com.installshield.util.MnemonicString;
 
-public class DirectoryChooserPanelSwingImpl extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.FileChooserUI;
+import javax.swing.plaf.basic.BasicFileChooserUI;
+
+public class DirectoryChooserPanelSwingImpl
+extends SwingWizardPanelImpl implements  ActionListener, ListSelectionListener
 {
     private JTextField inputTextField;
     private JButton browseButton;
@@ -83,14 +97,13 @@ public class DirectoryChooserPanelSwingImpl extends SwingWizardPanelImpl impleme
         inputLabelPanel.setLayout(new BorderLayout());
         
         JLabel inputLabel = new JLabel();
-
-        MnemonicString inputLabelMn = new MnemonicString(resolveString(getDirectoryChooserPanel().getDestinationCaption()));
+        
+        MnemonicString inputLabelMn = 
+            new MnemonicString(resolveString(getDirectoryChooserPanel().getDestinationCaption()));
         inputLabel.setText(inputLabelMn.toString());
         if (inputLabelMn.isMnemonicSpecified()) {
             inputLabel.setDisplayedMnemonic(inputLabelMn.getMnemonicChar());
         }
-        
-        inputLabel.setLabelFor(inputTextField);
         inputLabelPanel.add(inputLabel);
         
         GridBagConstraints gbc = new GridBagConstraints();
@@ -113,6 +126,7 @@ public class DirectoryChooserPanelSwingImpl extends SwingWizardPanelImpl impleme
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        inputLabel.setLabelFor(inputTextField);
         inputPanel.add(inputTextField, gbc);
         
         inputTextField.getAccessibleContext().setAccessibleName(resolveString(getDirectoryChooserPanel().getDescription()));
