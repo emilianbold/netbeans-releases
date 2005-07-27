@@ -162,12 +162,19 @@ final class SingleModuleProperties extends ModuleProperties {
         this.specificationVersion = manifestManager.getSpecificationVersion();
         this.implementationVersion = manifestManager.getImplementationVersion();
         this.provTokensString = manifestManager.getProvidedTokensString();
-        try {
-            this.bundleInfo.reload();
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
+        if (isFileBundle()) {
+            try {
+                this.bundleInfo.reload();
+            } catch (IOException ioe) {
+                ErrorManager.getDefault().notify(ioe);
+            }
+            firePropertyChange(PROPERTIES_REFRESHED, null, null);
         }
-        firePropertyChange(PROPERTIES_REFRESHED, null, null);
+    }
+    
+    /** i.e. whether the bundle can be stored/reload etc. */
+    private boolean isFileBundle() {
+        return bundleInfo != null && bundleInfo.getPath() != null;
     }
     
     Map/*<String, String>*/ getDefaultValues() {
@@ -425,7 +432,7 @@ final class SingleModuleProperties extends ModuleProperties {
         storeManifestChanges();
         
         // store localized info
-        if (bundleInfo != null && bundleInfo.getPath() != null) {
+        if (isFileBundle()) {
             bundleInfo.store();
         } // XXX else ignore for now but we could save into some default location
         
@@ -480,7 +487,7 @@ final class SingleModuleProperties extends ModuleProperties {
     private void firePropertyChange(String propName, Object oldValue, Object newValue) {
         changeSupport.firePropertyChange(propName, oldValue, newValue);
     }
-
+    
     /**
      * Store appropriately properties regarding the manifest file.
      */

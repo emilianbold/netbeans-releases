@@ -162,6 +162,21 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
     }
     
+    public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws IOException {
+        NbModuleProject p = generateStandaloneModule("module1");
+        FileObject propsFO = FileUtil.toFileObject(new File(getWorkDir(),
+                "module1/src/org/example/module1/resources/Bundle.properties"));
+        propsFO.delete();
+        SingleModuleProperties props = new SingleModuleProperties(
+                p.getHelper(),
+                p.evaluator(),
+                (SuiteProvider) p.getLookup().lookup(SuiteProvider.class),
+                false,
+                null);
+        props.refresh();
+    }
+    
+    
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
 //        SingleModuleProperties props = loadProperties(nbroot.getFileObject("apisupport/project"),

@@ -211,7 +211,7 @@ public abstract class TestBase extends NbTestCase {
      *   <li>module1/src/org/example/module1/resources/layer.xml
      * </ul>
      */
-    NbModuleProject generateStandaloneModule(String prjDir) throws IOException {
+    public NbModuleProject generateStandaloneModule(String prjDir) throws IOException {
         String prjDirDotted = prjDir.replace('/', '.');
         File prjDirF = file(getWorkDir(), prjDir);
         NbModuleProjectGenerator.createStandAloneModule(
