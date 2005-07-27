@@ -21,6 +21,7 @@ import java.lang.ref.*;
 import java.lang.reflect.*;
 
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.codestructure.*;
@@ -251,6 +252,16 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
 	
         // Generate constraints
         for (int i=0; i < components.length; i++) {
+            if (Math.max(layouts[i].gridx + layouts[i].gridwidth - 1,
+                layouts[i].gridy + layouts[i].gridheight - 1) >= 512) {
+                for (int j=0; j<i; j++) {
+                    currentConstraints[j] = null; // Reset partially converted constraints
+                }
+                org.openide.DialogDisplayer.getDefault().notify(
+                    new org.openide.NotifyDescriptor.Message(
+                        NbBundle.getMessage(AbstractLayoutSupport.class, "MSG_ERR_MoreThan512"))); // NOI18N
+                return;
+            }
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = layouts[i].gridx;
             gbc.gridy = layouts[i].gridy;
