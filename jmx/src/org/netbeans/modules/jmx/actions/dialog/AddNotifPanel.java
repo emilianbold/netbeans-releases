@@ -102,6 +102,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
         notificationTable.setName("notificationTable"); // NOI18N
         notificationTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(notificationTable);
+        notifTableLabel.setLabelFor(notificationTable);
         
         removeButton.setEnabled(false);
         addButton.addActionListener(
@@ -122,6 +123,27 @@ public class AddNotifPanel extends javax.swing.JPanel {
         Mnemonics.setLocalizedText(removeButton,
                      bundle.getString("LBL_Button_RemoveNotification")); // NOI18N
         
+        // for accessibility
+        genDelegationCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_GEN_DELEG_BROADCAST")); // NOI18N
+        genDelegationCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_GEN_DELEG_BROADCAST_DESCRIPTION")); // NOI18N
+        genSeqNbCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_GEN_SEQ_NUMBER")); // NOI18N
+        genSeqNbCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_GEN_SEQ_NUMBER_DESCRIPTION")); // NOI18N
+        notificationTable.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_NOTIFICATION_TABLE")); // NOI18N
+        notificationTable.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_NOTIFICATION_TABLE_DESCRIPTION")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_ADD_NOTIFICATION")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_ADD_NOTIFICATION_DESCRIPTION")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REMOVE_NOTIFICATION")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REMOVE_NOTIFICATION_DESCRIPTION")); // NOI18N
     }
     
     private boolean isAcceptable() {

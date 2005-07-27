@@ -113,6 +113,19 @@ public class AddAttributesPanel extends javax.swing.JPanel
         Mnemonics.setLocalizedText(removeButton,
                      bundle.getString("LBL_Button_RemoveAttribute")); // NOI18N
         
+        // for accessibility
+        attributeTable.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_ATTRIBUTES_TABLE")); // NOI18N
+        attributeTable.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_ATTRIBUTES_TABLE_DESCRIPTION")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_ADD_ATTRIBUTE")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_ADD_ATTRIBUTE_DESCRIPTION")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REMOVE_ATTRIBUTE")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REMOVE_ATTRIBUTE_DESCRIPTION")); // NOI18N
     }
     
     public void event() {

@@ -114,6 +114,19 @@ public class AddOperationsPanel extends javax.swing.JPanel
         Mnemonics.setLocalizedText(removeButton,
                      bundle.getString("LBL_Button_RemoveOperation")); // NOI18N
         
+        // for accessibility
+        operationTable.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_OPERATIONS_TABLE")); // NOI18N
+        operationTable.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_OPERATIONS_TABLE_DESCRIPTION")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_ADD_OPERATION")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_ADD_OPERATION_DESCRIPTION")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REMOVE_OPERATION")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REMOVE_OPERATION_DESCRIPTION")); // NOI18N
     }
     
     public void event() {

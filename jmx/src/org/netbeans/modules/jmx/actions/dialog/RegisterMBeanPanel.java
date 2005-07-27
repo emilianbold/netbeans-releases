@@ -186,6 +186,44 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                      bundle.getString("LBL_StandardMBean_Constructor")); // NOI18N
         Mnemonics.setLocalizedText(interfaceLabel,
                      bundle.getString("LBL_Interface")); // NOI18N
+        
+        //for accesibility
+        userMBeanRadioButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_USER_MBEAN")); // NOI18N
+        userMBeanRadioButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_USER_MBEAN_DESCRIPTION")); // NOI18N
+        mbeanClassComboBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_MBEAN_CLASS")); // NOI18N
+        mbeanClassComboBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_MBEAN_CLASS_DESCRIPTION")); // NOI18N
+        objectNameTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_OBJECTNAME")); // NOI18N
+        objectNameTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_OBJECTNAME_DESCRIPTION")); // NOI18N
+        constructorComboBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_CONSTRUCTOR")); // NOI18N
+        constructorComboBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_CONSTRUCTOR_DESCRIPTION")); // NOI18N
+        standardMBeanRadioButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_STANDARD_MBEAN")); // NOI18N
+        standardMBeanRadioButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_STANDARD_MBEAN_DESCRIPTION")); // NOI18N
+        classNameTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_CLASSNAME")); // NOI18N
+        classNameTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_CLASSNAME_DESCRIPTION")); // NOI18N
+        stdMBObjectNameTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_OBJECTNAME")); // NOI18N
+        stdMBObjectNameTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_OBJECTNAME_DESCRIPTION")); // NOI18N
+        interfaceComboBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE")); // NOI18N
+        interfaceComboBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE_DESCRIPTION")); // NOI18N
+        stdMBConstructorComboBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_CONSTRUCTOR")); // NOI18N
+        stdMBConstructorComboBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_CONSTRUCTOR_DESCRIPTION")); // NOI18N
     }
     
     private boolean isAcceptable() {

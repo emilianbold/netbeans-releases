@@ -173,10 +173,10 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
         add(firstInternalMethodPanel, BorderLayout.CENTER);
         
         //Accessibility
-        methAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_ATTRIBUTE"));// NOI18N
-        methAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_ATTRIBUTE_DESCRIPTION"));// NOI18N
-        methRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_ATTRIBUTE"));// NOI18N
-        methRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_ATTRIBUTE_DESCRIPTION"));// NOI18N
+        methAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_OPERATION"));// NOI18N
+        methAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_OPERATION_DESCRIPTION"));// NOI18N
+        methRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_OPERATION"));// NOI18N
+        methRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_OPERATION_DESCRIPTION"));// NOI18N
         
     }
     

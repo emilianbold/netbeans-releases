@@ -16,6 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JButton;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.util.ResourceBundle;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.GenericWizardPanel;
@@ -59,6 +60,8 @@ public class MBeanNotificationPanel extends JPanel {
     
     private JPanel ancestorPanel = null;
     
+    private ResourceBundle bundle;
+    
     /**
      * MBean Notification Panel constructor
      * @param wiz a wizard panel
@@ -69,8 +72,11 @@ public class MBeanNotificationPanel extends JPanel {
         
         this.ancestorPanel = this;
         
+        bundle = NbBundle.getBundle(MBeanNotificationPanel.class);
+        
         initComponents();
-        String str = NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_Notification_Panel");// NOI18N
+        
+        String str = bundle.getString("LBL_Notification_Panel");// NOI18N
         setName(str);
         
         //init state
@@ -162,23 +168,23 @@ public class MBeanNotificationPanel extends JPanel {
         JPanel selectionPanel = initSelectionPanel();
         
         Mnemonics.setLocalizedText(implNotifEmitCheckBox,
-                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_ImplementNotifEmitter"));//NOI18N
+                bundle.getString("LBL_ImplementNotifEmitter"));//NOI18N
         Mnemonics.setLocalizedText(genDelegationCheckBox,
-                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_GenBroadcasterDelegation"));//NOI18N
+                bundle.getString("LBL_GenBroadcasterDelegation"));//NOI18N
         Mnemonics.setLocalizedText(genSeqNbCheckBox,
-                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_GenSeqNumberField"));//NOI18N
+                bundle.getString("LBL_GenSeqNumberField"));//NOI18N
         Mnemonics.setLocalizedText(notifTableLabel,
-                NbBundle.getMessage(MBeanNotificationPanel.class,"LBL_Notifications"));//NOI18N
+                bundle.getString("LBL_Notifications"));//NOI18N
         
         // defines a scrolol panel for the JTabel
         JScrollPane notifJTableScrollPanel = new JScrollPane(notificationTable);
         
         notifAddJButton = new JButton();
         Mnemonics.setLocalizedText(notifAddJButton,
-                NbBundle.getMessage(MBeanNotificationPanel.class,"BUTTON_add_notification"));//NOI18N
+                bundle.getString("BUTTON_add_notification"));//NOI18N
         notifRemJButton = new JButton();
         Mnemonics.setLocalizedText(notifRemJButton,
-                NbBundle.getMessage(MBeanNotificationPanel.class,"BUTTON_rem_notification"));//NOI18N
+                bundle.getString("BUTTON_rem_notification"));//NOI18N
         
         notifAddJButton.setName("notifAddJButton");// NOI18N
         notifRemJButton.setName("notifRemJButton");// NOI18N
@@ -202,12 +208,30 @@ public class MBeanNotificationPanel extends JPanel {
         add(notifJPanel, BorderLayout.SOUTH);
         
         //Accessibility
-        notifRemJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_NOTIFICATION"));// NOI18N
-        notifRemJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_NOTIFICATION_DESCRIPTION"));// NOI18N
-        notifAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_NOTIFICATION"));// NOI18N
-        notifAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_NOTIFICATION_DESCRIPTION"));// NOI18N
-        notificationTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_NOTIFICATION_TABLE"));// NOI18N
-        notificationTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_NOTIFICATION_TABLE_DESCRIPTION"));// NOI18N
+        implNotifEmitCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_IMPL_NOTIF_EMITTER")); // NOI18N
+        implNotifEmitCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_IMPL_NOTIF_EMITTER_DESCRIPTION")); // NOI18N
+        genDelegationCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_GEN_DELEG_BROADCAST")); // NOI18N
+        genDelegationCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_GEN_DELEG_BROADCAST_DESCRIPTION")); // NOI18N
+        genSeqNbCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_GEN_SEQ_NUMBER")); // NOI18N
+        genSeqNbCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_GEN_SEQ_NUMBER_DESCRIPTION")); // NOI18N
+        notifRemJButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REMOVE_NOTIFICATION")); // NOI18N
+        notifRemJButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REMOVE_NOTIFICATION_DESCRIPTION"));// NOI18N
+        notifAddJButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_ADD_NOTIFICATION"));// NOI18N
+        notifAddJButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_ADD_NOTIFICATION_DESCRIPTION"));// NOI18N
+        notificationTable.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_NOTIFICATION_TABLE"));// NOI18N
+        notificationTable.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_NOTIFICATION_TABLE_DESCRIPTION"));// NOI18N
         
     }
     

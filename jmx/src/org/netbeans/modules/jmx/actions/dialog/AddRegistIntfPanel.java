@@ -63,6 +63,13 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         //init labels
         Mnemonics.setLocalizedText(keepRefCheckBox,
                      bundle.getString("LBL_Keep_References")); // NOI18N
+        
+        //for accessibility
+        keepRefCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTRATION_KEEP")); // NOI18N
+        keepRefCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION")); // NOI18N
+        
         infoTextArea.setText(currentClass.getSimpleName() + " " + // NOI18N
                 bundle.getString("LBL_MBeanRegistration_Informations")); // NOI18N
     }
@@ -127,10 +134,13 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        northPanel = new javax.swing.JPanel();
         infoTextArea = new javax.swing.JTextArea();
         keepRefCheckBox = new javax.swing.JCheckBox();
 
-        setLayout(new java.awt.GridBagLayout());
+        setLayout(new java.awt.BorderLayout());
+
+        northPanel.setLayout(new java.awt.GridBagLayout());
 
         infoTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("inactiveCaption"));
         infoTextArea.setEditable(false);
@@ -145,7 +155,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 12);
-        add(infoTextArea, gridBagConstraints);
+        northPanel.add(infoTextArea, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -153,7 +163,9 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
-        add(keepRefCheckBox, gridBagConstraints);
+        northPanel.add(keepRefCheckBox, gridBagConstraints);
+
+        add(northPanel, java.awt.BorderLayout.NORTH);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -162,6 +174,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea infoTextArea;
     private javax.swing.JCheckBox keepRefCheckBox;
+    private javax.swing.JPanel northPanel;
     // End of variables declaration//GEN-END:variables
     
 }

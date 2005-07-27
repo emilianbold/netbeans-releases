@@ -68,7 +68,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     public MBeanOptionsPanel (final MBeanOptionsWizardPanel wiz) 
     {
         this.wiz = wiz;
-        bundle = NbBundle.getBundle(StandardMBeanPanel.class);
+        bundle = NbBundle.getBundle(MBeanOptionsPanel.class);
         initComponents ();
         mbeanDescriptionJTextField.addFocusListener(new FocusListener() {
            private String description = null;
@@ -120,7 +120,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                      bundle.getString("LBL_preRegisterParamCbx"));//NOI18N
         
         // Provide a name in the title bar.
-        setName(bundle.getString("LBL_Standard_Panel"));// NOI18N
+        setName(bundle.getString("LBL_Standard_Options_Panel"));// NOI18N
         
         // Accessibility      
         generatedFileJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_GENERATED_FILE"));// NOI18N
