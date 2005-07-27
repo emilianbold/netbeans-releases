@@ -12,22 +12,22 @@
  */
 
 package org.netbeans.modules.palette;
-
-import java.awt.Image;
 import java.text.MessageFormat;
 import java.util.Collections;
 import javax.swing.Action;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteFilter;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
-import org.openide.*;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * A node for palette category.
@@ -43,7 +43,9 @@ class CategoryNode extends FilterNode {
     private Action[] actions;
 
     CategoryNode( Node originalNode, Lookup lkp ) {
-        super( originalNode, new Children( originalNode, lkp ) );
+        super( originalNode, 
+               new Children( originalNode, lkp ),
+               new ProxyLookup( new Lookup[] { lkp, originalNode.getLookup() } ) );
         
         DataFolder folder = (DataFolder)originalNode.getCookie( DataFolder.class );
         if( null != folder ) {
