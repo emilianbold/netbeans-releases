@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+
+<map version="1.0">
+
+	<mapID target="about_plugins" url="nbmodule-about.html"/>
+
+<mapID target="org.netbeans.modules.apisupport.project.ui.SuiteCustomizer" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformInfoWizardPanel" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="tbd.html" />
+<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="tbd.html" />
+	
+
+</map>
+
