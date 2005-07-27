@@ -43,6 +43,24 @@ public class ManagerPopup extends javax.swing.JDialog {
         Mnemonics.setLocalizedText(okJButton,bundle.getString("LBL_okButton.text"));// NOI18N
         Mnemonics.setLocalizedText(cancelJButton,bundle.getString("LBL_Generic_Cancel"));// NOI18N
         
+        // Accessibility
+        rmiHostJTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_RMI_HOST")); // NOI18N
+        rmiHostJTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_RMI_HOST_DESCRIPTION")); // NOI18N
+        rmiPortJTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_RMI_PORT")); // NOI18N
+        rmiPortJTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_RMI_PORT_DESCRIPTION")); // NOI18N
+        okJButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_OK")); // NOI18N
+        okJButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
+        cancelJButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_CANCEL")); // NOI18N
+        cancelJButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_CANCEL_DESCRIPTION")); // NOI18N
+        
         setName("ManagerPopup");
         
         addListeners();

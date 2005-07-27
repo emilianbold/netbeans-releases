@@ -60,7 +60,6 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         this.wiz = wiz;
         bundle = NbBundle.getBundle(AgentURLPanel.class);
         
-       
         initComponents();
         
         //custom initialisation
@@ -94,6 +93,36 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         Mnemonics.setLocalizedText(codeExampleJRadioButton,bundle.getString("LBL_rbtnCodeExample.text"));// NOI18N
         Mnemonics.setLocalizedText(jmxAgentURLPopupJButton,bundle.getString("LBL_urlPopupBtn.text"));// NOI18N
         
+        //for accessibility
+        jmxURLJTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_JMX_URL")); // NOI18N
+        jmxURLJTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_JMX_URL_DESCRIPTION")); // NOI18N
+        jmxAgentURLPopupJButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_BUTTON_JMX_URL")); // NOI18N
+        jmxAgentURLPopupJButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_BUTTON_JMX_URL_DESCRIPTION")); // NOI18N
+        securityJCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_AUTHENTICATED")); // NOI18N
+        securityJCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_AUTHENTICATED_DESCRIPTION")); // NOI18N
+        codeExampleJRadioButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_RADIOBUTTON_CODE_EXAMPLE")); // NOI18N
+        codeExampleJRadioButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_RADIOBUTTON_CODE_EXAMPLE_DESCRIPTION")); // NOI18N
+        userCredentialsJRadioButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_RADIOBUTTON_USER_CREDENTIALS")); // NOI18N
+        userCredentialsJRadioButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_RADIOBUTTON_USER_CREDENTIALS_DESCRIPTION")); // NOI18N
+        rmiUserNameJTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_RMI_USER_NAME")); // NOI18N
+        rmiUserNameJTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_RMI_USER_NAME_DESCRIPTION")); // NOI18N
+        rmiPasswordJTextField.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_RMI_USER_PASSWORD")); // NOI18N
+        rmiPasswordJTextField.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_RMI_USER_PASSWORD_DESCRIPTION")); // NOI18N
+        
         // ensures that every time the text field changes, an event is thrown to the wiz
         rmiUserNameJTextField.getDocument().addDocumentListener(this);
         rmiPasswordJTextField.getDocument().addDocumentListener(this);
@@ -105,7 +134,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         setUserPasswordValidity(true);
                 
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(AgentURLPanel.class, "LBL_AgentURL")); // NOI18N
+        setName(bundle.getString("LBL_AgentURL")); // NOI18N
     }
     
     /**

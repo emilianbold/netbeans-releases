@@ -48,12 +48,30 @@ public class ManagerPanel extends javax.swing.JPanel {
     public ManagerPanel (ManagerWizardPanel wiz) 
     {
         this.wiz = wiz;
-        bundle = NbBundle.getBundle(JMXManagerIterator.class);
+        bundle = NbBundle.getBundle(JMXManagerPanel.class);
         initComponents ();
         
-        Mnemonics.setLocalizedText(generateMainMethodJCheckBox,bundle.getString("LBL_chkMainMethod.text"));// NOI18N
-        Mnemonics.setLocalizedText(setAsMainClassJCheckBox,bundle.getString("LBL_chkMainClass.text"));// NOI18N
-        Mnemonics.setLocalizedText(generateSampleCodeJCheckBox,bundle.getString("LBL_chkSampleCode.text"));// NOI18N
+        Mnemonics.setLocalizedText(generateMainMethodJCheckBox,
+                bundle.getString("LBL_chkMainMethod.text"));// NOI18N
+        Mnemonics.setLocalizedText(setAsMainClassJCheckBox,
+                bundle.getString("LBL_chkMainClass.text"));// NOI18N
+        Mnemonics.setLocalizedText(generateSampleCodeJCheckBox,
+                bundle.getString("LBL_chkSampleCode.text"));// NOI18N
+        
+        // Accessibility
+        generateMainMethodJCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_CREATE_MAIN_METHOD"));// NOI18N
+        generateMainMethodJCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_CREATE_MAIN_METHOD_DESCRIPTION"));// NOI18N
+        setAsMainClassJCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_SET_MAIN_CLASS"));// NOI18N
+        setAsMainClassJCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_SET_MAIN_CLASS_DESCRIPTION"));// NOI18N
+        generateSampleCodeJCheckBox.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_GENERATE_SAMPLE"));// NOI18N
+        generateSampleCodeJCheckBox.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_GENERATE_SAMPLE_DESCRIPTION"));// NOI18N
+
         
         // init flags
         mainMethodSelected = generateMainMethodJCheckBox.isSelected();
@@ -61,7 +79,7 @@ public class ManagerPanel extends javax.swing.JPanel {
         sampleCodeSelected = generateSampleCodeJCheckBox.isSelected();
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ManagerPanel.class, "LBL_Manager_Panel"));// NOI18N 
+        setName(bundle.getString("LBL_Manager_Panel"));// NOI18N 
         
     }
     
