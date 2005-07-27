@@ -224,6 +224,15 @@ public class CreatedModifiedFilesTest extends TestBase {
                 TOKENS_MAP);
         cmf.add(cmf.layerOperation(lc));
 
+        String localizeAndTokenMePath = "src/org/example/module1/resources/localizeAndTokenMe.setting";
+        lc = cmf.createLayerEntry(
+                "Services/org-example-module1-LocalizedAndTokened.settings",
+                localizeAndTokenMePath,
+                createFile(HTML_CONTENT),
+                "Some Settings",
+                TOKENS_MAP);
+        cmf.add(cmf.layerOperation(lc));
+
         // XXX should assert cmf.getCreatedPaths() for the tokenMe.setting and
         // createMe.setting (in the meantime would fail)
         assertRelativePath("src/org/example/module1/resources/layer.xml", cmf.getModifiedPaths());
@@ -231,6 +240,7 @@ public class CreatedModifiedFilesTest extends TestBase {
 
         assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + tokenMePath));
 
+        // check layer content
         BufferedReader reader = new BufferedReader(new FileReader(
                 new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml")));
         String[] supposedContent = new String[] {
@@ -243,8 +253,11 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "</folder>",
                     "<folder name=\"Services\">",
                     "<file name=\"org-example-module1-Module1UI.settings\" url=\"module1ui.settings\"/>",
-                    "<file name=\"org-example-module1-Other.settings\" url=\"src/org/example/module1/resources/createMe.setting\"/>",
-                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"src/org/example/module1/resources/tokenMe.setting\"/>",
+                    "<file name=\"org-example-module1-Other.settings\" url=\"" + createMePath + "\"/>",
+                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"" + tokenMePath + "\"/>",
+                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"src/org/example/module1/resources/localizeAndTokenMe.setting\">",
+                    "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
+                    "</file>",
                     "</folder>",
                     "</filesystem>"
         };
@@ -269,6 +282,13 @@ public class CreatedModifiedFilesTest extends TestBase {
         }
         
         assertEquals("content of layer", Arrays.asList(supposedContent), actualContent);
+        
+        // check bundle content
+        EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(
+                file(getWorkDir(), "module1/src/org/example/module1/resources/Bundle.properties")));
+        assertEquals("localized name property", "Some Settings",
+                ep.getProperty("Services/org-example-module1-LocalizedAndTokened.settings"));
+        assertEquals("module name", "Testing Module", ep.getProperty("OpenIDE-Module-Name"));
     }
     
     private void assertRelativePath(String expectedPath, String[] paths) {

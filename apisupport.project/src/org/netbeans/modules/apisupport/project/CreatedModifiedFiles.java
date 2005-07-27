@@ -271,7 +271,10 @@ public class CreatedModifiedFiles {
      *        being created
      * @param content became content of a file represented by the
      *        contentResourcePath
-     * @param localizedDisplayName <strong>not used yet</strong>
+     * @param localizedDisplayName if it is not a <code>null</code>
+     *        <em>SystemFileSystem.localizingBundle</em> attribute will be
+     *        created with the stringvalue to a default bundle (from manifest).
+     *        Also an appropriate entry will be added into the bundle.
      * @param substitutionTokens map of <em>token to be replaced</em> - <em>by
      *        what</em> pairs which will be applied on the stored
      *        <code>content</code> file. Both a key and a value have to be a
@@ -514,11 +517,24 @@ public class CreatedModifiedFiles {
                         contentResourcePath, content, tokens);
                 cf.run();
             }
+
             String srcDir = project.getSourceDirectoryPath();
             ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
             String layerFile = srcDir + "/" + mm.getLayer(); // NOI18N
+            
+            String lbDotted = null;
+            if (localizedDisplayName != null) {
+                Operation cf = CreatedModifiedFiles.this.bundleKeyDefaultBundle(
+                        layerPath, localizedDisplayName);
+                cf.run();
+                lbDotted = mm.getLocalizingBundle().replace('/', '.');
+                if (lbDotted.endsWith(".properties")) { // NOI18N
+                    lbDotted = lbDotted.substring(0, lbDotted.length() - 11);
+                }
+            }
+            
             LayerUtil.createFile(project.getProjectDirectory(), layerFile,
-                    layerPath, contentResourcePath);
+                    layerPath, contentResourcePath, lbDotted);
         }
     }
     
