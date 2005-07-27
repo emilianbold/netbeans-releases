@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="harness" basedir=".">
+
+    <import file="common.xml"/>
+    
+    <target name="taskdefs" unless="harness.taskdefs.done">
+        <dirname property="harness.dir" file="${harness.file}"/>
+        <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <property name="harness.taskdefs.done" value="true"/>
+    </target>
+    
+    <target name="common-init" depends="taskdefs">
+        <property name="netbeans.javadoc.dir" location="build/javadoc"/>
+    </target>
+
+    <target name="basic-init" depends="projectized-common.basic-init">
+        <!-- Must be done even without build-init, or clean will not work. -->
+        <condition property="cluster" value="${suite.dir}/build/cluster"> <!-- #59872 -->
+            <isset property="suite.dir"/>
+        </condition>
+        <property name="cluster" location="build/cluster"/>
+    </target>
+    
+    <target name="init" depends="basic-init,files-init,build-init"/>
+
+    <target name="nbm-license-init" unless="license.file">
+        <property name="license.file" location="${java.io.tmpdir}/no-license.txt"/>
+        <echo file="${license.file}">[NO LICENSE SPECIFIED]</echo>
+    </target>
+
+    <target name="build-init" depends="basic-init,nbm-license-init">
+        <!-- Similar to projectized.xml but does not try to set NBM homepage/distribution, nor is javahelp.excludes predefined, but javadoc.title is defaulted. -->
+        <parseprojectxml project="." publicpackagesproperty="public.packages" friendsproperty="friends" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" classpathextensionsproperty="class.path.extensions"/>
+        <condition property="is.regular">
+            <not>
+                <or>
+                    <isset property="is.autoload"/>
+                    <isset property="is.eager"/>
+                    <equals arg1="${module.jar.dir}" arg2="core"/>
+                    <equals arg1="${module.jar.dir}" arg2="lib"/>
+                </or>
+            </not>
+        </condition>
+        <property name="build.compiler.debug" value="true"/>
+        <property name="build.compiler.debuglevel" value="source,lines,vars"/>
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+        <property name="build.compiler.optimize" value="off"/>
+        <property name="build.package.compress" value="false"/>
+        <property name="build.package.index" value="false"/>
+        <property name="manifest.mf" location="manifest.mf"/>
+        <property name="src.dir" location="src"/>
+        <property name="build.classes.dir" location="build/classes"/>
+        <property name="nbm" value="${code.name.base.dashes}.nbm"/>
+        <property name="nbm.module.author" value=""/>
+        <property name="nbm.release.date" value=""/>
+        <property name="nbm.needs.restart" value="false"/>
+        <property name="nbm.is.global" value=""/>
+        <!-- Override if you want to use these: -->
+        <property name="nbm.distribution" value=""/>
+        <property name="nbm.homepage" value=""/>
+        <path id="cp">
+            <pathelement path="${module.classpath}"/>
+            <pathelement path="${cp.extra}"/>
+        </path>
+        <property name="build.javahelp.dir" location="build/javahelp"/>
+        <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
+        <property name="javahelp.search" value="JavaHelpSearch"/>
+        <property name="javadoc.title" value="${code.name.base.dashes}"/>
+    </target>
+
+    <target name="test-lib-init" depends="init">
+        <!-- Tricky, since who distributes these things? junit & testtools modules only. -->
+        <!-- But those might not be installed anywhere. Not clear what to do. -->
+        <!-- So we try four things in order (!): -->
+        <!-- 1. You can define test.unit.lib.cp yourself if need be. -->
+        <!-- 2. If the platform has some or all of junit & testtools modules, use them. -->
+        <!-- 3. If running from the IDE and the caller IDE has these modules, use them. -->
+        <!-- 4. If the dest dir happens to be nbbuild/netbeans/ in a NB source tree, use xtest sources. -->
+        <!-- Would be nice to have: -->
+        <!-- 5. [not done yet] If ${netbeans.sources} includes a NB source tree, use xtest sources. -->
+        <!-- ...but that would be more difficult to do, since you would need to parse netbeans.sources. -->
+        <path id="test.unit.lib.cp">
+            <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
+            <pathelement location="${netbeans.dest.dir}/ide5/modules/ext/junit-3.8.1.jar"/>
+            <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar"/>
+            <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar"/>
+            <pathelement location="${netbeans.home}/../ide5/modules/ext/junit-3.8.1.jar"/>
+            <pathelement location="${netbeans.home}/../testtools/modules/ext/nbjunit.jar"/>
+            <pathelement location="${netbeans.home}/../testtools/modules/ext/insanelib.jar"/>
+            <pathelement location="${netbeans.dest.dir}/../../xtest/lib/junit.jar"/>
+            <pathelement location="${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar"/>
+            <pathelement location="${netbeans.dest.dir}/../../xtest/lib/insanelib.jar"/>
+        </path>
+    </target>
+    
+    <target name="javahelp" depends="init" if="has.javahelp">
+        <!-- Similar to projectized.xml but does not fiddle with usersguide/.../ide.css, and finds jhall.jar differently: -->
+        <available property="jhall.jar.exists" file="${jhall.jar}"/>
+        <fail unless="jhall.jar.exists">You must set 'jhall.jar' to the location of this JAR from a JavaHelp distribution</fail>
+        <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>
+        <copy todir="${build.javahelp.dir}">
+            <fileset dir="javahelp"/>
+        </copy>
+        <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
+                   db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
+            <classpath>
+                <pathelement location="${jhall.jar}"/>
+            </classpath>
+            <include name="**/*.html"/>
+            <exclude name="${javahelp.search}/"/>
+            <exclude name="${javahelp.excludes}"/>
+        </jhindexer>
+        <mkdir dir="${cluster}/${javahelp.jar.dir}"/>
+        <jar jarfile="${cluster}/${javahelp.jar}" compress="true">
+            <fileset dir="${build.javahelp.dir}"/>
+        </jar>
+    </target>
+
+    <target name="javadoc" depends="build-init">
+        <mkdir dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
+        <javadoc destdir="${netbeans.javadoc.dir}/${code.name.base.dashes}" packagenames="${module.javadoc.packages}" source="${javac.source}">
+            <classpath refid="cp"/>
+            <sourcepath location="${src.dir}"/>
+            <doctitle>${javadoc.title}</doctitle>
+        </javadoc>
+    </target>
+
+    <target name="javadoc-nb" depends="init,javadoc" if="netbeans.home">
+        <nbbrowse file="${netbeans.javadoc.dir}/${code.name.base.dashes}/index.html"/>
+    </target>
+    
+    <target name="run" depends="netbeans">
+        <property name="run.app.exe" value="bin\nb.exe"/>
+        <property name="run.app.sh" value="bin/netbeans"/>
+        <property name="run.jdkhome" location="${java.home}/.."/>
+        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir">
+            <isset property="suite.dir"/>
+        </condition>
+        <property name="test.user.dir" location="build/testuserdir"/>
+        <property name="install" location="${netbeans.dest.dir}"/>
+        <mkdir dir="${test.user.dir}/etc"/>
+        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters=${cluster}</echo>
+        <!-- XXX the following is undesirable when platform is NB IDE; overrides branding to be null: -->
+        <property name="branding.token" value="-"/> <!-- fallback value if not set -->
+        <property name="run.args" value=""/>
+        <property name="run.args.extra" value=""/>
+        <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP" executable="${install}\${run.app.exe}" failonerror="yes">
+            <arg value="--jdkhome"/>
+            <arg file="${run.jdkhome}"/>
+            <arg value="--userdir"/>
+            <arg file="${test.user.dir}"/>
+            <arg value="--branding"/>
+            <arg value="${branding.token}"/>
+            <arg line="${run.args}"/>
+            <arg line="${run.args.extra}"/>
+        </exec>
+        <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
+            <arg value="${install}/${run.app.sh}"/>
+            <arg value="--jdkhome"/>
+            <arg file="${run.jdkhome}"/>
+            <arg value="--userdir"/>
+            <arg file="${test.user.dir}"/>
+            <arg value="--branding"/>
+            <arg value="${branding.token}"/>
+            <arg line="${run.args}"/>
+            <arg line="${run.args.extra}"/>
+        </exec>
+        <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
+            <arg value="${install}/${run.app.sh}"/>
+            <arg value="--jdkhome"/>
+            <arg file="/Library/Java/Home"/>
+            <arg value="--userdir"/>
+            <arg file="${test.user.dir}"/>
+            <arg value="--branding"/>
+            <arg value="${branding.token}"/>
+            <arg line="${run.args}"/>
+            <arg line="${run.args.extra}"/>
+        </exec>
+    </target>
+    
+    <target name="debug" depends="netbeans">
+        <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
+            <classpath>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </nbjpdastart>
+        <property name="debug.pause" value="n"/>
+        <property name="debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
+        <antcall target="run">
+            <param name="run.args" value="${debug.args}"/>
+        </antcall>
+    </target>
+    
+    <target name="reload" depends="netbeans">
+        <antcall target="run">
+            <param name="run.args" value="--reload ${cluster}/${module.jar}"/>
+        </antcall>
+    </target>
+    
+    <target name="reload-in-ide" depends="netbeans">
+        <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
+    </target>
+    
+</project>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="suite" basedir=".">
+
+    <target name="-taskdefs" unless="harness.taskdefs.done">
+        <dirname property="harness.dir" file="${suite.file}"/>
+        <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
+        <property name="harness.taskdefs.done" value="true"/>
+    </target>
+    
+    <target name="-init" depends="-taskdefs">
+        <property file="nbproject/private/private.properties"/>
+        <property file="nbproject/project.properties"/>
+        <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.sorted"/>
+        <property name="cluster" location="build/cluster"/>
+        <echo level="verbose">Suite in ${basedir} with target platform ${netbeans.dest.dir}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
+    </target>
+    
+    <target name="build" depends="-init,branding" description="Build all modules in the suite.">
+        <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
+    </target>
+    
+    <target name="clean" depends="-init" description="Clean all modules in the suite.">
+        <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
+        <delete dir="build" failonerror="false"/>
+    </target>
+
+    <target name="branding" depends="-init" if="branding.token">
+        <property name="branding.dir" location="branding"/>
+        <mkdir dir="${cluster}"/>
+        <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
+    </target>
+    
+</project>

@@ -15,12 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}"/>
-        <copy file="harness-build.xml" tofile="${cluster}/build.xml"/>
-        <copy file="suite-build.xml" tofile="${cluster}/suite.xml"/>
+    <target name="common.xml" depends="init">
         <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${cluster}/common.xml"/>
-        <copy file="README" tofile="${cluster}/README"/>
     </target>
     
     <target name="nbantext" depends="init">
@@ -31,6 +27,6 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="release,nbantext"/>
+    <target name="netbeans-extra" depends="common.xml,nbantext"/>
 
 </project>
