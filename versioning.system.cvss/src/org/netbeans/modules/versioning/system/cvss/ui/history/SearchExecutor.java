@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.RlogCommand;
+import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.RLogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 
@@ -30,11 +31,13 @@ import java.text.SimpleDateFormat;
  */
 class SearchExecutor implements Runnable {
 
-    private static final SimpleDateFormat defaultDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    
+    private static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
     private static final DateFormat [] dateFormats = new DateFormat[] {
-        defaultDateFormat,
+        fullDateFormat,
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
-        new SimpleDateFormat("yyyy-MM-dd HH:mm"),
+        simpleDateFormat,
         new SimpleDateFormat("yyyy-MM-dd"),
     };
     
@@ -57,11 +60,11 @@ class SearchExecutor implements Runnable {
         if (fromDate != null || toDate != null) {
             String dateFilter = "";
             if (fromDate != null) {
-                dateFilter = defaultDateFormat.format(fromDate);
+                dateFilter = fullDateFormat.format(fromDate);
             }
             dateFilter += "<=";
             if (toDate != null) {
-                dateFilter += defaultDateFormat.format(toDate);
+                dateFilter += fullDateFormat.format(toDate);
             }
             cmd.setDateFilter(dateFilter);
         } else if (from != null || to != null) {
@@ -83,14 +86,33 @@ class SearchExecutor implements Runnable {
         processResults(executors);
     }
 
-    private void processResults(RLogExecutor[] executors) {
+    private List processResults(RLogExecutor[] executors) {
         List log = new ArrayList(200);
         for (int i = 0; i < executors.length; i++) {
             RLogExecutor executor = executors[i];
             log.addAll(executor.getLogEntries());
         }
+        String commitMessage = criteria.getCommitMessage();
+
+        List results = new ArrayList(log.size());
+        for (Iterator i = log.iterator(); i.hasNext();) {
+            LogInformation info = (LogInformation) i.next();
+            results.addAll(info.getRevisionList());
+        }
+
+        if (commitMessage != null) {
+            for (Iterator i = results.iterator(); i.hasNext();) {
+                LogInformation.Revision revision = (LogInformation.Revision) i.next();
+                String msg = revision.getMessage();
+                if (msg.indexOf(commitMessage) == -1) {
+                    i.remove();
+                }
+            }
+        }
+
+        return results;
     }
-        
+    
     private Date parseDate(String s) {
         if (s == null) return null;
         for (int i = 0; i < dateFormats.length; i++) {

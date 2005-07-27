@@ -20,8 +20,12 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.xml.parsers.DocumentInputSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogOutputListener;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.lib.cvsclient.command.annotate.AnnotateLine;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.ErrorManager;
@@ -268,6 +272,16 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
 
     // implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    private File getCurrentFile() {
+        DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        if (dobj != null) {
+            FileObject fo = dobj.getPrimaryFile();
+            File file = FileUtil.toFile(fo);
+            return file;
+        }
+        return null;
+    }
+    
     /**
      * Registers "close" popup menu, tooltip manager
      * and repaint on documet change manager.
@@ -282,14 +296,10 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                 if (recentRevision != null) {
                     String prevRevision = previousRevision(recentRevision);
                     if (prevRevision != null) {
-                        DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-                        if (dobj != null) {
-                            FileObject fo = dobj.getPrimaryFile();
-                            File file = FileUtil.toFile(fo);
-                            if (file != null) {
-                                DiffExecutor diffExecutor = new DiffExecutor("Diff to Previous");
-                                diffExecutor.showDiff(file, prevRevision, recentRevision);
-                            }
+                        File file = getCurrentFile();
+                        if (file != null) {
+                            DiffExecutor diffExecutor = new DiffExecutor("Diff to Previous");
+                            diffExecutor.showDiff(file, prevRevision, recentRevision);
                         }
                     }
                 }
@@ -307,6 +317,15 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         JMenuItem menu = new JMenuItem(loc.getString("CTL_MenuItem_FindAssociateChanges"));
         menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                int line = getCurrentLine();
+                if (line == -1) return;
+                AnnotateLine al = getAnnotateLine(line);
+                if (al == null) return;
+                String message = (String) commitMessages.get(al.getRevision());
+                File file = getCurrentFile();
+                File [] context = getContext(file);
+                SearchHistoryAction.openSearch(context, NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision), 
+                                               message, al.getAuthor(), al.getDate());
             }
         });
         popupMenu.add(menu);
@@ -360,6 +379,21 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         editorUI.addPropertyChangeListener(this);
     }
 
+    private File[] getContext(File currentFile) {
+        Project project = FileOwnerQuery.getOwner(FileUtil.toFileObject(currentFile));
+        List list = Utils.getProjectsSources(new Project [] { project });
+        return (File[]) list.toArray(new File[list.size()]);
+    }
+
+    private int getCurrentLine() {
+        int offset = caret.getDot();
+        try {
+            return Utilities.getLineOffset(doc, offset);
+        } catch (BadLocationException ex) {
+            return -1;
+        }
+     }
+    
     /**
      * Shows commit message in status bar
      * and or revision change repaints side bar

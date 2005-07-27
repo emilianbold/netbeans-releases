@@ -132,15 +132,15 @@ public abstract class CommandDuplicator {
 
         public Command duplicate() {
             RlogCommand c = new RlogCommand();
-            c.setDateFilter(c.getDateFilter());
-            c.setDefaultBranch(c.isDefaultBranch());
-            c.setHeaderAndDescOnly(c.isHeaderAndDescOnly());
-            c.setHeaderOnly(c.isHeaderOnly());
-            c.setNoTags(c.isNoTags());
-            c.setRevisionFilter(c.getRevisionFilter());
-            c.setStateFilter(c.getStateFilter());
-            c.setSuppressHeader(c.isSuppressHeader());
-            c.setUserFilter(c.getUserFilter());
+            c.setDateFilter(sample.getDateFilter());
+            c.setDefaultBranch(sample.isDefaultBranch());
+            c.setHeaderAndDescOnly(sample.isHeaderAndDescOnly());
+            c.setHeaderOnly(sample.isHeaderOnly());
+            c.setNoTags(sample.isNoTags());
+            c.setRevisionFilter(sample.getRevisionFilter());
+            c.setStateFilter(sample.getStateFilter());
+            c.setSuppressHeader(sample.isSuppressHeader());
+            c.setUserFilter(sample.getUserFilter());
             c.setModules(sample.getModules());
             c.setRecursive(sample.isRecursive());
             return c;

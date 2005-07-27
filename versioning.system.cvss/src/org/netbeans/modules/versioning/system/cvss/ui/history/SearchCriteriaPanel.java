@@ -54,6 +54,46 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     public String getUsername() {
         return cbUseCommitMessage1.isSelected() ? tfUsername.getText().trim() : null;
     }
+
+    public void setFrom(String from) {
+        if (from == null) {
+            cbUseFrom.setSelected(false);
+        } else {
+            cbUseFrom.setSelected(true);
+            tfFrom.setText(from);
+        }
+        refreshComponents();
+    }
+
+    public void setTo(String to) {
+        if (to == null) {
+            cbUseTo.setSelected(false);
+        } else {
+            cbUseTo.setSelected(true);
+            tfTo.setText(to);
+        }
+        refreshComponents();
+    }
+    
+    public void setCommitMessage(String message) {
+        if (message == null) {
+            cbUseCommitMessage.setSelected(false);
+        } else {
+            cbUseCommitMessage.setSelected(true);
+            tfCommitMessage.setText(message);
+        }
+        refreshComponents();
+    }
+
+    public void setUsername(String username) {
+        if (username == null) {
+            cbUseCommitMessage1.setSelected(false);
+        } else {
+            cbUseCommitMessage1.setSelected(true);
+            tfUsername.setText(username);
+        }
+        refreshComponents();
+    }
     
     private void setupComponents() {
         refreshComponents();

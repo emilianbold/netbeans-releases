@@ -21,6 +21,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.*;
 
 /**
  * Search History action.
@@ -51,5 +52,28 @@ public class SearchHistoryAction extends AbstractSystemAction  {
                 tc.requestActive();
             }
         });
+    }
+
+    /**
+     * Called from Annotation Bar.
+     * 
+     * @param context 
+     * @param title 
+     * @param commitMessage
+     * @param username
+     * @param date
+     */ 
+    public static void openSearch(File [] context, String title, String commitMessage, String username, Date date) {
+        Date from = date;
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.DATE, 1);
+        Date to = c.getTime();
+        
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context, commitMessage, username, from, to);
+        String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title);
+        tc.setName(tcTitle);
+        tc.open();
+        tc.requestActive();
     }
 }
