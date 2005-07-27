@@ -147,7 +147,7 @@
                         <specification-version>4.50.1</specification-version>
                     </run-dependency>
                 </dependency>
-                
+
                 <dependency>
                     <code-name-base>org.netbeans.api.xml</code-name-base>
                     <build-prerequisite/>

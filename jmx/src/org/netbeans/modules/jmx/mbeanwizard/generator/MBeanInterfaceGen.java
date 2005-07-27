@@ -24,7 +24,6 @@ import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.Introspector;
-import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;
@@ -76,18 +75,11 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
             List attrList = mbean.getAttributes();
             MBeanAttribute[] attributes = (MBeanAttribute[]) 
                     attrList.toArray(new MBeanAttribute[attrList.size()]);
-            AttributeMethods[] attrMethods = 
-                    new AttributeMethods[attrList.size()];
-            for (int i = 0; i < attrMethods.length ; i ++)
-                attrMethods[i] = AttributeMethods.NONE;
-            updateAttributes(mbeanIntf, attributes, attrMethods);
+            updateAttributes(mbeanIntf, attributes);
             List opList = mbean.getOperations();
             MBeanOperation[] operations = (MBeanOperation[]) 
                     opList.toArray(new MBeanOperation[opList.size()]);
-            boolean[] operExist = new boolean[opList.size()];
-            for (int i = 0; i < operExist.length ; i ++)
-                operExist[i] = false;
-            updateOperations(mbeanIntf, operations, operExist);
+            updateOperations(mbeanIntf, operations);
             
             createdFile = intfFile;
         } finally {
@@ -115,8 +107,7 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
         mbeanIntf.setJavadocText(formDoc.format(args));
     }
     
-    public void updateAttributes(JavaClass mbeanIntf, 
-            MBeanAttribute[] attributes, AttributeMethods[] attributesMethods)
+    public void updateAttributes(JavaClass mbeanIntf, MBeanAttribute[] attributes)
            throws java.io.IOException, Exception
     {
         JavaModel.getJavaRepository().beginTrans(true);
@@ -142,8 +133,14 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
     private void addGetAttrMethodDecl(JavaClass tgtIntf, MBeanAttribute attribute) {
         JavaModelPackage pkg = (JavaModelPackage) tgtIntf.refImmediatePackage();
         
+        String prefix;
+        if (attribute.getIsMethodExits())
+            prefix = "is"; // NOI18N
+        else
+            prefix = "get"; // NOI18N
+        
         Method method = pkg.getMethod().createMethod(
-                "get" + attribute.getName(), // NOI18N
+                prefix + attribute.getName(),
                 Collections.EMPTY_LIST,
                 Modifier.PUBLIC,
                 "Get " + attribute.getDescription(), // NOI18N
@@ -187,8 +184,7 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
         tgtIntf.getFeatures().add(method);
     }
     
-    public void updateOperations(JavaClass mbeanIntf, 
-            MBeanOperation[] operations, boolean[] operExist)
+    public void updateOperations(JavaClass mbeanIntf, MBeanOperation[] operations)
            throws java.io.IOException, Exception
     {
         JavaModel.getJavaRepository().beginTrans(true);

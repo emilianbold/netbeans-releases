@@ -31,6 +31,8 @@ public class MBeanDO {
     private String packageName;
     private String description;
     private String type;
+    private String wrappedClassName;
+    private boolean isWrapppedClass = false;
     private boolean needDateImport = false;
     private boolean needObjectNameImport = false;
     private boolean notificationEmitter = false;
@@ -164,5 +166,21 @@ public class MBeanDO {
 
     public void setKeepPreRegistRef(boolean keepPreRegistRef) {
         this.keepPreRegistRef = keepPreRegistRef;
+    }
+
+    public String getWrappedClassName() {
+        return wrappedClassName;
+    }
+
+    public void setWrappedClassName(String wrappedClassName) {
+        this.wrappedClassName = wrappedClassName;
+    }
+
+    public boolean isWrapppedClass() {
+        return isWrapppedClass;
+    }
+
+    public void setWrapppedClass(boolean isWrapppedClass) {
+        this.isWrapppedClass = isWrapppedClass;
     }
 }

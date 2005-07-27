@@ -27,7 +27,6 @@ import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.Introspector;
-import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;

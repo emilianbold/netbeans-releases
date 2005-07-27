@@ -17,7 +17,6 @@ package org.netbeans.modules.jmx.actions.dialog;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
-import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.actions.AddAttrAction;
 import org.netbeans.modules.jmx.actions.AddOpAction;
@@ -45,8 +44,7 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
      * @param operations <CODE>MBeanOperation[]</CODE> operations of this MBean
      * @param opExist <CODE>boolean[]</CODE> represents if each operation already exists.
      */
-    public AddOperationsInfoPanel(String mbeanClassName, MBeanOperation[] operations,
-            boolean[] opExist) {
+    public AddOperationsInfoPanel(String mbeanClassName, MBeanOperation[] operations) {
         bundle = NbBundle.getBundle(AddOperationsInfoPanel.class);
         
         // init tags
@@ -56,7 +54,7 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
         //init labels
         StringBuffer methodsList = new StringBuffer();
         for (int i = 0; i < operations.length; i ++) {
-            if (opExist[i])
+            if (operations[i].isMethodExists())
                 methodsList.append(" - " +operations[i].getName() + "(" + // NOI18N
                         operations[i].getSimpleSignature() + ")\n"); // NOI18N
         }

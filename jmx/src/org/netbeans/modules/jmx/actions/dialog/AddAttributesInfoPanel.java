@@ -16,7 +16,6 @@ package org.netbeans.modules.jmx.actions.dialog;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
-import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.actions.AddAttrAction;
 import org.netbeans.modules.jmx.actions.AddRegisterIntfAction;
@@ -40,8 +39,7 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
     /** 
      * Creates new form Panel.
      */
-    public AddAttributesInfoPanel(String mbeanClassName, MBeanAttribute[] attributes,
-            AttributeMethods[] attrMethods) {
+    public AddAttributesInfoPanel(String mbeanClassName, MBeanAttribute[] attributes) {
         bundle = NbBundle.getBundle(AddAttributesInfoPanel.class);
         
         // init tags
@@ -51,11 +49,11 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
         //init labels
         StringBuffer methodsList = new StringBuffer();
         for (int i = 0; i < attributes.length; i ++) {
-            if (attrMethods[i].equals(AttributeMethods.GET) ||
-                    attrMethods[i].equals(AttributeMethods.BOTH))
+            if (attributes[i].getGetMethodExits())
                     methodsList.append(" - get" + attributes[i].getName() + "\n"); // NOI18N
-            else if (attrMethods[i].equals(AttributeMethods.SET) ||
-                    attrMethods[i].equals(AttributeMethods.BOTH))
+            else if (attributes[i].getIsMethodExits())
+                    methodsList.append(" - is" + attributes[i].getName() + "\n"); // NOI18N
+            else if (attributes[i].getSetMethodExits())
                     methodsList.append(" - set" + attributes[i].getName() + "\n"); // NOI18N
         }
         

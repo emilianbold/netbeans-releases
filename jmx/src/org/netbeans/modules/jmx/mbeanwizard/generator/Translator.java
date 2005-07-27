@@ -101,6 +101,11 @@ public class Translator {
         addOperations(wiz,mbean);
         addNotifications(wiz,mbean);
         
+        String wrappedClass = (String) 
+            wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS);
+        mbean.setWrapppedClass((wrappedClass != null));
+        mbean.setWrappedClassName(wrappedClass);
+        
         // retrieve informations about MBeanRegistration interface
         Boolean implMBRegist = (Boolean) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_IMPL_REG_ITF);

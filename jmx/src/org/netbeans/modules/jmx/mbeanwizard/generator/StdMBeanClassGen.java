@@ -16,18 +16,30 @@ package org.netbeans.modules.jmx.mbeanwizard.generator;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import javax.jmi.reflect.RefClass;
+import javax.jmi.reflect.RefException;
+import javax.jmi.reflect.RefFeatured;
+import javax.jmi.reflect.RefObject;
+import javax.jmi.reflect.RefPackage;
+import org.netbeans.jmi.javamodel.ClassDefinition;
+import org.netbeans.jmi.javamodel.Element;
+import org.netbeans.jmi.javamodel.ElementPartKind;
 import org.netbeans.jmi.javamodel.Field;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaDoc;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.MultipartId;
 import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.jmi.javamodel.Constructor;
+import org.netbeans.jmi.javamodel.TypeParameter;
+import org.netbeans.jmi.javamodel.ParameterClass;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.Introspector;
-import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanNotification;
@@ -39,6 +51,7 @@ import org.netbeans.modules.jmx.WizardHelpers;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 
 /**
  * Standard MBean code generator class
@@ -130,6 +143,35 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         if (WizardConstants.MBEAN_EXTENDED.equals(mbean.getType())) {
             // add super class
             tgtClass.setSuperClassName(getTypeRef(pkg, "javax.management.StandardMBean")); // NOI18N
+            
+            //update constructor and create wrapped object ref field
+            if (mbean.isWrapppedClass()) {
+                // remove throws of constructor and updates body text and parameters
+                Constructor construct = tgtClass.getConstructor(new ArrayList(),false);
+                ParameterClass paramClass = (ParameterClass)
+                    Lookup.getDefault().lookup(ParameterClass.class);
+                Parameter param = paramClass.createParameter(
+                        "theRef", // NOI18N
+                        Collections.EMPTY_LIST,
+                        false,
+                        getTypeRef(pkg,mbean.getWrappedClassName()),
+                        0,
+                        false);
+                construct.getParameters().add(param);
+                construct.getExceptionNames().clear();
+                construct.setBodyText("this.theRef = theRef;\n"); // NOI18N
+                
+                //create ref field
+                Field refField = pkg.getField().createField(
+                    "theRef", // NOI18N
+                    Collections.EMPTY_LIST,
+                    Modifier.PRIVATE, 
+                    null,
+                    null, false, 
+                    getTypeRef(pkg, mbean.getWrappedClassName()),
+                    0, null, null);
+                tgtClass.getFeatures().add(0,refField);
+            }
             
             // update getDescription(MBeanInfo) method body
             MessageFormat formBody = new MessageFormat(getDescMInfo.getBodyText());
@@ -277,12 +319,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
     {
         List attrList = mbean.getAttributes();
         MBeanAttribute[] attributes = (MBeanAttribute[])
-        attrList.toArray(new MBeanAttribute[attrList.size()]);
-        AttributeMethods[] attrMethods =
-                new AttributeMethods[attrList.size()];
-        for (int i = 0; i < attrMethods.length ; i ++)
-            attrMethods[i] = AttributeMethods.NONE;
-        updateAttributesInClass(mbeanClass, mbeanRes, attributes, attrMethods);
+            attrList.toArray(new MBeanAttribute[attrList.size()]);
+        updateAttributesInClass(mbeanClass, mbeanRes, attributes);
     }
     
     private void createOperations(JavaClass mbeanClass, Resource mbeanRes, 
@@ -292,14 +330,11 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         List opList = mbean.getOperations();
         MBeanOperation[] operations = (MBeanOperation[])
         opList.toArray(new MBeanOperation[opList.size()]);
-        boolean[] operExist = new boolean[opList.size()];
-        for (int i = 0; i < operExist.length ; i ++)
-            operExist[i] = false;
-        updateOperationsInClass(mbeanClass, mbeanRes, operations, operExist);
+        updateOperationsInClass(mbeanClass, mbeanRes, operations);
     }
     
     private void updateAttributesInClass(JavaClass mbeanClass, Resource mbeanRes, 
-            MBeanAttribute[] attributes, AttributeMethods[] attributesMethods)
+            MBeanAttribute[] attributes)
            throws java.io.IOException, Exception
     {
          // add methods and fields in mbean class
@@ -310,23 +345,24 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                 addImport(mbeanRes,WizardConstants.DATE_OBJ_FULLNAME);
         }
         for (int i = 0; i < attributes.length; i++) {
-            boolean hasGetter = attributesMethods[i].equals(AttributeMethods.GET) ||
-                    attributesMethods[i].equals(AttributeMethods.BOTH);
-            boolean hasSetter = attributesMethods[i].equals(AttributeMethods.SET) ||
-                    attributesMethods[i].equals(AttributeMethods.BOTH);
+            boolean hasGetter = (attributes[i].getGetMethodExits() ||
+                    attributes[i].getIsMethodExits()) && !attributes[i].isWrapped();
+            boolean hasSetter = (attributes[i].getSetMethodExits() && 
+                    !attributes[i].isWrapped());
             if (attributes[i].isReadable() && !hasGetter)
-                addGetAttrMethod(mbeanClass, attributes[i],hasGetter || hasSetter);
+                addGetAttrMethod(mbeanClass, attributes[i]);
             if (attributes[i].isWritable() && !hasSetter)
-                addSetAttrMethod(mbeanClass, attributes[i],hasGetter || hasSetter);
+                addSetAttrMethod(mbeanClass, attributes[i]);
         }
         for (int i = attributes.length - 1; i >= 0; i--) {
-            if (attributesMethods[i].equals(AttributeMethods.NONE))
+            if (!attributes[i].getIsMethodExits() && !attributes[i].getGetMethodExits() &&
+                    !attributes[i].getSetMethodExits() && !attributes[i].isWrapped())
                 addAttrField(mbeanClass, attributes[i]);
         }
     }
     
     public void updateAttributes(JavaClass mbeanClass, Resource mbeanRes, 
-            MBeanAttribute[] attributes, AttributeMethods[] attributesMethods)
+            MBeanAttribute[] attributes)
            throws java.io.IOException, Exception
     {
         JavaModel.getJavaRepository().beginTrans(true);
@@ -336,34 +372,39 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                         WizardConstants.DATE_OBJ_NAME))
                     addImport(mbeanRes,WizardConstants.DATE_OBJ_FULLNAME);
             }
-            updateAttributesInClass(mbeanClass,mbeanRes,attributes,attributesMethods);
+            updateAttributesInClass(mbeanClass,mbeanRes,attributes);
             
             // add methods declaration in mbean interface
             JavaClass mbeanIntf = Introspector.getStandardMBeanInterface(mbeanClass);
             JavaModelPackage pkg = (JavaModelPackage) mbeanIntf.refImmediatePackage();
             mbeanIntf = (JavaClass) pkg.getJavaClass().resolve(mbeanIntf.getName());
             MBeanInterfaceGen intfGen = new MBeanInterfaceGen();
-            intfGen.updateAttributes(mbeanIntf, attributes, attributesMethods);
+            intfGen.updateAttributes(mbeanIntf, attributes);
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
     }
     
-    private void addGetAttrMethod(JavaClass tgtClass, MBeanAttribute attribute,
-            boolean hasSetter) {
+    private void addGetAttrMethod(JavaClass tgtClass, MBeanAttribute attribute) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
         String methodBody = "return " +  // NOI18N
                 WizardHelpers.forceFirstLetterLowerCase(attribute.getName()) + 
                 ";\n"; // NOI18N
         
-        if (hasSetter)
+        String prefix = "get";
+        
+        if (attribute.isWrapped()) {
+            if (attribute.getIsMethodExits())
+                prefix = "is";
+            methodBody = "return theRef." + prefix + attribute.getName() + "();\n"; // NOI18N
+        } else if (attribute.getSetMethodExits())
             methodBody = "return " +  // NOI18N
                 WizardHelpers.getDefaultValue(attribute.getTypeName()) + 
                 ";\n"; // NOI18N
         
         Method method = pkg.getMethod().createMethod(
-                "get" + attribute.getName(), // NOI18N
+                prefix + attribute.getName(),
                 Collections.EMPTY_LIST,
                 Modifier.PUBLIC,
                 "Get " + attribute.getDescription(), // NOI18N
@@ -379,15 +420,18 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
 
     }   
     
-    private void addSetAttrMethod(JavaClass tgtClass, MBeanAttribute attribute,
-            boolean hasGetter) {
+    private void addSetAttrMethod(JavaClass tgtClass, MBeanAttribute attribute) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
         String methodBody = 
                 WizardHelpers.forceFirstLetterLowerCase(attribute.getName()) + 
                 " = value;\n"; // NOI18N
         
-        if (hasGetter)
+        if (attribute.isWrapped()) {
+            methodBody = "theRef.set" + // NOI18N
+                    WizardHelpers.capitalizeFirstLetter(attribute.getName()) + 
+                    "(value);\n"; // NOI18N
+        } else if (attribute.getGetMethodExits() || attribute.getIsMethodExits())
             methodBody = "//TODO add your own implementation.\n"; // NOI18N
         
         ArrayList params = new ArrayList();
@@ -432,7 +476,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
     }
     
     private void updateOperationsInClass(JavaClass mbeanClass, Resource mbeanRes, 
-            MBeanOperation[] operations, boolean[] operExist)
+            MBeanOperation[] operations)
            throws java.io.IOException, Exception
     {
         // add methods in mbean class
@@ -449,13 +493,13 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             }
         }
         for (int i = 0; i < operations.length; i++) {
-            if (!operExist[i])
+            if (!operations[i].isMethodExists() && !operations[i].isWrapped())
                 addOpMethod(mbeanClass, operations[i], false);
         }
     }
     
     public void updateOperations(JavaClass mbeanClass, Resource mbeanRes, 
-            MBeanOperation[] operations, boolean[] operExist)
+            MBeanOperation[] operations)
            throws java.io.IOException, Exception
     {
         JavaModel.getJavaRepository().beginTrans(true);
@@ -471,14 +515,14 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                         addImport(mbeanRes,WizardConstants.DATE_OBJ_FULLNAME);
                 }
             }
-            updateOperationsInClass(mbeanClass, mbeanRes, operations, operExist);
+            updateOperationsInClass(mbeanClass, mbeanRes, operations);
             
             // add methods declaration in MBean interface
             JavaClass mbeanIntf = Introspector.getStandardMBeanInterface(mbeanClass);
             JavaModelPackage pkg = (JavaModelPackage) mbeanIntf.refImmediatePackage();
             mbeanIntf = (JavaClass) pkg.getJavaClass().resolve(mbeanIntf.getName());
             MBeanInterfaceGen intfGen = new MBeanInterfaceGen();
-            intfGen.updateOperations(mbeanIntf, operations, operExist);
+            intfGen.updateOperations(mbeanIntf, operations);
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
@@ -490,7 +534,17 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         
         String methodBody = "\n// add your own implementation\n\n"; // NOI18N
         
-        if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
+        if (operation.isWrapped()) {
+            StringBuffer body = new StringBuffer();
+            body.append("theRef." + operation.getName() + "("); // NOI18N
+            for (int i = 0; i < operation.getParametersSize(); i ++) {
+                MBeanOperationParameter param = operation.getParameter(i);
+                body.append(param.getParamName());
+                if (i < operation.getParametersSize() - 1)
+                    body.append(","); // NOI18N
+            }
+            body.append(");\n"); // NOI18N
+        } else if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
             methodBody += "return " +  // NOI18N
                 WizardHelpers.getDefaultValue(operation.getReturnTypeName()) + 
                 ";\n"; // NOI18N

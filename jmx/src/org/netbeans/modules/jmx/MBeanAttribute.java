@@ -30,6 +30,10 @@ public class MBeanAttribute {
     private Method setter;
     private boolean isReadable;
     private boolean isWritable;
+    private boolean isMethodExits = false;
+    private boolean getMethodExits = false;
+    private boolean setMethodExits = false;
+    private boolean wrapped = false;
     
     /** Creates a new instance of MBeanAttribute */
     public MBeanAttribute(String name, String description, 
@@ -41,6 +45,10 @@ public class MBeanAttribute {
         if (getter != null) {
             this.typeName = getter.getType().getName();
             this.isReadable = true;
+            boolean hasIsMethod = (getter.getName().startsWith("is")); // NOI18N
+            this.getMethodExits = !hasIsMethod;
+            this.isMethodExits = hasIsMethod;
+            
             if (setter != null)
                 this.access = WizardConstants.ATTR_ACCESS_READ_WRITE;
             else
@@ -49,6 +57,7 @@ public class MBeanAttribute {
             this.typeName = 
                 ((Parameter) setter.getParameters().get(0)).getType().getName();
             this.access = WizardConstants.ATTR_ACCESS_WRITE_ONLY;
+            this.setMethodExits = true;
         }
     }
     
@@ -160,6 +169,38 @@ public class MBeanAttribute {
      */
     public void setTypeName(String type) {
         this.typeName = type;
+    }
+
+    public boolean getIsMethodExits() {
+        return isMethodExits;
+    }
+
+    public void setIsMethodExits(boolean isMethodExits) {
+        this.isMethodExits = isMethodExits;
+    }
+
+    public boolean getGetMethodExits() {
+        return getMethodExits;
+    }
+
+    public void setGetMethodExits(boolean getMethodExits) {
+        this.getMethodExits = getMethodExits;
+    }
+
+    public boolean getSetMethodExits() {
+        return setMethodExits;
+    }
+
+    public void setSetMethodExits(boolean setMethodExits) {
+        this.setMethodExits = setMethodExits;
+    }
+
+    public boolean isWrapped() {
+        return wrapped;
+    }
+
+    public void setWrapped(boolean wrapped) {
+        this.wrapped = wrapped;
     }
     
 }

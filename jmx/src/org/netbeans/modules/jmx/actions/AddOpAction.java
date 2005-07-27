@@ -83,16 +83,17 @@ public class AddOpAction extends CookieAction {
         //detect if implementation of operations exists
         JavaClass mbeanClass = cfg.getMBeanClass();
         MBeanOperation[] operations = cfg.getOperations();
-        boolean[] opExist = new boolean[operations.length];
         boolean hasExistOp = false;
         for (int i = 0; i < operations.length; i++) {
-            opExist[i] = Introspector.hasOperation(mbeanClass,rc,operations[i]);
-            hasExistOp = hasExistOp || opExist[i];
+            boolean opExists = 
+                    Introspector.hasOperation(mbeanClass,rc,operations[i]);
+            operations[i].setMethodExists(opExists);
+            hasExistOp = hasExistOp || opExists;
         }
         if (hasExistOp) {
             AddOperationsInfoPanel infoPanel = 
                     new AddOperationsInfoPanel(mbeanClass.getSimpleName(),
-                        operations,opExist);
+                        operations);
             if (!infoPanel.configure()) {
                 return;
             }
@@ -100,7 +101,7 @@ public class AddOpAction extends CookieAction {
         
         StdMBeanClassGen generator = new StdMBeanClassGen();
         try {
-            generator.updateOperations(mbeanClass,rc,operations, opExist);
+            generator.updateOperations(mbeanClass,rc,operations);
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {

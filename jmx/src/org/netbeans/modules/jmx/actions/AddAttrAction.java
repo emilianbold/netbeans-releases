@@ -23,7 +23,6 @@ import org.openide.cookies.SourceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.jmx.*;
-import org.netbeans.modules.jmx.Introspector.AttributeMethods;
 import org.netbeans.modules.jmx.actions.dialog.AddAttributesInfoPanel;
 import org.netbeans.modules.jmx.actions.dialog.AddAttributesPanel;
 import org.netbeans.modules.jmx.mbeanwizard.generator.StdMBeanClassGen;
@@ -85,22 +84,18 @@ public class AddAttrAction extends CookieAction {
         //detect if implementation of attributes exists
         JavaClass mbeanClass = cfg.getMBeanClass();
         MBeanAttribute[] attributes = cfg.getAttributes();
-        ArrayList attrMethodsArray = new ArrayList();
         boolean hasExistAttr = false;
         for (int i = 0; i < attributes.length; i++) {
-            AttributeMethods attrMeth = 
-                    Introspector.hasAttribute(mbeanClass,rc,attributes[i]);
-            if (!attrMeth.equals(AttributeMethods.NONE))
+            boolean methodExist = 
+                    Introspector.discoverAttrMethods(mbeanClass,rc,attributes[i]);
+            if (methodExist)
                 hasExistAttr = true;
-            attrMethodsArray.add(attrMeth);
         }
-        AttributeMethods[] attrMethods = 
-                (AttributeMethods[]) attrMethodsArray.toArray(
-                        new AttributeMethods[attrMethodsArray.size()]);
+        
         if (hasExistAttr) {
             AddAttributesInfoPanel infoPanel = 
                     new AddAttributesInfoPanel(mbeanClass.getSimpleName(),
-                        attributes,attrMethods);
+                        attributes);
             if (!infoPanel.configure()) {
                 return;
             }
@@ -108,7 +103,7 @@ public class AddAttrAction extends CookieAction {
         
         StdMBeanClassGen generator = new StdMBeanClassGen();
         try {
-            generator.updateAttributes(mbeanClass,rc,attributes, attrMethods);
+            generator.updateAttributes(mbeanClass,rc,attributes);
             EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
             ec.open();
         } catch (Exception e) {

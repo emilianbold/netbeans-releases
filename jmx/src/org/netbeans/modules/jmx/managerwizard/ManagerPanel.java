@@ -25,7 +25,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.GenericWizardPanel;
-
 import org.netbeans.modules.jmx.runtime.J2SEProjectType;
 /**
  *
@@ -48,7 +47,7 @@ public class ManagerPanel extends javax.swing.JPanel {
     public ManagerPanel (ManagerWizardPanel wiz) 
     {
         this.wiz = wiz;
-        bundle = NbBundle.getBundle(JMXManagerPanel.class);
+        bundle = NbBundle.getBundle(ManagerPanel.class);
         initComponents ();
         
         Mnemonics.setLocalizedText(generateMainMethodJCheckBox,

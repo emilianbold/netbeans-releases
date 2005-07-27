@@ -28,6 +28,8 @@ public class MBeanOperation {
     
     private String name;
     private Method method;
+    private boolean methodExists = false;
+    private boolean wrapped = false;
     private String description;
     private String returnTypeName = "";// NOI18N
     private List<MBeanOperationParameter> parameters = null;
@@ -38,6 +40,7 @@ public class MBeanOperation {
         this.method = method;
         this.description = description;
         this.name = method.getName();
+        this.methodExists = true;
         this.returnTypeName = method.getType().getName();
         //inits exceptions
         List<JavaClass> exceptions = method.getExceptions();
@@ -375,6 +378,22 @@ public class MBeanOperation {
             return exceptions.size();
         else
             return -1;
+    }
+
+    public boolean isMethodExists() {
+        return methodExists;
+    }
+
+    public void setMethodExists(boolean methodExists) {
+        this.methodExists = methodExists;
+    }
+
+    public boolean isWrapped() {
+        return wrapped;
+    }
+
+    public void setWrapped(boolean wrapped) {
+        this.wrapped = wrapped;
     }
     
 }
