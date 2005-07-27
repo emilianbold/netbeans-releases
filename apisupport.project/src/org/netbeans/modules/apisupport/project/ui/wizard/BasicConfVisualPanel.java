@@ -51,7 +51,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     public BasicConfVisualPanel(WizardDescriptor setting) {
         super(setting);
         initComponents();
-        this.data = (NewModuleProjectData) getSetting().getProperty(
+        this.data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }

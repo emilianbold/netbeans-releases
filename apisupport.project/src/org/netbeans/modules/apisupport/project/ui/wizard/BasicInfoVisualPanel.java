@@ -64,7 +64,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         this.isSuiteWizard = isSuiteWizard;
         initComponents();
         
-        this.data = (NewModuleProjectData) getSetting().getProperty(
+        this.data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         if (isSuiteWizard) {
             detachModuleTypeGroup();

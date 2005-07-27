@@ -54,9 +54,9 @@ public class PlatformChooserVisualPanel extends BasicVisualPanel
     void storeData() {
         File file = platformChooser.getSelectedFile();
         if (file != null) {
-            getSetting().putProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY,
+            getSettings().putProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY,
                     file.getAbsolutePath());
-            getSetting().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
+            getSettings().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
                     plafLabelValue.getText());
         } // when wizard is cancelled file is null
     }

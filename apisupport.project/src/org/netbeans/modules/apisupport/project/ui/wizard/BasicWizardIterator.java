@@ -58,10 +58,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         protected Panel(WizardDescriptor wiz) {
             super(wiz);
         }
-                
-        public final WizardDescriptor getSetting() {
-            return super.getSetting();
-        }
+        
     }
 
     /** DataModel that is passed through individual panels.*/        
@@ -184,7 +181,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     private static final class PrivateWizardPanel extends BasicWizardPanel {
         private BasicWizardIterator.Panel panel;
         PrivateWizardPanel(BasicWizardIterator.Panel panel, String[] allSteps, int stepIndex) {
-            super(panel.getSetting());
+            super(panel.getSettings());
             panel.addPropertyChangeListener(this);            
             panel.setName(panel.getPanelName()); // NOI18N
             this.panel = panel;

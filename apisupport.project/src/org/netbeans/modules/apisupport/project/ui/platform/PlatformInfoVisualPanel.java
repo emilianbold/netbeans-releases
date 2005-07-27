@@ -40,7 +40,7 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String destDir = (String) getSetting().getProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY);
+        String destDir = (String) getSettings().getProperty(NbPlatformCustomizer.PLAF_DIR_PROPERTY);
         try {
             plafNameValue.setText(NbPlatform.computeDisplayName(new File(destDir)));
         } catch (IOException e) {
@@ -63,7 +63,7 @@ public class PlatformInfoVisualPanel extends BasicVisualPanel {
     }
     
     void storeData() {
-        getSetting().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
+        getSettings().putProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY,
                 plafNameValue.getText().trim());
     }
     

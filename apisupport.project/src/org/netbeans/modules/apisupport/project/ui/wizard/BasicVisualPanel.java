@@ -24,25 +24,25 @@ import org.openide.util.NbBundle;
  */
 public abstract class BasicVisualPanel extends JPanel {
     
-    private WizardDescriptor setting;
+    private WizardDescriptor settings;
     private Boolean valid = Boolean.FALSE;
     
     protected BasicVisualPanel(WizardDescriptor setting) {
-        this.setting = setting;
+        this.settings = setting;
     }
     
-    protected WizardDescriptor getSetting() {
-        return setting;
+    public final WizardDescriptor getSettings() {
+        return settings;
     }
     
     /** Set error message and always update panel validity. */
-    protected void setErrorMessage(String errorMessage) {
+    protected final void setErrorMessage(String errorMessage) {
         setErrorMessage(errorMessage, true);
     }
     
     /** Set error message and eventually update panel validity. */
-    protected void setErrorMessage(String errorMessage, boolean fireChange) {
-        setting.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
+    protected final void setErrorMessage(String errorMessage, boolean fireChange) {
+        settings.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
         if (fireChange) {
             setValid(Boolean.valueOf(errorMessage == null));
         }
@@ -52,7 +52,7 @@ public abstract class BasicVisualPanel extends JPanel {
      * Sets this panel's validity and fires event to it's wrapper wizard panel.
      * See {@link BasicWizardPanel#propertyChange} for what happens further.
      */
-    protected void setValid(Boolean newValid) {
+    protected final void setValid(Boolean newValid) {
         this.valid = newValid;
         firePropertyChange("valid", Boolean.valueOf(!newValid.booleanValue()), newValid); // NOI18N
     }
@@ -60,7 +60,7 @@ public abstract class BasicVisualPanel extends JPanel {
     /**
      * Convenience method for accessing Bundle resources from this package.
      */
-    public final String getMessage(String key) {
+    protected final String getMessage(String key) {
         return NbBundle.getMessage(getClass(), key);
     }
 }
