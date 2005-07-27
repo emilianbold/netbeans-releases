@@ -181,9 +181,8 @@ public class Utils {
             File rootFile = FileUtil.toFile(srcRootFo);
             FileInformation fi = cache.getStatus(rootFile);
             if ((fi.getStatus() & includingFolderStatus) == 0) return false;
-            File srcRootFile = FileUtil.toFile(srcRootFo);
             try {
-                getCVSRootFor(srcRootFile);
+                getCVSRootFor(rootFile);
             } catch (IOException e) {
                 // the folder is not under a versioned root
                 continue;
@@ -206,7 +205,7 @@ public class Utils {
             if (containsSubprojects) {
                 files.addAll(projectFiles);
             } else {
-                files.add(srcRootFile);
+                files.add(rootFile);
             }
         }
         return true;
