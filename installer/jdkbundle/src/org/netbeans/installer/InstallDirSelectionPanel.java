@@ -15,6 +15,7 @@ package org.netbeans.installer;
 
 import com.installshield.product.service.product.ProductService;
 import com.installshield.util.Log;
+import com.installshield.util.MnemonicString;
 import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
@@ -47,9 +48,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private JLabel     nbInputLabel;
     //private JTextArea  nbListLabel;
 
-    private JTextField j2seInstallDirTF;
-    private JButton    j2seBrowseButton;
-    private JLabel     j2seInputLabel;
+    private JTextField jdkInstallDirTF;
+    private JButton    jdkBrowseButton;
+    private JLabel     jdkInputLabel;
     //private JTextArea  j2seListLabel;
 
     private JPanel mainPanel;
@@ -63,7 +64,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private String installedVersion = "";
     private String backupDirName    = "";
     private String nbLabel          = null;
-    private String j2seLabel        = null;
+    private String jdkLabel        = null;
     private String j2seDir          = null;
 
     private static int NB_INSTALL_DIR   = 1;
@@ -185,7 +186,12 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	// netbeans install dir components
 	String nbInstallDir = resolveString("$P(absoluteInstallLocation)");
 	nbLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbInstallDirectoryLabel)");
+        MnemonicString nbInputLabelMn = new MnemonicString(nbLabel);
+        nbLabel = nbInputLabelMn.toString();
         nbInputLabel = new JLabel(nbLabel);
+        if (nbInputLabelMn.isMnemonicSpecified()) {
+            nbInputLabel.setDisplayedMnemonic(nbInputLabelMn.getMnemonicChar());
+        }
 	nbInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(15, 25, 3, 0);
@@ -208,10 +214,16 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	gridBagConstraints.gridwidth = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
 	gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        nbInputLabel.setLabelFor(nbInstallDirTF);
         inputPanel.add(nbInstallDirTF, gridBagConstraints);
 
-        String browseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.browseButtonLabel)");
-        nbBrowseButton = new JButton(browseButtonText);
+        String nbBrowseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.nbBrowseButtonLabel)");
+        MnemonicString nbBrowseMn = new MnemonicString(nbBrowseButtonText);
+        nbBrowseButtonText = nbBrowseMn.toString();
+        nbBrowseButton = new JButton(nbBrowseButtonText);
+        if (nbBrowseMn.isMnemonicSpecified()) {
+            nbBrowseButton.setMnemonic(nbBrowseMn.getMnemonicChar());
+        }
 	nbBrowseButton.setActionCommand("nb");
         nbBrowseButton.addActionListener(this);
         gridBagConstraints = new GridBagConstraints();
@@ -256,11 +268,16 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	} else {
 	    j2seInstallDir = tempPath + File.separator + j2seDir;
 	}*/
-	j2seLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkInstallDirectoryLabel)");
+	jdkLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkInstallDirectoryLabel)");
+        MnemonicString jdkInputLabelMn = new MnemonicString(jdkLabel);
+        jdkLabel = jdkInputLabelMn.toString();
 
 	if (!Util.isJDKAlreadyInstalled()) {
-	    j2seInputLabel = new JLabel(j2seLabel);
-	    j2seInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+            jdkInputLabel = new JLabel(jdkLabel);
+            if (jdkInputLabelMn.isMnemonicSpecified()) {
+                jdkInputLabel.setDisplayedMnemonic(jdkInputLabelMn.getMnemonicChar());
+            }
+	    jdkInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 	    gridBagConstraints = new GridBagConstraints();
 	    gridBagConstraints.insets = new Insets(0, 25, 3, 0);
 	    gridBagConstraints.gridx = 0;
@@ -270,9 +287,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
 	    gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
 	    gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	    inputPanel.add(j2seInputLabel, gridBagConstraints);
+	    inputPanel.add(jdkInputLabel, gridBagConstraints);
 	    
-	    j2seInstallDirTF = new JTextField(j2seInstallDir);
+	    jdkInstallDirTF = new JTextField(j2seInstallDir);
 	    gridBagConstraints = new GridBagConstraints();
 	    gridBagConstraints.insets = new Insets(0, 25, 3, 0);
 	    gridBagConstraints.gridx = 0;
@@ -282,12 +299,18 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    gridBagConstraints.gridwidth = 1;
 	    gridBagConstraints.anchor = GridBagConstraints.WEST;
 	    gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	    inputPanel.add(j2seInstallDirTF, gridBagConstraints);
+            jdkInputLabel.setLabelFor(jdkInstallDirTF);
+	    inputPanel.add(jdkInstallDirTF, gridBagConstraints);
 	    
-	    j2seBrowseButton = new JButton();
-	    j2seBrowseButton.setText(browseButtonText);
-	    j2seBrowseButton.setActionCommand("j2se"); 
-	    j2seBrowseButton.addActionListener(this);
+            String jdkBrowseButtonText = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkBrowseButtonLabel)");
+            MnemonicString jdkBrowseMn = new MnemonicString(jdkBrowseButtonText);
+            jdkBrowseButtonText = jdkBrowseMn.toString();
+            jdkBrowseButton = new JButton(jdkBrowseButtonText);
+            if (jdkBrowseMn.isMnemonicSpecified()) {
+                jdkBrowseButton.setMnemonic(jdkBrowseMn.getMnemonicChar());
+            }
+	    jdkBrowseButton.setActionCommand("j2se"); 
+	    jdkBrowseButton.addActionListener(this);
 	    gridBagConstraints = new GridBagConstraints();
 	    gridBagConstraints.insets = new Insets(0, 12, 3, 0);
 	    gridBagConstraints.gridx = GridBagConstraints.RELATIVE;
@@ -295,7 +318,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    gridBagConstraints.gridheight = 1;
 	    gridBagConstraints.gridwidth = 1;
 	    gridBagConstraints.anchor = GridBagConstraints.WEST;
-	    inputPanel.add(j2seBrowseButton, gridBagConstraints);
+	    inputPanel.add(jdkBrowseButton, gridBagConstraints);
 
 	    //j2seListLabel = new JTextArea();
 	    //j2seListLabel.setText("(" + defaultDirLabel + " " + j2seInstallDir + ")");	
@@ -314,8 +337,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    gridBagConstraints.fill = GridBagConstraints.BOTH;
 	    //inputPanel.add(j2seListLabel, gridBagConstraints);
 
-	    //j2seBrowseButton.setBackground(getContentPane().getBackground());
-	    //j2seInputLabel.setBackground(getContentPane().getBackground());
+	    //jdkBrowseButton.setBackground(getContentPane().getBackground());
+	    //jdkInputLabel.setBackground(getContentPane().getBackground());
 	    //j2seListLabel.setBackground(getContentPane().getBackground());
 	}
 
@@ -389,11 +412,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	
  	// Check the j2se directory
         String j2seMsgStart = null;
-        index = j2seLabel.lastIndexOf(':');
+        index = jdkLabel.lastIndexOf(':');
         if (index > 0) {
-            j2seMsgStart = j2seLabel.substring(0, index);
+            j2seMsgStart = jdkLabel.substring(0, index);
         } else {
-            j2seMsgStart = j2seLabel;
+            j2seMsgStart = jdkLabel;
         }
         String j2seInstallDir = null;
         if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
@@ -408,7 +431,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         }
         else {
             // There is no jdk already installed so check the j2se directory.
-            j2seInstallDir = j2seInstallDirTF.getText().trim();
+            j2seInstallDir = jdkInstallDirTF.getText().trim();
             instDirFile = new File(j2seInstallDir);
 
             try { // cleanup any misc chars in path such as "."
@@ -418,7 +441,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                 System.out.println("IOException: Could not get canonical path: " + ioerr);
                 j2seInstallDir = instDirFile.getAbsolutePath();
             }
-            j2seInstallDirTF.setText(j2seInstallDir);
+            jdkInstallDirTF.setText(j2seInstallDir);
 
             // If there is a problem with the specified directory, then return false
             if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
@@ -645,8 +668,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 		str = nbInstallDirTF.getText();
 		tf = nbInstallDirTF;
 	    } else {
-		str =j2seInstallDirTF.getText();
-		tf = j2seInstallDirTF;
+		str =jdkInstallDirTF.getText();
+		tf = jdkInstallDirTF;
 	    }
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
