@@ -893,7 +893,7 @@ public final class NbModuleProject implements Project {
         private static final String[] PRIVILEGED_NAMES = new String[] {
         };
         
-        private static final String[] RECOMENDED_TYPES = new String[] {         
+        private static final String[] RECOMMENDED_TYPES = new String[] {         
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
             "java-beans",           // NOI18N
@@ -902,8 +902,8 @@ public final class NbModuleProject implements Project {
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
             "junit",                // NOI18N                    
-            "simple-files",          // NOI18N
-             "nbm-specific"         // NOI18N
+            "simple-files",         // NOI18N
+            "nbm-specific",         // NOI18N
         };
         
         public String[] getPrivilegedTemplates() {
@@ -911,7 +911,7 @@ public final class NbModuleProject implements Project {
         }
 
         public String[] getRecommendedTypes() {
-            return RECOMENDED_TYPES;
+            return RECOMMENDED_TYPES;
         }
     }    
 }
