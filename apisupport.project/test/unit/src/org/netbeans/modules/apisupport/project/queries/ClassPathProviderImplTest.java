@@ -97,6 +97,7 @@ public class ClassPathProviderImplTest extends TestBase {
         Set/*<String>*/ expectedRoots = new TreeSet();
         // Keep up to date w/ changes in ant/nbproject/project.{xml,properties}:
         // ${module.classpath}:
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-xml.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
@@ -206,6 +207,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForDir("ant/build/classes"));
         expectedRoots.add(urlForJar("ant/external/lib/ant.jar"));
         // ${module.classpath}:
+        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-xml.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
