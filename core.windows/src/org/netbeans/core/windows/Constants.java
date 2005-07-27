@@ -7,19 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.core.windows;
 
-
+import java.awt.Dimension;
+import javax.swing.JSplitPane;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.util.Utilities;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * Constants in window system.
@@ -90,15 +87,6 @@ public abstract class Constants {
     public static final boolean SWITCH_DND_DISABLE          = Boolean.getBoolean("netbeans.winsys.disable_dnd"); // NOI18N
     /** During DnD it provides nicer feedback (fading of possible drop), however performance is worsen in that case. */
     public static final boolean SWITCH_DROP_INDICATION_FADE = Boolean.getBoolean("netbeans.winsys.dndfade.on"); //NOI18N
-    /** Uses the old tabbed components as container. */
-    public static final boolean SWITCH_OLD_TABS             = Boolean.getBoolean("netbeans.winsys.oldtabs"); // NOI18N
-    /** Uses the old tabbed components as copntainers for view modes. */
-    public static final boolean SWITCH_OLD_TABS_VIEW        = Boolean.getBoolean("netbeans.winsys.oldtabs.view"); // NOI18N
-    /** Uses the old tabbed components as copntainers for editor modes. */
-    public static final boolean SWITCH_OLD_TABS_EDITOR      = Boolean.getBoolean("netbeans.winsys.oldtabs.editor"); // NOI18N
-    /** Enables close button on old tabbed component, relevant only together with switches enabling the old tabs.. */
-    public static final boolean SWITCH_CLOSE_BUTTON_TAB     =  System.getProperty("netbeans.tab.close.button.enabled") == null // NOI18N
-                                                               ? true : Boolean.getBoolean("netbeans.tab.close.button.enabled"); // NOI18N
     /** Shows the status line at the end of menu bar instead of at the bottom of main window. */
     public static final boolean SWITCH_STATUSLINE_IN_MENUBAR = Boolean.getBoolean("netbeans.winsys.statusLine.in.menuBar"); // NOI18N
 
@@ -130,4 +118,3 @@ public abstract class Constants {
     
     private Constants() {}
 }
-
