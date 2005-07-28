@@ -21,6 +21,8 @@ import java.util.WeakHashMap;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
@@ -30,6 +32,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Lookup;
 
 /**
  * Fold manager factory provider that obtains the factories
@@ -67,40 +70,9 @@ class LayerProvider extends FoldManagerFactoryProvider {
             if (factoryList == null) { // not cached yet
                 String mimeType = kit.getContentType();
                 if (mimeType != null) {
-                    Repository repository = Repository.getDefault();
-                    FileSystem defaultFS;
-                    if (repository != null && (defaultFS = repository.getDefaultFileSystem()) != null) {
-                        FileObject dir = defaultFS.findResource("Editors/" + mimeType + "/" + FOLDER_NAME); // NOI18N
-                        if (dir!=null){
-                            try {
-                                DataObject dob = DataObject.find(dir);
-                                DataFolder folder = (DataFolder)dob.getCookie(DataFolder.class);
-                                DataObject[] children;
-                                if (folder != null && (children = folder.getChildren()) != null) {
-                                    factoryList = new ArrayList();
-                                    for (int i = 0; i < children.length; i++) {
-                                        InstanceCookie ic = (InstanceCookie)children[i].getCookie(InstanceCookie.class);
-                                        if (ic != null) {
-                                            try {
-                                                Object inst = ic.instanceCreate();
-                                                if (inst instanceof FoldManagerFactory) {
-                                                    factoryList.add(inst);
-                                                } else {
-                                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                                        inst.toString() + " not instanceof FoldManagerFactory"); // NOI18N
-                                                }
-                                            } catch (Exception e) {
-                                                // skip this factory
-                                            }
-                                        }
-                                    }
-                                    kit2factoryList.put(kit, factoryList);
-                                }
-                            } catch (DataObjectNotFoundException e) {
-                                // factoryList stays null
-                            }
-                        }
-                    }
+                    MimeLookup mimeLookup = MimeLookup.getMimeLookup(mimeType);
+                    factoryList = new ArrayList();
+                    factoryList.addAll(mimeLookup.lookup(new Lookup.Template(FoldManagerFactory.class)).allInstances());
                 }
             } // not yet cached
         }
