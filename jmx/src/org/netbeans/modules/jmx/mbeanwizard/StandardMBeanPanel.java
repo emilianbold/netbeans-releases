@@ -520,8 +520,7 @@ public class StandardMBeanPanel extends javax.swing.JPanel
                         WizardHelpers.getPackageName(project,filePath);
                 wiz.putProperty(WizardConstants.PROP_MBEAN_FILE_PATH,filePath);
                 wiz.putProperty(WizardConstants.PROP_MBEAN_PACKAGE_NAME, packName);
-                wiz.putProperty(WizardConstants.PROP_MBEAN_PACKAGE_PATH,
-                        packName.replace('.', File.separatorChar));
+                
             }
             
             /* transfered

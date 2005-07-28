@@ -42,11 +42,9 @@ public class Translator {
      * example of members values :
      * mBeanName = CacheManager
      * mBeanPackageName = com.foo.bar
-     * mBeanPackagePath = com/foo/bar
-     * mBeanPackDir = 'package com.foo.bar;'
      * srcFilePath = /home/thomas/app/src
      * mBeanFilePath = /home/thomas/app/src/com/foo/bar
-     * @param wiz <CODE>TemplateWizard</CODE> a wizard
+     * @param wiz <CODE>TemplateWizard</CODE> a wizard map
      */
     public static MBeanDO createMBeanDO(TemplateWizard wiz) {
         MBeanDO mbean = new MBeanDO();
@@ -129,10 +127,7 @@ public class Translator {
      * example of members values :
      * testClassName = CacheManagerTest
      * testPackageName = com.foo.bar.test
-     * mBeanPackagePath = com/foo/bar/test
-     * mBeanPackDir = 'package com.foo.bar.test;'
      * testFilePath = /home/thomas/app/src/com/foo/bar/test
-     * testMBeanImport = 'import com.foo.bar.CacheManager;'
      */
     public static MBeanGenInfo createGenInfo(WizardDescriptor wiz) {
         MBeanGenInfo mbeanGenInfo = new MBeanGenInfo();
