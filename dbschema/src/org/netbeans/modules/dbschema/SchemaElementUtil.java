@@ -151,18 +151,6 @@ public class SchemaElementUtil {
         return se;
     }
 
-    /** Constructs path of file.
-    * @param sb string buffer
-    * @param sepChar separator character
-    */
-    private static void constructName (FileObject fo, StringBuffer sb, char sepChar) {
-        FileObject parent = fo.getParent ();
-        if ((parent != null) && !parent.isRoot ()) {
-            constructName (parent, sb, sepChar);
-            sb.append (sepChar);
-        }
-        sb.append (fo.getNameExt ());
-    }    
     private static FileObject findResource(FileObject sourceRoot, String name) {
         ClassPath cp = ClassPath.getClassPath(sourceRoot, ClassPath.SOURCE);
         return cp.findResource(NameUtil.getSchemaResourceName(name));
