@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 
 /**
@@ -20,6 +23,8 @@ import org.openide.util.Lookup;
  * @author Petr Hrebejk, Jesse Glick
  */
 public class Utilities {
+    
+    private static final Map/*<ProjectCustomizer.Category, CategoryChangeSupport>*/ CATEGORIES = new HashMap();
     
     private Utilities() {}
     
@@ -45,6 +50,16 @@ public class Utilities {
         OpenProjectsTrampoline instance = (OpenProjectsTrampoline) Lookup.getDefault().lookup(OpenProjectsTrampoline.class);
         assert instance != null;
         return instance;
+    }
+    
+    public static CategoryChangeSupport getCategoryChangeSupport(ProjectCustomizer.Category category) {
+        CategoryChangeSupport cw = (CategoryChangeSupport) Utilities.CATEGORIES.get(category);
+        return cw == null ? CategoryChangeSupport.NULL_INSTANCE : cw;
+    }
+    
+    public static void putCategoryChangeSupport(
+            ProjectCustomizer.Category category, CategoryChangeSupport wrapper) {
+        Utilities.CATEGORIES.put(category, wrapper);
     }
     
 }

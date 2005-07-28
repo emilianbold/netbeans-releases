@@ -20,6 +20,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -44,14 +45,20 @@ public class CustomizerDialog {
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
                 
-    public static Dialog createDialog( ActionListener okOptionListener, JPanel innerPane, HelpCtx helpCtx ) {
+    public static Dialog createDialog( ActionListener okOptionListener, JPanel innerPane,
+            HelpCtx helpCtx, ProjectCustomizer.Category[] categories ) {
+        
+        ListeningButton okButton = new ListeningButton(
+                NbBundle.getMessage(CustomizerDialog.class, "LBL_Customizer_Ok_Option"), // NOI18N
+                categories);
+        okButton.setEnabled(CustomizerDialog.checkValidity(categories));
         
         // Create options
         JButton options[] = new JButton[] { 
-            new JButton( NbBundle.getMessage( CustomizerDialog.class, "LBL_Customizer_Ok_Option") ), // NOI18N
+            okButton,
             new JButton( NbBundle.getMessage( CustomizerDialog.class, "LBL_Customizer_Cancel_Option" ) ) , // NOI18N
         };
-
+        
         // Set commands
         options[ OPTION_OK ].setActionCommand( COMMAND_OK );
         options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
@@ -92,8 +99,18 @@ public class CustomizerDialog {
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
         return dialog;
         
-    }    
+    }
     
+    /** Returns whether all given categories are valid or not. */
+    private static boolean checkValidity(ProjectCustomizer.Category[] categories) {
+        for (int i = 0; i < categories.length; i++) {
+            if (!categories[i].isValid()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Listens to the actions on the Customizer's option buttons */
     private static class OptionListener implements ActionListener {
     
@@ -132,9 +149,31 @@ public class CustomizerDialog {
                 dialogDescriptor.setHelpCtx( newHelp == null  || newHelp == HelpCtx.DEFAULT_HELP  ? defaultHelpCtx : newHelp );
             }
                         
-        }        
+        }
         
     }
     
-                            
+    private static class ListeningButton extends JButton implements PropertyChangeListener {
+        
+        private ProjectCustomizer.Category[] categories;
+        
+        public ListeningButton(String label, ProjectCustomizer.Category[] categories) {
+            super(label);
+            this.categories = categories;
+            for (int i = 0; i < categories.length; i++) {
+                Utilities.getCategoryChangeSupport(categories[i]).addPropertyChangeListener(this);
+            }
+            
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == CategoryChangeSupport.VALID_PROPERTY) {
+                boolean valid = ((Boolean) evt.getNewValue()).booleanValue();
+                // enable only if all categories are valid
+                setEnabled(valid && CustomizerDialog.checkValidity(categories));
+            }
+        }
+        
+    }
+    
 }

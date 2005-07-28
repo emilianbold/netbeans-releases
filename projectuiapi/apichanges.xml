@@ -76,6 +76,48 @@ is the proper place.
 
     <changes>
         
+        <change id="ProjectCustomizer.errorMessage">
+            <api name="general"/>
+            <summary>Added ability to set an error message for project customizer's categories.</summary>
+            <version major="1" minor="9"/>
+            <date day="28" month="7" year="2005"/>
+            <author login="mkrauskopf"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ProjectCustomizer.Category.setErrorMessage</code> and
+                    <code>ProjectCustomizer.Category.getErrorMessage</code>
+                    methods. With those methods client can set an error message
+                    for individual categories.
+                    Also the default implementation of a customizer dialog uses
+                    these methods for showing a message on the bottom of
+                    category views and to mark category nodes for invalid
+                    categories (similar to the error message in wizards).
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer.Category"/>
+            <issue number="61036"/>
+        </change>
+    
+        <change id="ProjectCustomizer.validation">
+            <api name="general"/>
+            <summary>Added ability to set whether a project customizer's categories are valid.</summary>
+            <version major="1" minor="9"/>
+            <date day="28" month="7" year="2005"/>
+            <author login="mkrauskopf"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ProjectCustomizer.Category.setValid</code> and
+                    <code>ProjectCustomizer.Category.isValid</code> methods.
+                    With those methods client can affect whether the OK button
+                    of the Customizer dialog is enabled.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer.Category"/>
+            <issue number="58457"/>
+        </change>
+    
         <change id="ProjectActions">
             <api name="general"/>
             <summary>Ability to extend project context menus</summary>

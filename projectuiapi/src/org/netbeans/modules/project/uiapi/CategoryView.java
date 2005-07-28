@@ -1,4 +1,4 @@
-/*4
+/*
  *                 Sun Public License Notice
  *
  * The contents of this file are subject to the Sun Public License
@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -31,7 +32,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -43,8 +43,6 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
     private ExplorerManager manager;
     private BeanTreeView btv;
     private CategoryModel categoryModel;
-
-    private ProjectCustomizer.Category currentCategory;
 
     public CategoryView( CategoryModel categoryModel ) {
 
@@ -169,23 +167,32 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
 
     /** Node to be used for configuration
      */
-    private static class CategoryNode extends AbstractNode {
+    private static class CategoryNode extends AbstractNode implements PropertyChangeListener {
 
-        private Image icon = Utilities.loadImage( "org/netbeans/modules/project/uiapi/defaultCategory.gif" ); // NOI18N    
+        private Image icon = org.openide.util.Utilities.loadImage( "org/netbeans/modules/project/uiapi/defaultCategory.gif" ); // NOI18N    
+
+        private ProjectCustomizer.Category category;
 
         public CategoryNode( ProjectCustomizer.Category category ) {
             super( ( category.getSubcategories() == null || category.getSubcategories().length == 0 ) ? 
                         Children.LEAF : new CategoryChildren( category.getSubcategories() ), 
                    Lookups.fixed( new Object[] { category } ) );
             setName( category.getName() );
+            this.category = category;
             setDisplayName( category.getDisplayName() );
-
+            
             if ( category.getIcon() != null ) {
                 this.icon = category.getIcon(); 
             }
-
+            Utilities.getCategoryChangeSupport(category).addPropertyChangeListener(this);
         }
 
+        public String getHtmlDisplayName() {
+            return category.isValid() ? null :
+                "<html><font color=\"!nb.errorForeground\">" + // NOI18N
+                    category.getDisplayName() + "</font></html>"; // NOI18N
+        }
+        
         public Image getIcon( int type ) {
             return this.icon;
         }
@@ -193,6 +200,13 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
         public Image getOpenedIcon( int type ) {
             return getIcon( type );
         }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName() == CategoryChangeSupport.VALID_PROPERTY) {
+                fireDisplayNameChange(null, null);
+            }
+        }
+        
     }
 
     /** Children used for configuration
