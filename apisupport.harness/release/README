@@ -684,6 +684,11 @@ will be packed into
 
     ${cluster}/modules/locale/org-netbeans-modules-x_foo.jar!/org/netbeans/modules/x/resources/Bundle_foo.properties
 
+run - start application for testing.
+
+debug - like run, but run in the JPDA debugger. (Only available from inside the
+IDE.)
+
 CONTENTS OF YOUR manifest.mf
 ----------------------------
 

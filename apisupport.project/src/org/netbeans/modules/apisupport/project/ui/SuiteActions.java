@@ -13,13 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -27,6 +25,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
@@ -50,9 +49,13 @@ public final class SuiteActions implements ActionProvider {
         List/*<Action>*/ actions = new ArrayList();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
-        actions.add(createGlobalAction(project, new String[] {"build"}, "Build All"));
-        actions.add(createGlobalAction(project, new String[] {"clean", "build"}, "Clean and Build All"));
-        actions.add(createGlobalAction(project, new String[] {"clean"}, "Clean All"));
+        // XXX I18N:
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Build All", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, "Clean and Build All", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clean All", null));
+        actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Run", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
@@ -105,6 +108,8 @@ public final class SuiteActions implements ActionProvider {
             ActionProvider.COMMAND_BUILD,
             ActionProvider.COMMAND_CLEAN,
             ActionProvider.COMMAND_REBUILD,
+            ActionProvider.COMMAND_RUN,
+            ActionProvider.COMMAND_DEBUG,
         };
     }
     
@@ -124,6 +129,10 @@ public final class SuiteActions implements ActionProvider {
             targetNames = new String[] {"clean"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_REBUILD)) {
             targetNames = new String[] {"clean", "build"}; // NOI18N
+        } else if (command.equals(ActionProvider.COMMAND_RUN)) {
+            targetNames = new String[] {"run"}; // NOI18N
+        } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
+            targetNames = new String[] {"debug"}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
         }
@@ -132,21 +141,6 @@ public final class SuiteActions implements ActionProvider {
         } catch (IOException e) {
             Util.err.notify(e);
         }
-    }
-
-    private static Action createGlobalAction(final SuiteProject project, final String[] targetNames, String displayName) {
-        return new AbstractAction(displayName) {
-            public boolean isEnabled() {
-                return findBuildXml(project) != null;
-            }
-            public void actionPerformed(ActionEvent ignore) {
-                try {
-                    ActionUtils.runTarget(findBuildXml(project), targetNames, null);
-                } catch (IOException e) {
-                    Util.err.notify(e);
-                }
-            }
-        };
     }
     
     private static FileObject findBuildXml(SuiteProject project) {

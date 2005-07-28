@@ -42,4 +42,12 @@ Microsystems, Inc. All Rights Reserved.
         <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
     </target>
     
+    <target name="run" depends="build">
+        <ant antfile="${harness.dir}/run.xml" target="run"/>
+    </target>
+    
+    <target name="debug" depends="build">
+        <ant antfile="${harness.dir}/run.xml" target="debug"/>
+    </target>
+
 </project>

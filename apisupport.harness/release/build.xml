@@ -11,7 +11,7 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="harness" basedir=".">
+<project name="harness" basedir="." default="netbeans">
 
     <import file="common.xml"/>
     
@@ -143,79 +143,21 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="run" depends="netbeans">
-        <property name="run.app.exe" value="bin\nb.exe"/>
-        <property name="run.app.sh" value="bin/netbeans"/>
-        <property name="run.jdkhome" location="${java.home}/.."/>
-        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir">
-            <isset property="suite.dir"/>
-        </condition>
-        <property name="test.user.dir" location="build/testuserdir"/>
-        <property name="install" location="${netbeans.dest.dir}"/>
-        <mkdir dir="${test.user.dir}/etc"/>
-        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters=${cluster}</echo>
-        <!-- XXX the following is undesirable when platform is NB IDE; overrides branding to be null: -->
-        <property name="branding.token" value="-"/> <!-- fallback value if not set -->
-        <property name="run.args" value=""/>
-        <property name="run.args.extra" value=""/>
-        <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP" executable="${install}\${run.app.exe}" failonerror="yes">
-            <arg value="--jdkhome"/>
-            <arg file="${run.jdkhome}"/>
-            <arg value="--userdir"/>
-            <arg file="${test.user.dir}"/>
-            <arg value="--branding"/>
-            <arg value="${branding.token}"/>
-            <arg line="${run.args}"/>
-            <arg line="${run.args.extra}"/>
-        </exec>
-        <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
-            <arg value="${install}/${run.app.sh}"/>
-            <arg value="--jdkhome"/>
-            <arg file="${run.jdkhome}"/>
-            <arg value="--userdir"/>
-            <arg file="${test.user.dir}"/>
-            <arg value="--branding"/>
-            <arg value="${branding.token}"/>
-            <arg line="${run.args}"/>
-            <arg line="${run.args.extra}"/>
-        </exec>
-        <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
-            <arg value="${install}/${run.app.sh}"/>
-            <arg value="--jdkhome"/>
-            <arg file="/Library/Java/Home"/>
-            <arg value="--userdir"/>
-            <arg file="${test.user.dir}"/>
-            <arg value="--branding"/>
-            <arg value="${branding.token}"/>
-            <arg line="${run.args}"/>
-            <arg line="${run.args.extra}"/>
-        </exec>
+        <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
     
     <target name="debug" depends="netbeans">
-        <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
-            <classpath>
-                <fileset dir="${netbeans.dest.dir}">
-                    <include name="**/*.jar"/>
-                </fileset>
-                <fileset dir="${cluster}">
-                    <include name="**/*.jar"/>
-                </fileset>
-            </classpath>
-        </nbjpdastart>
-        <property name="debug.pause" value="n"/>
-        <property name="debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
-        <antcall target="run">
-            <param name="run.args" value="${debug.args}"/>
-        </antcall>
+        <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>
     
     <target name="reload" depends="netbeans">
-        <antcall target="run">
-            <param name="run.args" value="--reload ${cluster}/${module.jar}"/>
-        </antcall>
+        <ant antfile="${harness.dir}/run.xml" target="run">
+            <property name="run.args" value="--reload ${cluster}/${module.jar}"/>
+        </ant>
     </target>
     
     <target name="reload-in-ide" depends="netbeans">
+        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbinstaller module="${cluster}/${module.jar}" action="reinstall"/>
     </target>
     

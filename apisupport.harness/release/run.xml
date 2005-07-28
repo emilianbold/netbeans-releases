@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="run" basedir=".">
+
+    <target name="-init">
+        <property name="run.jdkhome" location="${java.home}/.."/>
+        <condition property="test.user.dir" value="${suite.dir}/build/testuserdir">
+            <isset property="suite.dir"/>
+        </condition>
+        <property name="test.user.dir" location="build/testuserdir"/>
+        <property name="install" location="${netbeans.dest.dir}"/>
+        <available file="${install}/bin" type="dir" property="platform.is.complete.app"/>
+        <property name="run.args.common" value="--userdir ${test.user.dir}"/>
+    </target>
+
+    <target name="-prepare-as-app" depends="-init" if="platform.is.complete.app">
+        <property name="run.app.exe" value="bin\nb.exe"/>
+        <property name="run.app.sh" value="bin/netbeans"/>
+        <property name="run.exe" location="${install}\${run.app.exe}"/>
+        <property name="run.sh" location="${install}/${run.app.sh}"/>
+        <mkdir dir="${test.user.dir}/etc"/>
+        <echo file="${test.user.dir}/etc/netbeans.conf">netbeans_extraclusters=${cluster}</echo>
+        <property name="run.args.prepared" value=""/>
+    </target>
+
+    <target name="-prepare-as-platform" depends="-init" unless="platform.is.complete.app">
+        <property name="platform.cluster" location="${install}/platform6"/> <!-- XXX better to avoid hardcoding -->
+        <property name="run.exe" location="${platform.cluster}\lib\nbexec.exe"/>
+        <property name="run.sh" location="${platform.cluster}/lib/nbexec"/>
+        <property name="branding.token" value="-"/> <!-- fallback value if not set -->
+        <property name="run.args.prepared" value="--branding ${branding.token} --clusters ${cluster}"/>
+    </target>
+
+    <target name="run" depends="-prepare-as-app,-prepare-as-platform">
+        <property name="run.args" value=""/>
+        <property name="run.args.extra" value=""/>
+        <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows 2003 Windows XP" executable="${run.exe}" failonerror="yes">
+            <arg value="--jdkhome"/>
+            <arg file="${run.jdkhome}"/>
+            <arg line="${run.args.common}"/>
+            <arg line="${run.args.prepared}"/>
+            <arg line="${run.args}"/>
+            <arg line="${run.args.extra}"/>
+        </exec>
+        <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
+            <arg value="${run.sh}"/>
+            <arg value="--jdkhome"/>
+            <arg file="${run.jdkhome}"/>
+            <arg line="${run.args.common}"/>
+            <arg line="${run.args.prepared}"/>
+            <arg line="${run.args}"/>
+            <arg line="${run.args.extra}"/>
+        </exec>
+        <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
+            <arg value="${run.sh}"/>
+            <arg value="--jdkhome"/>
+            <arg file="/Library/Java/Home"/>
+            <arg line="${run.args.common}"/>
+            <arg line="${run.args.prepared}"/>
+            <arg line="${run.args}"/>
+            <arg line="${run.args.extra}"/>
+        </exec>
+    </target>
+
+    <target name="debug">
+        <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
+        <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
+            <classpath>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${cluster}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </nbjpdastart>
+        <property name="debug.pause" value="n"/>
+        <property name="debug.args" value="-J-Xdebug -J-Xnoagent -J-Xrunjdwp:transport=dt_socket,suspend=${debug.pause},server=n,address=${debug.port}"/>
+        <antcall target="run">
+            <param name="run.args" value="${debug.args}"/>
+        </antcall>
+    </target>
+
+</project>
