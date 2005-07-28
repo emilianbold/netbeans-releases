@@ -318,7 +318,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             int nbAttrs = attrModel.size();
             int firstEditableRow = attrModel.getFirstEditableRow();
             
-            wiz.putProperty(WizardConstants.PROP_W_ATTR_NB, 
+            wiz.putProperty(WizardConstants.PROP_ATTR_NB, 
                     new Integer(nbAttrs).toString());
             
             // counter for the attribute storage
