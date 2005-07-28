@@ -355,7 +355,7 @@ public class ColumnElement extends DBMemberElement {
 			boolean old = _nullable;
 
 			_nullable = flag;
-			firePropertyChange (PROP_NULLABLE, new Boolean(old), new Boolean(flag));
+			firePropertyChange (PROP_NULLABLE, Boolean.valueOf(old), Boolean.valueOf(flag));
 		}
 
 		/** Get the length of the column - for character type fields only.

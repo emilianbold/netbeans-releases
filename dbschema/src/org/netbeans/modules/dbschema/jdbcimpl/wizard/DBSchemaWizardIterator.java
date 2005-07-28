@@ -23,9 +23,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-
 /** Iterator implementation which can iterate through two
 * panels which forms dbschema template wizard
 */
@@ -112,9 +109,9 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
                 bundle.getString("ConnectionChooser"),
                 bundle.getString("TablesChooser")
         };
-        wizardInstance.putProperty("WizardPanel_autoWizardStyle", new Boolean(true)); //NOI18N
-        wizardInstance.putProperty("WizardPanel_contentDisplayed", new Boolean(true)); //NOI18N
-        wizardInstance.putProperty("WizardPanel_contentNumbered", new Boolean(true)); //NOI18N
+        wizardInstance.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); //NOI18N
+        wizardInstance.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); //NOI18N
+        wizardInstance.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
         wizardInstance.putProperty("WizardPanel_contentData", stepsNames); //NOI18N
         
         if(!guiInitialized) {

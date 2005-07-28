@@ -18,12 +18,9 @@ import java.sql.*;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.openide.nodes.Node;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ViewNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =8370676447530973161L;

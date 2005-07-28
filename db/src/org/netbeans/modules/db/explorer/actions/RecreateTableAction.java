@@ -63,14 +63,14 @@ public class RecreateTableAction extends DatabaseAction {
                     JFileChooser chooser = new JFileChooser();
                     FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                     chooser.setDialogType(JFileChooser.OPEN_DIALOG);
-                    chooser.setDialogTitle(bundle.getString("RecreateTableFileOpenDialogTitle")); //NOI18N
+                    chooser.setDialogTitle(bundle().getString("RecreateTableFileOpenDialogTitle")); //NOI18N
                     chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                         public boolean accept(File f) {
                             return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                         }
 
                         public String getDescription() {
-                            return bundle.getString("GrabTableFileTypeDescription"); //NOI18N
+                            return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
                         }
                     });
 
@@ -88,9 +88,9 @@ public class RecreateTableAction extends DatabaseAction {
                         return;
 
                     String newtab = cmd.getObjectName();
-                    String msg = MessageFormat.format(bundle.getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
+                    String msg = MessageFormat.format(bundle().getString("RecreateTableRenameNotes"), new String[] {cmd.getCommand()}); //NOI18N
                     msg = cmd.getCommand();
-                    LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle.getString("RecreateTableRenameTable"), bundle.getString("RecreateTableNewName"), msg); //NOI18N
+                    LabeledTextFieldDialog dlg = new LabeledTextFieldDialog(bundle().getString("RecreateTableRenameTable"), bundle().getString("RecreateTableNewName"), msg); //NOI18N
                     dlg.setStringValue(newtab);
                     boolean noResult = true;
                     while(noResult) {
@@ -119,7 +119,7 @@ public class RecreateTableAction extends DatabaseAction {
                                 }
                             } catch(Exception exc) {
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);                        
-                                String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+                                String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             }
                         } else { // CANCEL option
@@ -128,7 +128,7 @@ public class RecreateTableAction extends DatabaseAction {
                     }
                 } catch(Exception exc) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                    String message = MessageFormat.format(bundle.getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableToRecreateTable"), new String[] {exc.getMessage()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             }

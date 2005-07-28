@@ -17,10 +17,8 @@ import java.beans.*;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
-import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
@@ -42,7 +40,6 @@ public class RecaptureSchema {
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
     ResourceBundle bundleDB = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-    private final String defaultName = bundle.getString("DefaultSchemaName"); //NOI18N
     private DBSchemaWizardData data; 
     private Node dbSchemaNode;
     
@@ -159,7 +156,7 @@ public class RecaptureSchema {
                         };
                         
                         pf.propertySupport.addPropertyChangeListener(listener);
-                        pf.show();
+                        pf.setVisible(true);
                         
                         sei.propertySupport.addPropertyChangeListener(listener);
                         final SchemaElement se = new SchemaElement(sei);

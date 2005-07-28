@@ -34,9 +34,6 @@ public class TableElementFilter extends SchemaElementFilter {
     public static final int[] DEFAULT_ORDER = {COLUMN | COLUMN_PAIR | INDEX | FK };
     
     /** stores property value */
-    private int[] order = null;
-
-    /** stores property value */
     private boolean sorted = true;
   
     /** Test whether the elements in one element type group are sorted.

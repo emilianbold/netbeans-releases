@@ -61,7 +61,7 @@ public class IndexNodeInfo extends TableNodeInfo {
                             children.add(info);
                         else {
                             rs.close();
-                            throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
+                            throw new Exception(bundle().getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                         }
                     }
                     rset.clear();

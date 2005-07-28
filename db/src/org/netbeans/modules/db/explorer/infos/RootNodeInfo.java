@@ -104,7 +104,7 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         Vector cons = RootNode.getOption().getConnections();
 
         if (cons.contains(cinfo))
-            throw new DatabaseException(bundle.getString("EXC_ConnectionAlreadyExists"));
+            throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
 
         DatabaseNode node = getNode();
         DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();

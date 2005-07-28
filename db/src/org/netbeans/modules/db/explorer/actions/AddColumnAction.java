@@ -52,7 +52,7 @@ public class AddColumnAction extends DatabaseAction {
                     try {
                         nfo.addColumn(dlg.getColumnName());
                     } catch(Exception exc) {
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
+                        String message = MessageFormat.format(bundle().getString("ERR_UnableToAddColumn"), new String[] {exc.getMessage()}); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
             }

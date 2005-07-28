@@ -23,11 +23,8 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 public class RecaptureSchemaAction extends CookieAction {
-
-    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
 
     /** Create. new ObjectViewAction. */
     public RecaptureSchemaAction() {
@@ -35,7 +32,7 @@ public class RecaptureSchemaAction extends CookieAction {
 
     /** Name of the action. */
     public String getName () {
-        return bundle.getString("ActionNameRecap"); //NOI18N
+        return NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle").getString("ActionNameRecap"); //NOI18N
     }
 
     /** No help yet. */

@@ -16,14 +16,10 @@ package org.netbeans.modules.db.explorer.infos;
 import java.sql.*;
 import java.util.*;
 
-import org.openide.nodes.Node;
-
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class RefTableListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =318942800614012305L;
@@ -45,7 +41,7 @@ public class RefTableListNodeInfo extends DatabaseNodeInfo {
                     if (info != null)
                         children.add(info);
                     else
-                        throw new Exception(bundle.getString("EXC_UnableToCreateExportedKeyNodeInfo"));
+                        throw new Exception(bundle().getString("EXC_UnableToCreateExportedKeyNodeInfo"));
                 }
                 rs.close();
             }

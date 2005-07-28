@@ -15,9 +15,6 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
 
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -25,9 +22,7 @@ import org.openide.util.LookupListener;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
-import org.openide.ErrorManager;
 
 public class DriverNodeInfo extends DatabaseNodeInfo {
         

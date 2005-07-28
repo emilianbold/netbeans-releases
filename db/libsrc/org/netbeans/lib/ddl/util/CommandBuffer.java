@@ -14,15 +14,8 @@
 package org.netbeans.lib.ddl.util;
 
 import java.util.*;
-import java.text.Format;
-import java.text.FieldPosition;
-import java.text.NumberFormat;
-import java.text.DateFormat;
-import java.text.ParsePosition;
-import java.text.ParseException;
 
 import org.openide.*;
-import org.openide.util.MapFormat;
 
 import org.netbeans.lib.ddl.*;
 

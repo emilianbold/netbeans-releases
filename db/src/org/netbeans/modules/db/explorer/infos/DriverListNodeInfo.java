@@ -85,7 +85,7 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
         if (!drvs.contains(drv))
             drvs.add(drv);
         else {
-            String message = MessageFormat.format(bundle.getString("EXC_DriverAlreadyExists"), new String[] {drv.toString()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_DriverAlreadyExists"), new String[] {drv.toString()}); // NOI18N
             throw new DatabaseException(message);
         }
 

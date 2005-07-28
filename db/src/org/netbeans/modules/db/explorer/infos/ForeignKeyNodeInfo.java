@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -25,7 +24,6 @@ import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ForeignKeyNodeInfo extends TableNodeInfo {
     static final long serialVersionUID =-8633867970381524742L;
@@ -40,7 +38,6 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
             if (rs != null) {
                 HashMap rset = new HashMap();
                 ColumnNodeInfo info;
-                Object value;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
                     if (rset.get(new Integer(8)) != null)
@@ -53,7 +50,7 @@ public class ForeignKeyNodeInfo extends TableNodeInfo {
                                 info.setName(info.getName() + " -> " + tempTName + ((String) rset.get(new Integer(4)))); // NOI18N
                                 children.add(info);
                             } else
-                                throw new Exception(bundle.getString("EXC_UnableToCreateForeignNodeInfo")); //NOI18N
+                                throw new Exception(bundle().getString("EXC_UnableToCreateForeignNodeInfo")); //NOI18N
                         }
                     rset.clear();
                 }

@@ -49,7 +49,7 @@ public class ExecuteCommandAction extends DatabaseAction {
                 win.open();
                 win.requestActive();
             } catch(Exception e) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle().getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
             }
         }
     }

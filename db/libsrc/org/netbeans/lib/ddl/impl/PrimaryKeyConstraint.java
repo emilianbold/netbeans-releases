@@ -13,10 +13,7 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.util.*;
-import java.sql.*;
-import java.text.ParseException;
-import org.netbeans.lib.ddl.*;
+import org.netbeans.lib.ddl.TableConstraintDescriptor;
 
 /**
 * Implementation of table primary key constraint.
@@ -27,13 +24,3 @@ public class PrimaryKeyConstraint extends AbstractTableColumn implements TableCo
 {
     static final long serialVersionUID =1012869540018507889L;
 }
-/*
- * <<Log>>
- *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  3    Gandalf   1.2         8/17/99  Ian Formanek    Generated serial version
- *       UID
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
- * $
- */

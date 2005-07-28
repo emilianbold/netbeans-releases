@@ -124,7 +124,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         RootNode.getOption().save();
                     } catch (DatabaseException exc) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                        String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         try {
                             cinfo.getConnection().close();
@@ -146,10 +146,10 @@ public class ConnectUsingDriverAction extends DatabaseAction {
         final ExceptionListener excListener = new ExceptionListener() {
             public void exceptionOccurred(Exception exc) {
                 if (exc instanceof ClassNotFoundException) {
-                    String message = MessageFormat.format(bundle.getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
+                    String message = MessageFormat.format(bundle().getString("EXC_ClassNotFound"), new String[] {exc.getMessage()}); //NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 } else {
-                    String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
@@ -178,7 +178,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
                         cinfo.connect();
                     } catch (DatabaseException exc) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
+                        String message = MessageFormat.format(bundle().getString("ERR_UnableToAddConnection"), new String[] {exc.getMessage()}); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                         try {
                             cinfo.getConnection().close();
@@ -222,7 +222,7 @@ public class ConnectUsingDriverAction extends DatabaseAction {
             // hack for Pointbase Network Server
 //            if (dbcon.getDriver().equals(PointbasePlus.DRIVER))
 //                if (exc.getErrorCode() == PointbasePlus.ERR_SERVER_REJECTED) {
-                    String message = MessageFormat.format(bundle.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
+                    String message = MessageFormat.format(bundle().getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
 //                    message = MessageFormat.format(bundle.getString("EXC_PointbaseServerRejected"), new String[] {message, dbcon.getDatabase()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
 //                    schema will be set to null

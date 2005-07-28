@@ -29,8 +29,6 @@ import org.openide.util.NbBundle;
 public class ConnectionDialog {
 
     private transient JTabbedPane tabs;
-    private transient SchemaPanel schemaPanel;
-    private transient JPanel basePane;
     private transient Exception storedExp;
 
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
@@ -42,8 +40,6 @@ public class ConnectionDialog {
             return;
 
         tabs = new JTabbedPane(JTabbedPane.TOP);
-        basePane = basePane;
-        schemaPanel = (SchemaPanel)extendPane;
         
         tabs.addChangeListener(tabListener);
 

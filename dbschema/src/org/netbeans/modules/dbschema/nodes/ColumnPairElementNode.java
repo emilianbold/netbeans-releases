@@ -14,13 +14,10 @@
 package org.netbeans.modules.dbschema.nodes;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.openide.nodes.*;
 
 import org.netbeans.modules.dbschema.*;
-import org.netbeans.modules.dbschema.util.SQLTypeUtil;
 
 /** Node representing a column pair.
  * @see ColumnElement

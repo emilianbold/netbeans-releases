@@ -252,6 +252,8 @@ public class SchemaRootChildren extends Children.Keys {
     /** The listener for listening to the property changes in the filter.
     */
     private final class DBElementListener implements PropertyChangeListener {
+        public DBElementListener () {} 
+        
         public void propertyChange (PropertyChangeEvent evt) {
             boolean refresh = DBElementProperties.PROP_SCHEMA.equals(evt.getPropertyName());
             if (!refresh && DBElementProperties.PROP_STATUS.equals(evt.getPropertyName())) {

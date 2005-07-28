@@ -108,7 +108,7 @@ public class ProcedureNodeInfo extends DatabaseNodeInfo {
                         info.put("type", itype); //NOI18N
                         children.add(info);
                     } else
-                        throw new Exception(bundle.getString("EXC_UnableToCreateProcedureColumnNodeInfo"));
+                        throw new Exception(bundle().getString("EXC_UnableToCreateProcedureColumnNodeInfo"));
                     rset.clear();
                 }
                 rs.close();

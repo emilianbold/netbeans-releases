@@ -96,7 +96,7 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             } else if (code.equals(DatabaseNode.COLUMN)) {
                 col = (TableColumn)cmd.createColumn(getName());
             } else {
-                String message = MessageFormat.format(bundle.getString("EXC_UnknownCode"), new String[] {code}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_UnknownCode"), new String[] {code}); // NOI18N
                 throw new DatabaseException(message);
             }
 
@@ -105,20 +105,19 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             ResultSet rs = drvSpec.getResultSet();
             if (rs != null) {
                 rs.next();
-                HashMap rset = new HashMap();
-                rset = drvSpec.getRow();
+                HashMap rset = drvSpec.getRow();
                 
                 try {
                     //hack because of MSSQL ODBC problems - see DriverSpecification.getRow() for more info - shouln't be thrown
-                    col.setColumnType(Integer.valueOf((String) rset.get(Integer.valueOf("5"))).intValue()); //NOI18N
-                    col.setColumnSize(Integer.valueOf((String) rset.get(Integer.valueOf("7"))).intValue()); //NOI18N
+                    col.setColumnType(Integer.parseInt((String) rset.get(new Integer(5))));
+                    col.setColumnSize(Integer.parseInt((String) rset.get(new Integer(7))));
                 } catch (NumberFormatException exc) {
                     col.setColumnType(0);
                     col.setColumnSize(0);
                 }
 
-                col.setNullAllowed(((String) rset.get(Integer.valueOf("18"))).toUpperCase().equals("YES")); //NOI18N
-                col.setDefaultValue((String) rset.get(Integer.valueOf("13"))); //NOI18N
+                col.setNullAllowed(((String) rset.get(new Integer(18))).toUpperCase().equals("YES")); //NOI18N
+                col.setDefaultValue((String) rset.get(new Integer(13)));
                 rset.clear();
 
                 rs.close();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -42,7 +42,6 @@ import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.OpenConnectionInterface;
 import org.netbeans.modules.db.runtime.DatabaseRuntime;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 
@@ -55,8 +54,6 @@ import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
  * open connection.
  */
 public class DatabaseConnection implements DBConnection {
-
-    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     static final long serialVersionUID =4554639187416958735L;
 
@@ -249,6 +246,7 @@ public class DatabaseConnection implements DBConnection {
 
     /** Returns name of the connection */
     public String getName() {
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         if(name == null)
             if((getSchema()==null)||(getSchema().length()==0))
                 name = MessageFormat.format(bundle.getString("ConnectionNodeUniqueName"), new String[] {getDatabase(), getUser(), bundle.getString("SchemaIsNotSet")}); //NOI18N
@@ -333,7 +331,7 @@ public class DatabaseConnection implements DBConnection {
      */
     public Connection createJDBCConnection() throws DDLException {
         if (drv == null || db == null || usr == null || pwd == null )
-            throw new DDLException(bundle.getString("EXC_InsufficientConnInfo"));
+            throw new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo"));
 
         Properties dbprops = new Properties();
         dbprops.put("user", usr); //NOI18N
@@ -371,7 +369,7 @@ public class DatabaseConnection implements DBConnection {
 
             return connection;
         } catch (SQLException e) {
-            String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
+            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
 
             //commented out for 3.6 release, need to solve for next Studio release
             // hack for Pointbase Network Server
@@ -389,7 +387,7 @@ public class DatabaseConnection implements DBConnection {
             ddle.initCause(e);
             throw ddle;
         } catch (Exception exc) {
-            String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
 
             propertySupport.firePropertyChange("failed", null, null);
 
@@ -410,7 +408,7 @@ public class DatabaseConnection implements DBConnection {
         return RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 if (drv == null || db == null || usr == null || pwd == null )
-                    sendException(new DDLException(bundle.getString("EXC_InsufficientConnInfo")));
+                    sendException(new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo")));
 
                 Properties dbprops = new Properties();
                 dbprops.put("user", usr); //NOI18N
@@ -451,7 +449,7 @@ public class DatabaseConnection implements DBConnection {
                     getOpenConnection().disable();
 
                 } catch (SQLException e) {
-                    String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
+                    String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotEstablishConnection"), new String[] {db, drv, e.getMessage()}); // NOI18N
 
                     //commented out for 3.6 release, need to solve for next Studio release
                     // hack for Pointbase Network Server

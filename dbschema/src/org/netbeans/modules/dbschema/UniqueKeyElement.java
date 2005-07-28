@@ -123,7 +123,7 @@ public final class UniqueKeyElement extends KeyElement {
 			boolean old = _pk;
 
 			_pk = flag;
-			firePropertyChange(PROP_PK, new Boolean(old), new Boolean(flag));
+			firePropertyChange(PROP_PK, Boolean.valueOf(old), Boolean.valueOf(flag));
 		}
 	}
 }

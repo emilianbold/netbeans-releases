@@ -19,6 +19,7 @@ import java.util.Vector;
 
 import javax.swing.*;
 import javax.swing.event.*;
+import org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
@@ -29,7 +30,6 @@ import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.db.explorer.actions.AddConnectionAction;
 import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
@@ -216,7 +216,7 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
      private void newConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {
          Node[] n = getDriverNodes();
  
-         DatabaseAction dbAction = (DatabaseAction) SystemAction.get(AddConnectionAction.class);
+         DatabaseAction dbAction = (DatabaseAction) SystemAction.get(ConnectUsingDriverAction.class);
          dbAction.performAction (n);
  
          Vector oldConnections = (Vector) conList.clone();

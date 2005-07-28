@@ -452,7 +452,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
 
                         if (rs != null) {
                             if (! all) {
-                                String colName, colNameTemp;
+                                String colName;
                                 HashMap rset = new HashMap();
                                 while (rs.next()) {
                                     if (bridge != null) {

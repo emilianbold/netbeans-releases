@@ -16,10 +16,8 @@ package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Vector;
 
 import javax.swing.AbstractListModel;
 

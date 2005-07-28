@@ -158,7 +158,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                                     cni.setUser(basePanel.getUser());
                                     cni.setPassword(basePanel.getPassword());
                                     if (basePanel.rememberPassword())
-                                        cni.put(DatabaseNodeInfo.REMEMBER_PWD, new Boolean(true));
+                                        cni.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
                                     try {
                                         if(schemaPanel.getSchema()==null)
                                             dlg.setSelectedComponent(schemaPanel);

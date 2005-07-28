@@ -15,7 +15,6 @@ package org.netbeans.lib.ddl.impl;
 
 import java.util.*;
 import java.sql.*;
-import java.text.ParseException;
 import org.netbeans.lib.ddl.*;
 
 /**

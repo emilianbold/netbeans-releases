@@ -73,15 +73,15 @@ public class CustomizeDriverAction extends DatabaseAction {
                     
                     StringBuffer err = new StringBuffer();
                     if (drvLoc.size() < 1)
-                        err.append(bundle.getString("AddDriverDialog_MissingFile")); //NOI18N
+                        err.append(bundle().getString("AddDriverDialog_MissingFile")); //NOI18N
                     if (drvClass == null || drvClass.equals("")) {
                         if (err.length() > 0)
                             err.append(", "); //NOI18N
 
-                        err.append(bundle.getString("AddDriverDialog_MissingClass")); //NOI18N
+                        err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
                     }
                     if (err.length() > 0) {
-                        String message = MessageFormat.format(bundle.getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
+                        String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                         
                         return;
@@ -116,11 +116,11 @@ public class CustomizeDriverAction extends DatabaseAction {
             }
         };
 
-        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle.getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle().getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
         descriptor.setClosingOptions(closingOptions);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.show();
+        dialog.setVisible(true);
     }
     
     private void closeDialog() {

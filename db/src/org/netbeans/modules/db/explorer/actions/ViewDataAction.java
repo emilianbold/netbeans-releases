@@ -160,7 +160,7 @@ public class ViewDataAction extends DatabaseAction {
                 }
             }, 0);
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }

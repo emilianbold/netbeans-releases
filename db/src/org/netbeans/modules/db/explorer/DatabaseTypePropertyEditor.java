@@ -25,8 +25,6 @@ import org.openide.util.NbBundle;
 */
 public class DatabaseTypePropertyEditor implements PropertyEditor {
     
-    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-    
     private int[] constants;
     private String[] names;
     private int index;
@@ -34,6 +32,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
     private PropertyChangeSupport support;
 
     public DatabaseTypePropertyEditor() {
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
         support = new PropertyChangeSupport(this);
         constants = new int[] {
             java.sql.Types.ARRAY,
@@ -103,6 +102,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
     }
 
     public void setValue (Object object) {
+        ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
 //        if (!(object instanceof Number)) {
 //            String message = MessageFormat.format(bundle.getString("EXC_CannotOperateWith"), new String[] {object.toString()}); // NOI18N
 //            throw new IllegalArgumentException(message);
@@ -177,7 +177,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor {
         int i, k = names.length;
         for (i = 0; i < k; i++) if (names [i].equals (string)) break;
         if (i == k) {
-            String message = MessageFormat.format(bundle.getString("EXC_CannotFindAsText"), new String[] {string}); // NOI18N
+            String message = MessageFormat.format(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_CannotFindAsText"), new String[] {string}); // NOI18N
             throw new IllegalArgumentException(message);
         }
         index = i;

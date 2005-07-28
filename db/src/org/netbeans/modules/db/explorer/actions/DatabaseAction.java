@@ -23,8 +23,11 @@ import org.openide.util.actions.CookieAction;
 public class DatabaseAction extends CookieAction {
     
     static final long serialVersionUID =2711301279685474175L;
-    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
     
+    protected static ResourceBundle bundle() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+    }
+
     protected String aname;
     protected String nodename;
 
@@ -71,4 +74,5 @@ public class DatabaseAction extends CookieAction {
     protected boolean asynchronous() {
         return false;
     }
+
 }

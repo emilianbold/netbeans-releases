@@ -202,7 +202,7 @@ public final class IndexElement extends DBMemberElement implements ColumnElement
 			boolean old = _unique;
 
 			_unique = flag;
-			firePropertyChange(PROP_UNIQUE, new Boolean(old), new Boolean(flag));
+			firePropertyChange(PROP_UNIQUE, Boolean.valueOf(old), Boolean.valueOf(flag));
 		}
 
 		/** Changes the set of elements.

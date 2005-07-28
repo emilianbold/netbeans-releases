@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
 import java.util.jar.JarFile;
@@ -44,8 +43,6 @@ import org.netbeans.modules.db.util.DriverListUtil;
 */
 public class DatabaseOption extends SystemOption {
     
-    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
-
     private static boolean debugMode;
     private static Vector drivers;
     private static Vector connections;
@@ -159,7 +156,7 @@ public class DatabaseOption extends SystemOption {
 
     /** Name of the option */
     public String displayName() {
-        return bundle.getString("OptionName"); //NOI18N
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("OptionName"); //NOI18N
     }
 
     /** Description of object */

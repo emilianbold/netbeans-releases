@@ -54,22 +54,6 @@ public class SchemaChildren extends Children.Keys {
         propToFilter.put (DBElementProperties.PROP_KEYS, new Integer (TableElementFilter.FK));
     }
     
-    /** For sorting groups of elements. */
-    private static Comparator comparator = new Comparator () {
-        public int compare (Object o1, Object o2) {
-            if (o1 instanceof DBMemberElement) 
-                if (o2 instanceof DBMemberElement)
-                    return ((DBMemberElement)o1).getName().getName().compareToIgnoreCase(((DBMemberElement) o2).getName().getName());
-                else
-                    return -1;
-            else
-                if (o2 instanceof DBMemberElement)
-                    return 1;
-                else
-                    return 0;
-        }
-    };
-
     /** Create class children with the default factory.
     * The children are initially unfiltered.
     * @param element attached class element (non-<code>null</code>)
@@ -216,6 +200,8 @@ public class SchemaChildren extends Children.Keys {
     /** The listener for listening to the property changes in the filter.
     */
     private final class DBElementListener implements PropertyChangeListener {
+        public DBElementListener () {}
+        
         /** This method is called when the change of properties occurs in the element.
         * PENDING - (for Hanz - should be implemented better, change only the
         * keys which belong to the changed property).

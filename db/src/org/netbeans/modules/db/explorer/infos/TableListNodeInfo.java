@@ -16,18 +16,12 @@ package org.netbeans.modules.db.explorer.infos;
 import java.sql.*;
 import java.util.*;
 
-import org.openide.util.NbBundle;
-
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.adaptors.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-
-import org.openide.nodes.Node;
 
 public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOperations {
     static final long serialVersionUID =-6156362126513404875L;
@@ -49,7 +43,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                         info.put(DatabaseNode.TABLE, info.getName());
                         children.add(info);
                     } else
-                        throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
+                        throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
                     rset.clear();
                 }
                 rs.close();
@@ -82,7 +76,7 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
                 if (info != null)
                     info.put(DatabaseNode.TABLE, info.getName());
                 else
-                    throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
+                    throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForTable")); // NOI18N
                 // refersh list of tables
                 refreshChildren();
             }

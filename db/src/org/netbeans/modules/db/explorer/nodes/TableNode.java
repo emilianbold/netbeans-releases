@@ -14,12 +14,10 @@
 package org.netbeans.modules.db.explorer.nodes;
 
 import java.awt.datatransfer.Transferable;
-import java.lang.reflect.Method;
 import java.io.IOException;
 import java.util.*;
 import java.text.MessageFormat;
 
-import javax.swing.SwingUtilities;
 
 import org.openide.*;
 import org.openide.cookies.InstanceCookie;

@@ -20,8 +20,6 @@ public final class DBIdentifier {
     private String name;
     transient private String fullName = null;
   
-    transient private int namePos;
-
     /** Default constructor
      */
     public DBIdentifier() {

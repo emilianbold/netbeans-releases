@@ -162,7 +162,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
                 
-                String message = MessageFormat.format(bundle.getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_ConnectionIsBroken"), new String[] {exc.getMessage()}); // NOI18N
                 throw new DatabaseException(message);
             }
         }

@@ -17,7 +17,6 @@ import java.util.*;
 import java.text.MessageFormat;
 
 import org.openide.*;
-import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.*;

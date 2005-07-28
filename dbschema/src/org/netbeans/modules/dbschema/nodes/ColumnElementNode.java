@@ -14,8 +14,6 @@
 package org.netbeans.modules.dbschema.nodes;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.openide.nodes.*;
 
@@ -77,7 +75,7 @@ public class ColumnElementNode extends DBMemberElementNode {
 		return new ElementProp(PROP_NULLABLE, Boolean.TYPE, canW) {
 			/** Gets the value */
 			public Object getValue () {
-				return new Boolean(((ColumnElement)element).isNullable());
+				return Boolean.valueOf(((ColumnElement)element).isNullable());
 			}
         };
 	}

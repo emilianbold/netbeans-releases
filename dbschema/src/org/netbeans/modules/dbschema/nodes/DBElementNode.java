@@ -247,6 +247,8 @@ public abstract class DBElementNode extends AbstractNode implements	IconStrings,
 	 * if the changed property could affect them.
 	 */
 	private class ElementListener implements PropertyChangeListener {
+            public ElementListener () {}
+            
 		/** Called when any element's property changed.
 		*/
 		public void propertyChange (PropertyChangeEvent evt) {

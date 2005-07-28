@@ -16,20 +16,15 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.sql.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.InputStream;
 import java.util.*;
 import java.beans.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 import org.openide.*;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.impl.*;

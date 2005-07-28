@@ -53,7 +53,7 @@ public class CreateTableAction extends DatabaseAction {
                             //PENDING
                         }
                 } catch(Exception exc) {
-                    String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateTable"), new String[] {nodeName, exc.getMessage()}); // NOI18N
+                    String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateTable"), new String[] {nodeName, exc.getMessage()}); // NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                 }
             }

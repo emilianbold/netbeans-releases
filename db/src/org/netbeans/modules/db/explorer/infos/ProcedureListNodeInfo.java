@@ -16,15 +16,11 @@ package org.netbeans.modules.db.explorer.infos;
 import java.sql.*;
 import java.util.*;
 
-import org.openide.nodes.Node;
-
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ProcedureListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-7911927402768472443L;
@@ -52,7 +48,7 @@ public class ProcedureListNodeInfo extends DatabaseNodeInfo {
                         info.put(DatabaseNode.PROCEDURE, info.getName());
                         children.add(info);
                     } else
-                        throw new Exception(bundle.getString("EXC_UnableToCreateProcedureNodeInfo")); //NOI18N
+                        throw new Exception(bundle().getString("EXC_UnableToCreateProcedureNodeInfo")); //NOI18N
                     rset.clear();
                 }
                 rs.close();

@@ -21,11 +21,8 @@ import org.openide.nodes.*;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.lib.ddl.adaptors.*;
 import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.infos.ForeignKeyNodeInfo;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =5809643799834921044L;
@@ -41,7 +38,6 @@ public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
                 Set fkmap = new HashSet();
                 HashMap rset = new HashMap();
                 ForeignKeyNodeInfo info;
-                Object value;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
                     if (rset.get(new Integer(12)) != null) {
@@ -58,7 +54,7 @@ public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
                                 children.add(info);
                             }
                         } else
-                            throw new Exception(bundle.getString("EXC_UnableToCreateForeignNodeInfo")); //NOI18N
+                            throw new Exception(bundle().getString("EXC_UnableToCreateForeignNodeInfo")); //NOI18N
                     }
                     rset.clear();
                 }

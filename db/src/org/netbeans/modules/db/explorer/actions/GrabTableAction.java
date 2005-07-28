@@ -76,14 +76,14 @@ public class GrabTableAction extends DatabaseAction {
             JFileChooser chooser = new JFileChooser();
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-            chooser.setDialogTitle(bundle.getString("GrabTableFileSaveDialogTitle")); //NOI18N
+            chooser.setDialogTitle(bundle().getString("GrabTableFileSaveDialogTitle")); //NOI18N
             chooser.setSelectedFile(new File(tablename+".grab")); //NOI18N
             chooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
                                       public boolean accept(File f) {
                                           return (f.isDirectory() || f.getName().endsWith(".grab")); //NOI18N
                                       }
                                       public String getDescription() {
-                                          return bundle.getString("GrabTableFileTypeDescription"); //NOI18N
+                                          return bundle().getString("GrabTableFileTypeDescription"); //NOI18N
                                       }
                                   });
 
@@ -95,12 +95,12 @@ public class GrabTableAction extends DatabaseAction {
                     file = chooser.getSelectedFile();
                     if (file != null) {
                         if(file.exists()) {
-                            Object yesOption = new JButton(bundle.getString("Yes"));
-                            Object noOption = new JButton (bundle.getString("No"));
+                            Object yesOption = new JButton(bundle().getString("Yes"));
+                            Object noOption = new JButton (bundle().getString("No"));
                             Object result = DialogDisplayer.getDefault ().notify (new NotifyDescriptor
-                                            (MessageFormat.format(bundle.getString("MSG_ReplaceFileOrNot"), // NOI18N
+                                            (MessageFormat.format(bundle().getString("MSG_ReplaceFileOrNot"), // NOI18N
                                                 new String[] {file.getName()}), //question
-                                             bundle.getString("GrabTableFileSaveDialogTitle"), // title
+                                             bundle().getString("GrabTableFileSaveDialogTitle"), // title
                                              NotifyDescriptor.YES_NO_OPTION, // optionType
                                              NotifyDescriptor.QUESTION_MESSAGE, // messageType
 
@@ -123,7 +123,7 @@ public class GrabTableAction extends DatabaseAction {
             ostream.close();
 
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToGrabTable"), new String[] {exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("ERR_UnableToGrabTable"), new String[] {exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }

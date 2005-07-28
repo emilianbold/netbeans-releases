@@ -13,7 +13,6 @@
 
 package org.netbeans.lib.ddl.impl;
 
-import java.text.ParseException;
 import java.util.*;
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;

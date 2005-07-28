@@ -100,7 +100,7 @@ public class ProgressFrame extends javax.swing.JFrame {
 
   private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
     setVisible(false);
-    propertySupport.firePropertyChange("cancel", null, new Boolean(true)); //NOI18N
+    propertySupport.firePropertyChange("cancel", null, Boolean.TRUE); //NOI18N
     
     dispose();    
   }//GEN-LAST:event_okButtonActionPerformed

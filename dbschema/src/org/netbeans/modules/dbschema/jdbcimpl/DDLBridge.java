@@ -15,7 +15,6 @@ package org.netbeans.modules.dbschema.jdbcimpl;
 
 import java.sql.*;
 
-import org.openide.util.Utilities;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;

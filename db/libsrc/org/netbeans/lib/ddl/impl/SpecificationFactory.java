@@ -48,12 +48,12 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     /** Database description file
     * You should use PListReader to parse it.
     */		
-    private final String dbFile = "org/netbeans/lib/ddl/resources/dbspec.plist";
+    private static final String dbFile = "org/netbeans/lib/ddl/resources/dbspec.plist";
 
     /** Driver description file
     * You should use PListReader to parse it.
     */		
-    private final String drvFile = "org/netbeans/lib/ddl/resources/driverspec.plist";
+    private static final String drvFile = "org/netbeans/lib/ddl/resources/driverspec.plist";
 
     /** Array of SpecificationFiles, found (but not read) files
     * which describes database products.

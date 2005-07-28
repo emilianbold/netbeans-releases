@@ -17,13 +17,10 @@ import java.sql.*;
 import java.util.*;
 
 import org.netbeans.lib.ddl.impl.*;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class ViewListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =2854540580610981370L;
@@ -46,7 +43,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
                             info.put(DatabaseNode.VIEW, info.getName());
                             children.add(info);
                         } else
-                            throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
+                            throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
                         rset.clear();
                     }
                     rs.close();
@@ -79,7 +76,7 @@ public class ViewListNodeInfo extends DatabaseNodeInfo {
                     if (info != null)
                         ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
                     else
-                        throw new Exception(bundle.getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
+                        throw new Exception(bundle().getString("EXC_UnableToCreateNodeInformationForView")); // NOI18N
                 }
                 // refersh list of views
                 refreshChildren();

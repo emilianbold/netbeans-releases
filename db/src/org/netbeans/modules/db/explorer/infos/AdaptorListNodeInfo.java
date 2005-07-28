@@ -13,20 +13,8 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.io.InputStream;
-import java.util.*;
-import java.sql.*;
-import org.netbeans.lib.ddl.*;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import org.openide.nodes.Node;
-import org.netbeans.lib.ddl.util.PListReader;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
-import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import java.util.Vector;
+import org.netbeans.modules.db.DatabaseException;
 
 public class AdaptorListNodeInfo extends DatabaseNodeInfo
 {
@@ -52,11 +40,3 @@ public class AdaptorListNodeInfo extends DatabaseNodeInfo
         		}
         */	}
 }
-/*
- * <<Log>>
- *  3    Gandalf   1.2         11/27/99 Patrik Knakal   
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         9/30/99  Slavek Psenicka 
- * $
- */

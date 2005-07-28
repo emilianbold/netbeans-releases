@@ -13,23 +13,7 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-import java.awt.datatransfer.Transferable;
-import java.io.IOException;
-import java.sql.*;
-import java.text.MessageFormat;
-import java.util.*;
-
-import org.openide.nodes.Children;
-import org.openide.nodes.NodeTransfer;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.datatransfer.PasteType;
-
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.infos.*;
 
 public class ForeignKeyNode extends DatabaseNode {
     public String getShortDescription() {

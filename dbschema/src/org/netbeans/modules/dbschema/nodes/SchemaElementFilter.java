@@ -13,9 +13,6 @@
 
 package org.netbeans.modules.dbschema.nodes;
 
-import java.beans.PropertyChangeListener;
-import java.lang.reflect.Modifier;
-
 /** Interface for filtering and ordering the items in the visual
 * presentation of a source element.
 * Used to control the children of a source element node.

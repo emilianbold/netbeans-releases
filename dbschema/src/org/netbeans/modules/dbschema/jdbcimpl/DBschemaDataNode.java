@@ -29,8 +29,4 @@ public class DBschemaDataNode extends DataNode {
         setIconBase ("org/netbeans/modules/dbschema/jdbcimpl/DBschemaDataIcon"); //NOI18N
     }
 
-    private DBschemaDataObject getDBschemaDataObject () {
-        return (DBschemaDataObject) getDataObject ();
-    }
-
 }

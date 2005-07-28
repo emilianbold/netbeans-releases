@@ -61,7 +61,7 @@ public class AddIndexAction extends DatabaseAction {
             rs.close();
 
             if (cols.size() == 0)
-                throw new Exception(bundle.getString("EXC_NoUsableColumnInPlace")); // NOI18N
+                throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
             AddIndexDialog dlg = new AddIndexDialog(cols, spec, info);
@@ -70,7 +70,7 @@ public class AddIndexAction extends DatabaseAction {
                 nfo.addIndex(dlg.getIndexName());
             }
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }

@@ -42,7 +42,6 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
             if (rs != null) {
                 Set ixmap = new HashSet();
                 IndexNodeInfo info;
-                Object value;
                 while (rs.next()) {
                     HashMap rset = getRow(rs);
                     if (rset == null)
@@ -56,7 +55,7 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                                 children.add(info);
                             }
                         } else
-                            throw new Exception(bundle.getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
+                            throw new Exception(bundle().getString("EXC_UnableToCreateIndexNodeInfo")); //NOI18N
                     }
                 }
                 rs.close();
@@ -103,7 +102,6 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                 HashMap rset = new HashMap();
                 IndexNodeInfo info = null;
                 String findex;
-                Object value;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
                     findex = (String) rset.get(new Integer(6));

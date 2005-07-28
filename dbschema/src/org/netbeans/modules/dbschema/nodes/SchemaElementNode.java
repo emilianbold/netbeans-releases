@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.dbschema.nodes;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.openide.nodes.*;
 
 import org.netbeans.modules.dbschema.*;

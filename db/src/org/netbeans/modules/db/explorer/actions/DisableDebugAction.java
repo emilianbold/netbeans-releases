@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.sql.DriverManager;
-
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;

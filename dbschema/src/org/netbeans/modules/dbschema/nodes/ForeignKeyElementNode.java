@@ -14,8 +14,6 @@
 package org.netbeans.modules.dbschema.nodes;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.openide.nodes.*;
 

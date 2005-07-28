@@ -21,8 +21,6 @@ import org.netbeans.modules.dbschema.*;
  * about its changes.
  */
 public class DBElementsCollection implements DBElementProperties {
-    /** array of objects */
-    private transient LinkedList array;
 
     /** Object to fire info about changes to */
     DBElementImpl owner;

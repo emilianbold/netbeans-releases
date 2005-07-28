@@ -212,25 +212,6 @@ public final class TableElement extends DBElement implements ColumnElementHolder
     		return getTableImpl().getColumn(name);
 	}
 
-	/** Gets all columns in this table of the given subtype.
-     * @param subtype the type of the column classes
-	 * @return the columns of the given subtype or <code>null</code> if not found
-     */
-	private ArrayList getColumns(Class subtype) {
-		ColumnElement[] columns = getColumns();
-		int i, count = columns.length;
-		ArrayList subKeys = new ArrayList(count);
-
-		for (i = 0; i < count; i++) {
-			ColumnElement column = columns[i];
-
-			if (subtype.isInstance(column))
-				subKeys.add(column);
-		}
-
-		return subKeys;
-	}
-
 	//================== Indexes ===============================
 
 	/** Adds a new index to the table.
@@ -710,7 +691,7 @@ public final class TableElement extends DBElement implements ColumnElementHolder
 			boolean old = _isTable;
 
 			_isTable = isTable;
-			firePropertyChange(PROP_TABLE_OR_VIEW, new Boolean(old), new Boolean(isTable));
+			firePropertyChange(PROP_TABLE_OR_VIEW, Boolean.valueOf(old), Boolean.valueOf(isTable));
 		}
 
 		/** Tests whether this is a table, or a view.

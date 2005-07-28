@@ -124,7 +124,7 @@ public class CaptureSchema {
                         };
                         
                         pf.propertySupport.addPropertyChangeListener(listener);
-                        pf.show();
+                        pf.setVisible(true);
                         
                         sei.propertySupport.addPropertyChangeListener(listener);
                         final SchemaElement se = new SchemaElement(sei);

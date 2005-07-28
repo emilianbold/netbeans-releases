@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,6 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
 import org.netbeans.modules.db.explorer.driver.JDBCDriver;
 import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
 
 public class AddDriverAction extends DatabaseAction {
     static final long serialVersionUID =-109193000951395612L;
@@ -50,15 +49,15 @@ public class AddDriverAction extends DatabaseAction {
                     
                     StringBuffer err = new StringBuffer();
                     if (drvLoc.size() < 1)
-                        err.append(bundle.getString("AddDriverDialog_MissingFile")); //NOI18N
+                        err.append(bundle().getString("AddDriverDialog_MissingFile")); //NOI18N
                     if (drvClass == null || drvClass.equals("")) {
                         if (err.length() > 0)
                             err.append(", "); //NOI18N
 
-                        err.append(bundle.getString("AddDriverDialog_MissingClass")); //NOI18N
+                        err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
                     }
                     if (err.length() > 0) {
-                        String message = MessageFormat.format(bundle.getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
+                        String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                         
                         return;
@@ -79,11 +78,11 @@ public class AddDriverAction extends DatabaseAction {
             }
         };
 
-        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle.getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
+        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle().getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
         Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
         descriptor.setClosingOptions(closingOptions);
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.show();
+        dialog.setVisible(true);
     }
     
     private void closeDialog() {

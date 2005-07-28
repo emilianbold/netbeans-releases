@@ -82,12 +82,15 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     private static Map gtab = null;
     static final String gtabfile = "org/netbeans/modules/db/resources/explorer.plist"; //NOI18N
-    static final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); // NOI18N
 
     private boolean connected = false;
 
     transient boolean passwordWasSet = false;
     
+    protected static ResourceBundle bundle() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle");
+    }
+
     public static Map getGlobalNodeInfo() {
         if (gtab == null)
             gtab = readInfo();
@@ -101,7 +104,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(gtabfile);
             if (stream == null) {
-                String message = MessageFormat.format(bundle.getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
@@ -126,7 +129,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             if (nodec != null)
                 e_ni = (DatabaseNodeInfo)Class.forName(nodec).newInstance();
             else {
-                String message = MessageFormat.format(bundle.getString("EXC_UnableToFindClassInfo"), new String[] {nodecode}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_UnableToFindClassInfo"), new String[] {nodecode}); // NOI18N
                 throw new Exception(message);
             }
         } catch (Exception exc) {
@@ -136,7 +139,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         if (e_ni != null)
             e_ni.setParentInfo(parent, nodecode);
         else {
-            String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
             throw new DatabaseException(message);
         }
         return e_ni;
@@ -199,7 +202,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         if (ltab != null)
             putAll(ltab);
         else {
-            String message = MessageFormat.format(bundle.getString("EXC_UnableToReadInfo"), new String[] {sname}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_UnableToReadInfo"), new String[] {sname}); // NOI18N
             throw new DatabaseException(message);
         }
         put(CODE, sname);
@@ -644,7 +647,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
             put(CHILDREN, children);
 
         } catch (Exception exc) {
-            String message = MessageFormat.format(bundle.getString("EXC_UnableToCreateChildren"), new String[] {exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateChildren"), new String[] {exc.getMessage()}); // NOI18N
             throw new DatabaseException(message);
         }
 
@@ -692,11 +695,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                     if (!systemact) {
                         String locname, xname = (String)e_action.get(NAME);
                         try {
-                            locname = bundle.getString(xname);
+                            locname = bundle().getString(xname);
                         } catch (MissingResourceException e) {
                             locname = xname;
                             
-                            String message = MessageFormat.format(bundle.getString("ERR_UnableToLocateLocalizedMenuItem"), new String[] {xname}); // NOI18N
+                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), new String[] {xname}); // NOI18N
                             System.out.println(message);
                         }
 
@@ -775,4 +778,5 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public boolean isPasswordSet() {
         return passwordWasSet;
     }
+
 }

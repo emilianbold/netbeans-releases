@@ -62,7 +62,7 @@ public class DisconnectAction extends DatabaseAction {
                         ConnectionNodeInfo nfo = (ConnectionNodeInfo) info.getParent(DatabaseNode.CONNECTION);
                         nfo.disconnect();
                     } catch(Exception exc) {
-                        String message = MessageFormat.format(bundle.getString("ERR_UnableToDisconnect"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+                        String message = MessageFormat.format(bundle().getString("ERR_UnableToDisconnect"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
                 }

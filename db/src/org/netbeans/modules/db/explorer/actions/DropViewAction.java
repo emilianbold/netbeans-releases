@@ -14,9 +14,6 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import org.openide.nodes.Node;
-import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.infos.*;
 
 public class DropViewAction extends DatabaseAction

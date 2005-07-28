@@ -14,8 +14,6 @@
 package org.netbeans.modules.dbschema.nodes;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 
 import org.openide.nodes.*;
 
@@ -64,7 +62,7 @@ public class IndexElementNode extends DBMemberElementNode {
 		return new ElementProp(PROP_UNIQUE, Boolean.TYPE, canW) {
 			/** Gets the value */
 			public Object getValue () {
-				return new Boolean(((IndexElement)element).isUnique());
+				return Boolean.valueOf(((IndexElement)element).isUnique());
 			}
 		};
 	}

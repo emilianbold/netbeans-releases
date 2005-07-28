@@ -37,7 +37,7 @@ public class CreateViewAction extends DatabaseAction {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             
             if (! info.getDriverSpecification().areViewsSupported()) {
-                String message = MessageFormat.format(bundle.getString("MSG_ViewsAreNotSupported"), new String[] {info.getConnection().getMetaData().getDatabaseProductName().trim()}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("MSG_ViewsAreNotSupported"), new String[] {info.getConnection().getMetaData().getDatabaseProductName().trim()}); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
                 return;
             }
@@ -51,7 +51,7 @@ public class CreateViewAction extends DatabaseAction {
                 nfo.addView(dlg.getViewName());
             }
         } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("ERR_UnableToPerformOperation"), new String[] {node.getName(), exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
