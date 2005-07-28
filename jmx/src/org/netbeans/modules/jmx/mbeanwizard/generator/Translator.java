@@ -326,7 +326,13 @@ public class Translator {
             if (attrDescr == null)
                 throw new IllegalArgumentException("attribute decription invalid"); // NOI18N
             
-            attributes.add(new MBeanAttribute(
+            Boolean attrSelect = (Boolean)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_ATTR_SELECT + i);
+            if (attrSelect == null)
+                throw new IllegalArgumentException("attribute selected invalid"); // NOI18N
+            
+            if (attrSelect)
+                attributes.add(new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
                     attrAccess, attrDescr, true));
         }
