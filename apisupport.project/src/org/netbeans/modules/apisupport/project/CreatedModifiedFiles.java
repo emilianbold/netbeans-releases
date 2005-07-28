@@ -140,7 +140,8 @@ public final class CreatedModifiedFiles {
      * Returns {@link Operation} for creating custom file in the project file
      * hierarchy.
      * @param path where a file to be created
-     * @param content content for the file being created
+     * @param content content for the file being created. Content may address either
+     * text or binary data.
      */
     public Operation createFile(String path, URL content) {
         return CreatedModifiedFilesFactory.createFile(project, path, content);

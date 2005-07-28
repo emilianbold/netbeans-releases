@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
@@ -193,19 +194,38 @@ final class CreatedModifiedFilesFactory {
             FileObject targetFO = FileUtil.createData(getProject().getProjectDirectory(), path);
             FileLock lock = targetFO.lock();
             try {
-                PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
-                BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
-                try {
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        pw.println(tokens == null ? line : replaceTokens(line));
-                    }
-                } finally {
-                    br.close();
-                    pw.close();
+                if (tokens == null) {
+                    copyByteAfterByte(lock, targetFO);
+                } else {
+                    copyAndSubstituteTokens(lock, targetFO);
                 }
             } finally {
                 lock.releaseLock();
+            }
+        }
+
+        private void copyByteAfterByte(final FileLock lock, final FileObject targetFO) throws IOException {
+            OutputStream os = targetFO.getOutputStream(lock);
+            InputStream is = content.openStream();
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                is.close();
+                os.close();
+            }
+        }
+        
+        private void copyAndSubstituteTokens(final FileLock lock, final FileObject targetFO) throws IOException {
+            PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
+            BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
+            try {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    pw.println(tokens == null ? line : replaceTokens(line));
+                }
+            } finally {
+                br.close();
+                pw.close();
             }
         }
         

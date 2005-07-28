@@ -15,9 +15,11 @@ package org.netbeans.modules.apisupport.project;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -28,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -162,6 +166,26 @@ public class CreatedModifiedFilesTest extends TestBase {
         
         assertFileContent(HTML_CONTENT, new File(getWorkDir(), "module1/" + templatePath));
     }
+    
+    public void testCreateBinaryFile() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        
+        String templatePath = "src/org/example/module1/resources/binarytemplate.zip";
+        
+        File binaryFile = createBinaryFile(HTML_CONTENT);
+        
+        Operation op = cmf.createFile(templatePath, binaryFile.toURI().toURL());
+        
+        assertRelativePath(templatePath, op.getCreatedPaths());
+        
+        cmf.add(op);
+        cmf.run();
+        
+        assertFileContent(binaryFile, new File(getWorkDir(), "module1/" + templatePath));
+    }
+    
     
     public void testCreateFileWithSubstitutions() throws Exception {
         NbModuleProject project = generateStandaloneModule("module1");
@@ -373,6 +397,24 @@ public class CreatedModifiedFilesTest extends TestBase {
         return myTemplate.toURI().toURL();
     }
     
+    private File createBinaryFile(String[] content) throws IOException {
+        File myTemplate = getWorkDir().createTempFile("myTemplate", "zip");
+        ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(myTemplate));
+        ZipEntry entry = new ZipEntry("a/b/c/d.txt");
+        zos.putNextEntry(entry);
+        
+        try {
+            for (int i = 0; i  < content.length; i++) {
+                zos.write(content[i].getBytes());
+            }
+            
+        } finally {
+            zos.close();
+        }
+        return myTemplate;
+    }
+    
+    
     private void assertFileContent(String[] content, File file) throws IOException {
         assertTrue("file exist and is a regular file", file.isFile());
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -383,6 +425,24 @@ public class CreatedModifiedFilesTest extends TestBase {
             assertNull(br.readLine());
         } finally {
             br.close();
+        }
+    }
+
+    private void assertFileContent(File f1, File f2) throws IOException {
+        InputStream is = new FileInputStream(f1);
+        InputStream is2 = new FileInputStream(f2);
+        
+        try {
+            byte[] content = new byte[is.available()];
+            is.read(content);
+            
+            byte[] content2 = new byte[is2.available()];
+            is2.read(content2);
+            
+            for (int i = 0; i < content.length; i++) {
+                assertEquals("file content", content[i], content2[i]);
+            }
+        } finally {
         }
     }
     
