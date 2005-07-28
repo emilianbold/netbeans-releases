@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        loc("CTL_Breakpoint_GoToSource_Label"),
+        loc("CTL_Breakpoint_GoToSource_Label"), // NOI18N
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -60,7 +60,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        loc("CTL_Breakpoint_Customize_Label"),
+        loc("CTL_Breakpoint_Customize_Label"), // NOI18N
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -156,7 +156,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         });
         HelpCtx helpCtx = HelpCtx.findHelp (c);
         if (helpCtx == null)
-            helpCtx = new HelpCtx ("debug.add.breakpoint");;
+            helpCtx = new HelpCtx ("debug.add.breakpoint");  // NOI18N
         descriptor.setHelpCtx (helpCtx);
         bOk.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
