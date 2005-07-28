@@ -7,27 +7,19 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 /**
- * TransactionView.java
- *
- *
- * Created: Wed Feb  2 15:42:32 2000
- *
  * @author Ana von Klopp
- * @version
  */
 
 package org.netbeans.modules.web.monitor.client;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionListener;    
@@ -36,6 +28,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import javax.swing.ActionMap;
 import javax.swing.Icon;     
 import javax.swing.ImageIcon;     
 import javax.swing.JButton;
@@ -46,35 +39,31 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;    
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
 import javax.swing.border.CompoundBorder;     
 import javax.swing.border.EmptyBorder;     
 import javax.swing.border.EtchedBorder;     
 import javax.swing.event.ChangeListener;    
 import javax.swing.event.ChangeEvent;    
+import javax.swing.text.DefaultEditorKit;
 
-import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children.SortedArray;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
-import org.openide.windows.Mode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.web.monitor.data.DataRecord;
-import org.netbeans.modules.web.monitor.data.MonitorData;
 
 /**
  * Update title does not work like it should. Maybe there is a getName
  * method for this that I can override.
  */
-class TransactionView extends ExplorerPanel implements
+class TransactionView extends TopComponent implements ExplorerManager.Provider,
 				     PropertyChangeListener, ChangeListener {
 
     // Handles all the files etc. 
@@ -145,44 +134,40 @@ class TransactionView extends ExplorerPanel implements
    
     static {
 		
-	try {
-	    updateIcon =
-	    new ImageIcon(TransactionView.class.getResource
-	    ("/org/netbeans/modules/web/monitor/client/icons/update.gif")); // NOI18N
+        updateIcon =
+        new ImageIcon(TransactionView.class.getResource
+        ("/org/netbeans/modules/web/monitor/client/icons/update.gif")); // NOI18N
 
-	    a2zIcon =
-	    new ImageIcon(TransactionView.class.getResource
-	    ("/org/netbeans/modules/web/monitor/client/icons/a2z.gif")); // NOI18N
+        a2zIcon =
+        new ImageIcon(TransactionView.class.getResource
+        ("/org/netbeans/modules/web/monitor/client/icons/a2z.gif")); // NOI18N
 
-	    timesortAIcon =
-	    new ImageIcon(TransactionView.class.getResource
-            ("/org/netbeans/modules/web/monitor/client/icons/timesortA.gif")); // NOI18N
+        timesortAIcon =
+        new ImageIcon(TransactionView.class.getResource
+        ("/org/netbeans/modules/web/monitor/client/icons/timesortA.gif")); // NOI18N
 
-	    timesortDIcon =
-	    new ImageIcon(TransactionView.class.getResource
-			  ("/org/netbeans/modules/web/monitor/client/icons/timesortB.gif")); // NOI18N
+        timesortDIcon =
+        new ImageIcon(TransactionView.class.getResource
+                      ("/org/netbeans/modules/web/monitor/client/icons/timesortB.gif")); // NOI18N
 
-	    timestampIcon =
-	    new ImageIcon(TransactionView.class.getResource
-			  ("/org/netbeans/modules/web/monitor/client/icons/timestamp.gif")); // NOI18N
+        timestampIcon =
+        new ImageIcon(TransactionView.class.getResource
+                      ("/org/netbeans/modules/web/monitor/client/icons/timestamp.gif")); // NOI18N
 
-	    // See comment above for variable declaration
-	    // "browserCookieButton"
-	    // browserCookieIcon = 
-	    // new ImageIcon(TransactionView.class.getResource
-	    //	  ("/org/netbeans/modules/web/monitor/client/icons/browsercookie.gif")); // NOI18N
+        // See comment above for variable declaration
+        // "browserCookieButton"
+        // browserCookieIcon = 
+        // new ImageIcon(TransactionView.class.getResource
+        //	  ("/org/netbeans/modules/web/monitor/client/icons/browsercookie.gif")); // NOI18N
 
-	    //savedCookieIcon = 
-	    //new ImageIcon(TransactionView.class.getResource
-	    //	  ("/org/netbeans/modules/web/monitor/client/icons/savedcookie.gif")); // NOI18N
+        //savedCookieIcon = 
+        //new ImageIcon(TransactionView.class.getResource
+        //	  ("/org/netbeans/modules/web/monitor/client/icons/savedcookie.gif")); // NOI18N
 
-	    frameIcon =
-	    new ImageIcon(TransactionView.class.getResource
-            ("/org/netbeans/modules/web/monitor/client/icons/menuitem.gif")); // NOI18N
+        frameIcon =
+        new ImageIcon(TransactionView.class.getResource
+        ("/org/netbeans/modules/web/monitor/client/icons/menuitem.gif")); // NOI18N
 
-	} catch(Throwable t) {
-	    t.printStackTrace();
-	} 
     }
 
     public HelpCtx getHelpCtx() {
@@ -213,10 +198,14 @@ class TransactionView extends ExplorerPanel implements
 
     private void initialize() {
 
-	mgr = getExplorerManager();
+	mgr = new ExplorerManager();
 	mgr.addPropertyChangeListener(this);
 	mgr.setRootContext(controller.getRoot());
 
+        // following line tells the top component which lookup should be associated with it
+        associateLookup (ExplorerUtils.createLookup (mgr, getActionMap ()));
+
+        setLayout(new java.awt.BorderLayout());
 	tree = new BeanTreeView();
 	tree.setDefaultActionAllowed(true);
 	tree.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(TransactionView.class).getString("ACS_MON_treeName"));
@@ -339,12 +328,6 @@ class TransactionView extends ExplorerPanel implements
     }
     
     /**
-     * Invoked by IDE when trying to close monitor. */
-    public boolean canClose(Workspace w, boolean last) {
-	return true;
-    }
-
-    /**
      * Do not serialize this component, substitute null instead.
      */
     public Object writeReplace() throws ObjectStreamException {
@@ -457,20 +440,10 @@ class TransactionView extends ExplorerPanel implements
 		}});
 
 	buttonPanel.add(updateButton);
-
-	JPanel sep = new JPanel() {
-		public float getAlignmentX() {
-		    return 0;
-		}
-		public float getAlignmentY() {
-		    return 0;
-		}
-	    };
-	sep.setMaximumSize(new Dimension(10, 10));
 	buttonPanel.add(timeDButton);
 	buttonPanel.add(timeAButton);
 	buttonPanel.add(alphaButton);
-	sep = new JPanel() {
+	JPanel sep = new JPanel() { // PENDING proper insets should do the same spacing job
 		public float getAlignmentX() {
 		    return 0;
 		}
@@ -791,23 +764,23 @@ class TransactionView extends ExplorerPanel implements
         return alphaButton.isSelected();
     }
 
-    void setAscButtonSelected() {        
-        toggleTaskbarButtons(true, false, false);
-    } 
-    
-    void setDescButtonSelected() {        
-        toggleTaskbarButtons(false, true, false);
-    }     
-    
-    void setAlphButtonSelected() {
-        toggleTaskbarButtons(false, false, true);
-    }
-    
-    private void toggleTaskbarButtons(boolean asc, boolean desc, boolean alph) {
+    void toggleTaskbarButtons(boolean asc, boolean desc, boolean alph) {
         timeAButton.setSelected(asc);
         timeDButton.setSelected(desc);
         alphaButton.setSelected(alph);    
     }
     
     // EOF: methods needed for binding with context menu ------
+
+    public ExplorerManager getExplorerManager() {
+        return mgr;
+    }
+    
+    protected void componentActivated() {
+        ExplorerUtils.activateActions(mgr, true);
+    }
+    
+    protected void componentDeactivated() {
+        ExplorerUtils.activateActions(mgr, false);
+    }
 }

@@ -99,17 +99,17 @@ public class SortAction extends NodeAction {
             Object source = e.getSource();            
             if (source == descSortMenuItem) {
                 if (!transView.isDescButtonSelected()) {
-                    transView.setDescButtonSelected();                
+                    transView.toggleTaskbarButtons(false, true, false);                
                     controller.setComparator(controller.new CompTime(true));
                 }
              } else if (source == ascSortMenuItem) {
                  if (!transView.isAscButtonSelected()) {
-                    transView.setAscButtonSelected();
+                    transView.toggleTaskbarButtons(true, false, false);
                     controller.setComparator(controller.new CompTime(false));
                  }
              } else if (source == alphSortMenuItem) {
                  if (!transView.isAlphButtonSelected()) {
-                    transView.setAlphButtonSelected();
+                    transView.toggleTaskbarButtons(false, false, true);
                     controller.setComparator(controller.new CompAlpha());
                  }
              }                       
