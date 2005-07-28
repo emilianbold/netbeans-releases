@@ -387,7 +387,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             
             // sets the number of introspected attributes and the number of
             // added attributes
-            wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NB, firstEditableRow);
+            wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NB, 
+                    new Integer(firstEditableRow).toString());
             wiz.putProperty(WizardConstants.PROP_ATTR_NB, 
                     new Integer(nbAttrs - firstEditableRow).toString());
         }
