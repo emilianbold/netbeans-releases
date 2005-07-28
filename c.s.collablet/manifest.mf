@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+OpenIDE-Module: com.sun.collablet/1
+OpenIDE-Module-Specification-Version: 1.0.0
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/core/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/collab/core/resources/layer.xml
+OpenIDE-Module-Install: org/netbeans/modules/collab/core/module/Install.class
+OpenIDE-Module-Requires: org.openide.windows.IOProvider
+
