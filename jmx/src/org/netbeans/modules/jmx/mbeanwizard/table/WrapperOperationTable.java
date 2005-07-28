@@ -12,7 +12,6 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard.table;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
@@ -20,17 +19,15 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel.AttributesWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.CheckBoxRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperDescriptionTextFieldRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.listener.OperationTextFieldKeyListener;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JCheckBoxCellEditor;
 import javax.swing.JTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.TextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 
 /**
  *
@@ -128,15 +125,14 @@ public class WrapperOperationTable extends OperationTable {
         } else {
             if (column != 5) {
                 JTextField txt = new JTextField();
-                return new WrapperTextFieldRenderer(txt, false, false);
+                return new TextFieldRenderer(txt, false, false);
             } else {
                 JTextField txt = new JTextField();
                 boolean selection = (Boolean)getModel().getValueAt(row,0);
                 txt.setEditable(selection);
                 txt.setEnabled(selection);
                 //return new WrapperTextFieldRenderer(txt, selection, selection);
-                return new WrapperDescriptionTextFieldRenderer(
-                        txt,selection,selection);
+                return new TextFieldRenderer(txt,selection,selection);
             }
         }
     }

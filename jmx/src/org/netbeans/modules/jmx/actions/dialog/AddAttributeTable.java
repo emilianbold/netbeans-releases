@@ -15,12 +15,11 @@ package org.netbeans.modules.jmx.actions.dialog;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.TextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.table.AttributeTable;
 
 /**
@@ -54,7 +53,7 @@ public class AddAttributeTable extends AttributeTable {
         if(row < firstEditable) {
             switch (column) {
                 case AddMBeanAttributeTableModel.IDX_ATTR_NAME :
-                    return new WrapperTextFieldRenderer(new JTextField(), false);
+                    return new TextFieldRenderer(new JTextField(), false, false);
                 case AddMBeanAttributeTableModel.IDX_ATTR_TYPE :
                     JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
                     return new ComboBoxRenderer(typeBox,false);
@@ -62,7 +61,7 @@ public class AddAttributeTable extends AttributeTable {
                     JComboBox accessBox = WizardHelpers.instanciateAccessJComboBox();
                     return new ComboBoxRenderer(accessBox,false);
                 case AddMBeanAttributeTableModel.IDX_ATTR_DESCRIPTION :
-                    return new WrapperTextFieldRenderer(new JTextField(), false);
+                    return new TextFieldRenderer(new JTextField(), false, false);
                 default : 
                     return super.getCellRenderer(row,column);
             }

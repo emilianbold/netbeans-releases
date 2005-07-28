@@ -161,7 +161,7 @@ public class AttributeTable extends JTable {
         
             if (column == 1) {
                 JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
-                return new ComboBoxRenderer(typeBox);
+                return new ComboBoxRenderer(typeBox, true, true);
             } else {
                 if (column == 2) {
                     JComboBox accessBox = 

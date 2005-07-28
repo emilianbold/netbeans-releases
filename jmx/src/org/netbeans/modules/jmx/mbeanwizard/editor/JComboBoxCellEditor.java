@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.jmx.mbeanwizard.editor;
-
-import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.listener.TableRemoveListener;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
 import java.awt.Component;
@@ -23,6 +21,9 @@ import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.jmx.mbeanwizard.table.AttributeTable;
+import org.netbeans.modules.jmx.mbeanwizard.table.OperationTable;
+import org.netbeans.modules.jmx.mbeanwizard.table.WrapperAttributeTable;
 
 /**
  * Class implementing the behaviour for the editor of a ComboBox
@@ -56,6 +57,7 @@ public class JComboBoxCellEditor extends DefaultCellEditor
             this.tf = tf;
             this.table = table;
             this.model = table.getModel();
+            tf.addFocusListener(this);
             ((AbstractJMXTableModel)this.model).addTableRemoveListener(this); 
         }
 
@@ -84,6 +86,10 @@ public class JComboBoxCellEditor extends DefaultCellEditor
         public void focusGained(FocusEvent e) {           
             editedRow = table.getEditingRow();
             editedColumn = table.getEditingColumn();
+            
+            if (table instanceof WrapperAttributeTable) {
+                    ((WrapperAttributeTable)table).getWiz().event();
+                }
         }
         
         /**
@@ -92,6 +98,7 @@ public class JComboBoxCellEditor extends DefaultCellEditor
          * @param e a focusEvent
          */
         public void focusLost(FocusEvent e) {
+            /*
             if (editedColumn != table.getEditingColumn()) {
                 lastSelectedItem = tf.getSelectedItem();
             } else if (editedRow == table.getEditingRow()) {
@@ -99,7 +106,11 @@ public class JComboBoxCellEditor extends DefaultCellEditor
             }
             if (editedRow < ((AbstractJMXTableModel)table.getModel()).size()) 
                 model.setValueAt(lastSelectedItem, editedRow, editedColumn);
-           
+           */
+            
+            if (table instanceof WrapperAttributeTable) {
+                    ((WrapperAttributeTable)table).getWiz().event();
+                }
         }
         
         /**

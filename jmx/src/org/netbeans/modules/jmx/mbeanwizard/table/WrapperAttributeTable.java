@@ -21,32 +21,57 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanAttributePanel.AttributesWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.CheckBoxRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperDescriptionTextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.AbstractJMXTableModel;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JCheckBoxCellEditor;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.DefaultCellEditor;
+import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanWrapperAttribute;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AttributeTextFieldKeyListener;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperComboBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.TextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.EmptyRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
+        
 /**
  *
  * @author an156382
  */
 public class WrapperAttributeTable extends AttributeTable{
-    
+
     /** Creates a new instance of WrapperAttributeTable */
     public WrapperAttributeTable(AbstractTableModel model, AttributesWizardPanel wiz) {
         super(model, wiz);
+        //ajustColumnWidth();
+    }
+    
+    /* ColumnWidth ??
+    private void ajustColumnWidth() {
+        TableColumnModel colModel = this.getColumnModel();
+        TableColumn tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_SELECTION);
+        tc.setMaxWidth(55);
+        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_NAME +1);
+        tc.setMaxWidth(95);
+        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_TYPE +1);
+        tc.setMaxWidth(95);
+        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_ACCESS +1);
+        tc.setMaxWidth(105);
+        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_DESCRIPTION +1);
+        tc.setMaxWidth(getDescriptionColumnWidth());
+    }
+    
+    public int getDescriptionColumnWidth() {
+        return ((int)this.getPreferredScrollableViewportSize().getWidth() - 55 - 95 - 95 - 105);
+    }
+    */
+    
+    public MBeanWrapperAttributeTableModel getModel() {
+        return (MBeanWrapperAttributeTableModel)super.getModel();
     }
     
     /**
@@ -154,20 +179,23 @@ public class WrapperAttributeTable extends AttributeTable{
                 cb.setEnabled(true);
                 return new CheckBoxRenderer(cb);
             } else
-                return new TextFieldRenderer(new JTextField());
+                return new EmptyRenderer(new JTextField());
         } else {
             if (column == 1) { //attribute Name
-                if (row < editableRow)
-                    return new WrapperTextFieldRenderer(new JTextField(),true,false);
-                else
-                    return new WrapperTextFieldRenderer(new JTextField(),true,true);
+                boolean ok = (row < editableRow);
+                //if (ok)
+                    //return new WrapperTextFieldRenderer(new JTextField(),true,false);
+                    return new TextFieldRenderer(new JTextField(),true,!ok);
+                //else
+                //    return new TextFieldRenderer(new JTextField(),true,true);
             } else {
                 if (column == 2) {
                     if (row < editableRow)
-                        return new WrapperTextFieldRenderer(new JTextField(),true,false);
+                        //return new WrapperTextFieldRenderer(new JTextField(),true,false);
+                        return new TextFieldRenderer(new JTextField(),true,false);
                     else {
                         JComboBox jcb = WizardHelpers.instanciateTypeJComboBox();
-                        return new ComboBoxRenderer(jcb);
+                        return new ComboBoxRenderer(jcb, true, true);
                     }
                 } else {
                     if (column == 3) { //attribute access
@@ -182,14 +210,13 @@ public class WrapperAttributeTable extends AttributeTable{
                         if (mba.isOriginalReadable() && mba.isOriginalWritable())
                             jcb.addItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
                         boolean selection = (Boolean)getModel().getValueAt(row,0);
-                        return new WrapperComboBoxRenderer(jcb, selection, true);
+                        return new ComboBoxRenderer(jcb, selection, selection); 
                     } else {
                         if (column == 4) { //attribute description
                             JTextField txt = new JTextField();
                             boolean selection = (Boolean)getModel().getValueAt(row,0);
-                            //return new WrapperTextFieldRenderer(txt, selection, selection);
-                            return new WrapperDescriptionTextFieldRenderer(
-                                    txt, true, selection);
+                            //return new WrapperDescriptionTextFieldRenderer(
+                            return new TextFieldRenderer(txt, true, selection);
                             }
                         }
                     }
@@ -211,5 +238,14 @@ public class WrapperAttributeTable extends AttributeTable{
         }
         else
             return (col != 0);
+    }
+    
+    /**
+     * Returns the wizard panel of the parent dialog
+     * @return FireEvent
+     */
+    public FireEvent getWiz() {
+        
+        return this.wiz;
     }
 }

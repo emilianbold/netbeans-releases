@@ -12,24 +12,23 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard;
-import java.awt.BorderLayout;
 import java.awt.Component;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.table.TableColumn;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.mbeanwizard.table.WrapperAttributeTable;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperOperationTableModel;
 import org.netbeans.modules.jmx.MBeanDO;
-import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.jmi.javamodel.JavaClass;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -47,6 +46,35 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
         initWrapperComponents();
         String str = NbBundle.getMessage(MBeanWrapperAttributePanel.class,"LBL_Attribute_Panel");// NOI18N
         setName(str);
+        affectTableMouseListener();
+    }
+    
+    private void affectTableMouseListener() {
+        /* Affects a mouseListener to the wrapper table to enable /disable
+         * the remove button when the user selects an attribute that has been
+         * introspected, i.e he is not allowed to remove
+         * Further an event is thrown to notify the table of that change
+         */ 
+        attributeTable.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e)  {
+                boolean isOK = attributeTable.getSelectedRow() < getModel().getFirstEditableRow();
+                attrRemoveJButton.setEnabled(!isOK);
+                wiz.event();
+            }
+     
+            public void mouseEntered(MouseEvent e) {}        
+            public void mouseExited(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {
+                boolean isOK = attributeTable.getSelectedRow() < getModel().getFirstEditableRow();
+                attrRemoveJButton.setEnabled(!isOK);
+                wiz.event();
+            }
+            public void mouseReleased(MouseEvent e) {
+                boolean isOK = attributeTable.getSelectedRow() < getModel().getFirstEditableRow();
+                attrRemoveJButton.setEnabled(!isOK);
+                wiz.event();
+            }
+        });
     }
     
     protected void initJTables() {
@@ -73,31 +101,50 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
         attrColumnModel = attributeTable.getColumnModel();
         affectAttributeTableComponents(attrColumnModel);
     }
-    /*
-    protected void affectAttributeTableComponents(TableColumnModel columnModel) {
-        
-        TableColumn selColumn = columnModel.getColumn(
-                MBeanWrapperAttributeTableModel.IDX_ATTR_SELECTION);
-        selColumn.setPreferredWidth(7);
-        // creates the scroll pane and add the attribute table to it.
-        JScrollPane attributeJTableScrollPane = new JScrollPane(attributeTable);
-        // we are in a gridbag layout; size of the JTable has to be specified
-        attributeJTableScrollPane.setPreferredSize(new java.awt.Dimension(500,145));
-        JPanel firstInternalAttributePanel = new JPanel();
-        
-        firstInternalAttributePanel.setLayout(new BorderLayout());
-        
-        // adds the two previously defined panels to the container
-        firstInternalAttributePanel.add(attributeJTableScrollPane, 
-                BorderLayout.CENTER);
-        
-        JLabel tableLabel = new JLabel(NbBundle.getMessage(MBeanWrapperAttributePanel.class, 
-                "LBL_AttrTable_FromExistingClass"));
-        
-        add(tableLabel, BorderLayout.NORTH);
-        add(firstInternalAttributePanel,BorderLayout.CENTER);
+    
+    public MBeanWrapperAttributeTableModel getModel() {
+        return (MBeanWrapperAttributeTableModel)attributeModel;
     }
-            */
+    
+    protected void affectAttributeTableComponents(TableColumnModel columnModel) {
+        super.affectAttributeTableComponents(columnModel);
+        tableLabel.setText(NbBundle.getMessage(MBeanWrapperAttributePanel.class,  
+                "LBL_AttrTable_FromExistingClass"));// NOI18N
+        
+        /* New ActionListener for the remove button that overrides the one from
+         * the super class: Now, to be able to remove a line, it must not be 
+         * an introspected attribute
+         */ 
+        attrRemoveJButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final int selectedRow = attributeTable.getSelectedRow();
+                int firstEditableRow = getModel().getFirstEditableRow();
+                
+                //No row selected
+                if (selectedRow == -1) return;
+                
+                if (selectedRow >= firstEditableRow) { // remove allowed
+                    try {
+                        //attrRemoveJButton.setEnabled(true);
+                        attributeModel.remRow(selectedRow, attributeTable);
+                        //attributeModel.selectNextRow(selectedRow, attributeTable);  
+                    } catch (Exception ex) {
+                        System.out.println("Exception here : ");// NOI18N
+                        ex.printStackTrace();
+                    }
+                } else {
+                    attrRemoveJButton.setEnabled(false);
+                }
+                
+                // if the model has no rows, disable the remove button
+                if (attributeModel.size() == getModel().getFirstEditableRow())
+                    attrRemoveJButton.setEnabled(false);
+                
+                wiz.event();
+            }
+        });
+    }
+    
       private boolean AttributeNameAlreadyChecked() {
             
             ArrayList attributeNames = new ArrayList(attributeModel.size());
@@ -252,6 +299,64 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
          */
         public void storeSettings(Object settings) {
             WizardDescriptor wiz = (WizardDescriptor) settings;
+            
+            //stores all values from the table in the model even with keyboard
+            //navigation
+            getPanel().attributeTable.editingStopped(new ChangeEvent(this));
+            
+            //read the contents of the attribute table
+            MBeanWrapperAttributeTableModel attrModel = 
+                    (MBeanWrapperAttributeTableModel)getPanel().attributeModel;
+            
+            int nbAttrs = attrModel.size();
+            int firstEditableRow = attrModel.getFirstEditableRow();
+            
+            wiz.putProperty(WizardConstants.PROP_W_ATTR_NB, 
+                    new Integer(nbAttrs).toString());
+            
+            // two loops; one for the wrapped atributes and the other for the
+            // attributes added by the user
+            for (int i = 0 ; i < firstEditableRow; i++) {
+                
+                // the current attribute (number i)
+                MBeanWrapperAttribute attr = attrModel.getWrapperAttribute(i);
+                
+                if (attr.isSelected()) { // the attribute has to be included for management
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NAME + i,
+                            attr.getName());
+                    
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_TYPE + i,
+                            attr.getTypeName());
+                    
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_RW + i,
+                            attr.getAccess());
+                    
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_DESCR + i,
+                            attr.getDescription());
+                }
+            }
+            
+            for (int i = firstEditableRow ; i < nbAttrs ; i++) {
+                
+                // the current attribute (number i)
+                MBeanAttribute attr = attrModel.getAttribute(i);
+                
+                wiz.putProperty(WizardConstants.PROP_USER_ATTR_NAME + i,
+                        attr.getName());
+                
+                wiz.putProperty(WizardConstants.PROP_USER_ATTR_TYPE + i,
+                        attr.getTypeName());
+                
+                wiz.putProperty(WizardConstants.PROP_USER_ATTR_RW + i,
+                        attr.getAccess());
+                
+                wiz.putProperty(WizardConstants.PROP_USER_ATTR_DESCR + i, 
+                        attr.getDescription());
+            }
+            
+            // sets the property if the user has added some attributes
+            wiz.putProperty(WizardConstants.PROP_USER_ADDED_ATTR,
+                    new Boolean(firstEditableRow != 0));
         }
         
         /**

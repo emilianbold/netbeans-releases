@@ -57,6 +57,9 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
     protected JTable attributeTable;
     protected MBeanAttributeTableModel attributeModel;
     
+    JButton attrRemoveJButton;
+    protected JLabel tableLabel;
+    
     protected TableColumnModel attrColumnModel;
     
     /**
@@ -111,7 +114,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         JButton attrAddJButton = new JButton();
         Mnemonics.setLocalizedText(attrAddJButton,
                 NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_add_attr"));//NOI18N
-        final JButton attrRemoveJButton = new JButton(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_rem_attr"));// NOI18N
+        attrRemoveJButton = new JButton(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_rem_attr"));// NOI18N
         Mnemonics.setLocalizedText(attrRemoveJButton,
                 NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_rem_attr"));//NOI18N
         
@@ -179,7 +182,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 BorderLayout.CENTER);
         firstInternalAttributePanel.add(attributeJPanel, BorderLayout.SOUTH);
       
-        JLabel tableLabel = new JLabel(NbBundle.getMessage(MBeanAttributePanel.class,"LBL_AttrTable"));// NOI18N
+        tableLabel = new JLabel(NbBundle.getMessage(MBeanAttributePanel.class,"LBL_AttrTable"));// NOI18N
         
         add(tableLabel, BorderLayout.NORTH);
         add(firstInternalAttributePanel, BorderLayout.CENTER);

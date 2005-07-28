@@ -24,10 +24,10 @@ import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationExceptionPanelRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationParameterPanelRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.renderer.WrapperTextFieldRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.TextFieldRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationTable;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationParameterPanelRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationExceptionPanelRenderer;
 
 /**
  * Class responsible for the operation table shown when you use Add Operations...
@@ -62,7 +62,7 @@ public class AddOperationTable extends OperationTable {
         if(row < firstEditable) {
             switch (column) {
                 case AddMBeanOperationTableModel.IDX_METH_NAME :
-                    return new WrapperTextFieldRenderer(new JTextField(), false);
+                    return new TextFieldRenderer(new JTextField(), false, false);
                 case AddMBeanOperationTableModel.IDX_METH_TYPE :
                     JComboBox typeBox = WizardHelpers.instanciateRetTypeJComboBox();
                     return new ComboBoxRenderer(typeBox,false);
@@ -92,7 +92,7 @@ public class AddOperationTable extends OperationTable {
                     return 
                         new OperationExceptionPanelRenderer(excepPanel, excepField);
                 case AddMBeanOperationTableModel.IDX_METH_DESCRIPTION :
-                    return new WrapperTextFieldRenderer(new JTextField(), false);
+                    return new TextFieldRenderer(new JTextField(), false, false);
                 default : 
                     return super.getCellRenderer(row,column);
             }

@@ -174,6 +174,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         setLayout(new java.awt.BorderLayout());
 
+        setMinimumSize(new java.awt.Dimension(0, 0));
+        setPreferredSize(new java.awt.Dimension(0, 0));
         northCenterPanel.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -293,6 +295,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         northCenterPanel.add(fromExistingClassJCheckBox, gridBagConstraints);
 
+        classSelectionJTextField.setText("java.lang.String");
         classSelectionJTextField.setEnabled(false);
         classSelectionJTextField.setMinimumSize(new java.awt.Dimension(4, 15));
         classSelectionJTextField.setPreferredSize(new java.awt.Dimension(160, 20));

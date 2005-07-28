@@ -37,21 +37,30 @@ public class TextFieldRenderer extends  DefaultTableCellRenderer {
         this.comp = jtf;
     }
     
+    /** Creates a new instance of TextFieldRenderer */
+    public TextFieldRenderer(JTextField comp, boolean isEnabled,
+            boolean isEditable) {
+        this.comp = comp;
+        this.isEnabled = isEnabled;
+        this.isEditable = isEditable;
+    }
+    
     public Component getTableCellRendererComponent(JTable table,
 						       Object value,
 						       boolean isSelected,
 						       boolean hasFocus,
 						       int row,
 						       int column) {
-            comp.setEditable(false);
+            //comp.setEditable(false);
+            obj = table.getModel().getValueAt(row,column); 
+            comp.setText((String)obj);
+            comp.setEnabled(isEnabled);
+            comp.setEditable(isEditable);
+            
+            // makes visual line selection possible
+            if (row == table.getSelectedRow())
+                comp.setBackground(table.getSelectionBackground());
+            
 	    return comp;
 	}
-
-        /**
-         * Returns simply the component
-         * @return Component the component
-         */
-//	public Component getComponent() {
-//	    return comp;
-//	}
 }
