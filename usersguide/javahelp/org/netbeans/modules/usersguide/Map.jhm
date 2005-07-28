@@ -491,7 +491,9 @@ the Options window:-->
 <!--Find Usages dialog:-->
 <mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findUsages-CSH.html" /> 
 <!--Rename-->
+<!--displays Refactor Code for Renamed File(s) dialog box after in-place rename of file-->
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/renameClass.html" />  
+<!--these four display Rename dialog box when you choose Refactor | Rename on a Projects/Files node or on code element in Source Editor-->
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Method" url="refactor/renameField.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Field" url="refactor/renameField.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaClass" url="refactor/renameClass.html" />
