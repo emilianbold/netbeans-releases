@@ -146,20 +146,21 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             
             //update constructor and create wrapped object ref field
             if (mbean.isWrapppedClass()) {
-                // remove throws of constructor and updates body text and parameters
+                // updates body text and parameters
                 Constructor construct = tgtClass.getConstructor(new ArrayList(),false);
-                ParameterClass paramClass = (ParameterClass)
-                    Lookup.getDefault().lookup(ParameterClass.class);
-                Parameter param = paramClass.createParameter(
+                
+                Parameter param = pkg.getParameter().createParameter(
                         "theRef", // NOI18N
-                        Collections.EMPTY_LIST,
-                        false,
-                        getTypeRef(pkg,mbean.getWrappedClassName()),
-                        0,
+                        Collections.EMPTY_LIST, // annotations
+                        false, // is final
+                        getTypeRef(pkg, mbean.getWrappedClassName()), // typename
+                        0, // dimCount
                         false);
+                
                 construct.getParameters().add(param);
-                construct.getExceptionNames().clear();
-                construct.setBodyText("this.theRef = theRef;\n"); // NOI18N
+                construct.setBodyText("super(" + mbean.getName() + // NOI18N
+                        WizardConstants.MBEAN_ITF_SUFFIX + ");\n" + // NOI18N
+                        "this.theRef = theRef;\n"); // NOI18N
                 
                 //create ref field
                 Field refField = pkg.getField().createField(

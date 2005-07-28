@@ -83,6 +83,25 @@ public class MBeanAttribute {
      * @param attrName the attribute name
      * @param attrType the attribute type
      * @param attrAccess the attribute access mode
+     * @param attrDescription the attribute description
+     * @param isIntrospected true only if attribute have been discovered
+     */
+    public MBeanAttribute(String attrName, String attrType, String attrAccess,
+            String attrDescription, boolean isIntrospected) {
+        this.name = attrName;
+        this.typeName = attrType;
+        this.access = attrAccess;
+        this.description = attrDescription;
+        this.wrapped = isIntrospected;
+        this.getter = null;
+        this.setter = null;
+    }
+    
+    /**
+     * Constructor
+     * @param attrName the attribute name
+     * @param attrType the attribute type
+     * @param attrAccess the attribute access mode
      */
     public MBeanAttribute(String attrName, String attrType, String attrAccess) {
         this.name = attrName;

@@ -28,6 +28,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.netbeans.jmi.javamodel.JavaClass;
 
 /**
  * create a Data Object for an MBean with the informations of the MBean 
@@ -99,10 +100,10 @@ public class Translator {
         addOperations(wiz,mbean);
         addNotifications(wiz,mbean);
         
-        String wrappedClass = (String) 
+        JavaClass wrappedClass = (JavaClass) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS);
         mbean.setWrapppedClass((wrappedClass != null));
-        mbean.setWrappedClassName(wrappedClass);
+        mbean.setWrappedClassName(wrappedClass.getName());
         
         // retrieve informations about MBeanRegistration interface
         Boolean implMBRegist = (Boolean) 
@@ -292,8 +293,44 @@ public class Translator {
             
             attributes.add(new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
-                    attrAccess, attrDescr));
+                    attrAccess, attrDescr, false));
         }
+        
+        String strNbWrapAttr = (String)wiz.getProperty(
+                WizardConstants.PROP_INTRO_ATTR_NB);
+        int nbWrapAttr = 0;
+        if (strNbWrapAttr != null) {
+            nbWrapAttr = new Integer(strNbWrapAttr).intValue();
+        }
+        for (int i = 0 ; i < nbWrapAttr ; i++) {
+             String attrName   = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_ATTR_NAME + i);
+            if ((attrName == null) || (attrName.equals(""))) // NOI18N
+                throw new IllegalArgumentException("attribute name invalid"); // NOI18N
+             
+            String attrType   = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_ATTR_TYPE + i);
+            if ((attrType == null) || (attrType.equals(""))) // NOI18N
+                throw new IllegalArgumentException("attribute type invalid"); // NOI18N
+            
+            String attrAccess = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_ATTR_RW + i);
+            if ((attrAccess == null) || 
+                ((!attrAccess.equals(WizardConstants.ATTR_ACCESS_READ_WRITE)) &&
+                (!attrAccess.equals(WizardConstants.ATTR_ACCESS_WRITE_ONLY)) &&
+                (!attrAccess.equals(WizardConstants.ATTR_ACCESS_READ_ONLY))))
+                throw new IllegalArgumentException("attribute access invalid"); // NOI18N
+            
+            String attrDescr = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_ATTR_DESCR + i);
+            if (attrDescr == null)
+                throw new IllegalArgumentException("attribute decription invalid"); // NOI18N
+            
+            attributes.add(new MBeanAttribute(
+                    WizardHelpers.capitalizeFirstLetter(attrName), attrType,
+                    attrAccess, attrDescr, true));
+        }
+        
         mbean.setAttributes(attributes);
     }
     
