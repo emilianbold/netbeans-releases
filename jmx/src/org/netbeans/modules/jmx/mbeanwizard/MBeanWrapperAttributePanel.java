@@ -40,6 +40,8 @@ import org.openide.util.HelpCtx;
  */
 public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
     
+    private int orderNumber = Integer.MAX_VALUE;
+    
     /** Creates a new instance of WrapperPanel */
     public MBeanWrapperAttributePanel(WrapperAttributesWizardPanel wiz) {
         super(wiz);
@@ -280,8 +282,9 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             
             // if the user loads the panel for the first time, perform introspection
             // else do nothing ...
-            //Object prop_user = wiz.getProperty(WizardConstants.PROP_USER_ADDED_ATTR);
-            //if (prop_user == null) { // the user loads the panel for the first time
+            int oNumber = (Integer)wiz.getProperty(WizardConstants.PROP_USER_ORDER_NUMBER);
+            if (oNumber != getPanel().orderNumber) { // the user loads the panel for the first time
+                getPanel().getModel().clear();
                 MBeanDO mbdo = null;
                 try {
                     mbdo = org.netbeans.modules.jmx.Introspector.introspectClass(
@@ -295,7 +298,26 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
                     
                     event();
                 } catch (Exception e) {e.printStackTrace();}
-            //}
+                
+                String nbAddedAttrStr = (String)wiz.getProperty(WizardConstants.PROP_ATTR_NB);
+                
+                int nbAddedAttr = 0;
+                
+                if (nbAddedAttrStr != null)
+                    nbAddedAttr = new Integer(nbAddedAttrStr);
+                
+                for (int i=0; i < nbAddedAttr; i++) {
+                    getPanel().getModel().addRow(
+                            new MBeanWrapperAttribute(
+                            true, 
+                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_NAME + i),
+                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_TYPE + i),
+                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_RW + i),
+                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_RW + i)));
+                            
+                }
+                getPanel().orderNumber = oNumber;
+            } 
             
             wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
         }
@@ -317,9 +339,6 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             
             int nbAttrs = attrModel.size();
             int firstEditableRow = attrModel.getFirstEditableRow();
-            
-            wiz.putProperty(WizardConstants.PROP_ATTR_NB, 
-                    new Integer(nbAttrs).toString());
             
             // counter for the attribute storage
             int j = 0;
@@ -350,7 +369,6 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
                 // the current attribute (number i)
                 MBeanWrapperAttribute attr = attrModel.getWrapperAttribute(i);
                 
-                if (attr.isSelected()) { // the attribute has to be included for management
                     wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NAME + i,
                             attr.getName());
                     
@@ -362,17 +380,16 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
                     
                     wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_DESCR + i,
                             attr.getDescription());
-                }
+                    
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_SELECT + i, 
+                            attr.isSelected());
             }
             
             // sets the number of introspected attributes and the number of
             // added attributes
             wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NB, firstEditableRow);
-            wiz.putProperty(WizardConstants.PROP_USER_ADDED_ATTR, j);
-            
-            // sets the property if the user has added some attributes
-            wiz.putProperty(WizardConstants.PROP_USER_ADDED_ATTR,
-                    new Boolean(true));
+            wiz.putProperty(WizardConstants.PROP_ATTR_NB, 
+                    new Integer(nbAttrs - firstEditableRow).toString());
         }
         
         /**

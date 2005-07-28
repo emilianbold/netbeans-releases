@@ -72,6 +72,10 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
         return attribute;
     }
     
+    public void clear() {
+        data.clear();
+    }
+    
     /**
      * Returns an attribute accordind to his index in the attribute list
      * @param index the index of the attribute
@@ -118,6 +122,13 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
                 break;
             }
         }
+    }
+    
+    public void addRow(MBeanAttribute mba) {
+       
+        data.add(mba); 
+        //table is informed about the change to update the view
+        this.fireTableDataChanged();
     }
     
     /**

@@ -84,12 +84,12 @@ public class JComboBoxCellEditor extends DefaultCellEditor
          * @param e a focusEvent
          */
         public void focusGained(FocusEvent e) {           
-            editedRow = table.getEditingRow();
+            /*editedRow = table.getEditingRow();
             editedColumn = table.getEditingColumn();
             
             if (table instanceof WrapperAttributeTable) {
                     ((WrapperAttributeTable)table).getWiz().event();
-                }
+                }*/
         }
         
         /**
@@ -107,10 +107,10 @@ public class JComboBoxCellEditor extends DefaultCellEditor
             if (editedRow < ((AbstractJMXTableModel)table.getModel()).size()) 
                 model.setValueAt(lastSelectedItem, editedRow, editedColumn);
            */
-            
+            /*
             if (table instanceof WrapperAttributeTable) {
                     ((WrapperAttributeTable)table).getWiz().event();
-                }
+                }*/
         }
         
         /**

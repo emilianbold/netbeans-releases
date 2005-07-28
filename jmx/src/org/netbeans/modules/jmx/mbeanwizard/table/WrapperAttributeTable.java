@@ -209,8 +209,7 @@ public class WrapperAttributeTable extends AttributeTable{
                             jcb.addItem(WizardConstants.ATTR_ACCESS_WRITE_ONLY);
                         if (mba.isOriginalReadable() && mba.isOriginalWritable())
                             jcb.addItem(WizardConstants.ATTR_ACCESS_READ_WRITE);
-                        boolean selection = (Boolean)getModel().getValueAt(row,0);
-                        return new ComboBoxRenderer(jcb, selection, selection); 
+                        return new ComboBoxRenderer(jcb, true, false); 
                     } else {
                         if (column == 4) { //attribute description
                             JTextField txt = new JTextField();

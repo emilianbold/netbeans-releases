@@ -175,16 +175,11 @@ public class WizardConstants
     public static final String PROP_JUNIT_JAVADOC_SELECTED       = "wizdata.junitJavadocSelected";// NOI18N
     public static final String PROP_JUNIT_HINT_SELECTED          = "wizdata.junitHintSelected";// NOI18N
     
-    
-    // information of the MBean wrapper attribute panel
-    // total number of wrapped attributes
-    public static final String PROP_W_ATTR_NB                    = "wizdata.w_attributeNb";// NOI18N
-    
-    // to see if the user has added some attributes
-    public static final String PROP_USER_ADDED_ATTR              = "wizdata.intro_attributeName";// NOI18N
+    // number of times the user switched panels
+    public static final String PROP_USER_ORDER_NUMBER            = "wizdata.intro_attributeName";// NOI18N
     
     // number of user added attributes
-    public static final String PROP_USER_ATTR_NB                 = "wizdata.user_attributeNb";// NOI18N
+    public static final String PROP_USER_ADDED_ATTR              = "wizdata.userAdded_attributeNb";// NOI18N
     
     // number of introspected attributes
     public static final String PROP_INTRO_ATTR_NB                = "wizdata.intro_attributeNb";// NOI18N
@@ -192,7 +187,8 @@ public class WizardConstants
     public static final String PROP_INTRO_ATTR_TYPE              = "wizdata.intro_attributeType";// NOI18N
     public static final String PROP_INTRO_ATTR_RW                = "wizdata.intro_attributeAccess";// NOI18N
     public static final String PROP_INTRO_ATTR_DESCR             = "wizdata.intro_attributeDescr";// NOI18N
-
+    public static final String PROP_INTRO_ATTR_SELECT            = "wizdata.intro_attributeSelect";// NOI18N
+    
     /** type boolean. */
     public static final String PROP_ATTR_RW = "wizdata.attributeRW"; // NOI18N
     

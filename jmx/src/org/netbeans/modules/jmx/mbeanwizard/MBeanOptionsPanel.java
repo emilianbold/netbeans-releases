@@ -15,9 +15,6 @@ package org.netbeans.modules.jmx.mbeanwizard;
 import java.awt.Component;
 import javax.swing.event.*;
 import java.util.ResourceBundle;
-
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.netbeans.api.project.Project;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -27,15 +24,13 @@ import org.openide.awt.Mnemonics;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.GenericWizardPanel;
-import java.awt.Container;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
+import java.lang.reflect.Modifier;
 import javax.swing.JTextField;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -50,6 +45,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 {
     private MBeanOptionsWizardPanel wiz;
     private ResourceBundle bundle;
+    
+    private Integer orderNumber = 0;
     
     // temporary: for now, the user can proceed to the next panel automaticely
     private boolean mbeanNameSelected = true;
@@ -84,14 +81,18 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         mbeanDescriptionJTextField.setName(  "mbeanDescriptionJTextField");// NOI18N
         // attach a documentlistener to the class text field to update the panel
         // each time the user fills something in to make sure it is not empty
+        // and increments the order number hemce he changes the class to load
         classSelectionJTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent evt) {
+                orderNumber++;
                 wiz.fireEvent(); 
             }
             public void insertUpdate(DocumentEvent evt) {
+                orderNumber++;
                 wiz.fireEvent();
             }
             public void removeUpdate(DocumentEvent evt) {
+                orderNumber++;
                 wiz.fireEvent();
             }
         });
@@ -145,7 +146,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION_KEEP"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
     }
-        
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -538,13 +539,21 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                  JavaClass mbeanClass = (JavaClass) pkg.getJavaClass().resolve(
                          fullClassName);
                  
-                 if ((mbeanClass == null) || 
+                 // checks that the class is neither null nor an interface nor 
+                 // abstract
+                 if ((mbeanClass == null) ||
                          (mbeanClass.getClass().getName().startsWith(
-                           "org.netbeans.jmi.javamodel.UnresolvedClass"))) {// NOI18N
+                         "org.netbeans.jmi.javamodel.UnresolvedClass"))) {// NOI18N
                      setErrorMsg(  "The specified class does not exist.");// NOI18N
                      
                      return false;
-                    }  
+                 } else if (mbeanClass.isInterface()) {
+                     setErrorMsg(  "The specified class is an Interface.");// NOI18N
+                     return false;
+                 } else if (Modifier.isAbstract(mbeanClass.getModifiers())) {
+                     setErrorMsg(  "The specified class is abstract.");// NOI18N
+                     return false;
+                 } 
              } else {
                  //condition on checked box but empty resource to load
                  if (getPanel().classSelectionJTextField.isEnabled() && 
@@ -733,6 +742,15 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             } 
             getPanel().mbeanDescriptionJTextField.setText(desc);
             updateMBeanDesc(templateWiz);
+            
+            
+            Integer orderNumber = (Integer)templateWiz.getProperty(
+                    WizardConstants.PROP_USER_ORDER_NUMBER);
+            
+            if (orderNumber == null)
+                orderNumber = 0;
+            
+            getPanel().orderNumber = orderNumber;
         }
         
         /**
@@ -801,6 +819,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
                         getPanel().preRegParamSelected);
            }
             
+           wiz.putProperty(WizardConstants.PROP_USER_ORDER_NUMBER, 
+                        getPanel().orderNumber);
         }    
         
         private JavaClass getExistingClass() {

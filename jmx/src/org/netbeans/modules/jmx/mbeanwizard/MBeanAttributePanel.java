@@ -310,17 +310,24 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
             //read the contents of the attribute table
             MBeanAttributeTableModel attrModel = getPanel().attributeModel;
             
-            int nbAttrs = attrModel.size();
+            attrModel.clear();
+            
+            String nbAttrsStr = (String) wiz.getProperty(WizardConstants.PROP_ATTR_NB);
+            int nbAttrs = 0;
+            if (nbAttrsStr != null)
+                nbAttrs = new Integer(nbAttrsStr);
+            
             for (int i = 0 ; i < nbAttrs ; i++) {
                 
-                // the current attribute (number i)
-                MBeanAttribute attr = attrModel.getAttribute(i);
+                String name = (String) wiz.getProperty(WizardConstants.PROP_ATTR_NAME + i);
                 
-                wiz.putProperty(WizardConstants.PROP_ATTR_TYPE + i,
-                        attr.getTypeName());
+                String type = (String)wiz.getProperty(WizardConstants.PROP_ATTR_TYPE + i);
                 
-                wiz.putProperty(WizardConstants.PROP_ATTR_RW + i,
-                        attr.getAccess());
+                String access = (String)wiz.getProperty(WizardConstants.PROP_ATTR_RW + i);
+                
+                String descr = (String)wiz.getProperty(WizardConstants.PROP_ATTR_DESCR + i);
+                
+                attrModel.addRow(new MBeanAttribute(name,type,access,descr));
                 
             }
             wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
