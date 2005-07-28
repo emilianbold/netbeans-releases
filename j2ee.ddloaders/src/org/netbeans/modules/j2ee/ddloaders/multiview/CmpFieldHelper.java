@@ -226,7 +226,6 @@ public class CmpFieldHelper {
     }
 
     public void setFieldName(String newName) {
-        //todo: launch refactoring instead of following code
         final IllegalArgumentException ex = FieldCustomizer.validateFieldName(newName);
         if (ex != null) {
             ErrorManager.getDefault().notify(ex);
@@ -313,38 +312,48 @@ public class CmpFieldHelper {
 
     public boolean edit() {
         Field field = JavaModel.getDefaultExtent().getField().createField();
-        field.setName(getFieldName());
+        String fieldName = getFieldName();
+        field.setName(fieldName);
         field.setType(JMIUtils.resolveType(getTypeString()));
-        String title = Utils.getBundleMessage("LBL_EditCmpField");
         FieldCustomizer customizer = new FieldCustomizer(field, getDefaultDescription(),
                 entityHelper.hasLocalInterface(), entityHelper.hasRemoteInterface(), hasLocalGetter(),
                 hasLocalSetter(), hasRemoteGetter(), hasRemoteSetter());
+        while (openEditCmpFieldDialog(customizer)) {
+            customizer.isOK();  // apply possible changes in dialog fields
+            String newFieldName = field.getName();
+            if (!fieldName.equals(newFieldName)) {
+                try {
+                    entityHelper.getEntityMethodController().validateNewCmpFieldName(newFieldName);
+                } catch (IllegalArgumentException ex) {
+                    Utils.notifyError(ex);
+                    continue;
+                }
+            }
+            Utils.beginJmiTransaction(true);
+            boolean rollback = true;
+            try {
+                setFieldName(newFieldName);
+                setType(field.getType());
+                setDescription(customizer.getDescription());
+                setLocalGetter(customizer.isLocalGetter());
+                setLocalSetter(customizer.isLocalSetter());
+                setRemoteGetter(customizer.isRemoteGetter());
+                setRemoteSetter(customizer.isRemoteSetter());
+                rollback = false;
+            } finally {
+                Utils.endJmiTransaction(rollback);
+            }
+            modelUpdatedFromUI();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean openEditCmpFieldDialog(FieldCustomizer customizer) {
+        String title = Utils.getBundleMessage("LBL_EditCmpField");
         NotifyDescriptor nd = new NotifyDescriptor(customizer, title, NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, null, null);
-        while (true) {
-            boolean resultIsOk = DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION;
-            if (resultIsOk) {
-                customizer.isOK();  // apply possible changes in dialog fields
-                Utils.beginJmiTransaction(true);
-                boolean rollback = true;
-                try {
-                    setFieldName(field.getName());
-                    setType(field.getType());
-                    setDescription(customizer.getDescription());
-                    setLocalGetter(customizer.isLocalGetter());
-                    setLocalSetter(customizer.isLocalSetter());
-                    setRemoteGetter(customizer.isRemoteGetter());
-                    setRemoteSetter(customizer.isRemoteSetter());
-                    rollback = false;
-                } finally {
-                    Utils.endJmiTransaction(rollback);
-                }
-                modelUpdatedFromUI();
-                return true;
-            } else {
-                return false;
-            }
-        }
+        return DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION;
     }
 
 }
