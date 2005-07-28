@@ -98,7 +98,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                         getSuiteProvider(), isStandalone, bundleInfo);
                 init();
             }
-			moduleProps.refresh();
+            moduleProps.refresh();
+            OptionListener listener = new OptionListener();
+            dialog = ProjectCustomizer.createCustomizerDialog(categories,
+                    panelProvider, preselectedCategory, listener,
+                    new HelpCtx(CustomizerProviderImpl.class));
+            dialog.addWindowListener(listener);
+            dialog.setTitle(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle",
+                                                ProjectUtils.getInformation(project).getDisplayName()));
+            dialog.setVisible(true);
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
                     if (preselectedCategory.equals(categories[i].getName())) {
@@ -111,15 +119,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
                     }
                 }
             }
-            OptionListener listener = new OptionListener();
-            dialog = ProjectCustomizer.createCustomizerDialog(categories,
-                    panelProvider, preselectedCategory, listener,
-                    new HelpCtx(CustomizerProviderImpl.class));
-            dialog.addWindowListener(listener);
-            dialog.setTitle(MessageFormat.format(
-                    NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle"), // NOI18N
-                    new Object[] { ProjectUtils.getInformation(project).getDisplayName() }));
-            dialog.setVisible(true);
         }
     }
     
@@ -128,14 +127,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     // Programmatic names of categories
-    private static final String SOURCES = "Sources"; // NOI18N
-    private static final String DISPLAY = "Display"; // NOI18N
-    private static final String LIBRARIES = "Libraries"; // NOI18N
-    private static final String VERSIONING = "Versioning"; // NOI18N
-    private static final String BUILD = "Build"; // NOI18N
-    private static final String COMPILING = "Compiling"; // NOI18N
-    private static final String PACKAGING = "Packaging"; // NOI18N
-    private static final String DOCUMENTING = "Documenting"; // NOI18N
+    private static final String CATEGORY_SOURCES = "Sources"; // NOI18N
+    private static final String CATEGORY_DISPLAY = "Display"; // NOI18N
+    private static final String CATEGORY_LIBRARIES = "Libraries"; // NOI18N
+    public static final String CATEGORY_VERSIONING = "Versioning"; // NOI18N
+    public static final String SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES = "publicPackages"; // NOI18N
+    private static final String CATEGORY_BUILD = "Build"; // NOI18N
+    private static final String CATEGORY_COMPILING = "Compiling"; // NOI18N
+    private static final String CATEGORY_PACKAGING = "Packaging"; // NOI18N
+    private static final String CATEGORY_DOCUMENTING = "Documenting"; // NOI18N
 
     private SuiteProvider getSuiteProvider() {
         return (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
@@ -144,23 +144,23 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     private void init() {
         ResourceBundle bundle = NbBundle.getBundle(CustomizerProviderImpl.class);
         
-        ProjectCustomizer.Category sources = createCategory(SOURCES,
+        ProjectCustomizer.Category sources = createCategory(CATEGORY_SOURCES,
                 bundle.getString("LBL_ConfigSources")); // NOI18N
-        ProjectCustomizer.Category display = createCategory(DISPLAY,
+        ProjectCustomizer.Category display = createCategory(CATEGORY_DISPLAY,
                 bundle.getString("LBL_ConfigDisplay")); // NOI18N
-        ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
+        ProjectCustomizer.Category libraries = createCategory(CATEGORY_LIBRARIES,
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
-        ProjectCustomizer.Category versioning = createCategory(VERSIONING,
+        ProjectCustomizer.Category versioning = createCategory(CATEGORY_VERSIONING,
                 bundle.getString("LBL_ConfigVersioning")); // NOI18N
 
-        ProjectCustomizer.Category compiling = createCategory(COMPILING,
+        ProjectCustomizer.Category compiling = createCategory(CATEGORY_COMPILING,
                 bundle.getString("LBL_ConfigCompiling")); // NOI18N
-        ProjectCustomizer.Category packaging = createCategory(PACKAGING,
+        ProjectCustomizer.Category packaging = createCategory(CATEGORY_PACKAGING,
                 bundle.getString("LBL_ConfigPackaging")); // NOI18N
-        ProjectCustomizer.Category documenting = createCategory(DOCUMENTING,
+        ProjectCustomizer.Category documenting = createCategory(CATEGORY_DOCUMENTING,
                 bundle.getString("LBL_ConfigDocumenting")); // NOI18N
         ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
-                BUILD,
+                CATEGORY_BUILD,
                 bundle.getString( "LBL_ConfigBuild" ), // NOI18N
                 null,
                 new ProjectCustomizer.Category[] {compiling, packaging, documenting}

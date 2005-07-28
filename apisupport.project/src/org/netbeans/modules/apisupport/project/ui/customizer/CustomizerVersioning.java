@@ -37,7 +37,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerVersioning extends NbPropertyPanel implements PropertyChangeListener {
+final class CustomizerVersioning extends NbPropertyPanel implements PropertyChangeListener, CustomizerProviderImpl.SubCategoryProvider {
     
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
@@ -447,6 +447,20 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
     
     private String getMessage(String key) {
         return NbBundle.getMessage(CustomizerVersioning.class, key);
+    }
+
+    public void showSubCategory(String name) {
+        if (name.equals(CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES)) {
+            publicPkgsTable.requestFocus();
+            /* XXX does not work quite right under Ocean; have to press TAB once; this does not help:
+            if (publicPkgsTable.getModel().getRowCount() > 0) {
+                publicPkgsTable.setEditingRow(0);
+                publicPkgsTable.setEditingColumn(1);
+            }
+             */
+        } else {
+            throw new IllegalArgumentException(name);
+        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
