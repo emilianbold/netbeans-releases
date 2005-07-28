@@ -184,17 +184,7 @@ public class WizardConstants
     public static final String PROP_USER_ADDED_ATTR              = "wizdata.intro_attributeName";// NOI18N
     
     // introspected attributes
-    public static final String PROP_INTRO_ATTR_NAME              = "wizdata.intro_attributeName";// NOI18N
-    public static final String PROP_INTRO_ATTR_TYPE              = "wizdata.intro_attributeType";// NOI18N
-    public static final String PROP_INTRO_ATTR_RW                = "wizdata.intro_attributeAccess";// NOI18N
-    public static final String PROP_INTRO_ATTR_DESCR             = "wizdata.intro_attributeDescr";// NOI18N
-    
-    // attributes added by the user
-    public static final String PROP_USER_ATTR_NAME               = "wizdata.user_attributeName";// NOI18N
-    public static final String PROP_USER_ATTR_TYPE               = "wizdata.user_attributeType";// NOI18N
-    public static final String PROP_USER_ATTR_RW                 = "wizdata.user_attributeAccess";// NOI18N
-    public static final String PROP_USER_ATTR_DESCR              = "wizdata.user_attributeDescr";// NOI18N
-            
+    public static final String PROP_ATTR                         = "wizdata.attributeAdded";// NOI18N
 
     /** type boolean. */
     public static final String PROP_ATTR_RW = "wizdata.attributeRW"; // NOI18N

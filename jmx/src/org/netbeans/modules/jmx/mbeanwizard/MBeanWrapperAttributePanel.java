@@ -275,8 +275,13 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
          *        attribute table
          */
         public void readSettings(Object settings) {
-            //TODO complete here
+            
             wiz = (WizardDescriptor) settings;
+            
+            //Object prop_user = wiz.getProperty(WizardConstants.PROP_USER_ADDED_ATTR);
+            //if (prop_user)
+            
+            
             MBeanDO mbdo = null;
             try {
                 mbdo = org.netbeans.modules.jmx.Introspector.introspectClass(
@@ -320,38 +325,24 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
                 
                 // the current attribute (number i)
                 MBeanWrapperAttribute attr = attrModel.getWrapperAttribute(i);
+                boolean isIntrospected = (i < firstEditableRow);
                 
                 if (attr.isSelected()) { // the attribute has to be included for management
-                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NAME + i,
+                    wiz.putProperty(WizardConstants.PROP_ATTR_NAME + i,
                             attr.getName());
                     
-                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_TYPE + i,
+                    wiz.putProperty(WizardConstants.PROP_ATTR_TYPE + i,
                             attr.getTypeName());
                     
-                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_RW + i,
+                    wiz.putProperty(WizardConstants.PROP_ATTR_RW + i,
                             attr.getAccess());
                     
-                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_DESCR + i,
+                    wiz.putProperty(WizardConstants.PROP_ATTR_DESCR + i,
                             attr.getDescription());
+                    
+                    wiz.putProperty(WizardConstants.PROP_ATTR + i, 
+                            isIntrospected);
                 }
-            }
-            
-            for (int i = firstEditableRow ; i < nbAttrs ; i++) {
-                
-                // the current attribute (number i)
-                MBeanAttribute attr = attrModel.getAttribute(i);
-                
-                wiz.putProperty(WizardConstants.PROP_USER_ATTR_NAME + i,
-                        attr.getName());
-                
-                wiz.putProperty(WizardConstants.PROP_USER_ATTR_TYPE + i,
-                        attr.getTypeName());
-                
-                wiz.putProperty(WizardConstants.PROP_USER_ATTR_RW + i,
-                        attr.getAccess());
-                
-                wiz.putProperty(WizardConstants.PROP_USER_ATTR_DESCR + i, 
-                        attr.getDescription());
             }
             
             // sets the property if the user has added some attributes
