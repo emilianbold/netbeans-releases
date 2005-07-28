@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+
+	<folder name="Services">
+		<folder name="Collaboration">
+			<folder name="Channels">
+				<file name="org-netbeans-modules-collab-channel-chat-ChatCollabletFactory.instance"/>
+				<file name="org-netbeans-modules-collab-channel-chat-ChatCollabletFactorySettings.settings" url="ChatCollabletFactorySettings.settings">
+					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.Bundle"/>
+					<attr name="SystemFileSystem.layer" stringvalue="session"/>
+				</file>
+				<file name="org-netbeans-modules-collab-channel-chat-HiddenChatChannelSettings.settings" url="HiddenChatChannelSettings.settings">
+					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
+					<attr name="SystemFileSystem.layer" stringvalue="session"/>
+				</file>
+			</folder>
+                        <folder name="MessageType">
+                                <file name="org-netbeans-modules-collab-channel-chat-messagetype-ChatContentTypeFactory.instance"/>					        
+			</folder>
+		</folder>
+		<folder name="JavaHelp">
+				<!-- Merge it after the main online help: -->
+				<attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-collab-channel-chat-helpset.xml"
+						  boolvalue="true"/>
+				<!-- This DTD gives an instance of HelpSet: -->
+				<file name="org-netbeans-modules-collab-channel-chat-helpset.xml"
+						  url="org-netbeans-modules-collab-channel-chat-helpset.xml" />
+				<!-- Merge before additional helpsets such as the Ant Manual. -->
+				<attr name="org-netbeans-modules-collab-channel-chat-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"
+						  boolvalue="true"/>
+		</folder>                
+	</folder>
+
+	<folder name="UI">
+		<folder name="Services">
+			<folder name="Collaboration">
+				<folder name="Channels">
+					<file name="org-netbeans-modules-collab-channel-chat-ChatCollabletFactorySettings.shadow">
+						<attr name="originalFile" stringvalue="Services/Collaboration/Channels/org-netbeans-modules-collab-channel-chat-ChatCollabletFactorySettings.settings"/>
+					</file>
+				</folder>
+			</folder>
+		</folder>
+	</folder>
+<!--        
+        <folder name="Menu">
+            <folder name="Help">
+              <folder name="HelpShortcuts">
+                        
+                        <attr name="org-netbeans-modules-collab-mainpage.xml/org-netbeans-modules-collab-channel-chat-mainpage.xml"
+                                  boolvalue="true"/>
+                        
+                        <file name="org-netbeans-modules-collab-channel-chat-mainpage.xml"
+                                  url="help-main-ref.xml" >
+                          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.chat.resources.Bundle"/>
+                          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>                          
+                        </file>                                  
+                        
+                        <attr name="org-netbeans-modules-collab-channel-chat-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance"
+                                  boolvalue="true"/>
+              </folder>
+            </folder>
+        </folder>        
+-->
+</filesystem>

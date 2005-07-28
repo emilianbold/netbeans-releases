@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+I18n NOTE: This file should NOT be localized!
+-->
+<html>
+  <head>
+<!--
+Note, the Java browser doesn't understand the font-family "mono" (must be "monospace"), 
+nor does it understand class names with uppercase letters.
+-->
+  <style type="text/css">
+<!--
+.hidden {
+	display: none;
+}
+.sender-default {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #000000;
+}
+.sender1 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #FF0000;
+}
+.sender2 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #0000FF;
+}
+.sender3 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #009900;
+}
+.sender4 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #FF9900;
+}
+.sender5 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #FF00FF;
+}
+.sender6 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #33CCFF;
+}
+.sender7 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #9900FF;
+}
+.sender8 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #666666;
+}
+.sender9 {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	font-weight: bold;
+	color: #CC6600;
+}
+.message-chat {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+}
+.message-text {
+	font-family: Courier, mono, monospace;
+	font-size: @BASE_FONT_SIZE@;
+}
+.message-java {
+	font-family: Courier, mono, monospace;
+	font-size: @BASE_FONT_SIZE@;
+}
+.message-xml {
+	font-family: Courier, mono, monospace;
+	font-size: @BASE_FONT_SIZE@;
+}
+.message-system {
+	font-family: sans-serif;
+	font-size: @BASE_FONT_SIZE@;
+	color: #CA5600
+}
+.message-html {
+}
+.message-other {
+	font-family: Courier, mono, monospace;
+	font-size: @BASE_FONT_SIZE@;
+}
+.timestamp {
+	font-family: sans-serif;
+	color: #000000;
+	font-size: @BASE_FONT_SIZE@;
+}
+.keyword {
+	color: #0000F0
+}
+.comment {
+	color: #1E801E
+}
+.string {
+	color: #007F7F
+}
+.line-number {
+	color: #909090
+}
+.line-number-highlight {
+	color: #FF0000
+}
+.protected {
+	background-color: #E1ECF7
+}
+-->
+  </style>
+  </head>
+  <body>
+
+	<!-- TAF: Experimental, please leave -->
+		<!--
+		<tr>
+			<td valign="top" colspan="2">
+				<object classid="org.netbeans.modules.collab.channel.chat.impl.TranscriptMessageComponent">
+					<param name="text" value="__MESSAGE_TEXT__" valuetype="data">
+					<param name="contentType" value="__CONTENT_TYPE__" valuetype="data">
+				</object>
+			</td>
+		</tr>
+		-->
+
+  	<!--
+	The following element with the embedded comment is a template
+	that will be used by the module to insert formatted message text
+	into the document without foreknowledge of the markup.  Please
+	be sure that the format of this template element remains 
+	unchanged!
+	-->
+	<div id="CHAT_MESSAGE_TEMPLATE">
+		<!--
+	    <table cellpadding="0">
+		<tr>
+			<td valign="top" nowrap>
+				&nbsp;<font class="timestamp">__TIMESTAMP__</font>&nbsp;&nbsp;
+			</td>
+			<td valign="top">
+				<font class="__SENDER_CLASS__">__SENDER__</font>&nbsp;<font class="__MESSAGE_CLASS__">__MESSAGE__</font>
+			</td>
+		</tr>
+		</table>
+		-->
+	</div>
+  	<div id="MESSAGE_TEMPLATE">
+		<!--
+	    <table cellpadding="0">
+		<tr>
+			<td align="left" valign="top" nowrap>
+				&nbsp;<font class="timestamp">__TIMESTAMP__</font>&nbsp;&nbsp;
+			</td>
+			<td align="left" valign="top" nowrap>
+				<font class="__SENDER_CLASS__">__SENDER__</font>
+			</td>
+		</tr>
+		<tr>
+			<td valign="top">&nbsp;</td>
+			<td valign="top" class="__MESSAGE_CLASS__">__MESSAGE__</td>
+		</tr>
+		</table>
+		-->
+	</div>
+	<div id="SYSTEM_MESSAGE_TEMPLATE">
+		<!--
+	    <table cellpadding="0">
+		<tr>
+			<td valign="top">
+				&nbsp;<font class="timestamp">__TIMESTAMP__</font> &nbsp;<font class="__MESSAGE_CLASS__">__MESSAGE__</font>
+			</td>
+		</tr>
+		</table>
+		-->
+	</div>
+
+	<p id="END"></p>
+	
+  </body>
+</html>

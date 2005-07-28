@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="collab-chat" default="netbeans" basedir=".">
+
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <!-- inherited targets -->
+    <!--
+    compile: compiles source code
+    jar: creates module jar
+    netbeans: installs module to $NETBEANS_HOME
+    nbm: makes NBM file in build/
+    javadoc: generates javadocs
+    test: runs junit tests
+    clean: does the obvious
+    -->
+
+    <!-- 
+    If you're adding compile dependencies on 3rd party jars 
+    (jgraph, jdom, etc.), uncomment this section ...
+
+    Identifies all the files to be considered part of this module when deployed 
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+
+            <include name="${nb.modules.dir}/ext/jgraph.jar"/>
+            <include name="${nb.modules.dir}/ext/jdom.jar"/>
+        </patternset>
+    </target>
+    -->
+
+    <!-- 
+    netbeans-extra is a hook provided to plug in file copying. 
+    If you're adding compile dependencies on 3rd party jars 
+    (jgraph, jdom, etc.), uncomment this section ...
+    This example assumes that jgraph.jar and jdom.jar are in snipe/lib/
+         
+    <target name="netbeans-extra" depends="init">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
+          <fileset dir="lib">
+            <include name="jgraph.jar"/>
+            <include name="jdom.jar"/>
+          </fileset>
+        </copy>
+    </target>
+    -->
+
+
+</project>
