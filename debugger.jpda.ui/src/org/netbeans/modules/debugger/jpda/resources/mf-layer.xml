@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
 
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
+            <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-ContinueAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             <file name="org-netbeans-modules-debugger-ui-actions-StepOutAction.instance"/>
@@ -117,7 +118,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.instance"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/Separator3.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.shadow/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
@@ -225,6 +230,9 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         <file name="SO-8.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-jpda-ui-actions-SourcesViewAction.instance"/>
+        </file>
+        <file name="S-F7.shadow">
+            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
         </file>
     </folder>
 

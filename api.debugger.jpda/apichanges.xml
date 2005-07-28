@@ -295,6 +295,22 @@ Microsystems, Inc. All Rights Reserved.
         </description>
         <class package="org.netbeans.api.debugger.jpda" name="LineBreakpoint"/>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>JPDAStep class added (also new method createJPDAStep added to JPDADebugger)</summary>
+        <version major="1" minor="5"/>
+        <date day="29" month="6" year="2005"/>
+        <author login="rondruska"/>
+        <compatibility addition="yes" source="incompatible" binary="compatible"/>
+        <description>
+            <p>
+                JPDAStep allows to create a step request to JDI with
+                no UI interference. It was designed for new RunIntoMethod
+                action. New method JPDADebugger.createJPDAStep creates
+                a new instance of JPDAStep.  
+            </p>
+        </description>
+    </change>
 
 </changes>
 

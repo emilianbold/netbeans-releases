@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 
-
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
@@ -66,8 +65,8 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
-
 
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -83,7 +82,6 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
-
 
 /**
 * Representation of a debugging session.
@@ -912,7 +910,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 System.out.println("NoInformationException");
             }
     }
-
+ 
     private Set jsr45EngineProviders;
 
     private DebuggerInfo createJSR45DI (final String language) {
@@ -934,5 +932,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 provider
             }
         );
+    }
+    
+    public JPDAStep createJPDAStep(int size, int depth) { 
+        return new JPDAStepImpl(this, size, depth);
     }
 }
