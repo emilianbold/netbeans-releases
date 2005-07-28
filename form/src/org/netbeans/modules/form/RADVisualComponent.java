@@ -554,10 +554,15 @@ public class RADVisualComponent extends RADComponent {
             Integer newValue = (Integer)value;
             LayoutModel layoutModel = getFormModel().getLayoutModel();
             LayoutInterval interval = component.getLayoutInterval(dimension);
+            Object layoutUndoMark = layoutModel.getChangeMark();
+            javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
             layoutModel.setIntervalSize(interval, interval.getMinimumSize(false), newValue.intValue(), interval.getMaximumSize(false));
             getNodeReference().firePropertyChangeHelper(
                 getName(), oldValue, newValue);
             getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
+            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                getFormModel().addUndoableEdit(ue);
+            }
         }
         
         public Object getValue() {
@@ -637,6 +642,8 @@ public class RADVisualComponent extends RADComponent {
             boolean resizable = newValue.booleanValue();
             LayoutModel layoutModel = getFormModel().getLayoutModel();
             LayoutInterval interval = component.getLayoutInterval(dimension);
+            Object layoutUndoMark = layoutModel.getChangeMark();
+            javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
             layoutModel.setIntervalSize(interval,
                 resizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
                 interval.getPreferredSize(false),
@@ -644,6 +651,9 @@ public class RADVisualComponent extends RADComponent {
             getNodeReference().firePropertyChangeHelper(
                 getName(), oldValue, newValue);
             getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
+            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                getFormModel().addUndoableEdit(ue);
+            }
         }
         
         public Object getValue() {
