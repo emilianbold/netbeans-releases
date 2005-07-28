@@ -32,7 +32,8 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
         private JComboBox comp;
         private Object obj;
         private boolean isEnabled;
-	
+	private boolean isEditable = false;
+        
         /**
          * Constructor
          * @param comp the combo box to affect the renderer to
@@ -49,6 +50,17 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
         public ComboBoxRenderer(JComboBox comp, boolean isEnabled) {
 	    this.comp = comp;
             this.isEnabled = isEnabled;
+	}
+        
+        /**
+         * Constructor
+         * @param comp the combo box to affect the renderer to
+         */
+        public ComboBoxRenderer(JComboBox comp, boolean isEnabled, 
+                boolean isEditable) {
+	    this.comp = comp;
+            this.isEnabled = isEnabled;
+            this.isEditable = isEditable;
 	}
 
         /**
@@ -70,7 +82,14 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
             obj = table.getModel().getValueAt(row,column);
             comp.setSelectedItem(obj);
             comp.setEnabled(isEnabled);
-	    return comp;
+            comp.setEditable(isEditable);
+            
+            // makes visual line selection possible
+            if (row == table.getSelectedRow())
+                comp.setBackground(table.getSelectionBackground());
+            
+            
+            return comp;
 	}
 
         /**
