@@ -278,23 +278,25 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             
             wiz = (WizardDescriptor) settings;
             
+            // if the user loads the panel for the first time, perform introspection
+            // else do nothing ...
             //Object prop_user = wiz.getProperty(WizardConstants.PROP_USER_ADDED_ATTR);
-            //if (prop_user)
+            //if (prop_user == null) { // the user loads the panel for the first time
+                MBeanDO mbdo = null;
+                try {
+                    mbdo = org.netbeans.modules.jmx.Introspector.introspectClass(
+                            (JavaClass)wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS));
+                    
+                    List<MBeanAttribute> attributes = mbdo.getAttributes();
+                    for (Iterator<MBeanAttribute> it = attributes.iterator(); it.hasNext();) {
+                        ((MBeanWrapperAttributeTableModel) getPanel().getAttributeModel()).addRow(it.next());
+                    }
+                    ((MBeanWrapperAttributeTableModel) getPanel().getAttributeModel()).setFirstEditableRow(attributes.size());
+                    
+                    event();
+                } catch (Exception e) {e.printStackTrace();}
+            //}
             
-            
-            MBeanDO mbdo = null;
-            try {
-                mbdo = org.netbeans.modules.jmx.Introspector.introspectClass(
-                        (JavaClass)wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS));
-                
-                List<MBeanAttribute> attributes = mbdo.getAttributes();
-                for (Iterator<MBeanAttribute> it = attributes.iterator(); it.hasNext();) {
-                    ((MBeanWrapperAttributeTableModel) getPanel().getAttributeModel()).addRow(it.next()); 
-                }
-                ((MBeanWrapperAttributeTableModel) getPanel().getAttributeModel()).setFirstEditableRow(attributes.size());
-                
-                event();
-            } catch (Exception e) {e.printStackTrace();}
             wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
         }
         
@@ -319,35 +321,58 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             wiz.putProperty(WizardConstants.PROP_W_ATTR_NB, 
                     new Integer(nbAttrs).toString());
             
+            // counter for the attribute storage
+            int j = 0;
+            
             // two loops; one for the wrapped atributes and the other for the
             // attributes added by the user
+            for (int i = firstEditableRow ; i < nbAttrs; i++) {
+                
+                // the current attribute (number i)
+                MBeanWrapperAttribute attr = attrModel.getWrapperAttribute(i);
+                
+                    wiz.putProperty(WizardConstants.PROP_ATTR_NAME + j,
+                            attr.getName());
+                    
+                    wiz.putProperty(WizardConstants.PROP_ATTR_TYPE + j,
+                            attr.getTypeName());
+                    
+                    wiz.putProperty(WizardConstants.PROP_ATTR_RW + j,
+                            attr.getAccess());
+                    
+                    wiz.putProperty(WizardConstants.PROP_ATTR_DESCR + j,
+                            attr.getDescription());
+                    j++;
+            }
+            
             for (int i = 0 ; i < firstEditableRow; i++) {
                 
                 // the current attribute (number i)
                 MBeanWrapperAttribute attr = attrModel.getWrapperAttribute(i);
-                boolean isIntrospected = (i < firstEditableRow);
                 
                 if (attr.isSelected()) { // the attribute has to be included for management
-                    wiz.putProperty(WizardConstants.PROP_ATTR_NAME + i,
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NAME + i,
                             attr.getName());
                     
-                    wiz.putProperty(WizardConstants.PROP_ATTR_TYPE + i,
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_TYPE + i,
                             attr.getTypeName());
                     
-                    wiz.putProperty(WizardConstants.PROP_ATTR_RW + i,
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_RW + i,
                             attr.getAccess());
                     
-                    wiz.putProperty(WizardConstants.PROP_ATTR_DESCR + i,
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_DESCR + i,
                             attr.getDescription());
-                    
-                    wiz.putProperty(WizardConstants.PROP_ATTR + i, 
-                            isIntrospected);
                 }
             }
             
+            // sets the number of introspected attributes and the number of
+            // added attributes
+            wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_NB, firstEditableRow);
+            wiz.putProperty(WizardConstants.PROP_USER_ADDED_ATTR, j);
+            
             // sets the property if the user has added some attributes
             wiz.putProperty(WizardConstants.PROP_USER_ADDED_ATTR,
-                    new Boolean(firstEditableRow != 0));
+                    new Boolean(true));
         }
         
         /**

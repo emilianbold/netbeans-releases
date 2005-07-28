@@ -361,9 +361,6 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 
                 wiz.putProperty(WizardConstants.PROP_ATTR_DESCR + i,
                         attr.getDescription());
-                
-                wiz.putProperty(WizardConstants.PROP_ATTR + i, 
-                            false);
             }
         }
         
