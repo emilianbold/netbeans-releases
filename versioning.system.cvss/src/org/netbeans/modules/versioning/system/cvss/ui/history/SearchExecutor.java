@@ -18,6 +18,7 @@ import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.RLogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import java.text.DateFormat;
@@ -41,12 +42,16 @@ class SearchExecutor implements Runnable {
         new SimpleDateFormat("yyyy-MM-dd"),
     };
     
+    private final SearchHistoryPanel    master;
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
+    
+    private List                        results;
 
-    public SearchExecutor(File [] roots, SearchCriteriaPanel criteria) {
-        this.roots = roots;
-        this.criteria = criteria;
+    public SearchExecutor(SearchHistoryPanel master) {
+        this.master = master;
+        roots = master.getRoots();
+        criteria = master.getCriteria();
     }
 
     public void run() {
@@ -83,7 +88,20 @@ class SearchExecutor implements Runnable {
         
         RLogExecutor [] executors = RLogExecutor.executeCommand(cmd, roots, null);
         ExecutorSupport.wait(executors);
-        processResults(executors);
+        results = processResults(executors);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                showResults();
+            }
+        });
+    }
+
+    private void showResults() {
+        JPanel resultsPanel = master.getResultsPanel();
+        resultsPanel.removeAll();
+        SummaryView summary = new SummaryView(results);
+        resultsPanel.add(summary.getComponent());
+        resultsPanel.revalidate();
     }
 
     private List processResults(RLogExecutor[] executors) {

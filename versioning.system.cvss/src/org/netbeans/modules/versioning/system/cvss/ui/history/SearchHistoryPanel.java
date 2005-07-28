@@ -56,11 +56,23 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         revalidate();
     }
 
+    public File[] getRoots() {
+        return roots;
+    }
+
+    public SearchCriteriaPanel getCriteria() {
+        return criteria;
+    }
+
+    public JPanel getResultsPanel() {
+        return resultsPanel;
+    }
+
     private synchronized void search() {
         if (currentSearchTask != null) {
             currentSearchTask.cancel();
         }
-        currentSearch = new SearchExecutor(roots, criteria);
+        currentSearch = new SearchExecutor(this);
         currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
         currentSearchTask.schedule(0);
     }
