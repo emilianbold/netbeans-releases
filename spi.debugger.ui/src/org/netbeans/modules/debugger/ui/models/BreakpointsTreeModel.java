@@ -125,13 +125,20 @@ public class BreakpointsTreeModel implements TreeModel {
         listeners.remove (l);
     }
     
-    void fireTreeChanged () {
+    private void fireTreeChanged () {
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)
             ((ModelListener) v.get (i)).modelChanged (
                 new ModelEvent.TreeChanged (this)
             );
+    }
+    
+    private void fireTreeChanged (ModelEvent me) {
+        Vector v = (Vector) listeners.clone ();
+        int i, k = v.size ();
+        for (i = 0; i < k; i++)
+            ((ModelListener) v.get (i)).modelChanged (me);
     }
     
     
@@ -194,9 +201,10 @@ public class BreakpointsTreeModel implements TreeModel {
                 return;
             if (evt.getPropertyName () == Breakpoint.PROP_GROUP_NAME) {
                 m.fireTreeChanged ();
-                return;
+            } else {
+                m.fireTreeChanged (new ModelEvent.NodeChanged(
+                        m, evt.getSource ()));
             }
-            m.fireTreeChanged ();
         }
     }
     
