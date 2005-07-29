@@ -68,18 +68,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
     public DeploymentFactory getFactory() {
         if ( jbossFactory == null ){
             String jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
-     
-            
             try {
-//                URL urls[] = new URL[]{
-//                        new File(jbossRoot + "/client/jboss-common-client.jar").toURL(),  //NOI18N
-//                        new File(jbossRoot + "/client/jboss-deployment.jar").toURL(),     //NOI18N
-//                        new File(jbossRoot + "/client/jnp-client.jar").toURL(),           //NOI18N 
-//                        new File(jbossRoot + "/lib/dom4j.jar").toURL()                    //NOI18N
-//                                
-//                };
-//                
-//                URLClassLoader loader = new URLClassLoader(urls, getClass().getClassLoader());
                 URLClassLoader loader = getJBClassLoader();
                 jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
             } catch (Exception e) {
@@ -105,12 +94,11 @@ public class JBDeploymentFactory implements DeploymentFactory {
     }
      
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
-//         alter the uri
-        if (uri.indexOf("#") != -1) {//NOI18N
-            uri = uri.substring(0, uri.indexOf("#"));//NOI18N
+        if (!handlesURI(uri)) {
+            throw new DeploymentManagerCreationException("Invalid URI:" + uri); // NOI18N
         }
+        
         return new JBDeploymentManager(getFactory().getDisconnectedDeploymentManager(uri), uri, null, null);
-
     }
     
     public String getProductVersion() {
