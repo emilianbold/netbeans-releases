@@ -103,39 +103,43 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Prope
     }
 
     /**
-     * Enables old VCS modules. 
+     * Enables old VCS modules.
+     *  
+     * @param mgr current ModuleManager
      */ 
-    private void enableCurrentModules() {
-        final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
-        mgr.mutex().writeAccess(new Runnable() {
-            public void run() {
-                Set modules = new HashSet();
-                for (int i = 0; i < oldModules.length; i++) {
-                    String oldmodule = oldModules[i];
-                    Module m = mgr.get(oldmodule);
-                    if (m != null && !m.isEnabled()) modules.add(m);
-                }
-                if (modules.size() > 0)
-                    try {
-                        mgr.enable(modules);
-                    } catch (InvalidException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
+    private void enableCurrentModules(ModuleManager mgr) {
+        Set modules = new HashSet();
+        for (int i = 0; i < oldModules.length; i++) {
+            String oldmodule = oldModules[i];
+            Module m = mgr.get(oldmodule);
+            if (m != null && !m.isEnabled()) modules.add(m);
+        }
+        if (modules.size() > 0)
+            try {
+                mgr.enable(modules);
+            } catch (InvalidException e) {
+                ErrorManager.getDefault().notify(e);
             }
-        });
     }
     
     public void uninstalled() {
-        ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
+        final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         mgr.removePropertyChangeListener(this);
         CvsVersioningSystem.getInstance().shutdown();
         if (programmaticDisable) {
             programmaticDisable = false;
             return;
         }
-        if (JOptionPane.showConfirmDialog(null, NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning"), 
-                                          NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning_Title"), 
-                                          JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) return;
-        enableCurrentModules();
+        mgr.mutex().writeAccess(new Runnable() {
+            public void run() {
+                Module m = mgr.get("org.netbeans.modules.vcs.advanced");
+                if (m != null && !m.isEnabled()) {
+                    if (JOptionPane.showConfirmDialog(null, NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning"), 
+                                                      NbBundle.getBundle(ModuleLifecycleManager.class).getString("MSG_Uninstall_Warning_Title"), 
+                                                      JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != JOptionPane.YES_OPTION) return;
+                    enableCurrentModules(mgr);
+                }
+            }
+        });
     }
 }
