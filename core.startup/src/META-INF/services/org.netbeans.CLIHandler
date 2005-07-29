@@ -1,1 +1,2 @@
 org.netbeans.core.startup.CLIOptions
+org.netbeans.core.startup.CLITestModuleReload

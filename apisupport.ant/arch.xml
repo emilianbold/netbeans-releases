@@ -98,9 +98,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-usecases">
   <p>
-   The Ant task and/or --reload option is used by the NetBeans Module
-   Projects module in order to make the <code>reload</code> target work in a
-   module build script.
+   The Ant task is used by the NetBeans Module
+   Build Harness in order to make the <code>reload-in-ide</code> target work in a
+   module build script. (This target is not currently exposed in the GUI and is semi-deprecated.)
   </p>
  </answer>
 
@@ -137,7 +137,6 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="compat-i18n">
   <p>
    Yes, although the Ant task is not internationalized; Ant tasks normally are not.
-   CLI messages are not internationalized.
   </p>
  </answer>
 
@@ -236,13 +235,6 @@ Microsystems, Inc. All Rights Reserved.
      </p>
     </api>
    </li>
-   <li>
-    <api group="java" name="org.netbeans.CLIHandler" type="import" category="devel">
-     <p>
-      Uses the CLI extension SPI.
-     </p>
-    </api>
-   </li>
   </ul>
  </answer>
 
@@ -321,7 +313,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   Module JAR; Ant task JAR, according to Ant module SPI; and CLI handler.
+   Module JAR; Ant task JAR, according to Ant module SPI.
   </p>
  </answer>
 
@@ -638,7 +630,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   Yes, registers a <code>CLIHandler</code> handler.
+   No.
   </p>
  </answer>
 

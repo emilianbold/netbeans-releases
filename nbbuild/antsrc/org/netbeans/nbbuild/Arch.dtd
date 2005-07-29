@@ -54,7 +54,7 @@ HTML contents of the document, with substitutions.
 
 <!ELEMENT api %Flow; >
 <!ATTLIST api
-          group (java|lookup|property|dtd|layer|java.io.File|javax.swing.UIManager|jmi|org.apache.tools.ant.Task) #REQUIRED
+          group (java|lookup|property|dtd|layer|java.io.File|javax.swing.UIManager|jmi|org.apache.tools.ant.Task|cli) #REQUIRED
           name NMTOKEN #REQUIRED
           type (import|export) #REQUIRED
           category %category; #REQUIRED
