@@ -31,6 +31,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.*;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 
 import org.netbeans.editor.BaseKit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -40,8 +41,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.spi.editor.completion.*;
-import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -331,29 +331,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
             String name = kit.getContentType();
             if (name == null)
                 return null;
-            BaseOptions bo = BaseOptions.getOptions(kitClass);
-            if (bo == null)
-                return null;
             List list = new ArrayList();
-            List files = bo.getOrderedMultiPropertyFolderFiles(FOLDER_NAME);
-            for (Iterator it = files.iterator(); it.hasNext();) {
-                Object file = it.next();
-                if (file instanceof DataObject) {
-                    DataObject dob = (DataObject) file;
-                    InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
-                    if (ic != null){
-                        try {
-                            if (CompletionProvider.class.isAssignableFrom(ic.instanceClass())) {
-                                list.add(ic.instanceCreate());
-                            }
-                        } catch (IOException ioe){
-                            ioe.printStackTrace();
-                        } catch (ClassNotFoundException cnfe){
-                            cnfe.printStackTrace();
-                        }
-                    }
-                }
-            }
+            MimeLookup lookup = MimeLookup.getMimeLookup(name);
+            list.addAll(lookup.lookup(new Lookup.Template(CompletionProvider.class)).allInstances());
             int size = list.size();
             CompletionProvider[] ret = size == 0 ? null : (CompletionProvider[])list.toArray(new CompletionProvider[size]);
             providersCache.put(kitClass, ret);
