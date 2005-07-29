@@ -21,6 +21,7 @@ import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.WizardServicesUI;
+import com.installshield.wizard.swing.SwingWizardUI;
 import com.installshield.wizardx.panels.ExtendedWizardPanel;
 
 import java.awt.BorderLayout;
@@ -662,6 +663,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     public void actionPerformed(ActionEvent event) {
         Object obj = event.getSource();
         if(obj instanceof JButton) {
+            SwingWizardUI wizardUI = (SwingWizardUI) getWizard().getUI();
+            if (wizardUI != null) {
+                wizardUI.restoreDefaultColors();
+            }
 	    String str = event.getActionCommand();
 	    JTextField tf = null;
 	    if (str.equals("nb")) {
@@ -680,9 +685,12 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             if(returnVal == JFileChooser.APPROVE_OPTION) {
                 tf.setText(chooser.getSelectedFile().getAbsolutePath());
             }
+            if (wizardUI != null) {
+                wizardUI.setWizardColors();
+            }
         }
     }
-
+    
     private char getWinSystemDrive() {
 	char sysDrive = 'C';
         try {
