@@ -252,6 +252,7 @@ public class RADVisualComponent extends RADComponent {
                 constraintsProperties = constr.getProperties();
         } else {
             LayoutComponent component = getFormModel().getLayoutModel().getLayoutComponent(getId());
+            if (component == null) return; // Will be called again later
             if (this != getFormModel().getTopRADComponent()) {
                 constraintsProperties = new Node.Property[] {
                     new LayoutComponentSizeProperty(component, LayoutConstants.HORIZONTAL),

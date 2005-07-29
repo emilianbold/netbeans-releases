@@ -349,12 +349,15 @@ public class LayoutModel implements LayoutConstants {
         Iterator iter = sourceInterval.getSubIntervals();
         while (iter.hasNext()) {
             LayoutInterval sourceSub = (LayoutInterval)iter.next();
-            LayoutInterval targetSub = LayoutInterval.cloneInterval(sourceSub);
+            LayoutInterval clone = null;
             if (sourceSub.isComponent()) {
                 String compId = (String)sourceToTargetIds.get(sourceSub.getComponent().getId());
                 LayoutComponent comp = getLayoutComponent(compId);
-                targetSub.setComponent(comp);
-            } else if (sourceSub.isGroup()) {
+                int dimension = (sourceSub == sourceSub.getComponent().getLayoutInterval(HORIZONTAL)) ? HORIZONTAL : VERTICAL;
+                clone = comp.getLayoutInterval(dimension);
+            }
+            LayoutInterval targetSub = LayoutInterval.cloneInterval(sourceSub, clone);
+            if (sourceSub.isGroup()) {
                 copyInterval(sourceSub, targetSub, sourceToTargetIds);
             }
             addInterval(targetSub, targetInterval, -1);

@@ -206,6 +206,19 @@ class CopySupport {
                                                targetComponent))
                     return null; // not allowed, ignore paste
 
+                sourceForm.startCompoundEdit();
+                LayoutModel layoutModel = sourceForm.getLayoutModel();
+                LayoutComponent layoutComponent = null;
+                if (layoutModel != null) {
+                    Object layoutUndoMark = layoutModel.getChangeMark();
+                    javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                    layoutComponent = layoutModel.getLayoutComponent(sourceComponent.getId());
+                    layoutModel.removeComponentAndIntervals(sourceComponent.getId(), true);
+                    if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                        sourceForm.addUndoableEdit(ue);
+                    }
+                }
+                
                 // remove source component from its parent
                 sourceForm.removeComponent(sourceComponent, false);
 
@@ -219,14 +232,13 @@ class CopySupport {
 
                     if (layoutSupport == null) {
                         visualCont.add(sourceComponent);
-                        LayoutModel layoutModel = visualCont.getFormModel().getLayoutModel();
                         LayoutComponent parent = layoutModel.getLayoutComponent(visualCont.getId());
-                        boolean isContainer = sourceComponent instanceof RADVisualContainer;
-                        LayoutComponent layoutComponent = layoutModel.getLayoutComponent(sourceComponent.getId());
-                        if (layoutComponent == null) {
-                            layoutComponent = new LayoutComponent(sourceComponent.getId(), isContainer);
-                        }
+                        Object layoutUndoMark = layoutModel.getChangeMark();
+                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
                         layoutModel.addNewComponent(layoutComponent, parent);
+                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                            sourceForm.addUndoableEdit(ue);
+                        }
                     } else {
                         RADVisualComponent[] compArray = new RADVisualComponent[] {
                             (RADVisualComponent) sourceComponent };
@@ -258,6 +270,7 @@ class CopySupport {
                     // add the component to the target container
                     targetForm.addComponent(sourceComponent, targetContainer);
                 }
+                sourceForm.endCompoundEdit(true);
             }
 
             return ExTransferable.EMPTY;
