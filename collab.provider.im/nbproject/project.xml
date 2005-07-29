@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.netbeans.modules.collab.provider.im</code-name-base>
+            <path>collab/im</path>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>com.sun.collablet</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency>
+                        <release-version>1</release-version>
+                    </compile-dependency>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>ext/collab-service.jar</runtime-relative-path>
+                <binary-origin>../external/collab-service.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-core-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-core-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-sasl-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-sasl-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-core-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-core-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-disco-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-disco-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-fneg-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-fneg-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-info-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-info-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-si-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-si-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-sift-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-sift-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jso-x-xdata-0.12.3.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-xdata-0.12.3.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/log4j-1.2.8.jar</runtime-relative-path>
+                <binary-origin>../external/log4j-1.2.8.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/xp.jar</runtime-relative-path>
+                <binary-origin>../external/xp.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jaxen-core-1.0.jar</runtime-relative-path>
+                <binary-origin>../external/jaxen-core-1.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/saxpath-1.0.jar</runtime-relative-path>
+                <binary-origin>../external/saxpath-1.0.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>
