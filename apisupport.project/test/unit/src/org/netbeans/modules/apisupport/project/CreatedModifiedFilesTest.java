@@ -251,12 +251,14 @@ public class CreatedModifiedFilesTest extends TestBase {
                 null,
                 null,
                 null,
+                null,
                 null);
         layerOp.run();
         
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Module1UI.settings",
                 "module1ui.settings",
+                null,
                 null,
                 null,
                 null);
@@ -273,14 +275,16 @@ public class CreatedModifiedFilesTest extends TestBase {
                 null,
                 null,
                 null,
+                null,
                 null);
         cmf.add(layerOp);
         
         String createMePath = "src/org/example/module1/resources/createMe.setting";
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Other.settings",
-                createMePath,
+                "createMe.settings",
                 createFile(HTML_CONTENT),
+                createMePath,
                 null,
                 null);
         cmf.add(layerOp);
@@ -288,19 +292,21 @@ public class CreatedModifiedFilesTest extends TestBase {
         String tokenMePath = "src/org/example/module1/resources/tokenMe.setting";
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Tokenized.settings",
-                tokenMePath,
+                "tokenMe.settings",
                 createFile(HTML_CONTENT),
-                null,
-                TOKENS_MAP);
+                tokenMePath,
+                TOKENS_MAP,
+                null);
         cmf.add(layerOp);
 
         String localizeAndTokenMePath = "src/org/example/module1/resources/localizeAndTokenMe.setting";
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-LocalizedAndTokened.settings",
-                localizeAndTokenMePath,
+                "localizeAndTokenMe.settings",
                 createFile(HTML_CONTENT),
-                "Some Settings",
-                TOKENS_MAP);
+                localizeAndTokenMePath,
+                TOKENS_MAP,
+                "Some Settings");
         cmf.add(layerOp);
 
         assertRelativePaths(
@@ -331,9 +337,9 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "</folder>",
                     "<folder name=\"Services\">",
                     "<file name=\"org-example-module1-Module1UI.settings\" url=\"module1ui.settings\"/>",
-                    "<file name=\"org-example-module1-Other.settings\" url=\"" + createMePath + "\"/>",
-                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"" + tokenMePath + "\"/>",
-                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"src/org/example/module1/resources/localizeAndTokenMe.setting\">",
+                    "<file name=\"org-example-module1-Other.settings\" url=\"createMe.settings\"/>",
+                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"tokenMe.settings\"/>",
+                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"localizeAndTokenMe.settings\">",
                     "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                     "</file>",
                     "</folder>",

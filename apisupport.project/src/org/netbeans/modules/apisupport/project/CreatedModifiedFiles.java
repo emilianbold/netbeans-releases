@@ -139,9 +139,9 @@ public final class CreatedModifiedFiles {
     /**
      * Returns {@link Operation} for creating custom file in the project file
      * hierarchy.
-     * @param path where a file to be created
-     * @param content content for the file being created. Content may address either
-     * text or binary data.
+     * @param path relative to a project directory where a file to be created
+     * @param content content for the file being created. Content may address
+     *        either text or binary data.
      */
     public Operation createFile(String path, URL content) {
         return CreatedModifiedFilesFactory.createFile(project, path, content);
@@ -153,7 +153,7 @@ public final class CreatedModifiedFiles {
      * <code>content</code> with custom string. The result will be stored into
      * a file representing by a given <code>path</code>.
      *
-     * @param path where a file to be created
+     * @param path relative to a project directory where a file to be created
      * @param content content for the file being created
      * @param tokens map of <em>token to be replaced</em> - <em>by what</em>
      *        pairs which will be applied on the stored file. Both a key and a
@@ -245,11 +245,9 @@ public final class CreatedModifiedFiles {
      * @param contentResourcePath represents an <em>url</em> attribute of entry
      *        being created.
      * @param content became content of a file represented by the
-     *        contentResourcePath
-     * @param localizedDisplayName if it is not a <code>null</code>
-     *        <em>SystemFileSystem.localizingBundle</em> attribute will be
-     *        created with the stringvalue to a default bundle (from manifest).
-     *        Also an appropriate entry will be added into the bundle.
+     *        <code>generatedPath</code>
+     * @param generatedPath path relative to a project directory where a new
+     *        file with a given <em>content</em> will be generated
      * @param substitutionTokens map of <em>token to be replaced</em> - <em>by
      *        what</em> pairs which will be applied on the stored
      *        <code>content</code> file. Both a key and a value have to be a
@@ -257,13 +255,22 @@ public final class CreatedModifiedFiles {
      *        java.lang.String#replaceAll(String, String)} and follow links in
      *        its javadoc for more details. May be <code>null</code> (the same
      *        as an empty map).
+     * @param localizedDisplayName if it is not a <code>null</code>
+     *        <em>SystemFileSystem.localizingBundle</em> attribute will be
+     *        created with the stringvalue to a default bundle (from manifest).
+     *        Also an appropriate entry will be added into the bundle.
      * @return see {@link Operation}
      */
-    public Operation createLayerEntry(String layerPath, String
-            contentResourcePath, URL content, String localizedDisplayName,
-            Map/*<String,String>*/ substitutionTokens) {
+    public Operation createLayerEntry(
+            String layerPath,
+            String contentResourcePath,
+            URL content,
+            String generatedPath,
+            Map/*<String,String>*/ substitutionTokens,
+            String localizedDisplayName) {
         return CreatedModifiedFilesFactory.createLayerEntry(project, layerPath,
-                contentResourcePath, content, localizedDisplayName, substitutionTokens);
+                contentResourcePath, content, generatedPath, substitutionTokens,
+                localizedDisplayName);
     }
     
     /**

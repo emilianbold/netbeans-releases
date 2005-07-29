@@ -80,9 +80,10 @@ final class CreatedModifiedFilesFactory {
     }
     
     static CreatedModifiedFiles.Operation createLayerEntry(NbModuleProject project,
-            String layerPath, String contentResourcePath, URL content,
-            String localizedDisplayName, Map/*<String,String>*/ substitutionTokens) {
-        return new CreateLayerEntry(project, layerPath, contentResourcePath, content, localizedDisplayName, substitutionTokens);
+            String layerPath, String contentResourcePath, URL content, String generatedPath,
+            Map/*<String,String>*/ substitutionTokens, String localizedDisplayName) {
+        return new CreateLayerEntry(project, layerPath, contentResourcePath, content,
+                generatedPath, substitutionTokens, localizedDisplayName);
     }
     
     static CreatedModifiedFiles.Operation orderLayerEntry(NbModuleProject project,
@@ -387,8 +388,8 @@ final class CreatedModifiedFilesFactory {
         private Operation createContentResource;
         
         public CreateLayerEntry(NbModuleProject project, String layerPath,
-                String contentResourcePath, URL content,
-                String localizedDisplayName, Map/*<String,String>*/ substitutionTokens) {
+                String contentResourcePath, URL content, String generatedPath,
+                Map/*<String,String>*/ substitutionTokens, String localizedDisplayName) {
             
             super(project);
             this.layerPath = layerPath;
@@ -397,7 +398,7 @@ final class CreatedModifiedFilesFactory {
             addCreatedOrModifiedPath(getLayerFile());
             
             if (content != null) {
-                this.createContentResource = new CreateFile(getProject(), contentResourcePath, content, tokens);
+                this.createContentResource = new CreateFile(getProject(), generatedPath, content, tokens);
                 addPaths(this.createContentResource);
             }
             if (localizedDisplayName != null) {

@@ -57,7 +57,7 @@ final class CreatedModifiedFilesProvider  {
         
         Map tokens = getTokens(fileSupport, data.getProject(), data.getLibrary());
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
-        libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,template,data.getLibraryDisplayName(),tokens);
+        libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,template,null,tokens,data.getLibraryDisplayName());
         
         fileSupport.add(libDescrOperation);        
     }
