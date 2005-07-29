@@ -96,23 +96,25 @@ public class CmpFieldHelper {
                 entityHelper.setPrimKeyClass(newType);
             }
             JavaClass beanClass = entityHelper.getBeanClass();
-            entityMethodController.registerClassForSave(beanClass);
-            Method[] methods = JMIUtils.getMethods(beanClass);
-            for (int i = 0; i < methods.length; i++) {
-                Method method = methods[i];
-                String name = method.getName();
-                boolean isCreate = "ejbCreate".equals(name);
-                boolean isPostCreate = "ejbPostCreate".equals(name);
-                if (isCreate && primary) {
-                    changeReturnType(method, newType);
-                }
-                if (isCreate || isPostCreate) {
-                    List parameters = method.getParameters();
-                    for (Iterator it1 = parameters.iterator(); it1.hasNext();) {
-                        Parameter parameter = (Parameter) it1.next();
-                        if (fieldName.equals(parameter.getName())) {
-                            parameter.setType(newType);
-                            break;
+            if (beanClass != null) {
+                entityMethodController.registerClassForSave(beanClass);
+                Method[] methods = JMIUtils.getMethods(beanClass);
+                for (int i = 0; i < methods.length; i++) {
+                    Method method = methods[i];
+                    String name = method.getName();
+                    boolean isCreate = "ejbCreate".equals(name);
+                    boolean isPostCreate = "ejbPostCreate".equals(name);
+                    if (isCreate && primary) {
+                        changeReturnType(method, newType);
+                    }
+                    if (isCreate || isPostCreate) {
+                        List parameters = method.getParameters();
+                        for (Iterator it1 = parameters.iterator(); it1.hasNext();) {
+                            Parameter parameter = (Parameter) it1.next();
+                            if (fieldName.equals(parameter.getName())) {
+                                parameter.setType(newType);
+                                break;
+                            }
                         }
                     }
                 }

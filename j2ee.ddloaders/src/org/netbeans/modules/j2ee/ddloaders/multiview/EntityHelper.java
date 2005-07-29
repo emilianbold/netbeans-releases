@@ -64,6 +64,7 @@ public class EntityHelper extends EntityAndSessionHelper {
         boolean rollback = true;
         try {
             JavaClass beanClass = getBeanClass();
+            assert beanClass != null;
             entityMethodController.registerClassForSave(beanClass);
             Method prototype = JMIUtils.createMethod(beanClass);
             prototype.setName(Utils.getMethodName(fieldName, get));

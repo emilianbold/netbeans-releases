@@ -124,7 +124,11 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
     }
 
     public String getBusinessInterfaceName(boolean local) {
-        String name = abstractMethodController.getBeanInterface(local, true).getName();
+        JavaClass beanInterface = abstractMethodController.getBeanInterface(local, true);
+        if (beanInterface == null) {
+            return null;
+        }
+        String name = beanInterface.getName();
         String componentInterfaceName = local ? ejb.getLocal() : ejb.getRemote();
         if (componentInterfaceName == null || componentInterfaceName.equals(name)) {
             return null;

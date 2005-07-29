@@ -50,7 +50,8 @@ public class QueryMethodHelper {
         QueryMethod queryMethod = query.getQueryMethod();
         List parameters = getQueryMethodParams(queryMethod);
         String methodName = queryMethod.getMethodName();
-        implementationMethod = entityHelper.getBeanClass().getMethod(methodName, parameters, false);
+        JavaClass beanClass = entityHelper.getBeanClass();
+        implementationMethod = beanClass == null ? null : beanClass.getMethod(methodName, parameters, false);
         remoteMethod = getMethod(entityHelper.getHomeInterfaceClass(), methodName, parameters);
         localMethod = getMethod(entityHelper.getLocalHomeInterfaceClass(), methodName, parameters);
     }
@@ -193,6 +194,7 @@ public class QueryMethodHelper {
     private Method setMethod(Method method, Method prototype, boolean singleReturn,
             boolean remote) {
         JavaClass interfaceClass = getHomeClass(remote);
+        assert interfaceClass != null;
         setReturn(prototype, singleReturn, remote);
         if (method == null) {
             Utils.addMethod(interfaceClass, (Method) prototype.duplicate(), remote);
@@ -222,7 +224,9 @@ public class QueryMethodHelper {
         //todo: validation
         prototype.setModifiers(Modifier.PUBLIC | Modifier.ABSTRACT);
         if (implementationMethod == null) {
-            Utils.addMethod(entityHelper.getBeanClass(), prototype);
+            JavaClass beanClass = entityHelper.getBeanClass();
+            assert beanClass != null;
+            Utils.addMethod(beanClass, prototype);
             implementationMethod = prototype;
         } else {
             updateMethod(implementationMethod, prototype);
