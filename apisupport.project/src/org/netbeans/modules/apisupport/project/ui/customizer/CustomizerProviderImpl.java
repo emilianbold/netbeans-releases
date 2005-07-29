@@ -18,8 +18,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,7 +47,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-public final class CustomizerProviderImpl implements CustomizerProvider {
+public final class CustomizerProviderImpl implements CustomizerProvider, PropertyChangeListener {
     
     public static final ErrorManager err = ErrorManager.getDefault().getInstance(
             "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
@@ -181,7 +182,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
         panels.put(libraries, new CustomizerLibraries(moduleProps));
         
         // versioning customizer
-        panels.put(versioning, new CustomizerVersioning(moduleProps));
+        CustomizerVersioning versioningPanel = new CustomizerVersioning(moduleProps);
+        versioningPanel.addPropertyChangeListener(this);
+        versioning.setValid(versioningPanel.isCustomizerValid());
+        panels.put(versioning, versioningPanel);
         
         // compiling customizer
         panels.put(compiling, new CustomizerCompiling(moduleProps));
@@ -208,6 +212,24 @@ public final class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     /** Listens to the actions on the Customizer's option buttons */
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName() == NbPropertyPanel.VALID_PROPERTY) {
+            findCategory(evt.getSource()).setValid(((Boolean) evt.getNewValue()).booleanValue());
+        } else if (evt.getPropertyName() == NbPropertyPanel.ERROR_MESSAGE_PROPERTY) {
+            findCategory(evt.getSource()).setErrorMessage((String) evt.getNewValue());
+        }
+    }
+    
+    private ProjectCustomizer.Category findCategory(Object panel) {
+        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
+            if (panel.equals(entry.getValue())) {
+                return (ProjectCustomizer.Category) entry.getKey();
+            }
+        }
+        throw new IllegalArgumentException(panel + " panel is not known in this customizer"); // NOI18N
+    }
+    
     private class OptionListener extends WindowAdapter implements ActionListener {
         
         // Listening to OK button ----------------------------------------------

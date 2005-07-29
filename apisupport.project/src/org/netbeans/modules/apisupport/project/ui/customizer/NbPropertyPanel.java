@@ -23,10 +23,23 @@ import javax.swing.JPanel;
  */
 abstract class NbPropertyPanel extends JPanel implements ComponentFactory.StoragePanel {
     
+    /** Property whether <code>this</code> panel is valid. */
+    static final String VALID_PROPERTY = "isPanelValid"; // NOI18N
+    
+    /** Property for error message of this panel. */
+    static final String ERROR_MESSAGE_PROPERTY = "errorMessage"; // NOI18N
+    
     protected SingleModuleProperties props;
+    
+    /** Whether this panel is valid or not. */
+    private boolean valid;
+    
+    /** Error message for this panel (may be null). */
+    private String errMessage;
     
     /** Creates new NbPropertyPanel */
     NbPropertyPanel(final SingleModuleProperties props) {
+        this.valid = true; // panel is valid by default
         this.props = props;
         initComponents();
     }
@@ -49,6 +62,32 @@ abstract class NbPropertyPanel extends JPanel implements ComponentFactory.Storag
     
     void setBooleanProperty(String key, boolean property) {
         props.setBooleanProperty(key, property);
+    }
+    
+    /**
+     * Sets whether panel is valid and fire property change. See {@link
+     * #VALID_PROPERTY}
+     */
+    protected void setValid(boolean valid) {
+        if (this.valid != valid) {
+            this.valid = valid;
+            firePropertyChange(NbPropertyPanel.VALID_PROPERTY, !valid, valid);
+        }
+    }
+    
+    /**
+     * Sets an error message which will be shown in the customizer. Pass
+     * <code>null</code> for blank message. Also set this panel to be invalid
+     * for nonnull, nonempty message. Invalid otherwise.
+     */
+    protected void setErrorMessage(String message) {
+        String newMessage = message == null ? "" : message;
+        if (!newMessage.equals(this.errMessage)) {
+            String oldMessage = this.errMessage;
+            this.errMessage = newMessage;
+            firePropertyChange(NbPropertyPanel.ERROR_MESSAGE_PROPERTY, oldMessage, newMessage);
+        }
+        setValid("".equals(newMessage));
     }
     
     public void store() { /* empty implementation */ }

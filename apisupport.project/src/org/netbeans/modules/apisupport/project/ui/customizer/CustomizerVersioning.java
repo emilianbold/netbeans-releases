@@ -68,6 +68,18 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
         });
         removeFriendButton.setEnabled(false);
         props.addPropertyChangeListener(this);
+        
+        majorRelVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                checkForm();
+            }
+        });
+        implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+            public void insertUpdate(DocumentEvent e) {
+                updateAppendImpl();
+            }
+        });
+        
         updateAppendImpl();
     }
     
@@ -82,6 +94,34 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
             UIUtil.setText(specificationVerValue, specVersion);
         }
         UIUtil.setText(implVerValue, props.getImplementationVersion());
+        checkForm();
+    }
+    
+    boolean isCustomizerValid() {
+        return checkMajorReleaseVersion();
+    }
+
+    private boolean checkMajorReleaseVersion() {
+        String mrv = majorRelVerValue.getText().trim();
+        if (mrv.length() != 0) {
+            try {
+                if (Integer.parseInt(mrv) < 0) {
+                    return false;
+                }
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private void checkForm() {
+        // check major release version
+        if (!checkMajorReleaseVersion()) {
+            setErrorMessage(getMessage("MSG_MajorReleaseVersionIsInvalid")); // NOI18N
+            return;
+        }
+        setErrorMessage(null);
     }
     
     private void initPublicPackageTable() {
@@ -126,6 +166,7 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
             lastAppImplChecked = appendImpl.isSelected();
             appendImpl.setSelected(false);
         }
+        setValid(false);
     }
     
     public void store() {
