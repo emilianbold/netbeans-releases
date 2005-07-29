@@ -76,7 +76,7 @@ is the proper place.
 
     <changes>
         
-        <change id="ProjectCustomizer.errorMessage">
+        <change id="ProjectCustomizer.Category.errorMessage">
             <api name="general"/>
             <summary>Added ability to set an error message for project customizer's categories.</summary>
             <version major="1" minor="9"/>
@@ -95,11 +95,11 @@ is the proper place.
                     categories (similar to the error message in wizards).
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer.Category"/>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
             <issue number="61036"/>
         </change>
     
-        <change id="ProjectCustomizer.validation">
+        <change id="ProjectCustomizer.Category.valid">
             <api name="general"/>
             <summary>Added ability to set whether a project customizer's categories are valid.</summary>
             <version major="1" minor="9"/>
@@ -114,7 +114,7 @@ is the proper place.
                     of the Customizer dialog is enabled.
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer.Category"/>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectCustomizer"/>
             <issue number="58457"/>
         </change>
     
