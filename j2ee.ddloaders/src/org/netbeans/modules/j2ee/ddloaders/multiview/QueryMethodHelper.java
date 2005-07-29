@@ -163,7 +163,7 @@ public class QueryMethodHelper {
                 prototypeMethod = remoteMethod;
             }
         }
-        return prototypeMethod.isValid() ? prototypeMethod : null;
+        return (prototypeMethod != null && prototypeMethod.isValid()) ? prototypeMethod : null;
     }
 
     public void updateFinderMethod(Method prototype, Query query, boolean singleReturn, boolean publishToLocal,
