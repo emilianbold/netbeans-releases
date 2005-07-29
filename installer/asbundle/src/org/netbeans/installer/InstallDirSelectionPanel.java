@@ -21,6 +21,7 @@ import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.console.ConsoleWizardPanelImpl;
 import com.installshield.wizard.service.ServiceException;
 import com.installshield.wizard.service.WizardServicesUI;
+import com.installshield.wizard.swing.SwingWizardUI;
 import com.installshield.wizardx.panels.ExtendedWizardPanel;
 
 import java.awt.BorderLayout;
@@ -41,16 +42,12 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-public class InstallDirSelectionPanel extends ExtendedWizardPanel implements ActionListener{
+public class InstallDirSelectionPanel extends ExtendedWizardPanel implements ActionListener {
     
     private JTextField nbInstallDirTF;
     private JButton    nbBrowseButton;
     private JLabel     nbInputLabel;
-
-    private JTextField j2seInstallDirTF;
-    private JButton    j2seBrowseButton;
-    private JLabel     j2seInputLabel;
-
+    
     private JPanel mainPanel;
     private JPanel displayPanel;
     private JPanel inputPanel;
@@ -416,24 +413,26 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     public void actionPerformed(ActionEvent event) {
         Object obj = event.getSource();
-        if(obj instanceof JButton) {
-	    String str = event.getActionCommand();
-	    JTextField tf = null;
-	    if (str.equals("nb")) {
-		str = nbInstallDirTF.getText();
-		tf = nbInstallDirTF;
-	    } else {
-		str =j2seInstallDirTF.getText();
-		tf = j2seInstallDirTF;
-	    }
+        if (obj instanceof JButton) {
+            logEvent(this, Log.DBG, "Show JFileChooser");
+            SwingWizardUI wizardUI = (SwingWizardUI) getWizard().getUI();
+            if (wizardUI != null) {
+                wizardUI.restoreDefaultColors();
+            }
+            String str = event.getActionCommand();
+            JTextField tf = null;
+            str = nbInstallDirTF.getText();
+            tf = nbInstallDirTF;
             JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setSelectedFile(new File(str));
-            chooser.setBackground(((JButton)obj).getBackground());
             chooser.setAcceptAllFileFilterUsed(false);
             int returnVal = chooser.showOpenDialog(new JFrame());
-            if(returnVal == JFileChooser.APPROVE_OPTION) {
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
                 tf.setText(chooser.getSelectedFile().getAbsolutePath());
+            }
+            if (wizardUI != null) {
+                wizardUI.setWizardColors();
             }
         }
     }
