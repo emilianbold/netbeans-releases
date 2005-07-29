@@ -196,6 +196,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/errorstripe</project>
                 <project>../editor/errorstripe/api</project>
                 <project>../editor/fold</project>
+                <project>../editor/hints</project>
                 <project>../editor/lib</project>
                 <project>../editor/mimelookup</project>
                 <project>../editor/plain</project>
@@ -236,6 +237,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../java/editor</project>
                 <project>../java/editor/lib</project>
                 <project>../java/freeform</project>
+                <project>../java/hints</project>
                 <project>../java/j2seplatform</project>
                 <project>../java/j2seproject</project>
                 <project>../java/javacore</project>
