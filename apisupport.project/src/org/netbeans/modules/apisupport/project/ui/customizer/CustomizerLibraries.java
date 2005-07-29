@@ -40,22 +40,25 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-public class CustomizerLibraries extends JPanel {
-    
-    private SingleModuleProperties modProps;    
+public class CustomizerLibraries extends NbPropertyPanel {
     
     /** Creates new form CustomizerLibraries */
-    public CustomizerLibraries(final SingleModuleProperties modProps) {
+    public CustomizerLibraries(final SingleModuleProperties props) {
+        super(props);
         initComponents();
-        platformValue.setSelectedItem(modProps.getActivePlatform());
-        if (!modProps.isStandalone()) {
-            platformValue.setEnabled(false);
-        }
-        this.modProps = modProps;
-        updateEnabled();
-        reqTokenList.setModel(modProps.getRequiredTokenListModel());
-        dependencyList.setModel(modProps.getDependenciesListModel());
+        refresh();
         dependencyList.setCellRenderer(ComponentFactory.getDependencyCellRenderer(false));
+        platformValue.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    // set new platform
+                    getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+                    // refresh dependencies list
+                    dependencyList.setModel(getProperties().getDependenciesListModel());
+                    updateEnabled();
+                }
+            }
+        });
         dependencyList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
@@ -63,27 +66,26 @@ public class CustomizerLibraries extends JPanel {
                 }
             }
         });
-        platformValue.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    // set new platform
-                    modProps.setActivePlatform((NbPlatform) platformValue.getSelectedItem());
-                    // refresh dependencies list
-                    dependencyList.setModel(modProps.getDependenciesListModel());
-                    updateEnabled();
-                }
-            }
-        });
+    }
+    
+    protected void refresh() {
+        platformValue.setSelectedItem(getProperties().getActivePlatform());
+        if (!getProperties().isStandalone()) {
+            platformValue.setEnabled(false);
+        }
+        updateEnabled();
+        reqTokenList.setModel(getProperties().getRequiredTokenListModel());
+        dependencyList.setModel(getProperties().getDependenciesListModel());
     }
     
     private void updateEnabled() {
         // if there is no selection disable edit/remove buttons
-        boolean enabled = modProps.isActivePlatformValid() && dependencyList.getSelectedIndex() != -1;
+        boolean enabled = getProperties().isActivePlatformValid() && dependencyList.getSelectedIndex() != -1;
         editDepButton.setEnabled(enabled);
         removeDepButton.setEnabled(enabled);
-        addDepButton.setEnabled(modProps.isActivePlatformValid());
+        addDepButton.setEnabled(getProperties().isActivePlatformValid());
     }
-
+    
     private ComponentFactory.DependencyListModel getDepListModel() {
         return (ComponentFactory.DependencyListModel) dependencyList.getModel();
     }
@@ -309,7 +311,7 @@ public class CustomizerLibraries extends JPanel {
         panel.setLayout(new BorderLayout(0, 2));
         panel.add(new JLabel(NbBundle.getMessage(CustomizerLibraries.class, "LBL_ProvidedTokens_NoMnem")),
                 BorderLayout.NORTH);
-        JList tokenList = new JList(modProps.getAllTokens());
+        JList tokenList = new JList(getProperties().getAllTokens());
         JScrollPane tokenListSP = new JScrollPane(tokenList);
         panel.add(tokenListSP, BorderLayout.CENTER);
         
@@ -332,7 +334,7 @@ public class CustomizerLibraries extends JPanel {
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
         platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
-        platformValue.setSelectedItem(modProps.getActivePlatform());
+        platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocus();
     }//GEN-LAST:event_managePlatforms
     
@@ -364,7 +366,7 @@ public class CustomizerLibraries extends JPanel {
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        DependencyListModel model = modProps.getUniverseDependenciesListModel(
+        DependencyListModel model = getProperties().getUniverseDependenciesListModel(
                 getDepListModel().getDependencies());
         final AddModulePanel addPanel = new AddModulePanel(model);
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,

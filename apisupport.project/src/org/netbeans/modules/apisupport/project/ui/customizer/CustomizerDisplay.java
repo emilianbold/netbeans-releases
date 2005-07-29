@@ -14,9 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Iterator;
-import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 
@@ -25,21 +23,19 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
  *
  * @author mkrauskopf
  */
-final class CustomizerDisplay extends JPanel implements
-        ComponentFactory.StoragePanel, PropertyChangeListener {
+final class CustomizerDisplay extends NbPropertyPanel implements
+        ComponentFactory.StoragePanel {
     
-    private SingleModuleProperties modProps;
     private boolean disabled;
     
     /** Creates new form CustomizerDisplay */
-    CustomizerDisplay(final SingleModuleProperties modProps) {
-        this.modProps = modProps;
+    CustomizerDisplay(final SingleModuleProperties props) {
+        super(props);
         initComponents();
-        modProps.addPropertyChangeListener(this);
         refresh();
     }
     
-    public void refresh() {
+    protected  void refresh() {
         this.disabled = getBundle() == null;
         if (disabled) {
             nameValue.setEnabled(false);
@@ -61,7 +57,7 @@ final class CustomizerDisplay extends JPanel implements
     }
     
     private LocalizedBundleInfo getBundle() {
-        return modProps.getBundleInfo();
+        return getProperties().getBundleInfo();
     }
     
     private void readFromProperties() {
@@ -74,11 +70,11 @@ final class CustomizerDisplay extends JPanel implements
     
     private void fillUpCategoryValue() {
         categoryValue.removeAllItems();
-        for (Iterator it = modProps.getModuleCategories().iterator(); it.hasNext(); ) {
+        for (Iterator it = getProperties().getModuleCategories().iterator(); it.hasNext(); ) {
             Object next = it.next();
             this.categoryValue.addItem(next);
         }
-        if (!modProps.getModuleCategories().contains(getCategory())) {
+        if (!getProperties().getModuleCategories().contains(getCategory())) {
             // put module's own category at the beginning
             categoryValue.insertItemAt(getCategory(), 0);
         }
@@ -90,11 +86,9 @@ final class CustomizerDisplay extends JPanel implements
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        String pName = evt.getPropertyName();
-        if (SingleModuleProperties.NB_PLATFORM_PROPERTY == pName) {
+        super.propertyChange(evt);
+        if (SingleModuleProperties.NB_PLATFORM_PROPERTY == evt.getPropertyName()) {
             fillUpCategoryValue();
-        } else if (SingleModuleProperties.PROPERTIES_REFRESHED == pName) {
-            refresh();
         }
     }
     

@@ -23,20 +23,25 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 final class CustomizerSources extends NbPropertyPanel {
     
     /** Creates new form CustomizerSources */
-    CustomizerSources(final SingleModuleProperties modProps) {
-        super(modProps);
+    CustomizerSources(final SingleModuleProperties props) {
+        super(props);
         initComponents();
-        if (modProps.getSuiteDirectory() == null) {
+        refresh();
+    }
+    
+    protected void refresh() {
+        if (getProperties().getSuiteDirectory() == null) {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);
         } else {
-            UIUtil.setText(moduleSuiteValue, modProps.getSuiteDirectory());
+            UIUtil.setText(moduleSuiteValue, getProperties().getSuiteDirectory());
         }
+        srcLevelValue.removeAllItems();
         for (int i = 0; i < SingleModuleProperties.SOURCE_LEVELS.length; i++) {
             srcLevelValue.addItem(SingleModuleProperties.SOURCE_LEVELS[i]);
         }
         srcLevelValue.setSelectedItem(getProperty(SingleModuleProperties.JAVAC_SOURCES));
-        UIUtil.setText(prjFolderValue, modProps.getProjectDirectory());
+        UIUtil.setText(prjFolderValue, getProperties().getProjectDirectory());
     }
     
     public void store() {

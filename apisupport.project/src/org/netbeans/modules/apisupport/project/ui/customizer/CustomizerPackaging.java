@@ -24,18 +24,21 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 final class CustomizerPackaging extends NbPropertyPanel {
     
     /** Creates new form CustomizerPackaging */
-    CustomizerPackaging(final SingleModuleProperties moduleProps) {
-        super(moduleProps);
+    CustomizerPackaging(final SingleModuleProperties props) {
+        super(props);
         initComponents();
-        // cluster
-        UIUtil.setText(jarFileValue, moduleProps.getJarFile());
+        refresh();
+    }
+    
+    protected void refresh() {
+        UIUtil.setText(jarFileValue, getProperties().getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
         isGlobal.setSelected(getBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL));
         UIUtil.setText(licenseValue, getProperty(SingleModuleProperties.LICENSE_FILE));
         UIUtil.setText(homePageValue, getProperty(SingleModuleProperties.NBM_HOMEPAGE));
         UIUtil.setText(authorValue, getProperty(SingleModuleProperties.NBM_MODULE_AUTHOR));
     }
-
+    
     public void store() {
         setBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART, needsRestart.isSelected());
         setBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL, isGlobal.isSelected());
@@ -196,7 +199,7 @@ final class CustomizerPackaging extends NbPropertyPanel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void browseLicense(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLicense
         JFileChooser chooser = new JFileChooser(licenseValue.getText());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -223,4 +226,5 @@ final class CustomizerPackaging extends NbPropertyPanel {
     private javax.swing.JCheckBox needsRestart;
     private javax.swing.JSeparator sep1;
     // End of variables declaration//GEN-END:variables
+    
 }

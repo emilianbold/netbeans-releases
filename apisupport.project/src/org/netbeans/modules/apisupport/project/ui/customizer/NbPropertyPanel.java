@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 
 /**
@@ -21,7 +23,8 @@ import javax.swing.JPanel;
  *
  * @author Martin Krauskopf
  */
-abstract class NbPropertyPanel extends JPanel implements ComponentFactory.StoragePanel {
+abstract class NbPropertyPanel extends JPanel implements
+        ComponentFactory.StoragePanel, PropertyChangeListener {
     
     /** Property whether <code>this</code> panel is valid. */
     static final String VALID_PROPERTY = "isPanelValid"; // NOI18N
@@ -42,7 +45,14 @@ abstract class NbPropertyPanel extends JPanel implements ComponentFactory.Storag
         this.valid = true; // panel is valid by default
         this.props = props;
         initComponents();
+        props.addPropertyChangeListener(this);
     }
+    
+    /**
+     * This method is called whenever {@link SingleModuleProperties} are
+     * refreshed.
+     */
+    protected abstract void refresh();
     
     SingleModuleProperties getProperties() {
         return props;
@@ -91,6 +101,12 @@ abstract class NbPropertyPanel extends JPanel implements ComponentFactory.Storag
     }
     
     public void store() { /* empty implementation */ }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (SingleModuleProperties.PROPERTIES_REFRESHED == evt.getPropertyName()) {
+            refresh();
+        }
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

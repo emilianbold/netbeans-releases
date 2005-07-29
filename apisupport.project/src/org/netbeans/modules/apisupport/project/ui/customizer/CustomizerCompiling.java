@@ -24,6 +24,10 @@ final class CustomizerCompiling extends NbPropertyPanel {
     CustomizerCompiling(final SingleModuleProperties props) {
         super(props);
         initComponents();
+        refresh();
+    }
+    
+    protected void refresh() {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
     }

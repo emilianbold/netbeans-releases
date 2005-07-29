@@ -41,12 +41,6 @@ final class SuiteProperties extends ModuleProperties {
     /** Represent currently set set of sub-modules. */
     private Set/*<Project>*/ subModules;
     
-    // XXX don't know exact allowed ant property format. We might use something
-    // more gentle like "\\$\\{[\\p{Alnum}-_\\.]+\\}"?
-    private static final String ANT_PROPERTY_REGEXP = "\\$\\{\\p{Graph}+\\}"; // NOI18N
-    
-    private static final String MODULES_PROPERTY = "modules"; // NOI18N
-    
     // models
     private SuiteSubModulesListModel moduleListModel;
     

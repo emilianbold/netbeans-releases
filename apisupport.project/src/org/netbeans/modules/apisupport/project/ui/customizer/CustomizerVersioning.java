@@ -47,13 +47,33 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
     CustomizerVersioning(SingleModuleProperties props) {
         super(props);
         initComponents();
-        refresh();
         initPublicPackageTable();
+        refresh();
+        attachListeners();
+    }
+    
+    protected void refresh() {
+        UIUtil.setText(majorRelVerValue, props.getMajorReleaseVersion());
+        UIUtil.setText(tokensValue, props.getProvidedTokens());
+        String specVersion = props.getSpecificationVersion();
+        if (null == specVersion || "".equals(specVersion)) { // NOI18N
+            appendImpl.setSelected(true);
+            UIUtil.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
+        } else {
+            UIUtil.setText(specificationVerValue, specVersion);
+        }
+        UIUtil.setText(implVerValue, props.getImplementationVersion());
         friendsList.setModel(props.getFriendListModel());
         UIUtil.setText(cnbValue, props.getCodeNameBase());
         regularMod.setSelected(true);
         autoloadMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD));
         eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));
+        removeFriendButton.setEnabled(false);
+        updateAppendImpl();
+        checkForm();
+    }
+    
+    private void attachListeners() {
         implVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 updateAppendImpl();
@@ -66,9 +86,6 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
                 }
             }
         });
-        removeFriendButton.setEnabled(false);
-        props.addPropertyChangeListener(this);
-        
         majorRelVerValue.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkForm();
@@ -79,28 +96,12 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
                 updateAppendImpl();
             }
         });
-        
-        updateAppendImpl();
-    }
-    
-    public void refresh() {
-        UIUtil.setText(majorRelVerValue, props.getMajorReleaseVersion());
-        UIUtil.setText(tokensValue, props.getProvidedTokens());
-        String specVersion = props.getSpecificationVersion();
-        if (null == specVersion || "".equals(specVersion)) { // NOI18N
-            appendImpl.setSelected(true);
-            UIUtil.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
-        } else {
-            UIUtil.setText(specificationVerValue, specVersion);
-        }
-        UIUtil.setText(implVerValue, props.getImplementationVersion());
-        checkForm();
     }
     
     boolean isCustomizerValid() {
         return checkMajorReleaseVersion();
     }
-
+    
     private boolean checkMajorReleaseVersion() {
         String mrv = majorRelVerValue.getText().trim();
         if (mrv.length() != 0) {
@@ -489,7 +490,7 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
     private String getMessage(String key) {
         return NbBundle.getMessage(CustomizerVersioning.class, key);
     }
-
+    
     public void showSubCategory(String name) {
         if (name.equals(CustomizerProviderImpl.SUBCATEGORY_VERSIONING_PUBLIC_PACKAGES)) {
             publicPkgsTable.requestFocus();

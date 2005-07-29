@@ -18,14 +18,13 @@ import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -48,11 +47,9 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -121,7 +118,6 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     /** package name / selected */
     private SortedSet/*<String>*/ availablePublicPackages;
-    private Map/*<String, Boolean>*/ publicPackages;
     
     private String[] allTokens;
     private SortedSet/*<String>*/ modCategories;
@@ -133,7 +129,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private FriendListModel friendListModel;
     private RequiredTokenListModel requiredTokensListModel;
     
-    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
@@ -146,30 +142,37 @@ public final class SingleModuleProperties extends ModuleProperties {
             SuiteProvider sp, boolean isStandalone, LocalizedBundleInfo bundleInfo) {
         super(helper, evaluator);
         this.suiteProvider = sp;
-        ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         this.bundleInfo = bundleInfo;
         this.isStandalone = isStandalone;
-        this.originalPlatform = this.platform = NbPlatform.getPlatformByID(
-                evaluator.getProperty("nbplatform.active")); // NOI18N
-        this.requiredTokens = new TreeSet(
-                Arrays.asList(manifestManager.getRequiredTokens()));
-        refresh();
+        this.changeSupport = new PropertyChangeSupport(this);
+        this.refresh();
     }
     
-    void refresh() {
+    protected void refresh() {
+        reloadProperties();
+        // reset
+        availablePublicPackages = null;
+        dependencyListModel = null;
+        friendListModel = null;
+        requiredTokensListModel = null;
         ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
-        this.majorReleaseVersion = manifestManager.getReleaseVersion();
-        this.specificationVersion = manifestManager.getSpecificationVersion();
-        this.implementationVersion = manifestManager.getImplementationVersion();
-        this.provTokensString = manifestManager.getProvidedTokensString();
+        majorReleaseVersion = manifestManager.getReleaseVersion();
+        specificationVersion = manifestManager.getSpecificationVersion();
+        implementationVersion = manifestManager.getImplementationVersion();
+        provTokensString = manifestManager.getProvidedTokensString();
+        originalPlatform = this.platform = NbPlatform.getPlatformByID(
+                getEvaluator().getProperty("nbplatform.active")); // NOI18N
+        getPublicPackagesModel().reloadData(loadPublicPackages());
+        this.requiredTokens = new TreeSet(
+                Arrays.asList(manifestManager.getRequiredTokens()));
         if (isFileBundle()) {
             try {
-                this.bundleInfo.reload();
+                bundleInfo.reload();
             } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }
-            firePropertyChange(PROPERTIES_REFRESHED, null, null);
         }
+        firePropertyChange(PROPERTIES_REFRESHED, null, null);
     }
     
     /** i.e. whether the bundle can be stored/reload etc. */
@@ -368,25 +371,39 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     PublicPackagesTableModel getPublicPackagesModel() {
         if (publicPackagesModel == null) {
-            // transform ManifestManager.PackageExport[] to String[]
-            Collection/*<String>*/ sPackages = new TreeSet();
-            ManifestManager.PackageExport[] pexports = getProjectXMLManager().getPublicPackages();
-            for (int i = 0; i < pexports.length; i++) {
-                ManifestManager.PackageExport pexport = pexports[i];
-                if (pexport.isRecursive()) {
-                    for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
-                        String p = (String) it.next();
-                        if (p.startsWith(pexport.getPackage())) {
-                            sPackages.add(p);
-                        }
-                    }
-                } else {
-                    sPackages.add(pexport.getPackage());
-                }
-            }
-            publicPackagesModel = new PublicPackagesTableModel(getPublicPackages(sPackages));
+            publicPackagesModel = new PublicPackagesTableModel(loadPublicPackages());
         }
         return publicPackagesModel;
+    }
+    
+    /** Loads a map of package-isSelected entries. */
+    private Map/*<String, Boolean>*/ loadPublicPackages() {
+        Collection/*<String>*/ selectedPackages = getSelectedPackages();
+        Map/*<String, Boolean>*/ publicPackages = new TreeMap();
+        for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
+            String pkg = (String) it.next();
+            publicPackages.put(pkg, Boolean.valueOf(selectedPackages.contains(pkg)));
+        }
+        return publicPackages;
+    }
+    
+    private Collection getSelectedPackages() {
+        Collection/*<String>*/ sPackages = new HashSet();
+        ManifestManager.PackageExport[] pexports = getProjectXMLManager().getPublicPackages();
+        for (int i = 0; i < pexports.length; i++) {
+            ManifestManager.PackageExport pexport = pexports[i];
+            if (pexport.isRecursive()) {
+                for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
+                    String p = (String) it.next();
+                    if (p.startsWith(pexport.getPackage())) {
+                        sPackages.add(p);
+                    }
+                }
+            } else {
+                sPackages.add(pexport.getPackage());
+            }
+        }
+        return sPackages;
     }
     
     /**
@@ -407,22 +424,6 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
         }
         return availablePublicPackages;
-    }
-
-    /**
-     * Returns map of package-isSelected entries.
-     */
-    private Map/*<String, Boolean>*/ getPublicPackages(Collection/*<String>*/ selectedPackages) {
-        if (publicPackages == null) {
-            // fill up the map
-            publicPackages = new TreeMap();
-            for (Iterator it = getAvailablePublicPackages().iterator(); it.hasNext(); ) {
-                String pkg = (String) it.next();
-                publicPackages.put(pkg,
-                        Boolean.valueOf(selectedPackages.contains(pkg)));
-            }
-        }
-        return publicPackages;
     }
     
     void storeProperties() throws IOException {

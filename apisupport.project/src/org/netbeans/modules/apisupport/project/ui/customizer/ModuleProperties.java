@@ -45,6 +45,10 @@ abstract class ModuleProperties {
     ModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
         this.evaluator = evaluator;
+        reloadProperties();
+    }
+    
+    protected void reloadProperties() {
         this.projectProperties = helper.getProperties(
                 AntProjectHelper.PROJECT_PROPERTIES_PATH);
         this.privateProperties = helper.getProperties(
