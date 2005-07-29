@@ -316,7 +316,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 if(server.handlesUri(url)) {
                     // try to create a disconnected deployment manager to see
                     // whether the instance is not corrupted - see #46929
-                    DeploymentManager manager = server.getDeploymentManager();
+                    DeploymentManager manager = server.getDeploymentManager(url);
                     if (manager != null) {
                         ServerInstance instance = new ServerInstance(server,url);
                         // PENDING persist url/password in ServerString as well

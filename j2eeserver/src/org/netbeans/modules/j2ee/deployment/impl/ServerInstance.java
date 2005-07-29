@@ -44,6 +44,7 @@ public class ServerInstance implements Node.Cookie {
     private final String url;
     private final Server server;
     private DeploymentManager manager;
+    private DeploymentManager disconnectedManager;
     private IncrementalDeployment incrementalDeployment;
     private TargetModuleIDResolver tmidResolver;
     private J2eePlatform j2eePlatform;
@@ -143,6 +144,22 @@ public class ServerInstance implements Node.Cookie {
         return manager;
     }
     
+    public boolean isConnected () {
+        return manager != null;
+    }
+    
+    public DeploymentManager getDisconnectedDeploymentManager() {
+        if (disconnectedManager != null) return disconnectedManager;
+        
+        FileObject fo = ServerRegistry.getInstanceFileObject(url);
+        if (fo == null) {
+            String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
+            throw new IllegalStateException(msg);
+        }
+        disconnectedManager = server.getDeploymentManager(url);
+        return disconnectedManager;
+    }
+    
     public J2eePlatform getJ2eePlatform() {
         return j2eePlatform;
     }
@@ -156,7 +173,7 @@ public class ServerInstance implements Node.Cookie {
             J2eePlatformFactory fact = server.getJ2eePlatformFactory();
             // TODO this will be removed, implementation of J2EEPlatformFactory will be mandatory
             if (fact != null) {
-                j2eePlatformImpl = fact.getJ2eePlatformImpl(getDeploymentManager());
+                j2eePlatformImpl = fact.getJ2eePlatformImpl(isConnected() ? getDeploymentManager() : getDisconnectedDeploymentManager());
             }
         }
         return j2eePlatformImpl;
@@ -192,6 +209,10 @@ public class ServerInstance implements Node.Cookie {
         if (manager != null) {
             manager.release();
             manager = null;
+        }
+        if (disconnectedManager != null) {
+            disconnectedManager.release();
+            disconnectedManager = null;
         }
         incrementalDeployment = null;
         tmidResolver = null;
@@ -286,7 +307,7 @@ public class ServerInstance implements Node.Cookie {
     
     public StartServer getStartServer() {
         if (startServer == null) {
-            startServer = server.getOptionalFactory ().getStartServer (getDeploymentManager ());
+            startServer = server.getOptionalFactory ().getStartServer (getDisconnectedDeploymentManager());
         }
         return startServer;
     }
@@ -488,10 +509,12 @@ public class ServerInstance implements Node.Cookie {
      */
     public DeploymentManager getDeploymentManagerForConfiguration() {
         StartServer ss = getStartServer();
-        if (ss != null && ss.needsStartForConfigure())
+        if (ss != null && ss.needsStartForConfigure()) {
             start();
-        
-        return getDeploymentManager();
+            return getDeploymentManager();
+        } else {
+            return getDisconnectedDeploymentManager();
+        }
     }
     
     // Note: execution only need these 3 state transition APIs

@@ -128,11 +128,15 @@ public class Server implements Node.Cookie {
     }
     
     public DeploymentManager getDeploymentManager() {
+        return getDeploymentManager(null);
+    }
+    
+    public DeploymentManager getDeploymentManager(String uri) {
         if(manager == null) {
             getFactory();
             if (manager == null) {
                 try {
-                    manager = factory.getDisconnectedDeploymentManager(dep.getDisconnectedString());
+                    manager = factory.getDisconnectedDeploymentManager(uri == null ? dep.getDisconnectedString() : uri);
                 } catch (Exception e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
