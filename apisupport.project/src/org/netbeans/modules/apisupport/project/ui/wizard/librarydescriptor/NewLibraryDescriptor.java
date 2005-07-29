@@ -38,12 +38,9 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
     
     public Set instantiate() throws IOException {
         assert data != null;
-        Set fileOperations = data.getFileOperations();
+        CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
         if (fileOperations != null) {            
-            for (Iterator it = fileOperations.iterator(); it.hasNext();) {
-                CreatedModifiedFiles.Operation operation = (CreatedModifiedFiles.Operation)it.next();
-                operation.run();
-            }
+            fileOperations.run();
         }        
         //TODO:
         return new HashSet();
@@ -52,8 +49,8 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {
         data = new NewLibraryDescriptor.DataModel(wiz);
         return new BasicWizardIterator.Panel[] {
-            new SelectLibraryPanel(wiz,data )
-            //new NameAndLocationPanel(wiz,data )
+            new SelectLibraryPanel(wiz,data ),
+            new NameAndLocationPanel(wiz,data )
         };
     }
 
@@ -69,7 +66,7 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
         private String libraryName = null;
         private String libraryDisplayName = null;        
         
-        private Set/*<CreatedModifiedFiles.Operation>*/ fileOperations;
+        private CreatedModifiedFiles files;
         /** Creates a new instance of NewLibraryDescriptorData */
         DataModel(WizardDescriptor wiz) {
             super(wiz);
@@ -91,12 +88,12 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
             this.packageName = packageName;
         }
 
-        public Set getFileOperations() {
-            return fileOperations;
+        public CreatedModifiedFiles getCreatedModifiedFiles() {            
+            return files;
         }
 
-        public void setFileOperations(Set fileOperations) {
-            this.fileOperations = fileOperations;
+        public void setCreatedModifiedFiles(CreatedModifiedFiles files) {
+            this.files = files;
         }
 
         public String getLibraryName() {

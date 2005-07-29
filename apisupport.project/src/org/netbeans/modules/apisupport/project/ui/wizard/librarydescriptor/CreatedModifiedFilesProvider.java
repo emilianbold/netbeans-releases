@@ -12,14 +12,17 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import javax.swing.JTextArea;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -36,6 +39,7 @@ final class CreatedModifiedFilesProvider  {
     
     private static final String LIBRARY_LAYER_ENTRY = "org-netbeans-api-project-libraries/Libraries";//NOI18N
     
+    
     static CreatedModifiedFiles createInstance(NewLibraryDescriptor.DataModel data)  {
         
         CreatedModifiedFiles retval = new CreatedModifiedFiles(data.getProject());
@@ -43,26 +47,59 @@ final class CreatedModifiedFilesProvider  {
         
         return retval;
     }
-        
-    static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
-        String packagePath;
-        packagePath = getPackageRelativePath(data.getProject(), data.getPackageName());
-        
-        String libraryDescPath;
-        libraryDescPath = getLibraryDescriptor(data.getLibraryName()) ;
-        
-        URL template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
-        
-        CreatedModifiedFiles.Operation libDescrOperation;
-        
-        Map tokens = getTokens(fileSupport, data.getProject(), data.getLibrary());
-        String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
-        libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,template,null,tokens,data.getLibraryDisplayName());
-        
-        fileSupport.add(libDescrOperation);        
+    
+    public static void setCreatedFiles(CreatedModifiedFiles fileManipulator, JTextArea component) {
+        setCreatedModifiedFiles(fileManipulator, component, false);
     }
     
-    static String getBundleRelativePath(NbModuleProject project) {
+    public  static void setModifiedFiles(CreatedModifiedFiles fileManipulator, JTextArea component) {
+        setCreatedModifiedFiles(fileManipulator, component, true);
+    }
+    
+    private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
+        String packagePath;
+        String libraryDescPath;
+        String libraryDescRelativePath;
+        URL template;
+        CreatedModifiedFiles.Operation libDescrOperation;
+        Map tokens;
+        
+        packagePath = getPackageRelativePath(data.getProject(), data.getPackageName());
+        libraryDescPath = getLibraryDescriptor(data.getLibraryName()) ;
+        template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
+        tokens = getTokens(fileSupport, data.getProject(), data.getLibrary());
+        String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
+        
+        
+        {
+            libraryDescRelativePath = getLibraryDescriptorRelativePath(packagePath,data.getLibraryName());
+            String layerPath = getLayerRelativePath(data.getProject());
+            File prjFile = FileUtil.toFile(data.getProject().getProjectDirectory());
+            File layerFolder = new File(prjFile,layerPath).getParentFile();
+            File libraryDescFile = new File(prjFile,libraryDescRelativePath);
+            
+            libraryDescPath = PropertyUtils.relativizeFile(layerFolder, libraryDescFile);
+        }
+        
+        libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,
+                template,libraryDescRelativePath ,tokens,data.getLibraryDisplayName());
+        
+        fileSupport.add(libDescrOperation);
+    }
+    
+    
+    
+    private static String getLayerRelativePath(NbModuleProject project) {
+        ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
+        StringBuffer sb = new StringBuffer();
+        
+        sb.append(project.getSourceDirectoryPath()).append("/").append(mm.getLayer());//NOI18N
+        
+        return sb.toString(); // NOI18N;
+    }
+    
+    
+    private static String getBundleRelativePath(NbModuleProject project) {
         StringBuffer sb = new StringBuffer();
         
         ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
@@ -72,14 +109,14 @@ final class CreatedModifiedFilesProvider  {
     }
     
     
-    static String getPackageRelativePath(NbModuleProject project, String fullyQualifiedPackageName) {
+    private static String getPackageRelativePath(NbModuleProject project, String fullyQualifiedPackageName) {
         StringBuffer sb = new StringBuffer();
         
         sb.append(project.getSourceDirectoryPath()).append("/").append(fullyQualifiedPackageName);//NOI18N
         
         return sb.toString().replace('.','/');//NOI18N
     }
-
+    
     private static String getLibraryDescriptor(String libraryName) {
         StringBuffer sb = new StringBuffer();
         
@@ -88,13 +125,13 @@ final class CreatedModifiedFilesProvider  {
         return sb.toString();//NOI18N
     }
     
-    /*private static String getLibraryDescriptorRelativePath(String packageRelativePath, String libraryName) {
+    private static String getLibraryDescriptorRelativePath(String packageRelativePath, String libraryName) {
         StringBuffer sb = new StringBuffer();
         
         sb.append(packageRelativePath).append("/").append(libraryName).append(".xml");//NOI18N
         
         return sb.toString();//NOI18N
-    }*/
+    }
     
     private static String getLibraryDescriptorEntryPath(String libraryName) {
         StringBuffer sb = new StringBuffer();
@@ -105,9 +142,12 @@ final class CreatedModifiedFilesProvider  {
     }
     
     
-    private static URL transformURL(final URL url, final NbModuleProject project) {
-        //TODO:
-        return url;
+    private static String transformURL(final URL url, final String pathPrefix, final String archiveName) {
+        StringBuffer sb = new StringBuffer();
+        
+        sb.append("jar:nbinst:///").append(pathPrefix).append(archiveName).append("!/");//NOI18N
+        
+        return sb.toString();
     }
     
     private static Map getTokens(CreatedModifiedFiles fileSupport, NbModuleProject project, Library library) {
@@ -117,46 +157,82 @@ final class CreatedModifiedFilesProvider  {
         retval.put("bundle_to_substitute",getBundleRelativePath(project).replace('/','.'));//NOI18N
         
         Iterator it = library.getContent(VOLUME_CLASS).iterator();
-        retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, project, "release/libs/"));//NOI18N
+        retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, project, "libs/"));//NOI18N
         
         it = library.getContent(VOLUME_SRC).iterator();
-        retval.put("src_to_substitute",getTokenSubstitution(it, fileSupport, project, "release/sources/"));//NOI18N
+        retval.put("src_to_substitute",getTokenSubstitution(it, fileSupport, project, "sources/"));//NOI18N
         
         it = library.getContent(VOLUME_JAVADOC).iterator();
-        retval.put("javadoc_to_substitute",getTokenSubstitution(it, fileSupport, project, "release/docs/"));//NOI18N
+        retval.put("javadoc_to_substitute",getTokenSubstitution(it, fileSupport, project, "docs/"));//NOI18N
         
         return retval;
     }
     
-    private static String getTokenSubstitution(Iterator it, CreatedModifiedFiles fileSupport, final NbModuleProject project, String pathPrefix) {
+    private static String getTokenSubstitution(Iterator it, CreatedModifiedFiles fileSupport,
+            final NbModuleProject project, String pathPrefix) {
         StringBuffer sb = new StringBuffer();
         while (it.hasNext()) {
             sb.append("<resource>");//NOI18N
             URL originalURL = (URL)it.next();
-            addCopyOperation(fileSupport, project, originalURL, pathPrefix);
-            
-            URL url = transformURL(originalURL, project);
-            sb.append(url.toExternalForm());
-            if (it.hasNext()) {
-                sb.append("</resource>\n");//NOI18N
-            } else {
-                sb.append("</resource>");//NOI18N
+            String archiveName;
+            archiveName = addArchiveToCopy(fileSupport, project, originalURL, "release/"+pathPrefix);//NOI18N
+            if (archiveName != null) {
+                String urlToString = transformURL(originalURL, pathPrefix, archiveName);//NOI18N
+                sb.append(urlToString);
+                if (it.hasNext()) {
+                    sb.append("</resource>\n");//NOI18N
+                } else {
+                    sb.append("</resource>");//NOI18N
+                }
             }
         }
         return sb.toString();
     }
     
-    private static void addCopyOperation(CreatedModifiedFiles fileSupport,  final NbModuleProject project, URL originalURL, String pathPrefix) {
+    /** returns archive name or temporarily null cause there is no zip support for file protocol  */
+    private static String addArchiveToCopy(CreatedModifiedFiles fileSupport,  final NbModuleProject project,
+            URL originalURL, String pathPrefix) {
+        
+        String retval = null;
+        
         URL archivURL = FileUtil.getArchiveFile(originalURL);
         if (archivURL != null && FileUtil.isArchiveFile(archivURL)) {
             FileObject archiv = URLMapper.findFileObject(archivURL);
             assert archiv != null;
+            retval = archiv.getNameExt();
             StringBuffer sb = new StringBuffer();
-            sb.append(pathPrefix).append(archiv.getNameExt());
+            sb.append(pathPrefix).append(retval);
             fileSupport.add(fileSupport.createFile(sb.toString(),archivURL));
         } else {
             //TODO: probably add new Operation that will zip files first or add there
             // posibility to use instead of URL InputStream and use lazy ByteArrayInputStream.
         }
-    }    
+        return retval;
+    }
+    
+    private  static void setCreatedModifiedFiles(CreatedModifiedFiles fileManipulator,
+            JTextArea component, boolean modified) {
+        
+        String textToSet = generateText(fileManipulator, modified);
+        if (textToSet.length() > 0) {
+            component.setText(generateText(fileManipulator, modified));
+        }
+    }
+    private static String generateText(CreatedModifiedFiles fileManipulator, boolean modified) {
+        StringBuffer sb = new StringBuffer();
+        String[] relPaths = (modified) ? fileManipulator.getModifiedPaths() :
+            fileManipulator.getCreatedPaths();
+        
+        if (relPaths.length > 0) {
+            for (int i = 0; i < relPaths.length; i++) {
+                if (i > 0) {
+                    sb.append("\n");//NOI18N
+                }
+                sb.append(relPaths[i]);
+            }
+        }
+        
+        return sb.toString();
+    }
+    
 }

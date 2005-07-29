@@ -262,7 +262,7 @@ public final class ManifestManager {
         return localizingBundle;
     }
     
-    String getLayer() {
+    public String getLayer() {
         return layer;
     }
     
