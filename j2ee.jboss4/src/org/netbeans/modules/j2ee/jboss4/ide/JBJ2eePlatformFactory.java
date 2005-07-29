@@ -90,7 +90,7 @@ class J2eePlatformImplImpl extends J2eePlatformImpl {
     
     private void initLibraries() {
         try {
-            libraries = new LibraryImplementation[2];
+            LibraryImplementation libs[] = new LibraryImplementation[2];
 
             J2eeLibraryTypeProvider libraryProvider = new J2eeLibraryTypeProvider();
 
@@ -107,7 +107,7 @@ class J2eePlatformImplImpl extends J2eePlatformImpl {
                 list.add(fileToUrl(j2eeDoc));
                 library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
             }
-            libraries[0] = library;
+            libs[0] = library;
             
             list = new ArrayList();
             library = libraryProvider.createLibrary();
@@ -126,8 +126,9 @@ class J2eePlatformImplImpl extends J2eePlatformImpl {
                 list.add(fileToUrl(j2eeDoc));
                 library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
             }
-            libraries[1] = library;
+            libs[1] = library;
 
+            libraries = libs;
         } catch (MalformedURLException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
