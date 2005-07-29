@@ -65,6 +65,8 @@ public class ModuleNode extends AbstractNode implements Node.Cookie {
     public Action[] getActions(boolean context) {
         if (null == actions) {
             actions = new Action[] {
+                SystemAction.get(OpenModuleProjectAction.class),
+                SystemAction.get(RemoveAction.class)
         };
         getCookieSet().add(this);
         }
