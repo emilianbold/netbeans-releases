@@ -16,6 +16,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
  
+    <target name="build-init" depends="projectized.build-init">
+        <ant dir="../external" target="unscramble"/>
+    </target>
+
+ 
     <target name="netbeans-extra" depends="init">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
