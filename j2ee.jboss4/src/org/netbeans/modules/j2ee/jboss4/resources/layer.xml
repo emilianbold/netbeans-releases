@@ -43,10 +43,10 @@
                        <file name="WEB-INF\jboss-web.xml"/>                         
                     </folder>
                     <folder name="EJB">
-			<file name="META-INF\jboss1.xml"/>
+			<file name="META-INF\jboss.xml"/>
                     </folder>
 		    <folder name="EAR">
-			<file name="META-INF\jboss2.xml"/>
+			<file name="META-INF\jboss.xml"/>
                     </folder>
                 </folder>
                 
