@@ -150,7 +150,7 @@ public class EntityHelper extends EntityAndSessionHelper {
     }
 
     protected EntityAndSessionGenerator getGenerator() {
-        EntityGenerator generator = new EntityGenerator();
+        EntityGenerator generator = new EntityGenerator(entity.getPrimKeyClass());
         generator.setCMP(Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType()));
         return generator;
     }
