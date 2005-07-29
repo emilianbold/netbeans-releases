@@ -414,7 +414,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     public void actionPerformed(ActionEvent event) {
         Object obj = event.getSource();
         if (obj instanceof JButton) {
-            logEvent(this, Log.DBG, "Show JFileChooser");
             SwingWizardUI wizardUI = (SwingWizardUI) getWizard().getUI();
             if (wizardUI != null) {
                 wizardUI.restoreDefaultColors();
