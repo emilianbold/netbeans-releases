@@ -896,6 +896,7 @@ public final class NbModuleProject implements Project {
         private static final String[] RECOMMENDED_TYPES = new String[] {         
             "java-classes",         // NOI18N
             "java-main-class",      // NOI18N
+            "java-forms",           // NOI18N
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
