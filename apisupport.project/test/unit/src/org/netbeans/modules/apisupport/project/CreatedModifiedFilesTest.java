@@ -427,7 +427,7 @@ public class CreatedModifiedFilesTest extends TestBase {
             br.close();
         }
     }
-
+    
     private void assertFileContent(File f1, File f2) throws IOException {
         InputStream is = new FileInputStream(f1);
         InputStream is2 = new FileInputStream(f2);
@@ -443,6 +443,8 @@ public class CreatedModifiedFilesTest extends TestBase {
                 assertEquals("file content", content[i], content2[i]);
             }
         } finally {
+            is.close();
+            is2.close();
         }
     }
     

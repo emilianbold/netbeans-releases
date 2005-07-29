@@ -394,8 +394,6 @@ final class CreatedModifiedFilesFactory {
             this.layerPath = layerPath;
             this.contentResourcePath = contentResourcePath;
             this.tokens = substitutionTokens;
-            ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
-            String srcDir = getProject().getSourceDirectoryPath();
             addCreatedOrModifiedPath(getLayerFile());
             
             if (content != null) {
@@ -433,9 +431,6 @@ final class CreatedModifiedFilesFactory {
         private String layerPath;
         private String precedingItemName;
         private String followingItemName;
-        
-        private Operation createBundleKey;
-        private Operation createContentResource;
         
         public OrderLayerEntry(NbModuleProject project, String layerPath,
                 String precedingItemName, String followingItemName) {
