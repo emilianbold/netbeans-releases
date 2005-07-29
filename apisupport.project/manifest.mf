@@ -2,7 +2,8 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.apisupport.project
 OpenIDE-Module-Specification-Version: 1.8
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/apisupport/project/Bundle.properties
-OpenIDE-Module-Requires: org.openide.windows.IOProvider, org.netbeans.api.javahelp.Help
+OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Install: org/netbeans/modules/apisupport/project/Install.class
 OpenIDE-Module-Layer: org/netbeans/modules/apisupport/project/ui/resources/layer.xml
-Class-Path: docs/org-netbeans-modules-apisupport-project.jar
+
+

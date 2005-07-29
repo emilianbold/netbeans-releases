@@ -8,7 +8,7 @@
          "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 <helpset version="2.0">
 
-<!-- last updated 05Feb04-->
+<!-- last updated 28Jul05-->
 
   <!-- title -->
   <title>NetBeans Plug-in Help</title>
