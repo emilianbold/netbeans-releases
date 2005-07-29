@@ -141,11 +141,17 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public void drawString(String str, int param, int param2) {
+        if (buf.length() > 0 && buf.charAt(buf.length()-1) != ' ') {
+            buf.append(' ');
+        }
         buf.append(str);
     }
     
     public void drawString(AttributedCharacterIterator iterator,
             int param, int param2) {
+        if (buf.length() > 0 && buf.charAt(buf.length()-1) != ' ') {
+            buf.append(' ');
+        }
         for (char c=iterator.first(); c != iterator.DONE; c=iterator.next()) {
             buf.append(c);
         }
@@ -242,11 +248,17 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public void drawString(String str, float param, float param2) {
+        if (buf.length()>0 && buf.charAt(buf.length()-1) != ' ') {
+            buf.append(' ');
+        }
         buf.append(str);
     }
     
     public void drawString(AttributedCharacterIterator iterator,
             float param, float param2) {
+        if (buf.length()>0 && buf.charAt(buf.length()-1)!=' ') {
+            buf.append(' ');
+        }
         for (char c=iterator.first(); c != iterator.DONE; c=iterator.next()) {
             buf.append(c);
         }
