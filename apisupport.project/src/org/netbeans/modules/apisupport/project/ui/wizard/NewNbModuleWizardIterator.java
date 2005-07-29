@@ -39,8 +39,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private static final long serialVersionUID = 1L;
     
-    private final static int TYPE_MODULE = 1;
-    private final static int TYPE_SUITE = 2;
+    final static int TYPE_MODULE = 1;
+    final static int TYPE_SUITE = 2;
+    final static int TYPE_LIBRARY_MODULE = 3;
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
     
@@ -63,6 +64,10 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         return new NewNbModuleWizardIterator(TYPE_SUITE);
     }
     
+    public static NewNbModuleWizardIterator createLibraryModuleIterator() {
+        return new NewNbModuleWizardIterator(TYPE_LIBRARY_MODULE);
+    }
+    
     
     public Set instantiate() throws IOException {
         final NewModuleProjectData data = (NewModuleProjectData) settings.
@@ -70,7 +75,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         
         final File projectFolder = new File(data.getProjectFolder());
         ModuleUISettings.getDefault().setLastUsedModuleLocation(data.getProjectLocation());
-        if (this.type == TYPE_MODULE) {
+        if (type == TYPE_MODULE) {
             ModuleUISettings.getDefault().setNewModuleCounter(data.getModuleCounter());
             if (data.isNetBeansOrg()) {
                 // create module within the netbeans.org CVS tree
@@ -88,6 +93,20 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
                         data.getCodeNameBase(), data.getProjectDisplayName(),
                         data.getBundle(), data.getLayer(), new File(data.getSuiteRoot()));
             }
+        } else if (type == TYPE_LIBRARY_MODULE) {
+                // create suite-component module
+                File[] jars = LibraryStartVisualPanel.convertStringToFiles((String)settings.getProperty(LibraryStartVisualPanel.PROP_LIBRARY_PATH));
+                
+                File license = null;
+                String licPath = (String)settings.getProperty(LibraryStartVisualPanel.PROP_LICENSE_PATH);
+                if (licPath != null && licPath.length() > 0) {
+                    license = new File(licPath);
+                } 
+                NbModuleProjectGenerator.createSuiteLibraryModule(projectFolder,
+                        data.getCodeNameBase(), data.getProjectDisplayName(),
+                        data.getBundle(), new File(data.getSuiteRoot()), 
+                        license, jars);
+            
         } else if (this.type == TYPE_SUITE) {
             ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
             SuiteProjectGenerator.createSuiteModule(projectFolder, data.getPlatform());
@@ -121,6 +140,9 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
             case TYPE_SUITE:
                 steps = initSuiteModuleWizard();
                 break;
+            case TYPE_LIBRARY_MODULE:
+                steps = initLibraryModuleWizard();
+                break;
             default:
                 assert false : "Should never get here. type: "  + type; // NOI18N
         }
@@ -143,7 +165,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private String[] initModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings, false),
+            new BasicInfoWizardPanel(settings, TYPE_MODULE),
             new BasicConfWizardPanel(settings)
         };
         String[] steps = new String[] {
@@ -155,10 +177,24 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
     
     private String[] initSuiteModuleWizard() {
         panels = new WizardDescriptor.Panel[] {
-            new BasicInfoWizardPanel(settings, true),
+            new BasicInfoWizardPanel(settings, TYPE_SUITE),
             new PlatformSelectionWizardPanel(settings)
         };
         String[] steps = new String[] {
+            getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
+            getMessage("LBL_PlatformSelectionPanel_Title") // NOI18N
+        };
+        return steps;
+    }
+    
+    private String[] initLibraryModuleWizard() {
+        panels = new WizardDescriptor.Panel[] {
+            new LibraryStartWizardPanel(settings),
+            new BasicInfoWizardPanel(settings, TYPE_LIBRARY_MODULE),
+            new LibraryConfWizardPanel(settings)
+        };
+        String[] steps = new String[] {
+            getMessage("LBL_LibraryStartPanel_Title"), //NOi18N
             getMessage("LBL_BasicInfoPanel_Title"), // NOI18N
             getMessage("LBL_PlatformSelectionPanel_Title") // NOI18N
         };

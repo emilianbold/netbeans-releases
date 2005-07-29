@@ -12,59 +12,43 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
-
 import java.awt.Component;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 /**
- * First panel of <code>NewNbModuleWizardIterator</code>. Allow user to enter
- * basic module information:
+ * first panel of  the library wrapper module wizard
  *
- * <ul>
- *  <li>Project name</li>
- *  <li>Project Location</li>
- *  <li>Project Folder</li>
- *  <li>If should be set as a Main Project</li>
- *  <li>NetBeans Platform (for standalone modules)</li>
- *  <li>Module Suite (for suite modules)</li>
- * </ul>
- *
- * @author Martin Krauskopf
+ * @author Milos Kleint
  */
-final class BasicInfoWizardPanel extends BasicWizardPanel {
+final class LibraryStartWizardPanel extends BasicWizardPanel {
     
     /** Representing visual component for this step. */
-    private BasicInfoVisualPanel visualPanel;
-    
-    private int wizardType;
+    private LibraryStartVisualPanel visualPanel;
     
     /** Creates a new instance of BasicInfoWizardPanel */
-    public BasicInfoWizardPanel(WizardDescriptor settings, int wizType) {
+    public LibraryStartWizardPanel(WizardDescriptor settings) {
         super(settings);
-        wizardType = wizType;
     }
     
     public void readSettings(Object settings) {
         visualPanel.refreshData();
     }
-    
     public void storeSettings(Object settings) {
         visualPanel.storeData();
     }
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicInfoVisualPanel(getSettings(), wizardType);
+            visualPanel = new LibraryStartVisualPanel(getSettings());
             visualPanel.addPropertyChangeListener(this);
-            visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title")); // NOI18N
-            visualPanel.checkForm();
+            visualPanel.setName(getMessage("LBL_LibraryStartPanel_Title")); // NOI18N
+//            visualPanel.checkForm();
         }
         return visualPanel;
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(BasicInfoWizardPanel.class);
+        return new HelpCtx(LibraryStartWizardPanel.class);
     }
-    
 }

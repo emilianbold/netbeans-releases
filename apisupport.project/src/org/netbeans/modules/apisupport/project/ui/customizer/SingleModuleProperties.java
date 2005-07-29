@@ -62,7 +62,7 @@ import org.openide.filesystems.JarFileSystem;
  * 
  * @author Martin Krauskopf
  */
-final class SingleModuleProperties extends ModuleProperties {
+public final class SingleModuleProperties extends ModuleProperties {
 
     private static final String[] IDE_TOKENS = new String[] {
         "org.openide.modules.os.Windows", // NOI18N
@@ -73,19 +73,19 @@ final class SingleModuleProperties extends ModuleProperties {
     };
     
     // property keys for project.properties
-    static final String BUILD_COMPILER_DEBUG = "build.compiler.debug"; // NOI18N
-    static final String BUILD_COMPILER_DEPRECATION = "build.compiler.deprecation"; // NOI18N
-    static final String CLUSTER_DIR = "cluster.dir"; // NOI18N
-    static final String IS_AUTOLOAD = "is.autoload"; // NOI18N
-    static final String IS_EAGER = "is.eager"; // NOI18N
-    static final String JAVAC_SOURCES = "javac.source"; // NOI18N
-    static final String JAVADOC_TITLE = "javadoc.title"; // NOI18N
-    static final String LICENSE_FILE = "license.file"; // NOI18N
-    static final String NBM_HOMEPAGE = "nbm.homepage"; // NOI18N
-    static final String NBM_IS_GLOBAL = "nbm.is.global"; // NOI18N
-    static final String NBM_MODULE_AUTHOR = "nbm.module.author"; // NOI18N
-    static final String NBM_NEEDS_RESTART = "nbm.needs.restart"; // NOI18N
-    static final String SPEC_VERSION_BASE = "spec.version.base"; // NOI18N
+    public static final String BUILD_COMPILER_DEBUG = "build.compiler.debug"; // NOI18N
+    public static final String BUILD_COMPILER_DEPRECATION = "build.compiler.deprecation"; // NOI18N
+    public static final String CLUSTER_DIR = "cluster.dir"; // NOI18N
+    public static final String IS_AUTOLOAD = "is.autoload"; // NOI18N
+    public static final String IS_EAGER = "is.eager"; // NOI18N
+    public static final String JAVAC_SOURCES = "javac.source"; // NOI18N
+    public static final String JAVADOC_TITLE = "javadoc.title"; // NOI18N
+    public static final String LICENSE_FILE = "license.file"; // NOI18N
+    public static final String NBM_HOMEPAGE = "nbm.homepage"; // NOI18N
+    public static final String NBM_IS_GLOBAL = "nbm.is.global"; // NOI18N
+    public static final String NBM_MODULE_AUTHOR = "nbm.module.author"; // NOI18N
+    public static final String NBM_NEEDS_RESTART = "nbm.needs.restart"; // NOI18N
+    public static final String SPEC_VERSION_BASE = "spec.version.base"; // NOI18N
     
     static final String[] SOURCE_LEVELS = {"1.4", "1.5"}; // NOI18N
     

@@ -17,8 +17,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -81,6 +89,86 @@ public class NbModuleProjectGenerator {
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
+
+    /** Generates suite component Library Wrapper NetBeans Module. */
+    public static void createSuiteLibraryModule(File projectDir, String cnb,
+            String name, String bundlePath, File suiteDir, File license, File[] jars) throws IOException {
+        final FileObject dirFO = NbModuleProjectGenerator.createProjectDir(projectDir);
+        if (ProjectManager.getDefault().findProject(dirFO) != null) {
+            throw new IllegalArgumentException("Already a project in " + dirFO); // NOI18N
+        }
+        
+        EditableProperties props = new EditableProperties(true);
+        props.put(SingleModuleProperties.IS_AUTOLOAD, "true"); // NOI18N
+        Set packageList = new HashSet(); //list of strings
+        Map classPathExtensions = new HashMap();
+        
+        File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
+        if (!releaseDir.mkdirs()) {
+            //TODO report error
+            ErrorManager.getDefault().log("cannot create release directory.");
+        }
+        FileObject relDirFo = FileUtil.toFileObject(releaseDir);
+        for (int i = 0; i < jars.length; i++) {
+            FileObject orig = FileUtil.toFileObject(jars[i]);
+            if (orig != null) {
+                JarFile jf = null;
+                try {
+                    FileUtil.copyFile(orig, relDirFo, orig.getName());
+                    jf = new JarFile(jars[i]);
+                    Enumeration en = jf.entries();
+                    while (en.hasMoreElements()) {
+                        JarEntry entry = (JarEntry)en.nextElement();
+                        if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
+                            String nm = entry.getName();
+                            String path = nm.substring(0, nm.lastIndexOf('/'));
+                            packageList.add(path.replace('/', '.'));
+                        }
+                    }
+                    classPathExtensions.put("ext/" + orig.getNameExt(), "../release/modules/ext/" + orig.getNameExt());
+                } catch (IOException e) {
+                    //TODO report
+                    ErrorManager.getDefault().notify(e);
+                } finally {
+                    if (jf != null) {
+                        try {
+                            jf.close();
+                        } catch (IOException e) {
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (license != null && license.exists()) {
+            FileObject fo = FileUtil.toFileObject(license);
+            try {
+                FileUtil.copyFile(fo, dirFO, fo.getName());
+                props.put(SingleModuleProperties.LICENSE_FILE, "${basedir}/" + fo.getNameExt());
+                //TODO set the nbm.license property
+            } catch (IOException e) {
+                //TODO report
+                    ErrorManager.getDefault().notify(e);
+            }
+            
+        }
+        ProjectXMLManager.generateLibraryModuleTemplate(
+                createFileObject(dirFO, AntProjectHelper.PROJECT_XML_PATH),
+                cnb, NbModuleTypeProvider.SUITE_COMPONENT, packageList, classPathExtensions);
+        createSuiteProperties(dirFO, suiteDir);
+        createManifest(dirFO, cnb, bundlePath, null);
+        createBundle(dirFO, bundlePath, name);
+        appendToSuite(dirFO, suiteDir);
+        
+        //write down the nbproject/properties file
+        FileObject bundleFO = createFileObject(
+                dirFO, "nbproject" + File.separator + "project.properties"); // NOI18N
+        Util.storeProperties(bundleFO, props);
+        
+        ModuleList.refresh();
+        ProjectManager.getDefault().clearNonProjectCache();
+    }
+    
     
     /** 
      * Generates NetBeans Module within the netbeans.org CVS tree.

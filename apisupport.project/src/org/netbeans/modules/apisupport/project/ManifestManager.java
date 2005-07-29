@@ -185,7 +185,9 @@ public final class ManifestManager {
         em.setAttribute(OPENIDE_MODULE, cnb, null);
         em.setAttribute(OPENIDE_MODULE_SPECIFICATION_VERSION, specVer, null);
         em.setAttribute(OPENIDE_MODULE_LOCALIZING_BUNDLE, bundlePath, null);
-        em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
+        if (layerPath != null) {
+            em.setAttribute(OPENIDE_MODULE_LAYER, layerPath, null);
+        }
         Util.storeManifest(manifest, em);
     }
     

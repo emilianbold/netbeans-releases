@@ -36,7 +36,7 @@ import org.openide.WizardDescriptor;
  */
 final class BasicConfVisualPanel extends BasicVisualPanel {
     
-    private static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
+    static final String EXAMPLE_BASE_NAME = "org.yourorghere."; // NOI18N
     
     private NewModuleProjectData data;
     private boolean wasLayerUpdated;
@@ -46,22 +46,34 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     private DocumentListener cnbDL;
     private DocumentListener layerDL;
     private DocumentListener bundleDL;
-    
+    private boolean libraryModule;
     /** Creates new form BasicConfVisualPanel */
     public BasicConfVisualPanel(WizardDescriptor setting) {
+        this(setting, false);
+    }
+    
+    public BasicConfVisualPanel(WizardDescriptor setting, boolean isLibraryModule) {
         super(setting);
+        libraryModule = isLibraryModule;
         initComponents();
-        this.data = (NewModuleProjectData) getSettings().getProperty(
+        data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         cnbDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkCodeNameBase(); }
         };
-        layerDL = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
-        };
+        if (!libraryModule) {
+            layerDL = new UIUtil.DocumentAdapter() {
+                public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
+            };
+        } else {
+          // for library modules, don't generate any layer.
+            layer.setVisible(false);
+            layerValue.setVisible(false);
+        }
         bundleDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { wasBundleUpdated = true; checkBundle(); }
         };
+        
     }
     
     private void checkCodeNameBase() {
@@ -76,7 +88,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
                 bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
                 wasBundleUpdated = false;
             }
-            if (!wasLayerUpdated) {
+            if (!wasLayerUpdated && !libraryModule) {
                 layerValue.setText(slashName + "/layer.xml"); // NOI18N
                 wasLayerUpdated = false;
             }
@@ -109,10 +121,13 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     void refreshData() {
-        String dotName = EXAMPLE_BASE_NAME + data.getProjectName();
-        codeNameBaseValue.setText(Util.normalizeCNB(dotName));
-        codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
-        displayNameValue.setText(data.getProjectName());
+        String cnb = data.getCodeNameBase();
+        codeNameBaseValue.setText(cnb);
+        if (cnb.startsWith(EXAMPLE_BASE_NAME)) {
+            codeNameBaseValue.select(0, EXAMPLE_BASE_NAME.length() - 1);
+        }
+        String dn = data.getProjectDisplayName();
+        displayNameValue.setText(dn);
         checkCodeNameBase();
     }
     
@@ -122,7 +137,9 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
         data.setCodeNameBase(getCodeNameBaseValue());
         data.setProjectDisplayName(displayNameValue.getText());
         data.setBundle(getBundleValue());
-        data.setLayer(getLayerValue());
+        if (!libraryModule) {
+            data.setLayer(getLayerValue());
+        }
     }
     
     private String getCodeNameBaseValue() {

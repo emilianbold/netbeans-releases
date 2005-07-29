@@ -53,42 +53,47 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private NewModuleProjectData data;
     
     private boolean isNetBeansOrg;
-    private boolean isSuiteWizard;
+    private int wizardType;
     
     private ButtonModel lastSelectedType;
     private boolean wasLocationUpdate;
     
     /** Creates new form BasicInfoVisualPanel */
-    public BasicInfoVisualPanel(WizardDescriptor setting, boolean isSuiteWizard) {
+    public BasicInfoVisualPanel(WizardDescriptor setting, int wizType) {
         super(setting);
-        this.isSuiteWizard = isSuiteWizard;
+        wizardType = wizType;
         initComponents();
         
-        this.data = (NewModuleProjectData) getSettings().getProperty(
+        data = (NewModuleProjectData) getSettings().getProperty(
                 NewModuleProjectData.DATA_PROPERTY_NAME);
-        if (isSuiteWizard) {
+        if (wizType == NewNbModuleWizardIterator.TYPE_SUITE) {
             detachModuleTypeGroup();
             typeChooserPanel.setVisible(false);
             locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
-            int counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
-            setProjectName(getMessage("TXT_Suite"), counter); // NOI18N
-            data.setSuiteCounter(counter);
-        } else {
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
             if (moduleSuiteValue.getItemCount() > 0) {
                 suiteModule.setSelected(true);
                 locationValue.setText((String) moduleSuiteValue.getSelectedItem());
             } else {
                 locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
             }
-            int counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
-            setProjectName(getMessage("TXT_Module"), counter); // NOI18N
-            data.setModuleCounter(counter);
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
+            moduleSuite.setText("Add to Module Suite:");
+            suiteModule.setSelected(true);
+            suiteModule.setVisible(false);
+            platform.setVisible(false);
+            platformValue.setVisible(false);
+            standAloneModule.setVisible(false);
+            mainProject.setVisible(false);
+        } else {
+            throw new IllegalStateException("Unknown wizard type =" + wizardType);
         }
-        
         
         attachDocumentListeners();
         updateEnabled();
     }
+    
+    
     
     private String getNameValue() {
         return nameValue.getText().trim();
@@ -234,6 +239,31 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
     }
     
+    void refreshData() {
+        if (data.getProjectName() != null) {
+            nameValue.setText(data.getProjectName());
+            return;
+        }
+        String bundlekey = null;
+        int counter;
+        if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
+                counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
+                bundlekey = "TXT_Suite"; //NOI18N
+                data.setSuiteCounter(counter);
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
+                counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
+                bundlekey = "TXT_Module"; //NOI18N
+                data.setModuleCounter(counter);
+        } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
+            counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
+            bundlekey = "TXT_Library"; //NOI18N
+            data.setModuleCounter(counter);
+        } else {
+            throw new IllegalStateException("Unknown wizard type =" + wizardType);
+        }
+        setProjectName(getMessage(bundlekey), counter);
+    }
+    
     private void attachDocumentListeners() {
         DocumentListener fieldsDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { checkForm(); }
@@ -275,6 +305,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         moduleSuiteValue = ComponentFactory.getSuitesComboBox();
         browseSuiteButton = new javax.swing.JButton();
         chooserFiller = new javax.swing.JLabel();
+        pnlThouShaltBeholdLayout = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -373,8 +404,6 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(mainProject, gridBagConstraints);
 
@@ -488,6 +517,15 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(typeChooserPanel, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(pnlThouShaltBeholdLayout, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
@@ -566,6 +604,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private javax.swing.JTextField nameValue;
     private javax.swing.JLabel platform;
     private javax.swing.JComboBox platformValue;
+    private javax.swing.JPanel pnlThouShaltBeholdLayout;
     private javax.swing.JSeparator separator2;
     private javax.swing.JRadioButton standAloneModule;
     private javax.swing.JRadioButton suiteModule;

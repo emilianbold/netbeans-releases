@@ -16,9 +16,11 @@ package org.netbeans.modules.apisupport.project;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -36,6 +38,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.w3c.dom.NodeList;
 
 /**
  * Convenience class for managing project's <em>project.xml</em> file.
@@ -53,6 +56,8 @@ public final class ProjectXMLManager {
     private static final String BINARY_ORIGIN = "binary-origin"; // NOI18N
     private static final String BUILD_PREREQUISITE = "build-prerequisite"; // NOI18N
     private static final String CLASS_PATH_EXTENSION = "class-path-extension"; // NOI18N
+    private static final String CLASS_PATH_RUNTIME_PATH = "runtime-relative-path"; //NOI18N
+    private static final String CLASS_PATH_BINARY_ORIGIN = "binary-origin"; //NOI18N
     private static final String CODE_NAME_BASE = "code-name-base"; // NOI18N
     private static final String COMPILE_DEPENDENCY = "compile-dependency"; // NOI18N
     private static final String DATA = "data"; // NOI18N
@@ -304,6 +309,42 @@ public final class ProjectXMLManager {
             createModuleDependencyElement(moduleDependencies, md, null);
         }
         helper.putPrimaryConfigurationData(confData, true);
+    }
+    
+    public void removeClassPathExtensions() {
+        Element confData = getConfData();
+        NodeList nl = confData.getElementsByTagNameNS(NbModuleProjectType.NAMESPACE_SHARED, 
+                                                      ProjectXMLManager.CLASS_PATH_EXTENSION);
+        for (int i = 0; i < nl.getLength(); i++) {
+            confData.removeChild(nl.item(i));
+        }
+        helper.putPrimaryConfigurationData(confData, true);
+    }
+    
+    /**
+     * replace existing classpath extensions with new values.
+     * @param newValues <key=runtime-path(String), value=binary-path(String)>
+     */
+    public void replaceClassPathExtensions(HashMap newValues) {
+       removeClassPathExtensions(); 
+       if (newValues != null && newValues.size() > 0) {
+            Element confData = getConfData();
+            Document doc = confData.getOwnerDocument();
+            Iterator it = newValues.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry)it.next();
+                Element cpel = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_EXTENSION);
+                Element runtime = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_RUNTIME_PATH, 
+                                                      (String)entry.getKey());
+                Element binary = createModuleElement(doc, ProjectXMLManager.CLASS_PATH_BINARY_ORIGIN, 
+                                                      (String)entry.getValue());
+                cpel.appendChild(runtime);
+                cpel.appendChild(binary);
+                confData.appendChild(cpel);
+                
+            }
+            helper.putPrimaryConfigurationData(confData, true);
+       }
     }
     
     /**
@@ -585,6 +626,53 @@ public final class ProjectXMLManager {
         }
         dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
         dataEl.appendChild(createModuleElement(dataDoc, PUBLIC_PACKAGES));
+        
+        // store document to disk
+        ProjectXMLManager.safelyWrite(projectXml, prjDoc);
+    }
+
+    /**
+     * create a library wrapper project.xml
+     * @param publicPackages set of Strings representing the packages
+     * @param extensions <key=runtime path(String), value=binary path (String)>
+     *
+     */
+    static void generateLibraryModuleTemplate(FileObject projectXml, String cnb,
+            NbModuleType moduleType, Set publicPackages, Map extensions) throws IOException {
+        
+        Document prjDoc = XMLUtil.createDocument("project", PROJECT_NS, null, null); // NOI18N
+        
+        // generate general project elements
+        Element typeEl = prjDoc.createElementNS(PROJECT_NS, "type"); // NOI18N
+        typeEl.appendChild(prjDoc.createTextNode(NbModuleProjectType.TYPE));
+        prjDoc.getDocumentElement().appendChild(typeEl);
+        Element confEl = prjDoc.createElementNS(PROJECT_NS, "configuration"); // NOI18N
+        prjDoc.getDocumentElement().appendChild(confEl);
+        
+        // generate NB Module project type specific elements
+        Element dataEl = createModuleElement(confEl.getOwnerDocument(), DATA);
+        confEl.appendChild(dataEl);
+        Document dataDoc = dataEl.getOwnerDocument();
+        dataEl.appendChild(createModuleElement(dataDoc, CODE_NAME_BASE, cnb));
+        Element moduleTypeEl = createTypeElement(dataDoc, moduleType);
+        if (moduleTypeEl != null) {
+            dataEl.appendChild(moduleTypeEl);
+        }
+        dataEl.appendChild(createModuleElement(dataDoc, MODULE_DEPENDENCIES));
+        Element packages = createModuleElement(dataDoc, PUBLIC_PACKAGES);
+        dataEl.appendChild(packages);
+        Iterator it = publicPackages.iterator();
+        while (it.hasNext()) {
+            packages.appendChild(createModuleElement(dataDoc, PACKAGE, (String)it.next()));
+        }
+        it = extensions.entrySet().iterator();
+        while (it.hasNext()) {
+            Element cp = createModuleElement(dataDoc, CLASS_PATH_EXTENSION);
+            dataEl.appendChild(cp);
+            Map.Entry entry = (Map.Entry)it.next();
+            cp.appendChild(createModuleElement(dataDoc, CLASS_PATH_RUNTIME_PATH, (String)entry.getKey()));
+            cp.appendChild(createModuleElement(dataDoc, CLASS_PATH_BINARY_ORIGIN, (String)entry.getValue()));
+        }
         
         // store document to disk
         ProjectXMLManager.safelyWrite(projectXml, prjDoc);

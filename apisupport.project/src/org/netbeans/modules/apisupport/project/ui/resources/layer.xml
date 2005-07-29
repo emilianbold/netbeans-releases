@@ -36,6 +36,13 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptySuite.html"/>
                 </file>
+                <file name="libraryModule.xml">
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.NewNbModuleWizardIterator.createLibraryModuleIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/libraryModule.html"/>
+                </file>
             </folder>
             <attr name="APISupport/Samples" boolvalue="true"/>
         </folder>

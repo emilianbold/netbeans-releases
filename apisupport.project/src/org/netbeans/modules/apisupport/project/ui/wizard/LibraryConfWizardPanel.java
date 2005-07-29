@@ -31,13 +31,13 @@ import org.openide.util.HelpCtx;
  *
  * @author Martin Krauskopf
  */
-final class BasicConfWizardPanel extends BasicWizardPanel {
+final class LibraryConfWizardPanel extends BasicWizardPanel {
     
     /** Representing visual component for this step. */
     private BasicConfVisualPanel visualPanel;
     
     /** Creates a new instance of BasicConfWizardPanel */
-    public BasicConfWizardPanel(WizardDescriptor settings) {
+    public LibraryConfWizardPanel(WizardDescriptor settings) {
         super(settings);
     }
     
@@ -47,6 +47,8 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
                 NewModuleProjectData.DATA_PROPERTY_NAME);
                 
         if (data.getCodeNameBase() == null) {
+            //TODO get codebase name according to the content of jar.
+            
             String dotName = BasicConfVisualPanel.EXAMPLE_BASE_NAME + data.getProjectName();
             data.setCodeNameBase(Util.normalizeCNB(dotName));
         }
@@ -62,7 +64,7 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
     
     public Component getComponent() {
         if (visualPanel == null) {
-            visualPanel = new BasicConfVisualPanel(getSettings());
+            visualPanel = new BasicConfVisualPanel(getSettings(), true);
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicConfigPanel_Title")); // NOI18N
         }
@@ -70,7 +72,7 @@ final class BasicConfWizardPanel extends BasicWizardPanel {
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(BasicConfWizardPanel.class);
+        return new HelpCtx(LibraryConfWizardPanel.class);
     }
     
 }
