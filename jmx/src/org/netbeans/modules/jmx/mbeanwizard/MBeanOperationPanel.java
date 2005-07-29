@@ -20,23 +20,25 @@ import java.awt.FlowLayout;
 import java.util.ArrayList;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.GenericWizardPanel;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 
 import org.openide.WizardDescriptor;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JLabel;
-
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.*;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.jmx.FireEvent;
+import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationTable;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperOperationTableModel;
 import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -49,22 +51,22 @@ import org.openide.util.NbBundle;
  * MBean Attribute and Operation description
  *
  */
-public class MBeanOperationPanel extends JPanel implements DocumentListener,
-        ListSelectionListener{
+public class MBeanOperationPanel extends JPanel implements ListSelectionListener {
     private boolean DEBUG = false;
     
     protected OperationWizardPanel wiz;
     
-    protected OperationTable methodTable;
-    protected MBeanMethodTableModel methodModel;
-    protected TableColumnModel methColumnModel;
+    protected OperationTable operationTable;
+    protected MBeanOperationTableModel operationModel;
+    protected TableColumnModel opColumnModel;
+    protected JButton opRemoveJButton;
+    protected JLabel tableLabel;
     
     /**
      * Panel constructor: Fills a wizard descriptor with the user data
      * @param <code>wiz</code> the wizard panel
      */
     public MBeanOperationPanel(OperationWizardPanel wiz) {
-        //super(new GridLayout(1,1));
         super(new BorderLayout());
         this.wiz = wiz;
         initComponents();
@@ -76,57 +78,57 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
     
     protected void initJTables() {
         
-        methodModel = new MBeanMethodTableModel();
-        methodTable = new OperationTable(this, methodModel, wiz);
-        methodTable.setName("methodTable");// NOI18N
+        operationModel = new MBeanOperationTableModel();
+        operationTable = new OperationTable(this, getModel(), wiz);
+        operationTable.setName("methodTable");// NOI18N
         
         // Accessibility
-        methodTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_OPERATIONS_TABLE"));// NOI18N
-        methodTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
+        operationTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE"));// NOI18N
+        operationTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
         
     }
     
     /**
      * Returns the table model of the operation table
-     * @return <code>MBeanMethodTableModel</code> the operation table
+     * @return <code>MBeanOperationTableModel</code> the operation table
      */
-    public MBeanMethodTableModel getOperationModel() {
-        return methodModel;
+    public MBeanOperationTableModel getModel() {
+        return operationModel;
     }
     
     protected void initComponents() {
         
         initJTables();
         
-        methColumnModel = methodTable.getColumnModel();
+        opColumnModel = operationTable.getColumnModel();
         
-        affectOperationTableComponents(methColumnModel);
+        affectOperationTableComponents(opColumnModel);
     }
     
     protected void affectOperationTableComponents(TableColumnModel columnModel) {
         
         // defines the scrollpane which contains the operation JTable
-        JScrollPane methodJTableScrollPane = new JScrollPane(methodTable);
+        JScrollPane methodJTableScrollPane = new JScrollPane(operationTable);
         
         // defines the method add and remove button
         JButton methAddJButton = new JButton();
         Mnemonics.setLocalizedText(methAddJButton,
-                NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_add_method"));//NOI18N
-        final JButton methRemoveJButton = new JButton();
-        Mnemonics.setLocalizedText(methRemoveJButton,
-                NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_rem_method"));//NOI18N
+                NbBundle.getMessage(MBeanOperationPanel.class,"BUTTON_add_method"));//NOI18N
+        opRemoveJButton = new JButton();
+        Mnemonics.setLocalizedText(opRemoveJButton,
+                NbBundle.getMessage(MBeanOperationPanel.class,"BUTTON_rem_method"));//NOI18N
         methAddJButton.setName("methAddJButton");// NOI18N
-        methRemoveJButton.setName("methRemoveJButton");// NOI18N
+        opRemoveJButton.setName("methRemoveJButton");// NOI18N
         
         // remove button should be first disabled
-        methRemoveJButton.setEnabled(false);
+        opRemoveJButton.setEnabled(false);
         
         methAddJButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 
-                methodModel.addRow();
-                if (methodModel.size() != 0)
-                    methRemoveJButton.setEnabled(true);
+                getModel().addRow();
+                if (getModel().size() != 0)
+                    opRemoveJButton.setEnabled(true);
                 
                 // to verify that there are not two same operation names, 
                 // an event is fired to run dynamically the test
@@ -134,23 +136,23 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
             }
         });
         
-        methRemoveJButton.addActionListener(new ActionListener(){
+        opRemoveJButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
                 
-                final int selectedRow = methodTable.getSelectedRow();
+                final int selectedRow = operationTable.getSelectedRow();
                 
                 //No row selected
                 if (selectedRow == -1) return;
                 
                 //removes the row in the table model
-                methodModel.remRow(selectedRow,methodTable);
+                getModel().remRow(selectedRow,operationTable);
                 
                 //selects the next row in the table
-                methodModel.selectNextRow(selectedRow, methodTable);
+                getModel().selectNextRow(selectedRow, operationTable);
                 
                 //disables the remove button if the model is empty
-                if (methodModel.size() == 0)
-                    methRemoveJButton.setEnabled(false);
+                if (getModel().size() == 0)
+                    opRemoveJButton.setEnabled(false);
                 
                 // to verify that there are not two same operation names
                 wiz.event();
@@ -161,32 +163,32 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
         JPanel firstInternalMethodPanel = new JPanel();
         firstInternalMethodPanel.setLayout(new BorderLayout());
         methodJPanel.add(methAddJButton);
-        methodJPanel.add(methRemoveJButton);
+        methodJPanel.add(opRemoveJButton);
         
         firstInternalMethodPanel.add(methodJTableScrollPane, 
                 BorderLayout.CENTER);
         firstInternalMethodPanel.add(methodJPanel, BorderLayout.SOUTH);
         
-        JLabel tableLabel = new JLabel(NbBundle.getMessage(MBeanOperationPanel.class, "LBL_OpTable"));// NOI18N
+        tableLabel = new JLabel(NbBundle.getMessage(MBeanOperationPanel.class, "LBL_OpTable"));// NOI18N
         
         add(tableLabel, BorderLayout.NORTH);
         add(firstInternalMethodPanel, BorderLayout.CENTER);
         
         //Accessibility
-        methAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_OPERATION"));// NOI18N
-        methAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_OPERATION_DESCRIPTION"));// NOI18N
-        methRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_OPERATION"));// NOI18N
-        methRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_OPERATION_DESCRIPTION"));// NOI18N
+        methAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_ADD_OPERATION"));// NOI18N
+        methAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_ADD_OPERATION_DESCRIPTION"));// NOI18N
+        opRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_REMOVE_OPERATION"));// NOI18N
+        opRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_REMOVE_OPERATION_DESCRIPTION"));// NOI18N
         
     }
     
-    private boolean OperationAlreadyContained() {
+    protected boolean OperationAlreadyContained() {
         //for each operation, construction of the concat operation name 
         //+ all parameter types
-        ArrayList operations = new ArrayList(methodModel.size());
-        for (int i=0; i < methodModel.size(); i++) {
+        ArrayList operations = new ArrayList(getModel().size());
+        for (int i=0; i < getModel().size(); i++) {
             //the current operation
-            MBeanOperation oper = methodModel.getOperation(i);
+            MBeanOperation oper = getModel().getOperation(i);
             String operationName = oper.getName();
             //for this operation, get all his parameter types concat
             String operationParameter = (String)
@@ -250,7 +252,7 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
             if (getPanel() != null) {
                 if (getPanel().OperationAlreadyContained()) {
                     opValid = false;
-                    msg = NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"LBL_State_Same_Operation");// NOI18N
+                    msg = NbBundle.getMessage(MBeanOperationPanel.class,"LBL_State_Same_Operation");// NOI18N
                 }
             }
             setErrorMsg(msg);
@@ -302,6 +304,60 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
         public void readSettings(Object settings) {
             wiz = (WizardDescriptor) settings;
             
+            getPanel().getModel().clear();
+            
+            String nbAddedOpStr = (String)wiz.getProperty(WizardConstants.PROP_METHOD_NB);
+            
+            int nbAddedOp = 0;
+            
+            if (nbAddedOpStr != null)
+                nbAddedOp = new Integer(nbAddedOpStr);
+            
+            for (int i=0; i < nbAddedOp; i++) {
+                //init parameters
+                List<MBeanOperationParameter> params = new ArrayList();
+                String[] paramsStr = ((String)
+                wiz.getProperty(WizardConstants.PROP_METHOD_PARAM+ i)).trim().split(
+                        WizardConstants.PARAMETER_SEPARATOR);
+                //test if no parameters
+                if (!(paramsStr.length == 1 && paramsStr[0].equals(""))) {
+                    for (int j=0; j < paramsStr.length; j++) {
+                        String[] paramStr = paramsStr[j].trim().split(" ");// NOI18N
+                        String desc = (String)
+                        wiz.getProperty(WizardConstants.PROP_METHOD_PARAM + i +
+                                WizardConstants.DESC + j);
+                        params.add(
+                                new MBeanOperationParameter(paramStr[1], paramStr[0], desc));
+                    }
+                }
+                
+                //init exceptions
+                List<MBeanOperationException> exceptions = new ArrayList();
+                String[] exceptsStr = ((String)
+                wiz.getProperty(WizardConstants.PROP_METHOD_EXCEP+ i)).trim().split(
+                        WizardConstants.PARAMETER_SEPARATOR);
+                //test if no exceptions
+                if (!(exceptsStr.length == 1 && exceptsStr[0].equals(""))) {
+                    for (int j=0; j < exceptsStr.length; j++) {
+                        String desc = (String)
+                        wiz.getProperty(WizardConstants.PROP_METHOD_PARAM + i +
+                                WizardConstants.DESC + j);
+                        exceptions.add(
+                                new MBeanOperationException(exceptsStr[j], desc));
+                    }
+                }
+                
+                getPanel().getModel().addRow(
+                        new MBeanOperation(
+                        (String)wiz.getProperty(WizardConstants.PROP_METHOD_NAME + i),
+                        (String)wiz.getProperty(WizardConstants.PROP_METHOD_TYPE + i),
+                        params,
+                        exceptions,
+                        (String)wiz.getProperty(WizardConstants.PROP_METHOD_DESCR + i)));
+                
+            }
+        
+            wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
         }
         
         /**
@@ -313,10 +369,10 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
             
             //stores all values from the table in the model even with keyboard
             //navigation
-            getPanel().methodTable.editingStopped(new ChangeEvent(this));
+            getPanel().operationTable.editingStopped(new ChangeEvent(this));
             
             //read the contents of the operation table
-            MBeanMethodTableModel methModel = getPanel().methodModel;
+            MBeanOperationTableModel methModel = getPanel().getModel();
             
             int nbMeths = methModel.size();
             
@@ -326,7 +382,7 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
             for (int i = 0 ; i < nbMeths ; i++) {
                 
                 // the current operation (number i)
-                MBeanOperation op = getPanel().getOperationModel().
+                MBeanOperation op = getPanel().getModel().
                         getOperation(i);
                 
                 wiz.putProperty(WizardConstants.PROP_METHOD_NAME + i,
@@ -375,19 +431,4 @@ public class MBeanOperationPanel extends JPanel implements DocumentListener,
     public void valueChanged(ListSelectionEvent evt) {
     }
     
-    /**
-     * Implementing method
-     * @param e a DocumentEvent
-     */
-    public void changedUpdate( DocumentEvent e ) {}
-    /**
-     * Implementing method
-     * @param e a DocumentEvent
-     */
-    public void insertUpdate( DocumentEvent e )  {}
-    /**
-     * Implementing method
-     * @param e a DocumentEvent
-     */
-    public void removeUpdate( DocumentEvent e )  {}
 }

@@ -189,6 +189,14 @@ public class WizardConstants
     public static final String PROP_INTRO_ATTR_DESCR             = "wizdata.intro_attributeDescr";// NOI18N
     public static final String PROP_INTRO_ATTR_SELECT            = "wizdata.intro_attributeSelect";// NOI18N
     
+    public static final String PROP_INTRO_METHOD_NB              = "wizdata.intro_methodNb"; // NOI18N
+    public static final String PROP_INTRO_METHOD_NAME            = "wizdata.intro_methodName"; // NOI18N
+    public static final String PROP_INTRO_METHOD_TYPE            = "wizdata.intro_methodType"; // NOI18N
+    public static final String PROP_INTRO_METHOD_PARAM           = "wizdata.intro_methodParamType"; // NOI18N
+    public static final String PROP_INTRO_METHOD_EXCEP           = "wizdata.intro_methodException"; // NOI18N
+    public static final String PROP_INTRO_METHOD_DESCR           = "wizdata.intro_methodDescription"; // NOI18N
+    public static final String PROP_INTRO_METHOD_SELECT            = "wizdata.intro_methodSelect";// NOI18N
+    
     /** type boolean. */
     public static final String PROP_ATTR_RW = "wizdata.attributeRW"; // NOI18N
     

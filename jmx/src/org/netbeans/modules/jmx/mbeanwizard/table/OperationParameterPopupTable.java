@@ -141,14 +141,14 @@ public class OperationParameterPopupTable extends JTable {
     public TableCellRenderer getCellRenderer(int row, int column) {
         
         if(row >= getRowCount())
-                return null;
+            return null;
         
-            if (column == 1) {
-                JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
-                Object o = getModel().getValueAt(row,column);
-                typeBox.setSelectedItem(o);
-                return new ComboBoxRenderer(typeBox);
-            } 
+        if (column == 1) {
+            JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
+            Object o = getModel().getValueAt(row,column);
+            typeBox.setSelectedItem(o);
+            return new ComboBoxRenderer(typeBox);
+        }
         
         return super.getCellRenderer(row,column);
     }

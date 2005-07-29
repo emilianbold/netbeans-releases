@@ -28,7 +28,6 @@ import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.actions.AddAttrAction;
 import org.netbeans.modules.jmx.actions.AddOpAction;
-import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;

@@ -15,6 +15,7 @@ package org.netbeans.modules.jmx.mbeanwizard.renderer;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.Component;
 import java.util.ArrayList;
+import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.JTable;
 import javax.swing.JPanel;
@@ -79,6 +80,10 @@ public class OperationParameterPanelRenderer extends  DefaultTableCellRenderer {
                 paramString += ",";
         }
         text.setText(paramString);
+        
+        // makes visual line selection possible
+        if (row == table.getSelectedRow())
+            text.setBackground(table.getSelectionBackground());
         
         return comp;
     }

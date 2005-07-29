@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.mbeanwizard.table.WrapperAttributeTable;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
+import javax.swing.event.ListSelectionEvent;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -38,7 +39,8 @@ import org.openide.util.HelpCtx;
  *
  * @author an156382
  */
-public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
+public class MBeanWrapperAttributePanel extends MBeanAttributePanel 
+    implements ListSelectionListener{
     
     private int orderNumber = Integer.MAX_VALUE;
     
@@ -48,41 +50,13 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
         initWrapperComponents();
         String str = NbBundle.getMessage(MBeanWrapperAttributePanel.class,"LBL_Attribute_Panel");// NOI18N
         setName(str);
-        affectTableMouseListener();
-    }
-    
-    private void affectTableMouseListener() {
-        /* Affects a mouseListener to the wrapper table to enable /disable
-         * the remove button when the user selects an attribute that has been
-         * introspected, i.e he is not allowed to remove
-         * Further an event is thrown to notify the table of that change
-         */ 
-        attributeTable.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e)  {
-                boolean isOK = attributeTable.getSelectedRow() < getModel().getFirstEditableRow();
-                attrRemoveJButton.setEnabled(!isOK);
-                wiz.event();
-            }
-     
-            public void mouseEntered(MouseEvent e) {}        
-            public void mouseExited(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {
-                boolean isOK = attributeTable.getSelectedRow() < getModel().getFirstEditableRow();
-                attrRemoveJButton.setEnabled(!isOK);
-                wiz.event();
-            }
-            public void mouseReleased(MouseEvent e) {
-                boolean isOK = attributeTable.getSelectedRow() < getModel().getFirstEditableRow();
-                attrRemoveJButton.setEnabled(!isOK);
-                wiz.event();
-            }
-        });
     }
     
     protected void initJTables() {
         
         attributeModel = new MBeanWrapperAttributeTableModel(); 
         attributeTable = new WrapperAttributeTable(attributeModel,wiz); 
+        attributeTable.getSelectionModel().addListSelectionListener(this);
     }
     
     /**
@@ -129,7 +103,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
                     try {
                         //attrRemoveJButton.setEnabled(true);
                         attributeModel.remRow(selectedRow, attributeTable);
-                        //attributeModel.selectNextRow(selectedRow, attributeTable);  
+                        attributeModel.selectNextRow(selectedRow, attributeTable);  
                     } catch (Exception ex) {
                         System.out.println("Exception here : ");// NOI18N
                         ex.printStackTrace();
@@ -228,7 +202,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             if (getPanel() != null) {
                 if (getPanel().AttributeNameAlreadyChecked()) { 
                     attrValid = false;
-                    msg = NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"LBL_State_Same_Attribute_Name");// NOI18N
+                    msg = NbBundle.getMessage(MBeanWrapperAttributePanel.class,"LBL_State_Same_Attribute_Name");// NOI18N
                 }
                 setErrorMsg(msg);
             }
@@ -401,4 +375,10 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel {
             return new HelpCtx("jmx_instrumenting_app");// NOI18N
         }
     }
+    
+    public void valueChanged(ListSelectionEvent evt) {
+        boolean enable = (attributeTable.getSelectedRow() < 
+                ((MBeanWrapperAttributeTableModel)attributeModel).getFirstEditableRow());
+            attrRemoveJButton.setEnabled(!enable);
+    }    
 }

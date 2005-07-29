@@ -125,10 +125,15 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
     }
     
     public void addRow(MBeanAttribute mba) {
-       
-        data.add(mba); 
-        //table is informed about the change to update the view
-        this.fireTableDataChanged();
+       MBeanAttribute newAttr = new MBeanAttribute(
+               mba.getName(),
+               mba.getTypeName(),
+               mba.getAccess(),
+               mba.getDescription()
+       );
+       data.add(mba); 
+       //table is informed about the change to update the view
+       this.fireTableDataChanged();
     }
     
     /**

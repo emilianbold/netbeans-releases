@@ -49,14 +49,13 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
 
     /** private variables */
     private transient TemplateWizard wiz;
-
-    private transient MBeanWrapperPanel.WrapperAttributesWizardPanel wrapperPanel;
     
     private transient StandardMBeanPanel.StandardMBeanWizardPanel mbeanTemplatePanel;
     private transient MBeanOptionsPanel.MBeanOptionsWizardPanel mbeanOpPanel;
     //private transient MBeanAttrAndMethodPanel.AttributesWizardPanel attributePanel;
     private transient MBeanAttributePanel.AttributesWizardPanel attributePanel;
     private transient MBeanWrapperAttributePanel.WrapperAttributesWizardPanel wAttributePanel;
+    private transient MBeanWrapperOperationPanel.WrapperOperationsWizardPanel wOperationPanel;
     private transient MBeanOperationPanel.OperationWizardPanel operationPanel;
     private transient MBeanNotificationPanel.NotificationsWizardPanel notificationPanel;
     private transient MBeanJUnitPanel.JUnitWizardPanel junitOptionsPanel; 
@@ -244,7 +243,11 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         operationPanel = new MBeanOperationPanel.OperationWizardPanel();
         initializeComponent(steps,panelOffset + 3,
                 (JComponent)operationPanel.getComponent());
-
+        
+        wOperationPanel = new MBeanWrapperOperationPanel.WrapperOperationsWizardPanel();
+        initializeComponent(steps,panelOffset + 3,
+             (JComponent)wOperationPanel.getComponent());
+        
         notificationPanel = 
                 new MBeanNotificationPanel.NotificationsWizardPanel();
         initializeComponent(steps,panelOffset + 4,
@@ -392,10 +395,11 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
                     else
                         currentPanel = wAttributePanel;
                 } else {
-                    if ((currentPanel == attributePanel) || (currentPanel == wAttributePanel))
+                    if (currentPanel == attributePanel)  
                         currentPanel = operationPanel;
-                    else {
-                        if (currentPanel == operationPanel)
+                    else if (currentPanel == wAttributePanel) {
+                        currentPanel = wOperationPanel;
+                    } else if ((currentPanel == operationPanel) || (currentPanel == wOperationPanel)) {
                             currentPanel = notificationPanel;
                     }
                 }
@@ -415,15 +419,17 @@ public class JMXMBeanIterator implements TemplateWizard.Iterator {
         if (currentPanel == junitPanel)
             currentPanel = notificationPanel;
         else {
-            if (currentPanel == notificationPanel)
-                currentPanel = operationPanel;
-            else {
-                if (currentPanel == operationPanel) {
-                    if (isExistingRessource == null)
-                        currentPanel = attributePanel;
-                    else
+            if (currentPanel == notificationPanel) {
+                if (isExistingRessource != null)
+                    currentPanel = wOperationPanel;
+                else 
+                    currentPanel = operationPanel;
+            } else {
+                if (currentPanel == operationPanel)
+                    currentPanel = attributePanel;
+                else if (currentPanel == wOperationPanel) 
                         currentPanel = wAttributePanel;
-                } else {
+                else {
                     if ((currentPanel == attributePanel) || (currentPanel == wAttributePanel))
                         currentPanel = mbeanOpPanel;
                     else {

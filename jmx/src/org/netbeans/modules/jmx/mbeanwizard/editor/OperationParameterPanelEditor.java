@@ -22,7 +22,7 @@ import javax.swing.event.CellEditorListener;
 import java.awt.Component;
 import java.util.List;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 
 
 /**
@@ -41,7 +41,7 @@ public class OperationParameterPanelEditor implements TableCellEditor {
     private JPanel thisPanel;
     private JTextField text;
     private int editingRow = 0;
-    private MBeanMethodTableModel model = null;
+    private MBeanOperationTableModel model = null;
     
     protected EventListenerList listenerList = new EventListenerList();
     protected ChangeEvent changeEvent = new ChangeEvent(this);
@@ -53,7 +53,7 @@ public class OperationParameterPanelEditor implements TableCellEditor {
      * @param model the table model of the operation table
      * @param editingRow the current edited row in the table
      */
-    public OperationParameterPanelEditor(MBeanMethodTableModel model, 
+    public OperationParameterPanelEditor(MBeanOperationTableModel model, 
             JPanel panel, JTextField jTextField,
             int editingRow) {
         this.thisPanel = panel;

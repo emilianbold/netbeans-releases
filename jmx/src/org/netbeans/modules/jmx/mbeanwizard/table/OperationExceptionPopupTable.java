@@ -57,8 +57,11 @@ public class OperationExceptionPopupTable extends JTable {
         if(row >= getRowCount())
             return null;
         
-        // here, one text field for the two columns of the popup is enough
         final JTextField genericField = new JTextField();
+        if (column == 1)
+            return new JTextFieldCellEditor(genericField, this);
+        
+        // here, one text field for the two columns of the popup is enough
         final int col = column;
         String o = ((String)getModel().getValueAt(row,column));
         genericField.setText(o);
@@ -75,9 +78,6 @@ public class OperationExceptionPopupTable extends JTable {
                         acceptedKey = Character.isJavaIdentifierStart(typedKey);
                     } else {
                         acceptedKey = Character.isJavaIdentifierPart(typedKey);
-                    }
-                    if (col == 1) {
-                        acceptedKey = (acceptedKey || (typedKey == ' '));
                     }
                     if ((!acceptedKey) && (typedKey == '.'))  {
                         acceptedKey = true;

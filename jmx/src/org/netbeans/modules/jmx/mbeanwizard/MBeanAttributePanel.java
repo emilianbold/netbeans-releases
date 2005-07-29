@@ -85,8 +85,8 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         attributeTable.setName("attributeTable");// NOI18N
         
         // Accessibility
-        attributeTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ATTRIBUTES_TABLE"));// NOI18N
-        attributeTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ATTRIBUTES_TABLE_DESCRIPTION"));// NOI18N
+        attributeTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_ATTRIBUTES_TABLE"));// NOI18N
+        attributeTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_ATTRIBUTES_TABLE_DESCRIPTION"));// NOI18N
     }
     
     /**
@@ -113,10 +113,10 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         // defines the attribute add and remove buttons
         JButton attrAddJButton = new JButton();
         Mnemonics.setLocalizedText(attrAddJButton,
-                NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_add_attr"));//NOI18N
-        attrRemoveJButton = new JButton(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_rem_attr"));// NOI18N
+                NbBundle.getMessage(MBeanAttributePanel.class,"BUTTON_add_attr"));//NOI18N
+        attrRemoveJButton = new JButton(NbBundle.getMessage(MBeanAttributePanel.class,"BUTTON_rem_attr"));// NOI18N
         Mnemonics.setLocalizedText(attrRemoveJButton,
-                NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"BUTTON_rem_attr"));//NOI18N
+                NbBundle.getMessage(MBeanAttributePanel.class,"BUTTON_rem_attr"));//NOI18N
         
         attrAddJButton.setName("attrAddJButton");// NOI18N
         attrRemoveJButton.setName("attrRemoveJButton");// NOI18N
@@ -187,10 +187,10 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         add(tableLabel, BorderLayout.NORTH);
         add(firstInternalAttributePanel, BorderLayout.CENTER);
         
-        attrAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_ATTRIBUTE"));// NOI18N
-        attrAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_ADD_ATTRIBUTE_DESCRIPTION"));// NOI18N
-        attrRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_ATTRIBUTE"));// NOI18N
-        attrRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"ACCESS_REMOVE_ATTRIBUTE_DESCRIPTION"));// NOI18N
+        attrAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_ADD_ATTRIBUTE"));// NOI18N
+        attrAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_ADD_ATTRIBUTE_DESCRIPTION"));// NOI18N
+        attrRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_REMOVE_ATTRIBUTE"));// NOI18N
+        attrRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_REMOVE_ATTRIBUTE_DESCRIPTION"));// NOI18N
         
         
     }
@@ -255,7 +255,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
             if (getPanel() != null) {
                 if (getPanel().AttributeNameAlreadyContained()) {
                     attrValid = false;
-                    msg = NbBundle.getMessage(MBeanAttrAndMethodPanel.class,"LBL_State_Same_Attribute_Name");// NOI18N
+                    msg = NbBundle.getMessage(MBeanAttributePanel.class,"LBL_State_Same_Attribute_Name");// NOI18N
                 } 
                 setErrorMsg(msg);
             }

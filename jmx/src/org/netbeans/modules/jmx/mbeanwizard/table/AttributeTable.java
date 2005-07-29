@@ -21,11 +21,13 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AttributeTextFieldKeyListener;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
-
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 
 /**
  * Class responsible for the attribute table in the Method and Attribute Panel
@@ -40,6 +42,7 @@ public class AttributeTable extends JTable {
     /********************************************************************/
     
     protected FireEvent wiz;
+    public static final int ACCESSWIDTH = 95;
     
     /**
      * Constructor
@@ -56,6 +59,15 @@ public class AttributeTable extends JTable {
         this.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         this.setRowSelectionAllowed(true);
         this.setColumnSelectionAllowed(false);
+        ajustAccessColumnWidth();
+    }
+    
+    protected void ajustAccessColumnWidth() {
+        TableColumnModel colModel = this.getColumnModel();
+        TableColumn tc = colModel.getColumn(MBeanAttributeTableModel.IDX_ATTR_ACCESS);
+        tc.setMaxWidth(ACCESSWIDTH);
+        tc.setMinWidth(ACCESSWIDTH);
+        tc.setPreferredWidth(ACCESSWIDTH);
     }
     
     /**

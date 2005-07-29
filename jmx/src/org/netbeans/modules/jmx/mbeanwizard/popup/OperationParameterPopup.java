@@ -12,7 +12,7 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard.popup;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.tablemodel.OperationParameterTableModel;
 import org.netbeans.modules.jmx.mbeanwizard.listener.AddTableRowListener;
 import org.netbeans.modules.jmx.mbeanwizard.listener.RemTableRowListener;
@@ -42,7 +42,7 @@ public class OperationParameterPopup extends AbstractPopup{
     
     
     private FireEvent wiz = null;
-    private MBeanMethodTableModel methodModel = null;
+    private MBeanOperationTableModel methodModel = null;
     private int editedRow = 0;
     
     /**
@@ -53,7 +53,7 @@ public class OperationParameterPopup extends AbstractPopup{
      * @param wiz the parent-window's wizard panel
      */
     public OperationParameterPopup(JPanel ancestorPanel, 
-            MBeanMethodTableModel model,
+            MBeanOperationTableModel model,
             JTextField textField, int editedRow, FireEvent wiz) {
         
         super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor());
@@ -123,11 +123,15 @@ public class OperationParameterPopup extends AbstractPopup{
             }
         });
         
-        definePanels(new JButton[] {addJButton,
+        definePanels(getUsedButtons(),
+                popupTable);
+    }
+    
+    protected JButton[] getUsedButtons() {
+        return new JButton[] {addJButton,
                 removeJButton,
                 closeJButton
-        },
-                popupTable);
+        };
     }
     
     protected void readSettings() {

@@ -14,7 +14,7 @@ package org.netbeans.modules.jmx.mbeanwizard.table;
 
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -57,7 +57,7 @@ public class OperationTable extends JTable {
     private JTextField descriptionField;
     private JComboBox typeBox;
     
-    private JPanel ancestorPanel = null;
+    protected JPanel ancestorPanel = null;
     private FireEvent wiz = null;
     
     private JDialog currentPopup = null;
@@ -90,8 +90,8 @@ public class OperationTable extends JTable {
      */
     public TableCellEditor getCellEditor(int row, int column) {
         
-        final MBeanMethodTableModel model = 
-                (MBeanMethodTableModel)this.getModel();
+        final MBeanOperationTableModel model = 
+                (MBeanOperationTableModel)this.getModel();
         
         if(row >= getRowCount())
             return null;

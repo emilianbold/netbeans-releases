@@ -27,7 +27,6 @@ import org.netbeans.modules.jmx.Introspector;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.actions.AddAttrAction;
-import org.netbeans.modules.jmx.mbeanwizard.MBeanAttrAndMethodPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -129,6 +128,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
     }
     
     public void event() {
+        System.out.println("event");
         removeButton.setEnabled(
                 (attributeModel.getRowCount() > attributeModel.getFirstEditable()));
         btnOK.setEnabled(isAcceptable());

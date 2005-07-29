@@ -25,16 +25,17 @@ import org.netbeans.modules.jmx.MBeanOperation;
  *
  * @author an156382
  */
-public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
+public class MBeanWrapperOperationTableModel extends MBeanOperationTableModel {
     
     //other idx inherited
     public static final int IDX_METH_SELECTION        = 0;
+    private int firstEditableRow = 0;
     
     /** Creates a new instance of MBeanWrapperOperationTableModel */
     public MBeanWrapperOperationTableModel() {
         super();
         
-        bundle = NbBundle.getBundle(MBeanMethodTableModel.class);
+        bundle = NbBundle.getBundle(MBeanOperationTableModel.class);
         
         data = new ArrayList();
         
@@ -64,8 +65,8 @@ public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
             case 0: return oper.isSelected();
             case 1: return oper.getName();
             case 2: return oper.getReturnTypeName();
-            case 3: return oper.getSignature();
-            case 4: return oper.getExceptionClasses();
+            case 3: return oper.getParametersList();
+            case 4: return oper.getExceptionsList();
             case 5: return oper.getDescription();
             default: System.out.println("Error getValueAt " +// NOI18N
                     "MBeanWrapperOperationTableModel " + col);// NOI18N
@@ -82,16 +83,15 @@ public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
             MBeanWrapperOperation oper = (MBeanWrapperOperation)data.get(rowIndex);
             switch(columnIndex) {
                 case 0: oper.setSelected((Boolean)aValue);
-                break; /*
+                break;
                 case 1: oper.setName((String)aValue);
                 break;
                 case 2: oper.setReturnTypeName((String)aValue);
-                break;
+                break;/*
                 case 3: oper.setSimpleSignature((String)aValue);
                 break;
                 case 4: oper.setExceptionClasses((String)aValue);
-                break;
-                        **/
+                break;*/
                 case 5: oper.setDescription((String)aValue);
                 break;
                 default: System.out.println("Error setValueAt " +// NOI18N
@@ -113,5 +113,36 @@ public class MBeanWrapperOperationTableModel extends MBeanMethodTableModel {
         
         //table is informed about the change to update the view
         this.fireTableDataChanged();
+    }
+    
+    public void addRow() {
+        MBeanOperation op = createNewOperation();
+        MBeanWrapperOperation mbwo = new MBeanWrapperOperation(
+                true,
+                op.getName(),
+                op.getReturnTypeName(),
+                op.getParametersList(),
+                op.getExceptionsList(),
+                op.getDescription());
+        data.add(mbwo);
+        
+        //table is informed about the change to update the view
+        this.fireTableDataChanged();
+    }
+    
+    /**
+     * Returns the operation at index index
+     * @return MBeanWrapperOperation the operation at index index
+     */
+    public MBeanWrapperOperation getWrapperOperation(int index) {
+        return (MBeanWrapperOperation) data.get(index);
+    }
+
+    public int getFirstEditableRow() {
+        return this.firstEditableRow;
+    }
+    
+    public void setFirstEditableRow(int firstEditableRow) {
+        this.firstEditableRow = firstEditableRow;
     }
 }

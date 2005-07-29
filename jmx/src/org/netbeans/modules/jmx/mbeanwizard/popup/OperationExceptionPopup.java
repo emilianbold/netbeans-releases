@@ -27,7 +27,7 @@ import javax.swing.JTextField;
 
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 import org.netbeans.modules.jmx.runtime.ManagementDialogs;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationExceptionPopupTable;
 import javax.swing.JPanel;
@@ -41,7 +41,7 @@ import org.netbeans.modules.jmx.MBeanOperationException;
  */
 public class OperationExceptionPopup extends AbstractPopup{
     
-    private MBeanMethodTableModel methodModel;
+    protected MBeanOperationTableModel methodModel;
     private int editedRow;
     
     /**
@@ -52,7 +52,7 @@ public class OperationExceptionPopup extends AbstractPopup{
      * @param editedRow the current edited row in the wizard table
      */
     public OperationExceptionPopup(JPanel ancestorPanel, 
-            MBeanMethodTableModel methodModel,
+            MBeanOperationTableModel methodModel,
             JTextField textField, int editedRow) {
         
         super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor());
@@ -121,11 +121,15 @@ public class OperationExceptionPopup extends AbstractPopup{
             }
         });
         
-        definePanels(new JButton[] {addJButton,
+        definePanels(getUsedButtons(),
+                popupTable);
+    }
+    
+    protected JButton[] getUsedButtons() {
+        return new JButton[] {addJButton,
                 removeJButton,
                 closeJButton
-        },
-                popupTable);
+        };
     }
     
     protected void readSettings() {

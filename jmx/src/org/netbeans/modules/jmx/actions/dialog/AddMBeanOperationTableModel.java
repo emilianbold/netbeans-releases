@@ -11,14 +11,14 @@
 package org.netbeans.modules.jmx.actions.dialog;
 
 import org.netbeans.modules.jmx.MBeanOperation;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 
 
 /**
  * Allows the table to have non-editable cells.
  * @author tl156378
  */
-public class AddMBeanOperationTableModel extends MBeanMethodTableModel {
+public class AddMBeanOperationTableModel extends MBeanOperationTableModel {
     
     private int firstEditable = 0;
     

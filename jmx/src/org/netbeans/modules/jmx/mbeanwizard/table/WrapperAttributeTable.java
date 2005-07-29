@@ -26,6 +26,8 @@ import org.netbeans.modules.jmx.mbeanwizard.editor.JCheckBoxCellEditor;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.DefaultCellEditor;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
@@ -44,31 +46,29 @@ import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
  */
 public class WrapperAttributeTable extends AttributeTable{
 
+    private static final int SELWIDTH = 55;
+    
     /** Creates a new instance of WrapperAttributeTable */
     public WrapperAttributeTable(AbstractTableModel model, AttributesWizardPanel wiz) {
         super(model, wiz);
-        //ajustColumnWidth();
+        ajustSelectionColumnWidth();
     }
     
-    /* ColumnWidth ??
-    private void ajustColumnWidth() {
+    private void ajustSelectionColumnWidth() {
         TableColumnModel colModel = this.getColumnModel();
         TableColumn tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_SELECTION);
-        tc.setMaxWidth(55);
-        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_NAME +1);
-        tc.setMaxWidth(95);
-        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_TYPE +1);
-        tc.setMaxWidth(95);
-        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_ACCESS +1);
-        tc.setMaxWidth(105);
-        tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_DESCRIPTION +1);
-        tc.setMaxWidth(getDescriptionColumnWidth());
+        tc.setMaxWidth(SELWIDTH);
+        tc.setMinWidth(SELWIDTH);
+        tc.setPreferredWidth(SELWIDTH);
     }
     
-    public int getDescriptionColumnWidth() {
-        return ((int)this.getPreferredScrollableViewportSize().getWidth() - 55 - 95 - 95 - 105);
+    protected void ajustAccessColumnWidth() {
+        TableColumnModel colModel = this.getColumnModel();
+        TableColumn tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_ACCESS+1);
+        tc.setMaxWidth(ACCESSWIDTH); 
+        tc.setMinWidth(ACCESSWIDTH);
+        tc.setPreferredWidth(ACCESSWIDTH);
     }
-    */
     
     public MBeanWrapperAttributeTableModel getModel() {
         return (MBeanWrapperAttributeTableModel)super.getModel();

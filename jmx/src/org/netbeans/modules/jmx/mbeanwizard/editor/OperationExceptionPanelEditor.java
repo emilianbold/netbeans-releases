@@ -22,7 +22,7 @@ import javax.swing.event.CellEditorListener;
 import java.awt.Component;
 import java.util.List;
 import org.netbeans.modules.jmx.MBeanOperationException;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanMethodTableModel;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanOperationTableModel;
 
 
 
@@ -39,7 +39,7 @@ public class OperationExceptionPanelEditor implements TableCellEditor {
     // via getValueAt and setValueAt
     /********************************************************************/
     
-    private MBeanMethodTableModel model;
+    private MBeanOperationTableModel model;
     private JPanel thisPanel;
     private JTextField text;
     private int editingRow;
@@ -54,7 +54,7 @@ public class OperationExceptionPanelEditor implements TableCellEditor {
      * @param model the model of the operation table
      * @param editingRow the current edited row in the table
      */
-    public OperationExceptionPanelEditor(MBeanMethodTableModel model, 
+    public OperationExceptionPanelEditor(MBeanOperationTableModel model, 
             JPanel panel, JTextField jTextField,
             int editingRow) {
         this.model = model;
