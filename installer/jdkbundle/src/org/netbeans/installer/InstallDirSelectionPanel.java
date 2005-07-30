@@ -361,13 +361,13 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     }
     
     public boolean queryExit(WizardBeanEvent event) {
+	String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
+        
         String nbInstallDir = nbInstallDirTF.getText().trim();
         File instDirFile = new File(nbInstallDir);
-	String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
-	logEvent(this, Log.DBG, "queryExit productURL: " + productURL);
-	// Only get the canonical path if the install dir is not an empty string.
-	// getCanonicalPath returns the directory the installer is run from if the
-	// install dir is an empty string.
+	//Only get the canonical path if the install dir is not an empty string.
+	//getCanonicalPath returns the directory the installer is run from if the
+	//install dir is an empty string.
 	if (nbInstallDir.length() > 0) {
 	    try { // cleanup any misc chars in path such as "."
 		nbInstallDir = instDirFile.getCanonicalPath();
@@ -425,25 +425,28 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
                 ProductService service = (ProductService)getService(ProductService.NAME);
                 service.setRetainedProductBeanProperty(productURL,
                 Names.J2SE_ID, "active", Boolean.FALSE);
-            }catch(ServiceException ex) {
+            } catch(ServiceException ex) {
                 ex.printStackTrace();
                 Util.logStackTrace(this,ex);
             }
-        }
-        else {
+        } else {
             // There is no jdk already installed so check the j2se directory.
             j2seInstallDir = jdkInstallDirTF.getText().trim();
             instDirFile = new File(j2seInstallDir);
-
-            try { // cleanup any misc chars in path such as "."
-                j2seInstallDir = instDirFile.getCanonicalPath();
-                instDirFile = new File(j2seInstallDir);
-            } catch (IOException ioerr) {
-                System.out.println("IOException: Could not get canonical path: " + ioerr);
-                j2seInstallDir = instDirFile.getAbsolutePath();
+            //Only get the canonical path if the install dir is not an empty string.
+            //getCanonicalPath returns the directory the installer is run from if the
+            //install dir is an empty string.
+            if (j2seInstallDir.length() > 0) {
+                try { // cleanup any misc chars in path such as "."
+                    j2seInstallDir = instDirFile.getCanonicalPath();
+                    instDirFile = new File(j2seInstallDir);
+                } catch (IOException ioerr) {
+                    System.out.println("IOException: Could not get canonical path: " + ioerr);
+                    j2seInstallDir = instDirFile.getAbsolutePath();
+                }
             }
             jdkInstallDirTF.setText(j2seInstallDir);
-
+            
             // If there is a problem with the specified directory, then return false
             if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
                 return false;
