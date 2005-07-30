@@ -80,11 +80,25 @@ public class SelectMethodsTableModel extends QueryMethodsTableModel {
         return null;
     }
 
+    public void setValueAt(Object value, int rowIndex, int columnIndex) {
+        Query query = (Query) queries.getSelecMethod(rowIndex).clone();
+        if (columnIndex == 3) {
+            query.setDescription((String) value);
+        }
+        QueryMethodHelper helper = getQueryMethodHelper(rowIndex);
+        Method method = helper.getPrototypeMethod();
+        helper.updateSelectMethod(method, query);
+    }
+
     public TableCellEditor getCellEditor(int columnIndex) {
         return columnIndex == 1 ? returnMethodEditor : super.getCellEditor(columnIndex);
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return super.isCellEditable(rowIndex, columnIndex);
+        if (columnIndex == 3) {
+            return true;
+        } else {
+            return super.isCellEditable(rowIndex, columnIndex);
+        }
     }
 }
