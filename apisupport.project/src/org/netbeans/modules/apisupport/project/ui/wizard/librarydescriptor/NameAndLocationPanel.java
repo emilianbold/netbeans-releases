@@ -17,6 +17,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
@@ -34,41 +35,41 @@ import org.openide.WizardDescriptor;
  */
 final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private NewLibraryDescriptor.DataModel data;
-    private NewLibraryDescriptor.DataModel _tmpData;
     
     /** Creates new NameAndLocationPanel */
-    public NameAndLocationPanel(WizardDescriptor setting, NewLibraryDescriptor.DataModel data) {
+    public NameAndLocationPanel(final WizardDescriptor setting, final NewLibraryDescriptor.DataModel data) {
         super(setting);
         this.data = data;
-        _tmpData = data;
         initComponents();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
         modifiedFilesValue.setBackground(lblBgr);
         createdFilesValue.setBackground(lblBgr);
         
-        libraryNameVale.getDocument().addDocumentListener(new UIUtil.DocumentAdapter() {
+        DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
-                updateData(_tmpData);
+                updateData();
             }
-        });
-    }
-    
-    protected void storeToDataModel() {
-        if (getSettings().getValue().equals(getSettings().FINISH_OPTION)) {
-            if (data.getCreatedModifiedFiles() == null) {
-                data = _tmpData;
-            }
-        }
-    }
-    
-    private void updateData(NewLibraryDescriptor.DataModel someData) {
-        someData.setPackageName(packageNameValue.getSelectedItem().toString());
-        someData.setLibraryName(libraryNameVale.getText());
-        someData.setLibraryDisplayName(libraryDisplayNameValue.getText());
+        };
+        libraryNameVale.getDocument().addDocumentListener(dListener);
+        libraryDisplayNameValue.getDocument().addDocumentListener(dListener);
         
-        CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(someData);
-        someData.setCreatedModifiedFiles(files);
+        if (packageNameValue.getEditor().getEditorComponent() instanceof JTextField) {
+            JTextField txt = (JTextField)packageNameValue.getEditor().getEditorComponent();
+            txt.getDocument().addDocumentListener(dListener);
+        }
+        
+    }
+    
+    protected void storeToDataModel() {}
+    
+    private void updateData() {
+        data.setPackageName(packageNameValue.getEditor().getItem().toString());
+        data.setLibraryName(libraryNameVale.getText());
+        data.setLibraryDisplayName(libraryDisplayNameValue.getText());
+        
+        CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(data);
+        data.setCreatedModifiedFiles(files);
 
         CreatedModifiedFilesProvider.setCreatedFiles(files, createdFilesValue);
         CreatedModifiedFilesProvider.setModifiedFiles(files, modifiedFilesValue);
@@ -78,7 +79,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         checkValidity();
         libraryNameVale.setText(this.data.getLibrary().getName());
         libraryDisplayNameValue.setText(this.data.getLibrary().getDisplayName());
-        updateData(_tmpData);
+        updateData();
     }
     
     private static JComboBox createComboBox(SourceGroup srcRoot) {
@@ -149,12 +150,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         add(projectNameValue, gridBagConstraints);
 
         packageNameValue.setEditable(true);
-        packageNameValue.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                packageNameValueActionPerformed(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -244,13 +239,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-    
-    private void packageNameValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packageNameValueActionPerformed
-// TODO add your handling code here:
-        checkValidity();
-        updateData(_tmpData);
-    }//GEN-LAST:event_packageNameValueActionPerformed
-    
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel createdFiles;
     private javax.swing.JTextArea createdFilesValue;

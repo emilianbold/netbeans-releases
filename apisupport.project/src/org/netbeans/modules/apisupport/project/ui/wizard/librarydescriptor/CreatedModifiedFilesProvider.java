@@ -67,7 +67,7 @@ final class CreatedModifiedFilesProvider  {
         packagePath = getPackageRelativePath(data.getProject(), data.getPackageName());
         libraryDescPath = getLibraryDescriptor(data.getLibraryName()) ;
         template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
-        tokens = getTokens(fileSupport, data.getProject(), data.getLibrary());
+        tokens = getTokens(fileSupport, data.getProject(), data);
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
         
         
@@ -82,8 +82,11 @@ final class CreatedModifiedFilesProvider  {
         }
         
         libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,
-                template,libraryDescRelativePath ,tokens,data.getLibraryDisplayName());
+                template,libraryDescRelativePath ,tokens,null/*data.getLibraryDisplayName()*/);
         
+        
+        fileSupport.add(libDescrOperation);
+        libDescrOperation = fileSupport.bundleKeyDefaultBundle(data.getLibraryName(), data.getLibraryDisplayName());
         fileSupport.add(libDescrOperation);
     }
     
@@ -98,6 +101,20 @@ final class CreatedModifiedFilesProvider  {
         return sb.toString(); // NOI18N;
     }
     
+    
+    private static String getPackagePlusBundle(NbModuleProject project) {
+        StringBuffer sb = new StringBuffer();
+        
+        ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
+        
+        String bundle = mm.getLocalizingBundle().replace('/', '.');
+        if (bundle.endsWith(".properties")) { // NOI18N
+            bundle = bundle.substring(0, bundle.length() - 11);
+        }
+        
+        sb.append(bundle);
+        return sb.toString();//NOI18N
+    }
     
     private static String getBundleRelativePath(NbModuleProject project) {
         StringBuffer sb = new StringBuffer();
@@ -150,11 +167,11 @@ final class CreatedModifiedFilesProvider  {
         return sb.toString();
     }
     
-    private static Map getTokens(CreatedModifiedFiles fileSupport, NbModuleProject project, Library library) {
+    private static Map getTokens(CreatedModifiedFiles fileSupport, NbModuleProject project, NewLibraryDescriptor.DataModel data) {
         Map retval = new HashMap();
-        
-        retval.put("name_to_substitute",library.getName());//NOI18N
-        retval.put("bundle_to_substitute",getBundleRelativePath(project).replace('/','.'));//NOI18N
+        Library library = data.getLibrary();
+        retval.put("name_to_substitute",data.getLibraryName());//NOI18N
+        retval.put("bundle_to_substitute",getPackagePlusBundle(project).replace('/','.'));//NOI18N
         
         Iterator it = library.getContent(VOLUME_CLASS).iterator();
         retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, project, "libs/"));//NOI18N
@@ -172,12 +189,12 @@ final class CreatedModifiedFilesProvider  {
             final NbModuleProject project, String pathPrefix) {
         StringBuffer sb = new StringBuffer();
         while (it.hasNext()) {
-            sb.append("<resource>");//NOI18N
             URL originalURL = (URL)it.next();
             String archiveName;
             archiveName = addArchiveToCopy(fileSupport, project, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
                 String urlToString = transformURL(originalURL, pathPrefix, archiveName);//NOI18N
+                sb.append("<resource>");//NOI18N
                 sb.append(urlToString);
                 if (it.hasNext()) {
                     sb.append("</resource>\n");//NOI18N
