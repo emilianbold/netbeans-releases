@@ -366,7 +366,7 @@ public class WLStartServer extends StartServer {
          * The amount of time in milliseconds during which the server should
          * start
          */
-        private static final int TIMEOUT = 120000;
+        private static final int TIMEOUT = 180000;
         
         /**
          * The amount of time in milliseconds that we should wait between checks
@@ -491,7 +491,7 @@ public class WLStartServer extends StartServer {
          * The amount of time in milliseconds during which the server should
          * start
          */
-        private static final int TIMEOUT = 120000;
+        private static final int TIMEOUT = 240000;
         
         /**
          * The amount of time in milliseconds that we should wait between checks
@@ -556,7 +556,7 @@ public class WLStartServer extends StartServer {
                 
                 // create the stop process
                 Process serverProcess = Runtime.getRuntime().exec(
-                        domainHome + "/" + (Utilities.isWindows() ?    // NOI18N
+                        domainHome + "/bin/" + (Utilities.isWindows() ?    // NOI18N
                             SHUTDOWN_BAT : SHUTDOWN_SH)); 
                 
                 // create a tailer to the server's output stream so that a user

@@ -148,13 +148,24 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
     private boolean isValidDomainRoot(String path) {
         // set the child directories/files that should be present and validate
         // the directory as the domain root
+        
+        // the layout is different for 90b and 90, temporarilly leaving both 
+        // versions in for testing TODO: remove
         String[] children = {
+                    "servers", // NOI18N
+                    "config", // NOI18N
+                    "config/config.xml", // NOI18N
+                    "init-info/domain-info.xml", // NOI18N
+        };
+        boolean is90 = hasChildren(path, children);
+        String[] children90b = {
                     "servers", // NOI18N
                     "config", // NOI18N
                     "config/config.xml", // NOI18N
                     "domain-info.xml", // NOI18N
         };
-        return hasChildren(path, children);
+        boolean is90b = hasChildren(path, children90b);
+        return is90 || is90b;
     }
     
     /**
@@ -508,13 +519,15 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
                                 if (ch.hasChildNodes()){
                                     host = ch.getFirstChild().getNodeValue();
                                 }
-                                host = host.equals("") ? "localhost" : host; // NOI18N
                             }
                         }
                         
                         // if all the parameters were fetched successfully add 
                         // them to the result
-                        if ((name != null) && (port != null) && (!name.equals("")) && (!port.equals(""))) { // NOI18N
+                        if ((name != null) && (!name.equals(""))) { // NOI18N
+                            //address and port have minOccurs=0 and are missing in 90 examples server
+                            port = port == null || port.equals("") ? "7001" : port; //NOI18N
+                            host = host == null || host.equals("") ? "localhost" : host; // NOI18N
                             result.add(new Instance(name, host, port, domains[i]));
                         }
                     }

@@ -14,6 +14,7 @@ package org.netbeans.modules.j2ee.weblogic9;
 
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import javax.enterprise.deploy.model.*;
@@ -28,6 +29,8 @@ import org.openide.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Main class of the deployment process. This serves a a wrapper for the 
@@ -39,87 +42,43 @@ import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
  */
 public class WLDeploymentManager implements DeploymentManager {
     
-    /**
-     * Current classloader used to work with WL classes
-     */
-    private WLClassLoader loader;
-    
-    /**
-     * Server's DeploymentFactory implementation
-     */
-    private DeploymentFactory factory;
-    
-    /**
-     * Server's DeploymentManager implementation
-     */
     private DeploymentManager dm;
-    
-    /**
-     * Current server instance's properties
-     */
     private InstanceProperties instanceProperties;
-    
-    /**
-     * Connection properties - URI
-     */
     private String uri;
-    
-    /**
-     * Connection properties - user name
-     */
     private String username;
-    
-    /**
-     * Connection properties - password
-     */
     private String password;
-    
-    /**
-     * Marker that indicated whether the server is connected
-     */
     private boolean isConnected;
+    private String host;
+    private String port;
     
-    /**
-     * Creates a new instance of the deployment manager
-     * 
-     * @param uri the server's URI
-     * @param username username for connecting to the server
-     * @param password password for connecting to the server
-     */
-    public WLDeploymentManager(String uri, String username, String password) {
-        // save the connection properties
+    /** Create connected DM */
+    public WLDeploymentManager(DeploymentManager dm, String uri, String username, String password, String host, String port) {
+        this.dm = dm;
         this.uri = uri;
         this.username = username;
         this.password = password;
+        this.host = host;
+        this.port = port;
+        this.isConnected = true;
     }
     
-    /**
-     * Creates a new instance of the deployment manager
-     * 
-     * @param uri the server's URI
-     */
-    public WLDeploymentManager(String uri) {
-        this(uri, null, null);
-    }
-    
-    /**
-     * Parses the URI and stores the parsed URI in the instance properties 
-     * object
-     */
-    private void parseUri() {
-        // split the uri
-        String[] parts = uri.split(":");                               // NOI18N
-        
-        // set the host and port properties
-        getInstanceProperties().setProperty(
-                WLDeploymentFactory.HOST_ATTR, parts[3].substring(2));
-        getInstanceProperties().setProperty(
-                WLDeploymentFactory.PORT_ATTR, parts[4]);
+    /** Create disconnected DM */
+    public WLDeploymentManager(DeploymentManager dm, String uri, String host, String port) {
+        this.dm = dm;
+        this.uri = uri;
+        this.host = host;
+        this.port = port;
+        this.isConnected = false;
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // Connection data methods
     ////////////////////////////////////////////////////////////////////////////
+    
+    public boolean isConnected() {
+        return isConnected;
+    }
+    
     /**
      * Returns the stored server URI
      */
@@ -131,154 +90,116 @@ public class WLDeploymentManager implements DeploymentManager {
      * Returns the server host stored in the instance properties
      */
     public String getHost() {
-        return getInstanceProperties().getProperty(
-                WLDeploymentFactory.HOST_ATTR);
+        return host;
+    }
+    
+    public String getUsername () {
+        return getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR);
+    }
+    
+    public String getPassword () {
+        return getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR);
     }
     
     /**
      * Returns the server port stored in the instance properties
      */
     public String getPort() {
-        return getInstanceProperties().getProperty(WLDeploymentFactory.PORT_ATTR);
+        return port;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Class loading related things
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     * Loads the server's deployment factory if it's not already loaded. During 
-     * this process the classloader for WL classes is initialized.
-     */
-    private void loadDeploymentFactory() {
-        if (WLDebug.isEnabled()) // debug output
-            WLDebug.notify(getClass(), "loadDeploymentFactory()");     // NOI18N
-        
-        // if the factory is not loaded - load it
-        if (factory == null) {
-            // init the classloader
-            loader = WLClassLoader.getInstance(getInstanceProperties().
-                    getProperty(WLDeploymentFactory.SERVER_ROOT_ATTR));
-            
-            // update the context classloader
-            loader.updateLoader();
-            
-            // load the factory class and instantiate it
-            try {
-                factory = (DeploymentFactory) loader.loadClass(
-                        "weblogic.deploy.api.spi.factories." +         // NOI18N
-                        "internal.DeploymentFactoryImpl").             // NOI18N
-                        newInstance();
-            } catch (ClassNotFoundException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            } catch (InstantiationException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            } catch (IllegalAccessException e) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
-            } finally {
-                // restore the loader
-                loader.restoreLoader();
-            }
-        }
+    public boolean isLocal () {
+        return Boolean.parseBoolean(getInstanceProperties().getProperty(WLDeploymentFactory.IS_LOCAL_ATTR));
     }
-    
-    /**
-     * Updates the stored deployment manager. This is used when the current 
-     * deployment manager cannot be used due to any reason, for example
-     * it is disconnected, its deployment application is already defined, etc
-     */
-    private void updateDeploymentManager() {
-        if (WLDebug.isEnabled()) // debug output
-            WLDebug.notify(getClass(), "updateDeploymentManager()");   // NOI18N
-        
-        // load the deployment factory
-        loadDeploymentFactory();
-        
-        // update the context classloader
-        loader.updateLoader();
-        
-        try {
-            // if the current deployment manager is not null - flush the 
-            // resources it has registered
-            if (dm != null) {
-                dm.release();
-            }
-            
-            // try to get a connected deployment manager
-            dm = factory.getDeploymentManager(uri, username, password);
-            
-            // set the connected marker
-            isConnected = true;
-        } catch (DeploymentManagerCreationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            try {
-                // if the connected deployment manager cannot be obtained - get
-                // a disconnected one and set the connected marker to false
-                isConnected = false;
-                dm = factory.getDisconnectedDeploymentManager(uri);
-            } catch (DeploymentManagerCreationException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
-            }
-        } finally {
-            // restore the context classloader
-            loader.restoreLoader();
-        }
-    }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // IDE data methods
-    ////////////////////////////////////////////////////////////////////////////
     /**
      * Returns the InstanceProperties object for the current server instance
      */
     public InstanceProperties getInstanceProperties() {
-        // if the stored instance properties are null - get them via the 
-        // InstanceProperties' static method
         if (instanceProperties == null) {
             this.instanceProperties = InstanceProperties.getInstanceProperties(uri);
             
-            // if the instance properties were obtained successfully - parse 
-            // the URI and store the host and port in the instance properties
-            if (instanceProperties != null) {
-                parseUri();
-            }
         }
-        
-        // return either the stored or the newly obtained instance properties
         return instanceProperties;
     }
     
-    ////////////////////////////////////////////////////////////////////////////
-    // DeploymentManager Implementation
-    ////////////////////////////////////////////////////////////////////////////
-    /**
-     * Delegates the call to the server's deployment manager, checking whether 
-     * the server is connected, updating the manager if neccessary and throwing
-     * the IllegalStateException is appropriate
-     */
     public ProgressObject distribute(Target[] target, File file, File file2) 
             throws IllegalStateException {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify(getClass(), "distribute(" + target + ", " + // NOI18N
                     file + ", " + file2 + ")");                        // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(WLDeploymentManager.class, "ERR_illegalState"));
+        if (isLocal()) {
+            //autodeployment version
+            WLDeployer deployer = new WLDeployer(uri);
+
+            org.w3c.dom.Document dom =null;
+
+
+            WLTargetModuleID module_id = new WLTargetModuleID(target[0], file.getName() );
+
+            try{
+                String server_url = "http://" + getHost()+":"+getPort();
+                if (file2 != null){
+                    dom = org.openide.xml.XMLUtil.parse(new org.xml.sax.InputSource(new FileInputStream( file2 )), false, false,null, null);
+                    String doctype = dom.getDocumentElement().getNodeName();
+                    if (doctype.equals("weblogic-application")){
+
+        //TODO  for application try using context root from application.xml
+                        NodeList nlist = dom.getElementsByTagName("module");
+
+                        for (int i = 0; i < nlist.getLength(); i++){
+                            Element module_node = (Element)((Element)nlist.item(i)).getElementsByTagName("*").item(0);
+                            WLTargetModuleID child_module = new WLTargetModuleID( target[0] );
+
+                            if ( module_node.getTagName().equals("web")) {
+                                //child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getTextContent().trim()); // jdk 1.5
+                                child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
+                                //child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
+                                child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
+                            } else if(module_node.getTagName().equals("ejb")){
+        //                        child_module.setJARName(nlist.item(i).getTextContent().trim()); // jdk 1.5
+                                child_module.setJARName(nlist.item(i).getFirstChild().getNodeValue().trim()); // jdk 1.4
+                            }
+                            module_id.addChild( child_module );
+                        }
+
+                    } else if (doctype.equals("weblogic-web-app")){
+                       // module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
+                        module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
+                    } else if (doctype.equals("weblogic-ejb-jar")) {
+
+                    }
+                } else {
+                    String fname = file.getName();
+                    int dot = fname.lastIndexOf('.');
+                    if (dot > 0)
+                        fname = fname.substring(0, dot);
+                    module_id.setContextURL(server_url+"/"+fname);
+                }
+            }catch(Exception e){
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            deployer.deploy(target, file, file2, module_id);
+            return deployer;
+        } else {
+            //weblogic jsr88 version
+            modifiedLoader();
+            try {
+                return dm.distribute(target, file, file2);
+            } finally {
+                originalLoader();
+            }
         }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
-        try {
-            // delegate the call and return the result
-            return dm.distribute(target, file, file2);
-        } finally {
-            // restore the context classloader
-            loader.restoreLoader();
-        }
+    }
+    
+    private ClassLoader swapLoader;
+    
+    private void modifiedLoader() {
+        swapLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(WLDeploymentFactory.getWLClassLoader());
+    }
+    private void originalLoader() {
+        Thread.currentThread().setContextClassLoader(swapLoader);
     }
     
     /**
@@ -289,22 +210,20 @@ public class WLDeploymentManager implements DeploymentManager {
      * @return a wrapper for the server's DeploymentConfiguration implementation
      */
     public DeploymentConfiguration createConfiguration(
-            DeployableObject deployableObject) throws InvalidModuleException {
-        if (WLDebug.isEnabled()) // debug output
-            WLDebug.notify("createConfiguration(" +                    // NOI18N
-                    deployableObject + ")");                           // NOI18N
-        
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // update the context classloader
-        loader.updateLoader();
+        DeployableObject deployableObject) throws InvalidModuleException {
+//        return new WLDeploymentConfiguration(dm, deployableObject);
+        DeployableObject dobj;
+        if (deployableObject instanceof J2eeApplicationObject) {
+            dobj = new WLJ2eeApplicationObject(
+                    (J2eeApplicationObject) deployableObject);
+        } else {
+            dobj = new WLDeployableObject(deployableObject);
+        }
+        modifiedLoader();
         try {
-            // return the wrapper deployment configuration
-            return new WLDeploymentConfiguration(dm, deployableObject);
+            return dm.createConfiguration(dobj);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
     
@@ -319,25 +238,11 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("redeploy(" + targetModuleID + ", " +       // NOI18N
                     inputStream + ", " + inputStream2 + ")");          // NOI18N
-        
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.redeploy(targetModuleID, inputStream, inputStream2);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -351,25 +256,11 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("distribute(" + target + ", " +             // NOI18N
                     inputStream + ", " + inputStream2 + ")");          // NOI18N
-        
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.distribute(target, inputStream, inputStream2);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -382,25 +273,11 @@ public class WLDeploymentManager implements DeploymentManager {
             throws IllegalStateException {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("undeploy(" + targetModuleID + ")");        // NOI18N
-        
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.undeploy(targetModuleID);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -414,24 +291,11 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("stop(" + targetModuleID + ")");            // NOI18N
                 
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.stop(targetModuleID);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -445,24 +309,11 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("start(" + targetModuleID + ")");           // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.start(targetModuleID);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -477,24 +328,15 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("getAvailableModules(" + moduleType +       // NOI18N
                     ", " + target + ")");                              // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
-            return dm.getAvailableModules(moduleType, target);
+            TargetModuleID t[] = dm.getAvailableModules(moduleType, target);
+            for (int i=0; i < t.length; i++) {
+                System.out.println("available module:" + t[i]);
+            }
+            return t;
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -509,24 +351,15 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("getNonRunningModules(" + moduleType +      // NOI18N
                     ", " + target + ")");                              // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
-            return dm.getNonRunningModules(moduleType, target);
+            TargetModuleID t[] = dm.getNonRunningModules(moduleType, target);
+            for (int i=0; i < t.length; i++) {
+                System.out.println("non running module:" + t[i]);
+            }
+            return t;
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -541,24 +374,15 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("getRunningModules(" + moduleType +         // NOI18N
                     ", " + target + ")");                              // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
-            return dm.getRunningModules(moduleType, target);
+            TargetModuleID t[] = dm.getRunningModules(moduleType, target);
+            for (int i=0; i < t.length; i++) {
+                System.out.println("running module:" + t[i]);
+            }
+            return t;
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
 
@@ -574,24 +398,11 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("redeploy(" + targetModuleID + ", " +       // NOI18N
                     file + ", " + file2 + ")");                        // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
-        // update the context classloader
-        loader.updateLoader();
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.redeploy(targetModuleID, file, file2);
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
     
@@ -604,11 +415,12 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("setLocale(" + locale + ")");               // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call
-        dm.setLocale(locale);
+        modifiedLoader();
+        try {
+            dm.setLocale(locale);
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -620,11 +432,12 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("isLocaleSupported(" + locale + ")");       // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call
-        return dm.isLocaleSupported(locale);
+        modifiedLoader();
+        try {
+            return dm.isLocaleSupported(locale);
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -639,11 +452,12 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("setDConfigBeanVersion(" +                  // NOI18N
                     dConfigBeanVersionType + ")");                     // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call
-        dm.setDConfigBeanVersion(dConfigBeanVersionType);
+        modifiedLoader();
+        try {
+            dm.setDConfigBeanVersion(dConfigBeanVersionType);
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -657,11 +471,12 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("isDConfigBeanVersionSupported(" +          // NOI18N
                     dConfigBeanVersionType + ")");                     // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call and return the result
-        return dm.isDConfigBeanVersionSupported(dConfigBeanVersionType);
+        modifiedLoader();
+        try {
+            return dm.isDConfigBeanVersionSupported(dConfigBeanVersionType);
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -673,10 +488,15 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("release()");                               // NOI18N
         
-        if (dm != null) {
-            // delegate the call and clear the stored deployment manager
-            dm.release();
-            dm = null;
+        modifiedLoader();
+        try {
+            if (dm != null) {
+                // delegate the call and clear the stored deployment manager
+                dm.release();
+                dm = null;
+            }
+        } finally {
+            originalLoader();
         }
     }
 
@@ -689,11 +509,12 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("isRedeploySupported()");                   // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call and return the result
-        return dm.isRedeploySupported();
+        modifiedLoader();
+        try {
+            return dm.isRedeploySupported();
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -705,11 +526,12 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("getCurrentLocale()");                      // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call and return the result
-        return dm.getCurrentLocale();
+        modifiedLoader();
+        try {
+            return dm.getCurrentLocale();
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -720,12 +542,13 @@ public class WLDeploymentManager implements DeploymentManager {
     public DConfigBeanVersionType getDConfigBeanVersion() {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("getDConfigBeanVersion()");                 // NOI18N
-        
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call and return the result
-        return dm.getDConfigBeanVersion();
+
+        modifiedLoader();
+        try {
+            return dm.getDConfigBeanVersion();
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -737,11 +560,12 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("getDefaultLocale()");                      // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call and return the result
-        return dm.getDefaultLocale();
+        modifiedLoader();
+        try {
+            return dm.getDefaultLocale();
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -753,11 +577,12 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("getSupportedLocales()");                   // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // delegate the call and return the result
-        return dm.getSupportedLocales();
+        modifiedLoader();
+        try {
+            return dm.getSupportedLocales();
+        } finally {
+            originalLoader();
+        }
     }
 
     /**
@@ -769,24 +594,11 @@ public class WLDeploymentManager implements DeploymentManager {
         if (WLDebug.isEnabled()) // debug output
             WLDebug.notify("getTargets()");                            // NOI18N
         
-        // update the deployment manager
-        updateDeploymentManager();
-        
-        // update the context classloader
-        loader.updateLoader();
-        
-        // if the manager is not connected - throw an IllegalStateException
-        if (!isConnected) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    WLDeploymentManager.class, "ERR_illegalState"));   // NOI18N
-        }
-        
+        modifiedLoader();
         try {
-            // delegate the call and return the result
             return dm.getTargets();
         } finally {
-            // restore the context classloader
-            loader.restoreLoader();
+            originalLoader();
         }
     }
     

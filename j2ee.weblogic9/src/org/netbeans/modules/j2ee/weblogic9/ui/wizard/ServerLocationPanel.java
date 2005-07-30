@@ -19,6 +19,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
+import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 
 import org.openide.*;
 import org.openide.util.*;
@@ -107,11 +108,13 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         
         // check for the validity of the entered installation directory
         // if it's invalid, return false
-        if (!isValidServerRoot(locationField.getText())) {
+        if (!WLPluginProperties.isGoodServerLocation(new File (locationField.getText()))) {
             wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ServerLocationPanel.class, "ERR_INVALID_SERVER_ROOT")); // NOI18N
             return false;
         }
         
+        WLPluginProperties.getInstance().setInstallLocation(locationField.getText());
+        WLPluginProperties.getInstance().saveProperties();
         // set the server root in the parent instantiating iterator
         instantiatingIterator.setServerRoot(locationField.getText());
         
@@ -154,8 +157,9 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         
         // add server installation directory field
         locationField.addKeyListener(new LocationKeyListener());
-        if (System.getProperty("weblogic.home") != null) { // NOI18N
-            locationField.setText(System.getProperty("weblogic.home")); // NOI18N
+        String loc = WLPluginProperties.getInstance().getInstallLocation();
+        if (loc != null) { // NOI18N
+            locationField.setText(loc);
         }
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -214,53 +218,6 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
             locationField.setText(fileChooser.getSelectedFile().getPath());
             fireChangeEvent();
         }
-    }
-    
-    /**
-     * Checks whether the supplied directory is the valid server installation
-     * directory.
-     * 
-     * @return true if the supplied directory is valid, false otherwise
-     */
-    private boolean isValidServerRoot(String path) {
-        // set the child directories/files that should be present and validate
-        // the directory as the server's installation one
-        String[] children = {
-                    "common", // NOI18N
-                    "javelin", // NOI18N
-                    "uninstall", // NOI18N
-                    "common/bin", // NOI18N
-                    "server/lib/weblogic.jar" // NOI18N
-        };
-        return hasChildren(path, children);
-    }
-    
-    /**
-     * Checks whether the supplied directory has the required children
-     * 
-     * @return true if the directory contains all the children, false otherwise
-     */
-    private boolean hasChildren(String parent, String[] children) {
-        // if parent is null, it cannot contain any children
-        if (parent == null) {
-            return false;
-        }
-        
-        // if the children array is null, then the condition is fullfilled
-        if (children == null) {
-            return true;
-        }
-        
-        // for each child check whether it is contained and if it is not, 
-        // return false
-        for (int i = 0; i < children.length; i++) {
-            if (!(new File(parent + File.separator + children[i]).exists())) {
-                return false;
-            }
-        }
-        
-        // all is good
-        return true;
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -59,7 +59,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             SPEC_VERSIONS.add(J2eeModule.J2EE_14);
         }
         
-        private String platformRoot;
+        private String platformRoot = WLPluginProperties.getInstance().getInstallLocation();
         
         private LibraryImplementation[] libraries = null;
         
@@ -77,7 +77,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         
         public J2eePlatformImplImpl(DeploymentManager dm) {
             this.dm = (WLDeploymentManager) dm;
-            platformRoot = this.dm.getInstanceProperties().getProperty(WLDeploymentFactory.SERVER_ROOT_ATTR);
         }
         
         public boolean isToolSupported(String toolName) {
@@ -108,8 +107,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         }
         
         private void initLibraries() {
-            // init the resulting array
-            libraries = new LibraryImplementation[1];
             
             // create a new library
             LibraryImplementation library = new J2eeLibraryTypeProvider().
@@ -130,7 +127,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
             
-            // add the created library to the array
+            libraries = new LibraryImplementation[1];
             libraries[0] = library;
         }
         
