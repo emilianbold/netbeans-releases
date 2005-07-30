@@ -342,6 +342,7 @@ public class TargetServer {
                     //transfer to distribute
                     if (! dm.isRedeploySupported()) {
                         distributeTargets.add(deployed.findTarget());
+                        undeployTMIDs.add(deployed.delegate());
                         j.remove();
                     }
                 } else {
