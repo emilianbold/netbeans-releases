@@ -1,0 +1,14 @@
+<soap:Envelope
+	xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+	xmlns:moxc="http://www.netbeans.org/ns/moxc/1_0">
+	<soap:Header>
+		<moxc:message soap:mustUnderstand="true">
+            <moxc:sender>__sender__</moxc:sender>
+            <moxc:conversation>__conversation__</moxc:conversation>
+            <moxc:channel>__uri__</moxc:channel>
+            <moxc:instance>__instance__</moxc:instance>
+		</moxc:message>
+	</soap:Header>
+	<soap:Body>
+	</soap:Body>
+</soap:Envelope>
