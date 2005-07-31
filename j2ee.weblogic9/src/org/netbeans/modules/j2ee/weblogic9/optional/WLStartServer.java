@@ -438,20 +438,15 @@ public class WLStartServer extends StartServer {
                 // failed due to timeout
                 long start = System.currentTimeMillis();
                 
-                // get the current environment
-                Properties environment = System.getProperties();
-                environment.put("JAVA_OPTIONS", "-Xdebug " +           // NOI18N
-                        "-Xnoagent -Xrunjdwp:transport=dt_socket" +    // NOI18N
-                        ",address=" + debuggerPort +                   // NOI18N
-                        ",server=y,suspend=n");                        // NOI18N
                 
                 // create the startup process
-                Process serverProcess = Runtime.getRuntime().exec(new String[]{domainHome + "/" + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH)}, properties2StringArray(environment));
-                
-//                ProcessBuilder processBuilder = new ProcessBuilder(new String[]{domainHome + "/" + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH)}); // NOI18N
-//                processBuilder.environment().put("JAVA_OPTIONS", "-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=" + debuggerPort + ",server=y,suspend=n"); // NOI18N
-//                
-//                Process serverProcess = processBuilder.start();
+                File cwd = new File (domainHome);
+                assert cwd.isDirectory() : "Working directory for weblogic does not exist:" + domainHome; //NOI18N
+                org.openide.execution.NbProcessDescriptor pd = new org.openide.execution.NbProcessDescriptor(domainHome + "/" + (Utilities.isWindows() ? STARTUP_BAT : STARTUP_SH), "");
+                String envp[];
+                envp = new String[] {"JAVA_OPTIONS=-Xdebug -Xnoagent -Djava.compiler=none -Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=" + debuggerPort};    // NOI18N
+                        
+                Process serverProcess = pd.exec(null, envp, true, cwd);
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
