@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.netbeans.org/ns/share-output/1_0"
+    xmlns:share-output="http://www.netbeans.org/ns/share-output/1_0"
+	elementFormDefault="qualified" >
+
+	<xs:element name="open" type="share-output:open" /> 
+    <xs:complexType name="open">
+        <xs:sequence>
+            <xs:element name="instance" type="xs:string" />
+            <xs:element name="name" type="xs:string" />
+            <xs:element name="content" type="share-output:content"/>
+        </xs:sequence>
+    </xs:complexType>
+ 
+	<xs:element name="append" type="share-output:append" /> 
+    <xs:complexType name="append">
+        <xs:sequence>
+            <xs:element name="instance" type="xs:string" />
+            <xs:element name="content" type="share-output:content"/>
+        </xs:sequence>
+    </xs:complexType>
+ 
+	<xs:complexType name="content">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="contentType" type="xs:string" use="required" />
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType> 
+
+</xs:schema>

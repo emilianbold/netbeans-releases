@@ -1,0 +1,30 @@
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<soap:Envelope
+	xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+	xmlns:moxc="http://www.netbeans.org/ns/moxc/1_0">
+	<soap:Header>
+		<moxc:message soap:mustUnderstand="true">
+            <moxc:sender>__sender__</moxc:sender>
+            <moxc:conversation>__conversation__</moxc:conversation>
+            <moxc:channel>__uri__</moxc:channel>
+            <moxc:instance>__instance__</moxc:instance>
+		</moxc:message>
+	</soap:Header>
+	<soap:Body>
+		<share-output:close xmlns:share-output="__uri__">
+			<share-output:instance_id>__output_instance_id__</share-output:instance_id>
+		</share-output:close>
+	</soap:Body>
+</soap:Envelope>
