@@ -40,12 +40,15 @@ public class StorageBuilderAction extends ProductAction {
     //return code incase an error returns
     public static final int STORAGE_BUILDER_UNHANDLED_ERROR = -200;
     public static final String STORAGE_BUILDER_TEMP_DIR = "mdrtmpdir";
-    public static final String STORAGE_BUILDER_DEST_DIR = "ide5" + File.separator + "mdrstorage";
     public static final String STORAGE_BUILDER_TEMP_FILE = "mdrtmpfile";
     
     private int installMode = 0;
     private static final int INSTALL = 0;
     private static final int UNINSTALL = 1;
+    
+    private String ideClusterDir;
+    private String platformClusterDir;
+    private String sbDestDir;
     
     private String statusDesc = "";
     private String nbInstallDir = "";
@@ -87,6 +90,10 @@ public class StorageBuilderAction extends ProductAction {
         tempPath = resolveString("$J(temp.dir)");
         logEvent(this, Log.DBG,"TempPath: " + tempPath);
         
+        ideClusterDir = resolveString("$L(org.netbeans.installer.Bundle,NetBeans.ideClusterDir)");
+        platformClusterDir = resolveString("$L(org.netbeans.installer.Bundle,NetBeans.platformClusterDir)");
+        sbDestDir = ideClusterDir + File.separator + "mdrstorage";
+        
         mutableOperationState = support.getOperationState();
     }
     
@@ -123,7 +130,7 @@ public class StorageBuilderAction extends ProductAction {
             logEvent(this, Log.DBG,"Created temporary dir for SB: " + mdrTempDir.getAbsolutePath());
             
             //Create destination dir for storage builder
-            File mdrDestDir = new File(nbInstallDir + File.separator + STORAGE_BUILDER_DEST_DIR);
+            File mdrDestDir = new File(nbInstallDir + File.separator + sbDestDir);
             if (mdrDestDir.exists()) {
                 logEvent(this, Log.ERROR,"# # # # # # # #");
                 logEvent(this, Log.ERROR,"Fatal error: Storage Builder destination directory already exists.");
@@ -151,7 +158,7 @@ public class StorageBuilderAction extends ProductAction {
             long startTime = System.currentTimeMillis();
             
             //Set system proeprties for sb
-            System.getProperties().put("gjast.location",nbInstallDir + File.separator + "ide5"
+            System.getProperties().put("gjast.location",nbInstallDir + File.separator + ideClusterDir
             + File.separator + "modules" + File.separator + "ext" + File.separator + "gjast.jar");
             
             System.getProperties().put("mdr.filename",mdrTempDir.getAbsolutePath()
@@ -182,7 +189,7 @@ public class StorageBuilderAction extends ProductAction {
             startProgress();
             
             Object oResult = null;
-            String destDir = nbInstallDir + File.separator + "ide5" + File.separator + "mdrstorage";
+            String destDir = nbInstallDir + File.separator + ideClusterDir + File.separator + "mdrstorage";
             Object [] args = new Object [] {new String [] {Util.getJdkHome()}, destDir};
             try {
                 oResult = method.invoke(null, args);
@@ -237,37 +244,37 @@ public class StorageBuilderAction extends ProductAction {
         try {
             classPath = new URL [] 
             {
-            new URL(s + "ide5/modules/org-netbeans-jmi-javamodel.jar"),
-            new URL(s + "ide5/modules/org-netbeans-modules-javacore.jar"),
-            new URL(s + "platform5/modules/org-netbeans-modules-masterfs.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-jmi-javamodel.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-modules-javacore.jar"),
+            new URL(s + platformClusterDir + "/modules/org-netbeans-modules-masterfs.jar"),
             
             new URL(s + "_uninst/storagebuilder/storagebuilder.jar"),
             
-            new URL(s + "platform5/core/org-openide-filesystems.jar"),
-            new URL(s + "platform5/lib/org-openide-util.jar"),
-            new URL(s + "platform5/lib/org-openide-modules.jar"),
+            new URL(s + platformClusterDir + "/core/org-openide-filesystems.jar"),
+            new URL(s + platformClusterDir + "/lib/org-openide-util.jar"),
+            new URL(s + platformClusterDir + "/lib/org-openide-modules.jar"),
             
-            new URL(s + "platform5/modules/org-openide-actions.jar"),
-            new URL(s + "platform5/modules/org-openide-awt.jar"),
-            new URL(s + "platform5/modules/org-openide-dialogs.jar"),
-            new URL(s + "platform5/modules/org-openide-execution.jar"),
-            new URL(s + "platform5/modules/org-openide-explorer.jar"),
-            new URL(s + "platform5/modules/org-openide-io.jar"),
-            new URL(s + "platform5/modules/org-openide-loaders.jar"),
-            new URL(s + "platform5/modules/org-openide-nodes.jar"),
-            new URL(s + "platform5/modules/org-openide-options.jar"),
-            new URL(s + "platform5/modules/org-openide-text.jar"),
-            new URL(s + "platform5/modules/org-openide-windows.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-actions.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-awt.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-dialogs.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-execution.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-explorer.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-io.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-loaders.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-nodes.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-options.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-text.jar"),
+            new URL(s + platformClusterDir + "/modules/org-openide-windows.jar"),
             
-            new URL(s + "ide5/modules/org-netbeans-api-java.jar"),
-            new URL(s + "ide5/modules/javax-jmi-model.jar"),
-            new URL(s + "ide5/modules/javax-jmi-reflect.jar"),
-            new URL(s + "ide5/modules/org-netbeans-api-mdr.jar"),
-            new URL(s + "ide5/modules/org-netbeans-modules-mdr.jar"),
-            new URL(s + "ide5/modules/org-netbeans-modules-jmiutils.jar"),
-            new URL(s + "ide5/modules/org-netbeans-modules-projectapi.jar"),
-            new URL(s + "ide5/modules/org-netbeans-modules-classfile.jar"),
-            new URL(s + "ide5/modules/ext/java-parser.jar")
+            new URL(s + ideClusterDir + "/modules/org-netbeans-api-java.jar"),
+            new URL(s + ideClusterDir + "/modules/javax-jmi-model.jar"),
+            new URL(s + ideClusterDir + "/modules/javax-jmi-reflect.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-api-mdr.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-modules-mdr.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-modules-jmiutils.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-modules-projectapi.jar"),
+            new URL(s + ideClusterDir + "/modules/org-netbeans-modules-classfile.jar"),
+            new URL(s + ideClusterDir + "/modules/ext/java-parser.jar")
             };
         } catch (MalformedURLException exc) {
             throw exc;
@@ -286,7 +293,7 @@ public class StorageBuilderAction extends ProductAction {
         
         String fileName;
         //Delete directory created by storage builder during install
-        fileName = nbInstallDir + File.separator + STORAGE_BUILDER_DEST_DIR;
+        fileName = nbInstallDir + File.separator + sbDestDir;
         logEvent(this, Log.DBG,"Deleting: " + fileName);
         Util.deleteCompletely(new File(fileName),support);
         
