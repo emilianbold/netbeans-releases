@@ -328,7 +328,7 @@ public class ServerInstance implements Node.Cookie {
 
     public FindJSPServlet getFindJSPServlet() {
         if (findJSPServlet == null) {
-            findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDeploymentManager ());
+            findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDisconnectedDeploymentManager());
         }
         return findJSPServlet;
     }
