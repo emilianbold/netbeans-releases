@@ -167,7 +167,6 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
             lastAppImplChecked = appendImpl.isSelected();
             appendImpl.setSelected(false);
         }
-        setValid(false);
     }
     
     public void store() {
