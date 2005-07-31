@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema 
+    targetNamespace="http://www.w3.org/2003/05/soap-envelope"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
+    xmlns:moxc="http://www.netbeans.org/ns/moxc/1_0"
+    xmlns:filesharing="http://www.netbeans.org/ns/filesharing/1_0"
+    elementFormDefault="qualified" >
+	
+    <xs:import namespace="http://www.netbeans.org/ns/filesharing/1_0" schemaLocation="filesharing.xsd" />
+    <xs:import namespace="http://www.netbeans.org/ns/moxc/1_0" schemaLocation="header-msg.xsd" />
+
+    <xs:element name="Envelope" type="soap:Envelope" />
+    
+    <xs:complexType name="Envelope">
+            <xs:sequence>
+                    <xs:element name="Header" type="soap:Header" minOccurs="0" />
+                    <xs:element name="Body" type="soap:Body" minOccurs="1" />
+            </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Header" >
+        <xs:sequence>
+            <xs:element ref="moxc:message" />
+        </xs:sequence>
+            <xs:attribute name="mustUnderstand" type="xs:boolean" default="true"/>    
+    </xs:complexType>
+
+    <xs:complexType name="Body" >
+        <xs:choice minOccurs="1">
+            <xs:element name="send-file" type="filesharing:send-file" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="file-changed" type="filesharing:file-changed" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="lock-region" type="filesharing:lock-region" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="unlock-region" type="filesharing:unlock-region" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="join-filesharing" type="filesharing:join-filesharing" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="pause-filesharing" type="filesharing:pause-filesharing" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="resume-filesharing" type="filesharing:resume-filesharing" 
+                    minOccurs="0" maxOccurs="1"/>  
+            <xs:element name="leave-filesharing" type="filesharing:leave-filesharing" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="commands" type="filesharing:commands"
+                    minOccurs="0" maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType> 	
+
+</xs:schema>

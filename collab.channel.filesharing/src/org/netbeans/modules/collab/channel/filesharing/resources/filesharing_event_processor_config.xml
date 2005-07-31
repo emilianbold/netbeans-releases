@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<c:collab xmlns:c="http://sun.com/ns/collab/dev/1-0" xmlns:mdc="http://sun.com/ns/collab/dev/1-0/mdc">
+    <mdc:config version="1.0">
+    <!-- Event processor config-->
+        <mdc:event-processor-config>
+        
+<!-- channel event handlers -->        
+            <register-event-handler>
+                <event-name>sendMessageJoinBegin</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.JoinFilesharingBeginHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+            <register-event-handler>
+                <event-name>receivedMessageJoinBegin</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.JoinFilesharingBeginHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+                        
+            <register-event-handler>
+                <event-name>sendMessageJoinEnd</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.JoinFilesharingEndHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            <register-event-handler>
+                <event-name>receivedMessageJoinEnd</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.JoinFilesharingEndHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+                        
+            <register-event-handler>
+                <event-name>sendMessagePause</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.PauseFilesharingHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+            <register-event-handler>
+                <event-name>receivedMessagePause</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.PauseFilesharingHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+                                
+            <register-event-handler>
+                <event-name>receivedMessageSendFile</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.SendFileHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            
+            <register-event-handler>
+                <event-name>sendMessageResume</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.ResumeFilesharingHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+            <register-event-handler>
+                <event-name>receivedMessageResume</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.ResumeFilesharingHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            
+            <register-event-handler>
+                <event-name>sendMessageLockRegion</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.LockRegionHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+            <register-event-handler>
+                <event-name>receivedMessageLockRegion</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.LockRegionHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            
+            <register-event-handler>
+                <event-name>sendMessageSendChange</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.SendChangeHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+            <register-event-handler>
+                <event-name>receivedMessageSendChange</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.SendChangeHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+                                    
+            <register-event-handler>
+                <event-name>receivedMessageUnlockRegion</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.UnlockRegionHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+                        
+            <register-event-handler>
+                <event-name>receivedMessageCommand</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.CommandHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>                        
+                                                            
+            <register-event-handler>
+                <event-name>sendMessageLeave</event-name> 
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.LeaveFilesharingHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            <register-event-handler>
+                <event-name>receivedMessageLeave</event-name> 
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.LeaveFilesharingHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+               
+<!-- filesystem event handlers -->             
+            <register-event-handler>
+                <event-name>sendMessageSendFile</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.SendFileHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler> 
+            <register-event-handler>
+                <event-name>sendMessageDeleteFile</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.CommandHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            <register-event-handler>
+                <event-name>sendMessageRenameFile</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.CommandHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+            
+<!-- project event handlers --> 
+            <register-event-handler>
+                <event-name>sendMessageProjectActionList</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.CommandHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            
+            <register-event-handler>
+                <event-name>sendMessageProjectPerformAction</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.CommandHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>                        
+            
+<!-- DataObjectPool event handlers -->             
+            <register-event-handler>
+                <event-name>sendDataObject</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.SendFileHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            
+<!-- document event handlers -->
+            <register-event-handler>
+                <event-name>documentChangeInsert</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.DocumentChangeHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+            <register-event-handler>
+                <event-name>documentChangeRemove</event-name>            
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.DocumentChangeHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>            
+                        
+<!-- timer (synchronous) event handlers -->
+            <register-event-handler>
+                <event-name>sendChange</event-name> 
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.SendChangeHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+                     
+            <register-event-handler>
+                <event-name>sendMessageUnlockRegion</event-name> 
+                <event-handler-info>
+                    <handler-class>org.netbeans.modules.collab.channel.filesharing.eventhandler.UnlockRegionHandlerFactory</handler-class>
+                    <stateful>true</stateful>
+                </event-handler-info>
+            </register-event-handler>
+        </mdc:event-processor-config>
+    </mdc:config>    
+</c:collab>
+
+    
+

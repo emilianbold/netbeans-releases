@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+    Document   : collab.xml
+    Created on : May 21, 2004, 7:45 PM
+    Author     : Ayub Khan
+    Description:
+        Purpose of the document follows.
+        This is a Sample xml based on collab.xsd schema file
+-->
+
+<c:collab xmlns:c="http://sun.com/ns/collab/dev/1_0" xmlns:ch="http://sun.com/ns/collab/dev/1_0/filesharing">
+
+<!-- send file message syntax-->
+        <ch:send-file>
+            <file-groups>
+                <file-group>
+                    <file-group-name>/Collaboration/tutorial/HelloWorld</file-group-name>         
+                    <user>user1</user>
+                    <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                    <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                </file-group> 
+                <file-group>        
+                    <file-group-name>/Collaboration/tutorial/Foo</file-group-name>         
+                    <user>user1</user>
+                    <file-name>/Collaboration/tutorial/Foo.java</file-name>
+                </file-group>  
+            </file-groups>   
+            
+            <send-file-data>                      
+                <file-data>    
+                    <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                    <content-type>text/plain</content-type> 
+                </file-data>
+                <content>
+                    <encoding>base64</encoding>
+                    <digest>xxxx</digest>
+                    <data>hello world</data>
+                </content>
+            </send-file-data>
+            
+            <send-file-data>
+                <file-data>    
+                    <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                    <content-type>text/xml</content-type>
+                </file-data> 
+                <content>
+                    <encoding>base64</encoding>
+                    <digest>xxxx</digest>
+                    <data>hello world</data>
+                </content>
+            </send-file-data>
+            
+            <send-file-data>
+                <file-data>    
+                    <file-name>/Collaboration/tutorial/Foo.java</file-name>
+                    <content-type>text/plain</content-type>
+                </file-data> 
+                <content>
+                    <encoding>base64</encoding>
+                    <digest>xxxx</digest>
+                    <data>foo</data>
+                </content>
+            </send-file-data>   
+                  
+        </ch:send-file>  
+  
+<!-- file-changed message syntax-->        
+        <ch:file-changed>
+            <file-groups>
+                <file-group>
+                    <file-group-name>/Collaboration/tutorial/HelloWorld</file-group-name>         
+                    <user>user1</user>
+                    <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                    <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                </file-group>
+            </file-groups>   
+                                  
+            <file-changed-data>    
+                <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                <regions-changed>
+                    <region-changed>
+                        <region xsi:type="_text-region">
+                            <region-name>r1</region-name>
+                            <from-line>1</from-line>
+                            <to-line>10</to-line>
+                        </region>
+                        <change xsi:type="_text-change">
+                            <remove-text>
+                                <offset>2</offset> 
+                            </remove-text>                           
+                            <insert-text>
+                                <offset>3</offset>
+                                <content>
+                                    <encoding>base64</encoding>
+                                    <digest>xxxx</digest>
+                                    <data>bar</data>
+                                </content>
+                            </insert-text>                             
+                        </change>
+                    </region-changed>
+		</regions-changed>
+            </file-changed-data>                    
+        </ch:file-changed>     
+
+<!-- lock region message syntax -->
+        <ch:lock-region>
+            <file-groups><!-- allow only one group here-->
+                <file-group>
+                    <file-group-name>/Collaboration/tutorial/HelloWorld</file-group-name>         
+                    <user>user1</user>
+                    <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                    <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                </file-group>
+            </file-groups>   
+                                  
+            <lock-region-data>    
+                <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                <region xsi:type="_text-region">
+                    <region-name>rj1</region-name>
+                    <from-line>7</from-line>
+                    <to-line>17</to-line>
+                </region>
+            </lock-region-data>
+            
+            <lock-region-data>    
+                <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                <region xsi:type="_text-region">
+                    <region-name>rf1</region-name>
+                    <from-line>5</from-line>
+                    <to-line>11</to-line>
+                </region>
+            </lock-region-data>
+                        
+        </ch:lock-region>
+  
+<!-- unlock region message syntax -->  
+        <ch:unlock-region>
+            <file-groups><!-- allow only one group here-->
+                <file-group>
+                    <file-group-name>/Collaboration/tutorial/HelloWorld</file-group-name>         
+                    <user>user1</user>
+                    <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                    <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                </file-group>
+            </file-groups>   
+                                  
+            <unlock-region-data>    
+                <file-name>/Collaboration/tutorial/HelloWorld.java</file-name>
+                <region xsi:type="_text-region">
+                    <region-name>rj1</region-name>
+                </region>
+            </unlock-region-data>
+            
+            <unlock-region-data>    
+                <file-name>/Collaboration/tutorial/HelloWorld.form</file-name>
+                <region xsi:type="_text-region">
+                    <region-name>rf1</region-name>
+                </region>
+            </unlock-region-data>
+        </ch:unlock-region>
+  
+<!-- join filesharing (begin) message syntax -->  
+        <ch:join-filesharing>
+            <begin-join/>
+            <user>user1</user>
+        </ch:join-filesharing>      
+  
+<!-- pause filesharing message syntax -->               
+        <ch:pause-filesharing> <!-- pause is issued by the moderator on receiving a being-join -->
+            <join-user>
+                <user>user1</user>                             
+            </join-user>
+            <moderator>
+                <user>user3</user>
+            </moderator>
+            <file-owners>
+                <user>user4</user>   
+                <user>user6</user>                          
+            </file-owners>
+            <file-groups>
+                <file-group>        
+                    <file-group-name>/Collaboration/tutorial/Foo2</file-group-name>         
+                    <user>user3</user>
+                    <file-name>/Collaboration/tutorial/Foo2.java</file-name>
+                </file-group>            
+                <file-group>
+                    <file-group-name>/Collaboration/tutorial/Bar</file-group-name>         
+                    <user>user4</user>
+                    <file-name>/Collaboration/tutorial/Bar.java</file-name>
+                    <file-name>/Collaboration/tutorial/Bar.form</file-name>
+                </file-group> 
+                <file-group>        
+                    <file-group-name>/Collaboration/tutorial/Foo1</file-group-name>         
+                    <user>user6</user>
+                    <file-name>/Collaboration/tutorial/Foo1.java</file-name>
+                </file-group>  
+            </file-groups>
+        </ch:pause-filesharing>
+        
+<!-- join filesharing (end) message syntax -->         
+        <ch:join-filesharing>
+            <end-join/>
+            <user>user1</user>
+        </ch:join-filesharing>
+                
+<!-- resume filesharing message syntax -->        
+        <ch:resume-filesharing> <!-- issued by the moderator on receiving a end-join -->
+            <moderator>
+                <user>user1</user>
+            </moderator>
+        </ch:resume-filesharing>
+        
+<!-- leave filesharing message syntax -->        
+        <ch:leave-filesharing>
+            <user>user3</user>
+            <new-moderator>
+                <user>user4</user>
+            </new-moderator>
+            <new-file-owner> <!-- lists of users who take ownership -->
+                <user>user6</user>                             
+            </new-file-owner>
+            <file-groups>
+                <file-group>        
+                    <file-group-name>/Collaboration/tutorial/Foo2</file-group-name>         
+                    <user>user6</user>
+                    <file-name>/Collaboration/tutorial/Foo2.java</file-name>
+                </file-group>              
+            </file-groups>            
+        </ch:leave-filesharing>
+
+</c:collab>
+
+    
+

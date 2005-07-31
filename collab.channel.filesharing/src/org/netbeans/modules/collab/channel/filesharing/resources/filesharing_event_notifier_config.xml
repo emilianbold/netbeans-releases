@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<c:collab xmlns:c="http://sun.com/ns/collab/dev/1-0" xmlns:mdc="http://sun.com/ns/collab/dev/1-0/mdc">
+    <mdc:config version="1.0">
+    <!-- Event Notifier config -->
+        <mdc:event-notifier-config>        
+<!-- channel events -->        
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.JoinFilesharingBegin</event-class>
+                <event-name>sendMessageJoinBegin</event-name>
+            </register-event>
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedJoinFilesharingBegin</event-class>
+                <event-name>receivedMessageJoinBegin</event-name>
+            </register-event>
+                        
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.JoinFilesharingEnd</event-class>
+                <event-name>sendMessageJoinEnd</event-name>
+            </register-event> 
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedJoinFilesharingEnd</event-class>
+                <event-name>receivedMessageJoinEnd</event-name>
+            </register-event> 
+                       
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.PauseFilesharingEvent</event-class>
+                <event-name>sendMessagePause</event-name>
+            </register-event>
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedPauseFilesharing</event-class>
+                <event-name>receivedMessagePause</event-name>
+            </register-event> 
+ 
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedSendFile</event-class>
+                <event-name>receivedMessageSendFile</event-name>
+            </register-event>  
+                                 
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ResumeFilesharingEvent</event-class>
+                <event-name>sendMessageResume</event-name>
+            </register-event>
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedResumeFilesharing</event-class>
+                <event-name>receivedMessageResume</event-name>
+            </register-event> 
+                       
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.LockRegionEvent</event-class>
+                <event-name>sendMessageLockRegion</event-name>
+            </register-event>   
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedLockRegion</event-class>
+                <event-name>receivedMessageLockRegion</event-name>
+            </register-event> 
+            
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedSendChange</event-class>
+                <event-name>receivedMessageSendChange</event-name>
+            </register-event> 
+
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedUnlockRegion</event-class>
+                <event-name>receivedMessageUnlockRegion</event-name>
+            </register-event>  
+            
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.LeaveFilesharingEvent</event-class>
+                <event-name>sendMessageLeave</event-name>
+            </register-event>
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedLeaveFilesharing</event-class>
+                <event-name>receivedMessageLeave</event-name>
+            </register-event>            
+
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ReceivedCommand</event-class>
+                <event-name>receivedMessageCommand</event-name>
+            </register-event>                                               
+            
+<!-- filesystem events -->                                          
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.SendFileEvent</event-class>
+                <event-name>sendMessageSendFile</event-name>
+            </register-event>            
+                      
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.DeleteFileEvent</event-class>
+                <event-name>sendMessageDeleteFile</event-name>
+            </register-event>
+            
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.RenameFileEvent</event-class>
+                <event-name>sendMessageRenameFile</event-name>
+            </register-event>            
+            
+<!-- project events -->         
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ProjectActionListEvent</event-class>
+                <event-name>sendMessageProjectActionList</event-name>
+            </register-event>
+            
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.ProjectPerformActionEvent</event-class>
+                <event-name>sendMessageProjectPerformAction</event-name>
+            </register-event>                   
+            
+<!-- DataObjectPool events -->               
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.SendDataObject</event-class>
+                <event-name>sendDataObject</event-name>
+            </register-event>
+            
+<!-- document events -->                                          
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.DocumentChangeInsert</event-class>
+                <event-name>documentChangeInsert</event-name>
+            </register-event>            
+                      
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.DocumentChangeRemove</event-class>
+                <event-name>documentChangeRemove</event-name>
+            </register-event>            
+            
+<!-- timer (synchronous) events -->  
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.SendChange</event-class>
+                <event-name>sendChange</event-name>
+            </register-event>
+                                  
+            <register-event>
+                <event-class>org.netbeans.modules.collab.channel.filesharing.event.UnlockRegionEvent</event-class>
+                <event-name>sendMessageUnlockRegion</event-name>
+            </register-event>                                                        
+        </mdc:event-notifier-config>
+    </mdc:config>    
+</c:collab>
+
+    
+

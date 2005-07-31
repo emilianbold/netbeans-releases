@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.netbeans.org/ns/filesharing/1_0"
+    xmlns:filesharing="http://www.netbeans.org/ns/filesharing/1_0"
+    elementFormDefault="qualified" >
+
+    <!-- Schema for send-file --> 
+    <xs:complexType name="send-file">
+        <xs:sequence>
+            <xs:element name="file-groups" type="filesharing:file-groups" 
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="send-file-data" type="filesharing:send-file-data" 
+                    minOccurs="1" maxOccurs="unbounded"/>            
+        </xs:sequence>
+    </xs:complexType>
+     
+   <!-- Schema for file-changed -->     
+    <xs:complexType name="file-changed">
+        <xs:sequence>
+            <xs:element name="file-groups" type="filesharing:file-groups" 
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="file-changed-data" type="filesharing:file-changed-data" 
+                    minOccurs="1" maxOccurs="unbounded"/> 
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Schema for lock-region -->           
+    <xs:complexType name="lock-region">
+        <xs:sequence>
+            <xs:element name="file-groups" type="filesharing:file-groups" 
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="lock-region-data" type="filesharing:lock-region-data" 
+                    minOccurs="1" maxOccurs="unbounded"/> 
+        </xs:sequence> 
+    </xs:complexType> 
+    
+    <!-- Schema for unlock-region -->               
+    <xs:complexType name="unlock-region">
+        <xs:sequence>
+            <xs:element name="file-groups" type="filesharing:file-groups" 
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="unlock-region-data" type="filesharing:unlock-region-data" 
+                    minOccurs="1" maxOccurs="unbounded"/> 
+        </xs:sequence>    
+    </xs:complexType>
+    
+    <!-- Schema for join filesharing -->               
+    <xs:complexType name="join-filesharing">
+        <xs:sequence>
+            <xs:choice maxOccurs="1">
+                <xs:element name="begin-join" 
+                        minOccurs="0" maxOccurs="1"/>
+                <xs:element name="end-join" 
+                        minOccurs="0" maxOccurs="1"/>
+            </xs:choice>
+            <xs:element name="user" type="filesharing:user" 
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>    
+    </xs:complexType>       
+
+    <!-- Schema for pause filesharing --> 
+    <xs:complexType name="pause-filesharing">
+        <xs:sequence>
+            <xs:element name="join-user" type="filesharing:join-user" 
+                    minOccurs="1" maxOccurs="1"/>        
+            <xs:element name="moderator" type="filesharing:moderator" 
+                    minOccurs="1" maxOccurs="1"/>  
+            <xs:element name="file-owners" type="filesharing:file-owners" 
+                    minOccurs="1" maxOccurs="1"/>     
+            <xs:element name="users" type="filesharing:users" 
+                    minOccurs="1" maxOccurs="1"/>                     
+            <xs:element name="file-groups" type="filesharing:file-groups" 
+                    minOccurs="1" maxOccurs="1"/>            
+        </xs:sequence>
+    </xs:complexType>
+        
+    <!-- Schema for resume filesharing -->               
+    <xs:complexType name="resume-filesharing">
+        <xs:sequence>
+            <xs:element name="moderator" type="filesharing:moderator" 
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>    
+    </xs:complexType> 
+    
+    <!-- Schema for pause filesharing --> 
+    <xs:complexType name="leave-filesharing">
+        <xs:sequence>
+            <xs:element name="user" type="filesharing:user" 
+                    minOccurs="1" maxOccurs="1"/>        
+            <xs:element name="new-moderator" type="filesharing:moderator" 
+                    minOccurs="1" maxOccurs="1"/>  
+            <xs:element name="new-file-owner" type="filesharing:new-file-owner" 
+                    minOccurs="1" maxOccurs="1"/>                          
+            <xs:element name="file-groups" type="filesharing:file-groups" 
+                    minOccurs="1" maxOccurs="1"/>            
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Schema for commands --> 
+    <xs:complexType name="commands">
+        <xs:sequence>
+            <xs:choice maxOccurs="1">        
+                <xs:element name="filesystem-command" type="filesharing:filesystem-command" 
+                        minOccurs="1" maxOccurs="1"/>
+                <xs:element name="project-command" type="filesharing:project-command" 
+                        minOccurs="1" maxOccurs="1"/>                                                                      
+            </xs:choice>          
+        </xs:sequence>
+    </xs:complexType>    
+                    
+    <!-- ===================================================== -->   
+                
+    <xs:complexType name="file-groups">
+        <xs:sequence>
+            <xs:element name="file-group" type="filesharing:file-group" 
+                    minOccurs="1" maxOccurs="unbounded"/> 
+        </xs:sequence>
+    </xs:complexType>
+                
+    <xs:complexType name="file-group">
+        <xs:sequence>
+            <xs:element name="file-group-name" type="xs:string" 
+                    minOccurs="1" maxOccurs="1"/>         
+            <xs:element name="user" type="filesharing:user" 
+                    minOccurs="1" maxOccurs="1"/>
+            <!-- file-name contains full path --> 
+            <xs:element name="file-name" type="xs:string" 
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+                    
+    <xs:complexType name="send-file-data">
+        <xs:sequence>        
+            <xs:element name="file-data" type="filesharing:file-data"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="choose-line-region-function" type="xs:boolean"
+                        minOccurs="1" maxOccurs="1"/>
+            <xs:choice maxOccurs="1">   
+                <xs:element name="line-region-function" type="filesharing:line-region-function"
+                        minOccurs="1" maxOccurs="1"/>  
+                <xs:element name="line-region" type="filesharing:line-region"
+                        minOccurs="1" maxOccurs="unbounded"/>
+            </xs:choice>             
+            <xs:element name="content" type="filesharing:content"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>    
+    
+    <xs:complexType name="line-region-function">
+        <xs:sequence>
+            <xs:element name="function-name" type="xs:string"
+                        minOccurs="1" maxOccurs="1"/>
+            <xs:element name="arguments"  type="xs:string"
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>                   
+      
+    <xs:complexType name="file-data">
+        <xs:sequence>
+            <!-- file-name contains full path --> 
+            <xs:element name="file-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="content-type" type="xs:string" 
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="description" type="xs:string" 
+                    minOccurs="0" maxOccurs="1"/>                    
+        </xs:sequence>
+    </xs:complexType>
+    
+   <!-- Schema for file-changed -->     
+    <xs:complexType name="file-changed-data">
+        <xs:sequence>
+            <!-- file-name contains full path --> 
+            <xs:element name="file-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="digest" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>                    
+            <xs:element name="region-changed" type="filesharing:region-changed"
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- Schema for lock-region -->           
+    <xs:complexType name="lock-region-data">
+        <xs:sequence>
+            <!-- file-name contains full path -->
+            <xs:element name="file-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="line-region" type="filesharing:line-region"
+                    minOccurs="1" maxOccurs="unbounded"/>
+            <xs:choice maxOccurs="1">       
+                <xs:element name="text-region" type="filesharing:text-region"
+                        minOccurs="1" maxOccurs="1"/>
+                <xs:element name="java-region" type="filesharing:java-region"
+                        minOccurs="1" maxOccurs="1"/>                        
+            </xs:choice>                    
+            <xs:element name="content" type="filesharing:content"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence> 
+    </xs:complexType> 
+    
+    <!-- Schema for unlock-region -->               
+    <xs:complexType name="unlock-region-data">
+        <xs:sequence>
+            <!-- file-name contains full path --> 
+            <xs:element name="file-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>        
+            <xs:element name="line-region" type="filesharing:line-region"
+                    minOccurs="1" maxOccurs="unbounded"/>
+            <xs:choice maxOccurs="1">       
+                <xs:element name="text-region" type="filesharing:text-region"
+                        minOccurs="1" maxOccurs="1"/>
+                <xs:element name="java-region" type="filesharing:java-region"
+                        minOccurs="1" maxOccurs="1"/>                        
+            </xs:choice>                     
+            <xs:element name="content" type="filesharing:content"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>    
+    </xs:complexType>    
+        
+    <!-- user elements -->
+    <xs:complexType name="moderator">
+        <xs:sequence>
+            <xs:element name="users" type="filesharing:users" 
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="join-user">
+        <xs:sequence>
+            <xs:element name="user" type="filesharing:user" 
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>
+    </xs:complexType>        
+
+    <xs:complexType name="file-owners">
+        <xs:sequence>
+            <xs:element name="users" type="filesharing:users" 
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="new-file-owner">
+        <xs:sequence>
+            <xs:element name="users" type="filesharing:users" 
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>
+    </xs:complexType> 
+    
+    <xs:complexType name="users">
+        <xs:sequence>
+            <xs:element name="user" type="filesharing:user" 
+                    minOccurs="0" maxOccurs="unbounded"/> 
+        </xs:sequence>
+    </xs:complexType> 
+        
+    <xs:complexType name="user">
+        <xs:sequence>
+            <xs:element name="id" type="xs:string" 
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="name" type="xs:string" 
+                    minOccurs="0" maxOccurs="1"/>
+            <xs:element name="description" type="xs:string" 
+                    minOccurs="0" maxOccurs="1"/>                                       
+        </xs:sequence>
+    </xs:complexType>
+        
+    <!-- filesystem command schema -->
+    <xs:complexType name="filesystem-command">
+        <xs:sequence>
+            <xs:choice maxOccurs="1">
+            <!-- file commands -->
+                <xs:element name="delete-file" type="filesharing:delete-file" 
+                        minOccurs="1" maxOccurs="1"/>
+            </xs:choice>          
+        </xs:sequence>
+    </xs:complexType>
+   
+    <xs:complexType name="delete-file">
+        <xs:sequence>
+            <!-- file-name contains full path -->        
+            <xs:element name="file-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <!-- project command schema -->
+    <xs:complexType name="project-command">
+        <xs:sequence>
+            <xs:choice maxOccurs="1">
+            <!-- file commands -->
+                <xs:element name="project-action-list" type="filesharing:project-action-list" 
+                        minOccurs="1" maxOccurs="1"/>
+                <xs:element name="project-perform-action" type="filesharing:project-perform-action" 
+                        minOccurs="1" maxOccurs="1"/>                        
+            </xs:choice>          
+        </xs:sequence>
+    </xs:complexType>
+   
+    <xs:complexType name="project-action-list">
+        <xs:sequence>
+            <xs:element name="project-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="project-user" type="filesharing:user"
+                    minOccurs="1" maxOccurs="1"/>                            
+            <!-- project actions list -->        
+            <xs:element name="project-action" type="filesharing:project-action"
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="project-perform-action">
+        <xs:sequence>
+            <xs:element name="project-name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="project-user" type="filesharing:user"
+                    minOccurs="1" maxOccurs="1"/>        
+            <!-- project actions will be executed in sequence -->        
+            <xs:element name="project-action" type="filesharing:project-action"
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="project-action">
+        <xs:sequence>
+            <!-- project action names like "Build", "Rebuild" -->        
+            <xs:element name="name" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="description" type="xs:string"
+                    minOccurs="1" maxOccurs="1"/>                    
+        </xs:sequence>
+    </xs:complexType>                    
+        
+    <!-- ===================================================== -->    
+    
+    <xs:complexType name="region-changed">
+        <xs:sequence>
+            <xs:choice maxOccurs="1">       
+                <xs:element name="text-region-changed" type="filesharing:text-region-changed"
+                        minOccurs="1" maxOccurs="1"/>
+                <xs:element name="java-region-changed" type="filesharing:java-region-changed"
+                        minOccurs="1" maxOccurs="1"/>  
+                <xs:element name="line-region-changed" type="filesharing:line-region-changed"
+                        minOccurs="1" maxOccurs="1"/>                                              
+            </xs:choice>                
+        </xs:sequence>
+    </xs:complexType>    
+
+    <xs:complexType name="text-region-changed">
+        <xs:sequence>
+            <xs:element name="text-region" type="filesharing:text-region"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="text-change" type="filesharing:text-change"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="java-region-changed">
+        <xs:sequence>
+            <xs:element name="java-region" type="filesharing:java-region"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="java-change" type="filesharing:java-change"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>  
+    
+    <xs:complexType name="line-region-changed">
+        <xs:sequence>
+            <xs:element name="line-region" type="filesharing:line-region"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="line-change" type="filesharing:line-change"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>      
+        
+    <xs:complexType name="region" abstract="true">
+        <xs:sequence>
+            <xs:element name="region-name" type="xs:string"
+                        minOccurs="1" maxOccurs="1">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>      
+    
+    <xs:complexType name="change" abstract="true"/>
+
+    <xs:complexType name="content">
+        <xs:sequence>
+            <xs:element name="encoding" type="xs:string"
+                    minOccurs="1" maxOccurs="1">
+            </xs:element>
+            <xs:element name="digest" type="xs:string"
+                    minOccurs="1" maxOccurs="1">
+            </xs:element>
+            <xs:element name="data" type="xs:string"
+                    minOccurs="1" maxOccurs="1">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>        
+    
+    
+    
+    <!-- ===================================================== -->
+    <!-- ================   Text Region    =================== -->    
+    <!-- ===================================================== -->
+                
+    <xs:complexType name="text-region">
+        <xs:complexContent>
+            <xs:extension base="filesharing:region">
+                <xs:sequence>
+                    <xs:element name="begin-offset" type="xs:integer"
+                            minOccurs="1" maxOccurs="1">
+                    </xs:element>
+                    <xs:element name="length" type="xs:integer"
+                            minOccurs="1" maxOccurs="1">
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+    
+    <xs:complexType name="line-range">
+        <xs:sequence>
+            <xs:element name="from-line" type="xs:integer"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="to-line" type="xs:integer"
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>
+    </xs:complexType> 
+            
+    <xs:complexType name="offset-range">
+        <xs:sequence>    
+            <xs:element name="begin-offset" type="xs:integer"
+                    minOccurs="1" maxOccurs="1">
+            </xs:element>
+            <xs:element name="length" type="xs:integer"
+                    minOccurs="1" maxOccurs="1">
+            </xs:element>
+        </xs:sequence>        
+    </xs:complexType> 
+        
+    <xs:complexType name="text-change">
+        <xs:complexContent>
+            <xs:extension base="filesharing:change">
+                    <xs:choice maxOccurs="1">       
+                        <xs:element name="change-texts" type="filesharing:change-texts"
+                                minOccurs="1" maxOccurs="1"/>
+                        <xs:element name="content" type="filesharing:content"
+                                minOccurs="1" maxOccurs="1"/>                        
+                    </xs:choice>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>      
+    
+    
+    
+    <!-- ===================================================== -->
+    <!-- ================   Java Region    =================== -->    
+    <!-- ===================================================== -->  
+    <xs:complexType name="java-region">
+        <xs:complexContent>
+            <xs:extension base="filesharing:region">
+                <xs:sequence>
+                    <xs:element name="begin-offset" type="xs:integer"
+                            minOccurs="1" maxOccurs="1">
+                    </xs:element>
+                    <xs:element name="length" type="xs:integer"
+                            minOccurs="1" maxOccurs="1">
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+        
+    <xs:complexType name="java-change">
+        <xs:complexContent>
+            <xs:extension base="filesharing:change">
+                <xs:sequence>            
+                    <xs:choice maxOccurs="1">       
+                        <xs:element name="change-texts" type="filesharing:change-texts"
+                                minOccurs="1" maxOccurs="1"/>
+                        <xs:element name="content" type="filesharing:content"
+                                minOccurs="1" maxOccurs="1"/>                        
+                    </xs:choice>
+                </xs:sequence>            
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>      
+       
+    
+    
+    <!-- ===================================================== -->
+    <!-- ================   Line Region    =================== -->    
+    <!-- ===================================================== -->  
+    <xs:complexType name="line-region">
+        <xs:complexContent>
+            <xs:extension base="filesharing:region">
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="line-change">
+        <xs:complexContent>
+            <xs:extension base="filesharing:change">
+                <xs:sequence>            
+                    <xs:choice maxOccurs="1">
+                        <xs:element name="content" type="filesharing:content"
+                                minOccurs="1" maxOccurs="1"/>                        
+                    </xs:choice>
+                </xs:sequence>            
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>     
+
+
+
+    <!-- ===================================================== -->
+    <!-- ================Common Region Type=================== -->    
+    <!-- ===================================================== -->     
+    
+    <xs:complexType name="change-texts">    
+        <xs:sequence>
+            <xs:element name="remove-texts" type="filesharing:remove-texts"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="insert-texts" type="filesharing:insert-texts"
+                    minOccurs="1" maxOccurs="1"/> 
+        </xs:sequence>
+    </xs:complexType>
+                        
+    <xs:complexType name="remove-texts">
+        <xs:sequence>
+            <xs:element name="remove-text" type="filesharing:remove-text"
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="insert-texts">
+        <xs:sequence>
+            <xs:element name="insert-text" type="filesharing:insert-text"
+                    minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>   
+    
+    <xs:complexType name="remove-text">
+        <xs:sequence>
+            <xs:element name="offset" type="xs:integer"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    
+    <xs:complexType name="insert-text">
+        <xs:sequence>
+            <xs:element name="offset" type="xs:integer"
+                    minOccurs="1" maxOccurs="1"/>
+            <xs:element name="content" type="filesharing:content"
+                    minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>      
+ 
+</xs:schema>

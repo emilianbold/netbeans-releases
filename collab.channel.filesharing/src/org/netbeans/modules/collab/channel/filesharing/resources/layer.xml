@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+
+	<folder name="Services">
+		<folder name="Collaboration">
+			<folder name="Channels">
+				<file name="org-netbeans-modules-collab-channel-filesharing-FilesharingCollabletFactory.instance"/>
+				<file name="org-netbeans-modules-collab-channel-filesharing-ui-FilesharingCollabletFactorySettings.settings" url="FilesharingCollabletFactorySettings.settings">
+					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.Bundle"/>
+					<attr name="SystemFileSystem.layer" stringvalue="session"/>
+				</file>
+				<folder name="FileHandlers">
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabTextFileHandlerFactory.instance"/>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabJavaFileHandlerFactory.instance"/>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabXMLFileHandlerFactory.instance"/>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabFormFileHandlerFactory.instance"/>                                         
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabDefaultFileHandlerFactory.instance"/>                                                                                                    
+				</folder>
+				<!-- TAF: I don't believe this should actually be registered as a channel, since it just supporting library code
+				<file name="org-netbeans-modules-collab-channel-filesharing-mdc-MDCollabletFactory.instance"/>
+				<folder name="MDCollablet">
+				    <file name="org-netbeans-modules-collab-channel-filesharing-mdc-EventNotifierFactory.instance"/>
+				    <file name="org-netbeans-modules-collab-channel-filesharing-mdc-EventProcessorFactory.instance"/>
+				</folder>
+				-->
+			</folder>
+		</folder>
+		<folder name="JavaHelp">
+			<!-- Merge it after the main online help: -->
+			<attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-collab-channel-filesharing-helpset.xml" boolvalue="true"/>
+			<!-- This DTD gives an instance of HelpSet: -->
+			<file name="org-netbeans-modules-collab-channel-filesharing-helpset.xml" url="org-netbeans-modules-collab-channel-filesharing-helpset.xml" />
+			<!-- Merge before additional helpsets such as the Ant Manual. -->
+			<attr name="org-netbeans-modules-collab-channel-filesharing-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+		</folder>
+	</folder>
+
+	<folder name="UI">
+		<folder name="Services">
+			<folder name="Collaboration">
+				<folder name="Channels">
+					<file name="org-netbeans-modules-collab-channel-filesharing-ui-FilesharingCollabletFactorySettings.shadow">
+						<attr name="originalFile" stringvalue="Services/Collaboration/Channels/org-netbeans-modules-collab-channel-filesharing-ui-FilesharingCollabletFactorySettings.settings"/>
+					</file>
+				</folder>
+			</folder>
+		</folder>
+	</folder>
+
+    <!-- Lines marked as erroneous: -->
+	<folder name="Editors">
+		<folder name="AnnotationTypes">
+			<file name="regionhistory-annotation.xml" url="regionhistory-annotation.xml"/>                
+			<file name="region-annotation1.xml" url="region-annotation1.xml"/>
+			<file name="region-annotation2.xml" url="region-annotation2.xml"/>
+			<file name="region-annotation3.xml" url="region-annotation3.xml"/>
+			<file name="region-annotation4.xml" url="region-annotation4.xml"/>
+			<file name="region-annotation5.xml" url="region-annotation5.xml"/>
+			<file name="region-annotation6.xml" url="region-annotation6.xml"/>
+			<file name="region-annotation7.xml" url="region-annotation7.xml"/>
+			<file name="region-annotation8.xml" url="region-annotation8.xml"/>
+			<file name="region-annotation9.xml" url="region-annotation9.xml"/>
+		</folder>
+	</folder>     
+
+	<folder name="Shortcuts">
+		<file name="C-L.instance">
+			<attr name="instanceClass" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.actions.SyncAction"/>
+		</file>   
+	</folder> <!-- Shortcuts -->
+        
+        <!-- actions -->
+        <folder name="Actions">
+            <folder name="Collaboration">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.actions.Bundle"/>
+                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareFilesAction.instance" />
+            </folder>
+        </folder>        
+
+        <!--
+	<folder name="Menu">
+		<folder name="Help">
+			<folder name="HelpShortcuts">
+				
+				<attr name="org-netbeans-modules-collab-channel-chat-mainpage.xml/org-netbeans-modules-collab-channel-filesharing-mainpage.xml" boolvalue="true"/>
+				
+				<file name="org-netbeans-modules-collab-channel-filesharing-mainpage.xml" url="help-main-ref.xml" >
+					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.channel.filesharing.resources.Bundle"/>
+					<attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>                          
+				</file>                                  
+				
+				<attr name="org-netbeans-modules-collab-channel-filesharing-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
+			</folder>
+		</folder>
+	</folder>    
+	-->
+</filesystem>
