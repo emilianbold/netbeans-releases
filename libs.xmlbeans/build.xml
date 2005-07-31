@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="libs/xmlbeans" default="netbeans" basedir=".">
+
+    <import file="../../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra" depends="release"/>
+
+    <target name="release" depends="init">
+        <ant dir="../external" target="unscramble"/>
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy todir="${cluster}/modules/ext">
+            <fileset dir="../external">
+                <include name="xbean-1.0.4.jar"/>
+            </fileset>
+        </copy>
+    </target>
+    
+
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${cluster}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
+            <license name="xbeans-license.txt">
+                <text>For the integration module:</text>
+                <file location="${license.file}"/>
+                <text>For the xmlbeans library:</text>
+                <file location="../../nbbuild/external/apache-license-2.0.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+</project>
