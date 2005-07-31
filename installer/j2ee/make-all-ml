@@ -1,1 +1,1 @@
-ant -Dismp.home=$IS_HOME -Dcluster.dir=../../nbbuild/netbeans/enterprise1 build-ml
+ant -Dismp.home=$IS_HOME -Dcluster.dir=../../nbbuild/netbeans/enterprise2 build-ml
