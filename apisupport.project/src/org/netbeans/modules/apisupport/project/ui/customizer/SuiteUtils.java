@@ -279,7 +279,7 @@ public class SuiteUtils {
         } else {
             suiteProps.setPrivateProperty(projectPropKey, projectDirF.getAbsolutePath());
         }
-        String modulesProp = suiteProps.getProperty("modules"); // NOI18N
+        String modulesProp = suiteProps.getProperty(MODULES_PROPERTY);
         if (modulesProp == null) {
             modulesProp = "";
         }
@@ -287,7 +287,7 @@ public class SuiteUtils {
             modulesProp += ":"; // NOI18N
         }
         modulesProp += "${" + projectPropKey + "}"; // NOI18N
-        suiteProps.setProperty("modules", modulesProp.split("(?<=:)", -1)); // NOI18N
+        suiteProps.setProperty(MODULES_PROPERTY, modulesProp.split("(?<=:)", -1)); // NOI18N
         
         // adjust subModule's properties
         NbModuleProjectGenerator.createSuiteProperties(subModule.getProjectDirectory(), suiteDirF);
