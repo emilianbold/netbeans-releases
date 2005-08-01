@@ -415,6 +415,86 @@ public class Translator {
             
             operations.add(new MBeanOperation(name,type,parameters,exceptions,desc));   
         }
+        
+        //discovery of wrapped operations
+        String strNbWrapOp = (String) 
+            wiz.getProperty(WizardConstants.PROP_INTRO_METHOD_NB);
+        int nbWrapOp = 0;
+        if (strNbWrapOp != null)
+            nbWrapOp = new Integer(strNbWrapOp).intValue();
+        for (int i = 0; i < nbWrapOp; i++) {
+            String name  = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_METHOD_NAME + i);
+            if ((name == null) || (name.equals(""))) // NOI18N
+                throw new IllegalArgumentException("operation name invalid"); // NOI18N
+            
+            String type  = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_METHOD_TYPE + i);
+            if ((type == null) || (type.equals(""))) // NOI18N
+                throw new IllegalArgumentException("operation type invalid"); // NOI18N
+            
+            String desc = (String)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_METHOD_DESCR + i);
+            if (desc==null) 
+                throw new IllegalArgumentException("operation description invalid"); // NOI18N
+            if (desc.trim().equals("")) { // NOI18N
+                desc = "Operation "+ name + "\n"; // NOI18N
+            }
+            
+            // discovery of operation exceptions
+            String excepts = (String)
+                    wiz.getProperty(WizardConstants.PROP_INTRO_METHOD_EXCEP + i);
+            if (excepts == null) {
+                throw new IllegalArgumentException("method exception invalid"); // NOI18N
+            }
+            List<MBeanOperationException> exceptions = new ArrayList();
+            if ( (excepts != null) && (!excepts.trim().equals("")) ) { // NOI18N
+                String[] splitExcepts = excepts.split(
+                        WizardConstants.EXCEPTIONS_SEPARATOR);
+                for (int j = 0 ; j < splitExcepts.length ; j++) {
+                    String exceptClass = splitExcepts[j].trim();
+                    String exceptDesc = (String)wiz.getProperty(
+                        WizardConstants.PROP_INTRO_METHOD_EXCEP + i + 
+                        WizardConstants.DESC + j);
+                    if (exceptDesc == null) {
+                        throw new IllegalArgumentException(
+                                "operation exception description invalid"); // NOI18N
+                    }
+                    exceptions.add(
+                            new MBeanOperationException(exceptClass, exceptDesc));
+                }
+            }
+            
+            // discovery of operation parameters
+            String param = (String)wiz.getProperty(
+                WizardConstants.PROP_INTRO_METHOD_PARAM + i);
+            List<MBeanOperationParameter> parameters = new ArrayList();
+            if ( (param != null) && (!param.trim().equals("")) ) { // NOI18N
+                // one or more parameters
+                String[] params = param.split(
+                        WizardConstants.PARAMETER_SEPARATOR);
+                for (int j = 0 ; j < params.length ; j++) {
+                    String[] parts = params[j].trim().split(" "); // NOI18N
+                    String paramDesc = (String)wiz.getProperty(
+                        WizardConstants.PROP_INTRO_METHOD_PARAM + i + 
+                        WizardConstants.DESC + j);
+                    if (paramDesc == null) {
+                        paramDesc ="a parameter"; // NOI18N
+                    }
+                    parameters.add(new MBeanOperationParameter(parts[1], 
+                            parts[0], paramDesc));
+                }
+            }
+            
+            Boolean opSelect = (Boolean) wiz.getProperty(
+                    WizardConstants.PROP_INTRO_METHOD_SELECT + i);
+            if (opSelect == null)
+                throw new IllegalArgumentException("operation selected invalid"); // NOI18N
+            
+            if (opSelect)
+                operations.add(new MBeanOperation(name,type,parameters,exceptions,desc,true));   
+        }
+        
         mbean.setOperations(operations);
     }
     

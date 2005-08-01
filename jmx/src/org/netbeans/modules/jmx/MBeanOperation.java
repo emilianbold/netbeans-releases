@@ -95,6 +95,37 @@ public class MBeanOperation {
         
         forceParamName(this.parameters);
     }
+    
+    /**
+     * Constructor
+     * @param operationName the name of the operation
+     * @param operationReturnType the operation return type
+     * @param operationParameters the parameter list of that operation
+     * @param operationExceptions the exception list of that operation
+     * @param operationDescription the description of that operation
+     * @param isIntrospected true only if attribute have been discovered
+     */
+    public MBeanOperation(String operationName, String operationReturnType,
+            List<MBeanOperationParameter> operationParameters,
+            List<MBeanOperationException> operationExceptions,
+            String operationDescription, boolean isIntrospected) {
+        
+        this.name = operationName;
+        this.returnTypeName = operationReturnType;
+        if (operationParameters == null)
+            this.parameters = new ArrayList();
+        else
+            this.parameters = operationParameters;
+        if (operationExceptions == null)
+            this.exceptions = new ArrayList();
+        else
+            this.exceptions = operationExceptions;
+        this.description = operationDescription;
+        this.method = null;
+        
+        this.wrapped = isIntrospected;
+        forceParamName(this.parameters);
+    }
 
     private void forceParamName(List<MBeanOperationParameter> parameters) {
         
