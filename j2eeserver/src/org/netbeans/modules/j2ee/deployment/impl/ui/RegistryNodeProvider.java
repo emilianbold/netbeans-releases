@@ -80,7 +80,7 @@ public class RegistryNodeProvider {
                 if (DeploymentFactory.class.isAssignableFrom(clazz))
                     return server.getDeploymentFactory();
                 if (DeploymentManager.class.isAssignableFrom(clazz))
-                    return server.getDeploymentManager();
+                    return server.getDisconnectedDeploymentManager();
                 return null;
             }
             public Lookup.Result lookup(Lookup.Template template) {

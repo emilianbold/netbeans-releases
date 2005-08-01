@@ -156,7 +156,7 @@ public class ServerInstance implements Node.Cookie {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
             throw new IllegalStateException(msg);
         }
-        disconnectedManager = server.getDeploymentManager(url);
+        disconnectedManager = server.getDisconnectedDeploymentManager(url);
         return disconnectedManager;
     }
     

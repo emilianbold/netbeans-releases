@@ -303,7 +303,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 if(instance != null) {
                     config = instance.getDeploymentManagerForConfiguration().createConfiguration(mds.getDeployableObject());
                 } else {
-                    config = getServer ().getDeploymentManager().createConfiguration(mds.getDeployableObject());
+                    config = getServer ().getDisconnectedDeploymentManager().createConfiguration(mds.getDeployableObject());
                 }
                 config.getDConfigBeanRoot(mds.getDeployableObject().getDDBeanRoot());
                 if (!hasCustomSupport()) {
