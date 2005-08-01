@@ -7,40 +7,42 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * SlidingTabDisplayerButtonUI.java
- *
- * Created on March 27, 2004, 6:23 PM
  */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import org.netbeans.swing.tabcontrol.TabDisplayer;
-
-import org.openide.awt.HtmlRenderer;
-
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.geom.AffineTransform;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicToggleButtonUI;
-import java.awt.*;
-import java.awt.geom.AffineTransform;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.openide.awt.HtmlRenderer;
 
-/** Button UI that can paint rotated text, which is used by <code>BasicSlidingTabDisplayerUI</code>.
+/**
+ * Button UI that can paint rotated text, which is used by {@link BasicSlidingTabDisplayerUI}.
  * Uses the lightweight HTML renderer for good performance when rendering HTML strings.  It is
- * intended as a UI for <code>BasicSlidingTabDisplayerUI.IndexButton</code>.  Provide a subclass
+ * intended as a UI for {@link BasicSlidingTabDisplayerUI.IndexButton}.  Provide a subclass
  * of this class via UIDefaults to change the painting behavior or appearance of the tab buttons in
- * &quot;sliding&quot; style tabbed controls.    Typically the only method of interest when
- * subclassing is <code>paintBackground</code>.
+ * &quot;sliding&quot; style tabbed controls.  Typically the only method of interest when
+ * subclassing is {@link #paintBackground}.
  * <p>
- * As with its superclass BasicToggleButtonUI, instances of this class should be stateless,
+ * As with its superclass {@link BasicToggleButtonUI}, instances of this class should be stateless,
  * such that a single instance can manage any number of buttons.
  *
  * @see BasicSlidingTabDisplayerUI
- * @see org.netbeans.swing.tabcontrol.TabbedContainer.TYPE_SLIDING
- * @author  Tim Boudreau
+ * @see org.netbeans.swing.tabcontrol.TabbedContainer#TYPE_SLIDING
+ * @author Tim Boudreau
  */
 public class SlidingTabDisplayerButtonUI extends BasicToggleButtonUI {
     private static final SlidingTabDisplayerButtonUI INSTANCE = new SlidingTabDisplayerButtonUI();

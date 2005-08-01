@@ -7,31 +7,36 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * DefaultTabbedContainerUI.java
- *
- * Created on March 14, 2004, 3:28 PM
  */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import org.netbeans.swing.tabcontrol.TabData;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
-import org.netbeans.swing.tabcontrol.TabbedContainerUI;
-import org.netbeans.swing.tabcontrol.event.*;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.plaf.ComponentUI;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.AlphaComposite;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Composite;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.LayoutManager;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -40,6 +45,26 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.SingleSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.plaf.ComponentUI;
+import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.TabDisplayer;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.TabbedContainerUI;
+import org.netbeans.swing.tabcontrol.event.ArrayDiff;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
+import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
+import org.netbeans.swing.tabcontrol.event.VeryComplexListDataEvent;
 
 /**
  * Default UI implementation for tabbed containers.  Manages installing the tab
@@ -47,8 +72,8 @@ import java.util.Set;
  * relationship between the data models and selection models of the UI.
  * <p>
  * Note that there is typically little reasons to subclass this - to affect the display
- * or behavior of the tabs, implement TabDisplayerUI, the UI delegate for the embedded
- * component which displays the tabs.
+ * or behavior of the tabs, implement {@link org.netbeans.swing.tabcontrol.TabDisplayerUI},
+ * the UI delegate for the embedded component which displays the tabs.
  *
  * @author Tim Boudreau
  */
@@ -678,7 +703,7 @@ public class DefaultTabbedContainerUI extends TabbedContainerUI {
     /** Checks the position of the tabbed container relative to its parent
      * window, and potentially updates its orientation client property.
      *
-     * @see org.netbeans.swing.tabcontrol.TabDisplayer.PROP_ORIENTATION
+     * @see TabDisplayer#PROP_ORIENTATION
      */
     protected final void updateOrientation() {
         if (!container.isDisplayable()) {
