@@ -89,7 +89,8 @@ public class SNMPPanel extends javax.swing.JPanel {
         updateSelected();
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigPanel.class, "LBL_SNMP_Panel"));   // NOI18N                             
+        //setName(NbBundle.getMessage(ConfigPanel.class, "LBL_SNMP_Panel"));   // NOI18N   
+        setName(bundle.getString("LBL_SNMP_Panel"));// NOI18N
         //agentNameField.getDocument().addDocumentListener(this);   
         sNMPPortJTextField.addKeyListener(new KeyListener() {                   
                     public void keyTyped(KeyEvent e) {

@@ -57,7 +57,8 @@ public class ConfigPanel extends javax.swing.JPanel
                      bundle.getString("LBL_RMI_Password_File"));//NOI18N
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigPanel.class, "LBL_Config_Panel")); // NOI18N    
+        //setName(NbBundle.getMessage(ConfigPanel.class, "LBL_Config_Panel")); // NOI18N    
+        setName(bundle.getString("LBL_Config_Panel")); // NOI18N
         
         
         //Accessibility

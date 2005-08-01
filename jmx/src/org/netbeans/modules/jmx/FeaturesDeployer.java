@@ -22,7 +22,7 @@ public class FeaturesDeployer {
     private static boolean runOnSun() {    
         if(enable == null)  {
             try {
-                Class.forName("com.sun.jmx.mbeanserver.JmxMBeanServer");// NOI18N
+                Class.forName("com.sun.jmx.mbeanserver.JmxMBeanServer"); // NOI18N
                 enable = Boolean.TRUE;
             }catch(Throwable e) {
                 enable = Boolean.FALSE;

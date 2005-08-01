@@ -66,7 +66,8 @@ public class NotificationTypePopup extends AbstractPopup{
         initComponents();
         readSettings();
         
-        setDimensions(NbBundle.getMessage(NotificationTypePopup.class,"LBL_NotificationType_Popup"));// NOI18N
+        //setDimensions(NbBundle.getMessage(NotificationTypePopup.class,"LBL_NotificationType_Popup"));// NOI18N
+        setDimensions(bundle.getString("LBL_NotificationType_Popup"));// NOI18N
     }
     
     protected void initJTable() {
@@ -78,7 +79,7 @@ public class NotificationTypePopup extends AbstractPopup{
     }
     
     protected void initComponents() {
-        
+        /*
         addJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_addType"));// NOI18N
         removeJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_remType"));// NOI18N
         closeJButton = instanciatePopupButton(NbBundle.getMessage(NotificationTypePopup.class,"LBL_Notification_close"));// NOI18N
@@ -92,6 +93,21 @@ public class NotificationTypePopup extends AbstractPopup{
         closeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_CLOSE_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
         popupTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_NOTIFICATION_TYPE_TABLE"));// NOI18N
         popupTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NotificationTypePopup.class,"ACCESS_NOTIFICATION_TYPE_TABLE_DESCRIPTION"));// NOI18N
+        */
+        addJButton = instanciatePopupButton(bundle.getString("LBL_Notification_addType"));// NOI18N
+        removeJButton = instanciatePopupButton(bundle.getString("LBL_Notification_remType"));// NOI18N
+        closeJButton = instanciatePopupButton(bundle.getString("LBL_Notification_close"));// NOI18N
+        
+        //Accessibility
+        removeJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REMOVE_NOTIFICATION_TYPE"));// NOI18N
+        removeJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REMOVE_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_ADD_NOTIFICATION_TYPE"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_ADD_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_CLOSE_NOTIFICATION_TYPE"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_CLOSE_NOTIFICATION_TYPE_DESCRIPTION"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_NOTIFICATION_TYPE_TABLE"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_NOTIFICATION_TYPE_TABLE_DESCRIPTION"));// NOI18N
+        
         
         
         addJButton.addActionListener(

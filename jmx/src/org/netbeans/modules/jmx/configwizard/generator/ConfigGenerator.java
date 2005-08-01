@@ -235,7 +235,8 @@ public class ConfigGenerator
                 }
             }
             ManagementDialogs.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));// NOI18N
+                    //new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));// NOI18N
+                    new NotifyDescriptor.Message(bundle.getString("MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));// NOI18N
             
         }
         

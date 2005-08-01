@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import org.openide.util.NbBundle;
 import java.awt.Insets;
 import java.awt.event.*;
+import java.util.ResourceBundle;
 import org.openide.awt.Mnemonics;
 
 /**
@@ -31,6 +32,11 @@ import org.openide.awt.Mnemonics;
  * Abstract class which implements the generic behaviour of any popup window
  */
 public abstract class AbstractPopup extends JDialog implements ActionListener {
+    
+    protected final int POPUP_WIDTH = 500;
+    protected final int POPUP_HEIGHT = 250;
+    
+    protected ResourceBundle bundle;
     
     protected JTable popupTable;
     protected AbstractJMXTableModel popupTableModel;
@@ -49,6 +55,7 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
      */
     public AbstractPopup(Dialog d) {
         super(d);
+        bundle = NbBundle.getBundle(AbstractPopup.class);
     }
     
     /**
@@ -61,7 +68,7 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         setModal(true);
         setResizable(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setBounds(350,250,winWidth,250);
+        setBounds(350,250,winWidth,POPUP_HEIGHT);
         setVisible(true);
     }
     
@@ -101,7 +108,8 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 1, 5, 0));
 
-        cancelJButton = new JButton(NbBundle.getMessage(AbstractPopup.class,"LBL_Generic_Cancel"));// NOI18N
+        //cancelJButton = new JButton(NbBundle.getMessage(AbstractPopup.class,"LBL_Generic_Cancel"));// NOI18N
+        cancelJButton = new JButton(bundle.getString("LBL_Generic_Cancel"));// NOI18N
         cancelJButton.setMargin(new Insets(cancelJButton.getMargin().top, 12,
                 cancelJButton.getMargin().bottom, 12));
         winWidth = 

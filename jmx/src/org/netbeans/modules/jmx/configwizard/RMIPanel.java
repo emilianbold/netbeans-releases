@@ -384,8 +384,9 @@ public class RMIPanel extends javax.swing.JPanel {
         });
         
         // Provide a name in the title bar.
-        setName(NbBundle.getMessage(ConfigPanel.class,
-                 "LBL_RMI_Panel"));
+        //setName(NbBundle.getMessage(ConfigPanel.class,
+          //       "LBL_RMI_Panel"));
+        setName(bundle.getString("ACCESS_RMI_ENABLE_RMI")); // NOI18N
         
          //Accessibility
         rMIJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_ENABLE_RMI")); // NOI18N

@@ -33,6 +33,15 @@ public class WrapperOperationExceptionPopup extends OperationExceptionPopup {
         super(ancestorPanel, methodModel, textField, editedRow);
     }
     
+    protected void setDimensions(String str) {
+        setTitle(str);
+        setModal(true);
+        setResizable(false);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBounds(350,250,POPUP_WIDTH,POPUP_HEIGHT);
+        setVisible(true);
+    }
+    
     protected JButton[] getUsedButtons() {
         return new JButton[] {
                 closeJButton

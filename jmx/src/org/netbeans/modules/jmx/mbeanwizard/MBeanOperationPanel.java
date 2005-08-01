@@ -27,18 +27,15 @@ import org.openide.WizardDescriptor;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import javax.swing.JLabel;
 import javax.swing.event.*;
-import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.jmx.FireEvent;
-import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.mbeanwizard.table.OperationTable;
-import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperOperationTableModel;
 import org.openide.WizardDescriptor.FinishablePanel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -55,6 +52,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
     private boolean DEBUG = false;
     
     protected OperationWizardPanel wiz;
+    protected ResourceBundle bundle; 
     
     protected OperationTable operationTable;
     protected MBeanOperationTableModel operationModel;
@@ -69,8 +67,10 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
     public MBeanOperationPanel(OperationWizardPanel wiz) {
         super(new BorderLayout());
         this.wiz = wiz;
+        bundle = NbBundle.getBundle(MBeanOperationPanel.class);
         initComponents();
-        String str = NbBundle.getMessage(MBeanOperationPanel.class,"LBL_Operation_Panel");// NOI18N
+        //String str = NbBundle.getMessage(MBeanOperationPanel.class,"LBL_Operation_Panel");// NOI18N
+        String str = bundle.getString("LBL_Operation_Panel");// NOI18N
         setName(str);
         wiz.setErrorMsg(" ");// NOI18N
         
@@ -83,9 +83,10 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
         operationTable.setName("methodTable");// NOI18N
         
         // Accessibility
-        operationTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE"));// NOI18N
-        operationTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
-        
+        //operationTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE"));// NOI18N
+        //operationTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
+        operationTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_OPERATIONS_TABLE"));// NOI18N
+        operationTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
     }
     
     /**
@@ -113,10 +114,12 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
         // defines the method add and remove button
         JButton methAddJButton = new JButton();
         Mnemonics.setLocalizedText(methAddJButton,
-                NbBundle.getMessage(MBeanOperationPanel.class,"BUTTON_add_method"));//NOI18N
+                //NbBundle.getMessage(MBeanOperationPanel.class,"BUTTON_add_method"));//NOI18N
+                bundle.getString("BUTTON_add_method"));// NOI18N
         opRemoveJButton = new JButton();
         Mnemonics.setLocalizedText(opRemoveJButton,
-                NbBundle.getMessage(MBeanOperationPanel.class,"BUTTON_rem_method"));//NOI18N
+                //NbBundle.getMessage(MBeanOperationPanel.class,"BUTTON_rem_method"));//NOI18N
+                bundle.getString("BUTTON_rem_method"));// NOI18N
         methAddJButton.setName("methAddJButton");// NOI18N
         opRemoveJButton.setName("methRemoveJButton");// NOI18N
         
@@ -169,16 +172,24 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
                 BorderLayout.CENTER);
         firstInternalMethodPanel.add(methodJPanel, BorderLayout.SOUTH);
         
-        tableLabel = new JLabel(NbBundle.getMessage(MBeanOperationPanel.class, "LBL_OpTable"));// NOI18N
+        tableLabel = new JLabel();
+        Mnemonics.setLocalizedText(tableLabel,
+                     bundle.getString("LBL_OpTable"));//NOI18N
+        tableLabel.setLabelFor(operationTable);
         
         add(tableLabel, BorderLayout.NORTH);
         add(firstInternalMethodPanel, BorderLayout.CENTER);
         
         //Accessibility
-        methAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_ADD_OPERATION"));// NOI18N
-        methAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_ADD_OPERATION_DESCRIPTION"));// NOI18N
-        opRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_REMOVE_OPERATION"));// NOI18N
-        opRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_REMOVE_OPERATION_DESCRIPTION"));// NOI18N
+        //methAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_ADD_OPERATION"));// NOI18N
+        //methAddJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_ADD_OPERATION_DESCRIPTION"));// NOI18N
+        //opRemoveJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_REMOVE_OPERATION"));// NOI18N
+        //opRemoveJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_REMOVE_OPERATION_DESCRIPTION"));// NOI18N
+        
+        methAddJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_ADD_OPERATION"));// NOI18N
+        methAddJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_ADD_OPERATION_DESCRIPTION"));// NOI18N
+        opRemoveJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REMOVE_OPERATION"));// NOI18N
+        opRemoveJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REMOVE_OPERATION_DESCRIPTION"));// NOI18N
         
     }
     
@@ -252,7 +263,8 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
             if (getPanel() != null) {
                 if (getPanel().OperationAlreadyContained()) {
                     opValid = false;
-                    msg = NbBundle.getMessage(MBeanOperationPanel.class,"LBL_State_Same_Operation");// NOI18N
+                    //msg = NbBundle.getMessage(MBeanOperationPanel.class,"LBL_State_Same_Operation");// NOI18N
+                    msg = getPanel().bundle.getString("LBL_State_Same_Operation");// NOI18N
                 }
             }
             setErrorMsg(msg);

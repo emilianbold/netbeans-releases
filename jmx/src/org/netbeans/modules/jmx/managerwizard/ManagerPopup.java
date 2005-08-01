@@ -71,7 +71,8 @@ public class ManagerPopup extends javax.swing.JDialog {
         setName("ManagerPopup");
         
         addListeners();
-        setDimensions(NbBundle.getMessage(ManagerPopup.class,"LBL_RMIAgentURL_Popup"));// NOI18N
+        //setDimensions(NbBundle.getMessage(ManagerPopup.class,"LBL_RMIAgentURL_Popup"));// NOI18N
+        setDimensions(bundle.getString("LBL_RMIAgentURL_Popup"));// NOI18N
     }
     
     protected void setDimensions(String str) {

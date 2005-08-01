@@ -32,6 +32,7 @@ import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 
 
@@ -56,7 +57,8 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
     public MBeanWrapperOperationPanel(WrapperOperationsWizardPanel wiz) {
         super(wiz);
         initWrapperComponents();
-        String str = NbBundle.getMessage(MBeanWrapperOperationPanel.class,"LBL_Operation_Panel");// NOI18N
+        //String str = NbBundle.getMessage(MBeanWrapperOperationPanel.class,"LBL_Operation_Panel");// NOI18N
+        String str = bundle.getString("LBL_Operation_Panel");// NOI18N
         setName(str);
     }
     
@@ -65,6 +67,14 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
         operationModel = new MBeanWrapperOperationTableModel();
         operationTable = new WrapperOperationTable(this,getModel(), wiz);
         operationTable.getSelectionModel().addListSelectionListener(this);
+        
+        // Accessibility
+        //operationTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_OPERATIONS_TABLE"));// NOI18N
+        //operationTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanOperationPanel.class,"ACCESS_WRAPPED_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
+    
+        operationTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_OPERATIONS_TABLE"));// NOI18N
+        operationTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_WRAPPED_OPERATIONS_TABLE_DESCRIPTION"));// NOI18N
+    
     }
     
     /**
@@ -88,8 +98,9 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
     
     protected void affectOperationTableComponents(TableColumnModel columnModel) {
         super.affectOperationTableComponents(columnModel);
-        tableLabel.setText(NbBundle.getMessage(MBeanWrapperOperationPanel.class,  
-                "LBL_OpTable_FromExistingClass"));// NOI18N
+        Mnemonics.setLocalizedText(tableLabel,
+                     bundle.getString("LBL_OpTable_FromExistingClass"));//NOI18N 
+        tableLabel.setLabelFor(operationTable);
         
         /* New ActionListener for the remove button that overrides the one from
          * the super class: Now, to be able to remove a line, it must not be 
@@ -191,7 +202,8 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
             if (getPanel() != null) {
                 if (getPanel().OperationAlreadyContained()) {
                     opValid = false;
-                    msg = NbBundle.getMessage(MBeanWrapperOperationPanel.class,"LBL_State_Same_Operation");// NOI18N
+                    //msg = NbBundle.getMessage(MBeanWrapperOperationPanel.class,"LBL_State_Same_Operation");// NOI18N
+                    msg = getPanel().bundle.getString("LBL_State_Same_Operation");// NOI18N
                 }
                 setErrorMsg(msg);
             }

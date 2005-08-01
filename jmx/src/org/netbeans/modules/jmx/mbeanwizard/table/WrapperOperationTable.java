@@ -28,6 +28,8 @@ import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.MBeanOperationPanel.OperationWizardPanel;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
@@ -38,21 +40,24 @@ import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperOperationTabl
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.editor.OperationExceptionPanelEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.OperationParameterPanelEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationExceptionPopup;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationParameterPopup;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.EmptyRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationParameterPanelRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationExceptionPanelRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.popup.WrapperOperationExceptionPopup;
 import org.netbeans.modules.jmx.mbeanwizard.popup.WrapperOperationParameterPopup;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanWrapperAttributeTableModel;
 
 /**
  *
  * @author an156382
  */
 public class WrapperOperationTable extends OperationTable {
+    
+    private static final int SELWIDTH = 55;
     
     final JTable table;
     final OperationWizardPanel wiz;
@@ -65,7 +70,17 @@ public class WrapperOperationTable extends OperationTable {
         this.table = this;
         this.model = (MBeanWrapperOperationTableModel) model;
         this.wiz = wiz;
+        ajustSelectionColumnWidth();
     }
+    
+    private void ajustSelectionColumnWidth() {
+        TableColumnModel colModel = this.getColumnModel();
+        TableColumn tc = colModel.getColumn(MBeanWrapperAttributeTableModel.IDX_ATTR_SELECTION);
+        tc.setMaxWidth(SELWIDTH);
+        tc.setMinWidth(SELWIDTH);
+        tc.setPreferredWidth(SELWIDTH);
+    }
+    
     /**
      * Returns the cell editor for the table according to the column
      * @param row the row to be considered

@@ -54,6 +54,15 @@ public class WrapperOperationParameterPopup extends OperationParameterPopup {
         super(ancestorPanel, model, textField, editedRow, wiz);
     }
     
+    protected void setDimensions(String str) {
+        setTitle(str);
+        setModal(true);
+        setResizable(false);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setBounds(350,250,POPUP_WIDTH,POPUP_HEIGHT); 
+        setVisible(true);
+    }
+    
     protected void initJTable() {
         
         popupTableModel = new OperationParameterTableModel();

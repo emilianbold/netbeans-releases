@@ -68,7 +68,8 @@ public class OperationParameterPopup extends AbstractPopup{
         
         readSettings();
         
-        setDimensions(NbBundle.getMessage(OperationParameterPopup.class,"LBL_OperationParameter_Popup"));// NOI18N
+        //setDimensions(NbBundle.getMessage(OperationParameterPopup.class,"LBL_OperationParameter_Popup"));// NOI18N
+        setDimensions(bundle.getString("LBL_OperationParameter_Popup"));// NOI18N
     }
     
     protected void initJTable() {
@@ -80,7 +81,7 @@ public class OperationParameterPopup extends AbstractPopup{
     
     protected void initComponents() {
         initJTable();
-        
+        /*
         addJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_addParam"));// NOI18N
         removeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_remParam"));// NOI18N
         closeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationParameter_close"));// NOI18N
@@ -94,6 +95,21 @@ public class OperationParameterPopup extends AbstractPopup{
         closeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_CLOSE_PARAMETER_DESCRIPTION"));// NOI18N
         popupTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_PARAMETER_TABLE"));// NOI18N
         popupTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationParameterPopup.class,"ACCESS_PARAMETER_TABLE_DESCRIPTION"));// NOI18N
+        */
+        
+        addJButton = instanciatePopupButton(bundle.getString("LBL_OperationParameter_addParam"));// NOI18N
+        removeJButton = instanciatePopupButton(bundle.getString("LBL_OperationParameter_remParam"));// NOI18N
+        closeJButton = instanciatePopupButton(bundle.getString("LBL_OperationParameter_close"));// NOI18N
+     
+        //Accessibility
+        removeJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REMOVE_PARAMETER"));// NOI18N
+        removeJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REMOVE_PARAMETER_DESCRIPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_ADD_PARAMETER"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_ADD_PARAMETER_DESCRIPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_CLOSE_PARAMETER"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_CLOSE_PARAMETER_DESCRIPTION"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_PARAMETER_TABLE"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PARAMETER_TABLE_DESCRIPTION"));// NOI18N
         
         
         addJButton.setName("addParamJButton");// NOI18N

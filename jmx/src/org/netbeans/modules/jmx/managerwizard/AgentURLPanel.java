@@ -523,11 +523,13 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
                                 isUserCredentialRbtnSelected()) { //box checked
                             if (!getPanel().getUserNameValidity()) {
                                 credentials = false;
-                                msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_UserName_Incorrect");// NOI18N
+                                //msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_UserName_Incorrect");// NOI18N
+                                msg = getPanel().bundle.getString("LBL_State_UserName_Incorrect");// NOI18N
                             }
                             if (!getPanel().getUserPasswordValidity()) {
                                 credentials = false;
-                                msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_UserPassword_Incorrect");// NOI18N
+                                //msg = NbBundle.getMessage(AgentURLPanel.class,"LBL_State_UserPassword_Incorrect");// NOI18N
+                                msg = getPanel().bundle.getString("LBL_State_UserPassword_Incorrect");// NOI18N
                             }
                         }
                 setErrorMsg(msg);

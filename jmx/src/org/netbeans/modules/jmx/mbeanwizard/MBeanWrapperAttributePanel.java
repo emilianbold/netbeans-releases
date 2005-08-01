@@ -15,8 +15,6 @@ package org.netbeans.modules.jmx.mbeanwizard;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.mbeanwizard.table.WrapperAttributeTable;
@@ -32,6 +30,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 
 
@@ -57,6 +56,14 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
         attributeModel = new MBeanWrapperAttributeTableModel(); 
         attributeTable = new WrapperAttributeTable(attributeModel,wiz); 
         attributeTable.getSelectionModel().addListSelectionListener(this);
+        
+        // Accessibility
+        //attributeTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanWrapperAttributePanel.class,"ACCESS_ATTRIBUTES_TABLE"));// NOI18N
+        //attributeTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MBeanWrapperAttributePanel.class,"ACCESS_WRAPPED_ATTRIBUTES_TABLE_DESCRIPTION"));// NOI18N
+    
+        attributeTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_ATTRIBUTES_TABLE"));// NOI18N
+        attributeTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_WRAPPED_ATTRIBUTES_TABLE_DESCRIPTION"));// NOI18N
+    
     }
     
     /**
@@ -84,8 +91,9 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
     
     protected void affectAttributeTableComponents(TableColumnModel columnModel) {
         super.affectAttributeTableComponents(columnModel);
-        tableLabel.setText(NbBundle.getMessage(MBeanWrapperAttributePanel.class,  
-                "LBL_AttrTable_FromExistingClass"));// NOI18N
+        Mnemonics.setLocalizedText(tableLabel,
+                     bundle.getString("LBL_AttrTable_FromExistingClass"));//NOI18N 
+        tableLabel.setLabelFor(attributeTable);
         
         /* New ActionListener for the remove button that overrides the one from
          * the super class: Now, to be able to remove a line, it must not be 
@@ -202,7 +210,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
             if (getPanel() != null) {
                 if (getPanel().AttributeNameAlreadyChecked()) { 
                     attrValid = false;
-                    msg = NbBundle.getMessage(MBeanWrapperAttributePanel.class,"LBL_State_Same_Attribute_Name");// NOI18N
+                    //msg = NbBundle.getMessage(MBeanWrapperAttributePanel.class,"LBL_State_Same_Attribute_Name");// NOI18N
+                    msg = getPanel().bundle.getString("LBL_State_Same_Attribute_Name");// NOI18N
                 }
                 setErrorMsg(msg);
             }
@@ -287,7 +296,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                             (String)wiz.getProperty(WizardConstants.PROP_ATTR_NAME + i),
                             (String)wiz.getProperty(WizardConstants.PROP_ATTR_TYPE + i),
                             (String)wiz.getProperty(WizardConstants.PROP_ATTR_RW + i),
-                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_RW + i)));
+                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_DESCR + i)));
                             
                 }
                 getPanel().orderNumber = oNumber;

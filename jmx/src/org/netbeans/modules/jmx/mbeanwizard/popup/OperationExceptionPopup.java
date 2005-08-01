@@ -67,8 +67,9 @@ public class OperationExceptionPopup extends AbstractPopup{
         
         readSettings();
         
-        setDimensions(NbBundle.getMessage(OperationExceptionPopup.class,
-                "LBL_OperationException_Popup"));// NOI18N
+        //setDimensions(NbBundle.getMessage(OperationExceptionPopup.class,
+          //      "LBL_OperationException_Popup"));// NOI18N
+        setDimensions(bundle.getString("LBL_OperationException_Popup"));// NOI18N
     }
     
     protected void initJTable() {
@@ -79,7 +80,7 @@ public class OperationExceptionPopup extends AbstractPopup{
     }
     
     protected void initComponents() {
-        
+        /*
         addJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_addException"));// NOI18N
         removeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_remException"));// NOI18N
         closeJButton = instanciatePopupButton(NbBundle.getMessage(OperationExceptionPopup.class,"LBL_OperationException_close"));// NOI18N
@@ -94,6 +95,22 @@ public class OperationExceptionPopup extends AbstractPopup{
         closeJButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_CLOSE_EXCEPTION_DESCRIPTION"));// NOI18N
         popupTable.getAccessibleContext().setAccessibleName(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_EXCEPTION_TABLE"));// NOI18N
         popupTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OperationExceptionPopup.class,"ACCESS_EXCEPTION_TABLE_DESCRIPTION"));// NOI18N
+        */
+        
+        addJButton = instanciatePopupButton(bundle.getString("LBL_OperationException_addException"));// NOI18N
+        removeJButton = instanciatePopupButton(bundle.getString("LBL_OperationException_remException"));// NOI18N
+        closeJButton = instanciatePopupButton(bundle.getString("LBL_OperationException_close"));// NOI18N
+        
+        
+        //Accessibility
+        removeJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REMOVE_EXCEPTION"));// NOI18N
+        removeJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REMOVE_EXCEPTION_DESCRIPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_ADD_EXCEPTION"));// NOI18N
+        addJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_ADD_EXCEPTION_DESCRIPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_CLOSE_EXCEPTION"));// NOI18N
+        closeJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_CLOSE_EXCEPTION_DESCRIPTION"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_EXCEPTION_TABLE"));// NOI18N
+        popupTable.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_EXCEPTION_TABLE_DESCRIPTION"));// NOI18N
         
         
         addJButton.setName("addExceptionJButton");// NOI18N
@@ -112,7 +129,9 @@ public class OperationExceptionPopup extends AbstractPopup{
             public void actionPerformed(ActionEvent evt) {
                 if (existsSameException()) {
                      ManagementDialogs.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(OperationExceptionPopup.class, "ERR_InheritanceConflict"), // NOI18N
+                        //new NotifyDescriptor.Message(NbBundle.getMessage(OperationExceptionPopup.class, "ERR_InheritanceConflict"), // NOI18N
+                          //   NotifyDescriptor.ERROR_MESSAGE));
+                          new NotifyDescriptor.Message(bundle.getString("ERR_InheritanceConflict"), // NOI18N
                              NotifyDescriptor.ERROR_MESSAGE));
                 } else {
                     textFieldToFill.setText(storeSettings());

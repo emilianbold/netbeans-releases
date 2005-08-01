@@ -29,17 +29,20 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.JDialog;
 import javax.swing.ListSelectionModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.jmx.FireEvent;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.listener.OperationTextFieldKeyListener;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationExceptionPopup;
 import org.netbeans.modules.jmx.mbeanwizard.popup.OperationParameterPopup;
-import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.JComboBoxCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.OperationParameterPanelEditor;
 import org.netbeans.modules.jmx.mbeanwizard.editor.OperationExceptionPanelEditor;
+import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationParameterPanelRenderer;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.OperationExceptionPanelRenderer;
+import org.netbeans.modules.jmx.mbeanwizard.tablemodel.MBeanAttributeTableModel;
 
 /**
  * Class responsible for the operation table in the Method and Attribute Panel

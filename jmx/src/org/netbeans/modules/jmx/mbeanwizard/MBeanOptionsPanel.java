@@ -115,6 +115,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         
         Mnemonics.setLocalizedText(fromExistingClassJCheckBox,
                      bundle.getString("LBL_from_existing_class"));//NOI18N
+        Mnemonics.setLocalizedText(classSelectionJLabel,
+                     bundle.getString("LBL_class_selection"));//NOI18N
         Mnemonics.setLocalizedText(mbeanRegistrationJCheckBox,
                      bundle.getString("LBL_registrationCbx"));//NOI18N
         Mnemonics.setLocalizedText(preRegisterParamJCheckBox,
@@ -168,10 +170,12 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         extendedMBeanJRadioButton = new javax.swing.JRadioButton();
         dynamicMBeanJRadioButton = new javax.swing.JRadioButton();
         fromExistingClassJCheckBox = new javax.swing.JCheckBox();
-        classSelectionJTextField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         mbeanRegistrationJCheckBox = new javax.swing.JCheckBox();
         preRegisterParamJCheckBox = new javax.swing.JCheckBox();
+        classSelectionJPanel = new javax.swing.JPanel();
+        classSelectionJLabel = new javax.swing.JLabel();
+        classSelectionJTextField = new javax.swing.JTextField();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -181,9 +185,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
@@ -191,7 +194,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
@@ -199,7 +202,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -211,7 +214,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         generatedFileJLabel.setMaximumSize(new java.awt.Dimension(1000, 1000));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
@@ -222,7 +225,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         generatedFileJTextField.setName("generatedFileJTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -231,7 +234,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
@@ -248,7 +251,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
         northCenterPanel.add(standardMBeanJRadioButton, gridBagConstraints);
@@ -263,7 +266,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         northCenterPanel.add(extendedMBeanJRadioButton, gridBagConstraints);
@@ -278,7 +281,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         northCenterPanel.add(dynamicMBeanJRadioButton, gridBagConstraints);
@@ -292,23 +295,9 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         northCenterPanel.add(fromExistingClassJCheckBox, gridBagConstraints);
-
-        classSelectionJTextField.setText("java.lang.String");
-        classSelectionJTextField.setEnabled(false);
-        classSelectionJTextField.setMinimumSize(new java.awt.Dimension(4, 15));
-        classSelectionJTextField.setPreferredSize(new java.awt.Dimension(160, 20));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        northCenterPanel.add(classSelectionJTextField, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -338,11 +327,43 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         northCenterPanel.add(jPanel1, gridBagConstraints);
+
+        classSelectionJPanel.setLayout(new java.awt.GridBagLayout());
+
+        classSelectionJLabel.setLabelFor(classSelectionJTextField);
+        classSelectionJLabel.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        classSelectionJPanel.add(classSelectionJLabel, gridBagConstraints);
+
+        classSelectionJTextField.setEnabled(false);
+        classSelectionJTextField.setMinimumSize(new java.awt.Dimension(4, 15));
+        classSelectionJTextField.setPreferredSize(new java.awt.Dimension(160, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        classSelectionJPanel.add(classSelectionJTextField, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
+        northCenterPanel.add(classSelectionJPanel, gridBagConstraints);
 
         add(northCenterPanel, java.awt.BorderLayout.NORTH);
 
@@ -367,6 +388,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         dynamicMBeanJRadioButton.setEnabled(!mbeanFromExistingClass);
         
         extendedMBeanJRadioButton.setSelected(mbeanFromExistingClass);
+        classSelectionJLabel.setEnabled(mbeanFromExistingClass);
         classSelectionJTextField.setEnabled(mbeanFromExistingClass);
         //browseJButton.setEnabled(mbeanFromExistingClass);
         
@@ -394,6 +416,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     }//GEN-LAST:event_standardMBeanJRadioButtonActionPerformed
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel classSelectionJLabel;
+    private javax.swing.JPanel classSelectionJPanel;
     private javax.swing.JTextField classSelectionJTextField;
     private javax.swing.JRadioButton dynamicMBeanJRadioButton;
     private javax.swing.JRadioButton extendedMBeanJRadioButton;
