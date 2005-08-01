@@ -67,7 +67,7 @@ public interface TreeModel extends Model {
      * @throws  UnknownTypeException if this TreeModel implementation is not
      *          able to resolve children for given node type
      *
-     * @return  true if node is leaf
+     * @return  the children count
      * @since 1.1
      */
     public abstract int getChildrenCount (Object node) 
