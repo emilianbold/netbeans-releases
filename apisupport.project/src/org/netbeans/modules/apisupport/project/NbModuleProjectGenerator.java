@@ -119,13 +119,13 @@ public class NbModuleProjectGenerator {
                     Enumeration en = jf.entries();
                     while (en.hasMoreElements()) {
                         JarEntry entry = (JarEntry)en.nextElement();
-                        if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
+                        if (!entry.isDirectory() && entry.getName().endsWith(".class")) { // NOI18N
                             String nm = entry.getName();
                             String path = nm.substring(0, nm.lastIndexOf('/'));
                             packageList.add(path.replace('/', '.'));
                         }
                     }
-                    classPathExtensions.put("ext/" + orig.getNameExt(), "../release/modules/ext/" + orig.getNameExt());
+                    classPathExtensions.put("ext/" + orig.getNameExt(), "release/modules/ext/" + orig.getNameExt()); // NOI18N
                 } catch (IOException e) {
                     //TODO report
                     ErrorManager.getDefault().notify(e);
