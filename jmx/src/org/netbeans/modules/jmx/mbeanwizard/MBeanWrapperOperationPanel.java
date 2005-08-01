@@ -398,7 +398,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                             param.getParamDescription());
                 }
                 
-                wiz.putProperty(WizardConstants.PROP_METHOD_EXCEP + i,
+                wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_EXCEP + i,
                         op.getExceptionClasses());
                 
                 for (int k = 0; k < op.getExceptionsList().size(); k++) {
