@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.universe;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -73,6 +74,7 @@ public final class NbPlatform implements Comparable {
     public static SortedSet/*<NbPlatform>*/ getPlatforms() {
         if (platforms == null) {
             platforms = new TreeSet();
+            // XXX should this be using globalPropertyProvider instead (so properties can refer to one another)?
             EditableProperties p = PropertyUtils.getGlobalProperties();
             Iterator keys = p.keySet().iterator();
             while (keys.hasNext()) {
@@ -147,6 +149,14 @@ public final class NbPlatform implements Comparable {
         return new NbPlatform(null, null, destDir, sources, new URL[0]);
     }
     
+    /**
+     * Register a new platform.
+     * @param id unique ID string for the platform
+     * @param destdir destination directory (i.e. top-level directory beneath which there are clusters)
+     * @param label display label
+     * @return the created platform
+     * @throws IOException in case of problems (e.g. destination directory does not exist)
+     */
     public static NbPlatform addPlatform(final String id, final File destdir, final String label) throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
@@ -154,8 +164,17 @@ public final class NbPlatform implements Comparable {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     String plafDestDir = PLATFORM_PREFIX + id + PLATFORM_DEST_DIR_SUFFIX;
                     props.setProperty(plafDestDir, destdir.getAbsolutePath());
-                    props.setProperty(PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX,
-                            "${" + plafDestDir + "}/harness"); // NOI18N
+                    if (!destdir.isDirectory()) {
+                        throw new FileNotFoundException(destdir.getAbsolutePath());
+                    }
+                    String harnessDirKey = PLATFORM_PREFIX + id + PLATFORM_HARNESS_DIR_SUFFIX;
+                    if (new File(destdir, "harness").isDirectory()) { // NOI18N
+                        // Normal case.
+                        props.setProperty(harnessDirKey, "${" + plafDestDir + "}/harness"); // NOI18N
+                    } else {
+                        // Platform w/o harness. Provide a default harness for it and hope it works.
+                        props.setProperty(harnessDirKey, "${" + PLATFORM_PREFIX + PLATFORM_ID_DEFAULT + PLATFORM_HARNESS_DIR_SUFFIX + "}"); // NOI18N
+                    }
                     props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
