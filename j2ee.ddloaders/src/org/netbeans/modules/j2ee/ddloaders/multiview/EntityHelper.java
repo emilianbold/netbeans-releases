@@ -140,6 +140,24 @@ public class EntityHelper extends EntityAndSessionHelper {
         changeFinderMethodParam(getLocalHomeInterfaceClass(), params, newType);
         changeFinderMethodParam(getHomeInterfaceClass(), params, newType);
         entity.setPrimKeyClass(newType.getName());
+        JavaClass beanClass = getBeanClass();
+        if (beanClass != null) {
+            boolean rollback = true;
+            JMIUtils.beginJmiTransaction(true);
+            try {
+                entityMethodController.registerClassForSave(beanClass);
+                Method[] methods = JMIUtils.getMethods(beanClass);
+                for (int i = 0; i < methods.length; i++) {
+                    Method method = methods[i];
+                    if ("ejbCreate".equals(method.getName())) {
+                        method.setType(newType);
+                    }
+                }
+                rollback = false;
+            } finally {
+                JMIUtils.endJmiTransaction(rollback);
+            }
+        }
     }
 
     private void changeFinderMethodParam(JavaClass javaClass, List params, Type newType) {

@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EntityOverviewForm;
+import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
@@ -141,7 +142,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
 
                 public void setItemValue(String value) {
                     if (Utils.isValidPackageName(value)) {
-                        entity.setPrimKeyClass(value);
+                        entityHelper.setPrimKeyClass(JMIUtils.resolveType(value));
                     } else {
                         primaryKeyComboBoxHelper.refresh();
                     }
