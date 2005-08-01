@@ -13,13 +13,14 @@
 
 package org.netbeans.modules.apisupport.project.queries;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test subprojects.
@@ -48,7 +49,6 @@ public class SubprojectProviderImplTest extends TestBase {
             "openide/io",
             "openide/loaders",
             "xml/api",
-            "editor",
         });
     }
     
@@ -66,11 +66,16 @@ public class SubprojectProviderImplTest extends TestBase {
         Project p = project(project);
         SubprojectProvider spp = (SubprojectProvider) p.getLookup().lookup(SubprojectProvider.class);
         assertNotNull("have SPP in " + p, spp);
-        Set/*<Project>*/ subps = new HashSet();
+        SortedSet/*<String>*/ expected = new TreeSet();
         for (int i = 0; i < subprojects.length; i++) {
-            subps.add(project(subprojects[i]));
+            expected.add(file(subprojects[i]).toURI().toString());
         }
-        assertEquals("correct subprojects for " + project, subps, spp.getSubprojects());
+        SortedSet/*<String>*/ actual = new TreeSet();
+        Iterator it = spp.getSubprojects().iterator();
+        while (it.hasNext()) {
+            actual.add(((Project) it.next()).getProjectDirectory().getURL().toExternalForm());
+        }
+        assertEquals("correct subprojects for " + project, expected.toString(), actual.toString());
     }
     private Project project(String path) throws Exception {
         FileObject dir = nbroot.getFileObject(path);
