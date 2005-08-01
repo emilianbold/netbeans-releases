@@ -72,7 +72,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
             LookupListener resultListener = (LookupListener)WeakListeners.create( LookupListener.class, this, results[i] );
             results[i].addLookupListener( resultListener ); 
         }
-        
+        initialized = true;
     }
     
     /** Needs to override getValue in order to force refresh
