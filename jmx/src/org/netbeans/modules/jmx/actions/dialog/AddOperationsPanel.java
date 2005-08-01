@@ -244,7 +244,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(380, 300));
+        setPreferredSize(new java.awt.Dimension(500, 300));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

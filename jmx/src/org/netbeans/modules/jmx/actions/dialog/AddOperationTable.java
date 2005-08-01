@@ -62,10 +62,9 @@ public class AddOperationTable extends OperationTable {
         if(row < firstEditable) {
             switch (column) {
                 case AddMBeanOperationTableModel.IDX_METH_NAME :
-                    return new TextFieldRenderer(new JTextField(), false, false);
+                    return new TextFieldRenderer(new JTextField(), true, false);
                 case AddMBeanOperationTableModel.IDX_METH_TYPE :
-                    JComboBox typeBox = WizardHelpers.instanciateRetTypeJComboBox();
-                    return new ComboBoxRenderer(typeBox,false);
+                    return new TextFieldRenderer(new JTextField(), true, false);
                 case AddMBeanOperationTableModel.IDX_METH_PARAM :
                     JTextField paramField = new JTextField();
                     paramField.setEditable(false);
@@ -92,8 +91,8 @@ public class AddOperationTable extends OperationTable {
                     return 
                         new OperationExceptionPanelRenderer(excepPanel, excepField);
                 case AddMBeanOperationTableModel.IDX_METH_DESCRIPTION :
-                    return new TextFieldRenderer(new JTextField(), false, false);
-                default : 
+                    return new TextFieldRenderer(new JTextField(), true, false);
+                default :
                     return super.getCellRenderer(row,column);
             }
         }

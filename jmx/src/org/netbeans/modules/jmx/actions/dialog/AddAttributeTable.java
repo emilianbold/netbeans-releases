@@ -53,15 +53,13 @@ public class AddAttributeTable extends AttributeTable {
         if(row < firstEditable) {
             switch (column) {
                 case AddMBeanAttributeTableModel.IDX_ATTR_NAME :
-                    return new TextFieldRenderer(new JTextField(), false, false);
+                    return new TextFieldRenderer(new JTextField(), true, false);
                 case AddMBeanAttributeTableModel.IDX_ATTR_TYPE :
-                    JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
-                    return new ComboBoxRenderer(typeBox,false);
+                    return new TextFieldRenderer(new JTextField(),true,false);
                 case AddMBeanAttributeTableModel.IDX_ATTR_ACCESS :
-                    JComboBox accessBox = WizardHelpers.instanciateAccessJComboBox();
-                    return new ComboBoxRenderer(accessBox,false);
+                    return new TextFieldRenderer(new JTextField(),true,false);
                 case AddMBeanAttributeTableModel.IDX_ATTR_DESCRIPTION :
-                    return new TextFieldRenderer(new JTextField(), false, false);
+                    return new TextFieldRenderer(new JTextField(), true, false);
                 default : 
                     return super.getCellRenderer(row,column);
             }
