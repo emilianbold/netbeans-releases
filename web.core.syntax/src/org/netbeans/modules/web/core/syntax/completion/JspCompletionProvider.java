@@ -33,6 +33,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.Completion;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.web.core.syntax.JSPKit;
 import org.netbeans.modules.web.core.syntax.completion.JspCompletion;
@@ -73,7 +74,9 @@ public class JspCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        return 0;
+        int completionAutoPopup = ((JspSyntaxSupport)Utilities.getDocument(component).getSyntaxSupport()).checkCompletion(component, typedText, false);
+        if(completionAutoPopup == ExtSyntaxSupport.COMPLETION_POPUP) return COMPLETION_QUERY_TYPE + DOCUMENTATION_QUERY_TYPE;
+        else return 0;
     }
     
     public CompletionTask createTask(int type, JTextComponent component) {
