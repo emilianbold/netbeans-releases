@@ -89,7 +89,8 @@ public abstract class EditorContext {
      * @param annotationType a type of annotation to be set
      * @param timeStamp a time stamp to be used
      *
-     * @return annotation
+     * @return annotation or <code>null</code>, when the annotation can not be
+     *         created at the given URL or line number.
      */
     public abstract Object annotate (
         String url, 
