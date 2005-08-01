@@ -910,6 +910,10 @@ public class Evaluator implements JavaParserVisitor {
             ClassType cls = (ClassType) object.referenceType();
             type = cls.superclass();
         }
+        
+        if (ctx.typeContext == null) {
+            Assert.error(currentNode, "methodCallOnNull", ctx.identifier);
+        }
 
         List methods = type.methodsByName(ctx.identifier);
         if (ctx.localContext && methods.size() == 0) {

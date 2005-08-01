@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -135,6 +135,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] { ((Identifier)params[0]).typeContext.name(),  ((Identifier)params[0]).superQualifier };
         else if (reason.equals("accessInstanceVariableFromStaticContext"))
             msgParams = new String [] { ((Identifier)params[0]).identifier };
+        else if (reason.equals("methodCallOnNull"))
+            msgParams = new String[] { params[0].toString() };
         else {
             reason = "unknownInternalError";
             msgParams = null;

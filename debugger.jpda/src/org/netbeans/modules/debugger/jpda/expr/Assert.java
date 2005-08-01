@@ -42,20 +42,14 @@ class Assert {
         throw new EvaluationException(node, cause, params);
     }
 
-    static void assertAssignable(Object o, Class aClass, SimpleNode s, String cause) {
-        if (o == null || !aClass.isAssignableFrom(o.getClass())) {
-            error(s, cause);
-        }
-    }
-
     static void assertAssignable(Object o, Class aClass, SimpleNode s, String p1, Object p2) {
-        if (!aClass.isAssignableFrom(o.getClass())) {
+        if (o != null && !aClass.isAssignableFrom(o.getClass())) {
             error(s, p1, p2);
         }
     }
 
     static void assertAssignable(Object o, Class aClass, SimpleNode s, String p1, Object p2, Object p3) {
-        if (!aClass.isAssignableFrom(o.getClass())) {
+        if (o != null && !aClass.isAssignableFrom(o.getClass())) {
             error(s, p1, p2, p3);
         }
     }
