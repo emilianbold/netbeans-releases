@@ -6,6 +6,6 @@
     <instanceof class="org.openide.util.SharedClassObject"/>
     <instanceof class="org.openide.options.ContextSystemOption"/>
     <instanceof class="org.openide.options.SystemOption"/>
-    <instanceof class="org.netbeans.modules.collab.channel.output.OutputChatCollabletFactorySettings"/>
-    <instance class="org.netbeans.modules.collab.channel.output.OutputChatCollabletFactorySettings"/>
+    <instanceof class="org.netbeans.modules.collab.channel.output.OutputCollabletFactorySettings"/>
+    <instance class="org.netbeans.modules.collab.channel.output.OutputCollabletFactorySettings"/>
 </settings>
