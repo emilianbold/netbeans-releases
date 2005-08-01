@@ -218,8 +218,7 @@ public final class NbModuleProject implements Project {
             }),
             sourcesHelper.createSources(),
             new AntArtifactProviderImpl(this, helper, evaluator()),
-            new CustomizerProviderImpl(this, getHelper(), evaluator(), 
-                    getModuleType() == TYPE_STANDALONE, bundleInfo),
+            new CustomizerProviderImpl(this, getHelper(), evaluator(), bundleInfo),
             new SuiteProviderImpl(),
             typeProvider,
             new PrivilegedTemplatesImpl()                    

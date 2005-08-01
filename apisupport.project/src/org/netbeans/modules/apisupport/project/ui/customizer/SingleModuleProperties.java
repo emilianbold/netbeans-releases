@@ -35,6 +35,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
@@ -102,6 +103,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     // helpers for storing and retrieving real values currently stored on the disk
+    private NbModuleTypeProvider.NbModuleType moduleType;
     private SuiteProvider suiteProvider;
     private ProjectXMLManager projectXMLManager;
     private LocalizedBundleInfo bundleInfo;
@@ -112,7 +114,6 @@ public final class SingleModuleProperties extends ModuleProperties {
     private String implementationVersion;
     private String provTokensString;
     private SortedSet requiredTokens;
-    private boolean isStandalone;
     private NbPlatform platform;
     private NbPlatform originalPlatform;
     
@@ -139,18 +140,22 @@ public final class SingleModuleProperties extends ModuleProperties {
      * Creates a new instance of SingleModuleProperties
      */
     SingleModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator,
-            SuiteProvider sp, boolean isStandalone, LocalizedBundleInfo bundleInfo) {
+            SuiteProvider sp, NbModuleTypeProvider.NbModuleType moduleType,
+            LocalizedBundleInfo bundleInfo) {
         super(helper, evaluator);
         this.suiteProvider = sp;
         this.bundleInfo = bundleInfo;
-        this.isStandalone = isStandalone;
+        this.moduleType = moduleType;
         this.changeSupport = new PropertyChangeSupport(this);
-        this.refresh();
+        this.refresh(moduleType, sp);
     }
     
-    protected void refresh() {
+    protected void refresh(NbModuleTypeProvider.NbModuleType moduleType,
+            SuiteProvider suiteProvider) {
         reloadProperties();
         // reset
+        this.suiteProvider = suiteProvider;
+        this.moduleType = moduleType;
         availablePublicPackages = null;
         dependencyListModel = null;
         friendListModel = null;
@@ -265,7 +270,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     boolean isStandalone() {
-        return isStandalone;
+        return moduleType == NbModuleTypeProvider.STANDALONE;
     }
     
     boolean dependingOnImplDependency() {
@@ -472,7 +477,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
         }
         
-        if (isStandalone) {
+        if (isStandalone()) {
             ModuleProperties.storePlatform(getHelper(), platform);
         }
     }

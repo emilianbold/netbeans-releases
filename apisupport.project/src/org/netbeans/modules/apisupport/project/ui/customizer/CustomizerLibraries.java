@@ -70,9 +70,7 @@ public class CustomizerLibraries extends NbPropertyPanel {
     
     protected void refresh() {
         platformValue.setSelectedItem(getProperties().getActivePlatform());
-        if (!getProperties().isStandalone()) {
-            platformValue.setEnabled(false);
-        }
+        platformValue.setEnabled(getProperties().isStandalone());
         updateEnabled();
         reqTokenList.setModel(getProperties().getRequiredTokenListModel());
         dependencyList.setModel(getProperties().getDependenciesListModel());

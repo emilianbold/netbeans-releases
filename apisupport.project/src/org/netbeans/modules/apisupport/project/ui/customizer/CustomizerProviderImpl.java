@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -38,6 +39,7 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -56,7 +58,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final LocalizedBundleInfo bundleInfo;
-    private final boolean isStandalone;
     
     private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
     
@@ -69,12 +70,10 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     private Dialog dialog;
     
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
-            PropertyEvaluator evaluator, boolean isStandalone,
-            LocalizedBundleInfo bundleInfo) {
+            PropertyEvaluator evaluator, LocalizedBundleInfo bundleInfo) {
         this.project = project;
         this.helper = helper;
         this.evaluator = evaluator;
-        this.isStandalone = isStandalone;
         this.bundleInfo = bundleInfo;
     }
     
@@ -94,15 +93,18 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
             dialog.setVisible(true);
             return;
         } else {
+            Lookup lookup = project.getLookup();
+            SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
+            NbModuleTypeProvider nmtp = (NbModuleTypeProvider) lookup.lookup(NbModuleTypeProvider.class);
             if (moduleProps == null) { // first initialization
                 moduleProps = new SingleModuleProperties(helper, evaluator,
-                        getSuiteProvider(), isStandalone, bundleInfo);
+                        sp, nmtp.getModuleType(), bundleInfo);
                 init();
             }
-            moduleProps.refresh();
+            moduleProps.refresh(nmtp.getModuleType(), sp);
             OptionListener listener = new OptionListener();
             dialog = ProjectCustomizer.createCustomizerDialog(categories,
-                    panelProvider, preselectedCategory, listener,
+                  panelProvider, preselectedCategory, listener,
                     new HelpCtx(CustomizerProviderImpl.class));
             dialog.addWindowListener(listener);
             dialog.setTitle(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle",
@@ -137,10 +139,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     private static final String CATEGORY_COMPILING = "Compiling"; // NOI18N
     private static final String CATEGORY_PACKAGING = "Packaging"; // NOI18N
     private static final String CATEGORY_DOCUMENTING = "Documenting"; // NOI18N
-
-    private SuiteProvider getSuiteProvider() {
-        return (SuiteProvider) project.getLookup().lookup(SuiteProvider.class);
-    }
     
     private void init() {
         ResourceBundle bundle = NbBundle.getBundle(CustomizerProviderImpl.class);

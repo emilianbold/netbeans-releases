@@ -25,6 +25,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
@@ -33,6 +34,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -116,7 +118,10 @@ public class SingleModulePropertiesTest extends TestBase {
         }
         
         // simple reload
-        props.refresh();
+        FileObject miscProjectFO = suite2FO.getFileObject("misc-project");
+        Project miscProject = ProjectManager.getDefault().findProject(miscProjectFO);
+        Lookup lookup = miscProject.getLookup();
+        props.refresh(getModuleType(miscProject), getSuiteProvider(miscProject));
         
         // check that manifest and bundle has been reloaded
         assertEquals("spec. version", "1.1", props.getSpecificationVersion());
@@ -170,10 +175,10 @@ public class SingleModulePropertiesTest extends TestBase {
         SingleModuleProperties props = new SingleModuleProperties(
                 p.getHelper(),
                 p.evaluator(),
-                (SuiteProvider) p.getLookup().lookup(SuiteProvider.class),
-                false,
+                getSuiteProvider(p),
+                getModuleType(p),
                 null);
-        props.refresh();
+        props.refresh(getModuleType(p), getSuiteProvider(p));
     }
     
     
@@ -208,11 +213,20 @@ public class SingleModulePropertiesTest extends TestBase {
         SingleModuleProperties props = new SingleModuleProperties(
                 p.getHelper(),
                 p.evaluator(),
-                (SuiteProvider) p.getLookup().lookup(SuiteProvider.class),
-                false,
+                getSuiteProvider(p),
+                getModuleType(p),
                 locInfo);
 //        System.err.println("Loading of properties: " + (System.currentTimeMillis() - start) + "msec");
         return props;
+    }
+    
+    private NbModuleTypeProvider.NbModuleType getModuleType(Project p) {
+        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class);
+        return nmtp.getModuleType();
+    }
+    
+    private SuiteProvider getSuiteProvider(Project p) {
+        return (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
     }
     
 }
