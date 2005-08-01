@@ -78,12 +78,16 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
                 locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
             }
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
-            moduleSuite.setText("Add to Module Suite:");
+            moduleSuite.setText("Add to Module Suite:"); // XXX I18N!
             suiteModule.setSelected(true);
             suiteModule.setVisible(false);
+            if (moduleSuiteValue.getItemCount() > 0) {
+                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+            }
             platform.setVisible(false);
             platformValue.setVisible(false);
             standAloneModule.setVisible(false);
+            mainProject.setSelected(false);
             mainProject.setVisible(false);
         } else {
             throw new IllegalStateException("Unknown wizard type =" + wizardType);
