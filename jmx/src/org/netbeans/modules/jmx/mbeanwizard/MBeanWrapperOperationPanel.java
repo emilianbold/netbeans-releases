@@ -346,18 +346,18 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                 // the current Operation (number i)
                 MBeanWrapperOperation op = opModel.getWrapperOperation(i);
                 
-                wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_NAME + j,
+                wiz.putProperty(WizardConstants.PROP_METHOD_NAME + j,
                         op.getName());
                 
-                wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_TYPE + j,
+                wiz.putProperty(WizardConstants.PROP_METHOD_TYPE + j,
                         op.getReturnTypeName());
                 
-                wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_PARAM + j,
+                wiz.putProperty(WizardConstants.PROP_METHOD_PARAM + j,
                         op.getSignature());
                 
                 for (int k = 0; k < op.getParametersList().size(); k++) {
                     MBeanOperationParameter param = op.getParameter(k);
-                    wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_PARAM + j + 
+                    wiz.putProperty(WizardConstants.PROP_METHOD_PARAM + j + 
                             WizardConstants.DESC + k,
                             param.getParamDescription());
                 }
@@ -367,15 +367,13 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                 
                 for (int k = 0; k < op.getExceptionsList().size(); k++) {
                     MBeanOperationException excep = op.getException(k);
-                    wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_EXCEP + j + 
+                    wiz.putProperty(WizardConstants.PROP_METHOD_EXCEP + j + 
                             WizardConstants.DESC + k,
                             excep.getExceptionDescription());
                 }
-                wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_DESCR + j,
+                wiz.putProperty(WizardConstants.PROP_METHOD_DESCR + j,
                         op.getDescription());
                 
-                wiz.putProperty(WizardConstants.PROP_INTRO_METHOD_SELECT + j,
-                        op.isSelected());
                 j++;
             }
             
