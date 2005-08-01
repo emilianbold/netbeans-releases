@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="install" location="${netbeans.dest.dir}"/>
         <available file="${install}/bin" type="dir" property="platform.is.complete.app"/>
-        <property name="run.args.common" value="--userdir ${test.user.dir}"/>
+        <property name="run.args.common" value="--userdir ${test.user.dir} -J-Dnetbeans.logger.console=true -J-ea"/>
     </target>
 
     <target name="-prepare-as-app" depends="-init" if="platform.is.complete.app">
