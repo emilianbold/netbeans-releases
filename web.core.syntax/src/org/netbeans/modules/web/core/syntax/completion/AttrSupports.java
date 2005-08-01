@@ -357,8 +357,6 @@ public class AttrSupports extends Object {
          */
         private List completionResults (int offset, JspSyntaxSupport sup, SyntaxElement.TagDirective item, String valuePart) {
             List res = new ArrayList ();
-            
-            
             String path = "";   // NOI18N
             String fileNamePart = valuePart;
             int lastSlash = valuePart.lastIndexOf ('/');
@@ -402,6 +400,14 @@ public class AttrSupports extends Object {
             }
             itemOffset = offset - valuePart.length () + lastSlash + 1;  // works even with -1
             itemLength = fileNamePart.length ();
+            
+            
+            //set substitute offset
+            Iterator i = res.iterator();
+            while(i.hasNext()) {
+                JspCompletionItem.JspResultItem resultItem = (JspCompletionItem.JspResultItem)i.next();
+                resultItem.setSubstituteOffset(itemOffset);
+            }            
             
             return res;
         }

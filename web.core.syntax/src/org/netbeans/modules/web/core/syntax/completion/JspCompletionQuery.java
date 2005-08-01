@@ -393,9 +393,11 @@ public class JspCompletionQuery implements CompletionQuery {
             if (attrName != null) {
                 AttributeValueSupport attSup = 
                     AttributeValueSupport.getSupport(false, elem.getName(), attrName);
+                //we cannot set substitute offset for file cc items
                 if (attSup != null) {
                     CompletionQuery.Result result = attSup.getResult (component, offset, sup, elem, valuePart); // NOI18N
-                    setResultItemsOffset(result.getData(), valuePart.length(), offset);
+                    if(!(attSup instanceof AttrSupports.FilenameSupport))
+                        setResultItemsOffset(result.getData(), valuePart.length(), offset);
                     return result;
                 }
             }
