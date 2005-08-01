@@ -57,7 +57,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         for (int i=0; i< libs.length; i++) {
             String type = libs[i].getType ();
             if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(type)) {
-                List classes = libs[i].getContent("classpath");    //NOI18N
+                List classes = libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
                 for (Iterator it = classes.iterator(); it.hasNext();) {
                     URL entry = (URL) it.next();
                     URL normalizedEntry;
@@ -131,8 +131,8 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         
         public synchronized FileObject[] getRoots () {
             if (this.cache == null) {
-                if (this.lib.getContent("classpath").contains (entry)) {
-                    List src = this.lib.getContent("src");              //NOI18N
+                if (this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
+                    List src = this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
                     List result = new ArrayList ();
                     for (Iterator sit = src.iterator(); sit.hasNext();) {
                         FileObject sourceRootURL = URLMapper.findFileObject((URL) sit.next());
