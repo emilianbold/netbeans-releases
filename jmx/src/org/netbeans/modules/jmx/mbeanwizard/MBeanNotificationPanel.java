@@ -100,8 +100,11 @@ public class MBeanNotificationPanel extends JPanel {
         notifAddJButton.setEnabled(implSelected);
         if (implSelected && (notificationModel.getRowCount() > 0))
             notifRemJButton.setEnabled(true);
-        else if (!implSelected)
+        else if (!implSelected) {
             notifRemJButton.setEnabled(false);
+            if(notificationTable.isEditing())
+                notificationTable.getCellEditor().stopCellEditing();
+        }
     }
     
     private JPanel initSelectionPanel() {
