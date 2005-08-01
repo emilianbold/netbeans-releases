@@ -77,7 +77,7 @@ public class NbPlatformTest extends TestBase {
     public void testComputeDisplayName() throws Exception {
         String name = NbPlatform.computeDisplayName(file("nbbuild/netbeans"));
         //System.out.println("name: " + name);
-        assertTrue("name mentions 'NetBeans IDE'", name.indexOf("NetBeans IDE") != -1);
+        assertTrue("name '" + name + "' mentions 'NetBeans IDE'", name.indexOf("NetBeans IDE") != -1);
     }
     
     public void testAddSourceRoot() throws Exception {

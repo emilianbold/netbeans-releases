@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -560,36 +561,85 @@ public final class NbPlatform implements Comparable {
         if (coreJar == null) {
             throw new IllegalArgumentException(destdir.getAbsolutePath());
         }
+        String currVer, implVers;
         JarFile jf = new JarFile(coreJar);
         try {
-            // first try to find the Bundle for 4.2+ (after openide split)
-            ZipEntry bundle = jf.getEntry("org/netbeans/core/startup/Bundle.properties"); // NOI18N
-            if (bundle == null) {
-                // might be <4.2 (before openide split)
-                bundle = jf.getEntry("org/netbeans/core/Bundle.properties"); // NOI18N
-            }
-            if (bundle == null) {
-                throw new IOException(coreJar.getAbsolutePath());
-            }
-            Properties props = new Properties();
-            InputStream is = jf.getInputStream(bundle);
-            try {
-                props.load(is);
-            } finally {
-                is.close();
-            }
-            String currVer = props.getProperty("currentVersion"); // NOI18N
+            currVer = findCurrVer(jf, "");
             if (currVer == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
-            String implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            implVers = jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
             if (implVers == null) {
                 throw new IOException(coreJar.getAbsolutePath());
             }
-            return MessageFormat.format(currVer, new Object[] {implVers});
         } finally {
             jf.close();
         }
+        // Also check in localizing bundles for 'currentVersion', since it may be branded.
+        // We do not know what the runtime branding will be, so look for anything.
+        File[] clusters = destdir.listFiles();
+        BRANDED_CURR_VER: if (clusters != null) {
+            for (int i = 0; i < clusters.length; i++) {
+                File coreLocaleDir = new File(clusters[i], "core" + File.separatorChar + "locale"); // NOI18N
+                if (!coreLocaleDir.isDirectory()) {
+                    continue;
+                }
+                String[] kids = coreLocaleDir.list();
+                if (kids != null) {
+                    for (int j = 0; j < kids.length; j++) {
+                        String name = kids[j];
+                        String prefix = "core"; // NOI18N
+                        String suffix = ".jar"; // NOI18N
+                        if (!name.startsWith(prefix) || !name.endsWith(suffix)) {
+                            continue;
+                        }
+                        String infix = name.substring(prefix.length(), name.length() - suffix.length());
+                        int uscore = infix.lastIndexOf('_');
+                        if (uscore == -1) {
+                            // Malformed.
+                            continue;
+                        }
+                        String lastPiece = infix.substring(uscore + 1);
+                        if (Arrays.asList(Locale.getISOCountries()).contains(lastPiece) ||
+                                (!lastPiece.equals("nb") && Arrays.asList(Locale.getISOLanguages()).contains(lastPiece))) { // NOI18N
+                            // Probably a localization, not a branding... so skip it. (We want to show English only.)
+                            // But hardcode support for branding 'nb' since this is also Norwegian Bokmal, apparently!
+                            continue;
+                        }
+                        jf = new JarFile(new File(coreLocaleDir, name));
+                        try {
+                            String brandedCurrVer = findCurrVer(jf, infix);
+                            if (brandedCurrVer != null) {
+                                currVer = brandedCurrVer;
+                                break BRANDED_CURR_VER;
+                            }
+                        } finally {
+                            jf.close();
+                        }
+                    }
+                }
+            }
+        }
+        return MessageFormat.format(currVer, new Object[] {implVers});
+    }
+    private static String findCurrVer(JarFile jar, String infix) throws IOException {
+        // first try to find the Bundle for 4.2+ (after openide split)
+        ZipEntry bundle = jar.getEntry("org/netbeans/core/startup/Bundle" + infix + ".properties"); // NOI18N
+        if (bundle == null) {
+            // might be <4.2 (before openide split)
+            bundle = jar.getEntry("org/netbeans/core/Bundle" + infix + ".properties"); // NOI18N
+        }
+        if (bundle == null) {
+            return null;
+        }
+        Properties props = new Properties();
+        InputStream is = jar.getInputStream(bundle);
+        try {
+            props.load(is);
+        } finally {
+            is.close();
+        }
+        return props.getProperty("currentVersion"); // NOI18N
     }
 
     /**
