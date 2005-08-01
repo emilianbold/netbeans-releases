@@ -137,7 +137,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         if (tokens.hasMoreTokens()) {
             File fil = new File(tokens.nextToken());
             String name = fil.getName();
-            name = name.substring(0, name.lastIndexOf('.') - 1);
+            name = name.substring(0, name.lastIndexOf('.'));
             name = name.replaceAll("[0-9._-]+$", "");
             data.setProjectName(name);
             JarFile jf = null;
