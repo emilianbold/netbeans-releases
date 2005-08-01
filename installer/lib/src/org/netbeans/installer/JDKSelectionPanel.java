@@ -76,12 +76,6 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
             return false;
         }
         
-        return true;
-    }
-    
-    public void exited(WizardBeanEvent event) {
-        super.exited(event);
-        
         boolean belowRecommendedJDK = isBelowRecommendedJDK(jdkHome);
         logEvent(this, Log.DBG, "belowRecommendedJDK: " + belowRecommendedJDK);
         Util.setJdkHome(jdkHome);
@@ -91,6 +85,8 @@ public class JDKSelectionPanel extends DirectoryChooserPanel
         }
         logEvent(this, Log.DBG, "User Selected Java Home: " + jdkHome); //NOI18N
         Util.setBelowRecommendedJDK(belowRecommendedJDK);
+        
+        return true;
     }
     
     private boolean isBelowRecommendedJDK(String jdkHome) {
