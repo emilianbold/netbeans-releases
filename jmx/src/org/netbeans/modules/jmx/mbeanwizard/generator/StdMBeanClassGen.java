@@ -159,7 +159,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                 
                 construct.getParameters().add(param);
                 construct.setBodyText("super(" + mbean.getName() + // NOI18N
-                        WizardConstants.MBEAN_ITF_SUFFIX + ");\n" + // NOI18N
+                        WizardConstants.MBEAN_ITF_SUFFIX + ".class);\n" + // NOI18N
                         "this.theRef = theRef;\n"); // NOI18N
                 
                 //create ref field
@@ -330,7 +330,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
     {
         List opList = mbean.getOperations();
         MBeanOperation[] operations = (MBeanOperation[])
-        opList.toArray(new MBeanOperation[opList.size()]);
+            opList.toArray(new MBeanOperation[opList.size()]);
         updateOperationsInClass(mbeanClass, mbeanRes, operations);
     }
     
@@ -494,7 +494,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             }
         }
         for (int i = 0; i < operations.length; i++) {
-            if (!operations[i].isMethodExists() && !operations[i].isWrapped())
+            if (!operations[i].isMethodExists())
                 addOpMethod(mbeanClass, operations[i], false);
         }
     }
@@ -533,10 +533,10 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             boolean isDeclaration) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
         
-        String methodBody = "\n// add your own implementation\n\n"; // NOI18N
-        
+        StringBuffer body = new StringBuffer();
         if (operation.isWrapped()) {
-            StringBuffer body = new StringBuffer();
+            if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME))
+                body.append("return "); // NOI18N
             body.append("theRef." + operation.getName() + "("); // NOI18N
             for (int i = 0; i < operation.getParametersSize(); i ++) {
                 MBeanOperationParameter param = operation.getParameter(i);
@@ -545,11 +545,15 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                     body.append(","); // NOI18N
             }
             body.append(");\n"); // NOI18N
-        } else if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
-            methodBody += "return " +  // NOI18N
-                WizardHelpers.getDefaultValue(operation.getReturnTypeName()) + 
-                ";\n"; // NOI18N
+        } else {
+            body.append("\n// add your own implementation\n\n"); // NOI18N
+            if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
+                body.append("return " +  // NOI18N
+                        WizardHelpers.getDefaultValue(operation.getReturnTypeName()) +
+                        ";\n"); // NOI18N
+            }
         }
+        
         
         StringBuffer doc = new StringBuffer();
         doc.append(operation.getDescription() + "\n"); // NOI18N
@@ -590,7 +594,7 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                 doc.toString(), // javadoc text
                 null, // jvadoc
                 null, // object body
-                isDeclaration ? null : methodBody, // string body
+                isDeclaration ? null : body.toString(), // string body
                 Collections.EMPTY_LIST, // type params
                 params, // parameters
                 exceptions, // exceptions

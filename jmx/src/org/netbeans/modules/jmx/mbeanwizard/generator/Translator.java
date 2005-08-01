@@ -103,7 +103,8 @@ public class Translator {
         JavaClass wrappedClass = (JavaClass) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS);
         mbean.setWrapppedClass((wrappedClass != null));
-        mbean.setWrappedClassName(wrappedClass.getName());
+        if (wrappedClass != null)
+            mbean.setWrappedClassName(wrappedClass.getName());
         
         // retrieve informations about MBeanRegistration interface
         Boolean implMBRegist = (Boolean) 
