@@ -12,33 +12,15 @@
  */
 
 package org.netbeans.modules.tomcat5.ide;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
 
-import org.openide.filesystems.*;
-import org.openide.nodes.Node;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.*;
-
 import org.openide.ErrorManager;
-import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
 
@@ -80,9 +62,7 @@ public class DebugSupport {
     }
     
     private static File getDefaultWebXML(TomcatManager tm) {
-        File cb = tm.getCatalinaBaseDir();
-        if (cb == null)
-            cb = tm.getCatalinaHomeDir();
+        File cb = tm.getTomcatProperties().getCatalinaDir();
         File webXML = new File(cb, "conf" + File.separator + "web.xml");
         if (webXML.exists())
             return webXML;

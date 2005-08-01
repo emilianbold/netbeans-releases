@@ -62,7 +62,7 @@ public class LogManager {
                 return;
             }
             serverLog = new ServerLog(
-                manager.getDisplayName(),
+                manager.getTomcatProperties().getDisplayName(),
                 new InputStreamReader(process.getInputStream()),
                 new InputStreamReader(process.getErrorStream()),
                 true,
@@ -116,13 +116,14 @@ public class LogManager {
      * engine element.
      */
     public void openSharedContextLog() {
-        TomcatManagerConfig tomcatManagerConfig = manager.tomcatManagerConfig();
+        TomcatManagerConfig tomcatManagerConfig = manager.getTomcatManagerConfig();
         tomcatManagerConfig.refresh();
         if (!tomcatManagerConfig.hasLogger()) return;
         LogViewer newSharedContextLog = null;
         try {
+            TomcatProperties tp = manager.getTomcatProperties();
             newSharedContextLog = new LogViewer(
-                manager.getCatalinaDir(),
+                tp.getCatalinaDir(),
                 manager.getCatalinaWork(),
                 null,
                 tomcatManagerConfig.loggerClassName(),
@@ -182,7 +183,7 @@ public class LogManager {
      *         otherwise.
      */
     public boolean hasSharedLogger() {
-        TomcatManagerConfig tomcatManagerConfig = manager.tomcatManagerConfig();
+        TomcatManagerConfig tomcatManagerConfig = manager.getTomcatManagerConfig();
         tomcatManagerConfig.refresh();
         return tomcatManagerConfig.hasLogger();
     }
@@ -205,7 +206,7 @@ public class LogManager {
             moduleConfig = new TomcatModuleConfig(
                     module.getDocRoot(),
                     module.getPath(),
-                    manager.tomcatManagerConfig().serverXmlPath());
+                    manager.getTomcatManagerConfig().serverXmlPath());
             tomcatModuleConfigs.put(module, moduleConfig);
         } else {
             moduleConfig = (TomcatModuleConfig)o;
@@ -216,7 +217,7 @@ public class LogManager {
         LogViewer newContextLog = null;
         try {
             newContextLog = new LogViewer(
-                manager.getCatalinaDir(),
+                manager.getTomcatProperties().getCatalinaDir(),
                 manager.getCatalinaWork(),
                 module.getPath(),
                 moduleConfig.loggerClassName(),
@@ -280,7 +281,7 @@ public class LogManager {
             moduleConfig = new TomcatModuleConfig(
                     module.getDocRoot(),
                     module.getPath(),
-                    manager.tomcatManagerConfig().serverXmlPath());
+                    manager.getTomcatManagerConfig().serverXmlPath());
             tomcatModuleConfigs.put(module, moduleConfig);
         } else {
             moduleConfig = (TomcatModuleConfig)o;

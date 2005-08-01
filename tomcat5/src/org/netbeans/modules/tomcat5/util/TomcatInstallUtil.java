@@ -22,8 +22,6 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.*;
 
 import org.openide.ErrorManager;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.cookies.EditorCookie;
@@ -31,23 +29,17 @@ import org.openide.cookies.SaveCookie;
 
 import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatManager;
 
 import org.w3c.dom.Document;
 import org.apache.xml.serialize.*;
-import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Utilities;
+
 
 /**
  *
  * @author Martin Grebac
  */
 public class TomcatInstallUtil {
-    
-    static private final String TOMCAT_TEMP_DIR = "temp";                       //NOI18N
-    static private final String SERVER_XML_NAME_EXT = "server.xml";             //NOI18N
-    static private final String TOMCAT_CONF_DIR = "conf";//NOI18N
     
     /** default value of bundled tomcat server port */
     private static final Integer BUNDLED_DEFAULT_SERVER_PORT = new Integer(8084);
@@ -72,81 +64,10 @@ public class TomcatInstallUtil {
     private static final String TRUE    = "true";   // NOI18N
     
     /** Creates a new instance of TomcatInstallUtil */
-    public TomcatInstallUtil() {
-    }    
-    
-    public static boolean noTempDir(File homeDir) {
-        FileFilter filter = new FileFilter() {
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && pathname.getName().equals(TOMCAT_TEMP_DIR); 
-            }
-        };
-        File[] subFolders = homeDir.listFiles( filter );
-        if ( subFolders == null || subFolders.length == 0 )
-            return true;
-
-        return false;        
+    private TomcatInstallUtil() {
     }
     
-    public static boolean noServerXML(File homeDir, File baseDir) {
-        File testDir = ( baseDir != null ) ? baseDir : homeDir;
-        
-        FileFilter filter = new FileFilter() {
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && pathname.getName().equals(TOMCAT_CONF_DIR);
-            }
-        };
-        File[] subFolders = testDir.listFiles( filter );
-        if ( subFolders == null || subFolders.length == 0 )
-            return true;
-        
-        File[] serverFiles = subFolders[0].listFiles( new FileFilter() {
-            public boolean accept(File pathname) {
-                return pathname.getName().equals( SERVER_XML_NAME_EXT );
-            }
-        } );
-        if ( serverFiles == null || serverFiles.length == 0 )
-            return true;
-
-        return false;
-    }
-    
-    public static boolean noBootStrapJar(File homeDir) {
-        File[] subFolders = homeDir.listFiles();
-        if (subFolders==null) return true;
-        for (int i=0; i<subFolders.length; i++) {
-            if (subFolders[i].getName().equals("bin")&&subFolders[i].isDirectory()) {//NOI18N
-                File[] subBinFolders = subFolders[i].listFiles();
-                if (subBinFolders==null) return true;
-                for (int ii=0; ii<subBinFolders.length; ii++) {
-                    if (subBinFolders[ii].getName().equals("bootstrap.jar")) {  //NOI18N
-                        return false;
-                   }
-                }
-            }
-        }
-        return true;
-    }    
-
-    // bin/catalina.xml is specific for T5 - it's not in T4, nor T4.1, so we can use this for T4.x check
-    public static boolean noCatalinaXml(File homeDir) {
-        File[] subFolders = homeDir.listFiles();
-        if (subFolders==null) return true;
-        for (int i=0; i<subFolders.length; i++) {
-            if (subFolders[i].getName().equals("bin") && subFolders[i].isDirectory()) { //NOI18N
-                File[] subBinFolders = subFolders[i].listFiles();
-                if (subBinFolders==null) return true;
-                for (int ii=0; ii<subBinFolders.length; ii++) {
-                    if (subBinFolders[ii].getName().equals("catalina.xml")) {   //NOI18N
-                        return false;
-                   }
-                }
-            }
-        }
-        return true;
-    }
-    
-    public static String getAdminPort(Server server) {
+    public static String getShutdownPort(Server server) {
         String port;
         
         port = server.getAttributeValue("port");
@@ -207,7 +128,7 @@ public class TomcatInstallUtil {
      */
     public static File getBundledHome() {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject fo = fs.findResource(TomcatManager.BUNDLED_TOMCAT_SETTING);
+        FileObject fo = fs.findResource(TomcatProperties.BUNDLED_TOMCAT_SETTING);
         if (fo != null) {
             InstalledFileLocator ifl = InstalledFileLocator.getDefault();
             return ifl.locate(fo.getAttribute("bundled_home").toString(), null, false); // NOI18N
@@ -270,29 +191,6 @@ public class TomcatInstallUtil {
         doc.remove(prefixInd, origLen - prefixInd);
         doc.insertString(prefixInd, newDoc, null);
     }
-    /** The method is useful to notify the user that Tomcat must be restarted 
-     *
-    */
-    public static void notifyToRestart(final TomcatManager mng) {
-        org.openide.util.RequestProcessor.getDefault().post( new Runnable() {
-            public void run() {
-                if (mng.getStartTomcat().isRunning()) {
-                    DialogDisplayer disp = DialogDisplayer.getDefault();
-                    disp.notify(new NotifyDescriptor.Message(
-                     org.openide.util.NbBundle.getMessage(TomcatInstallUtil.class,"MSG_TomcatRestart")));
-                }
-            }
-        });
-    }
-    
-    /** The method is useful to notify the user that changes cannot be performed 
-     *
-    */
-    public static void notifyThatRunning(final TomcatManager mng) {
-        DialogDisplayer disp = DialogDisplayer.getDefault();
-        disp.notify(new NotifyDescriptor.Message(
-         org.openide.util.NbBundle.getMessage(TomcatInstallUtil.class,"MSG_TomcatIsRunning")));
-    }
     
     private static boolean isHttpConnector(String protocol, String scheme, String secure) {
         return (protocol == null || protocol.length() == 0 || protocol.toLowerCase().equals(HTTP))
@@ -300,37 +198,39 @@ public class TomcatInstallUtil {
                 && (secure == null || !secure.toLowerCase().equals(TRUE));
     }
     
-    public static boolean setServerPort(Integer port, FileObject tomcatConf) {
-        FileObject fo = tomcatConf;
-        try {
-            XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
-            org.w3c.dom.Document doc = dobj.getDocument();
-            org.w3c.dom.Element root = doc.getDocumentElement();
-            org.w3c.dom.NodeList list = root.getElementsByTagName("Service"); //NOI18N
-            int size=list.getLength();
-            if (size>0) {
-                org.w3c.dom.Element service=(org.w3c.dom.Element)list.item(0);
-                org.w3c.dom.NodeList cons = service.getElementsByTagName(PROP_CONNECTOR);
-                for (int i=0;i<cons.getLength();i++) {
-                    org.w3c.dom.Element con=(org.w3c.dom.Element)cons.item(i);
-                    String protocol = con.getAttribute(ATTR_PROTOCOL);
-                    String scheme = con.getAttribute(ATTR_SCHEME);
-                    String secure = con.getAttribute(ATTR_SECURE);
-                    if (isHttpConnector(protocol, scheme, secure)) {
-                        con.setAttribute(ATTR_PORT, String.valueOf(port));
-                        updateDocument(dobj,doc);
-                        return true;
+    public static boolean setServerPort(int port, File tomcatConf) {
+        FileObject fo = FileUtil.toFileObject(tomcatConf);
+        if (fo != null) {
+            try {
+                XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
+                org.w3c.dom.Document doc = dobj.getDocument();
+                org.w3c.dom.Element root = doc.getDocumentElement();
+                org.w3c.dom.NodeList list = root.getElementsByTagName("Service"); //NOI18N
+                int size=list.getLength();
+                if (size>0) {
+                    org.w3c.dom.Element service=(org.w3c.dom.Element)list.item(0);
+                    org.w3c.dom.NodeList cons = service.getElementsByTagName(PROP_CONNECTOR);
+                    for (int i=0;i<cons.getLength();i++) {
+                        org.w3c.dom.Element con=(org.w3c.dom.Element)cons.item(i);
+                        String protocol = con.getAttribute(ATTR_PROTOCOL);
+                        String scheme = con.getAttribute(ATTR_SCHEME);
+                        String secure = con.getAttribute(ATTR_SECURE);
+                        if (isHttpConnector(protocol, scheme, secure)) {
+                            con.setAttribute(ATTR_PORT, String.valueOf(port));
+                            updateDocument(dobj,doc);
+                            return true;
+                        }
                     }
                 }
+            } catch(org.xml.sax.SAXException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            } catch(org.openide.loaders.DataObjectNotFoundException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            } catch(javax.swing.text.BadLocationException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            } catch(java.io.IOException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
             }
-        } catch(org.xml.sax.SAXException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
-        } catch(org.openide.loaders.DataObjectNotFoundException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
-        } catch(javax.swing.text.BadLocationException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
-        } catch(java.io.IOException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
         }
         return false;
     }
@@ -388,26 +288,27 @@ public class TomcatInstallUtil {
         }
     }
     
-    public static boolean setAdminPort(Integer port, FileObject tomcatConf) {
-        FileObject fo = tomcatConf;
-        boolean success=false;
-        try {
-            XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
-            org.w3c.dom.Document doc = dobj.getDocument();
-            org.w3c.dom.Element root = doc.getDocumentElement();
-            root.setAttribute("port", String.valueOf(port)); //NOI18N
-            updateDocument(dobj,doc);
-            success=true;
-        } catch(org.xml.sax.SAXException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
-        } catch(org.openide.loaders.DataObjectNotFoundException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
-        } catch(javax.swing.text.BadLocationException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
-        } catch(java.io.IOException ex){
-            org.openide.ErrorManager.getDefault ().notify(ex);
+    public static boolean setShutdownPort(int port, File tomcatConf) {
+        FileObject fo = FileUtil.toFileObject(tomcatConf);
+        if (fo != null) {
+            try {
+                XMLDataObject dobj = (XMLDataObject)DataObject.find(fo);
+                org.w3c.dom.Document doc = dobj.getDocument();
+                org.w3c.dom.Element root = doc.getDocumentElement();
+                root.setAttribute("port", String.valueOf(port)); //NOI18N
+                updateDocument(dobj,doc);
+                return true;
+            } catch(org.xml.sax.SAXException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            } catch(org.openide.loaders.DataObjectNotFoundException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            } catch(javax.swing.text.BadLocationException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            } catch(java.io.IOException ex){
+                org.openide.ErrorManager.getDefault ().notify(ex);
+            }
         }
-        return success;
+        return false;
     }
     
     public static void updateDocument(DataObject dobj, org.w3c.dom.Document doc)

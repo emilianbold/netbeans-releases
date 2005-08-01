@@ -112,7 +112,7 @@ public class TomcatIncrementalDeployment extends IncrementalDeployment {
     }
     
     public void notifyDeployment(TargetModuleID module) {
-        if (tm.isTomcat50() && tm.getOpenContextLogOnRun()) {
+        if (tm.isTomcat50() && tm.getTomcatProperties().getOpenContextLogOnRun()) {
             tm.openLog(module);
         }
     }

@@ -38,17 +38,10 @@ import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
-
-import org.openide.awt.StatusDisplayer;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.openide.xml.XMLUtil;
-import org.openide.xml.EntityCatalog;
-import org.w3c.dom.Document;
-import org.xml.sax.*;
 import org.netbeans.modules.tomcat5.config.*;
 import java.io.*;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
 
 /** Implemtation of management task that provides info about progress
  *
@@ -194,8 +187,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         Server server = tm.getRoot();
         if (server != null && removeContextFromServer(server, tmId.getPath())) {
             File f = null;
-            try {                
-                f = new File(tm.getCatalinaDir().getAbsolutePath() + TomcatManager.SERVERXML_PATH);
+            try {
+                f = tm.getTomcatProperties().getServerXml();
                 server.write(f);
             } catch (Exception e) {
                 // cannot save changes
@@ -472,7 +465,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                 hconn.setRequestProperty("User-Agent", // NOI18N
                                          "NetBeansIDE-Tomcat-Manager/1.0"); // NOI18N
                 // Set up an authorization header with our credentials
-                String input = tm.getUsername () + ":" + tm.getPassword ();
+                TomcatProperties tp = tm.getTomcatProperties();
+                String input = tp.getUsername () + ":" + tp.getPassword ();
                 String auth = new String(Base64.encode(input.getBytes()));
                 hconn.setRequestProperty("Authorization", // NOI18N
                                          "Basic " + auth); // NOI18N

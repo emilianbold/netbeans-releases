@@ -39,8 +39,8 @@ public class TomcatManagerConfig {
      * 
      * @param serverXmlPath path to server.xml file.
      */
-    public TomcatManagerConfig(String serverXmlPath) {
-        serverXml = new File(serverXmlPath);
+    public TomcatManagerConfig(File serverXml) {
+        this.serverXml = serverXml;
         refresh();
     }
     

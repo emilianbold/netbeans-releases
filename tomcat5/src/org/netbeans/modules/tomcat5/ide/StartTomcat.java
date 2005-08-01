@@ -20,31 +20,27 @@ import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
-import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.tomcat5.*;
-import org.netbeans.modules.tomcat5.config.*;
-import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-import org.openide.filesystems.*;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
-
-import org.w3c.dom.Document;
-import org.xml.sax.*;
 import org.xml.sax.SAXException;
-import org.openide.xml.XMLUtil;
+
 
 /** Extension to Deployment API that enables starting of Tomcat.
  *
@@ -62,8 +58,6 @@ public final class StartTomcat extends StartServer implements ProgressObject
         
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
-    /** Tag replaced with separator between filename components */
-    public static final String TAG_SEPARATOR = "/"; // NOI18N
     
     public static final String TAG_JPDA = "jpda"; // NOI18N
     public static final String TAG_JPDA_STARTUP = "jpda_startup"; // NOI18N
@@ -74,53 +68,25 @@ public final class StartTomcat extends StartServer implements ProgressObject
     public static final String TAG_EXEC_SHUTDOWN = "exec_shutdown"; // NOI18N
     public static final String TAG_SECURITY_OPT = "security_option"; //NOI18N
     public static final String TAG_FORCE_OPT = "force_option"; //NOI18N
-    /** Shutdown command tag. */
-    //public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
+
     /** Debug startup/shutdown tag */
     public static final String TAG_DEBUG_CMD   = "catalina"; // NOI18N
 
-    private static NbProcessDescriptor defaultExecDesc(String command, String argCommand, String option) {
-        return new NbProcessDescriptor (
-                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
-                "{" + argCommand + "}" + " {" + option + "}",  // NOI18N
-                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
-            );
-    }
-    
-    private static NbProcessDescriptor defaultExecDesc(String command, String argCommand) {
-        return new NbProcessDescriptor (
-                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
-                "{" + argCommand + "}",  // NOI18N
-                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
-            );
-    }
-
-    private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand, String option) {
-        return new NbProcessDescriptor (
-                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
-                "{" + TAG_JPDA + "}" + " {" + jpdaCommand + "}" + " {" + option + "}",  // NOI18N
-                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
-            );
-    }
-    
-    private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand) {
-        return new NbProcessDescriptor (
-                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
-                "{" + TAG_JPDA + "}" + " {" + jpdaCommand + "}",  // NOI18N
-                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
-            );
-    }
 
     private TomcatManager tm;
     
     private ProgressEventSupport pes;
+    private int currentServerPort; // current server port Tomcat is running on
     
     private static Map isDebugModeUri = Collections.synchronizedMap((Map)new HashMap(2,1));
     
     public StartTomcat (DeploymentManager manager) {
-        pes = new ProgressEventSupport (this);
+        assert manager instanceof TomcatManager : 
+            "Illegal DeploymentManager instance: " + manager.getClass().getName(); // NIO18N
         tm = (TomcatManager)manager;
         tm.setStartTomcat (this);
+        pes = new ProgressEventSupport (this);
+        currentServerPort = tm.getServerPort();
     }
     
     public boolean supportsStartDeploymentManager () {
@@ -218,21 +184,11 @@ public final class StartTomcat extends StartServer implements ProgressObject
 
     public ServerDebugInfo getDebugInfo(Target target) { 
         ServerDebugInfo sdi;
-        String dbgType = tm.getDebugType();
-        if ((dbgType == null) || (dbgType.toLowerCase().indexOf("socket") > -1)) {
-            Integer dbgPort = tm.getDebugPort();
-            if (dbgPort != null) {
-                sdi = new ServerDebugInfo("localhost", dbgPort.intValue());  // NOI18N
-            } else {
-                sdi = new ServerDebugInfo("localhost", TomcatManager.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
-            }
+        TomcatProperties tp = tm.getTomcatProperties();
+        if (tp.getDebugType().toLowerCase().indexOf("socket") != -1) {  // NOI18N
+            sdi = new ServerDebugInfo("localhost", tp.getDebugPort());  // NOI18N
         } else {
-            String shmem = tm.getSharedMemory();
-            if (shmem != null) {
-                sdi = new ServerDebugInfo("localhost", shmem);
-            } else {
-                sdi = new ServerDebugInfo("localhost", TomcatManager.DEFAULT_SHARED_MEMORY);
-            }
+            sdi = new ServerDebugInfo("localhost", tp.getSharedMem());  // NOI18N
         }
         return sdi;
     }
@@ -249,26 +205,18 @@ public final class StartTomcat extends StartServer implements ProgressObject
         
         public synchronized void run () {
             // PENDING check whether is runs or not
-            File homeDir = tm.getCatalinaHomeDir();
+            TomcatProperties tp = tm.getTomcatProperties();
+            File homeDir = tp.getCatalinaHome();
             if (homeDir == null || !homeDir.exists()) {
                 fireCmdExecProgressEvent(
                     command == CommandType.START ? "MSG_NoHomeDirStart" : "MSG_NoHomeDirStop",
                     StateType.FAILED);
                 return;
             }
-            String base = tm.getCatalinaBase();
-            File baseDir = null;
-            if (base == null) {
+            File baseDir = tp.getCatalinaBase();
+            if (baseDir == null) {
                 baseDir = homeDir;
             } else {
-                baseDir = new File(base);
-                if (!baseDir.isAbsolute ()) {
-                    InstalledFileLocator ifl = InstalledFileLocator.getDefault();
-                    File baseDirTemp = ifl.locate (base, null, false);
-                    if (baseDirTemp != null) {
-                        baseDir = baseDirTemp;
-                    }
-                }
                 if (baseDir != null) {
                     String[] files = baseDir.list();
                     if (files == null || files.length == 0) {
@@ -284,12 +232,12 @@ public final class StartTomcat extends StartServer implements ProgressObject
             }
             
             // check whether the startup script - catalina.sh/bat exists
-            String STARTUP_SCRIPT = getStartupScript(homeDir.getAbsolutePath(), tm.getTomcatVersion());
-            if (!new File(homeDir.getAbsolutePath(), "bin/" + STARTUP_SCRIPT).exists()) { // NOI18N
+            File startupScript = getStartupScript();
+            if (!startupScript.exists()) {
                 final String MSG = NbBundle.getMessage(
                         StartTomcat.class, 
                         command == CommandType.START ? "MSG_StartFailedNoStartScript" : "MSG_StopFailedNoStartScript",
-                        STARTUP_SCRIPT);
+                        startupScript.getAbsolutePath());
                 pes.fireHandleProgressEvent(
                     null,
                     new Status(ActionType.EXECUTE, command, MSG, StateType.FAILED));
@@ -299,7 +247,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
             // install the monitor
             if (command == CommandType.START) {
                 try {
-                    MonitorSupport.synchronizeMonitorWithFlag(tm, true, !tm.isItBundledTomcat());
+                    MonitorSupport.synchronizeMonitorWithFlag(tm, true, !tp.isBundledTomcat());
                 } catch (IOException e) {
                     if (MonitorSupport.getMonitorFlag(tm)) {
                         // tomcat has been started with monitor enabled
@@ -327,11 +275,13 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
-
+            
+            currentServerPort = tm.getServerPort(); // remember the server port
+            
             if ((debug) && (command == CommandType.START)) {
 
                 NbProcessDescriptor pd  = null;
-                if (tm.getSecurityStartupOption()) {
+                if (tp.getSecManager()) {
                     pd = defaultDebugStartDesc (TAG_DEBUG_CMD, TAG_JPDA_STARTUP, TAG_SECURITY_OPT);
                 } else {
                     pd = defaultDebugStartDesc (TAG_DEBUG_CMD, TAG_JPDA_STARTUP);
@@ -339,32 +289,29 @@ public final class StartTomcat extends StartServer implements ProgressObject
                 try {
                     fireCmdExecProgressEvent("MSG_startProcess", StateType.RUNNING);
                     Process p = null;
-                    String transportStr = "JPDA_TRANSPORT=dt_socket";         // NOI18N
-                    String addressStr = "JPDA_ADDRESS=11555";                 // NOI18N
-
-                    if (org.openide.util.Utilities.isWindows()) {
-                        String dbgType = tm.getDebugType();
-                        if ((dbgType.toLowerCase().indexOf("socket") > -1) || (dbgType == null)) {         // NOI18N
-                            addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString(); // NOI18N
-                        } else {
-                            transportStr = "JPDA_TRANSPORT=dt_shmem";                // NOI18N
-                            addressStr = "JPDA_ADDRESS=" + tm.getSharedMemory();     // NOI18N
-                        }
+                    
+                    String address;
+                    String transport;
+                    if (tp.getDebugType().toLowerCase().indexOf("socket") != -1) { // NOI18N
+                        transport = "dt_socket"; // NOI18N
+                        address = Integer.toString(tp.getDebugPort());
                     } else {
-                        addressStr = "JPDA_ADDRESS=" + tm.getDebugPort().toString();         // NOI18N
+                        transport = "dt_shmem"; // NOI18N
+                        address = tp.getSharedMem();
                     }
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                        TomcatFactory.getEM ().log ("transport: " + transportStr);    // NOI18N
-                        TomcatFactory.getEM ().log ("address: " + addressStr);    // NOI18N
+                        TomcatFactory.getEM ().log ("transport: " + transport);    // NOI18N
+                        TomcatFactory.getEM ().log ("address: " + address);    // NOI18N
                     }
                     p = pd.exec (
-                        new TomcatFormat (homeDir.getAbsolutePath (), tm.getTomcatVersion()),
+                        new TomcatFormat(startupScript, homeDir),
                         new String[] {
-                            "JAVA_HOME="+System.getProperty ("jdk.home"),   // NOI18N
-                            transportStr,
-                            addressStr,
-                            "CATALINA_HOME="+homeDir.getAbsolutePath (),    // NOI18N
-                            "CATALINA_BASE="+baseDir.getAbsolutePath ()     // NOI18N
+                            "JAVA_HOME="        + getJavaHome(),    // NOI18N
+                            "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
+                            "JPDA_TRANSPORT="   + transport,        // NOI18N
+                            "JPDA_ADDRESS="     + address,          // NOI18N
+                            "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
+                            "CATALINA_BASE="    + baseDir.getAbsolutePath()     // NOI18N
                         },
                         true,
                         new File (homeDir, "bin") // NOI18N
@@ -377,19 +324,19 @@ public final class StartTomcat extends StartServer implements ProgressObject
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);
                     }
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
-                            STARTUP_SCRIPT, StateType.FAILED);
+                            startupScript.getAbsolutePath(), StateType.FAILED);
                     return;
                 }
             } else {
                 NbProcessDescriptor pd = null;
                 if (command == CommandType.START) {
-                    if (tm.getSecurityStartupOption()) {
+                    if (tp.getSecManager()) {
                         pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_STARTUP, TAG_SECURITY_OPT);
                     } else {
                         pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_STARTUP);
                     }
                 } else {
-                    if (tm.getForceStopOption() && Utilities.isUnix()) {
+                    if (tp.getForceStop() && Utilities.isUnix()) {
                         pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_SHUTDOWN, TAG_FORCE_OPT);
                     } else {
                         pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_SHUTDOWN);
@@ -399,11 +346,12 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess",
                             StateType.RUNNING);
                     Process p = pd.exec (
-                        new TomcatFormat (homeDir.getAbsolutePath (), tm.getTomcatVersion()),
+                        new TomcatFormat (startupScript, homeDir),
                         new String[] { 
-                            "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
-                            "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
-                            "CATALINA_BASE="+baseDir.getAbsolutePath ()    // NOI18N
+                            "JAVA_HOME="        + getJavaHome(),    // NOI18N
+                            "JAVA_OPTS="        + tp.getJavaOpts(), // NOI18N
+                            "CATALINA_HOME="    + homeDir.getAbsolutePath(),    // NOI18N
+                            "CATALINA_BASE="    + baseDir.getAbsolutePath()     // NOI18N
                         },
                         true,
                         new File (homeDir, "bin")
@@ -422,7 +370,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
                     }
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailedIOE" : "MSG_StopFailedIOE",
-                            STARTUP_SCRIPT, StateType.FAILED);
+                            startupScript.getAbsolutePath(), StateType.FAILED);
                     return;
                 }
             }
@@ -544,6 +492,82 @@ public final class StartTomcat extends StartServer implements ProgressObject
         pes.removeProgressListener (pl);
     }
     
+    
+    public String toString () {
+        return "StartTomcat [" + tm + "]"; // NOI18N
+    }
+    
+    public int getCurrentServerPort() {
+        return currentServerPort;
+    }
+    
+    // private helper methods -------------------------------------------------    
+    
+    private static NbProcessDescriptor defaultExecDesc(String command, String argCommand, String option) {
+        return new NbProcessDescriptor (
+            "{" + command + "}",  // NOI18N
+            "{" + argCommand + "}" + " {" + option + "}",  // NOI18N
+            NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+        );
+    }
+    
+    private static NbProcessDescriptor defaultExecDesc(String command, String argCommand) {
+        return new NbProcessDescriptor (
+            "{" + command + "}",     // NOI18N
+            "{" + argCommand + "}",  // NOI18N
+            NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+        );
+    }
+
+    private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand, String option) {
+        return new NbProcessDescriptor (
+            "{" + command + "}",  // NOI18N
+            "{" + TAG_JPDA + "}" + " {" + jpdaCommand + "}" + " {" + option + "}",  // NOI18N
+            NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+        );
+    }
+    
+    private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand) {
+        return new NbProcessDescriptor (
+            "{" + command + "}",  // NOI18N
+            "{" + TAG_JPDA + "}" + " {" + jpdaCommand + "}",  // NOI18N
+            NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+        );
+    }
+    
+    private String getJavaHome() {
+        FileObject fo = (FileObject)getJavaPlatform().getInstallFolders().iterator().next();
+        return FileUtil.toFile(fo).getAbsolutePath();
+    }
+    
+    /** Return the catalina startup script file. */
+    private File getStartupScript() {
+        TomcatProperties tp = tm.getTomcatProperties();
+        if (tp.getCustomScript()) {
+            return new File(tp.getScriptPath());
+        }
+        String javaVersion = (String)getJavaPlatform().getSystemProperties().get("java.vm.version"); // NOI18N
+        // use catalina50.sh/bat for Tomcat 5.0 on jdk1.5
+        if (tm.getTomcatVersion() == TomcatManager.TOMCAT_50 
+             && javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
+            String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
+            File scriptFile = new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N
+            if (scriptFile.exists()) {
+                return scriptFile;
+            }
+        }
+        String startupScript = Utilities.isWindows() ? CATALINA_BAT : CATALINA_SH;
+        return new File(tp.getCatalinaHome(), "/bin/" + startupScript); // NOI18N
+    }
+    
+    private JavaPlatform getJavaPlatform() {
+        String currentJvm = tm.getTomcatProperties().getJavaPlatform();
+        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+        JavaPlatform[] curJvms = jpm.getPlatforms(currentJvm, new Specification("J2SE", null)); // NOI18N
+        assert curJvms.length > 0 : "No Java platform available."; // NOI18N
+        return curJvms[0];
+    }
+    
     /** Utility class that just "consumes" the input stream - #58554 workaround
      */
     private static class StreamConsumer implements Runnable {
@@ -583,42 +607,19 @@ public final class StartTomcat extends StartServer implements ProgressObject
         
         private static final long serialVersionUID = 992972967554321415L;
         
-        public TomcatFormat (String home, int aTomcatVersion) {
+        public TomcatFormat(File startupScript, File homeDir) {
             super(new java.util.HashMap ());
-            String catalinaStartupScript = getStartupScript(home, aTomcatVersion);
             java.util.Map map = getMap ();
-            map.put (TAG_EXEC_CMD, catalinaStartupScript);
-            map.put (TAG_EXEC_STARTUP, "run"); // NOI18N
-            map.put (TAG_EXEC_SHUTDOWN, "stop"); // NOI18N
-            map.put (TAG_DEBUG_CMD, catalinaStartupScript);
-            map.put (TAG_JPDA, "jpda"); // NOI18N
-            map.put (TAG_JPDA_STARTUP, "run"); // NOI18N
-            map.put (TAG_SECURITY_OPT, "-security"); // NOI18N            
-            map.put (TAG_FORCE_OPT, "-force"); // NOI18N
-            map.put (TAG_CATALINA_HOME, home); // NOI18N
-            map.put (TAG_SEPARATOR, File.separator);
+            String scriptPath = startupScript.getAbsolutePath();
+            map.put(TAG_EXEC_CMD,       scriptPath);
+            map.put(TAG_EXEC_STARTUP,   "run");         // NOI18N
+            map.put(TAG_EXEC_SHUTDOWN,  "stop");        // NOI18N
+            map.put(TAG_DEBUG_CMD,      scriptPath);
+            map.put(TAG_JPDA,           "jpda");        // NOI18N
+            map.put(TAG_JPDA_STARTUP,   "run");         // NOI18N
+            map.put(TAG_SECURITY_OPT,   "-security");   // NOI18N
+            map.put(TAG_FORCE_OPT,      "-force");      // NOI18N
+            map.put(TAG_CATALINA_HOME,  homeDir.getAbsolutePath());
         }
-    }
-    
-    /**
-     * Return appropriate catalina startup script.
-     * 
-     * @param home TOMCAT_HOME dir.
-     * @return appropriate catalina startup script.
-     */
-    public static String getStartupScript(String home, int aTomcatVersion) {
-        String javaVersion = System.getProperty("java.vm.version");  // NOI18N
-        if (aTomcatVersion == TomcatManager.TOMCAT_50 
-             && javaVersion != null && javaVersion.startsWith("1.5")) {  // NOI18N
-            String startupScript = Utilities.isWindows() ? CATALINA_50_BAT : CATALINA_50_SH;
-            if (new File(home + "/bin/" + startupScript).exists()) { // NOI18N
-                return startupScript;
-            }
-        }
-        return Utilities.isWindows() ? CATALINA_BAT: CATALINA_SH;
-    }
-    
-    public String toString () {
-        return "StartTomcat [" + tm + "]"; // NOI18N
     }
 }

@@ -15,16 +15,15 @@ package org.netbeans.modules.tomcat5;
 
 import java.awt.Image;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.netbeans.modules.tomcat5.util.Utils;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -40,17 +39,22 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     private static final Set/*<Object>*/ MODULE_TYPES = new HashSet();
     private static final Set/*<String>*/ SPEC_VERSIONS = new HashSet();
     
-    private static final String JSP_API_JAR = "common/lib/jsp-api.jar";             // NOI18N
-    private static final String JSP_API_DOC = "webapps/tomcat-docs/jspapi";         // NOI18N
-    private static final String SERVLET_API_JAR = "common/lib/servlet-api.jar";     // NOI18N
-    private static final String SERVLET_API_DOC = "webapps/tomcat-docs/servletapi"; // NOI18N
-    private static final String J2EE_API_DOC    = "docs/j2eeri-1_4-doc-api.zip";    // NOI18N
+    private static final String WSCOMPILE = "wscompile"; // NOI18N    
+    private static final String WSCOMPILE_LIBS[] = new String[] {
+        "jaxrpc/lib/jaxrpc-api.jar",        // NOI18N
+        "jaxrpc/lib/jaxrpc-impl.jar",       // NOI18N
+        "jaxrpc/lib/jaxrpc-spi.jar",        // NOI18N
+        "saaj/lib/saaj-api.jar",            // NOI18N
+        "saaj/lib/saaj-impl.jar",           // NOI18N
+        "jwsdp-shared/lib/mail.jar",        // NOI18N
+        "jwsdp-shared/lib/activation.jar"   // NOI18N
+    };
+
     
     private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N
     
-    private File catalinaHome;
-    private File catalinaBase;
-    private String displayName;
+    private String displayName;    
+    private TomcatProperties tp;
     
     private List/*<LibraryImpl>*/ libraries  = new ArrayList();
     
@@ -61,54 +65,21 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
     
     /** Creates a new instance of TomcatInstallation */
-    public TomcatPlatformImpl(File aCatalinaHome, File aCatalinaBase, String aDisplayName) {
-        catalinaHome = aCatalinaHome;
-        catalinaBase = aCatalinaBase;
-        displayName = aDisplayName;
-        try {
-            J2eeLibraryTypeProvider lp = new J2eeLibraryTypeProvider();
-            LibraryImplementation lib = lp.createLibrary();
-
-            lib.setName(NbBundle.getMessage(TomcatPlatformImpl.class, "jsp20")); // NOI18N
-            
-            List l = new ArrayList();
-            l.add(fileToUrl(new File(catalinaHome, JSP_API_JAR)));
-            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-            
-            File jspDoc = new File(catalinaHome, JSP_API_DOC);
-            if (jspDoc == null || !jspDoc.exists()) {
-                jspDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-            }
-            if (jspDoc != null) {
-                l = new ArrayList();
-                l.add(fileToUrl(jspDoc));
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
-            }
-            
-            libraries.add(lib);
-
-            
-            lib = lp.createLibrary();
-            lib.setName(NbBundle.getMessage(TomcatPlatformImpl.class, "servlet24")); // NOI18N
-            
-            l = new ArrayList();
-            l.add(fileToUrl(new File(catalinaHome, SERVLET_API_JAR)));
-            lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, l);
-            
-            File servletDoc = new File(catalinaHome, SERVLET_API_DOC);
-            if (servletDoc == null || !servletDoc.exists()) {
-                servletDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
-            }
-            if (servletDoc != null) {
-                l = new ArrayList();
-                l.add(fileToUrl(servletDoc));
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, l);
-            }
-            
-            libraries.add(lib);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+    public TomcatPlatformImpl(TomcatProperties tp) {
+        this.tp = tp;
+        displayName = tp.getDisplayName();
+        
+        J2eeLibraryTypeProvider libProvider = new J2eeLibraryTypeProvider();
+        LibraryImplementation lib = libProvider.createLibrary();
+        lib.setName(NbBundle.getMessage(TomcatPlatformImpl.class, "LBL_lib_name", displayName));
+        loadLibraries(lib);
+        libraries.add(lib);
+    }
+    
+    public void notifyLibrariesChanged() {
+        LibraryImplementation lib = (LibraryImplementation)libraries.get(0);
+        loadLibraries(lib);
+        firePropertyChange(PROP_LIBRARIES, null, libraries);
     }
     
     public LibraryImplementation[] getLibraries() {
@@ -124,21 +95,42 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     }
     
     public File[] getPlatformRoots() {
-        if (catalinaBase != null) {
-            return new File[] {catalinaHome, catalinaBase};
+        if (tp.getCatalinaBase() != null) {
+            return new File[] {tp.getCatalinaHome(), tp.getCatalinaBase()};
         } else {
-            return new File[] {catalinaHome};
+            return new File[] {tp.getCatalinaHome()};
         }
     }
     
     public File[] getToolClasspathEntries(String toolName) {
+        // jwsdp support
+        if (WSCOMPILE.equals(toolName)) {
+            if (isToolSupported(WSCOMPILE)) {
+                File[] retValue = new File[WSCOMPILE_LIBS.length];
+                File homeDir = tp.getCatalinaHome();
+                for (int i = 0; i < WSCOMPILE_LIBS.length; i++) {
+                    retValue[i] = new File(homeDir, WSCOMPILE_LIBS[i]);
+                }
+                return retValue;
+            }
+        }
         return null;
     }
     
     public boolean isToolSupported(String toolName) {
+        // jwsdp support
+        if (WSCOMPILE.equals(toolName)) {
+            File homeDir = tp.getCatalinaHome();
+            for (int i = 0; i < WSCOMPILE_LIBS.length; i++) {
+                if (!new File(homeDir, WSCOMPILE_LIBS[i]).exists()) {
+                    return false;
+                }
+            }
+            return true;
+        }
         return false;
     }
-    
+        
     public Set/*<Object>*/ getSupportedModuleTypes() {
         return MODULE_TYPES;
     }
@@ -147,11 +139,11 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
         return SPEC_VERSIONS;
     }
     
-    private URL fileToUrl(File file) throws MalformedURLException {
-        URL url = file.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        }
-        return url;
+    // private helper methods -------------------------------------------------
+    
+    private void loadLibraries(LibraryImplementation lib) {
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, tp.getClasses());
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, tp.getJavadocs());
+        lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC, tp.getSources());        
     }
 }

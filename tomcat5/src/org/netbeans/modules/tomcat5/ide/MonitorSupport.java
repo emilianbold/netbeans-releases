@@ -135,9 +135,7 @@ public class MonitorSupport {
     }
     
     private static File getDefaultWebXML(TomcatManager tm) {
-        File cb = tm.getCatalinaBaseDir();
-        if (cb == null)
-            cb = tm.getCatalinaHomeDir();
+        File cb = tm.getTomcatProperties().getCatalinaDir();
         File webXML = new File(cb, "conf" + File.separator + "web.xml");
         if (webXML.exists())
             return webXML;
@@ -146,7 +144,7 @@ public class MonitorSupport {
     
     private static void addMonitorJars(TomcatManager tm) throws IOException {
         // getting Tomcat4.0 Directory
-        File instDir = tm.getCatalinaHomeDir();
+        File instDir = tm.getTomcatProperties().getCatalinaHome();
         if (instDir==null) return;
         
         copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, "common/lib/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N

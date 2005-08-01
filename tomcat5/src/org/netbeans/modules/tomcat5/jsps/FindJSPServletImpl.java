@@ -15,9 +15,9 @@ package org.netbeans.modules.tomcat5.jsps;
 
 import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.modules.InstalledFileLocator;
 
 /**
@@ -38,7 +38,7 @@ public class FindJSPServletImpl implements FindJSPServlet {
     
     
     public File getServletTempDirectory(String moduleContextPath) {
-        File baseDir = findBaseDir();
+        File baseDir = tm.getTomcatProperties().getCatalinaDir();
         if ((baseDir == null) || !baseDir.exists()) {
             return null;
         }
@@ -46,29 +46,6 @@ public class FindJSPServletImpl implements FindJSPServlet {
         File workDir = new File(hostBase, getContextRootString(moduleContextPath));
         //System.out.println("returning servlet root " + workDir);
         return workDir;
-    }
-    
-    private File findBaseDir() {
-        String home = tm.getCatalinaHome();
-        String base = tm.getCatalinaBase();
-        if (home == null) {
-            // not supported
-            return null;
-        }
-        
-        if (base == null) {
-            base = home;
-        }
-        
-        InstalledFileLocator ifl = InstalledFileLocator.getDefault();
-        File baseDir = new File(base);
-        if (!baseDir.isAbsolute()) {
-            baseDir = ifl.locate(base, null, false);
-            if (baseDir == null) {
-                return null;
-            }
-        }
-        return baseDir;
     }
     
     private String getContextRootString(String moduleContextPath) {

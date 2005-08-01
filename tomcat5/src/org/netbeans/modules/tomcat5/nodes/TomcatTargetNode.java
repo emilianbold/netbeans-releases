@@ -35,8 +35,6 @@ import org.openide.util.actions.SystemAction;
 
 public class TomcatTargetNode extends AbstractNode {
     
-    private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/mfolder"; // NOI18N
-    
     private Lookup lkp;
     
     /** Creates a new instance of TomcatTargetNode */
@@ -53,7 +51,7 @@ public class TomcatTargetNode extends AbstractNode {
             super(new TomcatWebModuleChildren(lookup));
             setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebApps"));  // NOI18N
             getCookieSet().add(new RefreshWebModuleChildren ((TomcatWebModuleChildren)getChildren()));
-            setIconBase(ICON_BASE);
+            setIconBaseWithExtension("org/netbeans/modules/tomcat5/resources/mfolder.gif"); // NOI18N
         }
         
         public javax.swing.Action[] getActions(boolean context) {

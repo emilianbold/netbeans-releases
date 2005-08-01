@@ -36,18 +36,38 @@ public class TomcatManagerTest extends NbTestCase {
     
     protected void setUp () throws java.lang.Exception {
         super.setUp ();
-        
-        tm = (TomcatManager)TomcatFactory55.create ().getDeploymentManager (
-            TomcatFactory55Test.TOMCAT_URI,
-            TomcatFactory55Test.TOMCAT_UNAME, 
-            TomcatFactory55Test.TOMCAT_PASSWD
-        );
+        tm = (TomcatManager)TomcatFactory55.create().getDeploymentManager(TomcatFactory55Test.TOMCAT_URI, null, null);
+        tm.ensureCatalinaBaseReady(); // This causes the base dir to be created if needed
     }
     
     /** Test of getUri method, of class org.netbeans.modules.tomcat5.TomcatManager. */
     public void testGetUri () {
         System.out.println ("testGetUri");
         assertEquals ("Uri string doesn't match", TomcatFactory55Test.TOMCAT_URI, tm.getUri ());
+    }
+    
+    public void testGetShutdownPort() {
+        assertEquals(tm.getShutdownPort(), 8025);
+    }
+    
+    public void testGetServerPort() {
+        assertEquals(tm.getServerPort(), 8084);
+    }
+    
+    public void testGetTomcatVersion() {
+        assertEquals(tm.getTomcatVersion(), tm.TOMCAT_55);
+    }
+    
+    public void testIsTomcat55() {
+        assertTrue(tm.isTomcat55());
+    }
+    
+    public void testIsTomcat50() {
+        assertFalse(tm.isTomcat50());
+    }
+    
+    public void testGetServerUri() {
+        assertEquals(tm.getServerUri(), "http://localhost:8084");
     }
     
 //    /** Test of getUsername method, of class org.netbeans.modules.tomcat5.TomcatManager. */

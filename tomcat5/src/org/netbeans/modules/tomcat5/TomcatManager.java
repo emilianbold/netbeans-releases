@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -71,101 +71,13 @@ public class TomcatManager implements DeploymentManager {
     public static final int TOMCAT_50 = 0;
     public static final int TOMCAT_55 = 1;
     
-    /** server.xml check timestamp */
-    public static final String TIMESTAMP = "timestamp";
-
-    /** admin port property */
-    public static final String ADMIN_PORT = "admin_port";
-
-    /** debugger port property */
-    public static final String DEBUG_PORT = "debugger_port";
-    
-    /** http server port property */
-    public static final String SERVER_PORT = InstanceProperties.HTTP_PORT_NUMBER;
-
-    public static final String HOST = "host";
-    
-    /** http server port property */
-    public static final String CLASSIC = "classic";
-
-    /** http server port property */
-    public static final String DEBUG_TYPE = "debug_type";
-
-    /** shared memory property */
-    public static final String SHARED_MEMORY = "shared_memory";
-    
-    /** is it bundled tomcat property */
-    public static final String IS_IT_BUNDLED_TOMCAT = "is_it_bundled_tomcat";
-
-    /** default value for property classic */
-    public static final Boolean DEFAULT_CLASSIC = Boolean.FALSE;
-
-    /** default value for property debugger port */
-    public static final Integer DEFAULT_DEBUG_PORT = new Integer(11555);
-    
-    /** default value for property server port */
-    public static final Integer DEFAULT_SERVER_PORT = new Integer(8080);
-
-    /** default value for property admin port */
-    public static final Integer DEFAULT_ADMIN_PORT = new Integer(8005);
-
-    /** default value for property debugging type*/
-    public static final String DEFAULT_DEBUG_TYPE_UNIX = "SEL_debuggingType_socket";  // NOI18N  
-
-    /** default value for property debugging type*/
-    public static final String DEFAULT_DEBUG_TYPE_WINDOWS = "SEL_debuggingType_shared";  // NOI18N 
-
-    /** default value for property shared memory*/
-    public static final String DEFAULT_SHARED_MEMORY = "tomcat_shared_memory_id";  // NOI18N
-
-    /** path to server xml */
-    public static final String SERVERXML_PATH = File.separator + "conf" + File.separator + "server.xml";  // NOI18N
-    
-    /** path to default web.xml */
-    public static final String WEBXML_PATH = File.separator + "conf" + File.separator + "web.xml";  // NOI18N
-    
-    /** some bundled tomcat settings are stored here */
-    public static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
-    
-    /** Tomcat specific Instance property - if this property exists and is set 
-       to <code>true</code> web module's context log will be opened on run. */
-    private static final String OPEN_CONTEXT_LOG_ON_RUN = "openContextLogOnRun";    
-
-    /** Tomcat specific Instance property - if this property exists and is set 
-       to <code>true</code> Tomcat will be started wiht the "-security" option */
-    private static final String SECURITY_STARTUP_OPTION = "securityStartupOption";
-
-    /** Tomcat specific Instance property - if this property exists and is set 
-       to <code>true</code> Tomcat will be stoped wiht the "-force" option */
-    private static final String FORCE_STOP_OPTION = "forceStopOption";
-    
-    /** Tomcat specific Instance property - running state check timeout in millis */
-    public static final String RUNNING_CHECK_TIMEOUT = "runningCheckTimeout";
-    
-    /* Default running state check timeout in millis */
-    public static final int DEFAULT_RUNNING_CHECK_TIMEOUT = 1000;
-
     /** Manager state. */
     private boolean connected;
     
     /** uri of this DeploymentManager. */
     private String uri;
     
-    /** Username used for connecting. */
-    private String username;
-    /** Password used for connecting. */
-    private String password;
-    
-    /** CATALINA_HOME of disconnected TomcatManager. */
-    private String catalinaHome;
-    /** CATALINA_BASE of disconnected TomcatManager. */
-    private String catalinaBase;
-    
-    private FileObject catalinaBaseDir;
-    
-    private StartTomcat sTomcat;
-    
-    private Server root = null;
+    private StartTomcat startTomcat;
     
     /** System process of the started Tomcat */
     private Process process;
@@ -178,8 +90,7 @@ public class TomcatManager implements DeploymentManager {
     
     private TomcatPlatformImpl tomcatPlatform;
     
-    /** Is it bundled Tomcat? */
-    private Boolean isItBundledTomcat = null;
+    private TomcatProperties tomcatProperties;
     
     private int tomcatVersion;
 
@@ -189,81 +100,25 @@ public class TomcatManager implements DeploymentManager {
      * @param uname username
      * @param passwd password
      */
-    public TomcatManager (boolean conn, String uri, String uname, String passwd, int aTomcatVersion) {
+    public TomcatManager (boolean conn, String uri, int tomcatVersion) {
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri+", uname="+uname); //NOI18N
+            TomcatFactory.getEM ().log ("Creating connected TomcatManager uri="+uri); //NOI18N
         }
         this.connected = conn;
-        sTomcat = null;
-        tomcatVersion = aTomcatVersion;
-        // parse home and base attrs
-        final String home = "home=";
-        final String base = ":base=";
-        final String uriString = "http://";  // NOI18N
-        int uriOffset = uri.indexOf (uriString);
-        int homeOffset = uri.indexOf (home) + home.length ();
-        int baseOffset = uri.indexOf (base, homeOffset);
-        if (homeOffset >= home.length ()) {
-            int homeEnd = baseOffset > 0 ? baseOffset : (uriOffset > 0 ? uriOffset - 1 : uri.length ());
-            int baseEnd = uriOffset > 0 ? uriOffset - 1 : uri.length ();
-            catalinaHome= uri.substring (homeOffset, homeEnd);
-            if (baseOffset > 0) {
-                catalinaBase = uri.substring (baseOffset + base.length (), baseEnd);
-            }
-            // Bundled Tomcat home and base dirs can be specified as attributes
-            // specified in BUNDLED_TOMCAT_SETTING file. Tomcat manager URL can 
-            // then look like "tomcat:home=$bundled_home:base=$bundled_base" and
-            // therefore remains valid even if Tomcat version changes. (issue# 40659)
-            if (catalinaHome.length() > 0 && catalinaHome.charAt(0) == '$') {
-                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-                FileObject fo = fs.findResource(BUNDLED_TOMCAT_SETTING);
-                if (fo != null) {
-                    catalinaHome = fo.getAttribute(catalinaHome.substring(1)).toString();
-                    if (catalinaBase != null && catalinaBase.length() > 0 
-                        && catalinaBase.charAt(0) == '$') {
-                        catalinaBase = fo.getAttribute(catalinaBase.substring(1)).toString();
-                    }
-                }
-            }
-        }
-        
-        //parse the old format for backward compatibility
-        if (uriOffset > 0) {
-            String theUri = uri.substring (uriOffset + uriString.length ());
-            int portIndex = theUri.indexOf (':');
-            String host = theUri.substring (0, portIndex - 1);
-            setHost (host);
-            //System.out.println("host:"+host);
-            int portEnd = theUri.indexOf ('/');
-            portEnd = portEnd > 0 ? portEnd : theUri.length ();
-            String port = theUri.substring (portIndex, portEnd - 1);
-            //System.out.println("port:"+port);
-            try {
-                setServerPort (Integer.valueOf (port));
-            } catch (NumberFormatException nef) {
-                org.openide.ErrorManager.getDefault ().log (nef.getLocalizedMessage ());
-            }
-        }
+        this.tomcatVersion = tomcatVersion;
         this.uri = uri;
-        username = uname;
-        password = passwd;
-        tomcatManagerConfig = new TomcatManagerConfig(getCatalinaDir() + SERVERXML_PATH);
     }
 
     public InstanceProperties getInstanceProperties() {
         return InstanceProperties.getInstanceProperties(getUri());
     }
     
-    /** Creates an instance of disconnected TomcatManager * /
-    public TomcatManager (String catHome, String catBase) {
-        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-            TomcatFactory.getEM ().log ("Creating discconnected TomcatManager home="+catHome+", base="+catBase);
+    public synchronized TomcatProperties getTomcatProperties() {
+        if (tomcatProperties == null) {
+            tomcatProperties = new TomcatProperties(this);
         }
-        this.connected = false;
-        this.catalinaHome = catHome;
-        this.catalinaBase = catBase;
+        return tomcatProperties;
     }
-     */
 
     /**
      * Returns true if the server is running.
@@ -272,7 +127,7 @@ public class TomcatManager implements DeploymentManager {
      * @return <code>true</code> if the server is running.
      */
     public boolean isRunning(boolean checkResponse) {
-        return isRunning(getRunningCheckTimeout(), checkResponse);
+        return isRunning(getTomcatProperties().getRunningCheckTimeout(), checkResponse);
     }
     
     /**
@@ -318,72 +173,14 @@ public class TomcatManager implements DeploymentManager {
      * @return URI without home and base specification
      */
     public String getPlainUri () {
-        return "http://" + getHost () + ":" + getServerPort () + "/manager/"; //NOI18N
+        return "http://" + getTomcatProperties().getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
     }
     
     /** Returns URI of TomcatManager.
      * @return URI without home and base specification
      */
     public String getServerUri () {
-        return "http://" + getHost () + ":" + getServerPort (); //NOI18N
-    }
-    
-    /** Returns catalinaHome.
-     * @return catalinaHome or <CODE>null</CODE> when not specified.
-     */
-    public String getCatalinaHome () {
-        return catalinaHome;
-    }
-    
-    /** Returns catalinaBase.
-     * @return catalinaBase or <CODE>null</CODE> when not specified.
-     */
-    public String getCatalinaBase () {
-        return catalinaBase;
-    }
-    
-    /** Returns catalinaHome directory.
-     * @return catalinaHome or <CODE>null</CODE> when not specified.
-     */
-    public File getCatalinaHomeDir () {
-        if (catalinaHome == null) {
-            return null;
-        }
-        File homeDir = new File (catalinaHome);
-        if (!homeDir.isAbsolute ()) {
-            InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
-            homeDir = ifl.locate (catalinaHome, null, false);
-        }
-        return homeDir;
-    }
-    
-    /** Returns catalinaBase directory.
-     * @return catalinaBase or <CODE>null</CODE> when not specified.
-     */
-    public File getCatalinaBaseDir () {
-        if (catalinaBase == null) {
-            return null;
-        }
-        File baseDir = new File (catalinaBase);
-        if (!baseDir.isAbsolute ()) {
-            InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
-            baseDir = ifl.locate (catalinaBase, null, false);
-            if (baseDir == null) {
-                baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+catalinaBase);   // NOI18N
-            }
-        }
-        return baseDir;
-    }
-    
-    /**
-     * Returns catalina directory.
-     * @return catalinaBase directory, if it does not exist return catalinaHome directory,
-     * <CODE>null</CODE> otherwise.
-     */
-    public File getCatalinaDir() {
-        File catalinaDir = getCatalinaBaseDir();
-        if (catalinaDir == null) catalinaDir = getCatalinaHomeDir();
-        return catalinaDir;        
+        return "http://" + getTomcatProperties().getHost() + ":" + getCurrentServerPort(); //NOI18N
     }
 
     /**
@@ -393,43 +190,46 @@ public class TomcatManager implements DeploymentManager {
      * @return path to catalina work directory.
      */
     public String getCatalinaWork() {
-        String engineName = tomcatManagerConfig.getEngineElement().getAttributeValue("name"); //NOI18N
-        String hostName = tomcatManagerConfig.getHostElement().getAttributeValue("name"); //NOI18N
-        StringBuffer catWork = new StringBuffer(getCatalinaDir().getAbsolutePath());
+        TomcatManagerConfig tmConfig = getTomcatManagerConfig();
+        String engineName = tmConfig.getEngineElement().getAttributeValue("name"); //NOI18N
+        String hostName = tmConfig.getHostElement().getAttributeValue("name"); //NOI18N
+        TomcatProperties tp = getTomcatProperties();
+        StringBuffer catWork = new StringBuffer(tp.getCatalinaDir().toString());
         catWork.append("/work/").append(engineName).append("/").append(hostName); //NOI18N
         return catWork.toString(); 
     }
     
-    public FileObject getCatalinaBaseFileObject() {
-        if (catalinaBaseDir!=null) return catalinaBaseDir;
-        File baseDir = getCatalinaBaseDir();
-        if (baseDir==null) baseDir = getCatalinaHomeDir();
-        String[] files = baseDir.list();
-        if (files == null || files.length == 0) {
-            createBaseDir(baseDir,getCatalinaHomeDir());
-        }
-        if (baseDir==null) return null;
-        catalinaBaseDir = FileUtil.toFileObject(baseDir);
-        if (catalinaBaseDir==null) {
-            // try to refresh parent FileObject
-            File parentDir = baseDir.getParentFile();
-            if (parentDir != null) {
-                FileObject parentFileObject = FileUtil.toFileObject(parentDir);
-                if (parentFileObject != null) {
-                    parentFileObject.refresh();
-                    catalinaBaseDir = FileUtil.toFileObject(baseDir);
+    /** Ensure that the catalina base folder is ready, generate it if empty. */
+    public void ensureCatalinaBaseReady() {
+        TomcatProperties tp = getTomcatProperties();
+        File baseDir = tp.getCatalinaBase();
+        if (baseDir != null) {
+            String[] files = baseDir.list();
+            // if empty, copy all the needed files from the catalina home folder
+            if (files == null || files.length == 0) {
+                // TODO: display a progress dialog
+                createBaseDir(baseDir, tp.getCatalinaHome());
+                // check whether filesystem sees it
+                if (FileUtil.toFileObject(baseDir) == null) {
+                    // try to refresh parent file object
+                    File parentDir = baseDir.getParentFile();
+                    if (parentDir != null) {
+                        FileObject parentFileObject = FileUtil.toFileObject(parentDir);
+                        if (parentFileObject != null) {
+                            parentFileObject.refresh();
+                        }
+                    }
                 }
             }
         }
-        return catalinaBaseDir;
     }
     
     public StartTomcat getStartTomcat(){
-        return sTomcat;
+        return startTomcat;
     }
     
     public void setStartTomcat (StartTomcat st){
-        sTomcat = st;
+        startTomcat = st;
     }
     
     /**
@@ -533,173 +333,6 @@ public class TomcatManager implements DeploymentManager {
         }
 
         return false;
-    }
-
-    /** Returns username.
-     * @return username or <CODE>null</CODE> when not connected.
-     */
-    public String getUsername () {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            return ip.getProperty(InstanceProperties.USERNAME_ATTR);
-        }
-        return username;
-    }
-    
-    public void setUsername (String username){
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(InstanceProperties.USERNAME_ATTR, username);
-            this.username = username;
-        }
-    }
-    
-    /** Returns password.
-     * @return password or <CODE>null</CODE> when not connected.
-     */
-    public String getPassword () {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            return ip.getProperty(InstanceProperties.PASSWORD_ATTR);
-        }
-        return password;
-    }
-    
-    public void setPassword (String password){
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(InstanceProperties.PASSWORD_ATTR, password);
-            this.password = password;
-        }
-    }
-    
-    /** 
-     * Return display name which represents this tomcat manager's server instance 
-     * in IDE.
-     *
-     * @return display name which represents this tomcat manager's server instance 
-     * in IDE, <code>null</code> if display name is not defined, which should not
-     * occur.
-     */
-    public String getDisplayName() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            return ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        }
-        return null;
-    }
-    
-    public void setOpenContextLogOnRun(boolean val) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(OPEN_CONTEXT_LOG_ON_RUN, Boolean.valueOf(val).toString());
-        }
-    }
-    
-    public boolean getOpenContextLogOnRun() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            Object val = ip.getProperty(OPEN_CONTEXT_LOG_ON_RUN);
-            if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
-        }
-        return true;
-    }
-
-    /**
-     * Set whether Tomcat should be started with the "-security" option.
-     *
-     * @param val <code>true</code> if Tomcat should be started with the "-security" 
-     *         option, <code>false</code> otherwise.
-     */
-    public void setSecurityStartupOption(boolean val) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(SECURITY_STARTUP_OPTION, Boolean.valueOf(val).toString());
-        }
-    }
-
-    /**
-     * Should be Tomcat started with the "-security" option?
-     *
-     * @return <code>true</code> if Tomcat should be started with the "-security" 
-     *         option, <code>false</code> otherwise.
-     */
-    public boolean getSecurityStartupOption() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            Object val = ip.getProperty(SECURITY_STARTUP_OPTION);
-            if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
-        }
-        return false;
-    }
-
-    /**
-     * Set whether Tomcat should be stopped with the "-force" option.
-     *
-     * @param val <code>true</code> if Tomcat should be stopped with the "-force" 
-     *         option, <code>false</code> otherwise.
-     */
-    public void setForceStopOption(boolean val) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(FORCE_STOP_OPTION, Boolean.valueOf(val).toString());
-        }
-    }
-    
-    /**
-     * Should be Tomcat stopped with the "-force" option?
-     *
-     * @return <code>true</code> if Tomcat should be stopped with the "-force" 
-     *         option, <code>false</code> otherwise.
-     */
-    public boolean getForceStopOption() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            Object val = ip.getProperty(FORCE_STOP_OPTION);
-            if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
-        }
-        return false;
-    }
-    
-        
-    /** 
-     * Return running state check timeout. The default value is 1000ms.
-     *
-     * @return running state check timeout. The default value is 1000ms.
-     */
-    public int getRunningCheckTimeout() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            Object val = ip.getProperty(RUNNING_CHECK_TIMEOUT);
-            if (val != null) {
-                try {
-                    return Integer.valueOf(val.toString()).intValue();
-                } catch (NumberFormatException nfe) {
-                    // ignore
-                }
-            }
-        }
-        return DEFAULT_RUNNING_CHECK_TIMEOUT;
-    }
-    
-    /**
-     * Is it bundled Tomcat?
-     *
-     * @return <code>true</code> if this TomcatManager represents bundled Tomcat, 
-     *         <code>false</code> otherwise.
-     */
-    public boolean isItBundledTomcat() {
-        if (isItBundledTomcat == null) {
-            isItBundledTomcat = Boolean.FALSE;
-            InstanceProperties ip = getInstanceProperties();
-            if (ip != null) {
-                Object val = ip.getProperty(IS_IT_BUNDLED_TOMCAT);
-                if (val != null) {
-                    isItBundledTomcat = Boolean.valueOf(val.toString());   
-                }
-            }
-        }
-        return isItBundledTomcat.booleanValue();
     }
     
     public boolean isTomcat55() {
@@ -952,319 +585,73 @@ public class TomcatManager implements DeploymentManager {
     }
     
     public String toString () {
-        return "Tomcat manager ["+uri+", home "+catalinaHome+", base "+catalinaBase+(connected?"conneceted":"disconnected")+"]";    // NOI18N
-    }
-
-    /**
-     * Getter for property debugPort.
-     * @return Value of property debugPort.
-     */
-    public java.lang.Integer getDebugPort() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            String prop = ip.getProperty(DEBUG_PORT);
-            if (prop != null) {
-                return Integer.valueOf(prop);
-            }
-        }
-        return DEFAULT_DEBUG_PORT;
+        TomcatProperties tp = getTomcatProperties();
+        return "Tomcat manager ["+uri+", home "+tp.getCatalinaHome()+", base "+tp.getCatalinaBase()+(connected?"conneceted":"disconnected")+"]";    // NOI18N
     }
     
-    /**
-     * Getter for property debugPort.
-     * @return Value of property debugPort.
-     */
-    public String getDebugType() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            String prop = ip.getProperty(DEBUG_TYPE);
-            if (prop != null) {
-                return prop;
-            }
-        }
-        if (org.openide.util.Utilities.isWindows()) {
-            return DEFAULT_DEBUG_TYPE_WINDOWS;
-        }
-        return DEFAULT_DEBUG_TYPE_UNIX;
-    }
-
-    public String getSharedMemory() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            String prop = ip.getProperty(SHARED_MEMORY);
-            if (prop != null) {
-                return prop;
-            }
-        }
-        return DEFAULT_SHARED_MEMORY;
-    }
-
-    /**
-     * Getter for property debugPort.
-     * @return Value of property debugPort.
-     */
-    public Boolean getClassic() {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            String prop = ip.getProperty(CLASSIC);
-            if (prop != null) {
-                return Boolean.valueOf(prop);
-            }
-        }
-        return DEFAULT_CLASSIC;
-    }
-
-    public void setClassic(Boolean classic) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(CLASSIC, classic.toString());
-        }
-    }
-
-    public void setDebugType(String str) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(DEBUG_TYPE, str);
-        }
-    }
-
-    public void setSharedMemory(String str) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(SHARED_MEMORY, str);
+    public void setServerPort(int port) {
+        ensureCatalinaBaseReady(); // generated the catalina base folder if empty
+        TomcatProperties tp = getTomcatProperties();
+        if (TomcatInstallUtil.setServerPort(port, tp.getServerXml())) {
+            tp.setServerPort(port);
         }
     }
     
-    /**
-     * Setter for property debugPort.
-     * @param port New value of property debugPort.
-     */
-    public void setDebugPort(java.lang.Integer port) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            ip.setProperty(DEBUG_PORT, port.toString());
+    public void setShutdownPort(int port) {
+        ensureCatalinaBaseReady(); // generated the catalina base folder if empty
+        TomcatProperties tp = getTomcatProperties();
+        if (TomcatInstallUtil.setShutdownPort(port, tp.getServerXml())) {
+            tp.setShutdownPort(port);
         }
-    }    
+    }
     
-    public Integer getServerPort() {
-        
-        boolean upToDate = false;
-        InstanceProperties ip = getInstanceProperties();
-        if (ip == null) {
-            return null;   
+    /** If Tomcat is running, return the port it was started with. Please note that 
+     * the value in the server.xml (returned by getServerPort()) may differ. */
+    public int getCurrentServerPort() {
+        if (startTomcat != null && isRunning(false)) {
+            return startTomcat.getCurrentServerPort();
+        } else {
+            return getServerPort();
         }
-                
-        String time;
-        try {
-            time = ip.getProperty(TIMESTAMP);
-        } catch (IllegalStateException ise) {
-            // TODO - Workaround - should be fixed on j2eeserver side
-            return null;
-        }
-        if (time != null) {
-            Long t = Long.valueOf(time);
-            upToDate = isPortUpToDate(t);
-        }
-        if (upToDate) {
-            String o;
-            try {
-                o = ip.getProperty(SERVER_PORT);
-            } catch (IllegalStateException ise) {
-                // TODO - Workaround - should be fixed on j2eeserver side
-                return null;
-            }
-            if (o != null) {
-                Integer i = null;
+    }
+
+    /** Return server port defined in the server.xml file, this value may differ
+     * from the actual port Tomcat is currently running on @see #getCurrentServerPort(). */
+    public int getServerPort() {
+        ensurePortsUptodate();
+        return getTomcatProperties().getServerPort();
+    }
+    
+    public int getShutdownPort() {
+        ensurePortsUptodate();
+        return getTomcatProperties().getShutdownPort();
+    }
+    
+    private void ensurePortsUptodate() {
+        TomcatProperties tp = getTomcatProperties();
+        File serverXml = tp.getServerXml();
+        long timestamp = -1;
+        if (serverXml.exists()) {
+            timestamp = serverXml.lastModified();
+            if (timestamp > tp.getTimestamp()) {
                 try {
-                    i = Integer.valueOf(o); 
-                } catch (Exception e){
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot convert port number: " + o + " to Integer."); //NOI18N
-                }
-                return i;
-            } 
-        } else {
-            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                TomcatFactory.getEM ().log ("server port not uptodate, gonna read from file"); // NOI18N 
-            }
-            Integer p = readPortFromFile();
-            return p;
-        }
-        return null;
-    }
-    
-    public Integer getAdminPort() {
-        boolean upToDate = false;
-        InstanceProperties ip = getInstanceProperties();
-        if (ip == null) {
-            return null;
-        }
-        String time = ip.getProperty(TIMESTAMP);
-        if (time != null) {
-            Long t = Long.valueOf(time);
-            upToDate = isPortUpToDate(t);
-        }
-        if (upToDate) {
-            String o = ip.getProperty(ADMIN_PORT);
-            if (o != null) {
-                return Integer.valueOf(o);
-            }
-        } else {
-            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                TomcatFactory.getEM ().log ("admin port not uptodate, gonna read from file"); // NOI18N
-            }
-            Integer p = readAdminPortFromFile();
-            return p;
-        }
-        return null;
-    }
-    
-    private synchronized void updatePortsFromFile() {
-        try {
-            InstanceProperties ip = getInstanceProperties();
-            FileInputStream inputStream;
-            File f;
-            if (catalinaBase != null) {
-                f = new File(catalinaBase + SERVERXML_PATH);
-            } else {
-                f = new File(catalinaHome + SERVERXML_PATH);
-            }
-            if (!f.isAbsolute ()) {
-                InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
-                f = ifl.locate (f.getPath(), null, false);
-                if (f == null) {
-                    return;
+                    Server server = Server.createGraph(serverXml);
+                    tp.setTimestamp(timestamp);
+                    tp.setServerPort(Integer.parseInt(TomcatInstallUtil.getPort(server)));
+                    tp.setShutdownPort(Integer.parseInt(TomcatInstallUtil.getShutdownPort(server)));
+                } catch (IOException ioe) {
+                    TomcatFactory.getEM().notify(ioe);
+                } catch (NumberFormatException nfe) {
+                    TomcatFactory.getEM().notify(nfe);
                 }
             }
-            
-            inputStream = new FileInputStream(f);
-            Long t = null;
-            
-            if (f.exists()) {
-                t = new Long(f.lastModified());
-            } else {
-                return;
-            }
-
-            if (ip != null) {
-                String stamp = ip.getProperty(TomcatManager.TIMESTAMP);
-                if (stamp != null) {
-                    if (isPortUpToDate(Long.valueOf(stamp))) {
-                        return;
-                    }
-                }                
-            }
-                        
-            Document doc = XMLUtil.parse(new InputSource(inputStream), false, false, null,org.openide.xml.EntityCatalog.getDefault());
-            Server server = Server.createGraph(doc);
-            Integer adminPort = new Integer(TomcatInstallUtil.getAdminPort(server));
-            Integer serverPort = new Integer(TomcatInstallUtil.getPort(server));
-            inputStream.close();
-            
-            if (ip != null) {
-                ip.setProperty(TIMESTAMP, t.toString());
-                ip.setProperty(ADMIN_PORT, adminPort.toString());
-                ip.setProperty(SERVER_PORT, serverPort.toString());
-            }
-        } catch (Exception e) {
-            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
-                TomcatFactory.getEM ().log (e.getMessage());
-            }
         }
     }
     
-    private Integer readAdminPortFromFile() {
-        updatePortsFromFile();
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            Integer adminPort = null;
-            try {
-                adminPort = Integer.valueOf(ip.getProperty(ADMIN_PORT));
-            } catch (Exception e) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
-            }
-            return adminPort;
-        }
-        return null;
-    }
-
-    private Integer readPortFromFile() {
-        updatePortsFromFile();
-        InstanceProperties ip = getInstanceProperties();
-        if (ip != null) {
-            Integer serverPort = null;
-            try {
-                serverPort = Integer.valueOf(ip.getProperty(SERVER_PORT));
-            } catch (Exception e) {
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.toString());
-            }
-            return serverPort;
-        }
-        return null;
-    }
-    
-    private synchronized boolean isPortUpToDate(Long timestamp) {
-        String serverXml;
-        if (catalinaBase == null) {
-            serverXml = catalinaHome + SERVERXML_PATH;
-        } else {
-            serverXml = catalinaBase + SERVERXML_PATH;
-        }
-        File serverXmlFile = new File(serverXml);
-        if (serverXmlFile.exists()) {
-            long l = serverXmlFile.lastModified();
-            if (l <= timestamp.longValue()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public void setServerPort(Integer port) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip == null) {
-            return;
-        }
-        ip.setProperty(SERVER_PORT, port.toString());
-    }
-    
-    //PENDING: does not set in server.xml
-    private void setHost (String host) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip == null) {
-            return;
-        }
-        ip.setProperty(HOST, host);
-    }
-    
-    public String getHost () {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip == null) {
-            return null;
-        }
-        return ip.getProperty(HOST);
-    }
-    
-    public void setAdminPort(Integer port) {
-        InstanceProperties ip = getInstanceProperties();
-        if (ip == null) {
-            return;
-        }
-        ip.setProperty(ADMIN_PORT, port.toString());
-    }
-
-    public Server getRoot() {
-        // do we really need to cache this? shouldn't we at least return a
-        // defensive copy, otherwise we may get easily out of sync with server.xml
-        // if (this.root != null) {
-        //    return root;
-        // }        
+    public Server getRoot() {        
         try {
-            File f = new File(getCatalinaDir().getAbsolutePath() + SERVERXML_PATH);
-            InputStream in = new BufferedInputStream(new FileInputStream(f));            
-            Document doc = XMLUtil.parse(new InputSource(in), false, false, null,org.openide.xml.EntityCatalog.getDefault());
-            root = Server.createGraph(doc);
-            return root;
-        } catch (Exception e) {
+            return Server.createGraph(getTomcatProperties().getServerXml());
+        } catch (IOException e) {
             if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                 TomcatFactory.getEM ().log (e.toString());
             }
@@ -1333,9 +720,9 @@ public class TomcatManager implements DeploymentManager {
                 //"docBase=\"balancer\""                    // NOI18N For bundled tomcat 5.0.x 
             };
             String passwd = null;
-            if (isItBundledTomcat()) {
+            if (getTomcatProperties().isBundledTomcat()) {
                 passwd = TomcatInstallUtil.generatePassword(8);
-                setPassword(passwd);
+                getTomcatProperties().setPassword(passwd);
             }
             String [] patternTo = new String [] { 
                 null, 
@@ -1399,7 +786,7 @@ public class TomcatManager implements DeploymentManager {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
             return null;
         }
-        if (isItBundledTomcat()) {
+        if (getTomcatProperties().isBundledTomcat()) {
             TomcatInstallUtil.patchBundledServerXml(new File(baseDir, "conf/server.xml")); // NOI18N
         }
         return baseDir;
@@ -1498,7 +885,10 @@ public class TomcatManager implements DeploymentManager {
      * @return <code>TomcatManagerConfig</code> for easier access to some server.xml
      *         settings.
      */
-    public TomcatManagerConfig tomcatManagerConfig() {
+    public synchronized TomcatManagerConfig getTomcatManagerConfig() {
+        if (tomcatManagerConfig == null) {
+            tomcatManagerConfig = new TomcatManagerConfig(getTomcatProperties().getServerXml());
+        }
         return tomcatManagerConfig;
     }
     
@@ -1534,7 +924,7 @@ public class TomcatManager implements DeploymentManager {
     
     public synchronized TomcatPlatformImpl getTomcatPlatform() {
         if (tomcatPlatform == null) {
-            tomcatPlatform = new TomcatPlatformImpl(getCatalinaHomeDir(), getCatalinaBaseDir(), getDisplayName());
+            tomcatPlatform = new TomcatPlatformImpl(getTomcatProperties());
         }
         return tomcatPlatform;
     }

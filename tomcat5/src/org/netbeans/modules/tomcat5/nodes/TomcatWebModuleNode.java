@@ -14,6 +14,7 @@
 package org.netbeans.modules.tomcat5.nodes;
 
 import java.util.LinkedList;
+import javax.swing.Action;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.netbeans.modules.tomcat5.nodes.actions.*;
 import org.openide.nodes.AbstractNode;
@@ -28,8 +29,6 @@ import org.openide.util.actions.SystemAction;
 
 
 public class TomcatWebModuleNode extends AbstractNode {
-
-    private static String  ICON_BASE = "org/netbeans/modules/tomcat5/resources/WebModule"; // NOI18N
     
     private TomcatWebModule module;
     
@@ -40,10 +39,10 @@ public class TomcatWebModuleNode extends AbstractNode {
         setDisplayName(constructName());
         setShortDescription(module.getTomcatModule ().getWebURL());
         getCookieSet().add(module);
-        setIconBase(ICON_BASE);
+        setIconBaseWithExtension("org/netbeans/modules/tomcat5/resources/WebModule.gif"); // NOI18N
     }
     
-    protected SystemAction[] createActions(){
+    public Action[] getActions(boolean context){
         TomcatManager tm = (TomcatManager)module.getDeploymentManager();
         java.util.List actions = new LinkedList();
         actions.add(SystemAction.get(StartAction.class));
