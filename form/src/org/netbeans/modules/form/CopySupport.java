@@ -207,15 +207,19 @@ class CopySupport {
                     return null; // not allowed, ignore paste
 
                 sourceForm.startCompoundEdit();
+                boolean resetConstraintProperties = false;
                 LayoutModel layoutModel = sourceForm.getLayoutModel();
                 LayoutComponent layoutComponent = null;
                 if (layoutModel != null) {
-                    Object layoutUndoMark = layoutModel.getChangeMark();
-                    javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
                     layoutComponent = layoutModel.getLayoutComponent(sourceComponent.getId());
-                    layoutModel.removeComponentAndIntervals(sourceComponent.getId(), true);
-                    if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                        sourceForm.addUndoableEdit(ue);
+                    if (layoutComponent != null) {
+                        resetConstraintProperties = true;
+                        Object layoutUndoMark = layoutModel.getChangeMark();
+                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                        layoutModel.removeComponentAndIntervals(sourceComponent.getId(), true);
+                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                            sourceForm.addUndoableEdit(ue);
+                        }
                     }
                 }
                 
@@ -235,6 +239,11 @@ class CopySupport {
                         LayoutComponent parent = layoutModel.getLayoutComponent(visualCont.getId());
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                        if (layoutComponent == null) {
+                            layoutComponent = new LayoutComponent(sourceComponent.getId(),
+                                MetaComponentCreator.shouldBeLayoutContainer((RADVisualComponent)sourceComponent));
+                        }
+                        resetConstraintProperties = true;
                         layoutModel.addNewComponent(layoutComponent, parent);
                         if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                             sourceForm.addUndoableEdit(ue);
@@ -269,6 +278,9 @@ class CopySupport {
 
                     // add the component to the target container
                     targetForm.addComponent(sourceComponent, targetContainer);
+                }
+                if (resetConstraintProperties) {
+                    ((RADVisualComponent)sourceComponent).resetConstraintsProperties();
                 }
                 sourceForm.endCompoundEdit(true);
             }

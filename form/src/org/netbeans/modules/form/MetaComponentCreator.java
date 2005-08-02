@@ -203,7 +203,7 @@ public class MetaComponentCreator {
         return null;
     }
 
-    private static boolean shouldBeLayoutContainer(RADVisualComponent metacomp) {
+    static boolean shouldBeLayoutContainer(RADVisualComponent metacomp) {
         return metacomp instanceof RADVisualContainer
                && ((RADVisualContainer)metacomp).getLayoutSupport() == null;
     }
@@ -314,7 +314,7 @@ public class MetaComponentCreator {
         LayoutModel layoutModel = formModel.getLayoutModel();
         LayoutComponent layoutComp = layoutModel.getLayoutComponent(radComp.getId());
         if (layoutComp == null) {
-            boolean isContainer = radComp instanceof RADVisualContainer;
+            boolean isContainer = shouldBeLayoutContainer(radComp);
             layoutComp = new LayoutComponent(radComp.getId(), isContainer);
         }
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();

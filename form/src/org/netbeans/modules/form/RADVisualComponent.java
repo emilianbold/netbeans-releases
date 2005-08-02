@@ -250,32 +250,30 @@ public class RADVisualComponent extends RADComponent {
             LayoutConstraints constr = layoutSupport.getConstraints(this);
             if (constr != null)
                 constraintsProperties = constr.getProperties();
-        } else {
+        } else if (getParentContainer() != null) {
             LayoutComponent component = getFormModel().getLayoutModel().getLayoutComponent(getId());
             if (component == null) return; // Will be called again later
-            if (this != getFormModel().getTopRADComponent()) {
-                constraintsProperties = new Node.Property[] {
-                    new LayoutComponentSizeProperty(component, LayoutConstants.HORIZONTAL),
-                    new LayoutComponentSizeProperty(component, LayoutConstants.VERTICAL),
-                    new LayoutComponentResizableProperty(component, LayoutConstants.HORIZONTAL),
-                    new LayoutComponentResizableProperty(component, LayoutConstants.VERTICAL)
-                };
-                component.addPropertyChangeListener(new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        String propName = evt.getPropertyName();
-                        RADComponentNode node = getNodeReference();
-                        if (LayoutConstants.PROP_HORIZONTAL_PREF_SIZE.equals(propName)) {
-                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE, null, null);
-                        } else if (LayoutConstants.PROP_VERTICAL_PREF_SIZE.equals(propName)) {
-                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_SIZE, null, null);
-                        } else if (LayoutConstants.PROP_HORIZONTAL_MAX_SIZE.equals(propName)) {
-                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
-                        } else if (LayoutConstants.PROP_VERTICAL_MAX_SIZE.equals(propName)) {
-                            node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
-                        }
+            constraintsProperties = new Node.Property[] {
+                new LayoutComponentSizeProperty(component, LayoutConstants.HORIZONTAL),
+                new LayoutComponentSizeProperty(component, LayoutConstants.VERTICAL),
+                new LayoutComponentResizableProperty(component, LayoutConstants.HORIZONTAL),
+                new LayoutComponentResizableProperty(component, LayoutConstants.VERTICAL)
+            };
+            component.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propName = evt.getPropertyName();
+                    RADComponentNode node = getNodeReference();
+                    if (LayoutConstants.PROP_HORIZONTAL_PREF_SIZE.equals(propName)) {
+                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_SIZE, null, null);
+                    } else if (LayoutConstants.PROP_VERTICAL_PREF_SIZE.equals(propName)) {
+                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_VERTICAL_SIZE, null, null);
+                    } else if (LayoutConstants.PROP_HORIZONTAL_MAX_SIZE.equals(propName)) {
+                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
+                    } else if (LayoutConstants.PROP_VERTICAL_MAX_SIZE.equals(propName)) {
+                        node.firePropertyChangeHelper(PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE, null, null);
                     }
-                });
-            }
+                }
+            });
         }
 
         if (constraintsProperties == null) {
