@@ -111,9 +111,16 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     }
     
     public void initialize(WizardDescriptor wiz) {
+        
+      // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
+        String[] beforeSteps = null;
+        Object prop = wiz.getProperty ("WizardPanel_contentData"); // NOI18N
+        if (prop != null && prop instanceof String[]) {
+            beforeSteps = (String[])prop;
+        }
         position = 0;
         BasicWizardIterator.Panel[] panels = createPanels(wiz);
-        String[] steps = BasicWizardIterator.createSteps(panels);
+        String[] steps = BasicWizardIterator.createSteps(beforeSteps, panels);
         wizardPanels = new BasicWizardIterator.PrivateWizardPanel[panels.length];
         
         for (int i = 0; i < panels.length; i++) {
@@ -121,14 +128,25 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         }
     }
     
-    private static String[] createSteps(BasicWizardIterator.Panel[] panels) {
-        String[] steps = new String[panels.length];
-        
-        for (int i = 0; i < panels.length; i++) {
-            steps[i] = panels[i].getPanelName();
+    // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
+    private static String[] createSteps(String[] before, BasicWizardIterator.Panel[] panels) {
+        assert panels != null;
+        // hack to use the steps set before this panel processed
+        int diff = 0;
+        if (before == null) {
+            before = new String[0];
+        } else if (before.length > 0) {
+            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
         }
-        
-        return steps;
+        String[] res = new String[ (before.length - diff) + panels.length];
+        for (int i = 0; i < res.length; i++) {
+            if (i < (before.length - diff)) {
+                res[i] = before[i];
+            } else {
+                res[i] = panels[i - before.length + diff].getPanelName();
+            }
+        }
+        return res;
     }
     
     public void uninitialize(WizardDescriptor wiz) {
@@ -204,9 +222,20 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         
         public void storeSettings(Object settings) {
             panel.storeToDataModel();
+            //XXX hack
+            ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", null); // NOI18N
+            
         }
         
         public void readSettings(Object settings) {
+    // mkleint - copied from someplace.. is definitely weird..
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewProjectWizard to modify the title
+            Object substitute = ((JComponent)getPanel()).getClientProperty("NewFileWizard_Title"); // NOI18N
+            if (substitute != null) {
+                ((WizardDescriptor)settings).putProperty("NewFileWizard_Title", substitute); // NOI18N
+            }
+            
             panel.readFromDataModel();
         }
     }

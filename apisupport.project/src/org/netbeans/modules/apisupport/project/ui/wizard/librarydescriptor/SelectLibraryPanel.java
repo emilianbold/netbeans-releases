@@ -39,6 +39,8 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
+        
     }
     
     private void checkValidity() {

@@ -42,6 +42,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         this.data = data;
         initComponents();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
         modifiedFilesValue.setBackground(lblBgr);
         createdFilesValue.setBackground(lblBgr);
         
