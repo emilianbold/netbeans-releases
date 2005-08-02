@@ -61,11 +61,11 @@ public class Customizer extends JTabbedPane {
         addTab(NbBundle.getMessage(Customizer.class,"TXT_General"), new CustomizerGeneral(custData));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Startup"), new CustomizerStartup(custData));
         addTab(NbBundle.getMessage(Customizer.class,"TXT_Platform"), new CustomizerJVM(custData));
-        addTab(NbBundle.getMessage(Customizer.class,"TXT_Classes"), 
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Classes"), 
                new PathView(custData, custData.getClassModel(), CLASSPATH));
-        addTab(NbBundle.getMessage(Customizer.class,"TXT_Sources"), 
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Sources"), 
                new PathView(custData, custData.getSourceModel(), SOURCES));
-        addTab(NbBundle.getMessage(Customizer.class,"TXT_Javadoc"), 
+        addTab(NbBundle.getMessage(Customizer.class,"TXT_Tab_Javadoc"), 
                new PathView(custData, custData.getJavadocsModel(), JAVADOC));
     }
 
