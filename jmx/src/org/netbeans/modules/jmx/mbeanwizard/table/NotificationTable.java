@@ -186,11 +186,9 @@ public class NotificationTable extends JTable {
         
         if (column == 0) {
             JComboBox nameField = new JComboBox();
-            nameField.setEnabled(true);
-            nameField.setEditable(true);
             nameField.addItem(WizardConstants.NOTIFICATION);
             nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
-            return new ComboBoxRenderer(nameField);
+            return new ComboBoxRenderer(nameField,true,true);
         } else {
             if (column == 2) {
                 JTextField typeField = new JTextField();
