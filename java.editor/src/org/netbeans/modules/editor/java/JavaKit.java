@@ -450,7 +450,7 @@ public class JavaKit extends NbEditorKit {
         protected boolean asynchonous() {
             return false;
         }
-
+        
         public String openSource(JTextComponent target) {
             String itemDesc = null;
             SyntaxSupport sup = Utilities.getSyntaxSupport(target);
@@ -589,7 +589,7 @@ public class JavaKit extends NbEditorKit {
             }
         }
         
-        private void addAction(JTextComponent target, JMenu menu, Action a){
+        protected void addAction(JTextComponent target, JMenu menu, Action a){
             if (a != null) {
                 String actionName = (String) a.getValue(Action.NAME);
                 JMenuItem item = null;
