@@ -108,17 +108,17 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-openide-actions-CopyAction.instance/org-openide-actions-PasteAction.instance" boolvalue="true"/>
             <file name="org-openide-actions-PasteAction.instance"/>
         </folder>
+
+        <folder name="SideBar">
+            <file name="org-netbeans-editor-GlyphGutter.instance"/>
+            <file name="org-netbeans-editor-StatusBar$StatusBarFactory.instance">
+                <attr name="position" stringvalue="South" />
+                <attr name="scrollable" boolvalue="false" />
+            </file>
+        </folder>
         
         <folder name="text">
             <folder name="base">
-                
-                <folder name="SideBar">
-                    <file name="org-netbeans-editor-GlyphGutter.instance"/>
-                    <file name="org-netbeans-editor-StatusBar$StatusBarFactory.instance">
-                        <attr name="position" stringvalue="South" />
-                        <attr name="scrollable" boolvalue="false" />
-                    </file>
-                </folder>
 
                 <folder name="Defaults">
                     <file name="keybindings.xml" url="XMLs/DefaultGlobalKeyBindings.xml"/>
