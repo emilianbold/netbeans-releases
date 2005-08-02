@@ -78,13 +78,13 @@ public class OperationParameterPanelEditor implements TableCellEditor {
             int row, int column) {
         List<MBeanOperationParameter> oText = 
                 (List<MBeanOperationParameter>) table.getModel().getValueAt(row, column);
-        String paramString = "";
+        String paramString = "";// NOI18N
         for (int i = 0; i < oText.size(); i++) {
-            paramString += oText.get(i).getParamType() + " " + 
+            paramString += oText.get(i).getParamType() + " " + // NOI18N
                     oText.get(i).getParamName();
             
             if (i < oText.size()-1)
-                paramString += ",";
+                paramString += ",";// NOI18N
         }
         text.setText(paramString);
         

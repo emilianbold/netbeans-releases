@@ -393,11 +393,11 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
                 WizardHelpers.forceFirstLetterLowerCase(attribute.getName()) + 
                 ";\n"; // NOI18N
         
-        String prefix = "get";
+        String prefix = "get";// NOI18N
         
         if (attribute.isWrapped()) {
             if (attribute.getIsMethodExits())
-                prefix = "is";
+                prefix = "is";// NOI18N
             methodBody = "return theRef." + prefix + attribute.getName() + "();\n"; // NOI18N
         } else if (attribute.getSetMethodExits())
             methodBody = "return " +  // NOI18N

@@ -129,10 +129,10 @@ public class WrapperOperationTable extends OperationTable {
          } else if (column == 3) { //parameter panel
              final JTextField paramField = new JTextField();
              paramField.setEditable(false);
-             paramField.setName("methParamTextField");
+             paramField.setName("methParamTextField");// NOI18N
              JButton paramButton =
                      new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
-             paramButton.setName("methAddParamButton");
+             paramButton.setName("methAddParamButton");// NOI18N
              paramButton.setMargin(new java.awt.Insets(2,2,2,2));
              final int editedRow = row;
              
@@ -158,7 +158,7 @@ public class WrapperOperationTable extends OperationTable {
              paramButton.setEnabled(stateBut);
              
              JPanel panel = new JPanel(new BorderLayout());
-             panel.setName("methParamColJPanel");
+             panel.setName("methParamColJPanel");// NOI18N
              panel.add(paramField, BorderLayout.CENTER);
              panel.add(paramButton, BorderLayout.EAST);
              
@@ -173,10 +173,10 @@ public class WrapperOperationTable extends OperationTable {
          } else if (column == 4) { //operation exceptions
              final JTextField excepField = new JTextField();
              excepField.setEditable(false);
-             excepField.setName("methExcepTextField");
+             excepField.setName("methExcepTextField");// NOI18N
              JButton excepButton = new JButton(
                      WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
-             excepButton.setName("methAddExcepJButton");
+             excepButton.setName("methAddExcepJButton");// NOI18N
              excepButton.setMargin(new java.awt.Insets(2,2,2,2));
              final int editedRow = row;
              
@@ -262,7 +262,7 @@ public class WrapperOperationTable extends OperationTable {
         } else if (column == 3) {
             JTextField paramField = new JTextField();
             paramField.setEditable(false);
-            paramField.setName("methParamTextField");
+            paramField.setName("methParamTextField");// NOI18N
             JButton paramButton =
                     new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
             paramButton.setMargin(new java.awt.Insets(2,2,2,2));
@@ -277,7 +277,7 @@ public class WrapperOperationTable extends OperationTable {
         } else if (column == 4) {
             JTextField excepField = new JTextField();
             excepField.setEditable(false);
-            excepField.setName("methExcepTextField");
+            excepField.setName("methExcepTextField");// NOI18N
             JButton excepButton =
                     new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
             excepButton.setMargin(new java.awt.Insets(2,2,2,2));

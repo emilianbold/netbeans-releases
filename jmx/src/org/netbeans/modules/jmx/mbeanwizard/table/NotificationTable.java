@@ -87,7 +87,7 @@ public class NotificationTable extends JTable {
             JComboBox nameField = new JComboBox();
             nameField.addItem(WizardConstants.NOTIFICATION);
             nameField.addItem(WizardConstants.ATTRIBUTECHANGE_NOTIFICATION);
-            nameField.setName("notifClassBox");
+            nameField.setName("notifClassBox");// NOI18N
             nameField.setEditable(true);
             nameField.setEnabled(true);
             Object o = getModel().getValueAt(row,column);
@@ -132,10 +132,10 @@ public class NotificationTable extends JTable {
                 if (column == 2) {
                     final JTextField typeField = new JTextField();
                     typeField.setEditable(false);
-                    typeField.setName("typeTextField");
+                    typeField.setName("typeTextField");// NOI18N
                     JButton typeButton = new JButton(
                             WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
-                    typeButton.setName("notifTypePopupJButton");
+                    typeButton.setName("notifTypePopupJButton");// NOI18N
                     typeButton.setMargin(new java.awt.Insets(2,2,2,2));
                     typeButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent evt) {
@@ -193,7 +193,7 @@ public class NotificationTable extends JTable {
             if (column == 2) {
                 JTextField typeField = new JTextField();
                 typeField.setEditable(false);
-                typeField.setName("typeTextField");
+                typeField.setName("typeTextField");// NOI18N
                 JButton typeButton = 
                         new JButton(WizardConstants.MBEAN_POPUP_EDIT_BUTTON);
                 typeButton.setMargin(new java.awt.Insets(2,2,2,2));

@@ -81,33 +81,33 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
     // {4} = isWritable
     // {5} = isIs
     private static final String MBEAN_ATT_INFO_PATTERN = new String(
-      "    new MBeanAttributeInfo(\"{0}\",\n" +
-      "                           {1},\n" +
-      "                           \"{2}\",\n" +
-      "                           {3},\n" +
-      "                           {4},\n" +
-      "                           {5})");
+      "    new MBeanAttributeInfo(\"{0}\",\n" +// NOI18N
+      "                           {1},\n" +// NOI18N
+      "                           \"{2}\",\n" +// NOI18N
+      "                           {3},\n" +// NOI18N
+      "                           {4},\n" +// NOI18N
+      "                           {5})");// NOI18N
     
     // {0} = operation name
     // {1} = operation desc
     // {2} = operation type full name
     // {3} = operation index 
     private static final String MBEAN_OPERATION_INFO_PATTERN = new String(
-      "    new MBeanOperationInfo(\"{0}\",\n" +
-      "                           \"{1}\",\n" +
-      "                           op{3}Params,\n" +
-      "                           {2},\n" +
-      "                           MBeanOperationInfo.ACTION)");
+      "    new MBeanOperationInfo(\"{0}\",\n" +// NOI18N
+      "                           \"{1}\",\n" +// NOI18N
+      "                           op{3}Params,\n" +// NOI18N
+      "                           {2},\n" +// NOI18N
+      "                           MBeanOperationInfo.ACTION)");// NOI18N
     
     // {0} = operation index
     private static final String MBEAN_PARAMS_INFO_PATTERN = new String(
-      "       MBeanParameterInfo[] op{0}Params = new MBeanParameterInfo[] '{'\n");
+      "       MBeanParameterInfo[] op{0}Params = new MBeanParameterInfo[] '{'\n");// NOI18N
     
     // {0} = param name
     // {1} = param type full name
     // {2} = param desc
     private static final String MBEAN_PARAM_INFO_PATTERN = new String(
-      "           new MBeanParameterInfo(\"{0}\",{1},\"{2}\")");
+      "           new MBeanParameterInfo(\"{0}\",{1},\"{2}\")");// NOI18N
     
     private JavaClass mbeanClass;
     
@@ -185,7 +185,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         MBeanAttribute[] attributes = (MBeanAttribute[])
             attrList.toArray(new MBeanAttribute[attrList.size()]);
         StringBuffer content = new StringBuffer();
-        content.append("\n");
+        content.append("\n");// NOI18N
         MessageFormat formCheckAttr = new MessageFormat(CHECK_ATTR_NAME_PATTERN);
         MessageFormat formAttrComment = new MessageFormat(COMMENT_ATTR_VALUE_PATTERN);
         Object[] args;
@@ -211,7 +211,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         MBeanAttribute[] attributes = (MBeanAttribute[])
             attrList.toArray(new MBeanAttribute[attrList.size()]);
         StringBuffer content = new StringBuffer();
-        content.append("\n");
+        content.append("\n");// NOI18N
         MessageFormat formCheckAttr = new MessageFormat(CHECK_ATTR_NAME_PATTERN);
         MessageFormat formAttrComment = new MessageFormat(COMMENT_ATTR_VALUE_PATTERN);
         MessageFormat formAttrThrow = new MessageFormat(THROW_ATTR_VALUE_PATTERN);
@@ -228,9 +228,9 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
                   checkedAttrBody, "" // NOI18N
             };
             content.append(formCheckAttr.format(args));
-            content.append(" else ");
+            content.append(" else ");// NOI18N
             if (i == attributes.length - 1)
-                content.append("\n   ");
+                content.append("\n   ");// NOI18N
         }
         setAttr.setBodyText(content.toString() + setAttr.getBodyText().substring(1));
     }
@@ -248,7 +248,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         MBeanOperation[] operations = (MBeanOperation[])
             opList.toArray(new MBeanOperation[opList.size()]);
         StringBuffer content = new StringBuffer();
-        content.append("\n");
+        content.append("\n");// NOI18N
         if (operations.length > 0) {
             content.append(METHOD_SIGNATURE_DEF);
             addImport(mbeanClass.getResource(),"java.util.Arrays"); // NOI18N

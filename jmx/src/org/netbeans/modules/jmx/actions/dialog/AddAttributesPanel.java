@@ -128,7 +128,6 @@ public class AddAttributesPanel extends javax.swing.JPanel
     }
     
     public void event() {
-        System.out.println("event");
         removeButton.setEnabled(
                 (attributeModel.getRowCount() > attributeModel.getFirstEditable()));
         btnOK.setEnabled(isAcceptable());

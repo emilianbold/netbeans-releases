@@ -66,7 +66,7 @@ public abstract class MBeanFileGenerator {
      * @param sb <CODE>StringBuffer</CODE> the StringBuffer to complete
      */
     public static void closeBloc(StringBuffer sb) {
-        sb.append("}\n");
+        sb.append("}\n");// NOI18N
     }
     
     /**
@@ -74,7 +74,7 @@ public abstract class MBeanFileGenerator {
      * @param sb <CODE>StringBuffer</CODE> the StringBuffer to complete
      */
     public static void newLine(StringBuffer sb) {
-        sb.append("\n");
+        sb.append("\n");// NOI18N
     }
     
     public static void addManagementImport(Resource tgtRes){

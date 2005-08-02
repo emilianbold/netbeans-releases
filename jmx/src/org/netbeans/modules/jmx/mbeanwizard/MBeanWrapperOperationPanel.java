@@ -288,7 +288,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                         wiz.getProperty(WizardConstants.PROP_METHOD_PARAM+ i)).trim().split(
                             WizardConstants.PARAMETER_SEPARATOR);
                     //test if no parameters
-                    if (!(paramsStr.length == 1 && paramsStr[0].equals(""))) {
+                    if (!(paramsStr.length == 1 && paramsStr[0].equals(""))) {// NOI18N
                         for (int j=0; j < paramsStr.length; j++) {
                             String[] paramStr = paramsStr[j].trim().split(" ");// NOI18N
                             String desc = (String)
@@ -305,7 +305,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                         wiz.getProperty(WizardConstants.PROP_METHOD_EXCEP+ i)).trim().split(
                             WizardConstants.PARAMETER_SEPARATOR);
                     //test if no exceptions
-                    if (!(exceptsStr.length == 1 && exceptsStr[0].equals(""))) {
+                    if (!(exceptsStr.length == 1 && exceptsStr[0].equals(""))) {// NOI18N
                         for (int j=0; j < exceptsStr.length; j++) {
                             String desc = (String)
                             wiz.getProperty(WizardConstants.PROP_METHOD_PARAM + i +

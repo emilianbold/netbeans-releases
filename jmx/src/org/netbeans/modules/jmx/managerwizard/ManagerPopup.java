@@ -68,7 +68,7 @@ public class ManagerPopup extends javax.swing.JDialog {
         cancelJButton.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_CANCEL_DESCRIPTION")); // NOI18N
         
-        setName("ManagerPopup");
+        setName("ManagerPopup");// NOI18N
         
         addListeners();
         //setDimensions(NbBundle.getMessage(ManagerPopup.class,"LBL_RMIAgentURL_Popup"));// NOI18N

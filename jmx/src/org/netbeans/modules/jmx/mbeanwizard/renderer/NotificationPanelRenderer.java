@@ -68,12 +68,12 @@ public class NotificationPanelRenderer extends  DefaultTableCellRenderer {
         ArrayList<MBeanNotificationType> oText = 
                 (ArrayList<MBeanNotificationType>)
                     table.getModel().getValueAt(row, column);
-        String notifTypeString = "";
+        String notifTypeString = "";// NOI18N
         for (int i = 0; i < oText.size(); i++) {
             notifTypeString += oText.get(i).getNotificationType();
             
             if (i < oText.size()-1)
-                notifTypeString += ",";
+                notifTypeString += ",";// NOI18N
         }
         text.setText(notifTypeString);
         

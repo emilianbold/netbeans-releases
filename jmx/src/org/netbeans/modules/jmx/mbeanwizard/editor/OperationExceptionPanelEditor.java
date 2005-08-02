@@ -79,12 +79,12 @@ public class OperationExceptionPanelEditor implements TableCellEditor {
         
         List<MBeanOperationException> oText = 
                 (List<MBeanOperationException>) table.getModel().getValueAt(row, column);
-        String excepClassString = "";
+        String excepClassString = "";// NOI18N
         for (int i = 0; i < oText.size(); i++) {
             excepClassString += oText.get(i).getExceptionClass();
             
             if (i < oText.size()-1)
-                excepClassString += ",";
+                excepClassString += ",";// NOI18N
         }
         text.setText(excepClassString);
         

@@ -144,7 +144,7 @@ public class AttributeTable extends JTable {
                 if (column == 2) { //access mode
                     JComboBox accessBox = 
                             WizardHelpers.instanciateAccessJComboBox();
-                    accessBox.setName("attrAccessBox");
+                    accessBox.setName("attrAccessBox");// NOI18N
                     Object o = getModel().getValueAt(row,column);
                     accessBox.setSelectedItem(o);
                     return new JComboBoxCellEditor(accessBox, this);
