@@ -121,6 +121,10 @@ public class JSPKit extends NbEditorKit {
     
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
+                    new JspJavaGenerateGotoPopupAction(),
+                    new JavaKit.JavaJMIGotoSourceAction(),
+                    new JavaKit.JavaJMIGotoDeclarationAction(),
+                    new JavaKit.JavaGotoSuperImplementation(),
                     new JavaDocShowAction(),
                     // the jsp editor has own action for switching beetween matching blocks
                     new MatchBraceAction(ExtKit.matchBraceAction, false),
@@ -553,6 +557,40 @@ public class JSPKit extends NbEditorKit {
             }            
             super.actionPerformed(e, target);
         }
+    }
+ 
+    public static class JspJavaGenerateGotoPopupAction extends JavaKit.JavaGenerateGoToPopupAction {
+        
+        protected void addAction(JTextComponent target, JMenu menu,
+        String actionName) {
+            BaseKit kit = Utilities.getKit(target);
+            if (kit == null) return;
+            Action a = kit.getActionByName(actionName);
+            if (a!=null){ 
+                //test context only for context-aware actions
+                if(ExtKit.gotoSourceAction.equals(actionName) ||
+                        ExtKit.gotoDeclarationAction.equals(actionName) ||
+                        ExtKit.gotoSuperImplementationAction.equals(actionName))
+                    a.setEnabled(isJavaContext(target));
+                
+                addAction(target, menu, a);
+            } else { // action-name is null, add the separator
+                menu.addSeparator();
+            }
+        }
+        
+        private boolean isJavaContext(JTextComponent target) {
+            JspSyntaxSupport sup = (JspSyntaxSupport)Utilities.getSyntaxSupport(target);
+            int carretOffset = target.getCaret().getDot();
+            try {
+                TokenItem tok = sup.getTokenChain(carretOffset, carretOffset + 1);
+                return tok.getTokenContextPath().contains(JavaTokenContext.contextPath);
+            }catch(BadLocationException e) {
+                //do nothing
+                return true;
+            }
+        }
+        
     }
     
 }
