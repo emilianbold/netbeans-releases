@@ -260,25 +260,6 @@ the Options window:-->
 <mapID target="junit_runningtests" url="junit/junit_runningtests.html" />	
 <mapID target="junit_configuring" url="junit/junit_configuring.html" />
 
-<!-- VCS map ids :-->
-<mapID target="vcs.about" url="vcs-nb/vcs_about.html" />
-<mapID target="vcs.overview" url="vcs-nb/vcs_overview.html" />
-<mapID target="vcs.quickref" url="vcs-nb/vcs_quickref.html" />
-<mapID target="vcs.usingvcs" url="vcs-nb/vcs_usingvcs.html" />
-<mapID target="vcs.project-system" url="vcs-nb/vcs_project-system.html" />
-<mapID target="vcs.repositorysetup" url="vcs-nb/vcs_repositorysetup.html" />
-<mapID target="vcs.checkout" url="vcs-nb/vcs_checkout.html" />
-<mapID target="vcs.diff" url="vcs-nb/vcs_diff.html" />
-<mapID target="vcs.commit" url="vcs-nb/vcs_commit.html" />
-<mapID target="vcs.merge" url="vcs-nb/vcs_merge.html" />
-<mapID target="vcs.mergeresolve" url="vcs-nb/vcs_mergeresolve.html" />
-<mapID target="vcs.patch" url="vcs-nb/vcs_patch.html" />
-<mapID target="vcs.groups" url="vcs-nb/vcs_groups.html" />
-<mapID target="vcs.configure" url="vcs-nb/vcs_configure.html" />
-<mapID target="vcs.cvs" url="vcs-nb/vcs_cvs.html" />
-<mapID target="vcs.cvscommands" url="vcs-nb/vcs_cvscommands.html" />
-
-
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
 <mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
@@ -585,8 +566,6 @@ the Options window:-->
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="files/files_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="files/files_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs_mergeresolve.html" />
-   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs_mergeresolve.html" />
 <!--possibly remap the following target to configure_options.html :-->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
 
@@ -610,12 +589,7 @@ the Options window:-->
 <!--This ID is used for CSH as well for the Javadoc Index Search window:-->
       <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
 
-   <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_configure.html" />
 
-   <!--Begin helpIDs for Versioning Window:-->
-   <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diff.html" />
-   <!--csh for versioning menu items:-->
-   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcs_groups.html" />
 
    <!--csh for java actions:-->
    <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/new-interface.html" />

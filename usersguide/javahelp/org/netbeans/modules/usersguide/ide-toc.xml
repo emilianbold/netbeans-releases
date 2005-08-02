@@ -59,24 +59,6 @@
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
   </tocitem>
 
-  <tocitem text="Using Version Control" >
-    <tocitem text="About Version Control" target="vcs.about" />
-    <tocitem text="Working with Version Control" target="vcs.overview" />
-    <tocitem text="VCS Tasks: Quick Reference" target="vcs.quickref" />
-    <tocitem text="Using Version Control with the IDE" target="vcs.usingvcs" />
-    <tocitem text="Using VCS with IDE Projects" target="vcs.project-system" />
-    <tocitem text="Setting Up VCS" target="vcs.repositorysetup" />
-    <tocitem text="Checking Out Files with CVS" target="vcs.checkout" />
-    <tocitem text="Comparing File Revisions" target="vcs.diff" />
-    <tocitem text="Committing Files to a VCS Repository" target="vcs.commit" />
-    <tocitem text="Merging File Revisions" target="vcs.merge" />
-    <tocitem text="Resolving Merge Conflicts" target="vcs.mergeresolve" />
-    <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
-    <tocitem text="Using VCS Groups" target="vcs.groups" />
-    <tocitem text="Configuring Version Control Settings" target="vcs.configure" />
-    <tocitem text="Using CVS in the IDE" target="vcs.cvs" />
-    <tocitem text="CVS Command Reference" target="vcs.cvscommands" />
-  </tocitem>
 
   <tocitem text="Configuring the IDE">
     <tocitem text="About Configuring the IDE" target="configure.about" />    
