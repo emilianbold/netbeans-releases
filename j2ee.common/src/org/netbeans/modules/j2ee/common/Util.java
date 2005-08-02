@@ -29,12 +29,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
@@ -175,4 +177,22 @@ public class Util {
         }
         return result;
     }
+    
+    public static ClassPath getFullClasspath(FileObject fo) {
+        FileObject[] sourceRoots = ClassPath.getClassPath(fo, ClassPath.SOURCE).getRoots();
+        FileObject[] bootRoots = ClassPath.getClassPath(fo, ClassPath.BOOT).getRoots();
+        FileObject[] compileRoots = ClassPath.getClassPath(fo, ClassPath.COMPILE).getRoots();
+        FileObject[] roots = new FileObject[sourceRoots.length + bootRoots.length + compileRoots.length];
+        for (int i = 0; i < sourceRoots.length; i++) {
+            roots[i] = sourceRoots[i];
+        }
+        for (int i = 0; i < bootRoots.length; i++) {
+            roots[sourceRoots.length + i] = bootRoots[i];
+        }
+        for (int i = 0; i < compileRoots.length; i++) {
+            roots[sourceRoots.length + bootRoots.length + i] = compileRoots[i];
+        }
+        return ClassPathSupport.createClassPath(roots);
+    }
+
 }
