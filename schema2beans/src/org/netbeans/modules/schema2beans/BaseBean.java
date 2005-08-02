@@ -1438,28 +1438,31 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	first level (same simple property values and same attribute values).
      */
     synchronized boolean mergeTreeRoot(BaseBean bean, int mode) {
-        
+
+        //  Process the whole graph now
+        return this.mergeTree(bean, mode);
+    }
+
+    private boolean mergeAttributes(BaseBean bean, int mode) {
+        boolean result = true;
         //  We need to process the attributes of the root first
         BaseAttribute[] ba = bean.listAttributes();
-        
+
         //  We might have no attribute on the root
         if (ba != null) {
-            for(int j=0; j<ba.length; j++) {
-                if (!ba[j].isFixed()) {
-                    String attrName = ba[j].getName();
-                    
+            for (int j = 0; j < ba.length; j++) {
+                BaseAttribute baseAttribute = ba[j];
+                if (!baseAttribute.isFixed() && !baseAttribute.isTransient()) {
+                    String attrName = baseAttribute.getName();
                     String curValue = this.getAttributeValue(attrName);
                     String otherValue = bean.getAttributeValue(attrName);
-                    
+
                     if (curValue != otherValue) {
                         // Might have one of the two null, not both
-                        if (curValue == null || otherValue == null ||
-                                !curValue.equals(otherValue)) {
-                            
+                        if (curValue == null || otherValue == null || !curValue.equals(otherValue)) {
                             if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
                                 return false;
                             }
-                            
                             if ((mode & MERGE_UNION) == MERGE_UNION) {
                                 this.setAttributeValue(attrName, otherValue);
                             }
@@ -1468,11 +1471,9 @@ public abstract class BaseBean implements Cloneable, Bean {
                 }
             }
         }
-        
-        //  Process the whole graph now
-        return this.mergeTree(bean, mode);
+        return result;
     }
-    
+
     /**
      *	Merge the bean tree with ourself
      */
@@ -1491,10 +1492,10 @@ public abstract class BaseBean implements Cloneable, Bean {
             TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
                     DDLogFlags.DBG_UBN, 1, DDLogFlags.MERGE,
                     this.getClass().getName() + "/" +
-                    (bean==null?"<null>":bean.getClass().getName()) +
+                    (bean==null?"<getAttributeValue(\"Id\")null>":bean.getClass().getName()) +
                     " - " + mergeModeToString(mode));
         }
-        
+
         //
         //	The merge method is called only when two beans are logically
         //	identical. Therefore, this method doesn't try to check if it
@@ -1502,9 +1503,14 @@ public abstract class BaseBean implements Cloneable, Bean {
         //	have to be updated.
         //
         if (this.getClass().isInstance(bean)) {
+            if (!mergeAttributes(bean, mode)) {
+                return false;
+            }
+
+
             //	We got the same as ourself in another graph
             Iterator it = beanPropsIterator();
-            
+
             //
             //	Parse our attributes
             //
@@ -1519,17 +1525,17 @@ public abstract class BaseBean implements Cloneable, Bean {
             while (it.hasNext()) {
                 //	Get our next property (as a BeanProp)
                 BeanProp prop = (BeanProp)it.next();
-                
+
                 if (prop == null)
                     continue;
-                
+
                 String 		name = prop.getBeanName();
                 boolean 	isArray = Common.isArray(prop.type);
                 boolean 	isBean = Common.isBean(prop.type);
                 Object 		o1, o2, o3;
                 boolean		hasKey = false;
                 boolean		hasKeyDefined = false;
-                
+
                 if (isArray) {
                     //
                     //	For each element of the index property, we have to
@@ -1545,16 +1551,16 @@ public abstract class BaseBean implements Cloneable, Bean {
                     boolean 	toRemove[] = new boolean[size1];
                     boolean 	toAdd[] = new boolean[size2];
                     boolean 	compared[] = new boolean[size2];
-                    
+
                     //	To keep track of that need to be removed
                     Arrays.fill(toRemove, false);
-                    
+
                     //	To keep track of what we'll need to add after the loop
                     Arrays.fill(toAdd, true);
-                    
+
                     //	To make sure that we do not match twice the same elt
                     Arrays.fill(compared, false);
-                    
+
                     if (DDLogFlags.debug) {
                         TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
                                 DDLogFlags.DBG_UBN, 5,
@@ -1564,27 +1570,27 @@ public abstract class BaseBean implements Cloneable, Bean {
                                 bean.getClass().getName() + "." +
                                 name + "[" + size2 + "]");
                     }
-                    
+
                     //	For each of our current property elts ...
                     for (i=0; i<size1; i++) {
                         o1 = prop.getValue(i);
                         //System.out.println("looking at prop "+i+" o1="+o1);
-                        
+
                         if (isBean && o1 == null)
                             continue;	// Nothing to compare
-                        
+
                         boolean found = false;
-                        
+
                         // ... try each comparator ...
                         for (int c=0; c<this.comparators.size() && !found; c++){
                             BeanComparator cmp =
                                     (BeanComparator)this.comparators.get(c);
-                            
+
                             //	... with every new property elts
                             for (j=0; j<size2; j++) {
                                 if (!compared[j]) {
                                     o2 = bean.getValue(name, j);
-                                    
+
                                     if (isBean) {
                                         if (o2 == null) {
                                             // Ignore null elt
@@ -1592,21 +1598,21 @@ public abstract class BaseBean implements Cloneable, Bean {
                                             toAdd[j] = false;
                                             continue;
                                         }
-                                        
+
                                         o3 = cmp.compareBean(name,
                                                 (BaseBean)o1,
                                                 (BaseBean)o2);
-                                        
+
                                         if (!hasKey) {
                                             hasKey = cmp.hasKey();
                                             hasKeyDefined = true;
                                         }
-                                        
+
                                         if (o3 == o1) {
                                             //	Beans identicals - recurse
                                             boolean ret = ((BaseBean)o1).
                                                     mergeTree((BaseBean)o2, mode);
-                                            
+
                                             if (!ret) return ret;
                                             compared[j] = true;
                                             found = true;
@@ -1620,7 +1626,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                                             hasKey = cmp.hasKey();
                                             hasKeyDefined = true;
                                         }
-                                        
+
                                         if (o3 == o1) {
                                             compared[j] = true;
                                             found = true;
@@ -1630,10 +1636,10 @@ public abstract class BaseBean implements Cloneable, Bean {
                                 }
                             }
                         }
-                        
+
                         if (found) {
                             toAdd[j] = false;	// already have it
-                            
+
                             if (DDLogFlags.debug) {
                                 TraceLogger.put(TraceLogger.DEBUG,
                                         TraceLogger.SVC_DD,
@@ -1644,7 +1650,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                             }
                         } else {
                             toRemove[i] = true;	//	no more exists
-                            
+
                             if (DDLogFlags.debug) {
                                 TraceLogger.put(TraceLogger.DEBUG,
                                         TraceLogger.SVC_DD,
@@ -1655,7 +1661,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                             }
                         }
                     }
-                    
+
                     //
                     //	We want to make sure that we set a proper value
                     //	to hasKey when one of the two array is empty
@@ -1663,18 +1669,18 @@ public abstract class BaseBean implements Cloneable, Bean {
                     //
                     if (!hasKeyDefined)
                         hasKey = this.setHasKeyDefaultValue(prop);
-                    
+
                     if ((mode & MERGE_COMPARE) == MERGE_COMPARE) {
                         //	Any diff returns false
                         for (i=0; i<size1; i++)
                             if (toRemove[i] && hasKey)
                                 return false;
-                        
+
                         for (j=0; j<size2; j++)
                             if (toAdd[j] && hasKey)
                                 return false;
                     }
-                    
+
                     //	Remove, taking care of the index shifting
                     if ((mode & MERGE_INTERSECT) == MERGE_INTERSECT) {
                         for (i=0, j=0; i<size1; i++) {
@@ -1685,7 +1691,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                             }
                         }
                     }
-                    
+
                     //	Add all the new elements
                     if ((mode & MERGE_UNION) == MERGE_UNION) {
                         for (j=0; j < size2; j++) {
@@ -1708,7 +1714,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                 } else {
                     Object  newValue = null;
                     boolean found = false;
-                    
+
                     if (DDLogFlags.debug) {
                         TraceLogger.put(TraceLogger.DEBUG, TraceLogger.SVC_DD,
                                 DDLogFlags.DBG_UBN, 5,
@@ -1716,11 +1722,11 @@ public abstract class BaseBean implements Cloneable, Bean {
                                 this.getClass().getName() + "." +
                                 name);
                     }
-                    
+
                     //	This is a single value property
                     o1 = prop.getValue(0);	//	ourself
                     o2 = bean.getValue(name);	//	the other one
-                    
+
                     //
                     //	We have two properties to compare. Go over all the
                     //	comparators. Stop the comparison if any of them
@@ -1736,16 +1742,16 @@ public abstract class BaseBean implements Cloneable, Bean {
                     for (int c=0; c<this.comparators.size() && !found; c++) {
                         BeanComparator cmp =
                                 (BeanComparator)this.comparators.get(c);
-                        
+
                         if (isBean) {
                             if (o1 != null && o2 != null) {
                                 //	Recurse merging if they are the same
                                 o3 = cmp.compareBean(name, (BaseBean)o1,
                                         (BaseBean)o2);
-                                
+
                                 if (!hasKey)
                                     hasKey = cmp.hasKey();
-                                
+
                                 if (o3 != o1)
                                     newValue = (c==0)?o3:newValue;
                                 else {
@@ -1765,24 +1771,24 @@ public abstract class BaseBean implements Cloneable, Bean {
                         } else {
                             o3 = cmp.compareProperty(name, this, o1, -1,
                                     bean, o2, -1);
-                            
+
                             if (!hasKey)
                                 hasKey = cmp.hasKey();
-                            
+
                             if (o3 != o1)
                                 newValue = (c==0)?o3:newValue;
                             else
                                 found = true;
                         }
-                        
+
                         if (!found && ((mode & MERGE_COMPARE)==MERGE_COMPARE)) {
                             //	Any diff - return false
                             return false;
                         }
-                        
+
                         if (!found && ((mode & MERGE_UNION) == MERGE_UNION)
                         && hasKey) {
-                            
+
                             if (isBean) {
                                 if (newValue != null) {
                                     setValue(prop, 0,
@@ -1794,7 +1800,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                                 //  We need to explicitely copy the attrs
                                 this.copyProperty(prop, bean, 0, newValue);
                             }
-                            
+
                             if (DDLogFlags.debug) {
                                 TraceLogger.put(TraceLogger.DEBUG,
                                         TraceLogger.SVC_DD,
@@ -1815,14 +1821,14 @@ public abstract class BaseBean implements Cloneable, Bean {
                     }
                 }
             }
-            
+
             //
             // Look over comments (IZ#20156) and inner-element whitespace.
             // Comments and inner-element whitespace are only stored
             // in the DOM Graph.  We only deal in CharacterData here as
             // all other things are stored in hash tables too.
             //
-            
+
             if (binding != null && bean.binding != null && graphManager != null) {
                 Document doc1 = graphManager().getXmlDocument();
                 Node startingNode1 = binding.getNode();
@@ -1949,7 +1955,7 @@ public abstract class BaseBean implements Cloneable, Bean {
                     }
                 }
             }
-            
+
             //
             //	For the MERGE_COMPARE option: if we reach this point, that
             //	means we didn't find any diff. We can therefore return true.
