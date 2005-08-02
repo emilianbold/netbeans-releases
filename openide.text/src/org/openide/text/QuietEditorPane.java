@@ -12,7 +12,16 @@
  */
 package org.openide.text;
 
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTarget;
+import java.awt.event.InputEvent;
+import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.TransferHandler;
+import javax.swing.plaf.UIResource;
 import javax.swing.text.*;
 
 
@@ -32,7 +41,22 @@ final class QuietEditorPane extends JEditorPane {
 
     /** is firing of events enabled? */
     int working = FIRE; // [Mila] firing since begining, otherwise doesn't work well
-
+    
+    
+    public void setDocument(Document doc) {
+        super.setDocument(doc);
+        
+        // Setting DelegatingTransferHandler, where CallbackTransferable will
+        // be handled in importData method. 
+        // For more details, please refer issue #53439        
+        if (doc != null){
+            TransferHandler thn = getTransferHandler();
+            DelegatingTransferHandler dth = new DelegatingTransferHandler(thn);
+            setTransferHandler(dth);
+        }
+    }
+    
+    
     public void setWorking(int x) {
         working = x;
     }
@@ -88,4 +112,86 @@ final class QuietEditorPane extends JEditorPane {
             super.repaint();
         }
     }
+
+    /**
+     * Delegating TransferHandler.
+     * The main purpose is hooking on importData method where CallbackTransferable
+     * is handled. For more details, please refer issue #53439
+     */    
+    private class DelegatingTransferHandler extends TransferHandler{
+        
+        TransferHandler delegator;
+        
+        public DelegatingTransferHandler(TransferHandler delegator){
+            this.delegator = delegator;
+        }
+        
+        public void exportAsDrag(JComponent comp, InputEvent e, int action) {
+            delegator.exportAsDrag(comp, e, action);
+        }
+
+        public void exportToClipboard(JComponent comp, Clipboard clip, int action) {
+            delegator.exportToClipboard(comp, clip, action);
+        }
+
+        public boolean importData(JComponent comp, Transferable t) {
+            try {
+                if (t.isDataFlavorSupported(ActiveEditorDrop.FLAVOR)){
+                    Object obj = t.getTransferData(ActiveEditorDrop.FLAVOR);
+                    if (obj instanceof ActiveEditorDrop){
+                        return ((ActiveEditorDrop)obj).handleTransfer(comp);
+                    }
+                }
+            } catch (Exception exc){
+                exc.printStackTrace();
+            }
+            return delegator.importData(comp, t);
+        }
+
+        public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+            return delegator.canImport(comp, transferFlavors);
+        }
+
+        public int getSourceActions(JComponent c) {
+            return delegator.getSourceActions(c);
+        }
+
+        public Icon getVisualRepresentation(Transferable t) {
+            return delegator.getVisualRepresentation(t);
+        }
+
+        protected void exportDone(JComponent source, Transferable data, int action) {
+            try {
+                java.lang.reflect.Method method = delegator.getClass().getDeclaredMethod(
+                    "exportDone",  // NOI18N
+                    new Class[] {javax.swing.JComponent.class, Transferable.class, int.class});
+                method.setAccessible(true);
+                method.invoke(delegator, new Object[] {source, data, new Integer(action)});
+            } catch (NoSuchMethodException ex) {
+                ex.printStackTrace();
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+            } catch (java.lang.reflect.InvocationTargetException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        protected Transferable createTransferable(JComponent comp) {
+            try {
+                java.lang.reflect.Method method = delegator.getClass().getDeclaredMethod(
+                    "createTransferable", // NOI18N
+                    new Class[] {javax.swing.JComponent.class});
+                method.setAccessible(true);
+                return (Transferable)method.invoke(delegator, new Object[] {comp});
+            } catch (NoSuchMethodException ex) {
+                ex.printStackTrace();
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+            } catch (java.lang.reflect.InvocationTargetException ex) {
+                ex.printStackTrace();
+            }
+            return null;
+	}
+    }
+    
 }
