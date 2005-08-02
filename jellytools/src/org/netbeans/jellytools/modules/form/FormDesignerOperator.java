@@ -70,8 +70,8 @@ public class FormDesignerOperator extends TopComponentOperator {
     private JToggleButtonOperator _tbDesign;
     private JToggleButtonOperator _tbSelectionMode;
     private JToggleButtonOperator _tbConnectionMode;
-    private JButtonOperator _btTestForm;
-    private JButtonOperator _btPaletteManager;
+    private JButtonOperator _btPreviewForm;
+    private JButtonOperator _btPaletteCustomizer;
 
     /** Waits for the form Designer appearence and creates operator for it.
      * It is activated by defalt.
@@ -138,28 +138,28 @@ public class FormDesignerOperator extends TopComponentOperator {
         return(_tbConnectionMode);
     }
 
-   /** Getter for the "Palette Manager" button.
+   /** Getter for the "Palette Customizer" button.
      * @return JButtonOperator instance
      */
-    public JButtonOperator btPaletteManager() {
-        if(_btPaletteManager == null) {
-            _btPaletteManager = new JButtonOperator(this, new ToolTipChooser(
-                                   Bundle.getString("org.netbeans.modules.form.palette.Bundle",
-                                                    "CTL_PaletteManager_Title")));
+    public JButtonOperator btPaletteCustomizer() {
+        if(_btPaletteCustomizer == null) {
+            _btPaletteCustomizer = new JButtonOperator(this, new ToolTipChooser(
+                                   Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle", 
+                                                           "ACT_InstallBean")));
         }
-        return _btPaletteManager;
+        return _btPaletteCustomizer;
     }
 
-    /** Getter for the "Test Form" button.
+    /** Getter for the "Preview Form" button.
      * @return JButtonOperator instance
      */
-    public JButtonOperator btTestForm() {
-        if(_btTestForm == null) {
-            _btTestForm = new JButtonOperator(this, new ToolTipChooser(
+    public JButtonOperator btPreviewForm() {
+        if(_btPreviewForm == null) {
+            _btPreviewForm = new JButtonOperator(this, new ToolTipChooser(
                                    Bundle.getString("org.netbeans.modules.form.actions.Bundle", 
                                                     "ACT_TestMode")));
         }
-        return _btTestForm;
+        return _btPreviewForm;
     }
 
     /** Switches to the source editor. It pushes Source toggle button if we
@@ -210,33 +210,33 @@ public class FormDesignerOperator extends TopComponentOperator {
         tbConnectionMode().push();
     }
     
-    /** Pushes "Test Form" button and waits for a frame opened.
+    /** Pushes "Preview Form" button and waits for a frame opened.
      * @param frameName Frame class name.
-     * @return JFrameOperator instance of "Testing Form" window
+     * @return JFrameOperator instance of "Form Preview" window
      */
-    public JFrameOperator testForm(String frameName) {
-        btTestForm().push();
+    public JFrameOperator previewForm(String frameName) {
+        btPreviewForm().push();
         return(new JFrameOperator(Bundle.getString("org.netbeans.modules.form.actions.Bundle",
                                                    "FMT_TestingForm",
                                                    new Object[] {frameName})));
     }
 
-    /** Pushes "Test Form" button and waits for a frame opened.
-     * @return JFrameOperator instance of "Testing Form" window
+    /** Pushes "Preview Form" button and waits for a frame opened.
+     * @return JFrameOperator instance of "Form Preview" window
      */
-    public JFrameOperator testForm() {
-        btTestForm().push();
+    public JFrameOperator previewForm() {
+        btPreviewForm().push();
         return(new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.form.actions.Bundle",
                                                           "FMT_TestingForm")));
     }
     
-    /** Pushes "Palette Manager" button and waits for the Palette Manager dialog opened.
-     * @return NbDialogOperator instance of "Palette Manager" window
+    /** Pushes "Palette Customizer" button and waits for the Palette Customizer dialog opened.
+     * @return NbDialogOperator instance of "Palette Customizer" window
      */
-    public NbDialogOperator paletteManager() {
-        btPaletteManager().push();
-        return new NbDialogOperator(Bundle.getString("org.netbeans.modules.form.palette.Bundle",
-                                                     "CTL_PaletteManager_Title"));
+    public NbDialogOperator paletteCustomizer() {
+        btPaletteCustomizer().push();
+        return new NbDialogOperator(Bundle.getString("org.netbeans.modules.palette.Bundle",
+                                                     "CTL_Customizer_Title"));
     }
     
     /** Returns component which actually handles all events happening
@@ -434,7 +434,7 @@ public class FormDesignerOperator extends TopComponentOperator {
         handleLayer();
         componentLayer();
         fakePane();
-        btTestForm();
+        btPreviewForm();
         tbConnectionMode();
         tbSelectionMode();
         tbSource();

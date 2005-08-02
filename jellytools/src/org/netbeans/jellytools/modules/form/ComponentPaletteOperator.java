@@ -13,10 +13,14 @@
 package org.netbeans.jellytools.modules.form;
 
 import java.awt.Component;
+import java.lang.reflect.Method;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JListOperator.ListItemChooser;
 
 /**
  * Keeps methods to access component palette of form editor.
@@ -36,11 +40,14 @@ public class ComponentPaletteOperator extends TopComponentOperator {
     private JCheckBoxOperator _cbAWT;
     private JCheckBoxOperator _cbLayouts;
     private JCheckBoxOperator _cbBeans;
+    // "Palette"
+    private static final String PALETTE_TITLE = 
+            Bundle.getString("org.netbeans.modules.palette.Bundle", "CTL_Component_palette");
 
     /** Waits for the Component Palette appearence and creates operator for it.
      */
     public ComponentPaletteOperator() {
-        super(waitTopComponent(null, null, 0, new PaletteTopComponentChooser()));
+        super(waitTopComponent(null, PALETTE_TITLE, 0, new PaletteTopComponentChooser()));
     }
 
     //subcomponents
@@ -109,11 +116,25 @@ public class ComponentPaletteOperator extends TopComponentOperator {
      * @see #expandAWT
      * @see #expandLayouts
      */
-    public void selectComponent(String displayName) {
-        //TBD approach used here is not clearly "black box"
-        //it might make sense to use getToolTipText(MouseEvent)
-        //to find item by tooltip (support from Jemmy might be necessary)
-        lstComponents().selectItem("displayName=" + displayName);  // NOI18N
+    public void selectComponent(final String displayName) {
+        int index = lstComponents().findItemIndex(new ListItemChooser() {
+            public boolean checkItem(JListOperator oper, int index) {
+                try {
+                    // call method org.netbeans.modules.palette.DefaultItem#getDisplayName
+                    Object item = oper.getModel().getElementAt(index);
+                    Method getDisplayNameMethod = item.getClass().getMethod("getDisplayName", new Class[] {}); // NOI18N
+                    getDisplayNameMethod.setAccessible(true);
+                    String indexDisplayName = (String)getDisplayNameMethod.invoke(item, new Object[] {});
+                    return oper.getComparator().equals(indexDisplayName, displayName);
+                } catch (Exception e) {
+                    throw new JemmyException("getDisplayName failed.", e); // NOI18N
+                }
+            }
+            public String getDescription() {
+                return "display name equals "+displayName; // NOI18N
+            }
+        });
+        lstComponents().selectItem(index);
     }
 
     //shortcuts
@@ -183,7 +204,7 @@ public class ComponentPaletteOperator extends TopComponentOperator {
 
     private static class PaletteTopComponentChooser implements ComponentChooser {
         public boolean checkComponent(Component comp) {
-            return(comp.getClass().getName().equals("org.netbeans.modules.form.palette.PaletteTopComponent"));
+            return(comp.getClass().getName().equals("org.netbeans.spi.palette.PaletteTopComponent"));
         }
         public String getDescription() {
             return("Any PaletteTopComponent");
