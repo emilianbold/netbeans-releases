@@ -71,16 +71,14 @@ final class CreatedModifiedFilesProvider  {
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
         
         
-        {
-            libraryDescRelativePath = getLibraryDescriptorRelativePath(packagePath,data.getLibraryName());
-            String layerPath = getLayerRelativePath(data.getProject());
-            File prjFile = FileUtil.toFile(data.getProject().getProjectDirectory());
-            File layerFolder = new File(prjFile,layerPath).getParentFile();
-            File libraryDescFile = new File(prjFile,libraryDescRelativePath);
-            
-            libraryDescPath = PropertyUtils.relativizeFile(layerFolder, libraryDescFile);
-        }
+        libraryDescRelativePath = getLibraryDescriptorRelativePath(packagePath,data.getLibraryName());
+        String layerPath = getLayerRelativePath(data.getProject());
+        File prjFile = FileUtil.toFile(data.getProject().getProjectDirectory());
+        File layerFolder = new File(prjFile,layerPath).getParentFile();
+        File libraryDescFile = new File(prjFile,libraryDescRelativePath);
         
+        libraryDescPath = PropertyUtils.relativizeFile(layerFolder, libraryDescFile);
+
         libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,
                 template,libraryDescRelativePath ,tokens,null/*data.getLibraryDisplayName()*/);
         
