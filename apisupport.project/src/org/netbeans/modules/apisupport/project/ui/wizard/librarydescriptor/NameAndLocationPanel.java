@@ -109,55 +109,23 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        projectName = new javax.swing.JLabel();
-        packageName = new javax.swing.JLabel();
-        projectNameValue = new JTextField(ProjectUtils.getInformation(this.data.getProject()).getDisplayName());
-        packageNameValue = this.createComboBox(this.data.getSourceRootGroup());
         libraryName = new javax.swing.JLabel();
-        libraryDisplayName = new javax.swing.JLabel();
         libraryNameVale = new javax.swing.JTextField();
+        libraryDisplayName = new javax.swing.JLabel();
         libraryDisplayNameValue = new javax.swing.JTextField();
+        projectName = new javax.swing.JLabel();
+        projectNameValue = new JTextField(ProjectUtils.getInformation(this.data.getProject()).getDisplayName());
+        packageName = new javax.swing.JLabel();
+        packageNameValue = this.createComboBox(this.data.getSourceRootGroup());
         createdFiles = new javax.swing.JLabel();
-        modifiedFiles = new javax.swing.JLabel();
-        filler = new javax.swing.JLabel();
         createdFilesValue = new javax.swing.JTextArea();
+        modifiedFiles = new javax.swing.JLabel();
         modifiedFilesValue = new javax.swing.JTextArea();
+        filler = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(projectName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_ProjectName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 12);
-        add(projectName, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(packageName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_PackageName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(packageName, gridBagConstraints);
-
-        projectNameValue.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
-        add(projectNameValue, gridBagConstraints);
-
-        packageNameValue.setEditable(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        add(packageNameValue, gridBagConstraints);
-
+        libraryName.setLabelFor(libraryNameVale);
         org.openide.awt.Mnemonics.setLocalizedText(libraryName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_LibraryName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -166,6 +134,15 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
         add(libraryName, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 0);
+        add(libraryNameVale, gridBagConstraints);
+
+        libraryDisplayName.setLabelFor(libraryDisplayNameValue);
         org.openide.awt.Mnemonics.setLocalizedText(libraryDisplayName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_LibraryDisplayName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -176,19 +153,47 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 0);
-        add(libraryNameVale, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(libraryDisplayNameValue, gridBagConstraints);
 
+        projectName.setLabelFor(projectNameValue);
+        org.openide.awt.Mnemonics.setLocalizedText(projectName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_ProjectName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 12);
+        add(projectName, gridBagConstraints);
+
+        projectNameValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
+        add(projectNameValue, gridBagConstraints);
+
+        packageName.setLabelFor(packageNameValue);
+        org.openide.awt.Mnemonics.setLocalizedText(packageName, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_PackageName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(packageName, gridBagConstraints);
+
+        packageNameValue.setEditable(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        add(packageNameValue, gridBagConstraints);
+
+        createdFiles.setLabelFor(createdFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(createdFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_CreatedFiles"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -197,24 +202,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
         add(createdFiles, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_ModifiedFiles"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(modifiedFiles, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(filler, gridBagConstraints);
 
         createdFilesValue.setColumns(20);
         createdFilesValue.setRows(5);
@@ -227,6 +214,16 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
         add(createdFilesValue, gridBagConstraints);
 
+        modifiedFiles.setLabelFor(modifiedFilesValue);
+        org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/wizard/librarydescriptor/Bundle").getString("LBL_ModifiedFiles"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        add(modifiedFiles, gridBagConstraints);
+
         modifiedFilesValue.setColumns(20);
         modifiedFilesValue.setRows(5);
         modifiedFilesValue.setToolTipText("modifiedFilesValue");
@@ -237,6 +234,15 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(modifiedFilesValue, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(filler, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents

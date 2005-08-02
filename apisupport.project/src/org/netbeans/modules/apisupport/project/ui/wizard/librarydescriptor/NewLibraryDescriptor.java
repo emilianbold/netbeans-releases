@@ -41,8 +41,8 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
         CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
         if (fileOperations != null) {            
             fileOperations.run();
-        }        
-        //TODO:
+        }
+        //TODO: if this returns empty list, it will never get to the list of recent items in New action popup
         return new HashSet();
     }
     

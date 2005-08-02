@@ -76,8 +76,8 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         platformPanel = new javax.swing.JPanel();
-        librariesValue = LibrariesModel.getComboBox();
         library = new javax.swing.JLabel();
+        librariesValue = LibrariesModel.getComboBox();
         manageLibrariessButton = new javax.swing.JButton();
         fillerPanel = new javax.swing.JPanel();
         fillerLabel = new javax.swing.JLabel();
@@ -85,6 +85,15 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         setLayout(new java.awt.GridBagLayout());
 
         platformPanel.setLayout(new java.awt.GridBagLayout());
+
+        library.setLabelFor(librariesValue);
+        org.openide.awt.Mnemonics.setLocalizedText(library, org.openide.util.NbBundle.getMessage(SelectLibraryPanel.class, "LBL_Library"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        platformPanel.add(library, gridBagConstraints);
 
         librariesValue.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -100,15 +109,6 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         platformPanel.add(librariesValue, gridBagConstraints);
-
-        library.setLabelFor(librariesValue);
-        org.openide.awt.Mnemonics.setLocalizedText(library, org.openide.util.NbBundle.getMessage(SelectLibraryPanel.class, "LBL_Library"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        platformPanel.add(library, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(manageLibrariessButton, org.openide.util.NbBundle.getMessage(SelectLibraryPanel.class, "CTL_ManageLibraries"));
         manageLibrariessButton.addActionListener(new java.awt.event.ActionListener() {
