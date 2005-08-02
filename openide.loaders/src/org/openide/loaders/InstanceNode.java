@@ -29,6 +29,7 @@ import java.io.IOException;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 
 import org.openide.*;
 import org.openide.cookies.InstanceCookie;
@@ -41,7 +42,7 @@ import org.openide.nodes.*;
  *
  * @author  Jaroslav Tulach, Jan Pokorsky
  */
-final class InstanceNode extends DataNode {
+final class InstanceNode extends DataNode implements Runnable {
     
     /** icon base */
     private static final String INSTANCE_ICON_BASE =
@@ -75,7 +76,7 @@ final class InstanceNode extends DataNode {
         this.noBeanInfo = noBeanInfo;
         
         if (!noBeanInfo && !getDataObject().getPrimaryFile().hasExt(XML_EXT)) {
-            initName();
+            SwingUtilities.invokeLater (this);
         }
         
         // listen on the cookie change of the instance data object
@@ -249,7 +250,7 @@ final class InstanceNode extends DataNode {
 
     /** try to initialize display name.
     */
-    private void initName() {
+    public void run() {
         try {
             InstanceCookie ic = ic();
             if (ic == null) return;
