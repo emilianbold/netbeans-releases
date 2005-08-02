@@ -21,4 +21,5 @@ Microsystems, Inc. All Rights Reserved.
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/editor/Breakpoint.gif'
     highlight='0xFC9D9F' 
     type='line'
+    actions='BreakpointActions'
 />

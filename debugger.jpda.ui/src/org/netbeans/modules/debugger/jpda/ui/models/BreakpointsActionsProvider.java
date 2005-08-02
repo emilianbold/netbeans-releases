@@ -112,7 +112,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     public void removeModelListener (ModelListener l) {
     }
 
-    private static void customize (Breakpoint b) {
+    public static void customize (Breakpoint b) {
         JComponent c = null;
         if (b instanceof LineBreakpoint)
             c = new LineBreakpointPanel ((LineBreakpoint) b);
