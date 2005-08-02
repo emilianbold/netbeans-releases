@@ -49,11 +49,12 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
         //init labels
         StringBuffer methodsList = new StringBuffer();
         for (int i = 0; i < attributes.length; i ++) {
-            if (attributes[i].getGetMethodExits())
-                    methodsList.append(" - get" + attributes[i].getName() + "\n"); // NOI18N
-            else if (attributes[i].getIsMethodExits())
+            if (attributes[i].getIsMethodExits())
                     methodsList.append(" - is" + attributes[i].getName() + "\n"); // NOI18N
-            else if (attributes[i].getSetMethodExits())
+            else if (attributes[i].getGetMethodExits())
+                    methodsList.append(" - get" + attributes[i].getName() + "\n"); // NOI18N
+            
+            if (attributes[i].getSetMethodExits() && attributes[i].isWritable())
                     methodsList.append(" - set" + attributes[i].getName() + "\n"); // NOI18N
         }
         
