@@ -1353,9 +1353,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                     doc.addUndoableEditListener(getUndoRedo());
                                 }
                             };
-                        ERR.log("Posting the AWT runnable: " + run);
-                        SwingUtilities.invokeLater(run);
-                        ERR.log("Posted in " + Thread.currentThread());
+                        if (doc != null) {
+                            ERR.log("Posting the AWT runnable: " + run);
+                            SwingUtilities.invokeLater(run);
+                            ERR.log("Posted in " + Thread.currentThread());
+                        }
                     }
                 }
             );
