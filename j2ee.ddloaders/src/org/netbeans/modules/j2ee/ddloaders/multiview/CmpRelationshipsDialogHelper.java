@@ -78,7 +78,6 @@ public class CmpRelationshipsDialogHelper {
 
         private String lastFieldName;
         private String lastFieldType = CLASS_COLLECTION;
-        private boolean lastCreateField;
         private boolean lastGetter = true;
         private boolean lastSetter = true;
         private boolean createCmrFieldChanged = true;
@@ -86,7 +85,6 @@ public class CmpRelationshipsDialogHelper {
         private void init() {
             ejbComboBox.setModel(new DefaultComboBoxModel(entityNames));
             fieldTypeComboBox.setModel(new DefaultComboBoxModel(FILED_TYPE_ITEMS));
-            lastCreateField = isCreateCmrField();
             multiplicityOneRadioButton.addActionListener(listener);
             multiplicityManyRadioButton.addActionListener(listener);
             createCmrFieldCheckBox.addActionListener(new ActionListener() {
@@ -174,10 +172,7 @@ public class CmpRelationshipsDialogHelper {
         }
 
         private boolean equal(String s1, String s2) {
-            if (s1 == s2) {
-                return true;
-            }
-            return s1 == s2 || (s1 != null && s1.equals(s2));
+            return s1 == null ? s2 == null : s1.equals(s2);
         }
 
         private boolean isCascadeDelete() {
@@ -300,11 +295,11 @@ public class CmpRelationshipsDialogHelper {
         }
 
         public void setFieldStates(FormRoleHelper opositeRole) {
-            lastCreateField = isCreateCmrField();
+            boolean createCmrField = isCreateCmrField();
             String fieldName = getFieldName();
             if (createCmrFieldChanged) {
                 createCmrFieldChanged = false;
-                if (lastCreateField) {
+                if (createCmrField) {
                     if (fieldName.length() == 0) {
                         setFieldName(lastFieldName);
                     }
@@ -329,7 +324,7 @@ public class CmpRelationshipsDialogHelper {
             }
             boolean opositeMultiple = opositeRole.isMultiple();
             String fieldType = getFieldType();
-            if (lastCreateField && opositeMultiple) {
+            if (createCmrField && opositeMultiple) {
                 if (fieldType == null) {
                     setFieldType(lastFieldType);
                 }
