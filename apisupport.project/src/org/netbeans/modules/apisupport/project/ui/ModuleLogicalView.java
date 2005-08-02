@@ -191,44 +191,6 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return ModuleActions.getProjectActions(project);
         }
         
-        public String getDisplayName () {
-            String s = super.getDisplayName();
-
-            if (files != null && files.iterator().hasNext()) {
-                try {
-                    FileObject fo = (FileObject) files.iterator().next();
-                    s = fo.getFileSystem ().getStatus ().annotateName (s, files);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
-
-            return s;
-        }
-
-         public String getHtmlDisplayName() {
-             if (files != null && files.iterator().hasNext()) {
-                 try {
-                     FileObject fo = (FileObject) files.iterator().next();
-                     FileSystem.Status stat = fo.getFileSystem().getStatus();
-                     if (stat instanceof FileSystem.HtmlStatus) {
-                         FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
-
-                         String result = hstat.annotateNameHtml (
-                             super.getDisplayName(), files);
-
-                         //Make sure the super string was really modified
-                         if (!super.getDisplayName().equals(result)) {
-                             return result;
-                         }
-                     }
-                 } catch (FileStateInvalidException e) {
-                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                 }
-             }
-             return super.getHtmlDisplayName();
-         }
-
         public java.awt.Image getIcon (int type) {
             java.awt.Image img = super.getIcon(type);
 
