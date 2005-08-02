@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.debugger.jpda;
@@ -43,9 +43,9 @@ public abstract class JPDAStep {
     /** Property fired when the step is executed */
     public static final String PROP_STATE_EXEC = "exec";
     
-    /** Constructs a JPDAStep for given {@link JPDADebugger}, 
+    /** Constructs a JPDAStep for given {@link org.netbeans.api.debugger.jpda.JPDADebugger}, 
      *  size {@link #STEP_LINE}, {@link #STEP_MIN} 
-     *  and depth {@link #STEP_OUT}, {@link #STEP_IN}.
+     *  and depth {@link #STEP_OUT}, {@link #STEP_INTO}.
      * 
      *  @param debugger an associated JPDADebuger
      *  @param size step size
@@ -105,10 +105,11 @@ public abstract class JPDAStep {
         return depth;
     }
     
-    /** Adds the step request to the associated {@link #JPDADebugger}.
+    /** Adds the step request to the associated
+     *  {@link org.netbeans.api.debugger.jpda.JPDADebugger}.
      *  Method is not synchronized.
      *
-     *  @param {@link #JPDAThread} associated thread
+     *  @param tr associated thread
      */
     public abstract void addStep(JPDAThread tr);
     

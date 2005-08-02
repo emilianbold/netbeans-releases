@@ -191,7 +191,7 @@ public final class MethodBreakpoint extends JPDABreakpoint {
     /**
      * Set list of class exclusion filters to stop on.
      *
-     * @param classFilters a new value of class exclusion filters property
+     * @param classExclusionFilters a new value of class exclusion filters property
      */
     public void setClassExclusionFilters (String[] classExclusionFilters) {
         if (classExclusionFilters == this.classExclusionFilters) return;

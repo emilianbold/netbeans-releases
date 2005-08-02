@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE api-answers PUBLIC "-//NetBeans//DTD Arch Answers//EN" "../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd" [
@@ -16,7 +16,7 @@ Microsystems, Inc. All Rights Reserved.
 ]>
 
 <api-answers
-  question-version="1.23"
+  question-version="1.25"
   module="Debugger JPDA API"
   author="jjancura@netbeans.org"
 >
@@ -39,12 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
 <answer id="arch-what">
-The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger. 
-
-
-See <a href="http://debugger.netbeans.org/">debugger.netbeans.org</a> and
- <a href="http://debuggercore.netbeans.org/">debuggercore.netbeans.org</a>
-for more information.
+The debuggerjpda/api (Debugger JPDA API) defines API for NetBeans Java Debugger.
 </answer>
 
 <!--
@@ -63,14 +58,13 @@ for more information.
         </question>
 -->
 <answer id="arch-overall">
-See <a href="http://debuggercore.netbeans.org/docs/api/ProgrammersGuide.html">Programmers Guide</a>.
 List of APIs:
 <ul>
-<li><api name="JPDADebuggerAPI" type="export" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
-<li><api name="JPDADebuggerSPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/></li>
+<li><api name="JPDADebuggerAPI" type="export" category="official" url="@TOP@/@org-netbeans-api-debugger-jpda@" group="java"/>JPDA Debugger API</li>
+<li><api name="JPDADebuggerSPI" type="import" category="official" url="@TOP@/@org-netbeans-api-debugger-jpda@" group="java"/>JPDA Debugger SPI</li>
 
-<li><api name="Meta-inf-debugger-netbeans-JPDASession-Java-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
-<li><api name="Meta-inf-debugger-netbeans-JPDASession-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="http://www.netbeans.org/download/dev/javadoc/ViewmodelAPI/index.html"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-netbeans-JPDASession-Java-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
+<li><api name="Meta-inf-debugger-netbeans-JPDASession-org.netbeans.spi.debugger.jpda.JPDADebugger" group="lookup" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@"/>Debugger View loads all model definitions.</li>
 </ul>
 </answer>
         
@@ -83,7 +77,138 @@ List of APIs:
         </question>
 -->
 <answer id="arch-usecases">
-See <a href="http://debuggercore.netbeans.org/docs/api/UseCases.html">Usecases</a>.
+<h2><a name="UseCase_I._-_Install_and_use_CPP"></a>UseCase I. - Install
+and use CPP debugger plug-in to NetBeans + Java Debugger.</h2>
+<span style="font-style: italic;">CPP debugger plug-in installs support
+for debugging of some new language to the NetBeans IDE, and some new
+debugging engine. This implementation of debugger should share UI
+components (actions, Debugger Views, ...) with default NB Java
+Debugger. It should share basic debugger model too - notion of current
+context, current session, thread, call stack line, ...</span><br/>
+<br/>
+CPP debugger plug-in installs:<br/>
+<ul>
+  <li>New set of breakpoint types - CPPLineBreakpointType,
+CPPMethodBreakpointType...
+  <ul>
+    <li>This set of breakpoint types will have special cathegory in Add
+Breakpoint Dialog called "CPP". Each breakpoint type will install a new
+JPanel to Add Breakpoint Dialog.</li>
+    <li>ToggleBreakpointAction on CPP files will create / remove a
+instance of CPPLineBreakpointType.</li>
+  </ul>
+  </li>
+  <li>Install some watches evaluator for CPP language.</li>
+  <li>Some new View to Debugger Window</li>
+  <li>Use Termilnal Emulator in Output Window as command line interface
+to CPP debugger plug-in.</li>
+  <li>Install / uninstall a columns to / from standard Debugger Window
+Views.</li>
+  <li>Redefine Nodes used for representation of CPP threads, watches,
+variables, callstacks, sessions and breakpoints
+  <ul>
+    <li>Add / remove some properties<br/>
+    </li>
+    <li>Add / remove some actions</li>
+    <li>change icons</li>
+    <li>change display names</li>
+  </ul>
+  </li>
+  <li>Register CPP Actions for:
+  <ul>
+    <li>Step Into, Over, Out, Continue, Pause, Start, Kill, Restart,
+Finish</li>
+  </ul>
+  </li>
+  <li>Some new CPP specific actions.</li>
+</ul>
+<br/>
+
+<h2><a name="UseCase_II._-_Install_and_use_JSP"></a>UseCase II. -
+Install and use JSP debugger plug-in to NetBeans + Java Debugger.</h2>
+<span style="font-style: italic;">JSP debugger plug-in installs support
+for debugging of some new language to the NetBeans Java Debugger. It
+does not contain a new debugger engine, but it delegates to standard NB
+Java debugger. So it does not depends on Debugger Core API only, but it
+depends on JavaDebugger API too.<br/>
+<br/>
+JSP debugger plug-in installs:<br/>
+</span>
+<ul>
+  <li>New set of breakpoint types - JSPLineBreakpointType, ...
+  <ul>
+    <li>This set of breakpoint types will have special cathegory in Add
+Breakpoint Dialog called "JSP". Each breakpoint type will install a new
+JPanel to Add Breakpoint Dialog.</li>
+    <li>ToggleBreakpointAction on JSP files will create / remove a
+instance of JSPLineBreakpointType.</li>
+    <li>JSPLineBreakpointType delegates all functionality to
+JPDAClassBreakpoint and JPDALineBreakpoint<br/>
+    </li>
+  </ul>
+  </li>
+  <li>Some watches evaluator for JSP language expression. This
+evaluator delegates evaluation of Java expressions to standard
+JavaExpressionEvaluator.<br/>
+  </li>
+  <li>Redefine Nodes used for representation of JSP callstacks and
+breakpoints
+  <ul>
+    <li>Add / remove some properties<br/>
+    </li>
+    <li>Add / remove some actions</li>
+    <li>change icons</li>
+    <li>change display names</li>
+  </ul>
+  </li>
+  <li>Register JSP Actions for:
+  <ul>
+    <li>Step Into, Over, Out</li>
+    <li>Implementation of this actions delegates to standard Java Step
+actions - it redefines Java stepping functionality.</li>
+  </ul>
+  </li>
+  <li>JSP debugger plug in adds support for new programming language
+(JSP) to already running Java Session.<br/>
+  </li>
+</ul>
+<br/>
+
+<h2><a name="UseCase_III._-_Install_and_use_J2ME"></a>UseCase III. -
+Install and use J2EE debugger plug-in to NetBeans + Java Debugger.</h2>
+<span style="font-style: italic;">J2EE debugger plug-in installs some
+enhancements to the standard Java Debugger. It
+does not contain a new debugger engine or language support. So it does
+not depends on Debugger Core API only, but it
+depends on JavaDebugger API too.<br/>
+<br/>
+J2EE debugger plug-in installs:<br/>
+</span>
+<ul>
+  <li>New set of breakpoint types</li>
+  <li>Filter for Threads and Callstack Views. This filter should allow
+to:<br/>
+  <ul>
+    <li>Add / remove / modify nodes in this views.</li>
+  </ul>
+  </li>
+  <li>Redefine Stepping (Smart Stepping) behaviour of default Java
+Debugger.</li>
+  <li>Some new View to Debugger Window</li>
+</ul>
+<br/>
+<h2><a name="UseCase_IV._-_Install_and_use_DBX"></a>UseCase IV. -
+Install and use DBX debugger plug-in to NetBeans.</h2>
+<span style="font-style: italic;">DBX debugger plug-in installs support
+for debugging of some new language (CPP) to the NetBeans IDE, and some
+new
+debugging engine. But it contains debugger engine for Java debugging
+too. DBX debugger engine has its own session management (or will have
+in the next versions). One debugger engine can manage more than one
+sessions. One engine supports debugging in more than one language.<br/>
+<br/>
+</span>
+
 </answer>
         
 <!--
@@ -98,7 +223,8 @@ See <a href="http://debuggercore.netbeans.org/docs/api/UseCases.html">Usecases</
         </question>
 -->
 <answer id="arch-time">
-See <a href="http://debuggercore.netbeans.org/plans/NB40Plan.html">Integration Plan</a>.
+10/26/2003 - Basic Debugger Core API ready for integration
+04/01/2004 - Final review of Debugger Core &amp; Java Debugger API, merge to trunk.
 </answer>
         
 <!--
@@ -163,8 +289,8 @@ We would like to test 100% of our APIs.
 -->
 <answer id="dep-nb">
     <api name="OpenAPIs" type="import" category="official" url="http://openide.netbeans.org" group="java"/>
-    <api name="DebuggerCoreAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
-    <api name="ViewModelAPI" type="import" category="official" url="http://debuggercore.netbeans.org/docs/api/index.html" group="java"/>
+    <api name="DebuggerCoreAPI" type="import" category="official" url="@TOP@/@org-netbeans-api-debugger@" group="java"/>
+    <api name="ViewModelAPI" type="import" category="official" url="@TOP@/@org-netbeans-spi-viewmodel@" group="java"/>
 </answer>
 
 
@@ -837,5 +963,71 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.api.debugger.jpda/1
 </answer>
 
 
+
+
+
+
+<!--
+        <question id="arch-where" when="init">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <defaultanswer generate='here' />
+ </answer>
+
+
+
+<!--
+        <question id="exec-ant-tasks" when="impl">
+            Do you define or register any ant tasks that other can use?
+            
+            <hint>
+            If you provide an ant task that users can use, you need to be very
+            careful about its syntax and behaviour, as it most likely forms an
+	          API for end users and as there is a lot of end users, their reaction
+            when such API gets broken can be pretty strong.
+            </hint>
+        </question>
+-->
+ <answer id="exec-ant-tasks">
+  No.
+ </answer>
+
+
+
+<!--
+        <question id="security-grant" when="final">
+            Does your code grant additional rights to some other code?
+            <hint>Avoid using a class loader that adds extra
+            permissions to loaded code unless really necessary.
+            Also note that your API implementation
+            can also expose unneeded permissions to enemy code by
+            calling AccessController.doPrivileged().</hint>
+        </question>
+-->
+ <answer id="security-grant">
+  No.
+ </answer>
+
+
+
+<!--
+        <question id="security-policy" when="final">
+            Does your functionality require modifications to the standard policy file?
+            <hint>Your code might pass control to third-party code not
+            coming from trusted domains. This could be code downloaded over the
+            network or code coming from libraries that are not bundled
+            with NetBeans. Which permissions need to be granted to which domains?</hint>
+        </question>
+-->
+ <answer id="security-policy">
+  No.
+ </answer>
 
 </api-answers>

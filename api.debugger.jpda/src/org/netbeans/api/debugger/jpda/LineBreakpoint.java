@@ -83,7 +83,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Sets name of class to stop on.
      *
-     * @param cn a new name of class to stop on
+     * @param url the URL of class to stop on
      */
     public void setURL (String url) {
         String old;
@@ -194,7 +194,7 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /**
      * Sets source name.
      *
-     * @param c a new source name or <code>null</code>.
+     * @param sn a new source name or <code>null</code>.
      */
     public void setSourceName (String sn) {
         String old;

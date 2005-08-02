@@ -15,17 +15,15 @@
   -- http://www.sun.com/
   -- 
   -- The Original Code is NetBeans. The Initial Developer of the Original
-  -- Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+  -- Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
   -- Microsystems, Inc. All Rights Reserved.
   -->
 </head>
 <body style="color: rgb(0, 0, 0);" link="#0000ee" alink="#0000ee"
  vlink="#551a8b">
-JPDA Debugger SPIs defines support for <a
- href="#Smart_Stepping_Support">Smart Stepping</a> and <a
- href="#Variables_Filterring_Support">Variables Filterring</a>. It
-allows <a href="#Filterring_of_Debugger_Views">filterring of all
-Debugger Views</a> too.<br>
+JPDA Debugger SPIs defines support for Smart Stepping, Variables Filterring
+and filterring of all Debugger Views.
+
 <br>
 <h3><a name="Smart_Stepping_Support"></a>Smart Stepping Support</h3>
 <h4><span style="font-weight: bold;">Interfaces involved:</span></h4>
@@ -33,20 +31,20 @@ Debugger Views</a> too.<br>
   <li>{@link org.netbeans.api.debugger.jpda.SmartSteppingFilter} :
 Defines list of class exclusion filters to be used to filter stepping
 in debugged session.</li>
-  <li>{@link org.netbeans.spi.debugger.jpda.SmartSteppingListener} :
+  <li>{@link org.netbeans.spi.debugger.jpda.SmartSteppingCallback} :
 Listens on stepping engine and defines classes / places the debugger
 can stop in. </li>
   <li>{@link org.netbeans.api.debugger.jpda.JPDAThread} : Represents
-context for SmartSteppingListener (class name, method name, line
+context for SmartSteppingCallback (class name, method name, line
 number, ...).</li>
 </ul>
 <h4><span style="font-weight: bold;">Functionality supported:</span></h4>
-<div style="margin-left: 40px;">Set of SmartSteppingListeners installed
+<div style="margin-left: 40px;">Set of SmartSteppingCallback installed
 to JPDA Debugger defines scope for Step Into / Over / Out Actions. When
 user press some Step action, debugging is resumed. And when debugger
 stops on some new place (defined by class name and line number) set of
 SSListeners is asked if debugging should stop on this place or not (see
-{@link org.netbeans.spi.debugger.jpda.SmartSteppingListener#stopHere}
+{@link org.netbeans.spi.debugger.jpda.SmartSteppingCallback#stopHere}
 method). But this step-by-step method is slow. That is why the second,
 more powerfull method is here. SSListener can define some set of class
 exclusion patterns (like java.*, com.abba.Loader, ...). This set of
@@ -54,7 +52,7 @@ exclusion patterns managed by {@link
 org.netbeans.api.debugger.jpda.SmartSteppingFilter} class defines scope
 for Step Actions in more powerfull way.<br>
 <br>
-JPDA Debugger installs one default SmartSteppingListener. It excludes
+JPDA Debugger installs one default SmartSteppingCallback. It excludes
 all sourceless classes (packages). So, if user does not have mounted
 sources for Java default libraries, this SSListener adds patterns like:
 java.*, javax.* and com.sun.*. <br>
@@ -68,16 +66,11 @@ always in some methods, which name is prefixed with "xxx" like:<br>
 <div style="margin-left: 40px;">And we would like to change standard
 JPDA debugger to not stop in generated methods. <br>
 In this case we should implement {@link
-org.netbeans.spi.debugger.jpda.SmartSteppingListener}:<br>
-<pre style="background-color: rgb(255, 255, 102);">public class SmartSteppingListenerImpl extends SmartSteppingListener {<br>    <br>    public void initFilter (SmartSteppingFilter f) {}<br>    <br>    public boolean stopHere (JPDAThread thread, SmartSteppingFilter f) {<br>        String methodName = thread.getMethodName ();<br>        return !methodName.startsWith ("xxx");  // if method starts with "xxx" DO NOT stop there!<br>    }<br>}<br></pre>
+org.netbeans.spi.debugger.jpda.SmartSteppingCallback}:<br>
+<pre style="background-color: rgb(255, 255, 102);">public class SmartSteppingCallbackImpl extends SmartSteppingCallback {<br>    <br>    public void initFilter (SmartSteppingFilter f) {}<br>    <br>    public boolean stopHere (JPDAThread thread, SmartSteppingFilter f) {<br>        String methodName = thread.getMethodName ();<br>        return !methodName.startsWith ("xxx");  // if method starts with "xxx" DO NOT stop there!<br>    }<br>}<br></pre>
 And register full class name of our implementation
-(packagename.SmartSteppingListener) in the file named:<br>
-<pre style="background-color: rgb(255, 255, 102);">META-INF\debugger\netbeans-JPDADebuggerEngine\org.netbeans.spi.debugger.jpda.SmartSteppingListener</pre>
-</div>
-<div style="margin-left: 40px;">Thats all. Full source of this example
-is <a href="../../../../../examples/SmartSteppingListenerImpl.java">here</a>
-and complete module can be downloaded from debuggercore.netbeans.org /
-Files.<br>
+(packagename.SmartSteppingCallback) in the file named:<br>
+<pre style="background-color: rgb(255, 255, 102);">META-INF\debugger\netbeans-JPDADebuggerEngine\org.netbeans.spi.debugger.jpda.SmartSteppingCallback</pre>
 </div>
 <h3><a name="Variables_Filterring_Support"></a>Variables Filterring
 Support</h3>
@@ -113,10 +106,6 @@ for our new node type (JavaFrames) now.<br>
  align="right"><br><br>  &nbsp; public String getDisplayName (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Java Callstack Frames";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getIconBase (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "org/netbeans/examples/debugger/jpda/callstackviewfilterring/NonCurrentFrame";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getShortDescription (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Unimportant hidden callstack frames";<br>        throw new UnknownTypeException (node);<br>    }<br>}<br></pre>
 And registration:<br>
 <pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDADebuggerEngine\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
-Full source of this example is <a
- href="../../../../../examples/CallStackFilter.java">here</a> and
-complete module can be downloaded from debuggercore.netbeans.org /
-Files.<br>
 <br>
 <br>
 <pre style="background-color: rgb(255, 255, 102);"></pre>

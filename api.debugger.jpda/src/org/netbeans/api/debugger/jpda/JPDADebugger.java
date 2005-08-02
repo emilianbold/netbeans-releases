@@ -114,7 +114,9 @@ public abstract class JPDADebugger {
      * Its implementation use {@link ListeningDICookie} and 
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
      *
-     * @param name a name of shared memory block
+     * @param connector The listening connector
+     * @param args The arguments
+     * @param services The additional services
      */
     public static JPDADebugger listen (
         ListeningConnector        connector,
@@ -150,7 +152,9 @@ public abstract class JPDADebugger {
      * Its implementation use {@link ListeningDICookie} and 
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
      *
-     * @param name a name of shared memory block
+     * @param connector The listening connector
+     * @param args The arguments
+     * @param services The additional services
      */
     public static void startListening (
         ListeningConnector        connector,
@@ -178,7 +182,7 @@ public abstract class JPDADebugger {
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
      *
      * @param hostName a name of computer to attach to
-     * @param portNumber a potr number
+     * @param portNumber a port number
      */
     public static JPDADebugger attach (
         String          hostName,
@@ -214,8 +218,7 @@ public abstract class JPDADebugger {
      * Its implementation use {@link AttachingDICookie} and 
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
      *
-     * @param hostName a name of computer to attach to
-     * @param portNumber a potr number
+     * @param name a name of shared memory block
      */
     public static JPDADebugger attach (
         String          name,
@@ -323,7 +326,7 @@ public abstract class JPDADebugger {
      * Implements fix & continue (HotSwap). Map should contain class names
      * as a keys, and byte[] arrays as a values.
      *
-     * @param map a map from class names to be fixed to byte[] 
+     * @param classes a map from class names to be fixed to byte[] 
      */
     public abstract void fixClasses (Map classes);
     
