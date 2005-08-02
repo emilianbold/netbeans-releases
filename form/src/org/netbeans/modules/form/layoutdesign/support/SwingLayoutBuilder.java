@@ -111,7 +111,7 @@ public class SwingLayoutBuilder {
 
     public void createLayout() {
         container.removeAll();
-        GroupLayout layout = new GroupLayout(container);
+        GroupLayout layout = new GroupLayout((JComponent) container);
         container.setLayout(layout);
         LayoutInterval horizontalInterval = containerLC.getLayoutRoot(LayoutConstants.HORIZONTAL);
         GroupLayout.Group horizontalGroup = composeGroup(layout, horizontalInterval, true, true);
@@ -189,19 +189,23 @@ public class SwingLayoutBuilder {
                 }
             } else {
                 assert interval.isEmptySpace();
-//                if (interval.isDefaultPadding()) {
-                    // PENDING
-                    int padding = (first || last) ? 12 : 6;
-                    min = (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : min;
-                    pref = (pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : pref;
-                    max = (max == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : max;
+                if (interval.isDefaultPadding()) {
+                    assert (group instanceof GroupLayout.SequentialGroup);
+                    GroupLayout.SequentialGroup seqGroup = (GroupLayout.SequentialGroup)group;
+                    if (first || last) {
+                        seqGroup.addContainerGap(pref, max);
+                    } else {
+                        seqGroup.addPreferredGap(LayoutStyle.RELATED, pref, max);
+                    }
+                } else {
+                    if (min < 0) min = pref; // min == GroupLayout.PREFERRED_SIZE
                     min = Math.min(pref, min);
                     max = Math.max(pref, max);
-//                }
-                if (group instanceof GroupLayout.SequentialGroup) {
-                    ((GroupLayout.SequentialGroup)group).add(min, pref, max);
-                } else {
-                    ((GroupLayout.ParallelGroup)group).add(min, pref, max);
+                    if (group instanceof GroupLayout.SequentialGroup) {
+                        ((GroupLayout.SequentialGroup)group).add(min, pref, max);
+                    } else {
+                        ((GroupLayout.ParallelGroup)group).add(min, pref, max);
+                    }
                 }
             }
         }

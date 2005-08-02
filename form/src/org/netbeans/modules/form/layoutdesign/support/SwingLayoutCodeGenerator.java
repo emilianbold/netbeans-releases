@@ -102,7 +102,8 @@ public class SwingLayoutCodeGenerator {
      */
     private void generateInstantiation(Writer writer, String contExprStr) throws IOException {
         writer.write(LAYOUT_NAME + " " + layoutVarName + " "); // NOI18N
-        writer.write("= new " + LAYOUT_NAME + "(" + contExprStr + ");\n"); // NOI18N
+        // PENDING casting to JComponent
+        writer.write("= new " + LAYOUT_NAME + "((javax.swing.JComponent)" + contExprStr + ");\n"); // NOI18N
         writer.write(contExprStr + ".setLayout(" + layoutVarName + ");\n"); // NOI18N
     }
     
@@ -166,8 +167,8 @@ public class SwingLayoutCodeGenerator {
      */
     private void fillGroup(StringBuffer layout, LayoutInterval interval,
         boolean first, boolean last, int groupAlignment) throws IOException {
-        layout.append(".add("); // NOI18N
         if (interval.isGroup()) {
+            layout.append(".add("); // NOI18N
             int alignment = interval.getAlignment();
             if (alignment != LayoutConstants.DEFAULT) {
                 String alignmentStr = convertAlignment(alignment);
@@ -179,6 +180,7 @@ public class SwingLayoutCodeGenerator {
             int pref = interval.getPreferredSize(false);
             int max = interval.getMaximumSize(false);
             if (interval.isComponent()) {
+                layout.append(".add("); // NOI18N
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
                 String compVarName = (String)componentIDMap.get(layoutComp.getId());
@@ -196,22 +198,37 @@ public class SwingLayoutCodeGenerator {
                     generateSizeParams(layout, min, pref, max);
                 }
             } else if (interval.isEmptySpace()) {
-                if (min == LayoutConstants.USE_PREFERRED_SIZE) {
-                    min = pref;
-                }
-                if (max == LayoutConstants.USE_PREFERRED_SIZE) {
-                    max = pref;
-                }
-                // PENDING
-//                if (interval.isDefaultPadding()) {
-                    int padding = first || last ? 12 : 6;
-                    min = (min == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : min;
-                    pref = (pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : pref;
-                    max = (max == LayoutConstants.NOT_EXPLICITLY_DEFINED) ? padding : max;
+                if (interval.isDefaultPadding()) {
+                    if (first || last) {
+                        layout.append(".addContainerGap("); // NOI18N
+                    } else {
+                        layout.append(".addPreferredGap("); // NOI18N
+                        layout.append(LayoutStyle.class.getName());
+                        layout.append(".RELATED"); // NOI18N
+                    }
+                    if ((pref != LayoutConstants.NOT_EXPLICITLY_DEFINED)
+                        || ((max != LayoutConstants.NOT_EXPLICITLY_DEFINED)
+                            // NOT_EXPLICITLY_DEFINED is the same as USE_PREFERRED_SIZE in this case
+                            && (max != LayoutConstants.USE_PREFERRED_SIZE))) {
+                        if (!first && !last) {
+                            layout.append(',').append(' ');
+                        }
+                        layout.append(convertSize(pref)).append(", "); // NOI18N
+                        layout.append(convertSize(max));
+                    }
+                } else {
+                    if (min == LayoutConstants.USE_PREFERRED_SIZE) {
+                        min = pref;
+                    }
+                    if (max == LayoutConstants.USE_PREFERRED_SIZE) {
+                        max = pref;
+                    }
+                    layout.append(".add("); // NOI18N
+                    if (min < 0) min = pref; // min == GroupLayout.PREFERRED_SIZE
                     min = Math.min(pref, min);
                     max = Math.max(pref, max);
-//                }
-                generateSizeParams(layout, min, pref, max);
+                    generateSizeParams(layout, min, pref, max);
+                }
             } else {
                 assert false;
             }

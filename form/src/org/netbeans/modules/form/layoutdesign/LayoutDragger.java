@@ -16,7 +16,7 @@ package org.netbeans.modules.form.layoutdesign;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.BasicStroke;
-import java.util.Iterator;
+import java.util.*;
 
 /*
 Finding position procedure:
@@ -202,7 +202,7 @@ class LayoutDragger implements LayoutConstants {
                     if (resGap != null) {
                         sizeDef.resizingGap = resGap;
                         sizeDef.originalGapSize = LayoutInterval.getIntervalCurrentSize(resGap, i);
-                        sizeDef.preferredGapSize = getPreferredPadding(resGap, i);
+                        sizeDef.preferredGapSize = LayoutDesigner.sizeOfEmptySpace(resGap, visualMapper);
                         sizeDef.preferredSize = sizeDef.originalSize
                                 - sizeDef.originalGapSize + sizeDef.preferredGapSize;
                     }
@@ -559,7 +559,8 @@ class LayoutDragger implements LayoutConstants {
                 assert distance != LayoutRegion.UNKNOWN;
                 if (snapping) {
                     // PENDING consider the resulting interval when moving more components
-                    int pad = findPadding(null, movingComponents[0], dimension, i); // [limitation: only one component can be moved]
+                    int pad = findPadding(null, movingComponents[0].getLayoutInterval(dimension),
+                        dimension, i); // [limitation: only one component can be moved]
                     distance += (i == LEADING ? -pad : pad);
                 }
 
@@ -704,7 +705,8 @@ class LayoutDragger implements LayoutConstants {
                                                  dimension, i^1, i);
             if (snapping) {
                 // PENDING consider the resulting interval when moving more components
-                int pad = findPadding(sub, movingComponents[0], dimension, i);// [limitation: only one component can be moved]
+                int pad = findPadding(sub, movingComponents[0].getLayoutInterval(dimension),
+                    dimension, i);// [limitation: only one component can be moved]
                 distance += (i == LEADING ? -pad : pad);
                 validDistance = Math.abs(distance) < SNAP_DISTANCE;
             }
@@ -1218,18 +1220,18 @@ class LayoutDragger implements LayoutConstants {
      * interval.
      * @param alignment edge of the component
      */
-    static int findPadding(LayoutInterval interval, LayoutComponent comp,
-                           int dimension, int alignment)
-    {
-        return interval == null ? 12 : 6;
-        // TBD
-    }
-
-    static int getPreferredPadding(LayoutInterval gap, int dimension) {
-        assert gap.isEmptySpace();
-        LayoutInterval neighborL = LayoutInterval.getNeighbor(gap, LEADING, true, true, false);
-        LayoutInterval neighborT = LayoutInterval.getNeighbor(gap, TRAILING, true, true, false);
-        return neighborL != null && neighborT != null ? 6 : 12; // PENDING
+    int findPadding(LayoutInterval interval, LayoutInterval moving, int dimension, int alignment) {
+        int oppAlignment = (alignment == LEADING) ? TRAILING : LEADING;
+        List movingComps = LayoutInterval.edgeSubComponents(moving, alignment);
+        List fixedComps = LayoutInterval.edgeSubComponents(interval, oppAlignment);
+        List sources = (alignment == LEADING) ? fixedComps : movingComps;
+        List targets = (alignment == LEADING) ? movingComps : fixedComps;
+        Map map = new HashMap();
+        for (int i=0; i<movingComponents.length; i++) {
+            map.put(movingComponents[i].getId(), movingBounds[i]);
+        }
+        return LayoutDesigner.sizeOfEmptySpace(sources, targets, visualMapper,
+            targetContainer.getId(), map);
     }
 
     /**

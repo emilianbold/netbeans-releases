@@ -287,7 +287,7 @@ public final class LayoutInterval implements LayoutConstants {
         return type == SINGLE && layoutComponent == null;
     }
 
-    boolean isDefaultPadding() {
+    public boolean isDefaultPadding() {
         return isEmptySpace() && (minSize == NOT_EXPLICITLY_DEFINED
                                   || prefSize == NOT_EXPLICITLY_DEFINED
                                   || maxSize == NOT_EXPLICITLY_DEFINED);
@@ -854,6 +854,43 @@ public final class LayoutInterval implements LayoutConstants {
         }
         clone.setSizes(interval.getMinimumSize(), interval.getPreferredSize(), interval.getMaximumSize());
         return clone;
+    }
+    
+    /**
+     * Returns list of components that reside in the <code>root</code>
+     * layout interval - the list contains only components whose layout
+     * intervals lie at the specified edge (<code>LEADING</code>
+     * or <code>TRAILING</code>) of the <code>root</code> layout interval.
+     *
+     * @param root layout interval that will be scanned.
+     * @param edge the requested edge the components shoul be next to.
+     * @return <code>List</code> of <code>LayoutInterval</code>s that
+     * represent <code>LayoutComponent</code>s.
+     */
+    static List edgeSubComponents(LayoutInterval root, int edge) {
+        List components = new LinkedList();
+        List candidates = new LinkedList();
+        if (root != null) {
+            candidates.add(root);
+        }
+        while (!candidates.isEmpty()) {
+            LayoutInterval candidate = (LayoutInterval)candidates.get(0);
+            candidates.remove(candidate);
+            if (candidate.isGroup()) {
+                if (candidate.isSequential()) {
+                    int index = (edge == LEADING) ? 0 : candidate.getSubIntervalCount()-1;
+                    candidates.add(candidate.getSubInterval(index));
+                } else {
+                    Iterator subs = candidate.getSubIntervals();
+                    while (subs.hasNext()) {
+                        candidates.add(subs.next());
+                    }
+                }
+            } else if (candidate.isComponent()) {
+                components.add(candidate);
+            }
+        }
+        return components;
     }
     
 }

@@ -158,7 +158,7 @@ public class LayoutDesigner implements LayoutConstants {
                         && (pref == max || max == USE_PREFERRED_SIZE)) {
                         // Fixed size padding
                         if (pref == NOT_EXPLICITLY_DEFINED) {
-                            pref = LayoutDragger.getPreferredPadding(sub, dimension);
+                            pref = LayoutDesigner.sizeOfEmptySpace(sub, visualMapper);
                         }
                         if (first) {
                             leadingSpace = pref;
@@ -2501,29 +2501,6 @@ public class LayoutDesigner implements LayoutConstants {
     }
     
     /**
-     * Returns size of the padding represented by the given layout interval.
-     *
-     * @param interval layout interval that represents padding.
-     * @return size of the padding.
-     */
-    private int sizeOfPadding(LayoutInterval interval) {
-        // PENDING should use the same algorithm as layout manager
-        boolean first = true;
-        boolean last = true;
-        LayoutInterval parent = interval.getParent();
-        while ((first || last) && (parent != null)) {
-            if (parent.isSequential()) {
-                int index = parent.indexOf(interval);
-                first = first && (index == 0);
-                last = last && (index == parent.getSubIntervalCount() - 1);
-            }
-            interval = parent;
-            parent = parent.getParent();
-        }
-        return (first || last) ? 12 : 6;
-    }
-    
-    /**
      * Returns preferred size of the given interval (in pixels).
      *
      * @param interval interval whose preferred size should be determined.
@@ -2537,7 +2514,7 @@ public class LayoutDesigner implements LayoutConstants {
                 Dimension pref = visualMapper.getComponentPreferredSize(comp.getId());
                 return (interval == comp.getLayoutInterval(HORIZONTAL)) ? pref.width : pref.height;
             } else if (interval.isEmptySpace()) {
-                return sizeOfPadding(interval);
+                return sizeOfEmptySpace(interval);
             } else {
                 assert interval.isGroup();
                 prefSize = 0;
@@ -2556,6 +2533,142 @@ public class LayoutDesigner implements LayoutConstants {
             }
         }
         return prefSize;    
+    }
+
+    /**
+     * Returns size of the empty space represented by the given layout interval.
+     *
+     * @param interval layout interval that represents padding.
+     * @return size of the padding.
+     */
+    private int sizeOfEmptySpace(LayoutInterval interval) {
+        return sizeOfEmptySpace(interval, visualMapper);
+    }
+    
+    /**
+     * Returns size of the empty space represented by the given layout interval.
+     *
+     * @param interval layout interval that represents padding.
+     * @return size of the padding.
+     */
+    static int sizeOfEmptySpace(LayoutInterval interval, VisualMapper visualMapper) {
+        LayoutInterval parent = interval.getParent();
+        if (parent.isParallel()) return interval.getPreferredSize();
+        
+        // Find intervals that contain sources and targets
+        LayoutInterval candidate = interval;
+        LayoutInterval srcInt = null;
+        LayoutInterval targetInt = null;
+        while ((parent != null) && ((srcInt == null) || (targetInt == null))) {
+            int index = parent.indexOf(candidate);
+            if ((srcInt == null) && (index > 0)) {
+                srcInt = parent.getSubInterval(index-1);
+            }
+            if ((targetInt == null) && (index < parent.getSubIntervalCount()-1)) {
+                targetInt = parent.getSubInterval(index+1);
+            }
+            if ((srcInt == null) || (targetInt == null)) {
+                do {
+                    candidate = parent;
+                    parent = parent.getParent();
+                } while ((parent != null) && parent.isParallel());
+            }
+        }
+        
+        // Find sources and targets inside srcInt and targetInt
+        List sources = LayoutInterval.edgeSubComponents(srcInt, TRAILING);
+        List targets = LayoutInterval.edgeSubComponents(targetInt, LEADING);        
+
+        // Calculate size of gap from sources and targets and their positions
+        return sizeOfEmptySpace(sources, targets, visualMapper, null, Collections.EMPTY_MAP);
+    }
+    
+    static int sizeOfEmptySpace(List sources, List targets, VisualMapper visualMapper,
+        String contId, Map boundsMap) {
+        boolean inserting = (contId != null);
+        int size = 0;
+        boolean containerGap = false;
+        int containerGapAlignment = -1;
+        LayoutInterval temp = null;
+        if (sources.isEmpty()) {
+            if (targets.isEmpty()) {
+                return 0;
+            } else {
+                // Leading container gap
+                containerGap = true;
+                containerGapAlignment = LEADING;
+                temp = (LayoutInterval)targets.get(0);
+            }
+        } else {
+            temp = (LayoutInterval)sources.get(0);
+            if (targets.isEmpty()) {
+                // Trailing container gap
+                containerGap = true;
+                containerGapAlignment = TRAILING;
+            }
+        }
+        int dimension = (temp == temp.getComponent().getLayoutInterval(HORIZONTAL)) ? HORIZONTAL : VERTICAL;
+        // Calculate max of sources and min of targets
+        int max = Short.MIN_VALUE;
+        int min = Short.MAX_VALUE;
+        Iterator iter = sources.iterator();
+        while (iter.hasNext()) {
+            LayoutInterval source = (LayoutInterval)iter.next();
+            LayoutRegion region = sizeOfEmptySpaceHelper(source, boundsMap);
+            max = Math.max(max, region.positions[dimension][TRAILING]);
+        }
+        iter = targets.iterator();
+        while (iter.hasNext()) {
+            LayoutInterval target = (LayoutInterval)iter.next();
+            LayoutRegion region = sizeOfEmptySpaceHelper(target, boundsMap);
+            min = Math.min(min, region.positions[dimension][LEADING]);
+        }
+        if (containerGap) {
+            iter = sources.isEmpty() ? targets.iterator() : sources.iterator();
+            while (iter.hasNext()) {
+                LayoutInterval interval = (LayoutInterval)iter.next();
+                LayoutComponent component = interval.getComponent();
+                LayoutRegion region = sizeOfEmptySpaceHelper(interval, boundsMap);
+                String parentId = (contId == null) ? component.getParent().getId() : contId;
+                int padding = visualMapper.getPreferredPaddingInParent(parentId, component.getId(), dimension, containerGapAlignment);
+                int position = region.positions[dimension][containerGapAlignment];
+                int delta = (containerGapAlignment == LEADING) ? (position - min) : (max - position);
+                size = Math.max(size, padding - delta);
+            }            
+        } else {
+            Iterator srcIter = sources.iterator();
+            while (srcIter.hasNext()) {
+                LayoutInterval srcCandidate = (LayoutInterval)srcIter.next();                
+                String srcId = srcCandidate.getComponent().getId();
+                LayoutRegion srcRegion = sizeOfEmptySpaceHelper(srcCandidate, boundsMap);
+                int srcDelta = max - srcRegion.positions[dimension][TRAILING];
+                Iterator targetIter = targets.iterator();
+                while (targetIter.hasNext()) {
+                    LayoutInterval targetCandidate = (LayoutInterval)targetIter.next();
+                    String targetId = targetCandidate.getComponent().getId();
+                    // areParallelSiblings check
+                    if (boundsMap.containsKey(srcId) || boundsMap.containsKey(targetId)
+                        || findCommonParent(srcCandidate, targetCandidate).isParallel()) {
+                        LayoutRegion targetRegion = sizeOfEmptySpaceHelper(targetCandidate, boundsMap);
+                        int targetDelta = targetRegion.positions[dimension][LEADING] - min;
+                        int padding = visualMapper.getPreferredPadding(srcId,
+                            targetId, dimension, LEADING, VisualMapper.PADDING_RELATED);
+                        size = Math.max(size, padding - srcDelta - targetDelta);
+                    }
+                }
+            }
+        }
+        return size;        
+    }
+    
+    private static LayoutRegion sizeOfEmptySpaceHelper(LayoutInterval interval, Map boundsMap) {
+        LayoutComponent component = interval.getComponent();
+        String compId = component.getId();
+        if (boundsMap.containsKey(compId)) {
+            return (LayoutRegion)boundsMap.get(compId);
+        } else {
+            return interval.getCurrentSpace();
+        }
     }
     
     /**
@@ -2942,7 +3055,7 @@ public class LayoutDesigner implements LayoutConstants {
      * @param interval2 interval whose parent should be found.
      * @return common parent of two given intervals.
      */
-    private LayoutInterval findCommonParent(LayoutInterval interval1, LayoutInterval interval2) {
+    private static LayoutInterval findCommonParent(LayoutInterval interval1, LayoutInterval interval2) {
         // Find all parents of given intervals
         Iterator parents1 = parentsOfInterval(interval1).iterator();
         Iterator parents2 = parentsOfInterval(interval2).iterator();
@@ -2976,7 +3089,7 @@ public class LayoutDesigner implements LayoutConstants {
      * are parents of the given interval. The immediate parent of the interval
      * is at the end of the list.
      */
-    private List parentsOfInterval(LayoutInterval interval) {
+    private static List parentsOfInterval(LayoutInterval interval) {
         List parents = new LinkedList();
         while (interval != null) {
             parents.add(0, interval);
@@ -3943,9 +4056,15 @@ public class LayoutDesigner implements LayoutConstants {
         return group;
     }
 
-    private static int determinePadding(LayoutInterval interval, int dimension, int alignment) {
+    private int determinePadding(LayoutInterval interval, int dimension, int alignment) {
         LayoutInterval neighbor = LayoutInterval.getNeighbor(interval, alignment, true, true, false);
-        return LayoutDragger.findPadding(neighbor, interval.getComponent(), dimension, alignment);
+        if (dragger == null) {
+            // PENDING remove when offset gap is removed
+            // other calls hopefully use dragger (so, replace the 'if' by 'assert')
+            return 0;
+        } else {
+            return dragger.findPadding(neighbor, interval, dimension, alignment);
+        }
         // [TODO interval may not be component]
     }
 
@@ -3954,17 +4073,15 @@ public class LayoutDesigner implements LayoutConstants {
      * interval or a parent interval border (base interval null)
      * @param alignment LEADING or TRAILING point of addingInt
      */ 
-    private static int determineExpectingPadding(LayoutInterval addingInt,
+    private int determineExpectingPadding(LayoutInterval addingInt,
                                                  LayoutInterval baseInt,
                                                  LayoutInterval baseParent,
                                                  int dimension, int alignment)
     {
-        // PENDING rewrite to work correctly for general intervals
-        // assert addingInt.isComponent();
         if (baseInt == null) {
             baseInt = LayoutInterval.getNeighbor(baseParent, SEQUENTIAL, alignment);
         }
-        return LayoutDragger.findPadding(baseInt, addingInt.getComponent(), dimension, alignment);
+        return dragger.findPadding(baseInt, addingInt, dimension, alignment);
     }
 
     /**
@@ -4950,7 +5067,7 @@ public class LayoutDesigner implements LayoutConstants {
                     max = pref;
                 }
                 if (min != pref || max != pref) { // this gap may have different than default size
-                    int pad = LayoutDragger.getPreferredPadding(li, dimension);
+                    int pad = LayoutDesigner.sizeOfEmptySpace(li, visualMapper);
                     int size = LayoutInterval.getIntervalCurrentSize(li, dimension);
                     if (size > (max != NOT_EXPLICITLY_DEFINED ? max : pad)) {
                         size = max;
@@ -4974,13 +5091,13 @@ public class LayoutDesigner implements LayoutConstants {
         int min = gap.getPreferredSize();
         int pref = gap.getPreferredSize();
         if (pref == NOT_EXPLICITLY_DEFINED) {
-            pad = LayoutDragger.getPreferredPadding(gap, dimension);
+            pad = LayoutDesigner.sizeOfEmptySpace(gap, visualMapper);
             pref = pad;
         }
         if (currentSize != pref) {
             if (min == NOT_EXPLICITLY_DEFINED) {
                 if (pad < 0) {
-                    pad = LayoutDragger.getPreferredPadding(gap, dimension);
+                    pad = LayoutDesigner.sizeOfEmptySpace(gap, visualMapper);
                 }
                 min = pad;
             }

@@ -1210,7 +1210,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     private class LayoutMapper implements VisualMapper, LayoutConstants {
 
-        private Padding padding;
+        private LayoutStyle layoutStyle;
 
         // -------
 
@@ -1286,7 +1286,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             assert paddingType == PADDING_RELATED || paddingType == PADDING_UNRELATED;
 
             int type = paddingType == PADDING_RELATED ?
-                       Padding.RELATED : Padding.UNRELATED;
+                       LayoutStyle.RELATED : LayoutStyle.UNRELATED;
             int position = 0;
             if (dimension == HORIZONTAL) {
                 position = comp2Alignment == LEADING ?
@@ -1297,7 +1297,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                            SwingConstants.SOUTH : SwingConstants.NORTH;
             }
 
-            return getPadding().getPadding(comp1, comp2, position, type);
+            return getLayoutStyle().getPreferredGap(comp1, comp2, type, position, null);
         }
 
         public int getPreferredPaddingInParent(String parentId,
@@ -1306,11 +1306,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                                int compAlignment)
         {
             JComponent comp = null;
-            Component parent = getVisualComponent(parentId, true, false);
+            JComponent parent = (JComponent)getVisualComponent(parentId, true, false);
             if (parent != null) {
                 RADVisualContainer metacont = (RADVisualContainer)
                                               getMetaComponent(parentId);
-                parent = metacont.getContainerDelegate(parent);
+                parent = (JComponent)metacont.getContainerDelegate(parent);
                 if (parent instanceof JComponent) {
                     comp = (JComponent) getVisualComponent(compId, true, true);
                 }
@@ -1342,8 +1342,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     alignment = SwingConstants.SOUTH;
                 }
             }
-            return getPadding().getPaddingRelativeToParent((JComponent)parent, comp,
-                                                           alignment);
+            return getLayoutStyle().getPreferredGap(parent, comp, LayoutStyle.CHILD, alignment, parent);
         }
 
         public boolean[] getComponentResizability(String compId, boolean[] resizability) {
@@ -1391,10 +1390,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                    (Component) comp : null;
         }
 
-        private Padding getPadding() {
-            if (padding == null)
-                padding = Padding.getSharedInstance();
-            return padding;
+        private LayoutStyle getLayoutStyle() {
+            if (layoutStyle == null)
+                layoutStyle = LayoutStyle.getSharedInstance();
+            return layoutStyle;
         }
     }
 
