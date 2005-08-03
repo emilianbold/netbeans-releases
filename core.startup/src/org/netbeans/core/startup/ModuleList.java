@@ -1498,6 +1498,9 @@ final class ModuleList {
                 DiskStatus status = (DiskStatus)statuses.get(cnb);
                 if (status == null || status.dirty) {
                     FileObject xmlfile = (FileObject)entry.getValue();
+                    if (xmlfile == null || ! FileUtil.toFile (xmlfile).exists ()) {
+                        continue;
+                    }
                     InputStream is = xmlfile.getInputStream();
                     try {
                         InputSource src = new InputSource(is);
