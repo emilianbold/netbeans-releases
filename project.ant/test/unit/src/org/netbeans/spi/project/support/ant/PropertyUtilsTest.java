@@ -196,6 +196,7 @@ public class PropertyUtilsTest extends NbTestCase {
         File d11 = new File(tmp, "d11");
         // Note: none of these dirs/files exist yet.
         assertEquals("d1f from d1", "f", PropertyUtils.relativizeFile(d1, d1f));
+        assertEquals("d1 from d1f", "..", PropertyUtils.relativizeFile(d1f, d1)); // #61687
         assertEquals("d2f from d1", "../d2/f", PropertyUtils.relativizeFile(d1, d2f));
         assertEquals("d1 from d1", ".", PropertyUtils.relativizeFile(d1, d1));
         assertEquals("d2 from d1", "../d2", PropertyUtils.relativizeFile(d1, d2));

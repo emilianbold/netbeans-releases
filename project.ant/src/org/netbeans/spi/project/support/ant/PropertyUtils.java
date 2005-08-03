@@ -515,6 +515,11 @@ public class PropertyUtils {
             if (base == null) {
                 return null;
             }
+            if (base.equals(file)) {
+                // #61687: file is a parent of basedir
+                b.append(".."); // NOI18N
+                return b.toString();
+            }
             b.append("../"); // NOI18N
         }
         URI u = base.toURI().relativize(file.toURI());
