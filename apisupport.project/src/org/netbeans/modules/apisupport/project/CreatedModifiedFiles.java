@@ -68,6 +68,18 @@ public final class CreatedModifiedFiles {
          */
         String[] getCreatedPaths();
         
+        /* XXX should perhaps also have:
+        /**
+         * True if the created or modified path is relevant to the user and should
+         * be selected in the final wizard.
+         * /
+        boolean isRelevant(String path);
+        /**
+         * True if the created or modified path should be opened in the editor.
+         * /
+        boolean isForEditing(String path);
+         */
+        
     }
     
     private SortedSet/*<String>*/ createdPaths;
@@ -101,6 +113,7 @@ public final class CreatedModifiedFiles {
             modifiedPaths = new TreeSet();
         }
         operations.add(operation);
+        // XXX should always show isForEditing files at the top of the list, acc. to Jano
         createdPaths.addAll(Arrays.asList(operation.getCreatedPaths()));
         modifiedPaths.addAll(Arrays.asList(operation.getModifiedPaths()));
     }
@@ -116,6 +129,8 @@ public final class CreatedModifiedFiles {
                 op.run();
             }
         }
+        // XXX should get EditCookie/OpenCookie for created/modified files for which isForEditing
+        // XXX should return a Set<FileObject> of created/modified files for which isRelevant
     }
     
     public String[] getCreatedPaths() {
