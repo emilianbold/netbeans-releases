@@ -39,6 +39,7 @@ public class PostInstallFixupAction extends ProductAction {
     private String binDir = null;
     private String configDir = null;
     private String uninstallDir = null;
+    private String nbClusterDir = null;
     
     private String jdkHome = null;
     
@@ -86,6 +87,8 @@ public class PostInstallFixupAction extends ProductAction {
         binDir = nbInstallDir + sep + "bin";
         configDir = nbInstallDir + sep + "etc";
         uninstallDir = rootInstallDir + sep + "_uninst";
+        nbClusterDir = resolveString
+        ("$L(org.netbeans.installer.Bundle,NetBeans.nbClusterDir)");
     }
     
     public void install(ProductActionSupport support) throws ProductException {
@@ -104,8 +107,6 @@ public class PostInstallFixupAction extends ProductAction {
         
         //This file is used by IDE Update Center.
         String productID = Util.getStringPropertyValue("ProductID");
-        String nbClusterDir = resolveString
-        ("$L(org.netbeans.installer.Bundle,NetBeans.nbClusterDir)");
         if (productID != null) {
             try {
                 String fileName = nbInstallDir + sep + nbClusterDir + sep + "config" + sep + "productid";
@@ -137,8 +138,6 @@ public class PostInstallFixupAction extends ProductAction {
             
             deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
             deleteFiles(uninstallDir, new String[] {"install.log"});
-            String nbClusterDir = resolveString
-            ("$L(org.netbeans.installer.Bundle,NetBeans.nbClusterDir)");
             deleteFiles(nbInstallDir, new String[] {nbClusterDir + sep + "config" + sep + "productid" });
             
             if (Util.isMacOSX()) {
@@ -347,6 +346,7 @@ public class PostInstallFixupAction extends ProductAction {
                 content[i] = content[i].replaceAll("@absoluteInstallLocation@", nbInstallDir);
                 content[i] = content[i].replaceAll("@desktopIconName@", desktopIconName);
                 content[i] = content[i].replaceAll("@productName@", productName);
+                content[i] = content[i].replaceAll("@nbClusterDir@", nbClusterDir);
             }
             
             fileService.updateAsciiFile(iconfile, content, 0);

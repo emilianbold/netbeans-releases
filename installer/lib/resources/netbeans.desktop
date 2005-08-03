@@ -2,7 +2,7 @@
 Exec="@absoluteInstallLocation@/bin/netbeans"
 Terminal=0
 Type=Application
-Icon=@absoluteInstallLocation@/nb4.1/netbeans.png
+Icon=@absoluteInstallLocation@/@nbClusterDir@/netbeans.png
 Categories=Application;Development;Java;IDE;
 Name=@desktopIconName@
 Comment=Launches @productName@
