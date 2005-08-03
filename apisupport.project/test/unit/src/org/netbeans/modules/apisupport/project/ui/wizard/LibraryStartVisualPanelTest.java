@@ -1,59 +1,42 @@
 /*
- * LibraryStartVisualPanelTest.java
- * JUnit based test
+ *                 Sun Public License Notice
  *
- * Created on July 28, 2005, 11:42 AM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
-import junit.framework.*;
 import java.io.File;
-import java.io.IOException;
-import java.util.StringTokenizer;
-import java.util.jar.JarFile;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.openide.WizardDescriptor;
 
 /**
- *
+ * Test wizard logic.
  * @author mkleint
  */
 public class LibraryStartVisualPanelTest extends NbTestCase {
     
-    protected static String EEP = "apisupport/project/test/unit/data/test-library-0.1_01.jar";
-    private File libraryPath = null;
+    private File libraryPath;
+
     public LibraryStartVisualPanelTest(String testName) {
         super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new TestSuite(LibraryStartVisualPanelTest.class);
-        
-        return suite;
-    }
-
     protected void setUp() throws Exception {
         super.setUp();
-        File nbrootF = new File(System.getProperty("test.nbroot"));
-        libraryPath = new File(nbrootF, EEP);
-        assertTrue("librarypath exists.", libraryPath.exists());
+        libraryPath = new File(getDataDir(), "test-library-0.1_01.jar");
+        assertTrue("test JAR " + libraryPath + " exists", libraryPath.isFile());
     }
     
-    /**
-     * Test of populateProjectData method, of class org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartVisualPanel.
-     */
     public void testPopulateProjectData() {
-        System.out.println("populateProjectData");
-        
         NewModuleProjectData data = new NewModuleProjectData();
-        
-        String paths = libraryPath.getAbsolutePath();
-        
-        LibraryStartVisualPanel.populateProjectData(data, paths);
+        LibraryStartVisualPanel.populateProjectData(data, libraryPath.getAbsolutePath());
         assertEquals("test-library", data.getProjectName());
         assertEquals("org.apache.commons.logging", data.getCodeNameBase());
     }
