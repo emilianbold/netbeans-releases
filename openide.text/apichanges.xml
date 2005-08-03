@@ -27,13 +27,9 @@ Microsystems, Inc. All Rights Reserved.
         <description>
             <p>An <code>ActiveEditorDrop</code> interface has been added due to 
                 drag and drop callback support described at <a href="http://www.netbeans.org/issues/show_bug.cgi?id=61367">issue #61367</a>
-                Also modification in QuietEditorPane was needed, where DelegatingTransferHandler is 
-                set. It delegates to the original QuietEditorPane's TransferHandler and hooks the method importDate,
-                where ActiveEditorDrop callback is performed.
             </p>
         </description>
         <class package="org.openide.text" name="ActiveEditorDrop"/>
-        <class package="org.openide.text" name="QuietEditorPane"/>
         <issue number="61367"/>
     </change>
     <change id="CloneableEditorSupport-wrapEditorComponent">

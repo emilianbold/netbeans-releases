@@ -20,9 +20,9 @@ import java.awt.datatransfer.DataFlavor;
  * to be notified about a target component, where the drop operation was performed. 
  * Initiator should implement this interface and use the required artificial DataFlavor.
  * Component that will support drop operation of the ActiveEditorDrop should call handleTransfer
- * method. For details please refer {@link QuietEditorPane}.
- * <p/>
- * Sample usage of the client: <p/>
+ * method.
+ * <br>
+ * Sample usage of the client: <br>
  *   <pre>
  *   private class MyDrop extends StringSelection implements ActiveEditorDrop {
  *       
@@ -57,6 +57,7 @@ import java.awt.datatransfer.DataFlavor;
  *   </pre>
  *
  * @author Martin Roskanin
+ * @since org.openide.text 6.5 
  */
 public interface ActiveEditorDrop {
     
