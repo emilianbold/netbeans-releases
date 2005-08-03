@@ -172,6 +172,15 @@ public final class ModuleList {
         return new ModuleList(entries);
     }
     
+    private static final String[] EXCLUDED_DIR_NAMES = {
+        "CVS", // NOI18N
+        "nbproject", // NOI18N
+        "www", // NOI18N
+        "test", // NOI18N
+        "build", // NOI18N
+        "src", // NOI18N
+        "org", // NOI18N
+    };
     private static void doScanNetBeansOrgSources(Map/*<String,Entry>*/ entries, File dir, int depth,
             File root, File nbdestdir, String pathPrefix) throws IOException {
         if (depth == 0) {
@@ -181,11 +190,18 @@ public final class ModuleList {
         if (kids == null) {
             return;
         }
-        for (int i = 0; i < kids.length; i++) {
+        KIDS: for (int i = 0; i < kids.length; i++) {
             if (!kids[i].isDirectory()) {
                 continue;
             }
-            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
+            String name = kids[i].getName();
+            for (int j = 0; j < EXCLUDED_DIR_NAMES.length; j++) {
+                if (name.equals(EXCLUDED_DIR_NAMES[j])) {
+                    // #61579: known to not be project dirs, so skip to save time.
+                    continue KIDS;
+                }
+            }
+            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name;
             try {
                 scanPossibleProject(kids[i], entries, false, false, root, nbdestdir, newPathPrefix);
             } catch (IOException e) {
@@ -578,14 +594,17 @@ public final class ModuleList {
         return files;
     }
     
+    private static final String PROJECT_XML = "nbproject" + File.separatorChar + "project.xml"; // NOI18N
     /**
      * Load a project.xml from a project.
      * @param basedir a putative project base directory
      * @return its primary configuration data (if there is an NBM project here), else null
      */
     static Element parseData(File basedir) throws IOException {
-        File projectXml = new File(basedir, "nbproject" + File.separatorChar + "project.xml"); // NOI18N
-        if (!projectXml.isFile()) {
+        File projectXml = new File(basedir, PROJECT_XML);
+        // #61579: tboudreau claims File.exists is much cheaper on some systems
+        //System.err.println("parseData: " + basedir);
+        if (!projectXml.exists() || !projectXml.isFile()) {
             return null;
         }
         Document doc;
