@@ -279,6 +279,8 @@ public class TreeTableView extends BeanTreeView {
             addMouseListener(
                 new MouseAdapter() {
                     public void mouseClicked(MouseEvent evt) {
+                        // Check whether it was really a click
+                        if (evt.getClickCount() == 0) return ;
                         Component c = evt.getComponent();
 
                         if (c instanceof JTableHeader) {
