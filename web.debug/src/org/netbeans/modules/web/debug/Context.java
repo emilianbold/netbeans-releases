@@ -63,7 +63,8 @@ public class Context {
      * @param lineNumber a number of line annotation should be set into
      * @param annotationType a type of annotation to be set
      *
-     * @return annotation
+     * @return annotation or <code>null</code>, when the annotation can not be
+     *         created at the given URL or line number.
      */
     public static Object annotate (
         String url,
@@ -157,6 +158,14 @@ public class Context {
         );
     }
 
+    /**
+     * Adds annotation to url:line where the given breakpoint is set.
+     *
+     * @param b breakpoint to annotate
+     *
+     * @return annotation or <code>null</code>, when the annotation can not be
+     *         created at the url:line where the given breakpoint is set.
+     */
     public static Object annotate(JspLineBreakpoint b) {
         String url = b.getURL ();
         int lineNumber = b.getLineNumber ();

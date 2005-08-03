@@ -101,6 +101,9 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
         
         // add new one
         annotation = Context.annotate (b);
+        if (annotation == null)
+            return;
+        
         breakpointToAnnotation.put (b, annotation);
         
         DebuggerEngine de = DebuggerManager.getDebuggerManager ().
@@ -121,6 +124,8 @@ public class JspBreakpointAnnotationListener extends DebuggerManagerAdapter {
     
     private void update (JspLineBreakpoint b, Object timeStamp) {
         Object annotation = breakpointToAnnotation.get (b);
+        if (annotation == null) 
+            return;
         int ln = Context.getLineNumber (annotation, timeStamp);
         listen = false;
         b.setLineNumber (ln);
