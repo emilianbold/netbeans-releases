@@ -7,11 +7,30 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
+import javax.swing.text.Keymap;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -28,7 +47,7 @@ import java.awt.BorderLayout;
 public class WatchPanel {
 
     private JPanel panel;
-    private JTextField textField;
+    private JEditorPane editorPane;
     private String expression;
 
     public WatchPanel(String expression) {
@@ -43,28 +62,103 @@ public class WatchPanel {
 
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
         JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
-        textLabel.setBorder (new EmptyBorder (0, 0, 0, 10));
+        editorPane = new JEditorPane("text/x-java", expression); // NOI18N
+        
+        editorPane.addKeyListener(new KeyListener() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyChar() == '\n' || // ENTER
+                    e.getKeyChar() == 27 /*||   // ESC
+                    e.getKeyChar() == 9*/) {    // TAB
+                    
+                    e.consume();
+                }
+            }
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyChar() == '\n' || // ENTER
+                    e.getKeyChar() == 27 /*||   // ESC
+                    e.getKeyChar() == 9*/) {    // TAB
+                        
+                    e.consume();
+                }
+            }
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == '\n') {
+                    e.consume();
+                    JButton defaultB = panel.getRootPane().getDefaultButton();
+                    if (defaultB != null) {
+                        defaultB.doClick();
+                    }
+                }
+                if (e.getKeyChar() == 27) { // ESC
+                    e.consume();
+                    panel.putClientProperty("WatchCanceled", Boolean.TRUE); // NOI18N
+                    Container c = panel;
+                    do {
+                        c = c.getParent();
+                        if (c instanceof Dialog) {
+                            ((Dialog) c).setVisible(false);
+                            ((Dialog) c).dispose();
+                            return ;
+                        }
+                    } while (c != null);
+                }
+            }
+        });
+        DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
+        JPDADebugger d = (JPDADebugger) en.lookupFirst(null, JPDADebugger.class);
+        CallStackFrame csf = d.getCurrentCallStackFrame();
+        if (csf != null) {
+            DataObject dobj = null;
+            SourcePath sp = (SourcePath) en.lookupFirst(null, SourcePath.class);
+            String url = sp.getURL(csf, "Java");
+            FileObject file;
+            try {
+                file = URLMapper.findFileObject (new URL (url));
+                if (file != null) {
+                    try {
+                        dobj = DataObject.find (file);
+                    } catch (DataObjectNotFoundException ex) {
+                        // null dobj
+                    }
+                }
+            } catch (MalformedURLException e) {
+                // null dobj
+            }
+            editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
+        }
+        
+        JScrollPane sp = new JScrollPane(editorPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                                                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
+        textLabel.setBorder (new EmptyBorder (0, 0, 5, 0));
         panel.setLayout (new BorderLayout ());
         panel.setBorder (new EmptyBorder (11, 12, 1, 11));
-        panel.add ("West", textLabel); // NOI18N
-        panel.add ("Center", textField = new JTextField (25)); // NOI18N
-        textField.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
-        textField.setBorder (
-            new CompoundBorder (textField.getBorder (),
+        panel.add (BorderLayout.NORTH, textLabel);
+        panel.add (BorderLayout.CENTER, sp);
+        
+        FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
+        int size = 2*fm.getLeading() + fm.getMaxAscent() + fm.getMaxDescent() + 4;
+        
+        editorPane.setPreferredSize(new Dimension(30*size, (int) (1*size)));
+        
+        editorPane.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_CTL_Watch_Name")); // NOI18N
+        editorPane.setBorder (
+            new CompoundBorder (editorPane.getBorder (),
             new EmptyBorder (2, 0, 2, 0))
         );
         textLabel.setDisplayedMnemonic (
             bundle.getString ("CTL_Watch_Name_Mnemonic").charAt (0) // NOI18N
         );
-        textField.setText (expression);
-        textField.selectAll ();
+        editorPane.setText (expression);
+        editorPane.selectAll ();
 
-        textLabel.setLabelFor (textField);
-        textField.requestFocus ();
+        textLabel.setLabelFor (editorPane);
+        editorPane.requestFocus ();
+        
         return panel;
     }
 
     public String getExpression() {
-        return textField.getText().trim();
+        return editorPane.getText().trim();
     }
 }

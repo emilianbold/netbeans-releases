@@ -134,6 +134,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         dialog.dispose ();
 
         if (dd.getValue () != org.openide.DialogDescriptor.OK_OPTION) return;
+        if (panel.getClientProperty("WatchCanceled") != null) return ; //NOI18N
         w.setExpression (wp.getExpression ());
     }
 
@@ -152,6 +153,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         dialog.dispose ();
 
         if (dd.getValue () != org.openide.DialogDescriptor.OK_OPTION) return;
+        if (panel.getClientProperty("WatchCanceled") != null) return ; //NOI18N
         DebuggerManager.getDebuggerManager ().createWatch (wp.getExpression ());
     }
 }
