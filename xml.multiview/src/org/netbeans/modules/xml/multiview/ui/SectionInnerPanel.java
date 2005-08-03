@@ -266,8 +266,8 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
                 }
             } else {
                 if (!tc.getText().equals(orgValue)) {
-                    signalUIChange();
                     setValue(tc, tc.getText());
+                    signalUIChange();
                     sectionView.checkValidity();
                 } else {
                     if (viewIsBuggy) {
@@ -301,8 +301,8 @@ public abstract class SectionInnerPanel extends javax.swing.JPanel implements Li
 
         public boolean flushData() {
             if (!tc.getText().equals(orgValue)) {
-                signalUIChange();
                 setValue(tc, tc.getText());
+                signalUIChange();
             }
             return true;
         }
