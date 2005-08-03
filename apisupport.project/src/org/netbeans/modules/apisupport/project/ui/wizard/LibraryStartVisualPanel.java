@@ -28,7 +28,7 @@ import org.openide.WizardDescriptor;
 
 /**
  * first panel of the librarywrapper module wizard
- * @author Millos Kleint
+ * @author Milos Kleint
  */
 final class LibraryStartVisualPanel extends BasicVisualPanel {
 
