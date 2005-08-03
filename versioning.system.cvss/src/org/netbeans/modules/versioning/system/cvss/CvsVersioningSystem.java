@@ -26,8 +26,6 @@ import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.ModuleManager;
-import org.netbeans.Module;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.*;
@@ -74,8 +72,6 @@ public class CvsVersioningSystem {
     private boolean     userIgnorePatternsReset;
     private long        userIgnorePatternsTimestamp;
 
-    private boolean     moduleActive;
-
     public static synchronized CvsVersioningSystem getInstance() {
         if (instance == null) {
             instance = new CvsVersioningSystem();
@@ -85,7 +81,6 @@ public class CvsVersioningSystem {
     }
 
     private void init() {
-        disableCurrentModules();
         defaultGlobalOptions = new GlobalOptions();
         MetadataAttic.cleanUp();
         sah = new CvsLiteAdminHandler();
@@ -100,39 +95,6 @@ public class CvsVersioningSystem {
         }
     }
 
-    /**
-     * 
-     * @return true if old modules has been already disabled and this module was enabled, false otherwise
-     */
-    boolean isActive() {
-        return moduleActive;
-    }
-
-    /**
-     * Disables old VCS modules. 
-     */ 
-    private void disableCurrentModules() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                final ModuleManager mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
-                mgr.mutex().writeAccess(new Runnable() {
-                    public void run() {
-                        Set modules = new HashSet();
-                        for (int i = 0; i < ModuleLifecycleManager.oldModules.length; i++) {
-                            String oldmodule = ModuleLifecycleManager.oldModules[i];
-                            Module m = mgr.get(oldmodule);
-                            if (m != null && m.isEnabled()) modules.add(m);
-                        }                        
-                        if (modules.size() > 0) {
-                            mgr.disable(modules);
-                        }
-                        moduleActive = true;
-                    }
-                });
-            }
-        });
-    }
-    
     /**
      * Simple cache deserialization.
      */ 
