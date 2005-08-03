@@ -87,6 +87,8 @@ public class AddOpAction extends CookieAction {
         for (int i = 0; i < operations.length; i++) {
             boolean opExists = 
                     Introspector.hasOperation(mbeanClass,rc,operations[i]);
+            if (opExists)
+                Introspector.updateOperExceptions(mbeanClass,rc,operations[i]);
             operations[i].setMethodExists(opExists);
             hasExistOp = hasExistOp || opExists;
         }
