@@ -7,16 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.apisupport.refactoring;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -27,7 +27,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -40,7 +39,6 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -124,25 +122,18 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
     
     private void checkMetaInfServices(Project project, JavaClass clzz, RefactoringElementsBag refactoringElements) {
         FileObject services = findMetaInfServices(project);
-        //we have a METHA-INF/services folder
-        if (services != null) {
-            List interfaces = clzz.getInterfaces();
-            if (interfaces != null) {
-                // we implement some interfaces..
-                Iterator it = interfaces.iterator();
-                while (it.hasNext()) {
-                    JavaClass inter = (JavaClass)it.next();
-                    String name = inter.getName();
-                    FileObject ser = services.getFileObject(name);
-                    // there is a service by that interface name.
-                    // check content to see if it's this one..
-                    int line = checkContentOfFile(ser, clzz.getName());
-                    if (line != -1) {
-                        RefactoringElementImplementation elem =
-                                new ServicesWhereUsedRefactoringElement(clzz.getSimpleName(), ser);
-                        refactoringElements.add(refactoring, elem);
-                    }
-                }
+        if (services == null) {
+            return;
+        }
+        String name = clzz.getName();
+        // Easiest to check them all; otherwise would need to find all interfaces and superclasses:
+        FileObject[] files = services.getChildren();
+        for (int i = 0; i < files.length; i++) {
+            int line = checkContentOfFile(files[i], name);
+            if (line != -1) {
+                RefactoringElementImplementation elem =
+                        new ServicesWhereUsedRefactoringElement(clzz.getSimpleName(), files[i]);
+                refactoringElements.add(refactoring, elem);
             }
         }
     }
@@ -166,11 +157,11 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
     private int checkContentOfFile(FileObject fo, String classToLookFor) {
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+            reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), "UTF-8")); // NOI18N
             String line = reader.readLine();
             int counter = 0;
             while (line != null) {
-                if (line.contains(classToLookFor)) {
+                if (line.indexOf(classToLookFor) != -1) {
                     return counter;
                 }
                 counter = counter + 1;
@@ -199,7 +190,7 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry)it.next();
             String val = (String)entry.getValue();
-            if (val.contains(name) || val.contains(pathName)) {
+            if (val.indexOf(name) != -1 || val.indexOf(pathName) != -1) {
                 RefactoringElementImplementation elem =
                    new ManifestWhereUsedRefactoringElement(val, project.getManifestFile(), 
                                            ((Attributes.Name)entry.getKey()).toString());
@@ -213,7 +204,7 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
                 Map.Entry secEnt = (Map.Entry)it.next();
                 attrs = (Attributes)secEnt.getValue();
                 String val = (String)secEnt.getKey();
-                    if (val.contains(name) || val.contains(pathName)) {
+                    if (val.indexOf(name) != -1 || val.indexOf(pathName) != -1) {
                         String section = attrs.getValue("OpenIDE-Module-Class"); //NOI18N
                         RefactoringElementImplementation elem =
                            new ManifestWhereUsedRefactoringElement(val, project.getManifestFile(), 
