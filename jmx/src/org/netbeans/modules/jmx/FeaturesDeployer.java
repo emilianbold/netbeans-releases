@@ -28,7 +28,6 @@ public class FeaturesDeployer {
                 enable = Boolean.FALSE;
             }
         }
-                
         return enable.booleanValue();
     }
         
