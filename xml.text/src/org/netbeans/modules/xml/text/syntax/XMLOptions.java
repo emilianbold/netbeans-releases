@@ -15,7 +15,6 @@ package org.netbeans.modules.xml.text.syntax;
 import java.util.*;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.xml.text.indent.XMLIndentEngine;
 
 /**
  * Options for the xml editor kit
@@ -48,10 +47,6 @@ public class XMLOptions extends AbstractBaseOptions {
         super (XMLKit.class, "xml"); // NOI18N
     }
 
-    protected Class getDefaultIndentEngineClass () {
-        return XMLIndentEngine.class;
-    }
-    
     public boolean getCompletionAutoPopup() {
         return getSettingBoolean(ExtSettingsNames.COMPLETION_AUTO_POPUP);
     }

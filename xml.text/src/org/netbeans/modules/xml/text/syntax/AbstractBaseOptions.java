@@ -47,7 +47,9 @@ abstract class AbstractBaseOptions extends BaseOptions implements Localizer {
 
     /**
      */
-    
+    protected Class getDefaultIndentEngineClass () {
+        return XMLIndentEngine.class;
+    }
 
 
     public HelpCtx getHelpCtx() {
