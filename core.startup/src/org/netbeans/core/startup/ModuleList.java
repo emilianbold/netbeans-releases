@@ -13,12 +13,6 @@
 
 package org.netbeans.core.startup;
 
-// LIMITED INTERACTIONS with APIs and UI--may use ModuleInstall,
-// and FileSystems API, and localized messages (but not notification),
-// in addition to what is permitted for central classes (utility APIs
-// and ModuleInfo-related things). Should be possible to use without
-// rest of core.
-
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -1498,7 +1492,7 @@ final class ModuleList {
                 DiskStatus status = (DiskStatus)statuses.get(cnb);
                 if (status == null || status.dirty) {
                     FileObject xmlfile = (FileObject)entry.getValue();
-                    if (xmlfile == null || ! FileUtil.toFile (xmlfile).exists ()) {
+                    if (xmlfile == null || /* XXX this is evil, why is it needed? ask jrechtacek */ !FileUtil.toFile(xmlfile).exists()) {
                         continue;
                     }
                     InputStream is = xmlfile.getInputStream();
