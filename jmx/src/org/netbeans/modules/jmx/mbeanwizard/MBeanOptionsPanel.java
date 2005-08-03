@@ -201,6 +201,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         northCenterPanel.add(mbeanDecriptionJLabel, gridBagConstraints);
 
+        mbeanDescriptionJTextField.setName("mbeanDescriptionJTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -287,6 +288,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         northCenterPanel.add(dynamicMBeanJRadioButton, gridBagConstraints);
 
+        fromExistingClassJCheckBox.setName("ExistingClassCheckBox");
         fromExistingClassJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 fromExistingClassJCheckBoxActionPerformed(evt);
@@ -302,6 +304,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        mbeanRegistrationJCheckBox.setName("ImplementMBeanItf");
         mbeanRegistrationJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mbeanRegistrationJCheckBoxActionPerformed(evt);
@@ -313,6 +316,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         jPanel1.add(mbeanRegistrationJCheckBox, gridBagConstraints);
 
         preRegisterParamJCheckBox.setEnabled(false);
+        preRegisterParamJCheckBox.setName("PreRegisterParam");
         preRegisterParamJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 preRegisterParamJCheckBoxActionPerformed(evt);
@@ -346,6 +350,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         classSelectionJTextField.setEnabled(false);
         classSelectionJTextField.setMinimumSize(new java.awt.Dimension(4, 15));
+        classSelectionJTextField.setName("ExistingClassTextField");
         classSelectionJTextField.setPreferredSize(new java.awt.Dimension(160, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
