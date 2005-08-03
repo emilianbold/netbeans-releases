@@ -107,6 +107,8 @@ class CopySupport {
                                       FormModel targetForm,
                                       RADComponent targetComponent)
     {
+        if (!sourceComponent.isInModel())
+            return false;
         if (sourceComponent.getFormModel() != targetForm)
             return true;
 
