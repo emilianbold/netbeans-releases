@@ -51,18 +51,18 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                 NewModuleProjectData.DATA_PROPERTY_NAME);
         libraryDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
-                checkLibrary(); 
+                checkLibraryAndLicense(); 
             }
         };
         licenseDL = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) { 
-                checkLicense(); 
+                checkLibraryAndLicense(); 
             }
         };
         
     }
     
-    private void checkLibrary() {
+    private void checkLibraryAndLicense() {
         String text = txtLibrary.getText().trim();
         if (text.length() > 0) {
             StringTokenizer tokens = new StringTokenizer(text, PATH_SEPARATOR);
@@ -80,14 +80,11 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     return;
                 }
             }
-            setErrorMessage(null);
         } else  {
             setErrorMessage(getMessage("MSG_Library_Path_Not_Defined"));
+            return;
         }
-    }
-    
-    private void checkLicense() {
-        String text = txtLicense.getText().trim();
+        text = txtLicense.getText().trim();
         if (text.length() > 0) {
             File fil = new File(text);
             if (!fil.exists()) {
@@ -97,7 +94,6 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         }
         setErrorMessage(null);
     }
-    
     
     void refreshData() {
         String license = (String)getSettings().getProperty(PROP_LICENSE_PATH);
