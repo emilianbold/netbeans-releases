@@ -86,15 +86,6 @@ public class Translator {
             throw new IllegalArgumentException("MBeanFolder is null");// NOI18N
         DataFolder mbeanFolderDataObj = DataFolder.findFolder(mbeanFolder);
         mbean.setDataFolder(mbeanFolderDataObj);
-        
-        FileObject template = Templates.getTemplate( wiz );
-        if (template == null)
-            throw new IllegalArgumentException("template is null");// NOI18N
-        try {
-            mbean.setTemplate(DataObject.find( template ));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
          
         addAttributes(wiz,mbean);
         addOperations(wiz,mbean);
@@ -105,6 +96,15 @@ public class Translator {
         mbean.setWrapppedClass((wrappedClass != null));
         if (wrappedClass != null)
             mbean.setWrappedClassName(wrappedClass.getName());
+        
+        FileObject template = Templates.getTemplate( wiz );
+        if (template == null)
+            throw new IllegalArgumentException("template is null");// NOI18N
+        try {
+            mbean.setTemplate(DataObject.find( template ));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         // retrieve informations about MBeanRegistration interface
         Boolean implMBRegist = (Boolean) 
@@ -290,7 +290,7 @@ public class Translator {
             String attrDescr = (String)wiz.getProperty(
                     WizardConstants.PROP_ATTR_DESCR + i);
             if (attrDescr == null)
-                throw new IllegalArgumentException("attribute decription invalid"); // NOI18N
+                throw new IllegalArgumentException("attribute description invalid"); // NOI18N
             
             attributes.add(new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
@@ -325,7 +325,7 @@ public class Translator {
             String attrDescr = (String)wiz.getProperty(
                     WizardConstants.PROP_INTRO_ATTR_DESCR + i);
             if (attrDescr == null)
-                throw new IllegalArgumentException("attribute decription invalid"); // NOI18N
+                throw new IllegalArgumentException("attribute description invalid"); // NOI18N
             
             Boolean attrSelect = (Boolean)wiz.getProperty(
                     WizardConstants.PROP_INTRO_ATTR_SELECT + i);
@@ -373,7 +373,7 @@ public class Translator {
             String excepts = (String)
                     wiz.getProperty(WizardConstants.PROP_METHOD_EXCEP + i);
             if (excepts == null) {
-                throw new IllegalArgumentException("method exception invalid"); // NOI18N
+                throw new IllegalArgumentException("operation exception invalid"); // NOI18N
             }
             List<MBeanOperationException> exceptions = new ArrayList();
             if ( (excepts != null) && (!excepts.trim().equals("")) ) { // NOI18N
@@ -446,7 +446,7 @@ public class Translator {
             String excepts = (String)
                     wiz.getProperty(WizardConstants.PROP_INTRO_METHOD_EXCEP + i);
             if (excepts == null) {
-                throw new IllegalArgumentException("method exception invalid"); // NOI18N
+                throw new IllegalArgumentException("operation exception invalid"); // NOI18N
             }
             List<MBeanOperationException> exceptions = new ArrayList();
             if ( (excepts != null) && (!excepts.trim().equals("")) ) { // NOI18N
