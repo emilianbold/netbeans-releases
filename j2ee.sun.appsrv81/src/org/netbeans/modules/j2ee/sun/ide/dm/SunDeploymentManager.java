@@ -39,6 +39,7 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 
@@ -106,8 +107,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     public SunDeploymentManager( DeploymentFactory df, String uri,String userName, String password)  throws DeploymentManagerCreationException{
         this.df= df;
         this.uri =uri;
-        this.userName = userName;
-        this.password = password;
         secure = uri.endsWith(SECURESTRINGDETECTION);
         String uriNonSecure =uri;
         if (secure)
@@ -115,6 +114,18 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
+        if (userName == null) {
+            this.userName = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
+                    getProperty(InstanceProperties.USERNAME_ATTR);
+        } else {
+            this.userName = userName;
+        }
+        if (password == null) {
+            this.password = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
+                    getProperty(InstanceProperties.PASSWORD_ATTR);
+        } else {
+            this.password = password;
+        }
         resetInnerDeploymentManager();        
         calculateIsLocal();
     }
