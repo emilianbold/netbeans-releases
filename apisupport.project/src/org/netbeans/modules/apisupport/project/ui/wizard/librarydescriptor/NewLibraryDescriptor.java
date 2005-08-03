@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -39,7 +40,7 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
     public Set instantiate() throws IOException {
         assert data != null;
         CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
-        if (fileOperations != null) {            
+        if (fileOperations != null) { // XXX why would it be null??
             fileOperations.run();
         }
         //TODO: if this returns empty list, it will never get to the list of recent items in New action popup

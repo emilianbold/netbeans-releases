@@ -86,6 +86,7 @@ public class ModuleListTest extends TestBase {
     public void testNetBeansOrgEntries() throws Exception {
         long start = System.currentTimeMillis();
         ModuleList ml = ModuleList.getModuleList(file("ant/browsetask")); // should be arbitrary
+        // XXX might be better to have a test/perf/src/.../ModuleListPerfTest.java extending org.netbeans.performance.Benchmark
         System.err.println("Time to scan netbeans.org sources: " + (System.currentTimeMillis() - start) + "msec");
         ModuleEntry e = ml.getEntry("org.netbeans.modules.java.project");
         assertNotNull("have org.netbeans.modules.java.project", e);
