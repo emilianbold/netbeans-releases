@@ -137,7 +137,6 @@ class EjbJarActionProvider implements ActionProvider {
                     clazz = clazz.substring(0, clazz.length() - 5);
                 }
                 clazz = clazz.replace('/','.');
-                System.out.println("class name:" + clazz);
 
                 if (hasMainMethod(file)) {
 

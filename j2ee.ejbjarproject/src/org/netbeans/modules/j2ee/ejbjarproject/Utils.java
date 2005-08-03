@@ -12,8 +12,20 @@
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
+import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.dnd.EjbReference;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.entres.ServiceLocatorStrategy;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.modules.javacore.jmiimpl.javamodel.MethodImpl;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -29,9 +41,12 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.jmi.javamodel.ClassDefinition;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.shared.EjbMethodController;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -161,4 +176,136 @@ public class Utils {
 
     // =========================================================================
 
+    // utils for ejb code synchronization
+    
+    public static boolean canExposeInLocal(Method me) {
+        boolean signatureOk = 
+            Modifier.isPublic(me.getModifiers()) &&
+            !Modifier.isStatic(me.getModifiers());
+        if (signatureOk) {
+            ClassDefinition clzDef = me.getDeclaringClass();
+            EjbMethodController c = (clzDef instanceof JavaClass)? 
+                EjbMethodController.createFromClass((JavaClass)clzDef):
+                null; 
+            return c != null &&
+                   c.hasLocal() &&
+                   !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), true);
+        }
+        return false;
+    }
+
+    
+    public static void exposeInLocal(Method method) {
+        EjbMethodController c = EjbMethodController.create(method); 
+        c.createAndAddInterface(method, true);
+    }
+    
+    public static boolean canExposeInRemote(Method me) {
+        boolean signatureOk = 
+            Modifier.isPublic(me.getModifiers()) &&
+            !Modifier.isStatic(me.getModifiers());
+        if (signatureOk) {
+            ClassDefinition clzDef = me.getDeclaringClass();
+            EjbMethodController c = (clzDef instanceof JavaClass)? 
+                EjbMethodController.createFromClass((JavaClass)clzDef):
+                null; 
+            return c != null &&
+                   c.hasRemote() &&
+                   !c.hasMethodInInterface(me, c.getMethodTypeFromImpl(me), false);
+        }
+        return false;
+    }
+
+    public static void exposeInRemote(Method me) {
+        EjbMethodController c = EjbMethodController.create(me); 
+        c.createAndAddInterface(me, false);
+    }
+    
+    public  static void addReference(JavaClass beanClass, EjbReference ref, String serviceLocator, boolean remote,
+            boolean throwExceptions, String ejbRefName) {
+        // find the project containing the source file
+        FileObject srcFile = JavaModel.getFileObject(beanClass.getResource());
+        Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
+        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
+        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+        ServiceLocatorStrategy serviceLocatorStrategy = null;
+        if (serviceLocator != null) {
+            serviceLocatorStrategy =
+                    ServiceLocatorStrategy.create(enterpriseProject, srcFile,
+                    serviceLocator);
+        }
+        
+        try {
+            if (remote) {
+                EjbRef ejbRef = ref.createRef();
+                if (ejbRefName != null) {
+                    ejbRef.setEjbRefName(ejbRefName);
+                }
+                erc.addEjbReferernce(ejbRef, beanClass.getName(), ref.getClientJarTarget());
+                if (serviceLocatorStrategy == null) {
+                    MethodImpl lookupMethodImpl = (MethodImpl) ref.generateJNDILookup(ejbRef, throwExceptions);
+                    JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
+                    Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
+                    beanClass.getContents().add(methodToAdd);
+                } else {
+                    ref.generateServiceLocatorLookup(ejbRef, throwExceptions,
+                            beanClass, serviceLocatorStrategy);
+                }
+            } else {
+                EjbLocalRef ejbLocalRef = ref.createLocalRef();
+                if (ejbRefName != null) {
+                    ejbLocalRef.setEjbRefName(ejbRefName);
+                }
+                erc.addEjbLocalReference(ejbLocalRef, beanClass.getName(), ref.getClientJarTarget());
+                if (serviceLocatorStrategy == null) {
+                    MethodImpl lookupMethodImpl = (MethodImpl) ref.generateJNDILookup(ejbLocalRef, throwExceptions);
+                    JavaModelPackage jmp = (JavaModelPackage) beanClass.refImmediatePackage();
+                    Method methodToAdd = (Method) lookupMethodImpl.duplicate(jmp);
+                    beanClass.getContents().add(methodToAdd);
+                } else {
+                    ref.generateServiceLocatorLookup(ejbLocalRef, throwExceptions,
+                            beanClass, serviceLocatorStrategy);
+                }
+            }
+            if (serviceLocator != null) {
+                erc.setServiceLocatorName(serviceLocator);
+            }
+        } catch (IOException ioe) {
+            Utils.notifyError(ioe);
+        }
+    }
+    
+    /** Returns list of all EJB projects that can be called from the caller project.
+     *
+     * @param enterpriseProject the caller enterprise project
+     */
+    public static Project [] getCallableEjbProjects (Project enterpriseProject) {
+        Project[] allProjects = OpenProjects.getDefault().getOpenProjects();
+        
+        boolean isCallerEJBModule = false;
+        J2eeModuleProvider callerJ2eeModuleProvider = (J2eeModuleProvider) enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
+        if (callerJ2eeModuleProvider != null && callerJ2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+            // TODO: HACK - this should be set by calling AntArtifactQuery.findArtifactsByType(p, J2eeProjectConstants.ARTIFACT_TYPE_EJBJAR)
+            // but now freeform doesn't implement this correctly
+            isCallerEJBModule = true;
+        }
+        // TODO: HACK - this must be solved by freeform's own implementation of EnterpriseReferenceContainer, see issue 57003
+        // call ejb should not make this check, all should be handled in EnterpriseReferenceContainer
+        boolean isCallerFreeform = enterpriseProject.getClass().getName().equals("org.netbeans.modules.ant.freeform.FreeformProject");
+        
+        List /*<Project>*/ filteredResults = new ArrayList(allProjects.length);
+        for (int i = 0; i < allProjects.length; i++) {
+            boolean isEJBModule = false;
+            J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) allProjects[i].getLookup().lookup(J2eeModuleProvider.class);
+            if (j2eeModuleProvider != null && j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+                isEJBModule = true;
+            }
+            if ((isEJBModule && !isCallerFreeform) ||
+                (isCallerFreeform && enterpriseProject.equals(allProjects[i]))) {
+                filteredResults.add(allProjects[i]);
+            }
+        }
+        return (Project []) filteredResults.toArray(new Project[filteredResults.size()]);
+    }
+    
 }
