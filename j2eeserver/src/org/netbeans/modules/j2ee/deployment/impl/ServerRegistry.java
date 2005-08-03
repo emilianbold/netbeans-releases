@@ -314,13 +314,13 @@ public final class ServerRegistry implements java.io.Serializable {
             Server server = (Server) i.next();
             try {
                 if(server.handlesUri(url)) {
+                    ServerInstance instance = new ServerInstance(server,url);
+                    // PENDING persist url/password in ServerString as well
+                    instancesMap().put(url,instance);
                     // try to create a disconnected deployment manager to see
                     // whether the instance is not corrupted - see #46929
-                    DeploymentManager manager = server.getDeploymentManager();
+                    DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
                     if (manager != null) {
-                        ServerInstance instance = new ServerInstance(server,url);
-                        // PENDING persist url/password in ServerString as well
-                        instancesMap().put(url,instance);
                         ServerString str = new ServerString(server.getShortName(),url,null);
                         writeInstanceToFile(url,username,password);
                         if (displayName != null) instance.getInstanceProperties().setProperty(
@@ -333,6 +333,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
             }
         }
+        instancesMap().remove(url);
         return false;
     }
     

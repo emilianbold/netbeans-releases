@@ -80,7 +80,7 @@ public class RegistryNodeProvider {
                 if (DeploymentFactory.class.isAssignableFrom(clazz))
                     return server.getDeploymentFactory();
                 if (DeploymentManager.class.isAssignableFrom(clazz))
-                    return server.getDeploymentManager();
+                    return server.getDisconnectedDeploymentManager();
                 return null;
             }
             public Lookup.Result lookup(Lookup.Template template) {
@@ -94,8 +94,10 @@ public class RegistryNodeProvider {
             public Object lookup(Class clazz) {
                 if (DeploymentFactory.class.isAssignableFrom(clazz))
                     return instance.getServer().getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz))
-                    return instance.getDeploymentManager();
+                if (DeploymentManager.class.isAssignableFrom(clazz)) {
+                    return instance.isConnected() ? instance.getDeploymentManager()
+                        : instance.getDisconnectedDeploymentManager();
+                }
                 return null;
             }
             public Lookup.Result lookup(Lookup.Template template) {
@@ -109,8 +111,11 @@ public class RegistryNodeProvider {
             public Object lookup(Class clazz) {
                 if (DeploymentFactory.class.isAssignableFrom(clazz))
                     return target.getInstance().getServer().getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz))
-                    return target.getInstance().getDeploymentManager();
+                if (DeploymentManager.class.isAssignableFrom(clazz)) {
+                    ServerInstance instance = target.getInstance();
+                    return instance.isConnected() ? instance.getDeploymentManager()
+                        : instance.getDisconnectedDeploymentManager();
+                }
                 if (Target.class.isAssignableFrom(clazz))
                     return target.getTarget();
                 return null;

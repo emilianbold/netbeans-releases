@@ -127,18 +127,20 @@ public class Server implements Node.Cookie {
         return factory;
     }
     
-    public DeploymentManager getDeploymentManager() {
+    public DeploymentManager getDisconnectedDeploymentManager() {
         if(manager == null) {
-            getFactory();
-            if (manager == null) {
-                try {
-                    manager = factory.getDisconnectedDeploymentManager(dep.getDisconnectedString());
-                } catch (Exception e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-            }
+            manager = getDisconnectedDeploymentManager(dep.getDisconnectedString());
         }
         return manager;
+    }
+    
+    public DeploymentManager getDisconnectedDeploymentManager(String uri) {
+        try {
+            return getFactory().getDisconnectedDeploymentManager(uri);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            throw new IllegalStateException();
+        }
     }
     
     public boolean handlesUri(String uri) {

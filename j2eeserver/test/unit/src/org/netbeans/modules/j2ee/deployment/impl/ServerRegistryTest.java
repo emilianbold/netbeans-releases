@@ -58,7 +58,7 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
         OptionalDeploymentManagerFactory optionalFactory = testPlugin.getOptionalFactory();
         assertNotNull ("No OptionalDeploymentManagerFactory for test plugin", optionalFactory);
         
-        DeploymentManager manager = testPlugin.getDeploymentManager();
+        DeploymentManager manager = testPlugin.getDisconnectedDeploymentManager();
         assertNotNull ("No DeploymentManager for test plugin", manager);
         
         IncrementalDeployment incrementalDepl = optionalFactory.getIncrementalDeployment(manager);
