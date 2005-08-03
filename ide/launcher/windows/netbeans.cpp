@@ -35,6 +35,7 @@ static char jdkswitch[MAX_PATH] = "";
 static char* defaultDirs[] = { "nb4.2",
                                "ide6",
                                "enterprise2",
+                               "harness",
                                "profiler1",
                                "mobility7.2",
                                "extra",
