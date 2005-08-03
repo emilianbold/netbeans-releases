@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.spi.project.libraries;
 
 import java.beans.Customizer;
@@ -76,8 +77,8 @@ public interface LibraryTypeProvider extends Lookup.Provider {
      * The object of the LibraryImplementation type is
      * passed to the customizer's setObject method.
      * The customized object describes the library created by this
-     * provider, but the customizer can not relay on the fact that the customized
-     * object is of the same type as the object created by the createLibrary method.
+     * provider, but the customizer cannot assume that the customized
+     * object is of the same type as the object created by {@link #createLibrary}.
      * @param volumeType a type of volume listed in {@link #getSupportedVolumeTypes}
      * @return a customizer (must extend {@link javax.swing.JComponent})
      */
