@@ -344,7 +344,7 @@ public class CollabFilesystem extends LocalFileSystem implements FileSystem.Stat
             return null;
         }
 
-        if (fObj.getPath().contains(getPath())) {
+        if (fObj.getPath().indexOf(getPath()) != -1) {
             DataFolder df = null;
 
             try {

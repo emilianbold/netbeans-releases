@@ -1117,6 +1117,16 @@ public class DefaultUserInterface extends UserInterface {
     //		return encodeStr;
     //	}	
 
+    private String replaceAll(String origStr, String targetStr, String replacedStr) {
+        StringBuffer sb = new StringBuffer(origStr);
+        int idx;
+        while ((idx = sb.indexOf(targetStr)) != -1) {
+            sb.replace(idx, idx+targetStr.length(), replacedStr);
+        }
+        return sb.toString();
+    }
+
+
     /**
      *
      *
@@ -1138,9 +1148,9 @@ public class DefaultUserInterface extends UserInterface {
                 true,
                 new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
-                        String add = addOption.replace("&", "");
-                        String delete = deleteOption.replace("&", "");
-                        String setAsDefault = setAsDefaultOption.replace("&", "");
+                        String add = replaceAll(addOption, "&", "");
+                        String delete = replaceAll(deleteOption, "&", "");
+                        String setAsDefault = replaceAll(setAsDefaultOption, "&", "");
 
                         if (event.getActionCommand().equals(add)) {
                             createNewAccount(null, null);

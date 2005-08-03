@@ -217,7 +217,7 @@ public abstract class MOXCCollablet extends Object implements Collablet {
         }
 
         Element element = (Element) nodes.item(0);
-        element.setTextContent(value);
+        element.setNodeValue(value);
     }
 
     /**

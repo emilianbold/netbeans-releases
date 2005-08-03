@@ -38,7 +38,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import javax.xml.parsers.*;
-import javax.xml.xpath.*;
 
 import org.netbeans.core.output2.*;
 import org.netbeans.core.output2.ui.*;

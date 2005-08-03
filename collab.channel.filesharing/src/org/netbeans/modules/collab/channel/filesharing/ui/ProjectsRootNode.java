@@ -159,6 +159,10 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
         return this.context;
     }
 
+    private static boolean strContains(String str, String pattern) {
+        return str.indexOf(pattern) != -1;
+    }
+
     private DataObject[] getDragDataObjects(Node[] dragNodes, List dragDataObjects) {
         boolean skipProjectFolder = false;
 
@@ -191,7 +195,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
                      {
                         Debug.out.println("leaf a file/folder: " + d.getName());
 
-                        if (d.getPrimaryFile().isData() || dragNodes[0].getName().contains("jar:file:/")) { //a file
+                        if (d.getPrimaryFile().isData() || strContains(dragNodes[0].getName(), "jar:file:/")) { //a file
                             Debug.out.println("leaf a file: " + d.getName());
 
                             if (!dragDataObjects.contains(d)) {
@@ -516,7 +520,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
                 Debug.out.println("path: " + fPath);
                 Debug.out.println("rpath: " + rPath);
 
-                if (fPath.contains(rPath)) {
+                if (strContains(fPath, rPath)) {
                     return true; //skip copy share file/folder to share area
                 }
             }
@@ -526,7 +530,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
 
                 if (
                     (dragNodes[i] != null) && (dragNodes[i].getName() != null) &&
-                        dragNodes[i].getName().contains(pattern)
+                        strContains(dragNodes[i].getName(), pattern)
                 ) {
                     String message = NbBundle.getMessage(
                             ProjectsRootNode.class, "MSG_ProjectsRootNode_CannotShareNode",
@@ -1811,7 +1815,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
             Debug.out.println("path: " + fPath);
             Debug.out.println("rpath: " + rPath);
 
-            if (fPath.contains(rPath)) {
+            if (strContains(fPath, rPath)) {
                 return true; //a shared file
             }
 
@@ -1872,8 +1876,7 @@ public class ProjectsRootNode extends AbstractNode implements FilesharingConstan
 
                 try {
                     dispName = XMLUtil.toElementContent(dispName);
-                }
-                catch (CharConversionException ex) {
+                } catch (CharConversionException ex) {
                     // ignore
                 }
             }

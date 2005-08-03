@@ -120,10 +120,10 @@ public class MOXCMessage extends Object {
 
                 if (field.getLocalName().equals("channel")) // NOI18N
                  {
-                    channel = field.getTextContent();
+                    channel = getTextContent(field);
                 } else if (field.getLocalName().equals("sender")) // NOI18N
                  {
-                    sender = field.getTextContent();
+                    sender = getTextContent(field);
 
                     // Check if message is from self
                     selfOrigin = sender.equals(
@@ -131,20 +131,20 @@ public class MOXCMessage extends Object {
                         );
                 } else if (field.getLocalName().equals("conversation")) // NOI18N
                  {
-                    conversation = field.getTextContent();
+                    conversation = getTextContent(field);
                 } else if (field.getLocalName().equals("instance")) // NOI18N
                  {
-                    instance = field.getTextContent();
+                    instance = getTextContent(field);
                 } else {
                     Debug.out.println(
                         "Found unknown header field: <" + // NOI18N
                         field.getLocalName() + "> = " + // NOI18N
-                        field.getTextContent()
+                        getTextContent(field)
                     );
                 }
 
                 // Save the headers
-                headerMap.put(field.getLocalName(), field.getTextContent());
+                headerMap.put(field.getLocalName(), getTextContent(field));
             }
 
             // Store the headers in an unmodifiable form
@@ -299,5 +299,22 @@ public class MOXCMessage extends Object {
      */
     public boolean isSelfOrigin() {
         return selfOrigin;
+    }
+    
+    private static String getTextContent(Node node) {
+        StringBuffer result = new StringBuffer();
+        if (! node.hasChildNodes()) return "";
+
+        NodeList list = node.getChildNodes();
+        for (int i=0; i < list.getLength(); i++) {
+            Node subnode = list.item(i);
+            if (subnode.getNodeType() == Node.TEXT_NODE ||
+                    subnode.getNodeType() == Node.CDATA_SECTION_NODE) {
+                result.append(subnode.getNodeValue());
+            } else if (subnode.getNodeType() == Node.ENTITY_REFERENCE_NODE) {
+                result.append(getTextContent(subnode));
+            }
+        }
+        return result.toString();
     }
 }

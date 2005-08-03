@@ -116,11 +116,11 @@ public class SharedNonProjectNode extends FilterNode {
 
                 if (d != null) {
                     if ((d.getPrimaryFile() != null) && d.getPrimaryFile().isData()) {
-                        if (isLocal || actionName.contains("Edit")) { //NoI18n
+                        if (isLocal || strContains(actionName, "Edit")) { //NoI18n
                             newActions.add(actions[i]);
                         }
                     } else {
-                        if (isLocal && !actionName.contains("Rename")) { //NoI18n
+                        if (isLocal && !strContains(actionName, "Rename")) { //NoI18n
                             newActions.add(actions[i]);
                         }
                     }
@@ -145,6 +145,10 @@ public class SharedNonProjectNode extends FilterNode {
 
     public boolean canRename() {
         return isLocal && !isFolder;
+    }
+
+    private static boolean strContains(String str, String pattern) {
+        return str.indexOf(pattern) != -1;
     }
 
     /** Represents children of SharedNonProjectNode

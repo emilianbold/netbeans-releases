@@ -537,7 +537,7 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
             //return if not proper invitation message
             String inviteMsg = message.getContent();
 
-            if ((inviteMsg != null) && inviteMsg.contains("<?xml")) {
+            if ((inviteMsg != null) && (inviteMsg.indexOf("<?xml") != -1)) {
                 return;
             }
 
@@ -640,7 +640,8 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
         // At this point, the session is no good anymore
         try {
             //Workaround for bug#
-            if ((e != null) && (e.getMessage() != null) && e.getMessage().contains("Server Disconnected")) { //NoI18n	
+            if ((e != null) && (e.getMessage() != null) &&
+                   (e.getMessage().indexOf("Server Disconnected") != -1)) { //NoI18n	
                 criticalServerError = true;
             }
 

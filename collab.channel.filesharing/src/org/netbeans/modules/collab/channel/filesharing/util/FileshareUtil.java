@@ -87,15 +87,15 @@ public class FileshareUtil implements FilesharingConstants {
             Debug.out.println("project action: " + actionString); //NoI18n			
 
             if (
-                actionString.contains("org.netbeans.modules.project.ui.actions.ProjectAction") || //NoI18n
-                    actionString.contains("org.netbeans.modules.apisupport.project.Actions") || //NoI18n
+                strContains(actionString, "org.netbeans.modules.project.ui.actions.ProjectAction") || //NoI18n
+                    strContains(actionString, "org.netbeans.modules.apisupport.project.Actions") || //NoI18n
                     pAction instanceof CollabProjectAction
             ) {
                 SystemAction action = null;
 
                 if (
-                    actionName.contains("Build") && !actionName.contains("Clean") && //NoI18n
-                        !actionName.contains("with") && //NoI18n
+                    strContains(actionName, "Build") && !strContains(actionName, "Clean") && //NoI18n
+                        !strContains(actionName, "with") && //NoI18n
                         !newactions.containsKey(actionName)
                 ) {
                     //newactions.put(actionName+"null1", null);//NoI18n
@@ -110,7 +110,7 @@ public class FileshareUtil implements FilesharingConstants {
 
                     //newactions.put(actionName+"null2", null);//NoI18n
                 } else if (
-                    actionName.contains("Build") && actionName.contains("Clean") && //NoI18n
+                    strContains(actionName, "Build") && strContains(actionName, "Clean") && //NoI18n
                         !newactions.containsKey(actionName)
                 ) {
                     //newactions.put(actionName+"null1", null);//NoI18n
@@ -124,7 +124,7 @@ public class FileshareUtil implements FilesharingConstants {
                     newactions.put(actionName, action);
 
                     //newactions.put(actionName+"null2", null);//NoI18n
-                } else if (actionName.contains("Install") && //NoI18n
+                } else if (strContains(actionName, "Install") && //NoI18n
                         !newactions.containsKey(actionName)) {
                     //newactions.put(actionName+"null1", null);//NoI18n
                     action = new CollabInstallAction();
@@ -137,7 +137,7 @@ public class FileshareUtil implements FilesharingConstants {
                     newactions.put(actionName, action);
 
                     //newactions.put(actionName+"null2", null);//NoI18n
-                } else if (actionName.contains("Run") && //NoI18n
+                } else if (strContains(actionName, "Run") && //NoI18n
                         !newactions.containsKey(actionName)) {
                     //newactions.put(actionName+"null1", null);//NoI18n
                     action = new CollabRunAction();
@@ -302,5 +302,9 @@ public class FileshareUtil implements FilesharingConstants {
             Debug.out.println("File Link Delete::ex: " + th);
             th.printStackTrace(Debug.out);
         }
+    }
+
+    private static boolean strContains(String str, String pattern) {
+        return str.indexOf(pattern) != -1;
     }
 }

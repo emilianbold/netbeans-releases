@@ -82,6 +82,16 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
     private static final String SYSTEM_MESSAGE_TEMPLATE_ELEMENT_ID = "SYSTEM_MESSAGE_TEMPLATE";
     private static final String CHAT_MESSAGE_TEMPLATE_ELEMENT_ID = "CHAT_MESSAGE_TEMPLATE";
     private static final String CHAT_TEMPLATE_RESOURCE = "/org/netbeans/modules/collab/channel/chat/chat_template.html";
+    private static String[][] smiles = new String[][] {
+        { ":-)", "emo_smiley16.png" },
+        { ":)",  "emo_smiley16.png" },
+        { ":-(", "emo_sad16.png" },
+        { ":(",  "emo_sad16.png" },
+        { ";-)", "emo_wink16.png" },
+        { ";)",  "emo_wink16.png" },
+        { ":=)", "emo_laughing16.png" },
+        { "8-)", "emo_cool16.png" },
+        { ":-D", "emo_grin16.png" }};
 
     // NOTE: These constants must be kept in sync with the values in the
     // HTML template file!
@@ -871,14 +881,19 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
         }
     }
 
-    /*author Smitha Krishna Nagesh*/
     private String replaceAll(String origStr, String targetStr, String replacedStr) {
-        while (origStr.indexOf(targetStr) != -1) {
-            origStr = origStr.replace(targetStr, replacedStr);
+        StringBuffer sb = new StringBuffer(origStr);
+        int idx;
+        while((idx = sb.indexOf(targetStr)) != -1) {
+            sb.replace(idx, idx+targetStr.length(), replacedStr);
         }
-
-        return origStr;
+        return sb.toString();
     }
+
+    private boolean strContains(String str, String pattern) {
+        return str.indexOf(pattern) != -1;
+    }
+
 
     /**
      *
@@ -889,70 +904,15 @@ public class ChatComponent extends JPanel implements HyperlinkListener {
             // Convert message to HTML
             String html = convertToHtml(message);
 
-            // fixme: pattern ") is first expanded to &amp;) which will then find a smile there.			
-
-            /* author Smitha Krishna Nagesh */
-            if (html.contains(":-)")) {
-                URL smileUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_smiley16.png"
-                    );
-                html = replaceAll(html, ":-)", "<img align=\"center\" src=" + smileUrl + "></img>");
-            }
-
-            if (html.contains(":)")) {
-                URL smileUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_smiley16.png"
-                    );
-                html = replaceAll(html, ":)", "<img align=\"center\" src= " + smileUrl + "></img>");
-            }
-
-            if (html.contains(":-(")) {
-                URL frownUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_sad16.png"
-                    );
-                html = replaceAll(html, ":-(", "<img align=\"center\" src=" + frownUrl + "></img>");
-            }
-
-            if (html.contains(":(")) {
-                URL frownUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_sad16.png"
-                    );
-                html = replaceAll(html, ":(", "<img align=\"center\" src=" + frownUrl + "></img>");
-            }
-
-            if (html.contains(";-)")) {
-                URL winkUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_wink16.png"
-                    );
-                html = replaceAll(html, ";-)", "<img align=\"center\" src=" + winkUrl + "></img>");
-            }
-
-            if (html.contains(";)")) {
-                URL winkUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_wink16.png"
-                    );
-                html = replaceAll(html, ";)", "<img align=\"center\" src=" + winkUrl + "></img>");
-            }
-
-            if (html.contains(":=)")) {
-                URL laughUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_laughing16.png"
-                    );
-                html = replaceAll(html, ":=)", "<img align=\"center\" src=" + laughUrl + "></img>");
-            }
-
-            if (html.contains("8-)")) {
-                URL coolUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_cool16.png"
-                    );
-                html = replaceAll(html, "8-)", "<img align=\"center\" src=" + coolUrl + "></img>");
-            }
-
-            if (html.contains(":-D")) {
-                URL grinUrl = Thread.currentThread().getContextClassLoader().getResource(
-                        "org/netbeans/modules/" + "collab/channel/chat/resources/emoticons/emo_grin16.png"
-                    );
-                html = replaceAll(html, ":-D", "<img align=\"center\" src=" + grinUrl + "></img>");
+            // fixme: pattern ") is first expanded to &amp;) which will then find a smile there.
+            
+            for (int i=0; i<smiles.length; i++) {
+                if (strContains(html, smiles[i][0])) {
+                    URL smileUrl = ChatComponent.class.getResource(
+                        "resources/emoticons/" + smiles[i][1]);
+                    String tag = "<img align=\"center\" src=" + smileUrl + "></img>";
+                    html = replaceAll(html, smiles[i][0], tag);
+                }
             }
 
             // Insert the message text before the start of the epilogue
