@@ -98,7 +98,7 @@ public class OperationExceptionPopupTable extends JTable {
                     } else {
                         getToolkit().beep();
                     }
-                    //txt = WizardHelpers.capitalizeFirstLetter(txt);
+                    if (txt.indexOf("..") == -1) { // NOI18N
                     genericField.setText(txt);
                     if ((typedKey == KeyEvent.VK_BACK_SPACE) || 
                             (typedKey == KeyEvent.VK_DELETE))
@@ -110,7 +110,9 @@ public class OperationExceptionPopupTable extends JTable {
                             genericField.setCaretPosition(selectionStart);
                         }                            
                     }
-                        
+                    }  else {
+                        getToolkit().beep();
+                    }
                     e.consume();
                 }
             });
