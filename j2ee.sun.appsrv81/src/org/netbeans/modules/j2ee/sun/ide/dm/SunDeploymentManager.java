@@ -59,6 +59,7 @@ import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
+import org.openide.ErrorManager;
 
 
 /**
@@ -114,17 +115,23 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
-        if (userName == null) {
-            this.userName = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
-                    getProperty(InstanceProperties.USERNAME_ATTR);
-        } else {
-            this.userName = userName;
-        }
-        if (password == null) {
-            this.password = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
-                    getProperty(InstanceProperties.PASSWORD_ATTR);
-        } else {
-            this.password = password;
+        try {
+            if (userName == null) {
+                this.userName = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
+                        getProperty(InstanceProperties.USERNAME_ATTR);
+            } else {
+                this.userName = userName;
+            }
+            if (password == null) {
+                this.password = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
+                        getProperty(InstanceProperties.PASSWORD_ATTR);
+            } else {
+                this.password = password;
+            }
+        } catch (IllegalStateException ise) {
+            // get before set throws an ISE.  Instance registration time
+            // triggers this
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ise);
         }
         resetInnerDeploymentManager();        
         calculateIsLocal();
