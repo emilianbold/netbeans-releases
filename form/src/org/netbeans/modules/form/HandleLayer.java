@@ -829,7 +829,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
     }
     
     // Highlights panel below mouse cursor.
-    private void highlightPanel(MouseEvent e) {
+    private void highlightPanel(MouseEvent e, boolean recheck) {
         Component[] comps = getDeepestComponentsAt(formDesigner.getComponentLayer(), e.getPoint());
         if (comps.length == 0)
             return;
@@ -844,9 +844,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             comp = null;
         }
         JPanel panel = (JPanel)comp;
-        if (darkerPanel != panel) {
+        if ((darkerPanel != panel) || (recheck && !shouldHighlightPanel(panel, radcomp))) {
             if (darkerPanel != null) {
-                darkerPanel.setBorder(null);
+                // Reset only HighlightBorder border
+                if (darkerPanel.getBorder() instanceof HighlightBorder) {
+                    darkerPanel.setBorder(null);
+                }
                 darkerPanel = null;
             }
             if (shouldHighlightPanel(panel, radcomp)) {
@@ -865,6 +868,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 return false;
             }
             if (radPanel == formDesigner.getTopDesignComponent()) {
+                return false;
+            }
+            if ((formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT)
+                && formDesigner.getSelectedLayoutComponents().contains(radPanel)) {
                 return false;
             }
             if (radPanel instanceof RADVisualContainer) {
@@ -1279,6 +1286,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 showContextMenu(e.getPoint());
             }
         }
+        highlightPanel(e, true);
         e.consume();
     }
 
@@ -1478,7 +1486,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         if (draggedComponent != null) {
             draggedComponent.move(e);
-            highlightPanel(e);
+            highlightPanel(e, false);
             repaint();
         }
         else if (selectionDragger != null) {
@@ -1516,7 +1524,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         {
             checkResizing(e);
         }
-        highlightPanel(e);
+        highlightPanel(e, false);
         lastMousePosition = p;
     }
 
