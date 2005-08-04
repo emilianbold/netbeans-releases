@@ -74,6 +74,7 @@ public class XMLFormatter extends ExtFormatter {
         int pos = Utilities.getRowStart(doc, endOffset);
         TokenItem token = null;
         XMLSyntaxSupport sup = (XMLSyntaxSupport)(doc.getSyntaxSupport().get(XMLSyntaxSupport.class));
+        if(sup == null) return null; //do not format anything what is not a XML
         
         if (startOffset == endOffset){
             //pressed enter - called from indentNewLine
@@ -203,6 +204,7 @@ public class XMLFormatter extends ExtFormatter {
             BaseDocument doc = Utilities.getDocument(target);
             int dotPos = target.getCaret().getDot();
             XMLSyntaxSupport sup = (XMLSyntaxSupport)(doc.getSyntaxSupport().get(XMLSyntaxSupport.class));
+            if(sup == null) return i; //do not format anything what is not a XML
             
             if (typedText.charAt(0) == '>') {
                 //get the token before typed text
