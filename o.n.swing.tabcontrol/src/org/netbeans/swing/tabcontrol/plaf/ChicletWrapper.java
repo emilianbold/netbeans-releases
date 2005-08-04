@@ -127,7 +127,7 @@ public class ChicletWrapper implements Runnable {
         chiclet.setState (state);
         Graphics g = img.getGraphics();
         g.translate (-bounds.x, -bounds.y);
-        ColorUtil.setupAntialiasing(g, true);
+        ColorUtil.setupAntialiasing(g);
         chiclet.draw((Graphics2D)g);
         g.translate (bounds.x, bounds.y);
         return img;
