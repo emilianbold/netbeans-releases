@@ -76,6 +76,11 @@ public class MBeanNotificationPanel extends JPanel {
         
         initComponents();
         
+        // set names
+        implNotifEmitCheckBox.setName("implNotifEmitCheckBox");
+        genDelegationCheckBox.setName("genDelegationCheckBox");
+        genSeqNbCheckBox.setName("genSeqNbCheckBox");
+        
         String str = bundle.getString("LBL_Notification_Panel");// NOI18N
         setName(str);
         
