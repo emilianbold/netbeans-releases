@@ -174,7 +174,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         Dialog d = DialogDisplayer.getDefault ().createDialog (descriptor);
         d.pack ();
         d.setVisible (true);
-        if (descriptor.getValue () == bOk) {
+        if (descriptor.getValue () == bOk && c.getClientProperty("WatchCanceled") == null) {
             ((Controller) c).ok ();
         }
     }

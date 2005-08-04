@@ -16,6 +16,8 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.net.MalformedURLException;
@@ -63,47 +65,8 @@ public class WatchPanel {
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
         JLabel textLabel = new JLabel (bundle.getString ("CTL_Watch_Name")); // NOI18N
         editorPane = new JEditorPane("text/x-java", expression); // NOI18N
+        editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
         
-        editorPane.addKeyListener(new KeyListener() {
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == '\n' || // ENTER
-                    e.getKeyChar() == 27 /*||   // ESC
-                    e.getKeyChar() == 9*/) {    // TAB
-                    
-                    e.consume();
-                }
-            }
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyChar() == '\n' || // ENTER
-                    e.getKeyChar() == 27 /*||   // ESC
-                    e.getKeyChar() == 9*/) {    // TAB
-                        
-                    e.consume();
-                }
-            }
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == '\n') {
-                    e.consume();
-                    JButton defaultB = panel.getRootPane().getDefaultButton();
-                    if (defaultB != null) {
-                        defaultB.doClick();
-                    }
-                }
-                if (e.getKeyChar() == 27) { // ESC
-                    e.consume();
-                    panel.putClientProperty("WatchCanceled", Boolean.TRUE); // NOI18N
-                    Container c = panel;
-                    do {
-                        c = c.getParent();
-                        if (c instanceof Dialog) {
-                            ((Dialog) c).setVisible(false);
-                            ((Dialog) c).dispose();
-                            return ;
-                        }
-                    } while (c != null);
-                }
-            }
-        });
         DebuggerEngine en = DebuggerManager.getDebuggerManager ().getCurrentEngine();
         JPDADebugger d = (JPDADebugger) en.lookupFirst(null, JPDADebugger.class);
         CallStackFrame csf = d.getCurrentCallStackFrame();
