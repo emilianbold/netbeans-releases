@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -60,15 +60,16 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                     }
                 }
                 else {
-                    if (KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() instanceof Dialog) {
-                        NbDialog dlg = new NbDialog(d, (Dialog)KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ());
+                    Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
+                    if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
+                        w = WindowManager.getDefault ().getMainWindow ();
+                    }
+                    if (w instanceof Dialog) {
+                        NbDialog dlg = new NbDialog(d, (Dialog) w);
                         dlg.requestFocusInWindow ();
                         return dlg;
                     } else {
-                        Frame f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
-                            instanceof Frame ? 
-                            (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
-                            : WindowManager.getDefault().getMainWindow();
+                        Frame f = w instanceof Frame ? (Frame) w : WindowManager.getDefault ().getMainWindow ();
                         NbDialog dlg = new NbDialog(d, f);
                         dlg.requestFocusInWindow ();
                         return dlg;
@@ -125,10 +126,11 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                             presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
                         }
                     } else {
-                        Frame f = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
-                            instanceof Frame ? 
-                            (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
-                            : WindowManager.getDefault().getMainWindow();
+                        Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
+                        if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
+                            w = WindowManager.getDefault ().getMainWindow ();
+                        }
+                        Frame f = w instanceof Frame ? (Frame) w : WindowManager.getDefault().getMainWindow();
                         presenter = new NbDialog((DialogDescriptor) descriptor, f);
                     }
                 } else {
