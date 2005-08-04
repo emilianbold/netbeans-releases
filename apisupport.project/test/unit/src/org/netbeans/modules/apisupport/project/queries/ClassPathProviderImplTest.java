@@ -244,11 +244,11 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-modules.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/boot.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-explorer.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-compat.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-options.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-windows.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-actions.jar"));
