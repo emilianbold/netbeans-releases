@@ -240,12 +240,14 @@ public final class Module extends ModuleInfo {
      * bundle file (in all locale JARs as well as base JAR) is searched for
      * a key of the specified name.
      * Otherwise, the manifest's main attributes are searched for an attribute
-     * with the specified name, possibly with a locale suffix.
+     * with the specified name, possibly with a locale suffix
+     * (though this mode is deprecated).
      * If the attribute name contains a slash, and there is a manifest section
      * named according to the part before the last slash, then this section's attributes
      * are searched instead of the main attributes, and for the attribute listed
      * after the slash. Currently this would only be useful for localized filesystem
      * names. E.g. you may request the attribute org/foo/MyFileSystem.class/Display-Name.
+     * (Localizing manifest sections is also deprecated.)
      * In the future certain attributes known to be dangerous could be
      * explicitly suppressed from this list; should only be used for
      * documented localizable attributes such as OpenIDE-Module-Name etc.
