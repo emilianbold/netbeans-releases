@@ -12,6 +12,8 @@
  */
 package org.netbeans.modules.xml.text.syntax;
 
+import org.netbeans.modules.xml.text.indent.DTDIndentEngine;
+
 /**
  * Options for the dtd editor kit
  *
@@ -22,14 +24,15 @@ public class DTDOptions extends AbstractBaseOptions {
     /** Serial Version UID */
     private static final long serialVersionUID = 2347735706857337892L;
 
-    
-    //
-    // init
-    //
-
-    /** */
+      /** */
     public DTDOptions () {
         super (DTDKit.class, "dtd"); // NOI18N
     }
 
+    protected Class getDefaultIndentEngineClass () {
+        return DTDIndentEngine.class;
+        
+    }
+
+    
 }
