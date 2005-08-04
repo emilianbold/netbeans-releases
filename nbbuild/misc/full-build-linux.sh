@@ -28,6 +28,10 @@
 # if set to "yes", do a CVS update after cleaning and before building
 # (default "no").
 #
+# verifyupdate=yes
+# If yes, cvs update output is checked for unknown files and conflicts, and
+# the build is stopped if any are found.
+#
 # nbjdk=/opt/java/j2se/1.4.2
 # JDK 1.4.2_08 installation directory. (Full JDK, not just JRE.)
 #
@@ -102,6 +106,11 @@ fi
 if [ -z "$update" ]
 then
     update=no
+fi
+
+if [ -z "$verifyupdate" ]
+then
+    verifyupdate=yes
 fi
 
 if [ -z "$nbjdk" ]
@@ -250,8 +259,20 @@ fi
 
 if [ $update = yes ]
 then
+    CVSLOG="/tmp/cvs-update.log.$$"
+    trap "rm -f $CVSLOG ; exit" 0 1 2 3 15
     echo "----------UPDATING SOURCES----------" 1>&2
-    (cd $sources; cvs -q update)
+    (cd $sources; cvs -q update |tee $CVSLOG)
+
+    if [ $verifyupdate = yes ] ; then
+        # verify that CVS has all the source files in its repository, 
+        # and that there aren't any conflicts
+        if [ `grep -c '^[C?] ' $CVSLOG` -ne 0 ]; then
+            echo "CVS update had problems:" 1>&2
+            grep '^[C?] ' $CVSLOG 1>&2
+            exit 1
+        fi
+    fi
 fi
 
 if [ $dobuild = yes ]
