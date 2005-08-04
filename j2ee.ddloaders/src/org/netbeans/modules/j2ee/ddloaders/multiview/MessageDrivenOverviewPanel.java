@@ -22,6 +22,7 @@ import org.netbeans.modules.j2ee.ddloaders.multiview.ui.MessageDrivenOverviewFor
 import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemOptionHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -49,7 +50,10 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
 
         final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
 
-        addRefreshable(new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(dataObject, false) {
+        XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
+        addRefreshable(new ItemEditorHelper(getNameTextField(), new TextItemEditorModel(synchronizer,
+                false) {
+
             protected String getValue() {
                 return messageDriven.getEjbName();
             }
@@ -60,7 +64,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }));
         getNameTextField().setEditable(false);
 
-        addRefreshable(new ItemOptionHelper(dataObject, getTransactionTypeButtonGroup()) {
+        addRefreshable(new ItemOptionHelper(synchronizer, getTransactionTypeButtonGroup()) {
             public String getItemValue() {
                 return messageDriven.getTransactionType();
             }
@@ -87,7 +91,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
             messageSelectorTextField.setEnabled(false);
         } else {
             addRefreshable(new ItemEditorHelper(messageSelectorTextField,
-                            new TextItemEditorModel(dataObject, true, true) {
+                            new TextItemEditorModel(synchronizer, true, true) {
                 protected String getValue() {
                     return getConfigProperty(PROPERTY_MESSAGE_SELECTOR);
                 }
@@ -97,7 +101,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
             }));
 
-            addRefreshable(new ItemOptionHelper(dataObject, getAcknowledgeModeButtonGroup()) {
+            addRefreshable(new ItemOptionHelper(synchronizer, getAcknowledgeModeButtonGroup()) {
                 public String getItemValue() {
                     return getConfigProperty(PROPERTY_ACKNOWLEDGE_NAME, "Auto-acknowledge");//NOI18N
                 }
@@ -107,9 +111,9 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
                 }
             });
 
-            final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(dataObject, durabilityComboBox);
+            final DurabilityComboBoxHelper durabilityComboBoxHelper = new DurabilityComboBoxHelper(synchronizer, durabilityComboBox);
 
-            new ItemComboBoxHelper(dataObject, destinationTypeComboBox) {
+            new ItemComboBoxHelper(synchronizer, destinationTypeComboBox) {
                 {
                     setDurabilityEnabled();
                 }
@@ -131,7 +135,7 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
         }
 
         // the second ItemComboboxHelper for destinationTypeComboBox handles message-destination-type element
-        new ItemComboBoxHelper(dataObject, destinationTypeComboBox) {
+        new ItemComboBoxHelper(synchronizer, destinationTypeComboBox) {
 
             public String getItemValue() {
                 try {
@@ -209,8 +213,8 @@ public class MessageDrivenOverviewPanel extends MessageDrivenOverviewForm {
 
     private class DurabilityComboBoxHelper extends ItemComboBoxHelper {
 
-        public DurabilityComboBoxHelper(EjbJarMultiViewDataObject dataObject, JComboBox durabilityComboBox) {
-            super(dataObject, durabilityComboBox);
+        public DurabilityComboBoxHelper(XmlMultiViewDataSynchronizer synchronizer, JComboBox durabilityComboBox) {
+            super(synchronizer, durabilityComboBox);
         }
 
         public String getItemValue() {

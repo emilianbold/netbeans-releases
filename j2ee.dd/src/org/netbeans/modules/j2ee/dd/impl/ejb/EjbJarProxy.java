@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.dd.impl.ejb;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -333,10 +334,9 @@ public class EjbJarProxy implements EjbJar {
 
     public void write(FileObject fo) throws java.io.IOException {
         if (ejbJar != null) {
-            // trying to use OutputProvider for writing changes
-            DataObject dobj = DataObject.find(fo);
-            if (dobj != null && dobj instanceof EjbJarProxy.OutputProvider) {
-                ((EjbJarProxy.OutputProvider) dobj).write(this);
+            DataObject dataObject = DataObject.find(fo);
+            if (dataObject instanceof DDProviderDataObject) {
+                ((DDProviderDataObject) dataObject).writeModel();
             } else {
                 FileLock lock = fo.lock();
                 try {
@@ -355,7 +355,7 @@ public class EjbJarProxy implements EjbJar {
     }
 
     public Object clone() {
-        EjbJarProxy proxy = null;
+        EjbJarProxy proxy;
         if (ejbJar==null)
             proxy = new EjbJarProxy(null,version);
         else {
@@ -370,8 +370,7 @@ public class EjbJarProxy implements EjbJar {
             } else {
                 ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar)clonedEjbJar)._setSchemaLocation
                     ("http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd");
-                ((org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar)clonedEjbJar).setVersion
-                    (new java.math.BigDecimal(EjbJar.VERSION_2_1));
+                clonedEjbJar.setVersion(new java.math.BigDecimal(EjbJar.VERSION_2_1));
             }
         }
         proxy.setError(error);
@@ -439,14 +438,5 @@ public class EjbJarProxy implements EjbJar {
         else
             return ejbJar.newRelationships();
     }
-    
-    /** Contract between friend modules that enables 
-    * a specific handling of write(FileObject) method for targeted FileObject
-    */
-    public static interface OutputProvider {
-        public void write(EjbJar ejbJar) throws java.io.IOException;
-        public org.openide.filesystems.FileObject getTarget();
-    }
-    
 }
 

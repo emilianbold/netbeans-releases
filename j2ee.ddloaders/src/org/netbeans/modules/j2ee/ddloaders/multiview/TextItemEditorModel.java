@@ -14,24 +14,24 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /**
  * @author pfiala
  */
 public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorModel {
 
-    XmlMultiViewDataObject dataObject;
+    XmlMultiViewDataSynchronizer synchronizer;
     private boolean emptyAllowed;
     private boolean emptyIsNull;
     String origValue;
 
-    protected TextItemEditorModel(XmlMultiViewDataObject dataObject, boolean emptyAllowed) {
-        this(dataObject, emptyAllowed, false);
+    protected TextItemEditorModel(XmlMultiViewDataSynchronizer synchronizer, boolean emptyAllowed) {
+        this(synchronizer, emptyAllowed, false);
 
     }
-    protected TextItemEditorModel(XmlMultiViewDataObject dataObject, boolean emptyAllowed, boolean emptyIsNull) {
-        this.dataObject = dataObject;
+    protected TextItemEditorModel(XmlMultiViewDataSynchronizer synchronizer, boolean emptyAllowed, boolean emptyIsNull) {
+        this.synchronizer = synchronizer;
         this.emptyAllowed = emptyAllowed;
         this.emptyIsNull = emptyIsNull;
         origValue = getValue();
@@ -58,7 +58,7 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
             String currentValue = getValue();
             if (!(value == currentValue || value != null && value.equals(currentValue))) {
                 setValue(value);
-                dataObject.modelUpdatedFromUI();
+                synchronizer.requestUpdateData();
             }
             return true;
         } else {

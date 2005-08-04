@@ -55,14 +55,12 @@ public class MdbImplementationPanel extends MdbImplementationForm {
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Utils.activateMoveClassUI(messageDriven.getEjbClass());
-                signalUIChange();
             }
         });
         JButton renameClassButton = getRenameClassButton();
         renameClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Utils.activateRenameClassUI(messageDriven.getEjbClass());
-                signalUIChange();
             }
         });
         LinkButton.initLinkButton(getBeanClassLinkButton(), this, null, LINK_BEAN);

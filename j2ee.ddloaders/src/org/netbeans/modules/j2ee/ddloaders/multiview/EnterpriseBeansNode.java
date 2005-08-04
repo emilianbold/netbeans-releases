@@ -80,17 +80,21 @@ public class EnterpriseBeansNode extends EjbSectionNode {
     }
 
     private void checkChildren() {
-        doCheck = true;
-        if (setChecking(true)) {
-            try {
-                while (doCheck) {
-                    doCheck = false;
-                    check();
+        Utils.runInAwtDispatchThread(new Runnable() {
+            public void run() {
+                doCheck = true;
+                if (setChecking(true)) {
+                    try {
+                        while (doCheck) {
+                            doCheck = false;
+                            check();
+                        }
+                    } finally {
+                        setChecking(false);
+                    }
                 }
-            } finally {
-                setChecking(false);
             }
-        }
+        });
     }
 
     private synchronized boolean setChecking(boolean value) {

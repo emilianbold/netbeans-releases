@@ -22,6 +22,10 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
+import org.openide.util.Task;
+import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -37,14 +41,19 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
+import javax.swing.text.BadLocationException;
+import javax.swing.event.DocumentListener;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.OutputStream;
+import java.io.InputStream;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.Enumeration;
+import java.lang.*;
 
 /**
  * XmlMultiviewEditorSupport.java
@@ -63,6 +72,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private StyledDocument document;
     private TopComponentsListener topComponentsListener;
     private MultiViewDescription[] multiViewDescriptions;
+    private XmlMultiViewEditorSupport.DocumentSynchronizer documentSynchronizer;
+    private int loading = 0;
+    private int saving = 0;
+    private FileLock saveLock;
+    private static final String PROPERTY_MODIFICATION_LISTENER = "modificationListener"; // NOI18N
 
     public XmlMultiViewEditorSupport() {
         super(null, null);
@@ -72,6 +86,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     public XmlMultiViewEditorSupport(XmlMultiViewDataObject dObj) {
         super (dObj, new XmlEnv (dObj));
         this.dObj=dObj;
+        documentSynchronizer = new DocumentSynchronizer(dObj);
 
         // Set a MIME type as needed, e.g.:
         setMIMEType ("text/xml");   // NOI18N
@@ -82,13 +97,72 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     org.openide.awt.UndoRedo getUndoRedo0() {
         return super.getUndoRedo();
     }
-    
+
+    public XmlEnv getXmlEnv() {
+        return (XmlEnv) env;
+    }
+
     /** method enabled to create Cloneable Editor
      */
     protected CloneableEditor createCloneableEditor() {
         return super.createCloneableEditor();
     }
-    
+
+    public InputStream getInputStream() throws IOException {
+        return super.getInputStream();
+    }
+
+    protected Task reloadDocument() {
+        loading++;
+        documentSynchronizer.reloadingStarted();
+        final Task reloadDocumentTask = XmlMultiViewEditorSupport.super.reloadDocument();
+        final FileLock reloadLock;
+        try {
+            reloadLock = dObj.waitForLock();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        if (!reloadDocumentTask.isFinished()) {
+                            reloadDocumentTask.waitFinished(5000);
+                        }
+                        documentSynchronizer.updateData(reloadLock, true);
+                    } catch (InterruptedException e) {
+                        ErrorManager.getDefault().annotate(e, NbBundle.getMessage(XmlMultiViewEditorSupport.class,
+                                "CANNOT_UPDATE_LOCKED_DATA_OBJECT"));
+                    } finally {
+                        reloadLock.releaseLock();
+                        documentSynchronizer.reloadingFinished();
+                        loading--;
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return reloadDocumentTask;
+    }
+
+    public StyledDocument openDocument() throws IOException {
+        return super.openDocument();
+    }
+
+    public void saveDocument() throws IOException {
+        if (loading > 0) {
+            return;
+        }
+        saveLock = ((XmlMultiViewDataObject) getDataObject()).waitForLock();
+        saving++;
+        try {
+            super.saveDocument();
+            XmlMultiViewDataObject.DataCache dataCache = ((XmlMultiViewDataObject) getDataObject()).getDataCache();
+            dataCache.resetFileTime();
+        } finally {
+            saveLock.releaseLock();
+            saveLock = null;
+            saving--;
+        }
+    }
+
     protected CloneableTopComponent createCloneableTopComponent() {
         MultiViewDescription[] descs = getMultiViewDescriptions();
 
@@ -109,9 +183,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
             MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
             multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
-            for (int i = 0; i < customDesc.length; i++) {
-                multiViewDescriptions[i] = customDesc[i];
-            }
+            System.arraycopy(customDesc, 0, multiViewDescriptions, 0, customDesc.length);
             multiViewDescriptions[customDesc.length] = xmlDesc;
             xmlMultiViewIndex = customDesc.length;
         }
@@ -129,17 +201,19 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     /** Opens the specific View
      */
     void openView(final int index) {
-        dObj.documentUpdated();
         Utils.runInAwtDispatchThread(new Runnable() {
             public void run() {
                 CloneableTopComponent mvtc = openCloneableTopComponent();
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-                handler.requestVisible(handler.getPerspectives()[index < 0 ? xmlMultiViewIndex : index]);
+                handler.requestVisible(handler.getPerspectives()[xmlMultiViewIndex]);
+                if (index >= 0) {
+                    handler.requestVisible(handler.getPerspectives()[index]);
+                }
                 mvtc.requestActive();
             }
         });
     }
-    
+
     /** Overrides superclass method
      */
     public void open() {
@@ -165,9 +239,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
         super.notifyClosed();
     }
-    
+
     org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
-        if (mvtc!=null) return MultiViews.findMultiViewHandler(mvtc).getSelectedPerspective();
+        if (mvtc != null) {
+            return MultiViews.findMultiViewHandler(mvtc).getSelectedPerspective();
+        }
         return null;
     }
 
@@ -185,34 +261,29 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
     }
 
-    public void save(String s) throws IOException {
-        notifyUnmodified();
-        final OutputStream outputStream = ((Env) env).outputStream();
-        outputStream.write(s.getBytes());
-        outputStream.close();
-        notifyUnmodified();
-    }
 
     /** A description of the binding between the editor support and the object.
      * Note this may be serialized as part of the window system and so
      * should be static, and use the transient modifier where needed.
      */
-    private static class XmlEnv extends DataEditorSupport.Env {
+    public static class XmlEnv extends DataEditorSupport.Env {
 
-        private static final long serialVersionUID = 1882981960507292985L;
+        private static final long serialVersionUID = 2882981960507292985L;   //todo calculate a new one
+        private final XmlMultiViewDataObject xmlMultiViewDataObject;
 
-        /** Create a new environment based on the data object.
-         * @param obj the data object to edit
+        /** Create a new environment based on the buffer object.
+         * @param obj the buffer object to edit
          */
         public XmlEnv (XmlMultiViewDataObject obj) {
             super (obj);
+            xmlMultiViewDataObject = obj;
         }
 
         /** Get the file to edit.
          * @return the primary file normally
          */
         protected FileObject getFile () {
-            return getDataObject ().getPrimaryFile ();
+            return xmlMultiViewDataObject.getPrimaryFile ();
         }
 
         /** Lock the file to edit.
@@ -222,8 +293,9 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
          * @throws IOException if the lock could not be taken
          */
         protected FileLock takeLock () throws IOException {
-            return ((XmlMultiViewDataObject) getDataObject ()).getPrimaryEntry ().takeLock ();
+            return xmlMultiViewDataObject.getPrimaryEntry ().takeLock ();
         }
+
 
         /** Find the editor support this environment represents.
          * Note that we have to look it up, as keeping a direct
@@ -231,10 +303,36 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
          * @return the editor support
          */
         public CloneableOpenSupport findCloneableOpenSupport () {
-            return ((XmlMultiViewDataObject)getDataObject()).getEditorSupport();
+            return xmlMultiViewDataObject.getEditorSupport();
+        }
+
+        protected InputStream getFileInputStream() throws IOException {
+            return super.inputStream();
+        }
+
+        public InputStream inputStream() throws IOException {
+            if (xmlMultiViewDataObject.getEditorSupport().loading == 0) {
+                return xmlMultiViewDataObject.getDataCache().createInputStream();
+            } else {
+                return getFileInputStream();
+            }
+        }
+
+        protected OutputStream getFileOutputStream() throws IOException {
+            return super.outputStream();
+        }
+
+        public OutputStream outputStream() throws IOException {
+            XmlMultiViewEditorSupport editorSupport = xmlMultiViewDataObject.getEditorSupport();
+            XmlMultiViewDataObject.DataCache dataCache = xmlMultiViewDataObject.getDataCache();
+            if (editorSupport.saving > 0) {
+                return dataCache.createOutputStream(editorSupport.saveLock, false);
+            } else {
+                return dataCache.createOutputStream();
+            }
         }
     }
-    
+
     private static class XmlViewDesc implements MultiViewDescription, java.io.Serializable  {
 
         private static final long serialVersionUID = 8085725367398466167L;
@@ -242,7 +340,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         XmlViewDesc() {
         }
-        
+
         XmlViewDesc(XmlMultiViewDataObject dObj) {
             this.dObj=dObj;
         }
@@ -250,7 +348,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         public MultiViewElement createElement() {
             return new XmlMultiViewElement(dObj);
         }
-        
+
         public String getDisplayName() {
             return org.openide.util.NbBundle.getMessage(XmlMultiViewEditorSupport.class,"LBL_XML_TAB");
         }
@@ -266,7 +364,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         public int getPersistenceType() {
             return TopComponent.PERSISTENCE_ONLY_OPENED;
         }
-        
+
         public String preferredID() {
             return "multiview_xml"; //NOI18N
         }
@@ -275,7 +373,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     public TopComponent getMVTC() {
         return mvtc;
     }
-    
+
     void setMVTC(TopComponent mvtc) {
         this.mvtc = mvtc;
         if (topComponentsListener == null) {
@@ -287,7 +385,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     void setLastOpenView(int index) {
         lastOpenView=index;
     }
-    
+
     void addXmlDocListener() {
         if (xmlDocListener==null) {
             xmlDocListener = new XmlDocumentListener();
@@ -297,7 +395,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             } catch (java.io.IOException ex){}
         }
     }
-    
+
     void removeXmlDocListener() {
         if (getOpenedPanes() == null) {
             if (xmlDocListener != null) {
@@ -322,20 +420,88 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
 
         private void doUpdate() {
-            dObj.documentUpdated();
+            if (saving == 0) {
+                documentSynchronizer.requestUpdateData();
+            }
         }
     }
-    
+
+    private class DocumentSynchronizer extends XmlMultiViewDataSynchronizer {
+
+        private final RequestProcessor.Task reloadUpdatedTask = requestProcessor.create(new Runnable() {
+            public void run() {
+                DocumentListener listener = document == null ? null :
+                        (DocumentListener) document.getProperty(PROPERTY_MODIFICATION_LISTENER);
+                if (listener != null) {
+                    document.removeDocumentListener(listener);
+                }
+                try {
+                    reloadModel();
+                } finally {
+                    if (listener != null) {
+                        document.addDocumentListener(listener);
+                    }
+                }
+            }
+        });
+
+
+        public DocumentSynchronizer(XmlMultiViewDataObject dataObject) {
+            super(dataObject, 100);
+        }
+
+        protected boolean mayUpdateData(boolean allowDialog) {
+            return true;
+        }
+
+        protected void dataUpdated(long timeStamp) {
+            if (loading == 0) {
+                reloadUpdatedTask.schedule(0);
+            }
+        }
+
+        protected void updateDataFromModel(final FileLock lock, final boolean modify) {
+            final Document doc = getDocument();
+            if (doc == null) {
+                byte[] data = new byte[0];
+                try {
+                    dObj.getDataCache().setData(lock, data, modify);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            } else {
+                // safely take the text from the document
+                doc.render(new Runnable() {
+                    public void run() {
+                        try {
+                            dObj.getDataCache().setData(lock, doc.getText(0, doc.getLength()).getBytes(), modify);
+                        } catch (BadLocationException e) {
+                            // impossible
+                        } catch (IOException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
+                    }
+                });
+            }
+        }
+
+        protected void reloadModelFromData() {
+            if (loading == 0) {
+                Utils.replaceDocument(document, new String(dObj.getDataCache().getData()));
+            }
+        }
+    }
+
     static class MyCloseHandler implements CloseOperationHandler, java.io.Serializable {
         static final long serialVersionUID = -6512103928294991474L;
         private XmlMultiViewDataObject dObj;
-        MyCloseHandler() {     
+        MyCloseHandler() {
         }
-        
+
         MyCloseHandler(XmlMultiViewDataObject dObj) {
             this.dObj=dObj;
         }
-        
+
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             for (int i = 0; i < elements.length; i++) {
                 CloseOperationState element = elements[i];
@@ -343,7 +509,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                     return false;
                 }
             }
-            if (dObj.isModified () || dObj.isChangedFromUI()) {
+            if (dObj.isModified()) {
                 XmlMultiViewEditorSupport support = dObj.getEditorSupport();
                 String msg = support.messageSave();
 
@@ -372,7 +538,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
                 if (NotifyDescriptor.CANCEL_OPTION.equals(ret)
                         || NotifyDescriptor.CLOSED_OPTION.equals(ret)
-                ) {
+                        ) {
                     return false;
                 }
 
@@ -384,13 +550,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                         return false;
                     }
                 } else if (discardOption.equals(ret)) {
-                    try {
-                        dObj.reloadModelFromFileObject();
-                        support.notifyClosed();
-                    } catch (java.io.IOException e) {
-                        org.openide.ErrorManager.getDefault().notify(e);
-                        return false;
-                    }
+                    dObj.getEditorSupport().reloadDocument().waitFinished();
+                    support.notifyClosed();
                 }
             }
             return true;

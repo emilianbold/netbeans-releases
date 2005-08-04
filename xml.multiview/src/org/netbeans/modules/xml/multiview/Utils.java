@@ -13,16 +13,20 @@
 
 package org.netbeans.modules.xml.multiview;
 
-import org.xml.sax.SAXException;
-import org.xml.sax.Attributes;
+import org.openide.ErrorManager;
+import org.openide.text.NbDocument;
+import org.openide.util.RequestProcessor;
+import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.XMLReader;
+import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
-import org.xml.sax.helpers.DefaultHandler;
-import org.openide.ErrorManager;
+import org.xml.sax.Attributes;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.BadLocationException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.awt.*;
@@ -36,6 +40,8 @@ import java.io.StringReader;
  * @author mkuchtiak
  */
 public class Utils {
+    private static final int WAIT_FINISHED_TIMEOUT = 10000;
+
     /** This method update document in editor after change in beans hierarchy.
      * It takes old document and new document in String.
      * To preserve changes outside of root element only root element is replaced.
@@ -44,59 +50,77 @@ public class Utils {
      *     - find the first position where both documents differ
      *  2) do the same from the ends of documents
      *  3) remove old middle part of text (modified part) and insert new one
-     * 
+     *
      * @param doc original document
      * @param newDoc new value of whole document
      */
-    public static void replaceDocument(javax.swing.text.Document doc, String newDoc) throws javax.swing.text.BadLocationException {
-        String origDoc = filterEndLines(doc.getText(0, doc.getLength()));
-        newDoc = replaceRootElement(origDoc, filterEndLines(newDoc));
+    public static boolean replaceDocument(final StyledDocument doc, final String newDoc) {
+        if (doc == null) {
+            return true;
+        }
+        Runnable runnable = new Runnable() {
+            public void run() {
+                try {
+                    String origDocument = filterEndLines(doc.getText(0, doc.getLength()));
+                    String newDocument = replaceRootElement(origDocument, newDoc);
 
-        if (origDoc.equals(newDoc)) {
-            // no change in document
-            return;
-        }
+                    if (origDocument.equals(newDoc)) {
+                        // no change in document
+                        return;
+                    }
+                    newDocument = filterEndLines(newDocument);
 
-        char[] origChars = origDoc.toCharArray();
-        char[] newcChars = newDoc.toCharArray();
-        int offset = 0;
-        int tailIndex = origChars.length;
-        int delta = newcChars.length - tailIndex;
-        int n = delta < 0 ? tailIndex + delta : tailIndex;
-        for (offset = 0; offset < n; offset++) {
-            if (origChars[offset] != newcChars[offset]) {
-                break;
-            }
-        }
-        n = delta < 0 ? offset - delta : offset;
-        for (int i = tailIndex - 1; i >= n; i--) {
-            if (origChars[i] == newcChars[i + delta]) {
-                tailIndex = i;
-            } else {
-                i = tailIndex;
-                break;
-            }
-        }
+                    if (origDocument.equals(newDocument)) {
+                        // no change in document
+                        return;
+                    }
 
-        String s = newDoc.substring(offset, tailIndex + delta);
-        int length = tailIndex - offset;
-        if (doc instanceof AbstractDocument) {
-            ((AbstractDocument) doc).replace(offset, length, s, null);
-        } else {
-            if (length > 0) {
-                doc.remove(offset, length);
+                    char[] origChars = origDocument.toCharArray();
+                    char[] newcChars = newDocument.toCharArray();
+                    int tailIndex = origChars.length;
+                    int delta = newcChars.length - tailIndex;
+                    int n = delta < 0 ? tailIndex + delta : tailIndex;
+                    int offset;
+                    for (offset = 0; offset < n; offset++) {
+                        if (origChars[offset] != newcChars[offset]) {
+                            break;
+                        }
+                    }
+                    n = delta < 0 ? offset - delta : offset;
+                    for (int i = tailIndex - 1; i >= n; i--) {
+                        if (origChars[i] == newcChars[i + delta]) {
+                            tailIndex = i;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    String s = newDocument.substring(offset, tailIndex + delta);
+                    int length = tailIndex - offset;
+                    if (doc instanceof AbstractDocument) {
+                        ((AbstractDocument) doc).replace(offset, length, s, null);
+                    } else {
+                        if (length > 0) {
+                            doc.remove(offset, length);
+                        }
+                        if (s.length() > 0) {
+                            doc.insertString(offset, s, null);
+                        }
+                    }
+                } catch (BadLocationException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
             }
-            if (s.length() > 0) {
-                doc.insertString(offset, s, null);
-            }
-        }
+        };
+        NbDocument.runAtomic(doc, runnable);
+        return true;
     }
 
     /** Filter characters #13 (CR) from the specified String
      * @param str original string
      * @return the string without #13 characters
      */
-    public static String filterEndLines(String str) {
+    private static String filterEndLines(String str) {
         char[] text = str.toCharArray();
         if (text.length == 0) {
             return "";
@@ -169,13 +193,24 @@ public class Utils {
                                  tf.getFocusTraversalKeys(java.awt.KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
     }
 
+    public static void waitFinished(RequestProcessor.Task task) {
+        if (task.getDelay() > 0 && !task.isFinished()) {
+            try {
+                task.waitFinished(WAIT_FINISHED_TIMEOUT);
+            } catch (InterruptedException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
     /**
      * Replaces root element in the original document by root element of the new document
      * @param origDoc original document
      * @param newDoc new document
      * @return resulting document
      */
-    private static String replaceRootElement(String origDoc, String newDoc) {
+    public static String replaceRootElement(String origDoc, String newDoc) {
+        origDoc = filterEndLines(origDoc);
+        newDoc = filterEndLines(newDoc);
         String result = origDoc;
         try {
             RootElementParser parser = new RootElementParser(newDoc);
@@ -184,7 +219,7 @@ public class Utils {
             parser = new RootElementParser(origDoc);
             result = new StringBuffer(origDoc).replace(parser.startPosition, parser.endPosition, newContent).toString();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
+            //ErrorManager.getDefault().notify(e);
         }
         return result;
     }
@@ -236,6 +271,6 @@ public class Utils {
 
         public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
             return new InputSource(new StringReader(""));
-        }
+         }
     }
 }

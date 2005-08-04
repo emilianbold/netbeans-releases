@@ -13,15 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.ejb;
 
-import java.io.IOException;
-import java.io.InputStream;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 
 /**
@@ -36,7 +30,6 @@ public class EjbJarDDUtils {
      *
      * @param elements checked elements
      * @param identifier name of tag that contains identification value
-     * @param o object to be checked
      * @return a free element name
      */
     public static String findFreeName (CommonDDBean[] elements, String identifier, String name) {
@@ -73,9 +66,5 @@ public class EjbJarDDUtils {
         if (bean instanceof BaseBean) return (BaseBean)bean;
         else if (bean instanceof EjbJarProxy) return (BaseBean) ((EjbJarProxy)bean).getOriginal();
         return null;
-    }
-    
-    public static EjbJar createEjbJar(InputSource is) throws IOException, SAXException {
-        return DDProvider.getDefault().getDDRoot(is);
     }
 }

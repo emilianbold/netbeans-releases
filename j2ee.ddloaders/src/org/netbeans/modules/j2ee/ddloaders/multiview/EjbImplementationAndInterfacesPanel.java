@@ -16,7 +16,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.jmi.javamodel.JavaClass;
@@ -111,7 +111,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Utils.activateMoveClassUI(className);
-                signalUIChange();
                 moveClassButton.setEnabled(false);
                 renameClassButton.setEnabled(false);
             }
@@ -124,8 +123,9 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-        XmlMultiViewDataObject dataObject = sectionNodeView.getDataObject();
-        addRefreshable(new ItemCheckBoxHelper(dataObject, getLocalInterfaceCheckBox()) {
+        XmlMultiViewDataSynchronizer synchronizer =
+                ((EjbJarMultiViewDataObject) sectionNodeView.getDataObject()).getModelSynchronizer();
+        addRefreshable(new ItemCheckBoxHelper(synchronizer, getLocalInterfaceCheckBox()) {
             public boolean getItemValue() {
                 boolean value = helper.getLocal() != null;
                 getLocalComponentLinkButton().setVisible(value);
@@ -145,7 +145,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             }
         });
 
-        addRefreshable(new ItemCheckBoxHelper(dataObject, getRemoteInterfaceCheckBox()) {
+        addRefreshable(new ItemCheckBoxHelper(synchronizer, getRemoteInterfaceCheckBox()) {
             public boolean getItemValue() {
                 boolean value = helper.getRemote() != null;
                 getRemoteComponentLinkButton().setVisible(value);

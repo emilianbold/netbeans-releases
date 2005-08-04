@@ -198,7 +198,7 @@ public class ItemEditorHelper implements Refreshable {
                         e.printStackTrace();
                     }
                     try {
-                        insertString(0, itemValue, null);
+                        super.insertString(0, itemValue, null);
                     } catch (BadLocationException e) {
                         e.printStackTrace();
                     }

@@ -44,7 +44,7 @@ public class CmpRelationshipsTableModel extends InnerTableModel {
     private EjbJarMultiViewDataObject dataObject;
 
     public CmpRelationshipsTableModel(EjbJarMultiViewDataObject dataObject) {
-        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
+        super(dataObject.getModelSynchronizer(), COLUMN_NAMES, COLUMN_WIDTHS);
         this.dataObject = dataObject;
         this.ejbJar = dataObject.getEjbJar();
         ejbJar.addPropertyChangeListener(new PropertyChangeListener() {

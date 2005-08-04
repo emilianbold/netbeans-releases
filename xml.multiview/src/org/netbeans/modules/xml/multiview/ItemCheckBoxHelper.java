@@ -24,16 +24,16 @@ import java.awt.event.ActionListener;
  */
 public abstract class ItemCheckBoxHelper implements ActionListener, Refreshable {
     private JCheckBox checkBox;
-    private XmlMultiViewDataObject dataObject;
+    private XmlMultiViewDataSynchronizer synchronizer;
 
     /**
      * Constructor initializes object by combo box and data object which will be handled
      *
-     * @param dataObject
+     * @param synchronizer
      * @param checkBox   handled JComboBox.
      */
-    public ItemCheckBoxHelper(XmlMultiViewDataObject dataObject, JCheckBox checkBox) {
-        this.dataObject = dataObject;
+    public ItemCheckBoxHelper(XmlMultiViewDataSynchronizer synchronizer, JCheckBox checkBox) {
+        this.synchronizer = synchronizer;
         this.checkBox = checkBox;
         checkBox.addActionListener(this);
         setValue(getItemValue());
@@ -46,7 +46,7 @@ public abstract class ItemCheckBoxHelper implements ActionListener, Refreshable 
         final boolean value = getValue();
         if (value != getItemValue()) {
             setItemValue(value);
-            dataObject.modelUpdatedFromUI();
+            synchronizer.requestUpdateData();
         }
     }
 

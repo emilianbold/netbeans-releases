@@ -13,12 +13,17 @@
 package org.netbeans.modules.xml.multiview.test.util;
 
 import java.io.*;
-import org.openide.filesystems.FileStateInvalidException;
+import java.awt.*;
+
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.test.BookDataObject;
 import org.netbeans.modules.xml.multiview.test.bookmodel.Chapter;
+
+import javax.swing.*;
 
 public class Helper {
 
@@ -26,27 +31,70 @@ public class Helper {
         String result = dataDir.getAbsolutePath() + "/projects/webapp/web/WEB-INF/sample.book";
         return new File(result);
     }
-    
-    public static javax.swing.JTextField getChapterTitleTF(BookDataObject dObj, Chapter chapter) {
-        ToolBarMultiViewElement mvEl = dObj.getActiveMultiViewElement0();
-        javax.swing.JPanel sectionPanel = mvEl.getSectionView().findSectionPanel(chapter).getInnerPanel();
-        if (sectionPanel==null) return null;
-        java.awt.Component[] children = sectionPanel.getComponents();
-        for (int i=0;i<children.length;i++) {
-            if (children[i] instanceof javax.swing.JTextField) {
-                return (javax.swing.JTextField)children[i];
+
+    public static JTextField getChapterTitleTF(final BookDataObject dObj, Chapter chapter) {
+        final ToolBarMultiViewElement multiViewElement = new StepIterator() {
+            ToolBarMultiViewElement multiViewElement;
+
+            public boolean step() throws Exception {
+                return (multiViewElement = dObj.getActiveMultiViewElement0()) != null;
+            }
+        }.multiViewElement;
+        SectionView sectionView = new StepIterator() {
+            SectionView sectionView;
+            public boolean step() throws Exception {
+                return (sectionView = multiViewElement.getSectionView()) != null;
+
+            }
+        }.sectionView;
+        JPanel sectionPanel = sectionView.findSectionPanel(chapter).getInnerPanel();
+        Component[] children = sectionPanel.getComponents();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i] instanceof JTextField) {
+                return (JTextField) children[i];
             }
         }
-        return  null;
+        return null;
     }
-    
-    public static boolean isTextInFile(String text, File file) throws java.io.IOException {
-        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file));
+
+    public static boolean isTextInFile(String text, File file) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while ((line=reader.readLine())!=null) {
-            if (line.indexOf(text)>=0) return true;
+            if (line.indexOf(text) >= 0) {
+                return true;
+            }
         }
         return false;
     }
-    
+
+    public static void sleep(int ms) {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException ex){}
+    }
+
+    public static void waitForDispatchThread() {
+        final boolean[] finished = new boolean[]{false};
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                finished[0] = true;
+            }
+        });
+        new StepIterator() {
+            public boolean step() throws Exception {
+                return finished[0];
+            }
+        };
+    }
+
+    public static SaveCookie getSaveCookie(final DataObject dataObject) {
+        return new StepIterator() {
+            SaveCookie cookie;
+
+            public boolean step() throws Exception {
+                return ((cookie = (SaveCookie) dataObject.getCookie(SaveCookie.class)) != null);
+            }
+        }.cookie;
+    }
 }

@@ -3,7 +3,10 @@ package org.netbeans.modules.xml.multiview.test;
 import org.netbeans.modules.xml.multiview.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
+import org.openide.ErrorManager;
+
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
@@ -16,6 +19,9 @@ import org.netbeans.modules.xml.multiview.test.bookmodel.*;
  * @author mkuchtiak
  */
 public class BookDataObject extends XmlMultiViewDataObject {
+
+    private ModelSynchronizer modelSynchronizer;
+
     private static final int TYPE_TOOLBAR = 0;
     private static final int TYPE_TREEPANEL = 1;
     Book book;
@@ -23,45 +29,37 @@ public class BookDataObject extends XmlMultiViewDataObject {
     /** Creates a new instance of BookDataObject */  
     public BookDataObject (FileObject pf, BookDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
-        //init (pf,loader);
+        modelSynchronizer = new ModelSynchronizer(this);
         org.xml.sax.InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
         getCookieSet().add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
         try {
-            parseDocument(false);
+            parseDocument();
         } catch (IOException ex) {
             System.out.println("ex="+ex);
         }
     }
     /**
      *
-     * @param updateModel indicator whether model should be updated
-     * @return true in case of success, otherwise false
      * @throws IOException
      */
-    protected boolean parseDocument(boolean updateModel) throws IOException {
-        if (updateModel) {
-            if (book==null) {
-                book = getBook();
-            } else {
-                java.io.InputStream is = getEditorSupport().getInputStream();
-                Book newBook = null;
-                try {
-                    newBook = Book.createGraph(is);
-                } catch (RuntimeException ex) {
-                    System.out.println("runtime error "+ex);
-                }
-                if (newBook!=null) {
-                    book.merge(newBook, org.netbeans.modules.schema2beans.BaseBean.MERGE_UPDATE);
-                }
-            }
-        } else {
+    protected void parseDocument() throws IOException {
+        if (book==null) {
             book = getBook();
+        } else {
+            java.io.InputStream is = getEditorSupport().getInputStream();
+            Book newBook = null;
+            try {
+                newBook = Book.createGraph(is);
+            } catch (RuntimeException ex) {
+                System.out.println("runtime error "+ex);
+            }
+            if (newBook!=null) {
+                book.merge(newBook, org.netbeans.modules.schema2beans.BaseBean.MERGE_UPDATE);
+            }
         }
-        if (book==null) return false;
-        else return true;
     }
     
     public Book getBook() throws IOException {
@@ -87,11 +85,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[]{new DesignView(this,TYPE_TOOLBAR),new DesignView(this,TYPE_TREEPANEL)};
     }
-    
-    protected boolean isModelCreated() {
-        return book!=null;
-    }
-    
+
     private static class DesignView extends DesignMultiViewDesc {
         private int type;
         DesignView(BookDataObject dObj, int type) {
@@ -104,11 +98,11 @@ public class BookDataObject extends XmlMultiViewDataObject {
             if (type==TYPE_TOOLBAR) return new BookToolBarMVElement(dObj);
             else return new BookTreePanelMVElement(dObj);
         }
-        
+
         public java.awt.Image getIcon() {
             return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/resources/DDDataIcon.gif"); //NOI18N
         }
-        
+
         public String preferredID() {
             return "book_multiview_design"+String.valueOf(type);
         }
@@ -132,11 +126,50 @@ public class BookDataObject extends XmlMultiViewDataObject {
             });
         }
     }
-    
+
+    protected String getPrefixMark() {
+        return null;
+    }
+
     /** Enable to get active MultiViewElement object
      */
     public ToolBarMultiViewElement getActiveMultiViewElement0() {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
     
+    public void modelUpdatedFromUI() {
+        modelSynchronizer.requestUpdateData();
+    }
+
+    private class ModelSynchronizer extends XmlMultiViewDataSynchronizer {
+
+        public ModelSynchronizer(XmlMultiViewDataObject dataObject) {
+            super(dataObject, 500);
+        }
+
+        protected boolean mayUpdateData(boolean allowDialog) {
+            return true;
+        }
+
+        protected void updateDataFromModel(FileLock lock, boolean modify) {
+            try {
+                OutputStream outputStream = getDataCache().createOutputStream(lock, modify);
+                try {
+                    outputStream.write(generateDocumentFromModel().getBytes());
+                } finally {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+
+        protected void reloadModelFromData() {
+            try {
+                parseDocument();
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+    }
 }

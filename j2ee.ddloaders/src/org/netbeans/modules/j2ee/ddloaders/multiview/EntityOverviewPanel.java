@@ -20,6 +20,7 @@ import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.xml.multiview.ItemComboBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import javax.swing.*;
@@ -31,7 +32,7 @@ import java.awt.event.ActionListener;
  */
 public class EntityOverviewPanel extends EntityOverviewForm {
 
-    private EjbJarMultiViewDataObject dataObject;
+    private XmlMultiViewDataSynchronizer synchronizer;
     private Entity entity;
     private static final String PK_COMPOUND = Utils.getBundleMessage("LBL_Compound_PK");
     private EntityHelper entityHelper;
@@ -42,7 +43,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
     public EntityOverviewPanel(SectionNodeView sectionNodeView, final Entity entity, final EntityHelper entityHelper) {
         super(sectionNodeView);
         this.entityHelper = entityHelper;
-        dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
+        synchronizer = ((EjbJarMultiViewDataObject) sectionNodeView.getDataObject()).getModelSynchronizer();
 
         JTextField ejbNameTextField = getEjbNameTextField();
         JTextField persistenceTypeTextField = getPersistenceTypeTextField();
@@ -52,7 +53,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         final JComboBox primaryKeyClassComboBox = getPrimaryKeyClassComboBox();
         final JTextField primaryKeyClassTextField = getPrimaryKeyClassTextField();
 
-        addRefreshable(new ItemEditorHelper(ejbNameTextField, new TextItemEditorModel(dataObject, false) {
+        addRefreshable(new ItemEditorHelper(ejbNameTextField, new TextItemEditorModel(synchronizer, false) {
             protected String getValue() {
                 return entity.getEjbName();
             }
@@ -69,7 +70,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         boolean isCmp = Entity.PERSISTENCE_TYPE_CONTAINER.equals(persistenceType);
         persistenceTypeTextField.setText(persistenceType + ((isCmp ? " (CMP)" : " (BMP)")));    //NOI18N
 
-        addRefreshable(new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(dataObject, true) {
+        addRefreshable(new ItemEditorHelper(abstractSchemaNameTextField, new TextItemEditorModel(synchronizer, true) {
             protected String getValue() {
                 return entity.getAbstractSchemaName();
             }
@@ -87,7 +88,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassTextField.setVisible(false);
 
             initPrimaryKeyFieldComboBox();
-            final ItemComboBoxHelper primaryKeyComboBoxHelper = new ItemComboBoxHelper(dataObject,
+            final ItemComboBoxHelper primaryKeyComboBoxHelper = new ItemComboBoxHelper(synchronizer,
                     primaryKeyFieldComboBox) {
                 public String getItemValue() {
                     String value = entity.getPrimkeyField();
@@ -135,7 +136,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.addItem("java.lang.String");    //NOI18N
             primaryKeyClassComboBox.addItem("java.math.BigDecimal");//NOI18N
 
-            addRefreshable(new ItemComboBoxHelper(dataObject, primaryKeyClassComboBox) {
+            addRefreshable(new ItemComboBoxHelper(synchronizer, primaryKeyClassComboBox) {
                 public String getItemValue() {
                     return entity.getPrimKeyClass();
                 }
@@ -155,7 +156,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.setVisible(false);
             primaryKeyClassTextField.setVisible(true);
 
-            addRefreshable(new ItemEditorHelper(primaryKeyClassTextField, new TextItemEditorModel(dataObject, false) {
+            addRefreshable(new ItemEditorHelper(primaryKeyClassTextField, new TextItemEditorModel(synchronizer, false) {
                 protected String getValue() {
                     return entity.getPrimKeyClass();
                 }
@@ -165,7 +166,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 }
             }));
         }
-        addRefreshable(new ItemCheckBoxHelper(dataObject, getReentrantCheckBox()) {
+        addRefreshable(new ItemCheckBoxHelper(synchronizer, getReentrantCheckBox()) {
             public boolean getItemValue() {
                 return entity.isReentrant();
             }

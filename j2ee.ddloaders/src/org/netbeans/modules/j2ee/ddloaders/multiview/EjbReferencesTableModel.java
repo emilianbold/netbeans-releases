@@ -41,7 +41,7 @@ public class EjbReferencesTableModel extends InnerTableModel {
     private static final int[] COLUMN_WIDTHS = new int[]{170, 260, 70, 250};
 
     public EjbReferencesTableModel(XmlMultiViewDataObject dataObject, Ejb ejb) {
-        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
+        super(((EjbJarMultiViewDataObject)dataObject).getModelSynchronizer(), COLUMN_NAMES, COLUMN_WIDTHS);
         this.dataObject = dataObject;
         this.ejb = ejb;
     }

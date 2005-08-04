@@ -56,14 +56,22 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     }
     
     public CloseOperationState canCloseElement() {
+        if (!editorValidate()) {
+            return MultiViewFactory.createUnsafeCloseState(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, null, null);
+        } else {
+            return super.canCloseElement();
+        }
+    }
+
+    private boolean editorValidate() {
         try {
             editor.fireVetoableChange(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, this, null);
+            return true;
         } catch (PropertyVetoException e) {
-            return MultiViewFactory.createUnsafeCloseState(ToolBarDesignEditor.PROPERTY_FLUSH_DATA, null, null);
+            return false;
         }
-        return super.canCloseElement();
     }
-    
+
     public void componentActivated() {
        editor.componentActivated();
     }
@@ -85,8 +93,10 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     }
     
     public void componentShowing() {
-        editor.componentShowing();
-        dObj.setActiveMultiViewElement(this);
+        if (editorValidate()) {
+            editor.componentShowing();
+            dObj.setActiveMultiViewElement(this);
+        }
     }
     
     public org.openide.util.Lookup getLookup() {

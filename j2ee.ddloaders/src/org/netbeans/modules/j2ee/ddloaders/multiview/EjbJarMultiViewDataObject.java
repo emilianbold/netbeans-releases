@@ -22,16 +22,15 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.dd.api.ejb.*;
+import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
-import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDDUtils;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.shared.DDEditorNavigator;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.SectionNode;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
@@ -47,8 +46,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 import javax.swing.event.ChangeListener;
 import java.awt.*;
@@ -68,12 +65,10 @@ import java.util.Map;
  *
  * @author pfiala
  */
-public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
-        implements DDChangeListener, EjbJarProxy.OutputProvider, DDEditorNavigator, FileChangeListener, ChangeListener {
-
+public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
+        implements DDChangeListener, DDEditorNavigator, FileChangeListener, ChangeListener {
     private EjbJarProxy ejbJar;
     private FileObject srcRoots[];
-    protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
     private PropertyChangeListener ejbJarChangeListener;
     private Map entityHelperMap = new HashMap();
     private Map sessionHelperMap = new HashMap();
@@ -175,7 +170,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     public EjbJar getEjbJar() {
         if (ejbJar == null) {
             try {
-                parseDocument(false);
+                parseDocument();
             } catch (IOException e) {
                 Utils.notifyError(e);
             }
@@ -207,20 +202,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      */
     protected String getIconBaseForInvalidDocument() {
         return Utils.ICON_BASE_DD_INVALID; // NOI18N
-    }
-
-    /**
-     * Method from EjbJarProxy.OutputProvider
-     */
-    public void write(EjbJar ejbJarProxy) throws IOException {
-        writeModel();
-    }
-
-    /**
-     * Method from EjbJarProxy.OutputProvider
-     */
-    public FileObject getTarget() {
-        return getPrimaryFile();
     }
 
     protected DataObject handleCopy(DataFolder f) throws IOException {
@@ -377,46 +358,20 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         refreshSourceFolders();
     }
 
-    protected boolean parseDocument(boolean updateModel) throws IOException {
+    protected void parseDocument() throws IOException {
+        DDProvider ddProvider = DDProvider.getDefault();
         if (ejbJar == null || ejbJar.getOriginal() == null) {
             try {
-                setEjbJar((EjbJarProxy) DDProvider.getDefault().getDDRoot(getPrimaryFile()));
+                setEjbJar((EjbJarProxy) ddProvider.getDDRoot(getPrimaryFile()));
             } catch (IOException e) {
                 if (ejbJar == null) {
                     setEjbJar(new EjbJarProxy(null, null));
                 }
             }
+        } else {
+            DDUtils.merge(ejbJar, createInputStream());
         }
-        parseable = false;
-        InputSource is = createInputSource();
-        if (is != null) { // merging model with the document
-            try {
-                EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
-                ejbJar.setStatus(newEjbJar.getStatus());
-                SAXParseException error = newEjbJar.getError();
-                ejbJar.setError(error);
-                setSaxError(error);
-                if (updateModel) {
-                    if (ejbJar.getOriginal() != null) {
-                        ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
-                    } else {
-                        ejbJar.setOriginal(newEjbJar.getOriginal());
-                    }
-                }
-                parseable = true;
-            } catch (SAXException ex) {
-                if (ejbJar.getOriginal() == null) {
-                    ejbJar.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-                    if (ex instanceof SAXParseException) {
-                        ejbJar.setError((SAXParseException) ex);
-                    } else if (ex.getException() instanceof SAXParseException) {
-                        ejbJar.setError((SAXParseException) ex.getException());
-                    }
-                }
-                setSaxError(ex);
-            }
-        }
-        return parseable;
+        setSaxError(ejbJar.getError());
     }
 
     private void setEjbJar(EjbJarProxy newEjbJar) {
@@ -437,7 +392,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             if (ejbJar == null) {
-                parseDocument(false);
+                parseDocument();
             }
             ejbJar.write(out);
             out.close();
@@ -448,6 +403,14 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
         }
         return out.toString();
+    }
+
+    public boolean isDocumentParseable() {
+        return EjbJar.STATE_INVALID_UNPARSABLE != getEjbJar().getStatus();
+    }
+
+    protected String getPrefixMark() {
+        return "<ejb-jar";
     }
 
     /**
@@ -663,10 +626,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public SessionHelper getSessionHelper(Session session) {
-        SessionHelper sessionHelper = (SessionHelper) entityHelperMap.get(session);
+        SessionHelper sessionHelper = (SessionHelper) sessionHelperMap.get(session);
         if (sessionHelper == null) {
             sessionHelper = new SessionHelper(this, session);
-            entityHelperMap.put(session, sessionHelper);
+            sessionHelperMap.put(session, sessionHelper);
         }
         return sessionHelper;
     }
@@ -677,7 +640,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             if (EjbJar.PROPERTY_STATUS.equals(evt.getPropertyName())) {
                 return;
             }
-            //modelChanged();
             Object source = evt.getSource();
             if (source instanceof EnterpriseBeans) {
                 Object oldValue = evt.getOldValue();

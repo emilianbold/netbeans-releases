@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
@@ -24,13 +24,13 @@ import javax.swing.*;
  */
 public abstract class InnerTableModel extends AbstractTableModel {
 
-    private XmlMultiViewDataObject dataObject;
+    private XmlMultiViewDataSynchronizer synchronizer;
     protected final String[] columnNames;
     private int[] columnWidths;
     private int rowCount = -1;
 
-    public InnerTableModel(XmlMultiViewDataObject dataObject, String[] columnNames, int[] columnWidths) {
-        this.dataObject = dataObject;
+    public InnerTableModel(XmlMultiViewDataSynchronizer synchronizer, String[] columnNames, int[] columnWidths) {
+        this.synchronizer = synchronizer;
         this.columnNames = columnNames;
         this.columnWidths = columnWidths;
     }
@@ -94,8 +94,8 @@ public abstract class InnerTableModel extends AbstractTableModel {
     }
 
     protected void modelUpdatedFromUI() {
-        if (dataObject!= null) {
-            dataObject.modelUpdatedFromUI();
+        if (synchronizer != null) {
+            synchronizer.requestUpdateData();
         }
     }
 

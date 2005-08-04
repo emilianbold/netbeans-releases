@@ -29,7 +29,7 @@ public class ResourceReferencesNode extends EjbSectionNode {
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         final InnerTablePanel innerTablePanel = new InnerTablePanel(sectionNodeView,
-                        new ResourceReferencesTableModel(sectionNodeView.getDataObject(), (Ejb) key));
+                        new ResourceReferencesTableModel(sectionNodeView.getModelSynchronizer(), (Ejb) key));
         innerTablePanel.getRemoveButton().setVisible(false);
         return innerTablePanel;
     }

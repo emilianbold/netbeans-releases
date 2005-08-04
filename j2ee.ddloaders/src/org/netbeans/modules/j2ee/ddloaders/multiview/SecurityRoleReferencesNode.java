@@ -30,7 +30,7 @@ public class SecurityRoleReferencesNode extends EjbSectionNode {
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         return new InnerTablePanel(sectionNodeView,
-                new SecurityRoleReferencesTableModel(sectionNodeView.getDataObject(), (EntityAndSession) key));
+                new SecurityRoleReferencesTableModel(sectionNodeView.getModelSynchronizer(), (EntityAndSession) key));
 
     }
 }

@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.multiview.ui;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.Utils;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -25,17 +26,17 @@ import java.util.HashMap;
 /**
  * @author pfiala
  */
-public class SectionNodeView extends SectionView {
+public abstract class SectionNodeView extends SectionView {
 
     private final XmlMultiViewDataObject dataObject;
     private SectionNode rootNode = null;
     private HashMap nodes = new HashMap();
 
     private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
-                public void run() {
-                    getRootNode().refreshSubtree();
-                }
-            });
+        public void run() {
+            getRootNode().refreshSubtree();
+        }
+    });
 
     private static final int REFRESH_DELAY = 20;
 
@@ -97,4 +98,8 @@ public class SectionNodeView extends SectionView {
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         rootNode.dataModelPropertyChange(source, propertyName, oldValue, newValue);
     }
+
+    public abstract XmlMultiViewDataSynchronizer getModelSynchronizer();
+
+    ;
 }

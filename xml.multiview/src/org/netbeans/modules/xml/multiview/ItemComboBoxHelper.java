@@ -23,17 +23,17 @@ import java.awt.event.ActionListener;
  * @author pfiala
  */
 public abstract class ItemComboBoxHelper implements ActionListener, Refreshable {
-    private XmlMultiViewDataObject dataObject;
+    private XmlMultiViewDataSynchronizer synchronizer;
     private JComboBox comboBox;
 
     /**
      * Constructor initializes object by combo box and data object which will be handled
      *
-     * @param dataObject
+     * @param synchronizer
      * @param comboBox   handled JComboBox.
      */
-    public ItemComboBoxHelper(XmlMultiViewDataObject dataObject, JComboBox comboBox) {
-        this.dataObject = dataObject;
+    public ItemComboBoxHelper(XmlMultiViewDataSynchronizer synchronizer, JComboBox comboBox) {
+        this.synchronizer = synchronizer;
         this.comboBox = comboBox;
         comboBox.addActionListener(this);
         setValue(getItemValue());
@@ -46,7 +46,7 @@ public abstract class ItemComboBoxHelper implements ActionListener, Refreshable 
         final String value = (String) comboBox.getSelectedItem();
         if (value == null || !value.equals(getItemValue())) {
             setItemValue(value);
-            dataObject.modelUpdatedFromUI();
+            synchronizer.requestUpdateData();
         }
     }
 

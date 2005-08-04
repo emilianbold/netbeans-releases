@@ -14,21 +14,28 @@
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
+import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Common;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.ErrorManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.apache.xerces.parsers.DOMParser;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URL;
@@ -67,77 +74,31 @@ public final class DDProvider {
      * @return EjbJar object - root of the deployment descriptor bean graph
      */
     public synchronized EjbJar getDDRoot(FileObject fo) throws java.io.IOException {
-        EjbJarProxy ejbJarProxy = getFromCache (fo);
-        if (ejbJarProxy!=null) {
+        try {
+            DataObject dataObject = DataObject.find(fo);
+            if(dataObject instanceof DDProviderDataObject){
+                return getDDRoot((DDProviderDataObject) dataObject);
+            }
+        } catch (DataObjectNotFoundException e) {
+        }
+        EjbJarProxy ejbJarProxy = getFromCache(fo);
+        if (ejbJarProxy != null) {
             return ejbJarProxy;
         }
 
-        fo.addFileChangeListener(new FileChangeAdapter() {
-            public void fileChanged(FileEvent evt) {
-                FileObject fo=evt.getFile();
-                try {
-                    if (DataObject.find(fo) != null) {
-                        return;
-                    }
-                } catch (DataObjectNotFoundException e) {
-                }
-                try {
-                    EjbJarProxy ejbJarProxy = getFromCache (fo);
-                    String version = null;
-                    if (ejbJarProxy!=null) {
-                        try {
-                            DDParse parseResult = parseDD(fo);
-                            version = parseResult.getVersion();
-                            setProxyErrorStatus(ejbJarProxy, parseResult);
-                            EjbJar newValue = createEjbJar(parseResult);
-                            // replacing original file in proxy EjbJar
-                            if (!version.equals(ejbJarProxy.getVersion().toString())) {
-                                ejbJarProxy.setOriginal(newValue);
-                            } else {// the same version
-                                // replacing original file in proxy EjbJar
-                                if (ejbJarProxy.getOriginal()==null) {
-                                    ejbJarProxy.setOriginal(newValue);
-                                } else {
-                                    ejbJarProxy.getOriginal().merge(newValue,EjbJar.MERGE_UPDATE);
-                                }
-                            }
-                        } catch (SAXException ex) {
-                            if (ex instanceof SAXParseException) {
-                                ejbJarProxy.setError((SAXParseException)ex);
-                            } else if ( ex.getException() instanceof SAXParseException) {
-                                ejbJarProxy.setError((SAXParseException)ex.getException());
-                            }
-                            ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-                            // cbw if the state of the xml file transitions from
-                            // parsable to unparsable this could be due to a user
-                            // change or cvs change. We would like to still
-                            // receive events when the file is restored to normal
-                            // so lets not set the original to null here but wait
-                            // until the file becomes parsable again to do a merge
-                            //ejbJarProxy.setOriginal(null);
-                            ejbJarProxy.setProxyVersion(version);
-                        }
-                    }
-                } catch (java.io.IOException ex){}
-            }
-        });
+        fo.addFileChangeListener(new DDFileChangeListener());
 
-        try {
-            DDParse parseResult = parseDD(fo);
-            EjbJar original = createEjbJar(parseResult);
-            ejbJarProxy = new EjbJarProxy(original,parseResult.getVersion());
-            setProxyErrorStatus(ejbJarProxy, parseResult);
-        } catch (SAXException ex) {
-            // XXX lets throw an exception here
-            ejbJarProxy = new EjbJarProxy(org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar.createGraph(),"2.0");
-            ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-            if (ex instanceof SAXParseException) {
-                ejbJarProxy.setError((SAXParseException)ex);
-            } else if ( ex.getException() instanceof SAXParseException) {
-                ejbJarProxy.setError((SAXParseException)ex.getException());
-            }
+        ejbJarProxy = DDUtils.createEjbJarProxy(fo.getInputStream());
+        putToCache(fo, ejbJarProxy);
+        return ejbJarProxy;
+    }
+
+    private synchronized EjbJar getDDRoot(final DDProviderDataObject ddProviderDataObject) throws java.io.IOException {
+        EjbJarProxy ejbJarProxy = getFromCache(ddProviderDataObject) ;
+        if (ejbJarProxy == null) {
+            ejbJarProxy = DDUtils.createEjbJarProxy(ddProviderDataObject.createInputStream());
+            putToCache(ddProviderDataObject, ejbJarProxy);
         }
-        ddMap.put(fo, /*new WeakReference*/ (ejbJarProxy));
         return ejbJarProxy;
     }
 
@@ -153,66 +114,100 @@ public final class DDProvider {
         return (EjbJar)getDDRoot(fo).clone();
     }
 
-    private EjbJarProxy getFromCache (FileObject fo) {
- /*       WeakReference wr = (WeakReference) ddMap.get(fo);
-if (wr == null) {
-    return null;
-}
-EjbJarProxy ejbJarProxy = (EjbJarProxy) wr.get ();
-if (ejbJarProxy == null) {
-    ddMap.remove (fo);
-}
-return ejbJarProxy;*/
-        return (EjbJarProxy) ddMap.get(fo);
+    private EjbJarProxy getFromCache (Object o) {
+        /*       WeakReference wr = (WeakReference) ddMap.get(o);
+       if (wr == null) {
+           return null;
+       }
+       EjbJarProxy ejbJarProxy = (EjbJarProxy) wr.get ();
+       if (ejbJarProxy == null) {
+           ddMap.remove (o);
+       }
+       return ejbJarProxy;*/
+        return (EjbJarProxy) ddMap.get(o);
+    }
+
+    private void putToCache(Object o, EjbJarProxy ejbJarProxy) {
+        ddMap.put(o, /*new WeakReference*/ (ejbJarProxy));
     }
 
     /**
      * Returns the root of deployment descriptor bean graph for java.io.File object.
      *
-     * @param is source representing the ejb-jar.xml file
+     * @param inputSource source representing the ejb-jar.xml file
      * @return EjbJar object - root of the deployment descriptor bean graph
      */
-    public EjbJar getDDRoot(InputSource is) throws IOException, SAXException {
-        DDParse parse = parseDD(is);
-        EjbJar ejbJar = createEjbJar(parse);
-        EjbJarProxy proxy = new EjbJarProxy(ejbJar, ejbJar.getVersion().toString());
-        setProxyErrorStatus(proxy, parse);
-        return proxy;
+    public EjbJar getDDRoot(InputSource inputSource) throws IOException, SAXException {
+        ErrorHandler errorHandler = new ErrorHandler();
+        DOMParser parser = createParser(errorHandler);
+        parser.parse(inputSource);
+        Document document = parser.getDocument();
+        SAXParseException error = errorHandler.getError();
+        String version = extractVersion(document);
+        EjbJar original = createEjbJar(version, document);
+        EjbJarProxy ejbJarProxy = new EjbJarProxy(original, version);
+        ejbJarProxy.setError(error);
+        if (error != null) {
+            ejbJarProxy.setStatus(EjbJar.STATE_INVALID_PARSABLE);
+        } else {
+            ejbJarProxy.setStatus(EjbJar.STATE_VALID);
+        }
+        return ejbJarProxy;
     }
 
     // PENDING j2eeserver needs BaseBean - this is a temporary workaround to avoid dependency of web project on DD impl
     /**  Convenient method for getting the BaseBean object from CommonDDBean object
      *
      */
-    public org.netbeans.modules.schema2beans.BaseBean getBaseBean(org.netbeans.modules.j2ee.dd.api.common.CommonDDBean bean) {
-        if (bean instanceof org.netbeans.modules.schema2beans.BaseBean) {
-            return (org.netbeans.modules.schema2beans.BaseBean) bean;
+    public BaseBean getBaseBean(CommonDDBean bean) {
+        if (bean instanceof BaseBean) {
+            return (BaseBean) bean;
         } else if (bean instanceof EjbJarProxy) {
-            return (org.netbeans.modules.schema2beans.BaseBean) ((EjbJarProxy) bean).getOriginal();
+            return (BaseBean) ((EjbJarProxy) bean).getOriginal();
         }
         return null;
     }
 
-    private static void setProxyErrorStatus(EjbJarProxy ejbJarProxy, DDParse parse) {
-        SAXParseException error = parse.getWarning();
-        ejbJarProxy.setError(error);
-        if (error!=null) {
-            ejbJarProxy.setStatus(EjbJar.STATE_INVALID_PARSABLE);
+    private static EjbJar createEjbJar(String version, Document document) {
+        if (EjbJar.VERSION_2_1.equals(version)) {
+            return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar(document, Common.USE_DEFAULT_VALUES);
+        } else if (EjbJar.VERSION_2_0.equals(version)) {
+            return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar(document, Common.USE_DEFAULT_VALUES);
         } else {
-            ejbJarProxy.setStatus(EjbJar.STATE_VALID);
+            return null;
         }
     }
 
-    private static EjbJar createEjbJar(DDParse parse) {
-          EjbJar jar = null;
-          String version = parse.getVersion();
-          if (EjbJar.VERSION_2_1.equals(version)) {
-              return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_1.EjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
-          } else if (EjbJar.VERSION_2_0.equals(version)) {
-              return new org.netbeans.modules.j2ee.dd.impl.ejb.model_2_0.EjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
-          }
+    /**
+     * Extracts version of deployment descriptor.
+     */
+    private static String extractVersion(Document document) {
+        // first check the doc type to see if there is one
+        DocumentType dt = document.getDoctype();
+        // This is the default version
+        if (dt != null) {
+            if (EJB_20_DOCTYPE.equals(dt.getPublicId())) {
+                return EjbJar.VERSION_2_0;
+            }
+            if (EJB_11_DOCTYPE.equals(dt.getPublicId())){
+                return EjbJar.VERSION_1_1;
+            }
+        }
+        return EjbJar.VERSION_2_1;
 
-          return jar;
+    }
+
+    private static DOMParser createParser(ErrorHandler errorHandler)
+            throws SAXNotRecognizedException, SAXNotSupportedException {
+        DOMParser parser = new DOMParser();
+        parser.setErrorHandler(errorHandler);
+        parser.setEntityResolver(DDResolver.getInstance());
+        // XXX do we need validation here, if no one is using this then
+        // the dependency on xerces can be removed and JAXP can be used
+        parser.setFeature("http://xml.org/sax/features/validation", true); //NOI18N
+        parser.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
+        parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true); //NOI18N
+        return parser;
     }
 
     private static class DDResolver implements EntityResolver {
@@ -272,86 +267,17 @@ return ejbJarProxy;*/
         }
     }
 
-    public SAXParseException parse(FileObject fo)
-    throws org.xml.sax.SAXException, java.io.IOException {
-        DDParse parseResult = parseDD(fo);
-        return parseResult.getWarning();
-    }
-
-    private DDParse parseDD (FileObject fo)
-    throws SAXException, java.io.IOException {
-        return parseDD(fo.getInputStream());
-    }
-
-    private DDParse parseDD (InputStream is)
-    throws SAXException, java.io.IOException {
-        return parseDD(new InputSource(is));
-    }
-
-    private DDParse parseDD (InputSource is)
-    throws SAXException, java.io.IOException {
-        DDProvider.ErrorHandler errorHandler = new DDProvider.ErrorHandler();
-        org.apache.xerces.parsers.DOMParser parser = new org.apache.xerces.parsers.DOMParser();
-        parser.setErrorHandler(errorHandler);
-        parser.setEntityResolver(DDProvider.DDResolver.getInstance());
-        // XXX do we need validation here, if no one is using this then
-        // the dependency on xerces can be removed and JAXP can be used
-        parser.setFeature("http://xml.org/sax/features/validation", true); //NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
-        parser.setFeature("http://apache.org/xml/features/validation/schema-full-checking", true); //NOI18N
-        parser.parse(is);
-        Document d = parser.getDocument();
-        SAXParseException error = errorHandler.getError();
-        return new DDParse(d, error);
-    }
-
-    /**
-     * This class represents one parse of the deployment descriptor
-     */
-    private static class DDParse {
-        private Document document;
-        private SAXParseException saxException;
-        private String version;
-        public DDParse(Document d, SAXParseException saxEx) {
-            document = d;
-            saxException = saxEx;
-            extractVersion();
-        }
-
-        /**
-         * @return document from last parse
-         */
-        public Document getDocument() {
-            return document;
-        }
-
-        /**
-         * Extracts version of deployment descriptor. 
-         */
-        private void extractVersion () {
-            // first check the doc type to see if there is one
-            DocumentType dt = document.getDoctype();
-            // This is the default version
-            version = EjbJar.VERSION_2_1;
-            if (dt != null) {
-                if (EJB_20_DOCTYPE.equals(dt.getPublicId())) {
-                    version = EjbJar.VERSION_2_0;
+    private class DDFileChangeListener extends FileChangeAdapter {
+        public void fileChanged(FileEvent evt) {
+            FileObject fo = evt.getFile();
+            try {
+                EjbJarProxy ejbJarProxy = getFromCache(fo);
+                if (ejbJarProxy != null) {
+                    DDUtils.merge(ejbJarProxy, fo.getInputStream());
                 }
-                if (EJB_11_DOCTYPE.equals(dt.getPublicId())){
-                    version = EjbJar.VERSION_1_1;
-                }
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        /**
-         * @return validation error encountered during the parse
-         */
-        public SAXParseException getWarning() {
-            return saxException;
         }
     }
 }

@@ -15,7 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /**
  * @author pfiala
@@ -28,8 +28,8 @@ public class SecurityRoleReferencesTableModel extends InnerTableModel {
                                                   Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{100, 150, 100};
 
-    public SecurityRoleReferencesTableModel(XmlMultiViewDataObject dataObject, EntityAndSession ejb) {
-        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
+    public SecurityRoleReferencesTableModel(XmlMultiViewDataSynchronizer synchronizer, EntityAndSession ejb) {
+        super(synchronizer, COLUMN_NAMES, COLUMN_WIDTHS);
         this.ejb = ejb;
     }
 

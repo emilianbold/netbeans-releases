@@ -28,19 +28,19 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
 
     private final AbstractButton[] buttons;
     private final AbstractButton unmatchedOption;
-    private XmlMultiViewDataObject dataObject;
+    private XmlMultiViewDataSynchronizer synchronizer;
 
     /**
      * Constructor initializes object by button group which will be handled
      *
-     * @param dataObject
+     * @param synchronizer
      * @param group handled ButtonGroup.
      *              If the group contains at least one button that has empty text value
      *              (see {@link #getOptionText(javax.swing.AbstractButton)}, the last one of such buttons
      *              is used as "unmatched option". The "unmatched option" is selected,
      */
-    public ItemOptionHelper(XmlMultiViewDataObject dataObject, ButtonGroup group) {
-        this.dataObject = dataObject;
+    public ItemOptionHelper(XmlMultiViewDataSynchronizer synchronizer, ButtonGroup group) {
+        this.synchronizer = synchronizer;
         buttons = (AbstractButton[]) Collections.list(group.getElements()).toArray(new AbstractButton[0]);
         AbstractButton unmatchedOption = null;
         for (int i = 0; i < buttons.length; i++) {
@@ -61,7 +61,7 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
         final String option = getOption();
         if (!option.equals(getItemValue())) {
             setItemValue(getOption());
-            dataObject.modelUpdatedFromUI();
+            synchronizer.requestUpdateData();
         }
     }
 
@@ -69,7 +69,7 @@ public abstract class ItemOptionHelper implements ActionListener, Refreshable {
      * Selects option matched the item value.
      * If no option matches the value the unmatchedOption option is selected,
      * if the "unmatchedOption" uption exists.
-     * See {@link #ItemOptionHelper(XmlMultiViewDataObject, ButtonGroup)}
+     * See {@link #ItemOptionHelper(XmlMultiViewDataSynchronizer, ButtonGroup)}
      *
      * @param itemValue value of item to be selected in button group
      */

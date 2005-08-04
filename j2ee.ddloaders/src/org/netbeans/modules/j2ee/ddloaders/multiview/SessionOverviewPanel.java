@@ -17,6 +17,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.SessionOverviewForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemOptionHelper;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
@@ -33,9 +34,11 @@ public class SessionOverviewPanel extends SessionOverviewForm {
     public SessionOverviewPanel(final SectionNodeView sectionNodeView, final Session session) {
         super(sectionNodeView);
 
-        final EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
+        final XmlMultiViewDataSynchronizer synchronizer =
+                ((EjbJarMultiViewDataObject) sectionNodeView.getDataObject()).getModelSynchronizer();
 
-        addRefreshable(new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(dataObject, false) {
+
+        addRefreshable(new ItemEditorHelper(getEjbNameTextField(), new TextItemEditorModel(synchronizer, false) {
             protected String getValue() {
                 return session.getEjbName();
             }
@@ -46,7 +49,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
         }));
         getEjbNameTextField().setEditable(false);
 
-        addRefreshable(new ItemOptionHelper(dataObject, getSessionTypeButtonGroup()) {
+        addRefreshable(new ItemOptionHelper(synchronizer, getSessionTypeButtonGroup()) {
             public String getItemValue() {
                 return session.getSessionType();
             }
@@ -56,7 +59,7 @@ public class SessionOverviewPanel extends SessionOverviewForm {
             }
         });
 
-        addRefreshable(new ItemOptionHelper(dataObject, getTransactionTypeButtonGroup()) {
+        addRefreshable(new ItemOptionHelper(synchronizer, getTransactionTypeButtonGroup()) {
             public String getItemValue() {
                 return session.getTransactionType();
             }

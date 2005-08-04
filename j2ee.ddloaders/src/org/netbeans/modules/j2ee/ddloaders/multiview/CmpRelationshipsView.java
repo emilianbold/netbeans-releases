@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /**
  * @author pfiala
@@ -28,5 +29,9 @@ public class CmpRelationshipsView extends SectionNodeView {
         EjbJar ejbJar = dataObject.getEjbJar();
         rootNode.addChild(new CmpRelationShipsNode(this, ejbJar));
         setRootNode(rootNode);
+    }
+
+    public XmlMultiViewDataSynchronizer getModelSynchronizer() {
+        return ((EjbJarMultiViewDataObject) getDataObject()).getModelSynchronizer();
     }
 }

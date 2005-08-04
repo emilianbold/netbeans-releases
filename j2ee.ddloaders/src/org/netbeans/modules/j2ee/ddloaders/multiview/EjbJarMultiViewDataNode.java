@@ -119,11 +119,6 @@ public class EjbJarMultiViewDataNode extends DataNode {
                 if (EjbJar.VERSION_2_1.equals(val) && !val.equals(dataObject.getEjbJar().getVersion().toString())) {
                     dataObject.getEjbJar().setVersion(new java.math.BigDecimal(val));
                     dataObject.modelUpdatedFromUI();
-                    try {
-                        dataObject.getEjbJar().write(dataObject.getPrimaryFile());
-                    } catch (java.io.IOException ex) {
-                        org.openide.ErrorManager.getDefault().notify(ex);
-                    }
                 }
             }
         };

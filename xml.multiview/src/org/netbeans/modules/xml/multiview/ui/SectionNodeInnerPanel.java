@@ -26,8 +26,7 @@ public abstract class SectionNodeInnerPanel extends SectionInnerPanel {
     }
 
     protected void signalUIChange() {
-        SectionNodeView sectionNodeView = ((SectionNodeView)getSectionView());
-        sectionNodeView.getDataObject().modelUpdatedFromUI();
+        ((SectionNodeView)getSectionView()).getModelSynchronizer().requestUpdateData();
     }
 
     public void focusData(Object element) {

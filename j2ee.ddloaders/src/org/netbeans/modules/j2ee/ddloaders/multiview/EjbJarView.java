@@ -15,6 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
@@ -42,6 +43,10 @@ public class EjbJarView extends SectionNodeView {
             scheduleRefreshView();
         }
         super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
+    }
+
+    public XmlMultiViewDataSynchronizer getModelSynchronizer() {
+        return ((EjbJarMultiViewDataObject) getDataObject()).getModelSynchronizer();
     }
 
     public void refreshView() {

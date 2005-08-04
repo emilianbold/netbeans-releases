@@ -15,7 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /**
  * @author pfiala
@@ -28,8 +28,8 @@ public class ResourceEnvironmentReferencesTableModel extends InnerTableModel {
                                                   Utils.getBundleMessage("LBL_Description")};
     private static final int[] COLUMN_WIDTHS = new int[]{80, 150, 100};
 
-    public ResourceEnvironmentReferencesTableModel(XmlMultiViewDataObject dataObject, Ejb ejb) {
-        super(dataObject, COLUMN_NAMES, COLUMN_WIDTHS);
+    public ResourceEnvironmentReferencesTableModel(XmlMultiViewDataSynchronizer synchronizer, Ejb ejb) {
+        super(synchronizer, COLUMN_NAMES, COLUMN_WIDTHS);
         this.ejb = ejb;
     }
 

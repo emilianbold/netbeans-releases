@@ -30,6 +30,6 @@ public class ResourceEnvironmentReferencesNode extends EjbSectionNode {
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         SectionNodeView sectionNodeView = getSectionNodeView();
         return new InnerTablePanel(sectionNodeView,
-                new ResourceEnvironmentReferencesTableModel(sectionNodeView.getDataObject(), (Ejb) key));
+                new ResourceEnvironmentReferencesTableModel(sectionNodeView.getModelSynchronizer(), (Ejb) key));
     }
 }

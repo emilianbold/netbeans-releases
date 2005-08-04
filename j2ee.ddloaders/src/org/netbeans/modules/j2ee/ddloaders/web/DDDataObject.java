@@ -50,22 +50,24 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 
 import org.netbeans.modules.j2ee.ddloaders.web.multiview.*;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /** Represents a DD object in the Repository.
  *
  * @author  mkuchtiak
  */
-public class DDDataObject extends  XmlMultiViewDataObject
+public class DDDataObject extends  DDMultiViewDataObject
     implements DDChangeListener, WebAppProxy.OutputProvider, ChangeListener, PropertyChangeListener {
     private transient WebApp webApp;
     private transient FileObject srcRoots[];
     protected transient final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
-    
+    protected boolean changedFromUI;
+
     private static final long serialVersionUID = 8857563089355069362L;
-    
+
     /** Property name for documentDTD property */
     public static final String PROP_DOCUMENT_DTD = "documentDTD";   // NOI18N
     public static final String HELP_ID_PREFIX_OVERVIEW="dd_multiview_overview_"; //NOI18N
@@ -73,16 +75,16 @@ public class DDDataObject extends  XmlMultiViewDataObject
     public static final String HELP_ID_PREFIX_FILTERS="dd_multiview_filters_"; //NOI18N
     public static final String HELP_ID_PREFIX_PAGES="dd_multiview_pages_"; //NOI18N
     public static final String HELP_ID_PREFIX_REFERENCES="dd_multiview_references_"; //NOI18N
-    
+
     /** Holder of documentDTD property value */
     private String documentDTD;
-    
+
     /** List of updates to servlets that should be processed */
     private Vector updates;
-    
+
     private transient RequestProcessor.Task updateTask;
     private transient FileObjectObserver fileListener;
-    
+
     public DDDataObject (FileObject pf, DDDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
         init (pf,loader);
@@ -97,19 +99,19 @@ public class DDDataObject extends  XmlMultiViewDataObject
         getCookieSet().add(validateCookie);
 
         fileListener = new FileObjectObserver(fo);
-        
+
         Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
             sources.addChangeListener (this);
         }
         refreshSourceFolders ();
-        addPropertyChangeListener(this);    
+        addPropertyChangeListener(this);
     }
-    
+
     private void refreshSourceFolders () {
         ArrayList srcRootList = new ArrayList ();
-        
+
         Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
@@ -124,7 +126,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         srcRoots = (FileObject []) srcRootList.toArray (new FileObject [srcRootList.size ()]);
     }
-    
+
     private String getPackageName (FileObject clazz) {
         for (int i = 0; i < srcRoots.length; i++) {
             String rp = FileUtil.getRelativePath (srcRoots [i], clazz);
@@ -139,26 +141,25 @@ public class DDDataObject extends  XmlMultiViewDataObject
     }
 
     public WebApp getWebApp() {
-        if (webApp==null) 
+        if (webApp == null) {
             try {
                 webApp = createWebApp();
-            } catch (IOException ex) {}
+            } catch (IOException ex) {
+            }
+        }
         return webApp;
     }
-    
+
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
         if (DDDataObject.PROP_DOCUMENT_VALID.equals (evt.getPropertyName ())) {
             ((DDDataNode)getNodeDelegate()).iconChanged();
         }
     }
-    
+
     private WebApp createWebApp() throws java.io.IOException {
         WebApp webApp = DDProvider.getDefault().getDDRoot(getPrimaryFile());
         if (webApp != null) {
             setSaxError(webApp.getError());
-            parseable = webApp.getStatus() != WebApp.STATE_INVALID_UNPARSABLE;
-        } else {
-            parseable = false;
         }
         return webApp;
     }
@@ -170,7 +171,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
     /**
      * Sets only reasonable mappings (mappings with existing servlet element
      * @param mappings - all mappings
-     */    
+     */
     public void setReasonableMappings(ServletMapping[] mappings) {
         List newMappings = new ArrayList();
         Servlet[] servlets = webApp.getServlet();
@@ -188,8 +189,12 @@ public class DDDataObject extends  XmlMultiViewDataObject
         //setNodeDirty(true);
         //modelUpdatedFromUI();
     }
-    
-    protected boolean parseDocument(boolean updateModel) throws IOException {
+
+    protected InputSource createInputSource() throws IOException {
+        return new InputSource(createInputStream());
+    }
+
+    protected void parseDocument() throws IOException {
         if (webApp == null || ((WebAppProxy)webApp).getOriginal() == null) {
             try {
                 webApp = DDProvider.getDefault().getDDRoot(getPrimaryFile());
@@ -208,19 +213,17 @@ public class DDDataObject extends  XmlMultiViewDataObject
                 // preparsing
                 is = createInputSource();
                 error = DDUtils.parse(is);
-                
+
                 // creating model
-                if (updateModel) {
-                    java.io.InputStream inputStream = createInputStream();
-                    WebAppProxy app = new WebAppProxy(DDUtils.createWebApp(inputStream, version), version);
-                    inputStream.close();
-                    if (((WebAppProxy) webApp).getOriginal() != null) {
-                        webApp.merge(app, WebApp.MERGE_UPDATE);
-                    } else {
-                        ((WebAppProxy) webApp).setOriginal(app.getOriginal());
-                    }
+                java.io.InputStream inputStream = createInputStream();
+                WebAppProxy app = new WebAppProxy(DDUtils.createWebApp(inputStream, version), version);
+                inputStream.close();
+                if (((WebAppProxy) webApp).getOriginal() != null) {
+                    webApp.merge(app, WebApp.MERGE_UPDATE);
+                } else {
+                    ((WebAppProxy) webApp).setOriginal(app.getOriginal());
                 }
-                
+
                 if (error!=null) {
                     ((WebAppProxy)webApp).setStatus(WebApp.STATE_INVALID_PARSABLE);
                     ((WebAppProxy)webApp).setError(error);
@@ -228,13 +231,11 @@ public class DDDataObject extends  XmlMultiViewDataObject
                     ((WebAppProxy)webApp).setStatus(WebApp.STATE_VALID);
                     ((WebAppProxy)webApp).setError(null);
                 }
-                parseable=true;
                 //System.out.println("version:"+webApp.getVersion()+" Status:"+webApp.getStatus()+" Error:"+webApp.getError());
                 setSaxError(error);
-                return true;
             } catch (org.xml.sax.SAXException ex) {
                 // this should never happen when updateModel==false
-                if (webApp==null || ((WebAppProxy)webApp).getOriginal()==null) { 
+                if (webApp==null || ((WebAppProxy)webApp).getOriginal()==null) {
                     webApp = new WebAppProxy(null,version);
                    ((WebAppProxy)webApp).setStatus(WebApp.STATE_INVALID_UNPARSABLE);
                     if (ex instanceof org.xml.sax.SAXParseException) {
@@ -243,22 +244,19 @@ public class DDDataObject extends  XmlMultiViewDataObject
                         ((WebAppProxy)webApp).setError((org.xml.sax.SAXParseException)ex.getException());
                     }
                 }
-                parseable=false;
                 setSaxError(ex);
-                return false;
             }
         }
-        return false;
     }
 
     /** Create document from the Node. This method is called after Node (Node properties)is changed.
-     * The document is generated from data modul (isDocumentGenerable=true) 
+     * The document is generated from data modul (isDocumentGenerable=true)
     */
     protected String generateDocumentFromModel() {
         //System.out.println("Generating document - generate....");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
-            webApp.write(out);
+            getWebApp().write(out);
             out.close();
             return out.toString("UTF8"); //NOI18N
         }
@@ -267,18 +265,32 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         catch (IllegalStateException e){
             ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-	}
-	return out.toString ();
+    }
+    return out.toString ();
+    }
+
+    public boolean isDocumentParseable() {
+        return WebApp.STATE_INVALID_UNPARSABLE != webApp.getStatus();
+    }
+
+    protected String getPrefixMark() {
+        return "<web-app";
     }
 
     /** Method from WebAppProxy.OutputProvider
     */
     public void write(WebApp webAppProxy) throws IOException {
         // provide synchronization between model and text document
-        writeModel();
+        XmlMultiViewDataSynchronizer synchronizer = getModelSynchronizer();
+        FileLock lock = waitForLock();
+        try {
+            synchronizer.updateData(lock, false);
+        } finally {
+            lock.releaseLock();
+        }
     }
     /** Method from WebAppProfy.OutputProvider
-    */    
+    */
     public FileObject  getTarget() {
         return getPrimaryFile();
     }
@@ -313,7 +325,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
             //modelUpdatedFromUI();
         } catch (ClassNotFoundException ex) {}
     }
-    
+
     protected DataObject handleCopy(DataFolder f) throws IOException {
         DataObject dObj = super.handleCopy(f);
         try { dObj.setValid(false); }catch(java.beans.PropertyVetoException e){}
@@ -330,7 +342,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         super.dispose ();
     }
-    
+
     /** Getter for property documentDTD.
      * @return Value of property documentDTD or <CODE>null</CODE> if documentDTD cannot be obtained.
      */
@@ -346,8 +358,9 @@ public class DDDataObject extends  XmlMultiViewDataObject
      */
     public void deploymentChange (DDChangeEvent evt) {
         // fix of #28542, don't add servlet, if it's already defined in DD
-        if ( evt.getType() == DDChangeEvent.SERVLET_ADDED && servletDefined( evt.getNewValue() ) )
+        if (evt.getType() == DDChangeEvent.SERVLET_ADDED && servletDefined(evt.getNewValue())) {
             return;
+        }
 
         synchronized (this) {
             if (updates == null) {
@@ -355,22 +368,24 @@ public class DDDataObject extends  XmlMultiViewDataObject
             }
             updates.addElement (evt);
         }
-        
+
         // schedule processDDChangeEvent
         if (updateTask == null) {
             updateTask = RequestProcessor.getDefault().post (new Runnable () {
                 public void run () {
                     java.util.List changes = null;
                     synchronized (DDDataObject.this) {
-                        if (!DDDataObject.this.isValid())
+                        if (!DDDataObject.this.isValid()) {
                             return;
+                        }
                         if (updates != null) {
                             changes = updates;
                             updates = null;
                         }
                     }
-                    if (changes != null)
-                        showDDChangesDialog (changes);
+                    if (changes != null) {
+                        showDDChangesDialog(changes);
+                    }
                 }
             }, 2000, Thread.MIN_PRIORITY);
         }
@@ -378,18 +393,21 @@ public class DDDataObject extends  XmlMultiViewDataObject
             updateTask.schedule (2000);
         }
     }
-    
+
     private boolean servletDefined(String classname) {
         WebApp webApp = getWebApp();
-        if (webApp==null) return true;
+        if (webApp == null) {
+            return true;
+        }
         Servlet[] servlets = webApp.getServlet();
         for ( int i = 0; i < servlets.length; i++ ) {
-            if ( servlets[i].getServletClass() != null && servlets[i].getServletClass().equals( classname ) )
+            if (servlets[i].getServletClass() != null && servlets[i].getServletClass().equals(classname)) {
                 return true;
+            }
         }
         return false;
     }
-    
+
     private void showDDChangesDialog (List changes) {
         final JButton processButton;
         final JButton processAllButton;
@@ -397,7 +415,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
         final DDChangesPanel connectionPanel;
         final DialogDescriptor confirmChangesDescriptor;
         final Dialog confirmChangesDialog[] = { null };
-        
+
         processButton = new JButton (NbBundle.getMessage (DDDataObject.class, "LAB_processButton"));
         processButton.setMnemonic (NbBundle.getMessage (DDDataObject.class, "LAB_processButton_Mnemonic").charAt (0));
         processButton.setToolTipText (NbBundle.getMessage (DDDataObject.class, "ACS_processButtonA11yDesc"));
@@ -473,11 +491,11 @@ public class DDDataObject extends  XmlMultiViewDataObject
             }
         );
         confirmChangesDescriptor.setAdditionalOptions (additionalOptions);
-        
+
         processButton.setEnabled (false);
         processAllButton.requestFocus ();
         connectionPanel.setChanges (changes);
-        
+
         try {
             confirmChangesDialog[0] = DialogDisplayer.getDefault ().createDialog (confirmChangesDescriptor);
             confirmChangesDialog[0].show ();
@@ -485,11 +503,12 @@ public class DDDataObject extends  XmlMultiViewDataObject
             confirmChangesDialog[0].dispose ();
         }
     }
-    
+
     private void processDDChangeEvent (DDChangeEvent evt) {
-        if (!isValid())
+        if (!isValid()) {
             return;
-        
+        }
+
         if (evt.getType () == DDChangeEvent.SERVLET_ADDED) {
             String clz = evt.getNewValue ();
 
@@ -500,9 +519,10 @@ public class DDDataObject extends  XmlMultiViewDataObject
         else if (evt.getType () == DDChangeEvent.SERVLET_CHANGED) {
             // update servlet-class in servlet element
             String old = evt.getOldValue ();
-            if (old == null)
+            if (old == null) {
                 return;
-            
+            }
+
             Servlet [] servlets = getWebApp ().getServlet ();
             for (int i=0; i<servlets.length; i++) {
                 if (old.equals (servlets[i].getServletClass ())) {
@@ -513,9 +533,10 @@ public class DDDataObject extends  XmlMultiViewDataObject
         else if (evt.getType () == DDChangeEvent.SERVLET_DELETED) {
             // delete servlet and matching servlet-mappings
             String clz = evt.getNewValue ();
-            if (clz == null)
+            if (clz == null) {
                 return;
-            
+            }
+
             WebApp wa = getWebApp ();
             Servlet [] servlets = wa.getServlet ();
             java.util.Vector servletNames = new java.util.Vector ();
@@ -534,9 +555,10 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         else if (evt.getType () == DDChangeEvent.FILTER_CHANGED) {
             String old = evt.getOldValue ();
-            if (old == null)
+            if (old == null) {
                 return;
-            
+            }
+
             Filter [] filters = getWebApp ().getFilter ();
             for (int i=0; i<filters.length; i++) {
                 if (old.equals (filters[i].getFilterClass ())) {
@@ -546,9 +568,10 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         else if (evt.getType () == DDChangeEvent.FILTER_DELETED) {
             String clz = evt.getNewValue ();
-            if (clz == null)
+            if (clz == null) {
                 return;
-            
+            }
+
             WebApp wa = getWebApp ();
             Filter [] filters = wa.getFilter ();
             java.util.Vector filterNames = new java.util.Vector ();
@@ -567,9 +590,10 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         else if (evt.getType () == DDChangeEvent.LISTENER_CHANGED) {
             String old = evt.getOldValue ();
-            if (old == null)
+            if (old == null) {
                 return;
-            
+            }
+
             Listener [] listeners = getWebApp ().getListener ();
             for (int i=0; i<listeners.length; i++) {
                 if (old.equals (listeners[i].getListenerClass ())) {
@@ -579,9 +603,10 @@ public class DDDataObject extends  XmlMultiViewDataObject
         }
         else if (evt.getType () == DDChangeEvent.LISTENER_DELETED) {
             String clz = evt.getNewValue ();
-            if (clz == null)
+            if (clz == null) {
                 return;
-            
+            }
+
             WebApp wa = getWebApp ();
             Listener [] listeners = wa.getListener ();
             for (int i=0; i<listeners.length; i++) {
@@ -592,9 +617,9 @@ public class DDDataObject extends  XmlMultiViewDataObject
             }
         }
         try {
-            getWebApp().write(getPrimaryFile());
-        } catch (java.io.IOException ex){
-            ErrorManager.getDefault ().notify (ex);
+            writeModel();
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
         }
     }
 
@@ -613,7 +638,9 @@ public class DDDataObject extends  XmlMultiViewDataObject
                         break;
                     }
                 }
-                if (foundElement) return;
+                if (foundElement) {
+                    return;
+                }
                 Filter[] filters = getWebApp().getFilter();
                 for (int i=0;i<filters.length;i++) {
                     if (resourceName.equals(filters[i].getFilterClass())) {
@@ -623,7 +650,9 @@ public class DDDataObject extends  XmlMultiViewDataObject
                         break;
                     }
                 }
-                if (foundElement) return;
+                if (foundElement) {
+                    return;
+                }
                 Listener[] listeners = getWebApp().getListener();
                 for (int i=0;i<listeners.length;i++) {
                     if (resourceName.equals(listeners[i].getListenerClass())) {
@@ -639,7 +668,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
     public void stateChanged (javax.swing.event.ChangeEvent e) {
         refreshSourceFolders ();
     }
-    
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx(HELP_ID_PREFIX_OVERVIEW+"overviewNode"); //NOI18N
     }
@@ -658,49 +687,49 @@ public class DDDataObject extends  XmlMultiViewDataObject
             fo.addFileChangeListener((FileChangeListener)org.openide.util.WeakListeners.create(
                                         FileChangeListener.class, this, fo));
         }
-        
+
         public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
         }
-        
+
         public void fileChanged(FileEvent fileEvent) {
             /*
-            WebAppProxy webApp = (WebAppProxy) DDDataObject.this.getWebApp();
-            boolean needRewriting = true;
-            if (webApp!= null && webApp.isWriting()) { // change from outside
-                webApp.setWriting(false);
-                needRewriting=false;
-            }
-            if (isSavingDocument()) {// document is being saved
-                setSavingDocument(false);
-                needRewriting=false;
-            }
-            if (needRewriting) getEditorSupport().restartTimer();
-             */
+           WebAppProxy webApp = (WebAppProxy) DDDataObject.this.getWebApp();
+           boolean needRewriting = true;
+           if (webApp!= null && webApp.isWriting()) { // change from outside
+               webApp.setWriting(false);
+               needRewriting=false;
+           }
+           if (isSavingDocument()) {// document is being saved
+               setSavingDocument(false);
+               needRewriting=false;
+           }
+           if (needRewriting) getEditorSupport().restartTimer();
+            */
         }
-        
+
         public void fileDataCreated(FileEvent fileEvent) {
         }
-        
+
         public void fileDeleted(FileEvent fileEvent) {
         }
-        
+
         public void fileFolderCreated(FileEvent fileEvent) {
         }
-        
+
         public void fileRenamed(FileRenameEvent fileRenameEvent) {
-        }   
+        }
     }
-    
-    
+
+
     public static final String DD_MULTIVIEW_PREFIX = "dd_multiview"; // NOI18N
     public static final String MULTIVIEW_OVERVIEW = "Overview"; // NOI18N
     public static final String MULTIVIEW_SERVLETS = "Servlets"; // NOI18N
     public static final String MULTIVIEW_FILTERS = "Filters"; // NOI18N
     public static final String MULTIVIEW_PAGES = "Pages"; // NOI18N
     public static final String MULTIVIEW_REFERENCES = "References"; // NOI18N
-    
+
     private ServletsMultiViewElement servletMVElement;
-    
+
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[] {
             new DDView(this,MULTIVIEW_OVERVIEW),
@@ -711,13 +740,13 @@ public class DDDataObject extends  XmlMultiViewDataObject
             //new DDView(this,"Security")
         };
     }
-    
+
     private static class DDView extends DesignMultiViewDesc implements Serializable {
         private static final long serialVersionUID = -4814134594154669985L;
         private String name;
-        
+
         DDView() {}
-        
+
         DDView(DDDataObject dObj,String name) {
             super(dObj, name);
             this.name=name;
@@ -753,7 +782,7 @@ public class DDDataObject extends  XmlMultiViewDataObject
             }
             return null;
         }
-        
+
         public java.awt.Image getIcon() {
             return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
         }
@@ -761,12 +790,12 @@ public class DDDataObject extends  XmlMultiViewDataObject
         public String preferredID() {
             return DD_MULTIVIEW_PREFIX+name;
         }
-      
+
         public String getDisplayName() {
             return NbBundle.getMessage(DDDataObject.class,"TTL_"+name);
         }
     }
-    
+
     /** Enable to focus specific object in Multiview Editor
      *  The default implementation opens the XML View
      */
@@ -814,5 +843,8 @@ public class DDDataObject extends  XmlMultiViewDataObject
     public ToolBarMultiViewElement getActiveMVElement() {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
-    
+
+    public boolean isChangedFromUI() {
+        return changedFromUI;
+    }
 }
