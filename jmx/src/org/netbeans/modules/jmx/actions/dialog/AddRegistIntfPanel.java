@@ -72,6 +72,9 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         
         infoTextArea.setText(currentClass.getSimpleName() + " " + // NOI18N
                 bundle.getString("LBL_MBeanRegistration_Informations")); // NOI18N
+        
+        //for functionnals tests
+        keepRefCheckBox.setName("keepRefCheckBox"); // NOI18N
     }
     
     private boolean isAcceptable() {
