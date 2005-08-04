@@ -31,7 +31,7 @@ import java.util.Date;
  *
  * @author Tim Boudreau
  */
-class ChicletWrapper implements Runnable {
+public class ChicletWrapper implements Runnable {
     private boolean allowVertical = true;
     private boolean leftNotch = false;
     private boolean rightNotch = false;
@@ -127,7 +127,7 @@ class ChicletWrapper implements Runnable {
         chiclet.setState (state);
         Graphics g = img.getGraphics();
         g.translate (-bounds.x, -bounds.y);
-        ColorUtil.setupAntialiasing(g);
+        ColorUtil.setupAntialiasing(g, true);
         chiclet.draw((Graphics2D)g);
         g.translate (bounds.x, bounds.y);
         return img;
