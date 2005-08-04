@@ -29,6 +29,13 @@ public class MBean {
     private ArrayList<Operation> mBeanOperations = null;
     private ArrayList<Notification> mBeanNotifications = null;
     
+    private boolean mbeanItfImpl = false;
+    private boolean keepPreRegParam = false; 
+    private boolean implemNotifEmitter = false;
+    private boolean genBrdCasterDeleg = false;
+    private boolean genSeqNumber = false;
+    
+    /** MBean constructor which is not wrapper and does not implement mbritf */
     public MBean(String mBeanName, String mBeanType,
             String mBeanPackage, String mBeanComment,
             ArrayList<Attribute> mBeanAttributes,
@@ -42,7 +49,74 @@ public class MBean {
         this.mBeanOperations = mBeanOperations;
         this.mBeanNotifications = mBeanNotifications;
     }
+    
+    /* MBean for mbeans which implement mbean reg itf */
+    public MBean(String mBeanName, String mBeanType,
+            String mBeanPackage, String mBeanComment,
+            ArrayList<Attribute> mBeanAttributes,
+            ArrayList<Operation> mBeanOperations,
+            ArrayList<Notification> mBeanNotifications,
+            boolean mbeanItfImpl, boolean keepPreRegParam) {
+        this.mBeanName = mBeanName;
+        this.mBeanType = mBeanType;
+        this.mBeanPackage = mBeanPackage;
+        this.mBeanComment = mBeanComment;
+        this.mBeanAttributes = mBeanAttributes;
+        this.mBeanOperations = mBeanOperations;
+        this.mBeanNotifications = mBeanNotifications;
+        
+        this.mbeanItfImpl = mbeanItfImpl;
+        this.keepPreRegParam = keepPreRegParam;
+    }
+    
+    /* MBean for mbeans which implements notification emitter itf */
+    public MBean(String mBeanName, String mBeanType,
+            String mBeanPackage, String mBeanComment,
+            ArrayList<Attribute> mBeanAttributes,
+            ArrayList<Operation> mBeanOperations,
+            ArrayList<Notification> mBeanNotifications,
+            boolean implemNotifEmitter,
+            boolean genBrdCasterDeleg,
+            boolean genSeqNumber) {
+        this.mBeanName = mBeanName;
+        this.mBeanType = mBeanType;
+        this.mBeanPackage = mBeanPackage;
+        this.mBeanComment = mBeanComment;
+        this.mBeanAttributes = mBeanAttributes;
+        this.mBeanOperations = mBeanOperations;
+        this.mBeanNotifications = mBeanNotifications;
+        
+        this.setImplemNotifEmitter(implemNotifEmitter);
+        this.setGenBrdCasterDeleg(genBrdCasterDeleg);
+        this.setGenSeqNumber(genSeqNumber);
+    }
  
+    /* Full featured MBean */
+    public MBean(String mBeanName, String mBeanType,
+            String mBeanPackage, String mBeanComment,
+            ArrayList<Attribute> mBeanAttributes,
+            ArrayList<Operation> mBeanOperations,
+            ArrayList<Notification> mBeanNotifications,
+            boolean mbeanItfImpl, boolean keepPreRegParam,
+            boolean implemNotifEmitter,
+            boolean genBrdCasterDeleg,
+            boolean genSeqNumber) {
+        this.mBeanName = mBeanName;
+        this.mBeanType = mBeanType;
+        this.mBeanPackage = mBeanPackage;
+        this.mBeanComment = mBeanComment;
+        this.mBeanAttributes = mBeanAttributes;
+        this.mBeanOperations = mBeanOperations;
+        this.mBeanNotifications = mBeanNotifications;
+        
+        this.mbeanItfImpl = mbeanItfImpl;
+        this.keepPreRegParam = keepPreRegParam;
+        
+        this.setImplemNotifEmitter(implemNotifEmitter);
+        this.setGenBrdCasterDeleg(genBrdCasterDeleg);
+        this.setGenSeqNumber(genSeqNumber);
+    }
+    
     /**
      * Returns the name of the MBean
      * @return mBeanName the name of the MBean
@@ -76,6 +150,14 @@ public class MBean {
     }
     
     /**
+     * Returns the attribute list for the MBean
+     * @return ArrayList<Attribute> the attribute list of the MBean
+     */
+    public ArrayList<Attribute> getMBeanAttributeList() {
+        return mBeanAttributes;
+    }
+    
+    /**
      * Returns an attribute for the MBean
      * @param index index of the attribute to return
      * @return mBeanAttributes the attribute at index of the MBean
@@ -85,12 +167,28 @@ public class MBean {
     }
     
     /**
+     * Returns the operation list for the MBean
+     * @return ArrayList<Attribute> the operation list of the MBean
+     */
+    public ArrayList<Operation> getMBeanOperationList() {
+        return mBeanOperations;
+    }
+    
+    /**
      * Returns an operation for the MBean
      * @param index index of the operation to return
      * @return mBeanOperations the operation at index of the MBean
      */
     public Operation getMBeanOperation(int index) {
         return mBeanOperations.get(index);
+    }
+    
+    /**
+     * Returns the notification list for the MBean
+     * @return ArrayList<Notification> the notification list of the MBean
+     */
+    public ArrayList<Notification> getMBeanNotificationList() {
+        return mBeanNotifications;
     }
     
     /**
@@ -134,4 +232,61 @@ public class MBean {
         else
             return -1;
     }
+
+    /**
+     * Return true if the class implements the mbean registration itf
+     * @return boolean true if the class implements the mbean registration itf 
+     */
+    public boolean isMbeanItfImpl() {
+        return mbeanItfImpl;
+    }
+
+    /**
+     * Sets the caracteristic for this mbean to implement the mbean registration itf
+     * @param mbeanItfImpl true if this mbean to implements the mbean registration itf
+     */
+    public void setMbeanItfImpl(boolean mbeanItfImpl) {
+        this.mbeanItfImpl = mbeanItfImpl;
+    }
+
+    /**
+     * Return true if the class keeps the preregistered parameter references
+     * @return boolean true if the class keeps the preregistered parameter references
+     */
+    public boolean isKeepPreRegParam() {
+        return keepPreRegParam;
+    }
+    
+    /**
+     * Sets the caracteristic for this mbean to keep the preregistered parameter references
+     * @param keepPreRegParam true if this mbean keeps the preregistered parameter references
+     */
+    public void setKeepPreRegParam(boolean keepPreRegParam) {
+        this.keepPreRegParam = keepPreRegParam;
+    }
+
+    public boolean isImplemNotifEmitter() {
+        return implemNotifEmitter;
+    }
+
+    public void setImplemNotifEmitter(boolean implemNotifEmitter) {
+        this.implemNotifEmitter = implemNotifEmitter;
+    }
+
+    public boolean isGenBrdCasterDeleg() {
+        return genBrdCasterDeleg;
+    }
+
+    public void setGenBrdCasterDeleg(boolean genBrdCasterDeleg) {
+        this.genBrdCasterDeleg = genBrdCasterDeleg;
+    }
+
+    public boolean isGenSeqNumber() {
+        return genSeqNumber;
+    }
+
+    public void setGenSeqNumber(boolean genSeqNumber) {
+        this.genSeqNumber = genSeqNumber;
+    }
+
 }
