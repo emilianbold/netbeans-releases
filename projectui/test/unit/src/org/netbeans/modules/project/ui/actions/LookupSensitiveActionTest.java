@@ -66,6 +66,10 @@ public class LookupSensitiveActionTest extends NbTestCase {
         super.tearDown();
     }
     
+    public boolean runInEQ () {
+        return true;
+    }
+    
     public void testListening() throws Exception {
     
         // Lookup sensitive action has to refresh if and only if

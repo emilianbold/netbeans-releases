@@ -80,6 +80,10 @@ public class ProjectActionTest extends NbTestCase {
         super.tearDown();
     }
     
+    public boolean runInEQ () {
+        return true;
+    }
+    
     public void testCommandEnablement() {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[]{} );
         ProjectAction action = new ProjectAction( "COMMAND", "TestProjectAction", null, lookup );
