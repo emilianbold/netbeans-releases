@@ -36,6 +36,15 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     Action defaultAction;
     /** hash table to map (Action -> ArrayList of KeyStrokes) */
     Map actions;
+    
+    /* The keymap that is currently active */
+    private Keymap active;
+    
+    private final Action NO_ACTION = new KeymapAction(null);
+    
+    public Action createMapAction(Keymap k) {
+        return new KeymapAction(k);
+    }
 
     /** Default constructor
     */
@@ -67,7 +76,38 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     }
 
     public Action getAction(KeyStroke key) {
-        Action a = null;
+        Action a;
+        
+        if (active != null) {
+            a = active.getAction(key);
+
+            if (a != null) {
+                // always reset immediatelly, the action may set the new ctx then
+                active = null; 
+                return a;
+            }
+            
+            // no action, should we reset?
+            if (key.isOnKeyRelease() ||
+                (key.getKeyChar() != 0 && key.getKeyChar() != KeyEvent.CHAR_UNDEFINED)) {
+                
+                return null;
+            } 
+            
+            switch (key.getKeyCode()) {
+                case KeyEvent.VK_SHIFT:
+                case KeyEvent.VK_CONTROL:
+                case KeyEvent.VK_ALT:
+                case KeyEvent.VK_META:
+                    return null;
+            }
+            
+            active = null;
+            
+            // don't fall through, would be misleading
+            return NO_ACTION;
+        }
+        
         synchronized (this) {
             a = (Action) bindings.get(key);
         }
@@ -242,5 +282,93 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     public String toString() {
         return "Keymap[" + name + "]" + bindings; // NOI18N
     }
+    
+    public static class SubKeymap implements Keymap {
+        Object hold;
+        Keymap parent;
+        Map bindings;
+        Action defaultAction;
 
+        public SubKeymap(Object hold) {
+            this.hold = hold;
+            bindings = new HashMap();
+        }
+        
+        public void setMapping(Map m) {
+            bindings = new HashMap(m);
+        }
+        
+        public String getName() {
+            return "name";
+        }
+        
+        public void setResolveParent(Keymap parent) {
+            this.parent = parent;
+        }
+
+        public Keymap getResolveParent() {
+            return parent;
+        }
+
+        public void addActionForKeyStroke(KeyStroke key, Action a) {
+            bindings.put(key, a);
+        }
+
+        public KeyStroke[] getKeyStrokesForAction(Action a) {
+            return new KeyStroke[0];
+        }
+
+        public void setDefaultAction(Action a) {
+                defaultAction = a;
+        }
+
+        public Action getAction(KeyStroke key) {
+            return (Action)bindings.get(key);
+        }
+
+        public boolean isLocallyDefined(KeyStroke key) {
+            return bindings.containsKey(key);
+        }
+
+        public void removeKeyStrokeBinding(KeyStroke keys) {
+            bindings.remove(keys);
+        }
+
+        public Action[] getBoundActions() {
+            synchronized (this) {
+                return (Action[])bindings.values().toArray(new Action[0]);
+            }
+        }
+
+        public KeyStroke[] getBoundKeyStrokes() {
+            synchronized (this) {
+                return (KeyStroke[])bindings.keySet().toArray(new KeyStroke[0]);
+            }
+        }
+  
+        public Action getDefaultAction() {
+            return defaultAction;
+        }
+
+        public void removeBindings() {
+            bindings.clear();
+        }
+    
+    }
+    
+    public class KeymapAction extends javax.swing.AbstractAction {
+        private Keymap keymap;
+        
+        public KeymapAction(Keymap keymap) {
+            this.keymap = keymap;
+        }
+        
+        public Keymap getSubMap() {
+            return keymap;
+        }
+        
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            NbKeymap.this.active = keymap;
+        }
+    }
 }

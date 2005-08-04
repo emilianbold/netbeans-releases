@@ -128,6 +128,86 @@ final class ShortcutsFolder extends FolderInstance {
         return null;
     }
     
+    protected InstanceCookie acceptFolder (DataFolder df) {
+        return createSubMap(df);
+    }
+    
+    private static InstanceCookie createSubMap(DataFolder df) {
+        try {
+            // XXX
+            NbKeymap globalMap = (NbKeymap)Lookup.getDefault().lookup(Keymap.class);
+            Action a = globalMap.createMapAction((Keymap)new SubFolder(df).instanceCreate());
+            KeyActionPair pair = new KeyActionPair(df.getName(), a);
+            return pair;
+        } catch (IOException x) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+        } catch (ClassNotFoundException x) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+        }
+        return null;
+        
+    }
+
+    private static class SubFolder extends FolderInstance {
+        private NbKeymap.SubKeymap keymap;
+        
+        public SubFolder(DataFolder df) {
+            super(df);
+            keymap = new NbKeymap.SubKeymap(this);
+        }
+
+        protected Object createInstance(InstanceCookie[] cookies)
+                                throws IOException, ClassNotFoundException {
+            HashMap map = new HashMap(3*cookies.length/2);
+            for (int i = 0; i < cookies.length; i++) {
+                String keyname = cookies[i].instanceName();
+                KeyStroke stroke = Utilities.stringToKey (keyname);
+                if (stroke == null) {
+                    ErrorManager.getDefault ().
+                        getInstance ("org.netbeans.core.ShortcutsFolder"). // NOI18N
+                        log (ErrorManager.WARNING, "Warning: unparsable keystroke: " + keyname); // NOI18N
+                    continue;
+                }
+                Action action = (Action)cookies[i].instanceCreate();
+                map.put (stroke, action);
+            }
+            keymap.setMapping(map);
+            return keymap;
+        }
+        
+        protected InstanceCookie acceptDataObject(final DataObject dob) {
+            InstanceCookie ic = super.acceptDataObject(dob);
+            if (ic != null) {
+                try {
+                    final Object o = ic.instanceCreate();
+                    if (o instanceof Action) {
+                        // XXX #37306
+                        if(dob instanceof DataShadow) {
+                            // bugfix #41500, replan puting to EQ
+                            Mutex.EVENT.writeAccess (new Runnable () {
+                                public void run () {
+                                    ((Action)o).putValue(KEY_ORIGINAL_FILE_PATH, ((DataShadow)dob).getOriginal().getPrimaryFile().getPath());
+                                }
+                            });
+                        }
+                        KeyActionPair pair = new KeyActionPair(dob.getName(), (Action)o);
+                        return pair;
+                    }
+                } catch (IOException x) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+                } catch (ClassNotFoundException x) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, x);
+                }
+            }
+            return null;
+        }
+    
+        protected InstanceCookie acceptFolder (DataFolder df) {
+            return createSubMap(df);
+        }
+    }
+
+    
     // -----------------------------------------------------------------------------
     // Static methods
 
