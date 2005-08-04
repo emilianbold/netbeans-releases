@@ -81,17 +81,27 @@ class NavigatorTC extends TopComponent {
         setToEmpty();
     }
 
-    /** Singleton accessor */
+    /** Singleton accessor, finds instance in winsys structures */
     public static final NavigatorTC getInstance () {
-        if (instance == null) {
-            instance = (NavigatorTC)WindowManager.getDefault().
+        NavigatorTC navTC = (NavigatorTC)WindowManager.getDefault().
                         findTopComponent("navigatorTC"); //NOI18N
-            if (instance == null) {
-                // shouldn't happen under normal conditions
-                instance = new NavigatorTC();
-                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
-                    "Could not locate the navigator component via its winsys id"); //NOI18N
-            }
+        if (navTC == null) {
+            // shouldn't happen under normal conditions
+            navTC = privateGetInstance();
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+                "Could not locate the navigator component via its winsys id"); //NOI18N
+        }
+        return instance;
+    }
+    
+    /** Singleton intance accessor, to be used only from module's layer.xml
+     * file, winsys section and as fallback from getInstance().
+     *
+     * Please don't call directly otherwise.
+     */ 
+    public static final NavigatorTC privateGetInstance () {
+        if (instance == null) {
+            instance = new NavigatorTC();
         }
         return instance;
     }
