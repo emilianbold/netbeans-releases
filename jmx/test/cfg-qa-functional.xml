@@ -32,6 +32,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/RunUnitMBeanTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/managerwizard/CreateManagerProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/managerwizard/ConstructManager.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/CreateActionsProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/MBeanRegistTests.class"/>
             </patternset>
         </testset>
     </testbag>
