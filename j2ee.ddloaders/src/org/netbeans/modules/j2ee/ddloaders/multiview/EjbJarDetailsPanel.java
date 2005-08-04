@@ -16,7 +16,7 @@ import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbDetailForm;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 import java.awt.event.ActionEvent;
@@ -32,8 +32,8 @@ public class EjbJarDetailsPanel extends EjbDetailForm {
 
     private class LargeIconEditorModel extends TextItemEditorModel {
 
-        public LargeIconEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject, true, true);
+        public LargeIconEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, true, true);
         }
 
         protected String getValue() {
@@ -47,8 +47,8 @@ public class EjbJarDetailsPanel extends EjbDetailForm {
 
     private class SmallIconEditorModel extends TextItemEditorModel {
 
-        public SmallIconEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject, true, true);
+        public SmallIconEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, true, true);
         }
 
         protected String getValue() {
@@ -62,8 +62,8 @@ public class EjbJarDetailsPanel extends EjbDetailForm {
 
     private class DescriptionEditorModel extends TextItemEditorModel {
 
-        public DescriptionEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject, true, true);
+        public DescriptionEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, true, true);
         }
 
         protected String getValue() {
@@ -77,8 +77,8 @@ public class EjbJarDetailsPanel extends EjbDetailForm {
 
     private class DisplayNameEditorModel extends TextItemEditorModel {
 
-        public DisplayNameEditorModel(XmlMultiViewDataObject dataObject) {
-            super(dataObject, true, true);
+        public DisplayNameEditorModel(XmlMultiViewDataSynchronizer synchronizer) {
+            super(synchronizer, true, true);
         }
 
         protected String getValue() {
@@ -94,10 +94,11 @@ public class EjbJarDetailsPanel extends EjbDetailForm {
         super(sectionNodeView);
         this.dataObject = (EjbJarMultiViewDataObject) sectionNodeView.getDataObject();
         this.ejbJar = ejbJar;
-        addRefreshable(new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel(dataObject)));
-        addRefreshable(new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel(dataObject)));
-        addRefreshable(new ItemEditorHelper(getSmallIconTextField(), new SmallIconEditorModel(dataObject)));
-        addRefreshable(new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel(dataObject)));
+        XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
+        addRefreshable(new ItemEditorHelper(getDisplayNameTextField(), new DisplayNameEditorModel(synchronizer)));
+        addRefreshable(new ItemEditorHelper(getDescriptionTextArea(), new DescriptionEditorModel(synchronizer)));
+        addRefreshable(new ItemEditorHelper(getSmallIconTextField(), new SmallIconEditorModel(synchronizer)));
+        addRefreshable(new ItemEditorHelper(getLargeIconTextField(), new LargeIconEditorModel(synchronizer)));
         getBrowseLargeIconButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String relativePath = Utils.browseIcon(dataObject);
