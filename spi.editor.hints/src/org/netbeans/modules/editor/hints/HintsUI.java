@@ -35,6 +35,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 
 /**
@@ -315,65 +318,80 @@ public class HintsUI implements MouseListener, KeyListener {
     public void keyTyped(KeyEvent e) {
     }
     
-    private void invokeHint (Hint h) {
+    private void invokeHint (final Hint h) {
         removePopups();
-        Component gp = this.comp.getRootPane().getGlassPane();
-        Cursor cur = comp.getCursor();
-        gp.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+        final JTextComponent component = comp;
+        final Cursor cur = component.getCursor();
+        component.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+        Task t = null;
         try {
-            //Store component in a local variable - once we move the dot,
-            //the comp ivar will become null
-            JTextComponent c = this.comp;
-            
-            ChangeInfo changes = h.implement();
-            if (changes != null && changes.size() > 0) {
-                ChangeInfo.Change change = changes.get(0);
-                FileObject file = change.getFileObject();
-                if (file != null) {
-                    try {
-                        DataObject dob = 
-                            DataObject.find (file);
-                        
-                        EditCookie ck = 
-                            (EditCookie) dob.getCookie(EditCookie.class);
-                        
-                        if (ck != null) {
-                            //Try EditCookie first so we don't open the form
-                            //editor
-                            ck.edit();
-                        } else {
-                            OpenCookie oc = (OpenCookie) 
-                                dob.getCookie(OpenCookie.class);
-                            
-                            oc.open();
+            t = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    //Store component in a local variable - once we move the dot,
+                    //the comp ivar will become null
+                    JTextComponent c = component;
+
+                    ChangeInfo changes = h.implement();
+                    if (changes != null && changes.size() > 0) {
+                        ChangeInfo.Change change = changes.get(0);
+                        FileObject file = change.getFileObject();
+                        if (file != null) {
+                            try {
+                                DataObject dob = 
+                                    DataObject.find (file);
+
+                                EditCookie ck = 
+                                    (EditCookie) dob.getCookie(EditCookie.class);
+
+                                if (ck != null) {
+                                    //Try EditCookie first so we don't open the form
+                                    //editor
+                                    ck.edit();
+                                } else {
+                                    OpenCookie oc = (OpenCookie) 
+                                        dob.getCookie(OpenCookie.class);
+
+                                    oc.open();
+                                }
+                                EditorCookie edit = (EditorCookie) 
+                                    dob.getCookie (EditorCookie.class);
+
+                                JEditorPane[] panes = edit.getOpenedPanes();
+                                if (panes != null && panes.length > 0) {
+                                    c = panes[0];
+                                } else {
+                                    return;
+                                }
+
+                            } catch (DataObjectNotFoundException donfe) {
+                                ErrorManager.getDefault().notify(donfe);
+                                return;
+                            }
                         }
-                        EditorCookie edit = (EditorCookie) 
-                            dob.getCookie (EditorCookie.class);
-                        
-                        JEditorPane[] panes = edit.getOpenedPanes();
-                        if (panes != null && panes.length > 0) {
-                            c = panes[0];
-                        } else {
-                            return;
+                        /////////////////////////////////
+                        Position start = change.getStart();
+                        Position end = change.getEnd();
+                        if (start != null) {
+                            c.setSelectionStart(start.getOffset());
                         }
-                        
-                    } catch (DataObjectNotFoundException donfe) {
-                        ErrorManager.getDefault().notify(donfe);
-                        return;
+                        if (end != null) {
+                            c.setSelectionEnd(end.getOffset());
+                        }
                     }
                 }
-                
-                Position start = change.getStart();
-                Position end = change.getEnd();
-                if (start != null) {
-                    c.setSelectionStart(start.getOffset());
-                }
-                if (end != null) {
-                    c.setSelectionEnd(end.getOffset());
-                }
-            }
+            });
         } finally {
-            gp.setCursor (cur);
+            if (t != null) {
+                t.addTaskListener(new TaskListener() {
+                    public void taskFinished(Task task) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                component.setCursor (cur);
+                            }
+                        });
+                    }
+                });
+            }
         }
     }
 }
