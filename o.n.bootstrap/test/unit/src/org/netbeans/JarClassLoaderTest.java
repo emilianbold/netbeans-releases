@@ -127,9 +127,69 @@ public class JarClassLoaderTest extends TestCase {
         assertEquals("Loads the same cancel", cancel.loadClass(c, true), global.loadClass(c, true));
     }
     
+    /* Disabling for now as all ProxyClassLoader now have their packages:
+    public void testJustLoadAClass() throws Exception {
+        class NoPackages extends OneClassLoader {
+            public NoPackages (String name, ClassLoader l, ClassLoader l2, String classname) {
+                super(name, l, l2, classname);
+            }
+            
+            public String[] listPopulatedPackages() {
+                return null;
+            }
+        }
+        
+        String c = "org.fakepkg.FakeIfceHidden";
+        
+        Class verify = Class.forName(c, true, getClass().getClassLoader());
+        assertNotNull ("Just to be sure the class really exists on the classpath", verify);
+        
+        NoPackages cancel = new  NoPackages (
+            "load without populated packages", getClass().getClassLoader(), getClass().getClassLoader().getParent(), c            
+        );
+        
+        Class clazz = Class.forName(c, true, cancel);
+        
+        assertEquals ("Right name", c, clazz.getName());
+    }
+     */
+    
+    /** Proxy classloader with optimized packageOwners method.
+     */
+    public static class ExProxyClassLoader extends ProxyClassLoader {
+        public ExProxyClassLoader(ClassLoader[] parents) {
+            super(parents);
+        }
+
+        protected Set packageOwners(String pkg) {
+            HashSet ret = new HashSet();
+            ClassLoader[] parents = getParents();
+            LOOP: for (int i = 0; i <= parents.length; i++) {
+                ClassLoader p = i < parents.length ? parents[i] : this;
+                
+                if (p instanceof ProxyClassLoader) {
+                    String[] list = ((ProxyClassLoader)p).listPopulatedPackages();
+                    assertNotNull("All proxies are supposed to have list: " + p, list);
+                    for (int j = 0; j < list.length; j++) {
+                        if (pkg.equals(list[j])) {
+                            ret.add(p);
+                            continue LOOP;
+                        }
+                    }
+                }
+            }
+
+            return ret.isEmpty() ? null : ret;
+        }
+        
+        public String[] listPopulatedPackages() {
+            return new String[0];
+        }
+    }
+    
     /** Loads one class from the parent class loader, by itself.
      */
-    public static class OneClassLoader extends ProxyClassLoader {
+    public static class OneClassLoader extends ExProxyClassLoader {
         /** set of Strings that we accept */
         private Set classes;
         /** is sealed */
@@ -159,6 +219,18 @@ public class JarClassLoaderTest extends TestCase {
             classes = names;
             this.loadClassLoader = lc;
             this.name = name;
+        }
+        public String[] listPopulatedPackages() {
+            HashSet pkgs = new HashSet();
+            Iterator it = classes.iterator();
+            while(it.hasNext()) {
+                String c = (String)it.next();
+                int indx = c.lastIndexOf('.');
+                if (indx >= 0) {
+                    pkgs.add(c.substring(0, indx + 1).replace('.', '/'));
+                }
+            }
+            return (String[])pkgs.toArray(new String[0]);
         }
     
         /** For our test all packages are special.
@@ -214,15 +286,27 @@ public class JarClassLoaderTest extends TestCase {
         }
         // look up the jars and return a resource based on a content of jars
         protected URL findResource(String name) {
-            return null;
+            if (!name.endsWith(".class")) {
+                return null;
+            }
+            String c = name.substring(0, name.length() - 6).replace('/', '.');
+            if (!classes.contains(c)) {
+                return null;
+            }
+            java.net.URL u = loadClassLoader.getResource(name);
+            assertNotNull ("URL cannot be null", u);
+            return u;
         }
 
         protected Enumeration simpleFindResources(String name) {
-            return org.openide.util.Enumerations.empty();
+            URL u = findResource(name);
+            
+            return u == null ? org.openide.util.Enumerations.empty() : org.openide.util.Enumerations.singleton(u);
         }
         
         public String toString() {
             return name;
         }
+
     }
 }

@@ -146,6 +146,13 @@ abstract class SetupHid extends NbTestCase {
             actions.add("close");
             args.add(new ArrayList(modules));
         }
+        protected Set packageOwners(String pkg) {
+            return new HashSet () {
+                public boolean contains (Object any) {
+                    return true;
+                }
+            };
+        }
     }
     
     protected static final class FakeEvents extends org.netbeans.Events {

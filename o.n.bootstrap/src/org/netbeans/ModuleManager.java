@@ -58,7 +58,6 @@ public final class ModuleManager {
     private final ModuleInstaller installer;
     
     private SystemClassLoader classLoader;
-    private List classLoaderPatches; // List<File|JarFile>
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
     
     private final Events ev;
@@ -70,31 +69,7 @@ public final class ModuleManager {
     public ModuleManager(ModuleInstaller installer, Events ev) {
         this.installer = installer;
         this.ev = ev;
-        String patches = System.getProperty("netbeans.systemclassloader.patches");
-        if (patches != null) {
-            // Probably temporary helper for XTest. By setting this system property
-            // to a classpath (list of directories and JARs separated by the normal
-            // path separator) you may append to the system class loader.
-            System.err.println("System class loader patches: " + patches); // NOI18N
-            classLoaderPatches = new ArrayList();
-            StringTokenizer tok = new StringTokenizer(patches, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                File f = new File(tok.nextToken());
-                if (f.isDirectory()) {
-                    classLoaderPatches.add(f);
-                } else {
-                    try {
-                        classLoaderPatches.add(new JarFile(f));
-                    } catch (IOException ioe) {
-                        Util.err.notify(ioe);
-                    }
-                }
-            }
-        } else {
-            // Normal case.
-            classLoaderPatches = Collections.EMPTY_LIST;
-        }
-        classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.EMPTY_SET);
+        classLoader = new SystemClassLoader(getClassLoaderPatches(), new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.EMPTY_SET);
         updateContextClassLoaders(classLoader, true);
     }
     
@@ -310,10 +285,10 @@ public final class ModuleManager {
         ClassLoader[] parentCLs = (ClassLoader[])parents.toArray(new ClassLoader[parents.size()]);
         SystemClassLoader nue;
         try {
-            nue = new SystemClassLoader(classLoaderPatches, parentCLs, modules);
+            nue = new SystemClassLoader(getClassLoaderPatches(), parentCLs, modules);
         } catch (IllegalArgumentException iae) {
             Util.err.notify(iae);
-            nue = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {ModuleManager.class.getClassLoader()}, Collections.EMPTY_SET);
+            nue = new SystemClassLoader(getClassLoaderPatches(), new ClassLoader[] {ModuleManager.class.getClassLoader()}, Collections.EMPTY_SET);
         }
         synchronized (classLoaderLock) {
             classLoader = nue;
@@ -362,6 +337,7 @@ public final class ModuleManager {
         private final PermissionCollection allPermissions;
         private final StringBuffer debugme;
         private boolean empty = true;
+        private Set/*<String>*/ packages;
         
         public SystemClassLoader(List files, ClassLoader[] parents, Set modules) throws IllegalArgumentException {
             super(files, parents, false);
@@ -388,6 +364,14 @@ public final class ModuleManager {
             }
             record(modules);
             debugme.append(']'); // NOI18N
+
+            if (!files.isEmpty()) {
+                packages = new HashSet();
+                String[] arr = listPopulatedPackages();
+                for (int i = 0; i < arr.length; i++) {
+                    packages.add(arr[i]);
+                }
+            }
         }
         
         private void record(Collection modules) {
@@ -420,10 +404,38 @@ public final class ModuleManager {
         }
         
         protected boolean isSpecialResource(String pkg) {
-            if (installer.isSpecialResource(pkg)) {
-                return true;
+            return installer.isSpecialResource(pkg);
+        }
+        
+        protected Set packageOwners(String pkg) {
+            final Set ret = installer.packageOwners(pkg);
+            if (packages == null) {
+                return ret;
             }
-            return super.isSpecialResource(pkg);
+            
+            return new AbstractSet () {
+                public boolean contains(Object o) {
+                    if (ret == null) {
+                        return true;
+                    }
+                    
+                    return o == SystemClassLoader.this || ret.contains(o);
+                }
+
+                public int size() {
+                    if (ret == null) {
+                        return 1;
+                    }
+                    return ret.size() + 1;
+                }
+
+                public Iterator iterator() {
+                    HashSet h = new HashSet(ret);
+                    h.add(SystemClassLoader.this);
+                    return h.iterator();
+                }
+                
+            };
         }
         
         /** Provide all permissions for any code loaded from the files list
@@ -431,6 +443,22 @@ public final class ModuleManager {
          */
         protected PermissionCollection getPermissions(CodeSource cs) {
             return allPermissions;
+        }
+
+        protected Package definePackage(String name, String specTitle, String specVersion, String specVendor, String implTitle, String implVersion, String implVendor, URL sealBase) throws IllegalArgumentException {
+            if (packages != null) {
+                // this is needed for patches, sometimes they define the 
+                // same packages as existing modules and this does no 
+                // good, better to catch the exception here
+                try {
+                    return super.definePackage(name, specTitle, specVersion, specVendor, implTitle, implVersion, implVendor, sealBase);
+                } catch (IllegalArgumentException ex) {
+                    ex.printStackTrace();
+                    return super.getPackage(name);
+                }
+            }
+            
+            return super.definePackage(name, specTitle, specVersion, specVendor, implTitle, implVersion, implVendor, sealBase);
         }
 
     }
@@ -497,6 +525,8 @@ public final class ModuleManager {
         return m;
     }
     
+    /** Used to get list of packages from cache.
+     */
     /** Used by Module to communicate with the ModuleInstaller re. dependencies. */
     void refineDependencies(Module m, Set dependencies) {
         installer.refineDependencies(m, dependencies);
@@ -573,6 +603,11 @@ public final class ModuleManager {
     Manifest loadManifest(File jar) throws IOException {
         return installer.loadManifest(jar);
     }
+    
+    Set packageOwners(String pkg) {
+        return installer.packageOwners(pkg);
+    }
+    
 
     private void subCreate(Module m) throws DuplicateException {
         Util.err.log("created: " + m);
@@ -1534,6 +1569,37 @@ public final class ModuleManager {
         }
         installer.close(modules);
         return true;
+    }
+
+    /** Computes the list of patches for the current system.
+     * Usually returns empty list.
+     * @return List<File|JarFile>
+     */
+    private List getClassLoaderPatches() {
+        String patches = System.getProperty("netbeans.systemclassloader.patches");
+        if (patches == null) {
+            // Normal case.
+            return Collections.EMPTY_LIST;
+        }
+        // Probably temporary helper for XTest. By setting this system property
+        // to a classpath (list of directories and JARs separated by the normal
+        // path separator) you may append to the system class loader.
+        System.err.println("System class loader patches: " + patches); // NOI18N
+        ArrayList classLoaderPatches = new ArrayList();
+        StringTokenizer tok = new StringTokenizer(patches, File.pathSeparator);
+        while (tok.hasMoreTokens()) {
+            File f = new File(tok.nextToken());
+            if (f.isDirectory()) {
+                classLoaderPatches.add(f);
+            } else {
+                try {
+                    classLoaderPatches.add(new JarFile(f));
+                } catch (IOException ioe) {
+                    Util.err.notify(ioe);
+                }
+            }
+        }
+        return classLoaderPatches;
     }
     
 }

@@ -1185,10 +1185,7 @@ public final class Module extends ModuleInfo {
         }
 
         protected boolean isSpecialResource(String pkg) {
-            if (mgr.isSpecialResource(pkg)) {
-                return true;
-            }
-            return super.isSpecialResource(pkg);
+            return mgr.isSpecialResource(pkg);
         }
         
         protected boolean shouldDelegateResource(String pkg, ClassLoader parent) {
@@ -1217,6 +1214,10 @@ public final class Module extends ModuleInfo {
             } else {
                 Util.err.log("Now resources for " + getCodeNameBase() + " have been released."); // NOI18N
             }
+        }
+
+        protected Set packageOwners(String pkg) {
+            return getModule().getManager().packageOwners(pkg);
         }
     }
     

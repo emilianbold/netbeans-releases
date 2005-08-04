@@ -17,7 +17,9 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
+import org.netbeans.ModuleManager;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 
@@ -62,26 +64,60 @@ public class NbInstallerTest9 extends SetupHid {
     public void testManifestCaching() throws Exception {
         File workdir = getWorkDir();
         System.setProperty("netbeans.user", workdir.getAbsolutePath());
-        ModuleInstaller inst = new org.netbeans.core.startup.NbInstaller(new FakeEvents());
+        FakeEvents ev = new FakeEvents();
+        NbInstaller inst = new org.netbeans.core.startup.NbInstaller(ev);
+        ModuleManager mgr = new ModuleManager(inst, ev);
+        inst.registerManager(mgr);
+        
         File littleJar = new File(workdir, "little-manifest.jar");
+        Module m1 = mgr.create(littleJar, null, false, false, false);
+        
         //inst.loadManifest(littleJar).write(System.out);
         assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
         File mediumJar = new File(workdir, "medium-manifest.jar");
+        Module m2 = mgr.create(mediumJar, null, false, false, false);
+
         assertEquals(getManifest(mediumJar), inst.loadManifest(mediumJar));
         File bigJar = new File(workdir, "big-manifest.jar");
+        Module m3 = mgr.create(bigJar, null, false, false, false);
         assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));
+        
+        // enable them
+        try {
+            mgr.mutexPrivileged().enterWriteAccess();
+            
+            mgr.enable(new HashSet (Arrays.asList (new Object[] { m1, m2, m3})));
+            
+        } finally {
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
+        
         // trigger cache saving - this is sort of a hack, there is no API to do it
         inst.load(Collections.EMPTY_LIST);
         File allManifestsDat = new File(new File(new File(workdir, "var"), "cache"), "all-manifests.dat");
         assertTrue("File " + allManifestsDat + " exists", allManifestsDat.isFile());
         // Create a new NbInstaller, since otherwise it turns off caching...
         inst = new org.netbeans.core.startup.NbInstaller(new FakeEvents());
+        
         assertEquals(getManifest(littleJar), inst.loadManifest(littleJar));
         assertEquals(getManifest(mediumJar), inst.loadManifest(mediumJar));
         assertEquals(getManifest(bigJar), inst.loadManifest(bigJar));
+        
+        int i1 = inst.getIndex(littleJar);
+        int i2 = inst.getIndex(mediumJar);
+        int i3 = inst.getIndex(bigJar);
+
+        int[] data = { -1, -1, -1 };
+        
+        data[i1] = 1;
+        data[i2] = 2;
+        data[i3] = 3;
+        
+        int all = data[0] + data[1] + data[2];
+        assertEquals ("Each of the jar files has a unique id", 6, all);
     }
     
-    private static Manifest getManifest(File jar) throws IOException {
+    static Manifest getManifest(File jar) throws IOException {
         JarFile jf = new JarFile(jar);
         try {
             return jf.getManifest();

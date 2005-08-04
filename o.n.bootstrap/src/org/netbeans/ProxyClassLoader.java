@@ -29,27 +29,26 @@ import java.security.PrivilegedAction;
  *
  * @author  Petr Nejedly, Jesse Glick
  */
-public class ProxyClassLoader extends ClassLoader {
+public abstract class ProxyClassLoader extends ClassLoader {
     
     /** #38368: Allow disabling the default package warning */
     private static final boolean DO_NOT_WARN_DEFAULT_PACKAGE = Boolean.getBoolean("org.netbeans.do_not_warn_default_package"); // NOI18N
     
-    /**
-     * All known package owners.
-     * Packages are given in format <samp>org/netbeans/modules/foo/</samp>.
-     * Of type <code>Map&lt;String,ClassLoader&gt;</code>.
-     */
-    private final Map domainsByPackage = new HashMap(); 
     /** All known packages, of type <code>Map&lt;String,Package&gt;</code> */
     private final Map packages = new HashMap();
+    
+    /** All known exact mappings to classes */
+    private final Map classes = new HashMap();
 
-    /** All parents of this classloader, including their parents recursively */
+    /** 
+     * Including their parents recursively */
     private ClassLoader[] parents;
 
     /** if true, we have been destroyed */
     private boolean dead = false;
     
     private final boolean transitive;
+    
     
     /** Create a multi-parented classloader.
      * Loads recursively from parents.
@@ -83,6 +82,30 @@ public class ProxyClassLoader extends ClassLoader {
         this.parents = coalesceParents(parents);
     }
     
+    /** For testing purposes, allows access to the list of parents.
+     */
+    final ClassLoader[] getParents() {
+        return this.parents;
+    }
+    
+    /** Allows the subclasses to provide a set of ClassLoader that
+     * are supposed to contain the specific packages. Implementation
+     * can use whatever caching it wishes to provide the desired result.
+     * 
+     *
+     * @param pkg the name of the package to query
+     * @return null if this method is not implemented, or a set (which needs
+     *   only a <code>contains</code> method implemented) that will answer
+     *   true on all ClassLoader that could possibly contain the package
+     */
+    protected abstract Set/*<ClassLoader>*/ packageOwners(String pkg);
+    
+    /** Computes list of packages supported by this loader for optimizing
+     * the resource location check.
+     * @return array of strings or null, if this is not supported
+     */
+    public abstract String[] listPopulatedPackages();
+    
     // this is used only by system classloader, maybe we can redesign it a bit
     // to live without this functionality, then destroy may also go away
     /** Add new parents dynamically.
@@ -96,7 +119,12 @@ public class ProxyClassLoader extends ClassLoader {
             if (nueparents[i] == null) throw new IllegalArgumentException("null parent"); // NOI18N
         }
         
-        parents = coalesceAppend(parents, nueparents);
+        ArrayList existing = new ArrayList();
+        existing.addAll(Arrays.asList(parents));
+        
+        this.parents = coalesceAppend(
+            existing, nueparents
+        );
     }
 
     
@@ -144,10 +172,21 @@ public class ProxyClassLoader extends ClassLoader {
             throw new ClassNotFoundException("Will not load classes from default package (" + name + ")"); // NOI18N
         }
         String pkg = filename.substring(0, idx + 1); // "org/netbeans/modules/foo/"
-        Class c = smartLoadClass(name, filename, pkg);
-        if(c == null) {
+        Class c = findLoadedClass(name);
+        if(c != null) {
+            return c;
+        }
+        
+        Object obj = iterateInOrder(1, name, filename, pkg, null);
+        if (obj instanceof ClassNotFoundException) {
+            throw (ClassNotFoundException)obj;
+        }
+
+        if(obj == null) {
             throw new ClassNotFoundException(name);
         }
+        
+        c = (Class)obj;
         if (resolve) resolveClass(c);
         return c;
     }
@@ -169,7 +208,6 @@ public class ProxyClassLoader extends ClassLoader {
         return null;
     }
     
-
     /**
      * Finds the resource with the given name. The implementation of
      * this method searches for resources in the following order:<p>
@@ -194,55 +232,8 @@ public class ProxyClassLoader extends ClassLoader {
             printDefaultPackageWarning(name);
         }
         final String pkg = name.substring(0, slashIdx + 1);
-
-        if (isSpecialResource(pkg)) {
-            // Disable domain cache for this one, do a simple check.
-            for (int i = 0; i < parents.length; i++) {
-                if (!shouldDelegateResource(pkg, parents[i])) continue;
-                URL u;
-                if (parents[i] instanceof ProxyClassLoader) {
-                    u = ((ProxyClassLoader)parents[i]).findResource(name);
-                } else {
-                    u = parents[i].getResource(name);
-                }
-                if (u != null) return u;
-            }
-            return findResource(name);
-        }
         
-        ClassLoader owner = (ClassLoader)domainsByPackage.get(pkg);
-
-        if (owner != null) { // known package
-            // Note that shouldDelegateResource should already be true for this!
-            if (owner instanceof ProxyClassLoader) {
-                return ((ProxyClassLoader)owner).findResource(name); // we have its parents, skip them
-	    } else {
-                return owner.getResource(name);     // know nothing about this loader and his structure
-            }
-        } 
-        
-        // virgin package
-        URL retVal = null;
-        for (int i = 0; i < parents.length; i++) {
-            owner = parents[i];
-            if (!shouldDelegateResource(pkg, owner)) continue;
-            if (owner instanceof ProxyClassLoader) {
-                retVal = ((ProxyClassLoader)owner).findResource(name); // skip parents (checked already)
-            } else {
-                retVal = owner.getResource(name); // know nothing about this loader and his structure
-            }
-            if (retVal != null) {
-                domainsByPackage.put(new String(pkg).intern(), owner);
-                return retVal;
-            }
-        }
-        
-        // try it ourself
-        retVal = findResource(name);
-        if (retVal != null) {
-            domainsByPackage.put(new String(pkg).intern(), this);
-        }
-        return retVal;
+        return (URL)iterateInOrder(2, name, null, pkg, null);
     }
 
     /** This ClassLoader can't load anything itself. Subclasses
@@ -253,9 +244,9 @@ public class ProxyClassLoader extends ClassLoader {
      *      if the resource could not be found.
      */
     protected URL findResource(String name) {
-	return null;
+        return null;
     }
-
+    
     /**
      * Finds all the resource with the given name. The implementation of
      * this method uses the {@link #simpleFindResources(String)} method to find
@@ -273,23 +264,17 @@ public class ProxyClassLoader extends ClassLoader {
             printDefaultPackageWarning(name);
         }
         final String pkg = name.substring(0, slashIdx + 1);
+        
+        Set query = packageOwners(pkg);
 
         // Don't bother optimizing this call by domains.
         // It is mostly used for resources for which isSpecialResource would be true anyway.
         Enumeration[] es = new Enumeration[parents.length + 1];
-        for (int i = 0; i < parents.length; i++) {
-            if (!shouldDelegateResource(pkg, parents[i])) {
-                es[i] = org.openide.util.Enumerations.empty ();
-                continue;
-            }
-            if (parents[i] instanceof ProxyClassLoader) {
-                es[i] = ((ProxyClassLoader)parents[i]).simpleFindResources(name);
-            } else {
-                es[i] = parents[i].getResources(name);
-            }
+        IOException ex = (IOException)iterateInOrder(3, name, null, pkg, es);
+        if (ex != null) {
+            throw ex;
         }
-        es[parents.length] = simpleFindResources(name);
-        // Should not be duplicates, assuming the parent loaders are properly distinct
+        // Should not be duplicates (except null), assuming the parent loaders are properly distinct
         // from one another and do not overlap in JAR usage, which they ought not.
         // Anyway MetaInfServicesLookup, the most important client of this method, does
         // its own duplicate filtering already.
@@ -366,14 +351,14 @@ public class ProxyClassLoader extends ClassLoader {
      */
     protected Package definePackage(String name, String specTitle,
                 String specVersion, String specVendor, String implTitle,
-		String implVersion, String implVendor, URL sealBase )
-		throws IllegalArgumentException {
-	synchronized (packages) {
+		String implVersion, String implVendor, URL sealBase 
+    ) throws IllegalArgumentException {
+        synchronized (packages) {
             Package pkg = super.definePackage (name, specTitle, specVersion, specVendor, implTitle,
 			implVersion, implVendor, sealBase);
             packages.put(name, pkg);
             return pkg;
-	}
+        }
     }
 
     /**
@@ -452,14 +437,13 @@ public class ProxyClassLoader extends ClassLoader {
     
     /** Coalesce a new set of loaders into the existing ones.
      */
-    private ClassLoader[] coalesceAppend(ClassLoader[] existing, ClassLoader[] appended) throws IllegalArgumentException {
-        int likelySize = existing.length + 3;
+    private ClassLoader[] coalesceAppend(List existingL, ClassLoader[] appended) throws IllegalArgumentException {
+        int likelySize = appended.length + existingL.size() + 3;
         Set resultingUnique = new HashSet(likelySize);
-        List existingL = Arrays.asList(existing);
         resultingUnique.addAll(existingL);
         if (resultingUnique.containsAll(Arrays.asList(appended))) {
             // No change required.
-            return existing;
+            return (ClassLoader[])existingL.toArray(new ClassLoader[0]);
         }
         List resulting = new ArrayList(likelySize);
         resulting.addAll(existingL);
@@ -483,44 +467,6 @@ public class ProxyClassLoader extends ClassLoader {
         resulting.add(loader);
     }
 
-    /** A method that finds a class either in itself or in parents.
-     * It uses dual signaling for class not found: it can either return null
-     * or throw CNFE itself.
-     * @param name class name, e.g. "org.netbeans.modules.foo.Clazz"
-     * @param fileName resource name, e.g. "org/netbeans/modules/foo/Clazz.class"
-     * @param pkg package component, e.g. "org/netbeans/modules/foo/"
-     * @return a class or null if not found. It can also throw an exception.
-     * @throws ClassNotFoundException in case it doesn't found a class
-     * and a parent eglible for loading it thrown it already.
-     */
-    private final Class smartLoadClass(String name, String fileName, String pkg) throws ClassNotFoundException {
-	// First, check if the class has already been loaded
-	Class c = findLoadedClass(name);
-	if(c != null) return c;
-        
-        final ClassLoader owner = isSpecialResource(pkg) ? null : (ClassLoader)domainsByPackage.get(pkg);
-        if (owner == this) {
-            return simpleFindClass(name, fileName, pkg);
-        }
-        if (owner != null) {
-            // Note that shouldDelegateResource should already be true as we hit this pkg before.
-            if (owner instanceof ProxyClassLoader) {
-                return ((ProxyClassLoader)owner).fullFindClass(name, fileName, pkg);
-            } else {
-                return owner.loadClass(name); // May throw CNFE, will be propagated
-            }
-        }
-        
-        // Virgin package, do the parent scan 
-        c = loadInOrder(name, fileName, pkg);
-
-        if (c != null) {
-            final ClassLoader owner2 = getClassClassLoader(c); // who got it?
-            domainsByPackage.put(new String(pkg).intern(), owner2);
-        }
-        return c;
-    }
-
     // #29844 run as privileged as it may get called by loadClassInternal() used
     // during class resolving by JVM with arbitrary ProtectionDomain context stack
     private static ClassLoader getClassClassLoader(final Class c) {
@@ -530,53 +476,170 @@ public class ProxyClassLoader extends ClassLoader {
             }
         });
     }
+    
+    private static final ClassLoader[] EMPTY = new ClassLoader[0];
+    private static final Set ALL = new AbstractSet() {
+        public boolean contains(Object o) {
+            return true;
+        }
+        public int size() {
+            return Integer.MAX_VALUE;
+        }
+        public Iterator iterator() {
+            return Collections.EMPTY_LIST.iterator();
+        }
+    };
 
-    private final Class loadInOrder( String name, String fileName, String pkg ) throws ClassNotFoundException {
+    /** @param operation 1 == loadClass, 2 == getResource, 3 == getResources 
+     */
+    private final Object iterateInOrder(
+        int operation,
+        String name, 
+        String fileName, 
+        String pkg,
+        Enumeration[] out /* output or null */
+    ) {
+        Set askOnly;
+        ClassLoader[] arr;
         ClassNotFoundException cached = null;
-        for (int i = 0; i < parents.length; i++) {
-	    ClassLoader par = parents[i];
-            if (!shouldDelegateResource(pkg, par)) continue;
-	    if (par instanceof ProxyClassLoader) {
-                ProxyClassLoader pcl = (ProxyClassLoader)par;
-		Class c = pcl.fullFindClass(name, fileName, pkg);
-                // pcl might have have c in its already-loaded classes even though
-                // it was not the defining class loader. In that case, if pcl was
-                // not transitive (should not expose its own parents), reject this.
-                if (c != null && (pcl.transitive || getClassClassLoader(c) == pcl)) return c;
-	    } else {
-                // The following is an optimization, it should not affect semantics:
-                boolean skip = false;
-                if (name.startsWith("org.netbeans.") || // NOI18N
-                        name.startsWith("org.openide.") || // NOI18N
-                        name.endsWith(".Bundle") || // NOI18N
-                        name.endsWith("BeanInfo") || // NOI18N
-                        name.endsWith("Editor")) { // NOI18N
-                    if (par.getResource(fileName) == null) {
-                        // We would just throw CNFE anyway, don't bother!
-                        // Avg. (over ten runs after primer, w/ netbeans.close):
-                        // before: 13.87s after: 13.40s saved: 1.3%
-                        skip = true;
-                    }
+        
+        ClassLoader checkLast = (ClassLoader)classes.get(pkg);
+        if (checkLast != null) {
+            askOnly = ALL;
+            arr = EMPTY;
+        } else {
+            askOnly = packageOwners(pkg);
+            arr = this.parents;
+            checkLast = this;
+        }
+        
+        int len = arr.length;
+        for (int i = 0; i <= len; i++) {
+            ClassLoader par = i == len ? checkLast : arr[i];
+            
+            if (par instanceof ProxyClassLoader) {
+                ProxyClassLoader p = (ProxyClassLoader)par;
+                
+                if (askOnly == null) {
+                    // ok, we know there is this package missing
+                    // among ProxyClassLoaders
+                    continue;
                 }
-                if (!skip) {
-                    try {
-                        return par.loadClass(name);
-                    } catch( ClassNotFoundException cnfe ) {
-                        cached = cnfe;
-                    }
+                if (!askOnly.contains(p)) {
+                    // ok, we know p does not have this package
+                    continue;
                 }
-	    }
-	}
-
-        Class c = simpleFindClass(name, fileName, pkg); // Try it ourselves
-        if (c != null) return c;
-        if (cached != null) throw cached;
-	return null;
+                
+                if (p != this && !shouldDelegateResource(pkg, p)) {
+                    // ok, usual check, is here for compatibility
+                    // as I do not know what would happen if I removed it
+                    continue;
+                }
+       
+                switch (operation) {
+                    case 1: {
+                        Class c = p.fullFindClass(name, fileName, pkg);
+                        // pcl might have have c in its already-loaded classes even though
+                        // it was not the defining class loader. In that case, if pcl was
+                        // not transitive (should not expose its own parents), reject this.
+                        if (c != null) {
+                            ClassLoader l = getClassClassLoader(c);
+                            if (p.transitive || l == p) {
+                                if (askOnly.size() == 1) {
+                                    classes.put(pkg, l);
+                                }
+                            
+                                return c;
+                            }
+                        }
+                        break;
+                    }
+                    case 2: {
+                        URL u = p.findResource(name);
+                        if (u != null) {
+                            return u;
+                        }
+                        break;
+                    }
+                    case 3: {
+                        try {
+                            out[i] = p.simpleFindResources(name);
+                        } catch (IOException ex) {
+                            return ex;
+                        }
+                        break;
+                    }
+                    default:
+                        throw new IllegalArgumentException("Op: " + operation); // NOI18N
+                }
+            } else {
+                // this is regular classloader, so either we know
+                // nothing about the packages or the classloader is in
+                // the set
+                if (askOnly != null && !askOnly.contains(par)) {
+                    continue;
+                }
+                if (par != this && !shouldDelegateResource(pkg, par)) {
+                    continue;
+                }
+                
+                switch (operation) {
+                    case 1: {
+                        // The following is an optimization, it should not affect semantics:
+                        boolean skip = false;
+                        if (name.startsWith("org.netbeans.") || // NOI18N
+                                name.startsWith("org.openide.") || // NOI18N
+                                name.endsWith(".Bundle") || // NOI18N
+                                name.endsWith("BeanInfo") || // NOI18N
+                                name.endsWith("Editor")) { // NOI18N
+                            if (par.getResource(fileName) == null) {
+                                // We would just throw CNFE anyway, don't bother!
+                                // Avg. (over ten runs after primer, w/ netbeans.close):
+                                // before: 13.87s after: 13.40s saved: 1.3%
+                                skip = true;
+                            }
+                        }
+                        if (!skip) {
+                            try {
+                                Class c = par.loadClass(name);
+                                if (askOnly == null) {
+                                    classes.put(pkg, par);
+                                }
+                                return c;
+                            } catch( ClassNotFoundException cnfe ) {
+                                cached = cnfe;
+                            }
+                        }
+                        break;
+                    }
+                    case 2: {
+                        URL u = par.getResource(name);
+                        if (u != null) {
+                            return u;
+                        }
+                        break;
+                    }
+                    case 3: {
+                        try {
+                            out[i] = par.getResources(name);
+                        } catch (IOException ex) {
+                            return ex;
+                        }
+                        break;
+                    }
+                    default:
+                        throw new IllegalArgumentException("Op: " + operation); // NOI18N
+                }
+                
+            }
+        }
+        
+        return cached;
     }
 
     private synchronized Class fullFindClass(String name, String fileName, String pkg) {
-	Class c = findLoadedClass(name);
-	return (c == null) ? simpleFindClass(name, fileName, pkg) : c;
+        Class c = findLoadedClass(name);
+        return (c == null) ? simpleFindClass(name, fileName, pkg) : c;
     }    
 
     private void addPackages(Map all, Package[] pkgs) {
@@ -641,7 +704,7 @@ public class ProxyClassLoader extends ClassLoader {
                     return false;
                 }
 
-                if (array[index].hasMoreElements ()) {
+                if (array[index] != null && array[index].hasMoreElements ()) {
                     return true;
                 }
                 
@@ -654,6 +717,10 @@ public class ProxyClassLoader extends ClassLoader {
         * @exception  NoSuchElementException  if no more elements exist.
         */
         public Object nextElement() {
+            if (array[index] == null) {
+                index++;
+                return nextElement();
+            }
             try {
                 return array[index].nextElement ();
             } catch (NoSuchElementException ex) {
@@ -667,5 +734,4 @@ public class ProxyClassLoader extends ClassLoader {
             }
         }
     }
-    
 }
