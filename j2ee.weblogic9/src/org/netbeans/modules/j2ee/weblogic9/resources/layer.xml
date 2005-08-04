@@ -77,13 +77,11 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
                 
-                <!--
-                <file name="AppServerPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentPlanSplitter"/>
+                <file name="WLPlanSplitter.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.config.WLPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.config.WLPlanSplitter"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
                 </file>
-                -->
                 
                 <!--
                     Server-specific deployment configuration files' names, 
@@ -95,6 +93,9 @@
                     </folder>
                     <folder name="WAR">
                         <file name="WEB-INF\weblogic.xml"/>
+                    </folder>
+                    <folder name="EJB">
+                        <file name="META-INF\weblogic-ejb-jar.xml"/>
                     </folder>
                 </folder>
             </folder>

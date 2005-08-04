@@ -23,6 +23,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import javax.enterprise.deploy.spi.factories.*;
 import javax.enterprise.deploy.spi.status.*;
+import org.netbeans.modules.j2ee.weblogic9.config.DepConfig;
 
 import org.openide.*;
 import org.openide.util.*;
@@ -211,20 +212,7 @@ public class WLDeploymentManager implements DeploymentManager {
      */
     public DeploymentConfiguration createConfiguration(
         DeployableObject deployableObject) throws InvalidModuleException {
-//        return new WLDeploymentConfiguration(dm, deployableObject);
-        DeployableObject dobj;
-        if (deployableObject instanceof J2eeApplicationObject) {
-            dobj = new WLJ2eeApplicationObject(
-                    (J2eeApplicationObject) deployableObject);
-        } else {
-            dobj = new WLDeployableObject(deployableObject);
-        }
-        modifiedLoader();
-        try {
-            return dm.createConfiguration(dobj);
-        } finally {
-            originalLoader();
-        }
+        return new DepConfig(deployableObject,this);
     }
     
     /**
