@@ -30,15 +30,6 @@ public class MainCLITest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        if (args.length == 0) {
-            TestRunner.run(new NbTestSuite(MainCLITest.class));
-        } else {
-            TestRunner.run (new MainCLITest (args[0]));
-        }
-    }
-    
-    
     public void testHandlersCanBeInUserDir () throws Exception {
         clearWorkDir ();
         
