@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions;
 
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.filesystems.FileObject;
@@ -60,7 +61,7 @@ public class RunASVerifierAction extends NodeAction {
     }
     
     public void launchVerifier(String archiveLocation){
-        String installRoot = System.getProperty("com.sun.aas.installRoot");
+        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); // System.getProperty("com.sun.aas.installRoot");
         System.setProperty("com.sun.aas.configRoot", installRoot+"/config");
         System.setProperty("com.sun.aas.verifier.xsl", installRoot+"/lib/verifier");
         System.setProperty("server.name", "server");

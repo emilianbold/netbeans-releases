@@ -194,7 +194,7 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         String installRoot = null;//dmProps.getLocation();
 
         if (installRoot == null) {
-             installRoot = System.getProperty("com.sun.aas.installRoot"); 
+             installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot"); 
           /*  Util.showInformation(
             NbBundle.getMessage(StartSunServer.class, "MSG_WrongInstallDir"),
             NbBundle.getMessage(StartSunServer.class, "LBL_ErrorTitle"));

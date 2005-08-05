@@ -9,6 +9,7 @@
 				<file name="Factory.instance">
 					<attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.create"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.Installer"/>
+					<attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
 	            		</file>
 				<file name="RegistryNodeFactory.instance">
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.NodeFactory"/>

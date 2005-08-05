@@ -113,7 +113,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if cannot proceed, try later.
      */
     public java.util.Iterator getPublicIDs() {
-        String  installRoot = System.getProperty("com.sun.aas.installRoot");
+        String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot == null) {
             return null;
         }
@@ -136,7 +136,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
-        String  installRoot = System.getProperty("com.sun.aas.installRoot");
+        String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot == null) {
             return null;
         }
@@ -274,7 +274,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
         
         if (SCHEMASLOCATION == null) {
-            String  installRoot = System.getProperty("com.sun.aas.installRoot");
+            String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
             if (installRoot==null)
                 return null;
             File f = new File(installRoot);
@@ -416,7 +416,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
      */
     public String resolveURI(String name) {
        // System.out.println("resolveURI(String name)="+name);
-        String  installRoot = System.getProperty("com.sun.aas.installRoot");
+        String  installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         String prefix ="";
                     File file = new File(installRoot+"/lib/schemas/");
              try{

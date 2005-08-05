@@ -15,11 +15,10 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee.jsps;
 
 import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
 import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
-import org.openide.modules.InstalledFileLocator;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 
 /**
  *
@@ -52,7 +51,7 @@ public class FindJSPServletImpl implements FindJSPServlet {
     }
     
     private File findBaseDir() {
-        String installRoot = System.getProperty("com.sun.aas.installRoot"); 
+        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot"); 
 
  
         if (installRoot == null) {

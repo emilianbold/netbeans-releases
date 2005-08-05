@@ -51,7 +51,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
         } catch (Throwable e){
             //nothin to report there. The node name will indicate the config issue 
             //e.printStackTrace();
-            System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8 PE Location and restart.");
+            System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
             
         }
         
@@ -109,7 +109,7 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
      */
     public boolean handlesURI(String uri) {
         if (uri==null)
-            return false;
+            return false;        
         if (null != innerDF) {
             boolean retval = false;
             try {

@@ -38,6 +38,7 @@ import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.db.runtime.DatabaseRuntime;
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
 
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
 /**
@@ -112,7 +113,7 @@ public class RegisterPointbase implements DatabaseRuntime {
         }
     }
     private void createLocalInstallation(){
-        String installRoot = System.getProperty("com.sun.aas.installRoot");
+        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         String dest = System.getProperty("netbeans.user");
         try{
             unzip(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/j2ee/sun/ide/j2ee/db/pointbasescripts.zip") , new File(dest));
@@ -156,7 +157,7 @@ public class RegisterPointbase implements DatabaseRuntime {
         
     }
     public void   register(){
-        String installRoot = System.getProperty("com.sun.aas.installRoot");
+        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot==null){
             return;
         }
@@ -272,7 +273,7 @@ public class RegisterPointbase implements DatabaseRuntime {
      *
      **/
     public File getScriptsLocation(){
-        String installRoot = System.getProperty("com.sun.aas.installRoot");
+        String installRoot = PluginProperties.getDefault().getInstallRoot().getAbsolutePath(); //System.getProperty("com.sun.aas.installRoot");
         if (installRoot == null) {
             Util.showInformation(NbBundle.getMessage(StartAction.class, "ERR_NotThere"));
             return null;
