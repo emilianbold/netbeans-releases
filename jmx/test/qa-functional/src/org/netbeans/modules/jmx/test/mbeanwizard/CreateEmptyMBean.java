@@ -95,19 +95,19 @@ public class CreateEmptyMBean extends JellyTestCase {
                 mbean.getMBeanName(), mbean.getMBeanPackage());
         nfwo.next();
         
-        fillOptionsPanel(nfwo, mbean);
+        optionStep(nfwo, mbean);
         nfwo.next();
         
-        passAttributes(nfwo);
+        attributeStep(nfwo);
         nfwo.next();
        
-        passOperations(nfwo);
+        operationStep(nfwo);
         nfwo.next();
         
-        passNotifications(nfwo);
+        notificationStep(nfwo);
         nfwo.next();
         
-        passJunit(nfwo);
+        junitStep(nfwo);
         nfwo.finish();
     }
     
@@ -154,7 +154,7 @@ public class CreateEmptyMBean extends JellyTestCase {
     
     //========================= Panel discovery ==================================//
     
-    private void fillOptionsPanel(NewFileWizardOperator nfwo, MBean mbean) {
+    private void optionStep(NewFileWizardOperator nfwo, MBean mbean) {
         // get the generated file name for campare with master files
         String completeGeneratedFileName = getCompleteGeneratedFileName(nfwo);
         String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
@@ -176,21 +176,21 @@ public class CreateEmptyMBean extends JellyTestCase {
                 "mbeanDescriptionJTextField", nfwo));
     }
     
-    private void passAttributes(NewFileWizardOperator nfwo) {
+    private void attributeStep(NewFileWizardOperator nfwo) {
         // attributes
         assertTrue(JellyToolsHelper.verifyTableEnabled("attributeTable",nfwo));
         assertTrue(JellyToolsHelper.verifyButtonEnabled("attrAddJButton",nfwo));
         assertFalse(JellyToolsHelper.verifyButtonEnabled("attrRemoveJButton",nfwo)); 
     }
         
-    private void passOperations(NewFileWizardOperator nfwo) {
+    private void operationStep(NewFileWizardOperator nfwo) {
         // operations
         assertTrue(JellyToolsHelper.verifyTableEnabled("methodTable",nfwo));
         assertTrue(JellyToolsHelper.verifyButtonEnabled("methAddJButton",nfwo));
         assertFalse(JellyToolsHelper.verifyButtonEnabled("methRemoveJButton",nfwo));
     }
     
-    private void passNotifications(NewFileWizardOperator nfwo) {
+    private void notificationStep(NewFileWizardOperator nfwo) {
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("implNotifEmitCheckBox", nfwo));
         assertFalse(JellyToolsHelper.verifyCheckBoxSelected("implNotifEmitCheckBox", nfwo));
         
@@ -202,9 +202,10 @@ public class CreateEmptyMBean extends JellyTestCase {
         assertFalse(JellyToolsHelper.verifyButtonEnabled("notifRemJButton",nfwo));
     }
     
-    private void passJunit(NewFileWizardOperator nfwo) {
+    private void junitStep(NewFileWizardOperator nfwo) {
+        
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("junitJChckBox", nfwo));
-        assertFalse(JellyToolsHelper.verifyCheckBoxSelected("junitJChckBox", nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("junitJChckBox", nfwo));
         
         assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfClassToTest", nfwo));
         assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfTestClass", nfwo));
