@@ -60,7 +60,7 @@
 # which tests to run after the build:
 # "validate" - just validation tests (fastest, default)
 # "full" - validation tests plus all stable developer tests (slower, but safest)
-# a module, e.g. "openide" - validation tests plus all stable developer tests in that module
+# some module name, e.g. "core/palette" - validation tests plus all stable developer tests in that module
 # "none" - do not run tests
 # YOU MUST RUN AT LEAST THE VALIDATION TESTS BEFORE COMMITTING TO THE TRUNK
 #
