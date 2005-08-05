@@ -142,13 +142,13 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <public-packages>
+                <package>org.netbeans.modules.collab.channel.output</package>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/output-schema.jar</runtime-relative-path>
                 <binary-origin>lib/output-schema.jar</binary-origin>
             </class-path-extension>
-            <public-packages>
-                <package>org.netbeans.modules.collab.channel.output</package>
-            </public-packages>
         </data>
     </configuration>
 </project>
