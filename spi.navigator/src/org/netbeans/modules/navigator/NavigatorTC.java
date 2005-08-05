@@ -39,7 +39,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Dafe Simonek
  */
-class NavigatorTC extends TopComponent {
+final class NavigatorTC extends TopComponent {
     
     /** singleton instance */
     private static NavigatorTC instance;
@@ -91,7 +91,7 @@ class NavigatorTC extends TopComponent {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
                 "Could not locate the navigator component via its winsys id"); //NOI18N
         }
-        return instance;
+        return navTC;
     }
     
     /** Singleton intance accessor, to be used only from module's layer.xml
