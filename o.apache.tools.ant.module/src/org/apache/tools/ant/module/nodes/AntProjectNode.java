@@ -23,6 +23,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Mutex;
@@ -34,10 +35,8 @@ import org.w3c.dom.Element;
 public final class AntProjectNode extends DataNode implements ChangeListener {
     
     public AntProjectNode (DataObject obj) {
-        this(obj, (AntProjectCookie)obj.getCookie(AntProjectCookie.class));
-    }
-    private AntProjectNode(DataObject obj, AntProjectCookie cookie) {
-        super(obj, new AntProjectChildren(cookie));
+        super(obj, Children.LEAF);
+        AntProjectCookie cookie = (AntProjectCookie) obj.getCookie(AntProjectCookie.class);
         cookie.addChangeListener(WeakListeners.change(this, cookie));
     }
     

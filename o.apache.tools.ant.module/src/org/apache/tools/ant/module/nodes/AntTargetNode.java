@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.apache.tools.ant.module.nodes;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -43,11 +42,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.NodeEvent;
-import org.openide.nodes.NodeListener;
-import org.openide.nodes.NodeMemberEvent;
-import org.openide.nodes.NodeOp;
-import org.openide.nodes.NodeReorderEvent;
 import org.openide.nodes.Sheet;
 import org.openide.text.Line;
 import org.openide.util.NbBundle;
@@ -59,7 +53,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-final class AntTargetNode extends AbstractNode implements ChangeListener, NodeListener {
+final class AntTargetNode extends AbstractNode implements ChangeListener {
     
     /** main project, not necessarily the one defining this target */
     private final AntProjectCookie project;
@@ -84,11 +78,11 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
         setDisplayName(target.getName());
         if (target.isDescribed()) {
             setShortDescription(target.getElement().getAttribute("description")); // NOI18N
-            setIconBase ("org/apache/tools/ant/module/resources/EmphasizedTargetIcon");
+            setIconBaseWithExtension("org/apache/tools/ant/module/resources/EmphasizedTargetIcon.gif");
         } else if (target.isDefault()) {
-            setIconBase ("org/apache/tools/ant/module/resources/EmphasizedTargetIcon");
+            setIconBaseWithExtension("org/apache/tools/ant/module/resources/EmphasizedTargetIcon.gif");
         } else {
-            setIconBase ("org/apache/tools/ant/module/resources/TargetIcon");
+            setIconBaseWithExtension("org/apache/tools/ant/module/resources/TargetIcon.gif");
         }
         getCookieSet().add(new TargetOpenCookie(target));
     }
@@ -134,23 +128,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
         firePropertyChange (null, null, null);
     }
 
-    /** Inherit cookies from parent node.
-     * Permits e.g. subnodes to be saved directly.
-     */
-    public org.openide.nodes.Node.Cookie getCookie (Class clazz) {
-        org.openide.nodes.Node.Cookie supe = super.getCookie (clazz);
-        if (supe != null) return supe;
-        org.openide.nodes.Node parent = getParentNode ();
-        if (parent != null) {
-            if (! attachedCookieListener) {
-                attachedCookieListener = true;
-                parent.addNodeListener(NodeOp.weakNodeListener(this, parent));
-            }
-            return parent.getCookie (clazz);
-        }
-        return null;
-    }
-    
     public boolean canDestroy () {
         return false;
     }
@@ -209,17 +186,6 @@ final class AntTargetNode extends AbstractNode implements ChangeListener, NodeLi
         }
         
     }
-    
-    public void propertyChange (PropertyChangeEvent ev) {
-        if (org.openide.nodes.Node.PROP_COOKIE.equals (ev.getPropertyName ())) { // #9952
-            fireCookieChange ();
-        }
-    }
-    
-    public void childrenAdded (NodeMemberEvent ev) {}
-    public void nodeDestroyed (NodeEvent ev) {}
-    public void childrenRemoved (NodeMemberEvent ev) {}
-    public void childrenReordered (NodeReorderEvent ev) {}
     
     /**
      * Action to invoke the target shortcut wizard.

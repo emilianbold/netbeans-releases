@@ -147,5 +147,15 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-ant+xml">
+                    <file name="org-apache-tools-ant-module-nodes-AntNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 
 </filesystem>
