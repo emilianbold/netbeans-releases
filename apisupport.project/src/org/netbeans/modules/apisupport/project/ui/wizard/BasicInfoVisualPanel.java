@@ -78,7 +78,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
                 locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
             }
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
-            moduleSuite.setText("Add to Module Suite:"); // XXX I18N!
+            moduleSuite.setText(getMessage("LBL_Add_to_Suit"));
             suiteModule.setSelected(true);
             suiteModule.setVisible(false);
             if (moduleSuiteValue.getItemCount() > 0) {

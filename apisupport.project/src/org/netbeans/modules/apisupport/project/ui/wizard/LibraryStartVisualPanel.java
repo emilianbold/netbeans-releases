@@ -302,7 +302,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         if (txtLicense.getText().trim().length() > 0) {
             chooser.setSelectedFile(new File(txtLicense.getText().trim()));
         }
-        int ret = chooser.showDialog(this, "Select");
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             txtLicense.setText(chooser.getSelectedFile().getAbsolutePath());
         }
@@ -316,7 +316,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(true);
         chooser.addChoosableFileFilter(new JarZipFilter());
-        int ret = chooser.showDialog(this, "Select");
+        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File[] files =  chooser.getSelectedFiles();
             String path = "";
