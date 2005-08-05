@@ -1001,11 +1001,20 @@ class JavaCodeGenerator extends CodeGenerator {
                     LayoutComponent layoutCont = formModel.getLayoutModel().getLayoutComponent(cont.getId());
                     if (layoutCont != null) {
                         RADVisualComponent[] comps = cont.getSubComponents();
-                        String[] compNames = new String[comps.length];
-                        String[] compIds = new String[comps.length];
+                        SwingLayoutCodeGenerator.ComponentInfo[] infos = new SwingLayoutCodeGenerator.ComponentInfo[comps.length];
                         for (int i=0; i<comps.length; i++) {
-                            compNames[i] = getExpressionJavaString(comps[i].getCodeExpression(), ""); // NOI18N
-                            compIds[i] = comps[i].getId();
+                            RADVisualComponent subComp = comps[i];
+                            SwingLayoutCodeGenerator.ComponentInfo info = new SwingLayoutCodeGenerator.ComponentInfo();
+                            info.id = subComp.getId();
+                            info.variableName = getExpressionJavaString(subComp.getCodeExpression(), ""); // NOI18N
+                            info.clazz = subComp.getBeanClass();
+                            Node.Property minProp = subComp.getPropertyByName("minimumSize"); // NOI18N
+                            Node.Property prefProp = subComp.getPropertyByName("preferredSize"); // NOI18N
+                            Node.Property maxProp = subComp.getPropertyByName("maximumSize"); // NOI18N
+                            info.sizingChanged = !(((minProp == null) || minProp.isDefaultValue())
+                                && ((prefProp == null) || prefProp.isDefaultValue())
+                                && ((maxProp == null) || maxProp.isDefaultValue()));
+                            infos[i] = info;
                         }
                         CodeExpression contExpr = LayoutSupportManager.containerDelegateCodeExpression(
                             cont, cont.getCodeExpression(), formModel.getCodeStructure());
@@ -1018,8 +1027,7 @@ class JavaCodeGenerator extends CodeGenerator {
                             layoutCont,
                             contExprStr,
                             contVarName,
-                            compIds,
-                            compNames);
+                            infos);
                     }
                 }
 //                generateVisualCode((RADVisualContainer)comp, initCodeWriter);

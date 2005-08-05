@@ -35,9 +35,9 @@ public class SwingLayoutCodeGenerator {
     private String layoutVarName;
 
     /**
-     * Maps from component ID to component's variable name.
+     * Maps from component ID to <code>ComponentInfo</code>.
      */
-    private Map/*<String,String>*/ componentIDMap;
+    private Map/*<String,ComponentInfo>*/ componentIDMap;
 
     /**
      * Creates new <code>SwingLayoutCodeGenerator</code>.
@@ -45,7 +45,7 @@ public class SwingLayoutCodeGenerator {
      * @param layoutModel layout model of the form.
      */
     public SwingLayoutCodeGenerator(LayoutModel layoutModel) {
-        componentIDMap = new HashMap/*<String,String>*/();
+        componentIDMap = new HashMap/*<String,ComponentInfo>*/();
         this.layoutModel = layoutModel;
     }
 
@@ -60,14 +60,14 @@ public class SwingLayoutCodeGenerator {
      * @param compVarNames code expressions of subcomponents.
      */
     public void generateContainerLayout(Writer writer, LayoutComponent container,
-        String contExprStr, String contVarName, String[] compIds, String[] compVarNames) throws IOException {
+        String contExprStr, String contVarName, ComponentInfo infos[]) throws IOException {
         if (contVarName == null) {
             layoutVarName = LAYOUT_VAR_NAME;
         } else {
             layoutVarName = contVarName + Character.toUpperCase(LAYOUT_VAR_NAME.charAt(0))
                 + LAYOUT_VAR_NAME.substring(1);
         }
-        fillMap(compIds, compVarNames);
+        fillMap(infos);
         generateInstantiation(writer, contExprStr);
         StringBuffer sb = new StringBuffer();
         LayoutInterval horizontalInterval = container.getLayoutRoot(LayoutConstants.HORIZONTAL);
@@ -84,15 +84,11 @@ public class SwingLayoutCodeGenerator {
     /**
      * Fills the <code>componentIDMap</code>.
      *
-     * @param compIds IDs of components.
-     * @param compVarNames code expressions of components.
+     * @param infos information about components.
      */
-    private void fillMap(String[] compIds, String[] compVarNames) {
-        if (compIds.length != compVarNames.length) {
-            throw new IllegalArgumentException("Sizes must match"); // NOI18N
-        }
-        for (int counter = 0; counter < compIds.length; counter++) {
-            componentIDMap.put(compIds[counter], compVarNames[counter]);
+    private void fillMap(ComponentInfo[] infos) {
+        for (int counter = 0; counter < infos.length; counter++) {
+            componentIDMap.put(infos[counter].id, infos[counter]);
         }
     }
     
@@ -183,17 +179,28 @@ public class SwingLayoutCodeGenerator {
                 layout.append(".add("); // NOI18N
                 int alignment = interval.getAlignment();
                 LayoutComponent layoutComp = interval.getComponent();
-                String compVarName = (String)componentIDMap.get(layoutComp.getId());
-                assert (compVarName != null);
+                ComponentInfo info = (ComponentInfo)componentIDMap.get(layoutComp.getId());
+                assert (info.variableName != null);
                 if ((alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)) {
-                    layout.append(compVarName);
+                    layout.append(info.variableName);
                 } else {
                     String alignmentStr = convertAlignment(alignment);
-                    layout.append(alignmentStr).append(", ").append(compVarName); // NOI18N
+                    layout.append(alignmentStr).append(", ").append(info.variableName); // NOI18N
                 }
-                if ((min != LayoutConstants.NOT_EXPLICITLY_DEFINED) ||
-                    (pref != LayoutConstants.NOT_EXPLICITLY_DEFINED) ||
-                    (max != LayoutConstants.NOT_EXPLICITLY_DEFINED)) {
+                int status = SwingLayoutUtils.getResizableStatus(info.clazz);
+                
+                if (!((pref == LayoutConstants.NOT_EXPLICITLY_DEFINED) &&
+                    ((min == LayoutConstants.NOT_EXPLICITLY_DEFINED)
+                     || ((min == LayoutConstants.USE_PREFERRED_SIZE)
+                        && !info.sizingChanged
+                        && (status == SwingLayoutUtils.STATUS_NON_RESIZABLE))) &&
+                    ((max == LayoutConstants.NOT_EXPLICITLY_DEFINED)
+                     || ((max == LayoutConstants.USE_PREFERRED_SIZE)
+                        && !info.sizingChanged
+                        && (status == SwingLayoutUtils.STATUS_NON_RESIZABLE))
+                     || ((max == Short.MAX_VALUE)
+                        && !info.sizingChanged
+                        && (status == SwingLayoutUtils.STATUS_RESIZABLE))))) {                
                     layout.append(", "); // NOI18N
                     generateSizeParams(layout, min, pref, max);
                 }
@@ -287,6 +294,23 @@ public class SwingLayoutCodeGenerator {
             default: assert (size >= 0); convertedSize = new Integer(size).toString(); break;
         }
         return convertedSize;
+    }
+    
+    /**
+     * Information about one component.
+     */
+    public static class ComponentInfo {
+        /** ID of the component. */
+        public String id;
+        /** Variable name of the component. */
+        public String variableName;
+        /** The component's class. */
+        public Class clazz;
+        /**
+         * Determines whether size properties (e.g. minimumSize, preferredSize
+         * or maximumSize properties of the component has been changed).
+         */
+        public boolean sizingChanged;
     }
 
 }
