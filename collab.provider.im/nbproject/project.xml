@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.collab.provider.im</code-name-base>
-            <path>collab/im</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>

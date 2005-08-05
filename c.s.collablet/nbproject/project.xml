@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>com.sun.collablet</code-name-base>
-            <path>collab/core</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>

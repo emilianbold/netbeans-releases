@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.collab.channel.chat.java</code-name-base>
-            <path>collab/chat/java</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
