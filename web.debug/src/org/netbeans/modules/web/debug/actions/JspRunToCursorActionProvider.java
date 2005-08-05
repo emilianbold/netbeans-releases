@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -76,8 +76,9 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
     private boolean shouldBeEnabled () {
 
-        if (!Utils.isJsp(editorContext.getCurrentURL()))
+        if (/* some module disabled? */ editorContext == null || !Utils.isJsp(editorContext.getCurrentURL())) {
             return false;
+        }
         
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();
