@@ -155,6 +155,13 @@ public abstract class TreeParentNode extends TreeChild {
      * @throws ReadOnlyException
      */
     public final void insertBefore (TreeChild newChild, TreeChild refChild) throws ReadOnlyException {
+        /*
+        if (refChild == null) {
+            // For semantic compatibility with DOM.
+            appendChild(newChild);
+            return;
+        }
+         */
         childList.checkReadOnly ();
         int index = childList.indexOf (refChild);
         if (index < 0) {
