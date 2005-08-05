@@ -16,6 +16,7 @@ package org.netbeans.modules.editor.bookmarks;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
@@ -23,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
@@ -47,6 +49,7 @@ public class EditorBookmarksModule extends ModuleInstall {
     private static List listeners = new ArrayList(); // List<ChangeListener>
     private static final ListenerSupport listenerSupport = new ListenerSupport();
     private PropertyChangeListener annotationTypesListener;
+    private List lastOpenProjects;
 
     public void restored () {
         synchronized (Settings.class) {
@@ -64,11 +67,19 @@ public class EditorBookmarksModule extends ModuleInstall {
         // Start listening on project closing
         openProjectsListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                // null, null fired -> thus save all projects' bookmarks
-                PersistentBookmarks.saveAllProjectBookmarks();
+                List openProjects = Arrays.asList(OpenProjects.getDefault().getOpenProjects());
+                // lastOpenProjects will contain the just closed projects
+                lastOpenProjects.removeAll(openProjects);
+                for (Iterator it = lastOpenProjects.iterator(); it.hasNext();) {
+                    Project prj = (Project)it.next();
+                    PersistentBookmarks.saveProjectBookmarks(prj);
+                }
+                lastOpenProjects = new ArrayList(openProjects);
             }
         };
-        OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
+        OpenProjects op = OpenProjects.getDefault();
+        lastOpenProjects = new ArrayList(Arrays.asList(op.getOpenProjects()));
+        op.addPropertyChangeListener(openProjectsListener);
         
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){

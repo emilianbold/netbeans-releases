@@ -116,7 +116,7 @@ class PersistentBookmarks {
         }
     }
     
-    private static void saveProjectBookmarks(Project prj) {
+    static void saveProjectBookmarks(Project prj) {
         FileBookmarksMap fileBookmarksMap = findBookmarksMap(prj);
         if (fileBookmarksMap != null && fileBookmarksMap.isModified()) {
             saveBookmarksMap(prj, fileBookmarksMap);
