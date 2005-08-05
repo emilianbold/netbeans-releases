@@ -16,10 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.collab.channel.output</code-name-base>
-            <class-path-extension>
-                <runtime-relative-path>ext/output-schema.jar</runtime-relative-path>
-                <binary-origin>lib/output-schema.jar</binary-origin>
-            </class-path-extension>
             <module-dependencies>
                 <dependency>
                     <code-name-base>com.sun.collablet</code-name-base>
@@ -146,6 +142,10 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <class-path-extension>
+                <runtime-relative-path>ext/output-schema.jar</runtime-relative-path>
+                <binary-origin>lib/output-schema.jar</binary-origin>
+            </class-path-extension>
             <public-packages>
                 <package>org.netbeans.modules.collab.channel.output</package>
             </public-packages>
