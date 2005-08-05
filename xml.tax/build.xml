@@ -18,6 +18,9 @@ Microsystems, Inc. All Rights Reserved.
     <property name="lib_root" location="lib"/>
     <property name="xml_root" location=".."/>
     <property name="api_root" location="${xml_root}/api"/>
+    
+    <property name="build.compiler.deprecation" value="true"/>
+    <property name="build.compiler.debug" value="true"/>
 
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
