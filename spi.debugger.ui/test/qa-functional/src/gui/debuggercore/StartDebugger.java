@@ -35,6 +35,7 @@ public class StartDebugger extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new StartDebugger("setupStartTests"));
         suite.addTest(new StartDebugger("testRunInDebugger"));
+        suite.addTest(new StartDebugger("testDebugFile"));
         suite.addTest(new StartDebugger("testRunDebuggerStepInto"));
         suite.addTest(new StartDebugger("testRunDebuggerRunToCursor"));
         return suite;
@@ -47,6 +48,7 @@ public class StartDebugger extends JellyTestCase {
     
     /** setUp method  */
     public void setUp() {
+        Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
     }
     
@@ -74,6 +76,16 @@ public class StartDebugger extends JellyTestCase {
     
     public void testRunInDebugger() {
         Utilities.startDebugger(Utilities.runningStatusBarText);
+    }
+    
+    public void testDebugFile() {
+        new EditorOperator("MemoryView.java").grabFocus();
+        new Action(null, null, Utilities.debugFileShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
+
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
+        MainWindowOperator.getDefault().waitStatusText(Utilities.finishedStatusBarText);
     }
     
     public void testRunDebuggerStepInto() {
