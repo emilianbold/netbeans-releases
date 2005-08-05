@@ -197,14 +197,14 @@ public class Main extends Object {
         
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
-    
+
+            allKnownLoaders = new HashSet(parents.length * 2 + 1);
+            allKnownLoaders.addAll(Arrays.asList(parents));
+            allKnownLoaders.add (this);
+            
             if (cp.isEmpty ()) {
                 return;
             }
-
-            allKnownLoaders = new HashSet(parents.length * 2);
-            allKnownLoaders.addAll(Arrays.asList(parents));
-            allKnownLoaders.add (this);
             
             try {
                 java.util.jar.Manifest mf;
