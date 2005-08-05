@@ -12,22 +12,9 @@
  */
 package org.netbeans.modules.collab.ui.actions;
 
-import org.openide.*;
-import org.openide.awt.*;
-import org.openide.filesystems.*;
-import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
-import org.openide.windows.*;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.util.*;
-
-import javax.swing.*;
-
-import org.netbeans.modules.collab.*;
 import org.netbeans.modules.collab.ui.*;
 
 
@@ -37,20 +24,13 @@ import org.netbeans.modules.collab.ui.*;
  * @author Todd Fast <todd.fast@sun.com>
  */
 public class ShowNextNotificationAction extends SystemAction implements NotificationListener {
-    ////////////////////////////////////////////////////////////////////////////
-    // Class fields
-    ////////////////////////////////////////////////////////////////////////////
-    private static final Image NORMAL_IMAGE = (ToolbarPool.getDefault().getPreferredIconSize() == 16)
-        ? Utilities.loadImage("org/netbeans/modules/collab/ui/resources/chat_png.gif")
-        : Utilities.loadImage("org/netbeans/modules/collab/ui/resources/chat_png24.gif");
-    private static final Image ALERT_IMAGE = (ToolbarPool.getDefault().getPreferredIconSize() == 16)
-        ? Utilities.loadImage("org/netbeans/modules/collab/ui/resources/conversation_notify_png.gif")
-        : Utilities.loadImage("org/netbeans/modules/collab/ui/resources/conversation_notify_png24.gif");
-    private static final Icon NORMAL_ICON = (NORMAL_IMAGE != null) ? new ImageIcon(NORMAL_IMAGE) : new ImageIcon();
-    private static final Icon ALERT_ICON = (ALERT_IMAGE != null) ? new ImageIcon(ALERT_IMAGE) : new ImageIcon();
-    private static final Object PAUSE_LOCK = new Object();
+    private static final String NORMAL_RES = "org/netbeans/modules/collab/ui/resources/chat_png.gif";
+    private static final String ALERT_RES = "org/netbeans/modules/collab/ui/resources/conversation_notify_png.gif";
     private static final String ACTION_PERFORMER = "actionPerformer";
-    private static NotificationThread notificationThread;
+
+    private String currentIconRes = NORMAL_RES;
+
+
 
     /**
      *
@@ -58,8 +38,6 @@ public class ShowNextNotificationAction extends SystemAction implements Notifica
      */
     public ShowNextNotificationAction() {
         super();
-
-        setIcon(NORMAL_ICON);
         setEnabled(false);
 
         // Attach ourselves as a notification listener (weakly)
@@ -68,6 +46,20 @@ public class ShowNextNotificationAction extends SystemAction implements Notifica
                 NotificationListener.class, NotificationListener.class, this, NotificationRegistry.getDefault()
             )
         );
+    }
+
+    private void setIconResource(final String resource) {
+        javax.swing.SwingUtilities.invokeLater(
+            new Runnable() {
+                public void run() {
+                    currentIconRes = resource;
+                    firePropertyChange(SystemAction.PROP_ICON, null, null);
+                }
+            }
+        );
+    }
+    protected String iconResource() {
+        return currentIconRes;
     }
 
     /**
@@ -95,21 +87,6 @@ public class ShowNextNotificationAction extends SystemAction implements Notifica
     }
 
     /**
-     * First a property change after setting the icon
-     *
-     */
-    private void _setIcon(final Icon icon) {
-        SwingUtilities.invokeLater(
-            new Runnable() {
-                public void run() {
-                    ShowNextNotificationAction.super.setIcon(icon);
-                    firePropertyChange(SystemAction.PROP_ICON, Boolean.FALSE, Boolean.TRUE);
-                }
-            }
-        );
-    }
-
-    /**
      *
      *
      */
@@ -125,7 +102,7 @@ public class ShowNextNotificationAction extends SystemAction implements Notifica
         putValue(ACTION_PERFORMER, performer);
 
         if (performer == null) {
-            _setIcon(NORMAL_ICON);
+            setIconResource(NORMAL_RES);
             setEnabled(false);
         } else {
             setEnabled(true);
@@ -136,7 +113,7 @@ public class ShowNextNotificationAction extends SystemAction implements Notifica
      *
      *
      */
-    public void actionPerformed(ActionEvent event) {
+    public void actionPerformed(java.awt.event.ActionEvent event) {
         ActionPerformer performer = getActionPerformer();
 
         if (performer != null) {
@@ -154,9 +131,9 @@ public class ShowNextNotificationAction extends SystemAction implements Notifica
      */
     public void notificationStateChanged(boolean state) {
         if (state) {
-            _setIcon(ALERT_ICON);
+            setIconResource(ALERT_RES);
         } else {
-            _setIcon(NORMAL_ICON);
+            setIconResource(NORMAL_RES);
         }
     }
 
