@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.loader;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.regex.Matcher;
@@ -23,20 +24,20 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 
-
-
 /**
  * the first panel in loaders wizard
  *
  * @author Milos Kleint
  */
 public class FileRecognitionPanel extends BasicWizardIterator.Panel {
+    
+    private static final Pattern EXTENSION_PATTERN = Pattern.compile("[a-zA-Z0-9_,. ]*"); // NOI18N
+    private static final Pattern ELEMENT_PATTERN = Pattern.compile("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)"); // NOI18N
+    private static final Pattern MIME_TYPE_PATTERN = Pattern.compile("(application|text|image)/([a-zA-Z0-9_.+-])+"); // NOI18N
+    private static final String DEFAULT_MIME_TYPE = "text/x-<type>"; // NOI18N
+    
     private NewLoaderIterator.DataModel data;
     private ButtonGroup group;
-    private Pattern extensionPattern;
-    private Pattern elementPattern;
-    private Pattern mimeTypePattern;
-    private static final String DEFAULT_MIME_TYPE = "text/x-<type>"; //NOI18N
     private boolean listenersAttached = false;
     private DocumentListener docList;
     /**
@@ -66,35 +67,33 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
         rbByExtension.addActionListener(list);
         
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle"));
-        extensionPattern = Pattern.compile("[a-zA-Z0-9,\\. ]*");
-        elementPattern = Pattern.compile("(application/([a-zA-Z])*\\+xml|text/([a-zA-Z])*\\+xml)");
-        mimeTypePattern = Pattern.compile("(application|text|image)/([a-zA-Z\\+\\-])*");
     }
     
     private void checkValidity() {
+        // XXX I18N
         //TODO:
         String message = null;
         String txt = txtMimeType.getText().trim();
         
-        if (txt.length() == 0 || DEFAULT_MIME_TYPE.equals(txt) || (!mimeTypePattern.matcher(txt).matches())) {
-            message = "Not a valid mimetype.";
+        if (txt.length() == 0 || DEFAULT_MIME_TYPE.equals(txt) || (!MIME_TYPE_PATTERN.matcher(txt).matches())) {
+            message = "Not a valid MIME type.";
         } else {
             if (rbByElement.isSelected()) {
                 if (txtNamespace.getText().trim().length() == 0) {
-                    message = "Namespace must be filled out";
+                    message = "Namespace must be entered";
                 } else {
-                    Matcher match = elementPattern.matcher(txt);
+                    Matcher match = ELEMENT_PATTERN.matcher(txt);
                     if (!match.matches()) {
-                        message = "Wrong mimetype. Must be one of text/<something>+xml or application/<something>+xml";
+                        message = "Inappropriate MIME type. Must be one of text/<something>+xml or application/<something>+xml";
                     }
                 }
             } else {
                 if (txtExtension.getText().trim().length() == 0) {
-                    message = "Extension must be filled out";
+                    message = "Extension must be entered";
                 } else {
-                    Matcher match = extensionPattern.matcher(txtExtension.getText());
+                    Matcher match = EXTENSION_PATTERN.matcher(txtExtension.getText());
                     if (!match.matches()) {
-                        message = "Wrong extension pattern. Must be a list of extensions separated by commas.";
+                        message = "Invalid extension pattern. Must be a list of extensions separated by commas.";
                     }
                 }
             }
