@@ -14,16 +14,14 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.lib.cvsclient.command.CommandException;
-import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.command.GlobalOptions;
+import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.*;
 
 /**
  * Takes care about retrieving various revisions of a file and caching them locally. 
@@ -68,7 +66,8 @@ public class VersionsCache {
      * and their cached versions are purged with the {@link #purgeVolatileRevisions()} method.
      * 
      * @param revision revision to fetch
-     * @return File supplied file in the specified revision (locally cached copy)
+     * @return File supplied file in the specified revision (locally cached copy) or null if this file does not exist
+     * in the specified revision
      * @throws java.io.IOException
      * @throws org.netbeans.modules.versioning.system.cvss.IllegalCommandException
      * @throws org.netbeans.lib.cvsclient.command.CommandException
@@ -83,6 +82,7 @@ public class VersionsCache {
         File file = getCachedRevision(baseFile, revision);
         if (file != null) return file;
         file = checkoutRemoteFile(baseFile, revision);
+        if (file == null) return null;
         file = saveRevision(baseFile, file, revision);
         return file;
     }
@@ -96,8 +96,14 @@ public class VersionsCache {
     }
 
     private File saveRevision(File baseFile, File file, String revision) {
-        File cacheDir = new File(baseFile.getParentFile(), CACHE_DIR);
-        if (!cacheDir.exists() && !cacheDir.mkdirs()) return file;
+        // do not create directories if they do not exist (deleted trees) 
+        File cacheDir;
+        if (baseFile.getParentFile().isDirectory()) {
+            cacheDir = new File(baseFile.getParentFile(), CACHE_DIR);
+        } else {
+            cacheDir = file.getParentFile();
+        }
+            if (!cacheDir.exists() && !cacheDir.mkdirs()) return file;
         File destFile = new File(cacheDir, cachedName(baseFile, revision));
         try {
             FileInputStream fin = new FileInputStream(file);
@@ -144,17 +150,42 @@ public class VersionsCache {
     private String cachedName(File baseFile, String revision) {
         return "#" + revision + "#" + baseFile.getName();        
     }
-    
+
+    private String getRepositoryForDirectory(File directory) {
+        if (directory == null) return null;
+        if (!directory.exists()) {
+            return getRepositoryForDirectory(directory.getParentFile()) + "/" + directory.getName();
+        }
+        try {
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), "");
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets a specific revision of a file from repository. 
+     * 
+     * @param baseFile location of the file in local workdir (need not exist)
+     * @param revision revision number to get
+     * @return File file on disk (most probably located in some temp diretory) or null if this file does not exist
+     * in repository in the specified revision
+     * @throws IOException if some I/O error occurs during checkout
+     */ 
     private File checkoutRemoteFile(File baseFile, String revision) throws IOException {
         
-        UpdateCommand cmd = new UpdateCommand();
-        cmd.setRecursive(false); 
-        cmd.setFiles(new File [] { baseFile });
+        String repositoryPath = getRepositoryForDirectory(baseFile.getParentFile()) + "/" + baseFile.getName();
+        
+        CheckoutCommand cmd = new CheckoutCommand();
+        cmd.setRecursive(false);
+        cmd.setModule(repositoryPath);
         cmd.setPipeToOutput(true);
-        if (!revision.equals(REVISION_HEAD)) cmd.setUpdateByRevision(revision);
+        if (!revision.equals(REVISION_HEAD)) cmd.setCheckoutByRevision(revision);
         cmd.setDisplayName(NbBundle.getMessage(VersionsCache.class, "MSG_VersionsCache_FetchingProgress", revision, baseFile.getName()));
-
-        VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd);
+        
+        GlobalOptions options = new GlobalOptions();
+        options.setCVSRoot(getCvsRoot(baseFile.getParentFile()));
+        VersionsCacheExecutor executor = new VersionsCacheExecutor(cmd, options);
         executor.execute();
         try {
             executor.waitFinished();
@@ -166,5 +197,19 @@ public class VersionsCache {
         }
     }
 
+    private String getCvsRoot(File baseFile) throws IOException {
+        File root = new File (new File(baseFile, "CVS"), "Root");
+        if (root.isFile()) {
+            BufferedReader r = null;
+            try {
+                r = new BufferedReader(new FileReader(root));
+                return r.readLine();
+            } finally {
+                if (r != null) r.close();
+            }
+        } else {
+            return getCvsRoot(baseFile.getParentFile());
+        }
+    }
 
 }

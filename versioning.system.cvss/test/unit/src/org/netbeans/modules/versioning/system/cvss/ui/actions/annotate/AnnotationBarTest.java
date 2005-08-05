@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.annotate;
 
 import junit.framework.TestCase;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 
 /**
  * Test utility method in AnnotationBar
@@ -24,10 +25,10 @@ public class AnnotationBarTest extends TestCase {
 
 
     public static void testPreviousRevision() {
-        assertNull(AnnotationBar.previousRevision("1.1"));
-        assertEquals("1.1", AnnotationBar.previousRevision("1.2"));
-        assertEquals("1.2.1.1", AnnotationBar.previousRevision("1.2.1.2"));
-        assertEquals("1.199", AnnotationBar.previousRevision("1.200.0.1.1.1"));
+        assertNull(Utils.previousRevision("1.1"));
+        assertEquals("1.1", Utils.previousRevision("1.2"));
+        assertEquals("1.2.1.1", Utils.previousRevision("1.2.1.2"));
+        assertEquals("1.199", Utils.previousRevision("1.200.0.1.1.1"));
     }
 
 }

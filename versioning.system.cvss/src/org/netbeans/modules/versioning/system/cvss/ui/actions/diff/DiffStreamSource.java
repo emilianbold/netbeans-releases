@@ -39,6 +39,9 @@ class DiffStreamSource extends StreamSource {
     private String          mimeType;
 
     private IOException     failure;
+    /**
+     * Null is a valid value if base file does not exist in this revision. 
+     */ 
     private File            remoteFile;
     private final boolean   binary;
 
@@ -75,7 +78,7 @@ class DiffStreamSource extends StreamSource {
 
     public Reader createReader() throws IOException {
         init();        
-        if (revision == null) return null;
+        if (revision == null || remoteFile == null) return null;
         if (binary) return new StringReader("[Binary File " + getTitle() + "]");
         if (revision == Setup.REVISION_CURRENT) {
 
@@ -124,7 +127,7 @@ class DiffStreamSource extends StreamSource {
             failure.initCause(e);
             throw failure;
         }
-        FileObject fo = FileUtil.toFileObject(remoteFile);
+        FileObject fo = remoteFile != null ? FileUtil.toFileObject(remoteFile) : null;
         mimeType = fo != null ? fo.getMIMEType() : "text/plain";        
     }
 }

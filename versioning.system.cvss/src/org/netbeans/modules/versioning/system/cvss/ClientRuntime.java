@@ -115,8 +115,10 @@ public class ClientRuntime {
         }
         else if ((cmd instanceof CheckoutCommand)) {    // XXX
             BasicCommand bc = (BasicCommand) cmd;
-            String path = bc.getFiles()[0].getAbsolutePath();
-            client.setLocalPath(path);
+            if (bc.getFiles() != null) {
+                String path = bc.getFiles()[0].getAbsolutePath();
+                client.setLocalPath(path);
+            }
         } else if (cmd instanceof ImportCommand) {
             client.setLocalPath(((ImportCommand)cmd).getImportDirectory());
         } else {

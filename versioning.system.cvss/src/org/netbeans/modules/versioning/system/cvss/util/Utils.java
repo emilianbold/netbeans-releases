@@ -344,6 +344,38 @@ public class Utils {
     }
 
     /**
+     * Computes previous revision or <code>null</code>
+     * for initial.
+     *
+     * @param revision num.dot revision or <code>null</code>
+     */
+    public static String previousRevision(String revision) {
+        if (revision == null) return null;
+        String[] nums = revision.split("\\.");  // NOI18N
+        assert (nums.length % 2) == 0 : "File revisions must consist from even tokens: " + revision; // NOI18N
+
+        // eliminate branches
+        int lastIndex = nums.length -1;
+        while (lastIndex>1 && "1".equals(nums[lastIndex])) { // NOI18N
+            lastIndex -= 2;
+        }
+        if (lastIndex <= 0) {
+            return null;
+        } else if (lastIndex == 1 && "1".equals(nums[lastIndex])) { // NOI18N
+            return null;
+        } else {
+            int rev = Integer.parseInt(nums[lastIndex]);
+            rev--;
+            StringBuffer sb = new StringBuffer(nums[0]);
+            for (int i = 1; i<lastIndex; i++) {
+                sb.append(".").append(nums[i]); // NOI18N
+            }
+            sb.append(".").append("" + rev);  // NOI18N
+            return sb.toString();
+        }
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
     public static class ByImportanceComparator implements Comparator {

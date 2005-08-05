@@ -33,8 +33,8 @@ final class VersionsCacheExecutor extends ExecutorSupport {
     private File checkedOutVersion;
     private ClientRuntime.Result result;
 
-    public VersionsCacheExecutor(Command cmd) {
-        super(CvsVersioningSystem.getInstance(), cmd, new GlobalOptions());
+    public VersionsCacheExecutor(Command cmd, GlobalOptions options) {
+        super(CvsVersioningSystem.getInstance(), cmd, options);
     }
 
     protected synchronized void commandFinished(ClientRuntime.Result result) {
@@ -56,6 +56,7 @@ final class VersionsCacheExecutor extends ExecutorSupport {
      */
     public final synchronized void waitFinished() throws Throwable {
         try {
+            if (getTask() == null) throw new Exception("Command was not executed");
             while (finished == false) {
                 wait();
             }

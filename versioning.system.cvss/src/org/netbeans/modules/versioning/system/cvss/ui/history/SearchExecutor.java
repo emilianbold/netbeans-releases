@@ -15,7 +15,9 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.RlogCommand;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
+import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.RLogExecutor;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogExecutor;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 
 import javax.swing.*;
@@ -43,14 +45,28 @@ class SearchExecutor implements Runnable {
     };
     
     private final SearchHistoryPanel    master;
-    private final File[]                roots;
+    private final File[]                folders;
+    private final File[]                files;
     private final SearchCriteriaPanel   criteria;
     
     private List                        results;
 
     public SearchExecutor(SearchHistoryPanel master) {
         this.master = master;
-        roots = master.getRoots();
+        File [] roots = master.getRoots();
+        
+        Set foldersSet = new HashSet(roots.length); 
+        Set filesSet = new HashSet(roots.length); 
+        for (int i = 0; i < roots.length; i++) {
+            File root = roots[i];
+            if (root.isFile()) {
+                filesSet.add(root);
+            } else {
+                foldersSet.add(root);
+            }
+        }
+        files = (File[]) filesSet.toArray(new File[filesSet.size()]);
+        folders = (File[]) foldersSet.toArray(new File[foldersSet.size()]);
         criteria = master.getCriteria();
     }
 
@@ -60,7 +76,8 @@ class SearchExecutor implements Runnable {
         Date fromDate = parseDate(from);
         Date toDate = parseDate(to);
 
-        RlogCommand cmd = new RlogCommand();
+        RlogCommand rcmd = new RlogCommand();
+        LogCommand lcmd = new LogCommand();
 
         if (fromDate != null || toDate != null) {
             String dateFilter = "";
@@ -71,7 +88,8 @@ class SearchExecutor implements Runnable {
             if (toDate != null) {
                 dateFilter += fullDateFormat.format(toDate);
             }
-            cmd.setDateFilter(dateFilter);
+            rcmd.setDateFilter(dateFilter);
+            lcmd.setDateFilter(dateFilter);
         } else if (from != null || to != null) {
             String revFilter = "";
             if (from != null) {
@@ -81,14 +99,31 @@ class SearchExecutor implements Runnable {
             if (to != null) {
                 revFilter += to;
             }
-            cmd.setRevisionFilter(revFilter);
+            rcmd.setRevisionFilter(revFilter);
+            lcmd.setRevisionFilter(revFilter);
         }
         
-        cmd.setUserFilter(criteria.getUsername());
+        rcmd.setUserFilter(criteria.getUsername());
+        lcmd.setUserFilter(criteria.getUsername());
         
-        RLogExecutor [] executors = RLogExecutor.executeCommand(cmd, roots, null);
-        ExecutorSupport.wait(executors);
-        results = processResults(executors);
+        RLogExecutor [] rexecutors;
+        if (folders.length > 0) {
+            rexecutors = RLogExecutor.executeCommand(rcmd, folders, null);
+            ExecutorSupport.wait(rexecutors);
+        } else {
+            rexecutors = new RLogExecutor[0];
+        }
+        
+        LogExecutor [] lexecutors;
+        if (files.length > 0) {
+            lcmd.setFiles(files);
+            lexecutors = LogExecutor.executeCommand(lcmd, null);
+            ExecutorSupport.wait(lexecutors);
+        } else {
+            lexecutors = new LogExecutor[0];
+        }
+        
+        results = processResults(rexecutors, lexecutors);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 showResults();
@@ -99,15 +134,19 @@ class SearchExecutor implements Runnable {
     private void showResults() {
         JPanel resultsPanel = master.getResultsPanel();
         resultsPanel.removeAll();
-        SummaryView summary = new SummaryView(results);
+        SummaryView summary = new SummaryView(master, results);
         resultsPanel.add(summary.getComponent());
         resultsPanel.revalidate();
     }
 
-    private List processResults(RLogExecutor[] executors) {
+    private List processResults(RLogExecutor[] rexecutors, LogExecutor[] lexecutors) {
         List log = new ArrayList(200);
-        for (int i = 0; i < executors.length; i++) {
-            RLogExecutor executor = executors[i];
+        for (int i = 0; i < rexecutors.length; i++) {
+            RLogExecutor executor = rexecutors[i];
+            log.addAll(executor.getLogEntries());
+        }
+        for (int i = 0; i < lexecutors.length; i++) {
+            LogExecutor executor = lexecutors[i];
             log.addAll(executor.getLogEntries());
         }
         String commitMessage = criteria.getCommitMessage();

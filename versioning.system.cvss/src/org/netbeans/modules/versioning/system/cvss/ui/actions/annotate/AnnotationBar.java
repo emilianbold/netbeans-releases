@@ -294,7 +294,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         diffMenu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (recentRevision != null) {
-                    String prevRevision = previousRevision(recentRevision);
+                    String prevRevision = Utils.previousRevision(recentRevision);
                     if (prevRevision != null) {
                         File file = getCurrentFile();
                         if (file != null) {
@@ -355,7 +355,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                     diffMenu.setVisible(false);
                     rollbackMenu.setVisible(false);
                     if (recentRevision != null) {
-                        String prevRevision = previousRevision(recentRevision);
+                        String prevRevision = Utils.previousRevision(recentRevision);
                         if (prevRevision != null) {
                             String format = loc.getString("CTL_MenuItem_DiffToRevision");
                             diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, prevRevision }));
@@ -748,38 +748,6 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
             }
         }
         return line;
-    }
-
-    /**
-     * Computes previous revision or <code>null</code>
-     * for initial.
-     *
-     * @param revision num.dot revision or <code>null</code>
-     */
-    static String previousRevision(String revision) {
-        if (revision == null) return null;
-        String[] nums = revision.split("\\.");  // NOI18N
-        assert (nums.length % 2) == 0 : "File revisions must consist from even tokens: " + revision; // NOI18N
-
-        // eliminate branches
-        int lastIndex = nums.length -1;
-        while (lastIndex>1 && "1".equals(nums[lastIndex])) { // NOI18N
-            lastIndex -= 2;
-        }
-        if (lastIndex <= 0) {
-            return null;
-        } else if (lastIndex == 1 && "1".equals(nums[lastIndex])) { // NOI18N
-            return null;
-        } else {
-            int rev = Integer.parseInt(nums[lastIndex]);
-            rev--;
-            StringBuffer sb = new StringBuffer(nums[0]);
-            for (int i = 1; i<lastIndex; i++) {
-                sb.append(".").append(nums[i]); // NOI18N
-            }
-            sb.append(".").append("" + rev);  // NOI18N
-            return sb.toString();
-        }
     }
 
     /** Implementation */
