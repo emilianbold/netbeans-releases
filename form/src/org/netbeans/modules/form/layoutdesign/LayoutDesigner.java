@@ -2730,7 +2730,7 @@ public class LayoutDesigner implements LayoutConstants {
                         space.setSize(groupCurrSize - currSize);
                         int alignment = intr.getAlignment();
                         int index = (alignment == LEADING) ? -1 : 0;
-                        if (intr.isParallel()) {
+                        if (!intr.isSequential()) {
                             seqGroup = new LayoutInterval(SEQUENTIAL);
                             layoutModel.setIntervalAlignment(intr, DEFAULT);
                             seqGroup.setAlignment(alignment);
