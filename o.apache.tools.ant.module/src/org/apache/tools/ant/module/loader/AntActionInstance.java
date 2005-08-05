@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,7 +19,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.Locale;
+import java.net.MalformedURLException;
+import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -33,7 +34,6 @@ import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -121,9 +121,11 @@ public class AntActionInstance implements
                 return Actions.cutAmpersand(pname);
             }
         } else if (Action.SMALL_ICON.equals (key)) {
-            return new ImageIcon (NbBundle.getLocalizedFile
-                ("org.apache.tools.ant.module.resources.AntIcon", "gif", // NOI18N
-                 Locale.getDefault (), AntActionInstance.class.getClassLoader ()));
+            try {
+                return new ImageIcon(new URL("nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"));
+            } catch (MalformedURLException e) {
+                throw new AssertionError(e);
+            }
         } else if (Action.MNEMONIC_KEY.equals (key)) {
             Element el = proj.getProjectElement ();
             if (el != null) {
