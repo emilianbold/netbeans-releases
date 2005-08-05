@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Toolkit;
@@ -95,11 +96,6 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
         add(filtersPanel, BorderLayout.SOUTH);
     }
     
-    protected void processKeyEvent (KeyEvent e) {
-        System.out.println("key event:" + e);
-        System.out.println("consumed: " + e.isConsumed());
-    }
-    
     void setFilters (JComponent filtersComponent) {
         filtersPanel.add(filtersComponent);
     }
@@ -134,6 +130,19 @@ final class ClassMemberPanelUI extends JPanel implements TipHackInvoker {
             TooltipHack.invokeTip(content, x, y, Integer.MAX_VALUE);
         }
     }
+
+    /** Sets wait cursor on panel UI area according to given flag */
+    public void setBusyState (boolean isBusy) {
+        Cursor cursor;
+        if (isBusy) {
+            cursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+        } else {
+            cursor = Cursor.getDefaultCursor();
+        }
+        filtersPanel.setCursor(cursor);
+        content.setCursor(cursor);
+    }
+    
 
     /** Calculates row height based on font size */
     private void configureRowHeight (Graphics g) {

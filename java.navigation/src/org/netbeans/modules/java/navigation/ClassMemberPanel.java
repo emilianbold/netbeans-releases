@@ -13,11 +13,15 @@
 
 package org.netbeans.modules.java.navigation;
 
+import java.awt.Cursor;
 import java.util.Collection;
 import java.util.List;
+import java.util.TooManyListenersException;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.java.JavaDataObject;
+import org.netbeans.modules.java.navigation.base.ModelBusyListener;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -30,7 +34,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dafe Simonek
  */
-public final class ClassMemberPanel implements NavigatorPanel, LookupListener {
+public final class ClassMemberPanel implements NavigatorPanel, LookupListener, ModelBusyListener {
     
     /** Lookup template to search for java data objects. shared with InheritanceTreePanel */
     static final Lookup.Template JDOS = new Lookup.Template(JavaDataObject.class);
@@ -74,7 +78,7 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener {
     public void panelDeactivated () {
         curContext.removeLookupListener(this);
         curContext = null;
-        curModel.removeNotify();
+        detachFromModel(curModel);
         curModel = null;
         curData = null;
     }
@@ -85,7 +89,7 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener {
         if (!data.isEmpty()) {
             JavaDataObject jdo = (JavaDataObject)data.iterator().next();
             if (!jdo.equals(curData)) {
-                curModel.removeNotify();
+                detachFromModel(curModel);
                 curData = jdo;
                 setNewContent(jdo);
             }
@@ -97,6 +101,34 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener {
         return null;
     }
     
+    // ModelBusyListener impl - sets wait cursor on content during computing
+    
+    public void busyStart () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            getPanelUI().setBusyState(true);
+        } else {
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    getPanelUI().setBusyState(true);
+                }
+            });
+        }
+    }
+    
+    public void busyEnd () {
+        if (SwingUtilities.isEventDispatchThread()) {
+            getPanelUI().setBusyState(false);
+        } else {
+            SwingUtilities.invokeLater(new Runnable () {
+                public void run () {
+                    getPanelUI().setBusyState(false);
+                }
+            });
+        }
+    }
+    
+    // end of ModelBusyListener implementation
+    
     /********** non public stuff **********/
     
     private void setNewContent (JavaDataObject jdo) {
@@ -105,6 +137,16 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener {
         ui.getContent().setModel(curModel);
         ui.setFilters(curModel.getFilters());
         curModel.addNotify();
+        try {
+            curModel.addBusyListener(this);
+        } catch (TooManyListenersException exc) {
+            // ignore, we just have no busy cursor then, not a big problem
+        }
+    }
+    
+    private void detachFromModel (ClassMemberModel model) {
+        model.removeBusyListener(this);
+        model.removeNotify();
     }
     
     private ClassMemberPanelUI getPanelUI () {
@@ -113,5 +155,6 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener {
         }
         return panelUI;
     }
+
     
 }
