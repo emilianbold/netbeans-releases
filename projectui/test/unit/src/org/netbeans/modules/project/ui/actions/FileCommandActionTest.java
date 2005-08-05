@@ -82,6 +82,10 @@ public class FileCommandActionTest extends NbTestCase {
         super.tearDown();
     }
     
+    public boolean runInEQ () {
+        return true;
+    }
+    
     public void testCommandEnablement() {
         TestSupport.ChangeableLookup lookup = new TestSupport.ChangeableLookup( new Object[]{} );
         FileCommandAction action = new FileCommandAction( "COMMAND", "TestFileCommandAction", (Icon)null, lookup );

@@ -117,6 +117,10 @@ public class ActionsTest extends TestBase {
         assertNotNull("have a LogicalViewProvider", lvp);
     }
     
+    public boolean runInEQ () {
+        return true;
+    }
+    
     public void testBasicActions() throws Exception {
         List/*<String>*/ actionNames = new ArrayList(Arrays.asList(ap.getSupportedActions()));
         Collections.sort(actionNames);
