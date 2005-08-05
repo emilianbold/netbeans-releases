@@ -22,9 +22,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <target depends="init" name="compile">
         <ant dir="../appsrvbridge" target="jar" inheritAll="false"/>
-	<antcall target="projectized-common.compile"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy file="../appsrvbridge/dist/appsrvbridge.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+	<antcall target="projectized-common.compile"/>
     </target>
 
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
