@@ -447,7 +447,7 @@ public class TreeStreamResult implements TreeOutputResult {
             if (header != null) {
                 sb.append (XML_HEADER).append (header).append (PI_END);
             }
-            write (sb.toString () + "\n\n"); // NOI18N
+            write(sb.toString() + "\n"); // NOI18N
             
             indent -= indent_step;
             writeObjectList (document);
@@ -696,9 +696,6 @@ public class TreeStreamResult implements TreeOutputResult {
                 
                 if ( notElementChild ) {
                     //  		if ( isNotCharData ) {
-                    endIndent ();
-                }
-                if ( documentChild ) {
                     endIndent ();
                 }
             }
