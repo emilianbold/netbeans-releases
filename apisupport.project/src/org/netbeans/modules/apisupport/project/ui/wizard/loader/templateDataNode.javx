@@ -1,0 +1,15 @@
+package @@PACKAGENAME@@;
+
+import org.openide.loaders.DataNode;
+import org.openide.nodes.Children;
+
+public class @@PREFIX@@DataNode extends DataNode {
+
+    private static final String IMAGE_ICON_BASE = "@@ICONPATH@@"; //NOI18N
+
+    public @@PREFIX@@DataNode(@@PREFIX@@DataObject obj) {
+        super(obj, Children.LEAF);
+        setIconBaseWithExtension(IMAGE_ICON_BASE);
+    }
+
+}

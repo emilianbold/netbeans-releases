@@ -1,0 +1,25 @@
+
+package @@PACKAGENAME@@;
+
+import java.awt.Image;
+import java.beans.*;
+import org.openide.loaders.DataLoader;
+import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
+
+public class @@PREFIX@@DataLoaderBeanInfo extends SimpleBeanInfo {
+
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
+        } catch (IntrospectionException ie) {
+            ErrorManager.getDefault().notify(ie);
+            return null;
+        }
+    }
+    
+    public Image getIcon (int type) {
+@@IMAGESNIPPET@@
+    }
+
+}

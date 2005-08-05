@@ -239,8 +239,8 @@ public final class CreatedModifiedFiles {
      * parameters refers to a module this module will depend on.
      *
      * @param codeNameBase codename base
-     * @param releaseVersion release version
-     * @param version specification version (see {@link SpecificationVersion})
+     * @param releaseVersion release version, if -1 will be taken from the entry found in platform
+     * @param version specification version (see {@link SpecificationVersion}), if null will be taken from the entry found in platform
      * @param useInCompiler do this module needs a module beeing added at a
      *        compile time?
      */
@@ -258,7 +258,8 @@ public final class CreatedModifiedFiles {
      *        yet will be created. (e.g.
      *        <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
      * @param contentResourcePath represents an <em>url</em> attribute of entry
-     *        being created.
+     *        being created, if null, will try to guess the path by comparing layer file location with the 
+     *        generatedPath
      * @param content became content of a file represented by the
      *        <code>generatedPath</code>
      * @param generatedPath path relative to a project directory where a new

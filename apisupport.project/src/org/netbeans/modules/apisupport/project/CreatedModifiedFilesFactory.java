@@ -317,8 +317,11 @@ final class CreatedModifiedFilesFactory {
             ModuleEntry me = getProject().getModuleList().getEntry(codeNameBase);
             assert me != null : "Cannot find module with the given codeNameBase (" +
                     codeNameBase + ") in the project's universe";
-            ModuleDependency md = new ModuleDependency(me, String.valueOf(releaseVersion),
-                    version.toString(), useInCompiler, false);
+            
+            ModuleDependency md = new ModuleDependency(me, 
+                    releaseVersion == -1 ? me.getReleaseVersion() : String.valueOf(releaseVersion),
+                    version == null ? me.getSpecificationVersion() : version.toString(), 
+                    useInCompiler, false);
             ProjectXMLManager pxm = new ProjectXMLManager(getProject().getHelper());
             pxm.addDependency(md);
             // XXX consider this carefully
@@ -382,6 +385,7 @@ final class CreatedModifiedFilesFactory {
         
         private String layerPath;
         private String contentResourcePath;
+        private String generatedPath;
         private Map/*<String,String>*/ tokens;
         
         private Operation createBundleKey;
@@ -394,6 +398,7 @@ final class CreatedModifiedFilesFactory {
             super(project);
             this.layerPath = layerPath;
             this.contentResourcePath = contentResourcePath;
+            this.generatedPath = generatedPath;
             this.tokens = substitutionTokens;
             addCreatedOrModifiedPath(getLayerFile());
             
@@ -410,8 +415,21 @@ final class CreatedModifiedFilesFactory {
         public void run() throws IOException{
             if (createContentResource != null) {
                 createContentResource.run();
+                if (contentResourcePath == null) {
+                    System.out.println("content path is null");
+                    String layer = getLayerFile();
+                    String layerParent = layer.substring(0, layer.lastIndexOf("/"));
+                    System.out.println("layer=" + layerParent);
+                    System.out.println("generatedPath =" + generatedPath);
+                    if (generatedPath.startsWith(layerParent)) {
+                        contentResourcePath = generatedPath.substring(layerParent.length());
+                        if (contentResourcePath.startsWith("/")) {
+                            contentResourcePath = contentResourcePath.substring(1);
+                        }
+                    }
+                    System.out.println("content resource path=" + contentResourcePath);
+                }
             }
-            
             String lbDotted = null;
             if (createBundleKey != null) {
                 createBundleKey.run();
