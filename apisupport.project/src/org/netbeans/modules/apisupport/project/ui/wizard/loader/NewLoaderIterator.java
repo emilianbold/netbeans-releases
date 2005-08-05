@@ -255,16 +255,16 @@ public class NewLoaderIterator extends BasicWizardIterator {
                     }
                 }
                 if (!filesystems) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", 1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", -1, null, true)); //NOI18N
                 }
                 if (!loaders) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders", 1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders", -1, null, true)); //NOI18N
                 }
                 if (!nodes) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes", 1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes", -1, null, true)); //NOI18N
                 }
                 if (!util) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", 1, null, true)); //NOI18N
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
                 }
             }
         } catch (IOException e) {
