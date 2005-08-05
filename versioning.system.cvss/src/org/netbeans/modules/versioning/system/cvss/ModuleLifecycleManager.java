@@ -47,6 +47,10 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
 
     static final String [] vcsGenericModules = {
         "org.netbeans.modules.vcs.advanced",
+        "org.netbeans.modules.vcs.profiles.cvsprofiles",
+        "org.netbeans.modules.vcs.profiles.vss",
+        "org.netbeans.modules.vcs.profiles.pvcs",
+        "org.netbeans.modules.vcs.profiles.teamware"
     };
     
     public void restored() {
@@ -57,7 +61,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         Runnable runnable = new Runnable() {
             public void run() {
                 boolean notified = false;
-                for (int i = 0; i < vcsGenericModules.length; i++) {
+                outter: for (int i = 0; i < vcsGenericModules.length; i++) {
                     FileLock lock = null;
                     OutputStream os = null;
                     try {
@@ -78,7 +82,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                                     text.setNodeValue("false");
                                     break;
                                 } else {
-                                    continue;
+                                    continue outter;
                                 }
                             }
                         }
