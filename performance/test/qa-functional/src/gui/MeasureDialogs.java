@@ -31,10 +31,6 @@ public class MeasureDialogs  {
         //remove from test run for NB4.1        suite.addTest(new About("measureTime", "About dialog open"));
         //remove from test run for NB4.1        suite.addTest(new About_2("measureTime", "About details open"));
         
-        suite.addTest(new SetupWizard("measureTime", "Setup Wizard open"));
-        //remove from test run for NB4.1        suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
-        //remove from test run for NB4.1        suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
-        
         suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
         //remove from test run for NB4.1        suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
  

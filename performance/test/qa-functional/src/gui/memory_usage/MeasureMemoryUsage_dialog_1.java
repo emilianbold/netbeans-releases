@@ -35,10 +35,6 @@ public class MeasureMemoryUsage_dialog_1 {
         suite.addTest(new About("doMeasurement", "About dialog open"));
         suite.addTest(new About_2("doMeasurement", "About details open"));
         
-        suite.addTest(new SetupWizard("doMeasurement", "Setup Wizard open"));
-        suite.addTest(new SetupWizard_2("doMeasurement", "Setup Wizard next open"));
-        suite.addTest(new SetupWizard_3("doMeasurement", "Setup Wizard next next open"));
-        
         suite.addTest(new KeyboardShortcuts("doMeasurement", "Keyboard Shortcut dialog open"));
         suite.addTest(new KeyboardShortcuts_2("doMeasurement", "Keyboard Shortcut shortcuts open"));
  
