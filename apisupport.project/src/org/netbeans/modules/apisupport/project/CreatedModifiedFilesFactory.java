@@ -45,8 +45,8 @@ import org.openide.modules.SpecificationVersion;
 final class CreatedModifiedFilesFactory {
     
     static CreatedModifiedFiles.Operation addLoaderSection(
-            NbModuleProject project, String dataLoaderClass) {
-        return new AddLoaderSection(project, dataLoaderClass);
+            NbModuleProject project, String dataLoaderClass, String installBefore) {
+        return new AddLoaderSection(project, dataLoaderClass, installBefore);
     }
     
     static CreatedModifiedFiles.Operation addLookupRegistration(
@@ -279,10 +279,12 @@ final class CreatedModifiedFilesFactory {
         private FileObject mfFO;
         
         private String dataLoaderClass;
+        private String installBefore;
         
-        public AddLoaderSection(NbModuleProject project, String dataLoaderClass) {
+        public AddLoaderSection(NbModuleProject project, String dataLoaderClass, String installBefore) {
             super(project);
             this.dataLoaderClass = dataLoaderClass + ".class"; // NOI18N
+            this.installBefore = installBefore;
             this.mfFO = getProject().getManifestFile();
             addModifiedFileObject(mfFO);
         }
@@ -291,6 +293,9 @@ final class CreatedModifiedFilesFactory {
             EditableManifest em = Util.loadManifest(mfFO);
             em.addSection(dataLoaderClass);
             em.setAttribute("OpenIDE-Module-Class", "Loader", dataLoaderClass); // NOI18N
+            if (installBefore != null) {
+                em.setAttribute("Install-Before", installBefore, dataLoaderClass); //NOI18N
+            }
             Util.storeManifest(mfFO, em);
         }
         

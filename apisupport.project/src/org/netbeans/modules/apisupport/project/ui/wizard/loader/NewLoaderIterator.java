@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
@@ -276,6 +277,15 @@ public class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "loader_name",  //NOI18N
                                 NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
         
+        // 7. register manifest entry
+        boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
+                                               mime); 
+        String installBefore = null;
+        if (isXml) {
+            installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject"; //NOI18N
+        }
+        
+        fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore));
         model.setCreatedModifiedFiles(fileChanges);
     }
     
@@ -298,7 +308,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         while (tokens.hasMoreTokens()) {
             String element = tokens.nextToken();
             if (element.startsWith(".")) {
-                element = element.substring(1, element.length() - 1);
+                element = element.substring(1);
             }
             buff.append("        <ext name=\"").append(element).append("\"/>\n"); //NOI18N
         }

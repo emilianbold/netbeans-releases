@@ -212,9 +212,10 @@ public final class CreatedModifiedFiles {
      *
      * @param dataLoaderClass e.g. org/netbeans/modules/myprops/MyPropsLoader
      *        (<strong>without</strong> .class extension)
+     * @param installBefore content of Install-Before attribute, or null if not specified
      */
-    public Operation addLoaderSection(String dataLoaderClass) {
-        return CreatedModifiedFilesFactory.addLoaderSection(project, dataLoaderClass);
+    public Operation addLoaderSection(String dataLoaderClass, String installBefore) {
+        return CreatedModifiedFilesFactory.addLoaderSection(project, dataLoaderClass, installBefore);
     }
     
     /**
