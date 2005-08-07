@@ -14,5 +14,69 @@
 
 <project name="weblogic9" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
+  <target name="build-init" depends="projectized.build-init"/>
+
+  <property name="wl9_dir" location="src/org/netbeans/modules/j2ee/weblogic9"/>
+  
+  <target name="s2binit" depends="build-init">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
+  
+  <target name="dd2beans_gen" depends="s2binit">
+      <echo message="generating bean graph for WebLogic 9 Server configuration files" />
+	<schema2beans schema="${wl9_dir}/resources/weblogic-web-app.xsd"
+	  package="org.netbeans.modules.j2ee.weblogic9.config.gen"
+	  schemaType="xmlschema"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="weblogic-web-app"
+	  rootDir="src"/>
+	<schema2beans schema="${wl9_dir}/resources/weblogic-ejb-jar.xsd"
+	  package="org.netbeans.modules.j2ee.weblogic9.config.gen"
+	  schemaType="xmlschema"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="weblogic-ejb-jar"
+	  rootDir="src"/>
+	<schema2beans schema="${wl9_dir}/resources/weblogic-application.xsd"
+	  package="org.netbeans.modules.j2ee.weblogic9.config.gen"
+	  schemaType="xmlschema"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="weblogic-application"
+	  rootDir="src"/>
+  </target>
+  
+  <target name="compile" depends="dd2beans_gen, copy_extra, projectized-common.compile"/>
+    
+    <target name="copy_extra">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        
+    </target>
+
+  <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
+
+  <target name="clean-ddgen-check">
+    <available property="have-config" file="${wl9_dir}/config"/>
+  </target>
+
+  <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
+        <delete>
+            <fileset dir="${wl9_dir}/config/gen">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${wl9_dir}/config/gen"/>
+  </target>
 </project>
 

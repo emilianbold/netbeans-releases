@@ -23,7 +23,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import javax.enterprise.deploy.spi.factories.*;
 import javax.enterprise.deploy.spi.status.*;
-import org.netbeans.modules.j2ee.weblogic9.config.DepConfig;
+import org.netbeans.modules.j2ee.weblogic9.WLDeploymentConfiguration;
 
 import org.openide.*;
 import org.openide.util.*;
@@ -110,7 +110,7 @@ public class WLDeploymentManager implements DeploymentManager {
     }
     
     public boolean isLocal () {
-        return Boolean.parseBoolean(getInstanceProperties().getProperty(WLDeploymentFactory.IS_LOCAL_ATTR));
+        return new Boolean(getInstanceProperties().getProperty(WLDeploymentFactory.IS_LOCAL_ATTR)).booleanValue();
     }
     /**
      * Returns the InstanceProperties object for the current server instance
@@ -212,7 +212,7 @@ public class WLDeploymentManager implements DeploymentManager {
      */
     public DeploymentConfiguration createConfiguration(
         DeployableObject deployableObject) throws InvalidModuleException {
-        return new DepConfig(deployableObject,this);
+        return new WLDeploymentConfiguration(deployableObject);
     }
     
     /**
