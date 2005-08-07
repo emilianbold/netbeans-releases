@@ -319,21 +319,27 @@ public final class ServerRegistry implements java.io.Serializable {
                     instancesMap().put(url,instance);
                     // try to create a disconnected deployment manager to see
                     // whether the instance is not corrupted - see #46929
+                    ServerString str = new ServerString(server.getShortName(),url,null);
+                    writeInstanceToFile(url,username,password);
+                    if (displayName != null) instance.getInstanceProperties().setProperty(
+                           InstanceProperties.DISPLAY_NAME_ATTR, displayName);
                     DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
                     if (manager != null) {
-                        ServerString str = new ServerString(server.getShortName(),url,null);
-                        writeInstanceToFile(url,username,password);
-                        if (displayName != null) instance.getInstanceProperties().setProperty(
-                                InstanceProperties.DISPLAY_NAME_ATTR, displayName);
                         fireInstanceListeners(url, true);
                         return true;
-                    }
+                    } else {
+                        removeInstanceFromFile(url);
+                        instancesMap().remove(url);
+                    }                    	
                 }
             } catch (Exception e) {
+                if (instancesMap().containsKey(url)) {
+                    removeInstanceFromFile(url);
+                    instancesMap().remove(url);
+                }
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
             }
         }
-        instancesMap().remove(url);
         return false;
     }
     

@@ -71,6 +71,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     private DeploymentFactory df;
     private String host, userName, password;
     private String uri;
+    private boolean isConnected;
     /* port is the admin port number, ususally 4848*/
     
     int adminPortNumber;
@@ -115,6 +116,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
+        isConnected = userName == null;
         try {
             if (userName == null) {
                 this.userName = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
@@ -149,7 +151,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     private void resetInnerDeploymentManager() throws DeploymentManagerCreationException{
         try {
-            if (userName!=null){
+            if (isConnected){
                 innerDM = df.getDeploymentManager(uri,userName,password);
             } else{
                 innerDM = df.getDisconnectedDeploymentManager(uri);
