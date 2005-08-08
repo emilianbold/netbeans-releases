@@ -29,12 +29,14 @@ public class MBean {
     private ArrayList<Operation> mBeanOperations = null;
     private ArrayList<Notification> mBeanNotifications = null;
     
+    /*
     private boolean mbeanItfImpl = false;
     private boolean keepPreRegParam = false; 
     private boolean implemNotifEmitter = false;
     private boolean genBrdCasterDeleg = false;
     private boolean genSeqNumber = false;
     
+     */
     /** MBean constructor which is not wrapper and does not implement mbritf */
     public MBean(String mBeanName, String mBeanType,
             String mBeanPackage, String mBeanComment,
@@ -51,6 +53,7 @@ public class MBean {
     }
     
     /* MBean for mbeans which implement mbean reg itf */
+    /*
     public MBean(String mBeanName, String mBeanType,
             String mBeanPackage, String mBeanComment,
             ArrayList<Attribute> mBeanAttributes,
@@ -68,8 +71,9 @@ public class MBean {
         this.mbeanItfImpl = mbeanItfImpl;
         this.keepPreRegParam = keepPreRegParam;
     }
-    
+    */
     /* MBean for mbeans which implements notification emitter itf */
+    /*
     public MBean(String mBeanName, String mBeanType,
             String mBeanPackage, String mBeanComment,
             ArrayList<Attribute> mBeanAttributes,
@@ -90,8 +94,9 @@ public class MBean {
         this.setGenBrdCasterDeleg(genBrdCasterDeleg);
         this.setGenSeqNumber(genSeqNumber);
     }
- 
+    */
     /* Full featured MBean */
+    /*
     public MBean(String mBeanName, String mBeanType,
             String mBeanPackage, String mBeanComment,
             ArrayList<Attribute> mBeanAttributes,
@@ -116,7 +121,7 @@ public class MBean {
         this.setGenBrdCasterDeleg(genBrdCasterDeleg);
         this.setGenSeqNumber(genSeqNumber);
     }
-    
+    */
     /**
      * Returns the name of the MBean
      * @return mBeanName the name of the MBean
@@ -237,6 +242,7 @@ public class MBean {
      * Return true if the class implements the mbean registration itf
      * @return boolean true if the class implements the mbean registration itf 
      */
+    /*
     public boolean isMbeanItfImpl() {
         return mbeanItfImpl;
     }
@@ -245,6 +251,7 @@ public class MBean {
      * Sets the caracteristic for this mbean to implement the mbean registration itf
      * @param mbeanItfImpl true if this mbean to implements the mbean registration itf
      */
+    /*
     public void setMbeanItfImpl(boolean mbeanItfImpl) {
         this.mbeanItfImpl = mbeanItfImpl;
     }
@@ -253,6 +260,7 @@ public class MBean {
      * Return true if the class keeps the preregistered parameter references
      * @return boolean true if the class keeps the preregistered parameter references
      */
+    /*
     public boolean isKeepPreRegParam() {
         return keepPreRegParam;
     }
@@ -261,6 +269,7 @@ public class MBean {
      * Sets the caracteristic for this mbean to keep the preregistered parameter references
      * @param keepPreRegParam true if this mbean keeps the preregistered parameter references
      */
+    /*
     public void setKeepPreRegParam(boolean keepPreRegParam) {
         this.keepPreRegParam = keepPreRegParam;
     }
@@ -288,5 +297,5 @@ public class MBean {
     public void setGenSeqNumber(boolean genSeqNumber) {
         this.genSeqNumber = genSeqNumber;
     }
-
+*/
 }
