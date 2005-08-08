@@ -75,7 +75,7 @@ public class CreatedModifiedFilesTest extends TestBase {
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         cmf.add(cmf.bundleKeyDefaultBundle(LocalizedBundleInfo.NAME, "Much Better Name"));
         cmf.add(cmf.bundleKey("src/custom.properties", "some.property", "some value"));
-        cmf.add(cmf.addLoaderSection("org/example/module1/MyExtLoader"));
+        cmf.add(cmf.addLoaderSection("org/example/module1/MyExtLoader", null));
         cmf.add(cmf.createFile("src/org/example/module1/resources/template.html", createFile(HTML_CONTENT)));
         cmf.add(cmf.addLookupRegistration(
                 "org.example.spi.somemodule.ProvideMe",
@@ -127,7 +127,7 @@ public class CreatedModifiedFilesTest extends TestBase {
         NbModuleProject project = generateStandaloneModule("module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        Operation op = cmf.addLoaderSection("org/example/module1/MyExtLoader");
+        Operation op = cmf.addLoaderSection("org/example/module1/MyExtLoader", null);
         
         assertRelativePath("manifest.mf", op.getModifiedPaths());
         
