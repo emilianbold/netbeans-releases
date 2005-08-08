@@ -154,9 +154,11 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private Collection getFilteredData(Collection data, String prefix) {
             List ret = new ArrayList();
+            boolean camelCase = prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
             for (Iterator it = data.iterator(); it.hasNext();) {
                 CompletionQuery.ResultItem itm = (CompletionQuery.ResultItem) it.next();
-                if (JMIUtils.startsWith(itm.getItemText(), prefix))
+                if (JMIUtils.startsWith(itm.getItemText(), prefix)
+                        || (camelCase && (itm instanceof NbJMIResultItem.ClassResultItem) && JMIUtils.matchesCamelCase(itm.getItemText(), prefix)))
                     ret.add(itm);
             }
             return ret;
