@@ -43,6 +43,7 @@ import java.util.*;
 import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
+import java.lang.reflect.Field;
 
 /**
  * Annotates names for display in Files and Projects view (and possible elsewhere). Uses
@@ -68,6 +69,41 @@ public class Annotator {
 
     Annotator(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
+        initDefaults();
+    }
+
+    private void initDefaults() {
+        Field [] fields = Annotator.class.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            String name = fields[i].getName();
+            if (name.endsWith("Format")) {
+                initDefaultColor(name.substring(0, name.length() - 6)); 
+            }
+        }
+    }
+
+    private void initDefaultColor(String name) {
+        String color = System.getProperty("cvs.color." + name);
+        if (color == null) return;
+        setAnnotationColor(name, color);
+    }
+
+    /**
+     * Changes annotation color of files.
+     * 
+     * @param name name of the color to change. Can be one of:
+     * newLocally, addedLocally, modifiedLocally, removedLocally, deletedLocally, newInRepository, modifiedInRepository, 
+     * removedInRepository, conflict, mergeable, excluded.
+     * @param colorString new color in the format: 4455AA (RGB hexadecimal)
+     */ 
+    private void setAnnotationColor(String name, String colorString) {
+        try {
+            Field field = Annotator.class.getDeclaredField(name + "Format");
+            MessageFormat format = new MessageFormat("<html><font color=\"" + colorString + "\">{0}</font></html>");
+            field.set(null, format);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid color name");
+        }
     }
     
     /**
