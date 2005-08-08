@@ -38,6 +38,8 @@ import org.netbeans.modules.jmx.test.helpers.Parameter;
  */
 public class CreateOneFeatureMBean extends JellyTestCase {
     
+    public final String PROJECT_NAME = "MBeanFunctionalTest";
+    
     public final String TWO   = "2";
     public final String THREE  = "3";
     public final String SIX    = "6";
@@ -61,7 +63,7 @@ public class CreateOneFeatureMBean extends JellyTestCase {
         suite.addTest(new CreateOneFeatureMBean("constructTest3MBean"));
         suite.addTest(new CreateOneFeatureMBean("constructTest7MBean"));
         suite.addTest(new CreateOneFeatureMBean("constructTest11MBean"));
-        
+    
         return suite;
     }
     
@@ -72,7 +74,7 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     }
     
     public void setUp() {
-        JellyToolsHelper.grabProjectNode("MBeanFunctionalTest");
+        JellyToolsHelper.grabProjectNode(PROJECT_NAME);
     }
     
     public void tearDown() {

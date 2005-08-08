@@ -28,6 +28,8 @@ import org.netbeans.modules.jmx.test.helpers.MBean;
  */
 public class CreateEmptyMBean extends JellyTestCase {
     
+    public final String PROJECT_NAME = "MBeanFunctionalTest";
+    
     /** Need to be defined because of JUnit */
     public CreateEmptyMBean(String name) {
         super(name);
@@ -51,7 +53,7 @@ public class CreateEmptyMBean extends JellyTestCase {
     }
     
     public void setUp() {
-        JellyToolsHelper.grabProjectNode("MBeanFunctionalTest");
+        JellyToolsHelper.grabProjectNode(PROJECT_NAME);
     }
     
     public void tearDown() {
@@ -205,7 +207,7 @@ public class CreateEmptyMBean extends JellyTestCase {
     private void junitStep(NewFileWizardOperator nfwo) {
         
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("junitJChckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("junitJChckBox", nfwo));
+        assertFalse(JellyToolsHelper.verifyCheckBoxSelected("junitJChckBox", nfwo));
         
         assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfClassToTest", nfwo));
         assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfTestClass", nfwo));
