@@ -63,22 +63,28 @@ public class PaletteFactoryTest extends TestCase {
         try {
             PaletteFactory.createPalette( (String)null, new DummyActions() );
             fail( "Palette factory accepts null as folder name." );
-        } catch( AssertionError aE ) {
+        } catch( IllegalArgumentException e ) {
             //that's what we want
+        } catch( Throwable t ) {
+            fail( "Invalid exception thrown." );
         }
         
         try {
             PaletteFactory.createPalette( (Node)null, new DummyActions() );
             fail( "Palette factory accepts null as root Node." );
-        } catch( AssertionError aE ) {
+        } catch( IllegalArgumentException e ) {
             //that's what we want
+        } catch( Throwable t ) {
+            fail( "Invalid exception thrown." );
         }
         
         try {
             PaletteFactory.createPalette( DummyPalette.createPaletteRoot(), null );
             fail( "Palette factory accepts null for palette actions." );
-        } catch( AssertionError aE ) {
+        } catch( IllegalArgumentException e ) {
             //that's what we want
+        } catch( Throwable t ) {
+            fail( "Invalid exception thrown." );
         }
     }
     

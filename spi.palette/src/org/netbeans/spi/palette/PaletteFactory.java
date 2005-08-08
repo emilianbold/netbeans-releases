@@ -13,6 +13,7 @@
 
 package org.netbeans.spi.palette;
 
+import java.awt.Component;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.netbeans.modules.palette.Model;
 import org.netbeans.modules.palette.RootNode;
 import org.netbeans.modules.palette.Settings;
 import org.netbeans.modules.palette.PaletteSwitch;
+import org.netbeans.modules.palette.ui.PalettePanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -49,7 +51,10 @@ public final class PaletteFactory {
      * Create a new palette from the given folder.
      *
      * @param rootFolderName Name of palette's root folder, its sub-folders are categories.
+     * Cannot be null.
      * @param customActions Import actions for palette customizer.
+     *
+     * @throws IOException If the given folder cannot be found.
      */
     public static PaletteController createPalette( String rootFolderName, PaletteActions customActions ) 
             throws IOException {
@@ -60,12 +65,15 @@ public final class PaletteFactory {
     /**
      * Create a new palette from the given folder.
      *
-     * @param rootFolderName Name of palette's root folder, its sub-folders are categories.
+     * @param rootFolderName Name of palette's root folder, its sub-folders are categories. 
+     * Cannot be null.
      * @param customActions Import actions for palette customizer.
      * @param filter A filter that can dynamically hide some categories and items.
      * @param dndHandler Handle drop of new items into palette window and add 
      * custom DataFlavors to the Transferable of items being dragged from
      * the palette to editor window. Can be null.
+     *
+     * @throws IOException If the given folder cannot be found.
      */
     public static PaletteController createPalette( String rootFolderName, 
                                                    PaletteActions customActions,
@@ -73,7 +81,9 @@ public final class PaletteFactory {
                                                    DragAndDropHandler dndHandler ) 
             throws IOException {
         
-        assert null != rootFolderName;
+        if( null == rootFolderName ) {
+            throw new IllegalArgumentException( "Folder name cannot be null." );
+        }
         
         DataFolder paletteFolder = DataFolder.findFolder( getPaletteFolder( rootFolderName ) );
         return createPalette( paletteFolder.getNodeDelegate(), customActions, filter, dndHandler );
@@ -87,8 +97,7 @@ public final class PaletteFactory {
      * their children are palette items.
      * @param customActions Import actions for palette customizer.
      */
-    public static PaletteController createPalette( Node paletteRoot, PaletteActions customActions )
-            throws IOException {
+    public static PaletteController createPalette( Node paletteRoot, PaletteActions customActions ) {
         return createPalette( paletteRoot, customActions, null, null );
     }
     
@@ -96,8 +105,8 @@ public final class PaletteFactory {
      * Create a new palette from the given root Node.
      *
      * @param paletteRoot Palette's root <code>Node</code>, its children are categories, 
-     * their children are palette items.
-     * @param customActions Import actions for palette customizer.
+     * their children are palette items. Cannot be null.
+     * @param customActions Import actions for palette customizer. Cannot be null.
      * @param filter A filter that can dynamically hide some categories and items. Can be null.
      * @param dndHandler Handle drop of new items into palette window and add 
      * custom DataFlavors to the Transferable of items being dragged from
@@ -106,11 +115,14 @@ public final class PaletteFactory {
     public static PaletteController createPalette( Node paletteRoot, 
                                                    PaletteActions customActions,
                                                    PaletteFilter filter,
-                                                   DragAndDropHandler dndHandler )
-            throws IOException {
+                                                   DragAndDropHandler dndHandler ) {
         
-        assert null != paletteRoot;
-        assert null != customActions;
+        if( null == paletteRoot ) {
+            throw new IllegalArgumentException( "Palette root Node cannot be null." );
+        }
+        if( null == customActions ) {
+            throw new IllegalArgumentException( "Palette custom actions must be provided." );
+        }
         
         ArrayList lookupObjects = new ArrayList(3);
         lookupObjects.add( customActions );
@@ -119,6 +131,7 @@ public final class PaletteFactory {
         if( null != dndHandler )
             lookupObjects.add( dndHandler );
         
+
         RootNode root = new RootNode( paletteRoot, Lookups.fixed( lookupObjects.toArray() ) );
         Model model = createModel( root );
         Settings settings = new DefaultSettings( model );
