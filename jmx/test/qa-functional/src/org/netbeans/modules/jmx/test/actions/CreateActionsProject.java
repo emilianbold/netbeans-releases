@@ -17,6 +17,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.jmx.test.helpers.JellyToolsHelper;
 
 /**
  *
@@ -32,7 +33,7 @@ public class CreateActionsProject extends JellyTestCase {
         
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CreateActionsProject("createProject"));
-        
+        suite.addTest(new CreateActionsProject("createNotAMBean"));
         return suite;
     }
     
@@ -50,6 +51,16 @@ public class CreateActionsProject extends JellyTestCase {
         
     }
     
+    public void createNotAMBean() {
+        String className = "NotAMBean";
+        
+        // create a class which is not an MBean class
+        String content =
+                JellyToolsHelper.getFileContent(CreateActionsProject.class, className);
+        JellyToolsHelper.createJavaFile(PROJECT,className,PACKAGE,content);
+        
+    }
+    
     /**
      * Functional test which constructs a J2SE project to generate Agents
      *
@@ -63,8 +74,11 @@ public class CreateActionsProject extends JellyTestCase {
         NewFileNameLocationStepOperator projectName = 
                 new NewFileNameLocationStepOperator();
         
-        projectName.setObjectName("ActionsFunctionalTests");
+        projectName.setObjectName(PROJECT);
        
         project.finish();
     }
+    
+    public static final String PACKAGE = "com.foo.bar";
+    public static final String PROJECT = "ActionsFunctionalTest";
 }
