@@ -1324,6 +1324,13 @@ final class NbInstaller extends ModuleInstaller {
             try {
                 File f = packagesCacheFile(manifestCacheFile);
                 f.getParentFile().mkdirs();
+                
+                ClassLoaderCache old = packagesCache;
+                if (old != null) {
+                    packagesCache = null;
+                    old.close();
+                }
+                
                 ClassLoaderCache pkgs = ClassLoaderCache.create(f);
 
                 int allIndex = 0;
