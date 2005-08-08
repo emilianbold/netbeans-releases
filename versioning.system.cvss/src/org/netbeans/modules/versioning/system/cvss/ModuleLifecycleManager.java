@@ -22,9 +22,7 @@ import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.w3c.dom.*;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXException;
+import org.xml.sax.*;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
@@ -33,6 +31,7 @@ import javax.swing.*;
 import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 
 /**
  * Handles module events distributed by NetBeans module
@@ -43,7 +42,7 @@ import java.io.IOException;
  * @author Petr Kuzel
  * @author Maros Sandor
  */
-public final class ModuleLifecycleManager extends ModuleInstall implements ErrorHandler {
+public final class ModuleLifecycleManager extends ModuleInstall implements ErrorHandler, EntityResolver {
 
     static final String [] vcsGenericModules = {
         "org.netbeans.modules.vcs.advanced",
@@ -113,6 +112,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setValidating(false);
         DocumentBuilder parser = dbf.newDocumentBuilder();
+        parser.setEntityResolver(this);
         parser.setErrorHandler(this);
         InputStream is = fo.getInputStream();
         Document document = parser.parse(is);
@@ -124,15 +124,19 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
         CvsVersioningSystem.getInstance().shutdown();
     }
 
-    public void error(SAXParseException exception) throws SAXException {
+    public InputSource resolveEntity(String publicId, String systemId) {
+        return new InputSource(new ByteArrayInputStream(new byte[0]));
+    }
+    
+    public void error(SAXParseException exception) {
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
     }
 
-    public void fatalError(SAXParseException exception) throws SAXException {
+    public void fatalError(SAXParseException exception) {
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
     }
 
-    public void warning(SAXParseException exception) throws SAXException {
+    public void warning(SAXParseException exception) {
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
     }
 }
