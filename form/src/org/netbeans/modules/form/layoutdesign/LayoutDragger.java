@@ -19,7 +19,7 @@ import java.awt.BasicStroke;
 import java.util.*;
 
 /*
-Finding position procedure:
+Finding position procedure [sort of out of date]:
 - find vertical position first - preferring aligned position
 - find horizontal position - preferring derived (next to) position
 
@@ -202,7 +202,7 @@ class LayoutDragger implements LayoutConstants {
                     if (resGap != null) {
                         sizeDef.resizingGap = resGap;
                         sizeDef.originalGapSize = LayoutInterval.getIntervalCurrentSize(resGap, i);
-                        sizeDef.preferredGapSize = LayoutDesigner.sizeOfEmptySpace(resGap, visualMapper);
+                        sizeDef.preferredGapSize = LayoutUtils.getSizeOfDefaultGap(resGap, visualMapper);
                         sizeDef.preferredSize = sizeDef.originalSize
                                 - sizeDef.originalGapSize + sizeDef.preferredGapSize;
                     }
@@ -255,8 +255,16 @@ class LayoutDragger implements LayoutConstants {
         return movingEdges[dim] == LEADING || movingEdges[dim] == TRAILING;
     }
 
+    int getResizingEdge(int dim) {
+        return movingEdges[dim];
+    }
+
     LayoutComponent[] getMovingComponents() {
         return movingComponents;
+    }
+
+    VisualMapper getVisualMapper() {
+        return visualMapper;
     }
 
     // -----
@@ -271,7 +279,7 @@ class LayoutDragger implements LayoutConstants {
     }
 
     PositionDef[] getPositions() {
-        for (dimension=0; dimension < DIM_COUNT; dimension++) {
+/*        for (dimension=0; dimension < DIM_COUNT; dimension++) {
             if (movingEdges[dimension] != LayoutRegion.NO_POINT) {
                 PositionDef best = bestPositions[dimension];
                 if (best == null && !isResizing(dimension)) { // not found, retry without position restriction
@@ -279,7 +287,7 @@ class LayoutDragger implements LayoutConstants {
                     findBestPosition();
                 }
             }
-        }
+        } */
         return bestPositions;
     }
 
@@ -673,7 +681,7 @@ class LayoutDragger implements LayoutConstants {
             if (nextToAlignment != DEFAULT) {
                 // check if 'sub' is aligned at the corresponding border of the
                 // group - to know if the whole group could not be next to
-                if (LayoutInterval.wantResize(sub, false)) {
+                if (LayoutInterval.wantResize(sub)) {
                     if (nextToAlignment == LayoutRegion.ALL_POINTS) {
                         groupOuterAlignment = LayoutRegion.ALL_POINTS; // both L and T can happen
                     }
@@ -1149,7 +1157,7 @@ class LayoutDragger implements LayoutConstants {
                 LayoutInterval li = (LayoutInterval) it.next();
                 if ((!li.isEmptySpace() || interval.isSequential())
                     && isValidInterval(li))
-                {   // offset gap in parallel group does not count
+                {   // filling gap (in parallel group) does not count
                     count++;
                     if (count > 1)
                         return true;
@@ -1222,16 +1230,16 @@ class LayoutDragger implements LayoutConstants {
      */
     int findPadding(LayoutInterval interval, LayoutInterval moving, int dimension, int alignment) {
         int oppAlignment = (alignment == LEADING) ? TRAILING : LEADING;
-        List movingComps = LayoutInterval.edgeSubComponents(moving, alignment);
-        List fixedComps = LayoutInterval.edgeSubComponents(interval, oppAlignment);
+        List movingComps = LayoutUtils.edgeSubComponents(moving, alignment);
+        List fixedComps = LayoutUtils.edgeSubComponents(interval, oppAlignment);
         List sources = (alignment == LEADING) ? fixedComps : movingComps;
         List targets = (alignment == LEADING) ? movingComps : fixedComps;
         Map map = new HashMap();
         for (int i=0; i<movingComponents.length; i++) {
             map.put(movingComponents[i].getId(), movingBounds[i]);
         }
-        return LayoutDesigner.sizeOfEmptySpace(sources, targets, visualMapper,
-            targetContainer.getId(), map);
+        return LayoutUtils.getSizeOfDefaultGap(sources, targets, visualMapper,
+                                               targetContainer.getId(), map);
     }
 
     /**

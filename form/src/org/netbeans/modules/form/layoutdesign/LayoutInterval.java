@@ -461,6 +461,71 @@ public final class LayoutInterval implements LayoutConstants {
         return interval;
     }
 
+    /**
+     * Finds common parent of the given intervals.
+     *
+     * @param intervals intervals whose parent should be found.
+     * @return common parent of the given intervals.
+     */
+    static LayoutInterval getCommonParent(LayoutInterval[] intervals) {
+        assert (intervals != null) && (intervals.length > 0);
+        LayoutInterval parent = intervals[0].getParent();
+        for (int i=1; i<intervals.length; i++) {
+            parent = getCommonParent(parent, intervals[i]);
+        }
+        return parent;
+    }
+
+    /**
+     * Finds common parent of two given intervals.
+     *
+     * @param interval1 interval whose parent should be found.
+     * @param interval2 interval whose parent should be found.
+     * @return common parent of two given intervals.
+     */
+    static LayoutInterval getCommonParent(LayoutInterval interval1, LayoutInterval interval2) {
+        // Find all parents of given intervals
+        Iterator parents1 = parentsOfInterval(interval1).iterator();
+        Iterator parents2 = parentsOfInterval(interval2).iterator();
+        LayoutInterval parent1 = (LayoutInterval)parents1.next();
+        LayoutInterval parent2 = (LayoutInterval)parents2.next();
+        assert (parent1 == parent2);
+        
+        // Candidate for the common parent
+        LayoutInterval parent = null;
+        while (parent1 == parent2) {
+            parent = parent1;
+            if (parents1.hasNext()) {
+                parent1 = (LayoutInterval)parents1.next();
+            } else {
+                break;
+            }
+            if (parents2.hasNext()) {
+                parent2 = (LayoutInterval)parents2.next();
+            } else {
+                break;
+            }
+        }
+        return parent;
+    }
+
+    /**
+     * Calculates all parents of the given interval.
+     *
+     * @param interval interval whose parents should be found.
+     * @return <code>List</code> of <code>LayoutInterval</code> objects that
+     * are parents of the given interval. The immediate parent of the interval
+     * is at the end of the list.
+     */
+    private static List parentsOfInterval(LayoutInterval interval) {
+        List parents = new LinkedList();
+        while (interval != null) {
+            parents.add(0, interval);
+            interval = interval.getParent();
+        }
+        return parents;
+    }
+
     static int getCount(LayoutInterval group, int alignment, boolean nonEmpty) {
         int n = 0;
         Iterator it = group.getSubIntervals();
@@ -469,7 +534,7 @@ public final class LayoutInterval implements LayoutConstants {
             if ((group.isSequential()
                  || alignment == LayoutRegion.ALL_POINTS
                  || li.getAlignment() == alignment
-                 || wantResize(li, false))
+                 || wantResize(li))
                 && (!nonEmpty || !li.isEmptySpace()))
             {   // count in
                 n++;
@@ -601,7 +666,7 @@ public final class LayoutInterval implements LayoutConstants {
         }
         else { // parallel parent
             return interval.getAlignment() == alignment
-                   || wantResize(interval, false);
+                   || wantResize(interval);
         }
     }
 
@@ -700,7 +765,7 @@ public final class LayoutInterval implements LayoutConstants {
             else {
                 return !attached
                        || interval.getAlignment() == alignment
-                       || wantResize(interval, false);
+                       || wantResize(interval);
             }
 //                if (interval.getAlignment() == alignment) {
 //                return interval.getCurrentSpace().positions[dimension][alignment]
@@ -722,11 +787,18 @@ public final class LayoutInterval implements LayoutConstants {
         Iterator it = group.getSubIntervals();
         while (it.hasNext()) {
             LayoutInterval li = (LayoutInterval) it.next();
-            if (li.getAlignment() == alignment || wantResize(li, false)) {
+            if (li.getAlignment() == alignment || wantResize(li)) {
                 return true;
             }
         }
         return false;
+    }
+
+    static boolean isFixedDefaultPadding(LayoutInterval interval) {
+        return interval.isEmptySpace()
+               && (interval.getMinimumSize() == NOT_EXPLICITLY_DEFINED || interval.getMinimumSize() == USE_PREFERRED_SIZE)
+               && interval.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+               && (interval.getMaximumSize() == NOT_EXPLICITLY_DEFINED || interval.getMaximumSize() == USE_PREFERRED_SIZE);
     }
 
     /**
@@ -744,25 +816,27 @@ public final class LayoutInterval implements LayoutConstants {
     /**
      * Finds out whether given interval would resize if allowed (given more
      * space by its parent).
-     * @param wholeLayout if true, the method considers resizing of the whole
-     *        layout (in such case some parent of the interval could block the
-     *        resizing); if false, only the interval itself is checked
      * @return whether given interval would resize if given opportunity
      */
-    static boolean wantResize(LayoutInterval interval, boolean wholeLayout) {
-        if (!canResize(interval)) {
+    static boolean wantResize(LayoutInterval interval) {
+        return canResize(interval)
+               && (!interval.isGroup() || contentWantResize(interval));
+    }
+
+    /**
+     * Finds out whether given interval would resize if allowed (given more
+     * space by its parent). This method also considers resizing of the whole
+     * layout (some parent of the interval could block the resizing).
+     * @return whether given interval would resize if given opportunity
+     */
+    static boolean wantResizeInLayout(LayoutInterval interval) {
+        if (!wantResize(interval))
             return false;
-        }
-        if (interval.isGroup() && !contentWantResize(interval)) {
-            return false;
-        }
-        if (wholeLayout) {
-            while (interval.getParent() != null) {
-                interval = interval.getParent();
-                if (!canResize(interval)) {
-                    return false;
-                }
-            }
+
+        while (interval.getParent() != null) {
+            interval = interval.getParent();
+            if (!canResize(interval))
+                return false;
         }
         return true;
     }
@@ -771,7 +845,7 @@ public final class LayoutInterval implements LayoutConstants {
         boolean subres = false;
         Iterator it = group.getSubIntervals();
         while (it.hasNext()) {
-            if (wantResize((LayoutInterval)it.next(), false)) {
+            if (wantResize((LayoutInterval)it.next())) {
                 subres = true;
                 break;
             }
@@ -804,40 +878,92 @@ public final class LayoutInterval implements LayoutConstants {
 
         return posT - posL;
     }
-    
-    public static LayoutInterval getAdjacentEmptySpace(LayoutComponent comp, int dimension, int direction) {
-        LayoutInterval interval = comp.getLayoutInterval(dimension);
-        LayoutInterval parent;
-        while ((parent = interval.getParent()) != null) {
-            if (parent.isSequential()) {
-                int index = parent.indexOf(interval);
-                if (direction == LEADING) {
-                    if (index == 0) {
-                        interval = parent;
-                    } else {
-                        LayoutInterval candidate = parent.getSubInterval(index-1);
-                        return candidate.isEmptySpace() ? candidate : null;
-                    }
-                } else {
-                    if (index == parent.getSubIntervalCount()-1) {
-                        interval = parent;
-                    } else {
-                        LayoutInterval candidate = parent.getSubInterval(index+1);
-                        return candidate.isEmptySpace() ? candidate : null;                        
-                    }
-                }
-            } else {
-                // PENDING how should we determine the space: isAlignedAtBorder, isPlacedAtBorder, any?
-                if (LayoutInterval.isPlacedAtBorder(interval, dimension, direction)) {
-                    interval = parent;
-                } else {
-                    return null;
-                }
+
+    /**
+     * Computes effective alignment of an interval in its parent. In case of
+     * a sequential parent, the effective interval alignment depends on other
+     * intervals and their resizability. E.g. if a preceding interval is
+     * resizing then the interval is effectivelly "pushed" to the trailing end.
+     * If there are no other intervals resizing then the parent alignment is
+     * returned. If there are resizing intervals on both sides, or the interval
+     * itself is resizing, then the there is no (positive) effective alignment.
+     * @return LEADING, TRAILING, or LayoutRegion.NO_POINT
+     */
+    static int getEffectiveAlignment(LayoutInterval interval) {
+        LayoutInterval parent = interval.getParent();
+        if (parent.isParallel())
+            return interval.getAlignment();
+
+        if (LayoutInterval.wantResize(interval))
+            return LayoutRegion.NO_POINT;
+
+        boolean before = true;
+        boolean leadingFixed = true;
+        boolean trailingFixed = true;
+        Iterator it = parent.getSubIntervals();
+        do {
+            LayoutInterval li = (LayoutInterval) it.next();
+            if (li == interval) {
+                before = false;
+            }
+            else if (LayoutInterval.wantResize(li)) {
+                if (before)
+                    leadingFixed = false;
+                else
+                    trailingFixed = false;
             }
         }
-        return null;
+        while (it.hasNext());
+
+        if (leadingFixed && !trailingFixed)
+            return LEADING;
+        if (!leadingFixed && trailingFixed)
+            return TRAILING;
+        if (leadingFixed && trailingFixed)
+            return parent.getAlignment();
+
+        return LayoutRegion.NO_POINT; // !leadingFixed && !trailingFixed
     }
-    
+
+    static int getEffectiveAlignment(LayoutInterval interval, int edge) {
+        assert edge == LEADING || edge == TRAILING;
+
+        boolean wantResize = LayoutInterval.wantResize(interval);
+
+        LayoutInterval parent = interval.getParent();
+        if (parent.isParallel())
+            return wantResize ? edge : interval.getAlignment();
+
+        int n = parent.getSubIntervalCount();
+        int i = edge == LEADING ? 0 : n-1;
+        int d = edge == LEADING ? 1 : -1;
+        boolean before = true;
+        boolean beforeFixed = true;
+        boolean afterFixed = true;
+        while (i >=0 && i < n) {
+            LayoutInterval li = parent.getSubInterval(i);
+            if (li == interval) {
+                before = false;
+            }
+            else if (LayoutInterval.wantResize(li)) {
+                if (before)
+                    beforeFixed = false;
+                else
+                    afterFixed = false;
+            }
+            i += d;
+        }
+
+        if (beforeFixed && !afterFixed)
+            return edge;
+        if (!beforeFixed && afterFixed)
+            return edge^1;
+        if (beforeFixed && afterFixed)
+            return wantResize ? edge : parent.getAlignment();
+
+        return LayoutRegion.NO_POINT; // !leadingFixed && !trailingFixed
+    }
+
     /**
      * Creates clone of the given interval. Doesn't clone content of groups.
      *
@@ -855,42 +981,4 @@ public final class LayoutInterval implements LayoutConstants {
         clone.setSizes(interval.getMinimumSize(), interval.getPreferredSize(), interval.getMaximumSize());
         return clone;
     }
-    
-    /**
-     * Returns list of components that reside in the <code>root</code>
-     * layout interval - the list contains only components whose layout
-     * intervals lie at the specified edge (<code>LEADING</code>
-     * or <code>TRAILING</code>) of the <code>root</code> layout interval.
-     *
-     * @param root layout interval that will be scanned.
-     * @param edge the requested edge the components shoul be next to.
-     * @return <code>List</code> of <code>LayoutInterval</code>s that
-     * represent <code>LayoutComponent</code>s.
-     */
-    static List edgeSubComponents(LayoutInterval root, int edge) {
-        List components = new LinkedList();
-        List candidates = new LinkedList();
-        if (root != null) {
-            candidates.add(root);
-        }
-        while (!candidates.isEmpty()) {
-            LayoutInterval candidate = (LayoutInterval)candidates.get(0);
-            candidates.remove(candidate);
-            if (candidate.isGroup()) {
-                if (candidate.isSequential()) {
-                    int index = (edge == LEADING) ? 0 : candidate.getSubIntervalCount()-1;
-                    candidates.add(candidate.getSubInterval(index));
-                } else {
-                    Iterator subs = candidate.getSubIntervals();
-                    while (subs.hasNext()) {
-                        candidates.add(subs.next());
-                    }
-                }
-            } else if (candidate.isComponent()) {
-                components.add(candidate);
-            }
-        }
-        return components;
-    }
-    
 }

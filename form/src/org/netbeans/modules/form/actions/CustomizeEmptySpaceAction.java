@@ -139,7 +139,7 @@ class EmptySpaceCustomizer extends JPanel {
     }
     
     private void initValues(LayoutComponent comp, int dimension, int direction, JComboBox size, JCheckBox resizable) {
-        LayoutInterval space = LayoutInterval.getAdjacentEmptySpace(comp, dimension, direction);
+        LayoutInterval space = LayoutUtils.getAdjacentEmptySpace(comp, dimension, direction);
         if (space != null) {
             int pref = space.getPreferredSize(false);
             int max = space.getMaximumSize(false);
@@ -161,7 +161,7 @@ class EmptySpaceCustomizer extends JPanel {
     }
 
     private void applyValues(LayoutComponent comp, int dimension, int direction, JComboBox size, JCheckBox resizable) {
-        LayoutInterval space = LayoutInterval.getAdjacentEmptySpace(comp, dimension, direction);
+        LayoutInterval space = LayoutUtils.getAdjacentEmptySpace(comp, dimension, direction);
         if (space != null) {
             int pref = space.getPreferredSize(false);
             int max = space.getMaximumSize(false);
