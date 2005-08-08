@@ -15,6 +15,7 @@ package org.netbeans.modules.jmx;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 
@@ -46,7 +47,9 @@ public class MBeanDO {
     
     public MBeanDO(List attributes, List operations) {
         this.attributes = attributes;
+        Collections.sort(this.attributes);
         this.operations = operations;
+        Collections.sort(this.operations);
         this.notifs = new ArrayList();
     }
     
@@ -106,10 +109,12 @@ public class MBeanDO {
 
     public void setAttributes(List attributes) {
         this.attributes = attributes;
+        Collections.sort(this.attributes);
     }
 
     public void setOperations(List operations) {
         this.operations = operations;
+        Collections.sort(this.operations);
     }
 
     public DataFolder getDataFolder() {

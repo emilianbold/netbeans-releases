@@ -24,7 +24,7 @@ import org.netbeans.jmi.javamodel.Parameter;
  *
  * @author tl156378
  */
-public class MBeanOperation {
+public class MBeanOperation implements Comparable {
     
     private String name;
     private Method method;
@@ -425,6 +425,16 @@ public class MBeanOperation {
 
     public void setWrapped(boolean wrapped) {
         this.wrapped = wrapped;
+    }
+    
+    public int compareTo(Object o) {
+        MBeanOperation op = (MBeanOperation) o;
+        
+        int comp = name.compareTo(op.getName());
+        if (comp != 0)
+            return comp;
+        
+        return getSimpleSignature().compareTo(op.getSimpleSignature());
     }
     
 }

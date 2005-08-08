@@ -20,7 +20,7 @@ import org.netbeans.jmi.javamodel.Parameter;
  * class representing a MBean Attribute.
  * @author tl156378
  */
-public class MBeanAttribute {
+public class MBeanAttribute implements Comparable {
     
     private String name;
     private String typeName;
@@ -220,6 +220,10 @@ public class MBeanAttribute {
 
     public void setWrapped(boolean wrapped) {
         this.wrapped = wrapped;
+    }
+    
+    public int compareTo(Object o) {
+        return name.compareTo(((MBeanAttribute) o).getName());
     }
     
 }
