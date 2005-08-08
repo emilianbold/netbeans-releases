@@ -24,6 +24,7 @@ import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanOperation;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
 import org.netbeans.modules.jmx.WizardConstants;
+import org.netbeans.modules.jmx.WizardHelpers;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -147,7 +148,14 @@ public abstract class MBeanFileGenerator {
     }
     
     public static Type getType(JavaModelPackage pkg, String typeName) {
-        return pkg.getType().resolve(typeName);
+        if (typeName.endsWith("[]")) { // NOI18N
+            org.netbeans.jmi.javamodel.Array array = pkg.getArray().resolveArray(
+                    getType(pkg,
+                    WizardHelpers.getFullTypeName(
+                    typeName.substring(0,typeName.length() - 2)))); // NOI18N
+            return array;
+        } else
+            return pkg.getType().resolve(typeName);
     }
     
     public static MultipartId getTypeRef(JavaModelPackage pkg, String typeName) {
