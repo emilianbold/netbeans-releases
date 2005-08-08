@@ -56,7 +56,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private int wizardType;
     
     private ButtonModel lastSelectedType;
+    private static String lastSelectedSuite;
     private boolean wasLocationUpdate;
+    private static boolean wasSuiteModuleSelected = true;
     
     /** Creates new form BasicInfoVisualPanel */
     public BasicInfoVisualPanel(WizardDescriptor setting, int wizType) {
@@ -72,17 +74,25 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
             if (moduleSuiteValue.getItemCount() > 0) {
-                suiteModule.setSelected(true);
-                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                restoreSelectedSuite();
+                suiteModule.setSelected(wasSuiteModuleSelected);
+                if (wasSuiteModuleSelected) {
+                    locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                } else {
+                    locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
+                }
             } else {
                 locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
             }
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             moduleSuite.setText(getMessage("LBL_Add_to_Suit"));
-            suiteModule.setSelected(true);
+            suiteModule.setSelected(wasSuiteModuleSelected);
             suiteModule.setVisible(false);
             if (moduleSuiteValue.getItemCount() > 0) {
-                locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                restoreSelectedSuite();
+                if (wasSuiteModuleSelected) {
+                    locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                }
             }
             platform.setVisible(false);
             platformValue.setVisible(false);
@@ -97,7 +107,17 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         updateEnabled();
     }
     
-    
+    private void restoreSelectedSuite() {
+        if (lastSelectedSuite != null) {
+            int max = moduleSuiteValue.getModel().getSize();
+            for (int i=0; i < max; i++) {
+                if (lastSelectedSuite.equals(moduleSuiteValue.getModel().getElementAt(i))) {
+                    moduleSuiteValue.setSelectedItem(lastSelectedSuite);
+                    break;
+                }
+            }
+        }
+    }
     
     private String getNameValue() {
         return nameValue.getText().trim();
@@ -251,13 +271,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         String bundlekey = null;
         int counter;
         if (wizardType == NewNbModuleWizardIterator.TYPE_SUITE) {
-                counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
-                bundlekey = "TXT_Suite"; //NOI18N
-                data.setSuiteCounter(counter);
+            counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
+            bundlekey = "TXT_Suite"; //NOI18N
+            data.setSuiteCounter(counter);
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_MODULE) {
-                counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
-                bundlekey = "TXT_Module"; //NOI18N
-                data.setModuleCounter(counter);
+            counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
+            bundlekey = "TXT_Module"; //NOI18N
+            data.setModuleCounter(counter);
         } else if (wizardType == NewNbModuleWizardIterator.TYPE_LIBRARY_MODULE) {
             counter = ModuleUISettings.getDefault().getNewModuleCounter() + 1;
             bundlekey = "TXT_Library"; //NOI18N
@@ -539,7 +559,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
         if (!wasLocationUpdate) {
-            locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+            String suite = (String) moduleSuiteValue.getSelectedItem();
+            locationValue.setText(suite);
+            lastSelectedSuite = suite;
             wasLocationUpdate = false;
         }
         checkModuleSuite();
@@ -574,7 +596,8 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
         updateEnabled();
-        if (suiteModule.isSelected()) {
+        wasSuiteModuleSelected = suiteModule.isSelected();
+        if (wasSuiteModuleSelected) {
             checkModuleSuite();
         } else { // standalone module
             checkNbPlatform();
