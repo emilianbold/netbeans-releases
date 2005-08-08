@@ -49,6 +49,8 @@ public class SubprojectProviderImplTest extends TestBase {
             "openide/io",
             "openide/loaders",
             "xml/api",
+            "core/navigator",
+            "openide/explorer",
         });
     }
     
