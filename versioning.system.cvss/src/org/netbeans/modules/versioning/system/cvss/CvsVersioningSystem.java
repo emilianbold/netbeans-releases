@@ -55,7 +55,7 @@ public class CvsVersioningSystem {
     /**
      * Extensions to be treated as text although MIME type may suggest otherwise.
      */ 
-    private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "xml", "html", "properties", "mf", "jhm", "hs", "form" }));
+    private static final Set textExtensions = new HashSet(Arrays.asList(new String [] { "txt", "xml", "html", "properties", "mf", "jhm", "hs", "form" }));
     
     private final Map clientsCache = new HashMap();
     private final Map params = new HashMap();
