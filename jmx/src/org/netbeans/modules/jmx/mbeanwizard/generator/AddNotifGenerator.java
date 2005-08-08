@@ -304,7 +304,7 @@ public class AddNotifGenerator
     private static void addFields(JavaClass tgtClass, boolean genBroadcastDeleg,
             boolean genSeqNumber) {
         JavaModelPackage pkg = (JavaModelPackage)tgtClass.refImmediatePackage();
-        if (genBroadcastDeleg) {
+        if (genSeqNumber) {
             Field seqNumber = pkg.getField().createField("seqNumber", Collections.EMPTY_LIST, // NOI18N
                     Modifier.PRIVATE, null, null, false,
                     pkg.getMultipartId().createMultipartId("long", null, Collections.EMPTY_LIST), // NOI18N
@@ -312,7 +312,7 @@ public class AddNotifGenerator
             tgtClass.getFeatures().add(seqNumber);
         }
         
-        if (genSeqNumber) {
+        if (genBroadcastDeleg) {
             Field broadcaster = pkg.getField().createField("broadcaster", Collections.EMPTY_LIST, // NOI18N
                     Modifier.PRIVATE | Modifier.FINAL, null, null, true,
                     pkg.getMultipartId().createMultipartId(
