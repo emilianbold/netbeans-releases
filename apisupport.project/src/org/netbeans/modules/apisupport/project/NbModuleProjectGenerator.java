@@ -287,7 +287,6 @@ public class NbModuleProjectGenerator {
         EditableProperties globalProps = Util.loadProperties(suiteGlobalPropFO);
         String projectPropKey = "project." + projectDirF.getName(); // NOI18N
         if (CollocationQuery.areCollocated(projectDirF, suiteDir)) {
-            // XXX the generating of relative path doesn't seem's too clever, check it
             globalProps.setProperty(projectPropKey,
                     PropertyUtils.relativizeFile(suiteDir, projectDirF));
         } else {
