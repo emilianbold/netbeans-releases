@@ -52,16 +52,16 @@ import java.awt.*;
  */
 public class Annotator {
 
-    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
-    private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");            
-    private static MessageFormat modifiedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
-    private static MessageFormat removedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
-    private static MessageFormat deletedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
-    private static MessageFormat newInRepositoryFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");       
-    private static MessageFormat modifiedInRepositoryFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
-    private static MessageFormat removedInRepositoryFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
+    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
+    private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");            
+    private static MessageFormat modifiedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
+    private static MessageFormat removedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
+    private static MessageFormat deletedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
+    private static MessageFormat newInRepositoryFormat = new MessageFormat("<html><font color=\"#006C80\">{0}</font></html>");       
+    private static MessageFormat modifiedInRepositoryFormat = new MessageFormat("<html><font color=\"#006C80\">{0}</font></html>");
+    private static MessageFormat removedInRepositoryFormat = new MessageFormat("<html><font color=\"#006C80\">{0}</font></html>");
     private static MessageFormat conflictFormat = new MessageFormat("<html><font color=\"#CC0000\">{0}</font></html>");
-    private static MessageFormat mergeableFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
+    private static MessageFormat mergeableFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
     private static MessageFormat excludedFormat = new MessageFormat("<html><font color=\"#A0A0A0\">{0}</font></html>");
 
     private final FileStatusCache cache;
