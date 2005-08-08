@@ -1321,8 +1321,8 @@ final class NbInstaller extends ModuleInstaller {
     
     private void maybeSaveClassLoaderCache() {
         if (manifestCache != null && mgr != null && !optimizeLoading) {
+            File f = packagesCacheFile(manifestCacheFile);
             try {
-                File f = packagesCacheFile(manifestCacheFile);
                 f.getParentFile().mkdirs();
                 
                 ClassLoaderCache old = packagesCache;
@@ -1383,6 +1383,9 @@ final class NbInstaller extends ModuleInstaller {
                 optimizeLoading = true;
             } catch (IOException ioe) {
                 Util.err.notify(ErrorManager.WARNING, ioe);
+                optimizeLoading = false;
+                f.delete();
+                f.deleteOnExit();
             }
         }
     }
