@@ -340,12 +340,12 @@ public class FormModel
 
         LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
 
-        metacont.setOldLayoutSupport(false);
-
         if (!layoutModel.changeComponentToContainer(metacont.getId())) {
             layoutModel.addRootComponent(
                     new LayoutComponent(metacont.getId(), true));
         }
+
+        metacont.setOldLayoutSupport(false);
 
         fireContainerLayoutExchanged(metacont, currentDel, null);
     }

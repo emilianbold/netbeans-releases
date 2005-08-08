@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.undo.*;
 
 /**
@@ -362,6 +364,51 @@ public class LayoutModel implements LayoutConstants {
             }
             addInterval(targetSub, targetInterval, -1);
         }
+    }
+    
+    /**
+     * Creates layout model based on the current layout represented
+     * by bounds of given components.
+     *
+     * @param idToComponent maps component Id to <code>Component</code>.
+     */
+    public void createModel(String containerId, Map idToComponent) {
+        if (idToComponent.isEmpty()) return;
+        LayoutComponent lCont = getLayoutComponent(containerId);
+        assert (lCont != null);
+        Iterator iter = idToComponent.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            String id = (String)entry.getKey();
+            Component component = (Component)entry.getValue();
+            LayoutComponent lComp = getLayoutComponent(id);
+            if (lComp == null) {
+                lComp = new LayoutComponent(id, false);
+                addComponent(lComp, lCont, -1);
+            }
+            Rectangle bounds = component.getBounds();
+            Dimension dim = component.getPreferredSize();
+            createModelHelper(lCont, lComp, bounds.x, bounds.width, dim.width, HORIZONTAL);
+            createModelHelper(lCont, lComp, bounds.y, bounds.height, dim.height, VERTICAL);
+        }
+    }
+    
+    private void createModelHelper(LayoutComponent cont, LayoutComponent comp,
+        int pos, int size, int prefSize, int dimension) {
+        LayoutInterval root = cont.getLayoutRoot(dimension);
+        LayoutInterval interval = comp.getLayoutInterval(dimension);
+        if (size != prefSize) {
+            setIntervalSize(interval, interval.getMinimumSize(), size, interval.getMaximumSize());
+        }
+        if (pos > 0) {
+            LayoutInterval group = new LayoutInterval(SEQUENTIAL);
+            LayoutInterval gap = new LayoutInterval(SINGLE);
+            gap.setSize(pos);
+            addInterval(gap, group, -1);
+            addInterval(interval, group, -1);
+            interval = group;
+        }
+        addInterval(interval, root, -1);
     }
 
     // -----
