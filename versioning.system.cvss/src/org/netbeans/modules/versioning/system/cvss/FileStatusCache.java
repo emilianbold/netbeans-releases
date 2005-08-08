@@ -115,7 +115,7 @@ public class FileStatusCache {
      *    
      * @param dir folder to list
      * @return
-     */ 
+     */
     private File [] listFiles(File dir) {
         Set files = getScannedFiles(dir).keySet();
         return (File[]) files.toArray(new File[files.size()]);
@@ -130,7 +130,7 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    File [] listFiles(File [] roots, int includeStatus) {
+    public File [] listFiles(File [] roots, int includeStatus) {
         Set set = new HashSet();
         Map allFiles = cacheProvider.getAllModifiedValues();
         for (Iterator i = allFiles.keySet().iterator(); i.hasNext();) {

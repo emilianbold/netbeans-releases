@@ -64,10 +64,9 @@ public class GetCleanAction extends AbstractSystemAction {
     private void revertModifications() {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
-        File [] files = getFilesToProcess();
+        File [] files = cache.listFiles(getFilesToProcess(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            if (file.isDirectory()) continue;
             Entry entry = null;
             try {
                 entry = ah.getEntry(file);
