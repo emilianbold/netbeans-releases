@@ -210,7 +210,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
         // 2. dataobject file
-        boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*)", //NOI18N
+        boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.+-])*)", //NOI18N
                                                mime); 
         if (isEditable) {
             StringBuffer editorBuf = new StringBuffer();
@@ -358,6 +358,25 @@ public class NewLoaderIterator extends BasicWizardIterator {
         //8. create layerfile actions subsection
         fileChanges.add(fileChanges.createLayerSubtree("Loaders/" + mime + "/Actions",//NOI18N
                         buf.toString(), false));
+        //9. create sample template
+        buf = new StringBuffer();
+        
+        buf.append("<file name=\"new");
+        if (model.isExtensionBased()) {
+            buf.append(namePrefix).append(".").append(getFirstExtension(model.getExtension())).append("\">\n");
+        } else {
+            buf.append(namePrefix).append(".xml\">\n");
+        }
+        buf.append("<attr boolvalue=\"true\" name=\"template\"/>");
+        buf.append("<![CDATA[");
+        if (model.isExtensionBased()) {
+            buf.append("sample contents]]>");
+        } else {
+            buf.append("<root xmlns=\"").append(model.getElement()).append("\"/>]]>");
+        }
+        buf.append("</file>\n");
+        fileChanges.add(fileChanges.createLayerSubtree("Templates/Other",//NOI18N
+                buf.toString(), true));
         
         model.setCreatedModifiedFiles(fileChanges);
     }
@@ -387,6 +406,19 @@ public class NewLoaderIterator extends BasicWizardIterator {
         }
         buff.append("        <resolver mime=\"").append(mime).append("\"/>\n"); //NOI18N
         return buff.toString();
+    }
+    
+    private static String getFirstExtension(String ext) {
+        StringBuffer buff = new StringBuffer();
+        StringTokenizer tokens = new StringTokenizer(ext," ,");
+        String element = "someextenstion"; //NOI18N
+        if (tokens.hasMoreTokens()) {
+            element = tokens.nextToken();
+            if (element.startsWith(".")) { //NOI18N
+                element = element.substring(1);
+            }
+        }
+        return element;
     }
     
     private static String formatNameSpace(boolean isExtensionBased, String namespace, String mime) {

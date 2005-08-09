@@ -12,4 +12,16 @@ public class @@PREFIX@@DataNode extends DataNode {
         setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
+//    /** Creates property sheet. Ovrrides superclass method. */
+//    protected Sheet createSheet() {
+//        Sheet s = super.createSheet();
+//        Sheet.Set ss = s.get(Sheet.PROPERTIES);
+//        if (ss == null) {
+//            ss = Sheet.createPropertiesSet();
+//            s.put(ss);
+//        }
+//        //TODO put some relevant properties
+//        return s;
+//    }
+
 }
