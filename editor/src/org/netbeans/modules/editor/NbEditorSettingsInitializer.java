@@ -13,25 +13,12 @@
 
 package org.netbeans.modules.editor;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Arrays;
-import java.util.ArrayList;
-import javax.swing.KeyStroke;
 import org.netbeans.editor.BaseSettingsInitializer;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsUtil;
-import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtSettingsInitializer;
-import org.openide.actions.SaveAction;
-import org.openide.actions.CutAction;
-import org.openide.actions.CopyAction;
-import org.openide.actions.PasteAction;
-import org.openide.actions.DeleteAction;
-import org.openide.windows.TopComponent;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.editor.BaseKit;

@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.editor.options;
 
-import org.openide.loaders.XMLDataObject;
-
 /**
  *
  * @author  Martin Roskanin

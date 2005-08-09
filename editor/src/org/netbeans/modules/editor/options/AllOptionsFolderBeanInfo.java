@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.awt.Image;
 import java.beans.*;
 
 /** BeanInfo for common options

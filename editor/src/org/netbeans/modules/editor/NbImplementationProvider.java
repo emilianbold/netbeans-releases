@@ -31,8 +31,6 @@ import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.loaders.DataObject;
 
-import org.openide.util.actions.SystemAction;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /** This is NetBeans specific provider of functionality.

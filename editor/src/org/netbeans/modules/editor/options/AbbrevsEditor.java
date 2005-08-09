@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.awt.Component;
 import java.beans.*;
 import java.util.*;
 import javax.swing.event.*;

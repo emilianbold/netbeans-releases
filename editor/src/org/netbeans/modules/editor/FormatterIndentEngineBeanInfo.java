@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,7 +17,6 @@ import java.beans.*;
 import java.awt.Image;
 import java.lang.reflect.Method;
 import org.netbeans.editor.LocaleSupport;
-import java.util.ResourceBundle;
 import org.openide.util.Utilities;
 
 /** BeanInfo for the FormatterIndentEngine class

@@ -7,37 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Keymap;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.actions.Presenter;
-import org.openide.util.actions.SystemAction;
 
 /**
  *  Code Folding action displayed under Menu/View/

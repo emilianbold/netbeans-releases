@@ -7,19 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.editor;
 
-import java.awt.Toolkit;
 import java.io.*;
 import javax.swing.text.Document;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.editor.Settings;
 import org.openide.text.IndentEngine;
 
 /**

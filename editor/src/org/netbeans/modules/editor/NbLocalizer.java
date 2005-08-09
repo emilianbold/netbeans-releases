@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.editor;
 
-import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
 import org.netbeans.editor.LocaleSupport;

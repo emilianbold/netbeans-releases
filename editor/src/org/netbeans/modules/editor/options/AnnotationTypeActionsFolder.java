@@ -13,20 +13,12 @@
 
 package org.netbeans.modules.editor.options;
 
-import org.openide.util.Task;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
-import java.lang.ClassNotFoundException;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import java.util.Map;
-import java.util.HashMap;
-import java.io.IOException;
-import java.lang.String;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.AnnotationType;
-import java.util.Iterator;
-import org.netbeans.editor.AnnotationTypes;
 import java.util.LinkedList;
 import javax.swing.Action;
 import org.openide.filesystems.Repository;

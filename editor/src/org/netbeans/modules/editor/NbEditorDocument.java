@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,29 +16,22 @@ package org.netbeans.modules.editor;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
-import javax.swing.Timer;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
-import org.netbeans.editor.Syntax;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.Utilities;
 import org.openide.text.NbDocument;
 import org.openide.text.AttributedCharacters;
-import org.openide.text.IndentEngine;
 import javax.swing.text.Position;
 import org.openide.text.Annotation;
-import org.netbeans.editor.Mark;
-import org.netbeans.editor.Annotations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Dictionary;
@@ -51,7 +44,6 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.AnnotationDesc;
-import org.openide.ErrorManager;
 
 /**
 * BaseDocument extension managing the readonly blocks of text
