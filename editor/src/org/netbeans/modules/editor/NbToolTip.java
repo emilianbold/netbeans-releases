@@ -16,7 +16,6 @@ package org.netbeans.modules.editor;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
@@ -30,7 +29,6 @@ import org.netbeans.editor.ext.ToolTipSupport;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.Annotations;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtUtilities;
@@ -264,8 +262,6 @@ public class NbToolTip extends FileChangeAdapter {
         
         private boolean documentModified;
         
-        private boolean detached;
-
         Request(AnnotationDesc annoDesc, Annotation[] annos, Line.Part lp,
         ToolTipSupport tts, AbstractDocument doc, NbEditorKit kit, int requestId) {
             this.annoDesc = annoDesc;
