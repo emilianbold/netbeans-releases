@@ -53,8 +53,8 @@ public class MeasureActions  {
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPictureFile", "Open Picture file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPictureFile", "Open Picture file (20kB) if Editor opened"));
         
-        //TODO Form designer isn't TopComponent        suite.addTest(new OpenFormFile("testOpening20kBFormFile", "Open Form file (20kB)"));
-        //TODO Form designer isn't TopComponent        suite.addTest(new OpenFormFileWithOpenedEditor("testOpening20kBFormFile", "Open Form file (20kB) if Editor opened"));
+        suite.addTest(new OpenFormFile("testOpening20kBFormFile", "Open Form file (20kB)"));
+        suite.addTest(new OpenFormFileWithOpenedEditor("testOpening20kBFormFile", "Open Form file (20kB) if Editor opened"));
         
 //TODO It causes failing tests on LinRH & JDS - issue 57579     suite.addTest(new PasteInEditor("measureTime", "Paste in the editor"));
         suite.addTest(new PageUpPageDownInEditor("measureTime", "Press Page Up in the editor", true));

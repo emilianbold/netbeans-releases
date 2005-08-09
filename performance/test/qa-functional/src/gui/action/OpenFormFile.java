@@ -7,13 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.action;
 
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.modules.form.FormDesignerOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -46,7 +47,7 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
     
     
     public void testOpening20kBFormFile(){
-        WAIT_AFTER_OPEN = 17000;
+        WAIT_AFTER_OPEN = 15000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "JFrame20kB.java";
@@ -67,9 +68,13 @@ public class OpenFormFile extends OpenFilesNoCloneableEditor {
             throw new Error ("Cannot push menu item "+this.menuItem+" of node [" + gui.Utilities.SOURCE_PACKAGES + '|' +  filePackage + '|' + fileName + "] in project [" + fileProject + "]");
         }
         log("------------------------- after open ------------");
-        return new TopComponentOperator("JFrame20kB");
+        return new FormDesignerOperator("JFrame20kB");
     }
 
+    public void close() {
+        ((FormDesignerOperator)testedComponentOperator).close();
+    }
+    
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new OpenFormFile("testOpening20kBFormFile"));
     }

@@ -34,6 +34,9 @@ public class MeasureDialogs  {
         suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
         //remove from test run for NB4.1        suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
  
+        suite.addTest(new ModuleManager("measureTime", "Module Manager dialog open"));
+        suite.addTest(new ServerManager("measureTime", "Server Manager dialog open"));
+        
         suite.addTest(new Options("measureTime", "Options dialog open"));
  
         suite.addTest(new NewProjectDialog("measureTime", "New Project dialog open"));
@@ -45,7 +48,7 @@ public class MeasureDialogs  {
         //remove from test run for NB4.1        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
         suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
-//TODO       suite.addTest(new AddVersionedDirectoryDialog("measureTime", "Add Versioned Directory open"));
+        suite.addTest(new AddVersionedDirectoryDialog("measureTime", "Add Versioned Directory open"));
         
         suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
@@ -80,6 +83,7 @@ public class MeasureDialogs  {
         
         suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
         suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
+        suite.addTest(new NetBeansPlatformManager("measureTime", "NetBeans Platform Manager open"));
         
         // dialogs and windows which first open a file in the editor
         suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
