@@ -291,6 +291,27 @@ public final class CreatedModifiedFiles {
     }
     
     /**
+     * Creates an element subtree in layer file. Also
+     * may create and/or modify other files as it is needed.
+     *
+     * @param layerPath path in a project's layer. Folders which don't exist
+     *        yet will be created. (e.g.
+     *        <em>Loader/text/x-type/Actions</em>).
+     * @param subtreeContent content of the subtree to place in the layer file.
+     * @param includeSubtreeRootElement if truek will place the root element in the layer file, if not
+     *        will ignore the root and place it's children only.
+     * @return see {@link Operation}
+     */
+    public Operation createLayerSubtree(
+            String layerPath,
+            String subtreeContent,
+            boolean includeSubtreeRootElement) {
+        return CreatedModifiedFilesFactory.createLayerSubtree(project, layerPath,
+                subtreeContent, includeSubtreeRootElement);
+        
+    }
+    
+    /**
      * Order two entries in a project layer. i.e. creates an ordering
      * <em>&lt;attr&gt;</em> element.
      *

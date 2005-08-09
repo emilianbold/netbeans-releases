@@ -210,6 +210,21 @@ public class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
         // 2. dataobject file
+        boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*)", //NOI18N
+                                               mime); 
+        if (isEditable) {
+            StringBuffer editorBuf = new StringBuffer();
+            editorBuf.append("        CookieSet cookies = getCookieSet();\n");//NOI18N
+            editorBuf.append("        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(),\n");//NOI18N
+            editorBuf.append("                    cookies));\n");//NOI18N
+            replaceTokens.put("@@EDITOR_SUPPORT_SNIPPET@@", editorBuf.toString());//NOI18N
+            replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "import org.openide.text.DataEditorSupport;");//NOI18N
+        } else {
+            // ignore the editor support snippet
+            replaceTokens.put("@@EDITOR_SUPPORT_SNIPPET@@", "");//NOI18N
+            replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "");//NOI18N
+        }
+        
         String doName = getRelativePath(model.getProject(), model.getPackageName(), 
                                             namePrefix, "DataObject.java"); //NOI18N
         template = NewLoaderIterator.class.getResource("templateDataObject.javx");//NOI18N
@@ -240,6 +255,8 @@ public class NewLoaderIterator extends BasicWizardIterator {
                 boolean loaders = false;
                 boolean nodes = false;
                 boolean util = false;
+                boolean windows = false;
+                boolean text = false;
                 while (it.hasNext()) {
                     ModuleDependency dep = (ModuleDependency)it.next();
                     if ("org.openide.filesystems".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
@@ -254,6 +271,12 @@ public class NewLoaderIterator extends BasicWizardIterator {
                     if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
                         util = true;
                     }
+                    if ("org.openide.windows".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        windows = true;
+                    }
+                    if ("org.openide.text".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        text = true;
+                    }
                 }
                 if (!filesystems) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", -1, null, true)); //NOI18N
@@ -266,6 +289,12 @@ public class NewLoaderIterator extends BasicWizardIterator {
                 }
                 if (!util) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
+                }
+                if (!text && isEditable) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.text", -1, null, true)); //NOI18N
+                }
+                if (!windows && isEditable) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows", -1, null, true)); //NOI18N
                 }
             }
         } catch (IOException e) {
@@ -286,6 +315,50 @@ public class NewLoaderIterator extends BasicWizardIterator {
         }
         
         fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore));
+        
+        StringBuffer buf = new StringBuffer();
+        buf.append("<invisibleRoot>");//NOI18N
+        if (isEditable) {
+            buf.append("<file name=\"org-openide-actions-OpenAction.instance\"/>");//NOI18N
+            buf.append("<attr name=\"org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        }
+        buf.append("<file name=\"org-openide-actions-FileSystemAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-FileSystemAction.instance/sep-1.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"sep-1.instance\">");//NOI18N
+        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
+        buf.append("</file>");//NOI18N
+        buf.append("<attr name=\"sep-1.instance/org-openide-actions-CutAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-CutAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-CopyAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-CopyAction.instance/sep-2.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"sep-2.instance\">");//NOI18N
+        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
+        buf.append("</file>");//NOI18N
+        buf.append("<attr name=\"sep-2.instance/org-openide-actions-DeleteAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-DeleteAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-RenameAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-RenameAction.instance/sep-3.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"sep-3.instance\">");//NOI18N
+        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
+        buf.append("</file>");//NOI18N
+        buf.append("<attr name=\"sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-SaveAsTemplateAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"sep-4.instance\">");//NOI18N
+        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
+        buf.append("</file>");//NOI18N
+        buf.append("<attr name=\"sep-4.instance/org-openide-actions-ToolsAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-ToolsAction.instance\"/>");//NOI18N
+        buf.append("<attr name=\"org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance\" boolvalue=\"true\"/>");//NOI18N
+        buf.append("<file name=\"org-openide-actions-PropertiesAction.instance\"/>");//NOI18N
+        buf.append("</invisibleRoot>");
+        
+        //8. create layerfile actions subsection
+        fileChanges.add(fileChanges.createLayerSubtree("Loaders/" + mime + "/Actions",//NOI18N
+                        buf.toString(), false));
+        
         model.setCreatedModifiedFiles(fileChanges);
     }
     

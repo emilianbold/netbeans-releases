@@ -86,6 +86,11 @@ final class CreatedModifiedFilesFactory {
                 generatedPath, substitutionTokens, localizedDisplayName);
     }
     
+    static CreatedModifiedFiles.Operation createLayerSubtree(NbModuleProject project,
+            String layerPath, String content, boolean includeRootElement) {
+        return new CreateLayerSubtree(project, layerPath, content, includeRootElement);
+    }    
+    
     static CreatedModifiedFiles.Operation orderLayerEntry(NbModuleProject project,
             String layerPath, String precedingItemName, String followingItemName) {
         return new OrderLayerEntry(project, layerPath, precedingItemName, followingItemName);
@@ -421,18 +426,14 @@ final class CreatedModifiedFilesFactory {
             if (createContentResource != null) {
                 createContentResource.run();
                 if (contentResourcePath == null) {
-                    System.out.println("content path is null");
                     String layer = getLayerFile();
                     String layerParent = layer.substring(0, layer.lastIndexOf("/"));
-                    System.out.println("layer=" + layerParent);
-                    System.out.println("generatedPath =" + generatedPath);
                     if (generatedPath.startsWith(layerParent)) {
                         contentResourcePath = generatedPath.substring(layerParent.length());
                         if (contentResourcePath.startsWith("/")) {
                             contentResourcePath = contentResourcePath.substring(1);
                         }
                     }
-                    System.out.println("content resource path=" + contentResourcePath);
                 }
             }
             String lbDotted = null;
@@ -449,6 +450,29 @@ final class CreatedModifiedFilesFactory {
                     layerPath, contentResourcePath, lbDotted);
         }
     }
+    
+    private static final class CreateLayerSubtree extends OperationBase {
+        
+        private String layerPath;
+        private String subtreecontent;
+        private boolean includeRootElement;
+        
+        public CreateLayerSubtree(NbModuleProject project, String layerPath,
+                                  String subtreecontent, boolean includeRootElement) {
+            
+            super(project);
+            this.layerPath = layerPath;
+            this.subtreecontent = subtreecontent;
+            this.includeRootElement = includeRootElement;
+            addCreatedOrModifiedPath(getLayerFile());
+            
+        }
+        
+        public void run() throws IOException{
+            LayerUtil.createSubTree(getProject().getProjectDirectory(), getLayerFile(),
+                    layerPath, subtreecontent, includeRootElement);
+        }
+    }    
 
     private static final class OrderLayerEntry extends OperationBase {
         
