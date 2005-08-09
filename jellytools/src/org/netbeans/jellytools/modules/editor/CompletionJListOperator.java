@@ -16,15 +16,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Registry;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.modules.editor.completion.CompletionImpl;
 import org.netbeans.modules.editor.completion.CompletionJList;
+import org.openide.text.DocumentLine;
 
 
 /**
@@ -40,20 +46,21 @@ import org.netbeans.modules.editor.completion.CompletionJList;
  * @author Martin.Schovanek@sun.com
  */
 public class CompletionJListOperator extends JListOperator {
+    public static final String INSTANT_SUBSTITUTION = "InstantSubstitution";
     
-    public CompletionJListOperator() {
-        this(findCompletionJList());
-    }
+//    private CompletionJListOperator() {
+//        this(findCompletionJList());
+//    }
     
-    public CompletionJListOperator(CompletionJList list) {
+    private CompletionJListOperator(JList list) {
         super(list);
     }
     
     public List getCompletionItems() throws Exception {
-        return getCompletionItems((CompletionJList) getSource());
+        return getCompletionItems((JList) getSource());
     }
     
-    private static List getCompletionItems(CompletionJList compJList)
+    private static List getCompletionItems(JList compJList)
     throws Exception {
         ListModel model = (ListModel) compJList.getModel();
         // dump items to List
@@ -64,7 +71,10 @@ public class CompletionJListOperator extends JListOperator {
         return data;
     }
     
-    private static CompletionJList findCompletionJList() {
+    private static JList findCompletionJList() {
+        // Path to the completion model:
+        // CompletionImpl.get().layout.completionPopup.getCompletionScrollPane()
+        // .view.getModel()
         CompletionImpl comp = CompletionImpl.get();
         try {
             //CompletionLayout.class
@@ -79,9 +89,12 @@ public class CompletionJListOperator extends JListOperator {
             final Method getCSPaneMethod = popup.getClass().getDeclaredMethod(
                     "getCompletionScrollPane", null);
             getCSPaneMethod.setAccessible(true);
-            Object compSPane = waitFor(new Waitable() {
+            Object compSPane = waitFor(new Waitable() {                
                 public Object actionProduced(Object obj) {
                     Object o = null;
+                    if (DocumentWatcher.isModified()) {
+                        return INSTANT_SUBSTITUTION;
+                    }
                     try {
                         o = getCSPaneMethod.invoke(popup, null);
                     } catch (Exception ex) {
@@ -90,11 +103,15 @@ public class CompletionJListOperator extends JListOperator {
                     }
                     return o;
                 }
+                
                 public String getDescription() {
                     return "Wait getCompletionScrollPane() not null";
                 }
             });
             //CompletionJList.class
+            if (compSPane.equals(INSTANT_SUBSTITUTION)) {
+                return null;
+            }
             Field viewField = compSPane.getClass().getDeclaredField("view");
             viewField.setAccessible(true);
             final CompletionJList compJList =
@@ -135,7 +152,12 @@ public class CompletionJListOperator extends JListOperator {
         }
     }
     
+    /** Returns a CompletionJListOperator or null in case of
+     * instant substitution */
     public static CompletionJListOperator showCompletion() {
+        CompletionJListOperator operator = null;
+        
+        DocumentWatcher.start();
         Runnable run = new Runnable() {
             public void run() {
                 Completion.get().showCompletion();
@@ -143,7 +165,12 @@ public class CompletionJListOperator extends JListOperator {
         };
         runInAWT(run);
         // wait CC
-        return new CompletionJListOperator();
+        JList list = findCompletionJList();
+        if (list != null) {
+            operator = new CompletionJListOperator(list);
+        }
+        DocumentWatcher.stop();
+        return operator;
     }
     
     public static void showDocumentation() {
@@ -206,5 +233,52 @@ public class CompletionJListOperator extends JListOperator {
         } else {
             SwingUtilities.invokeLater(r);
         }
+    }
+    
+    static class DocumentWatcher {
+        private static BaseDocument doc;
+        private static boolean modified = false;
+        private static boolean active = false;
+        
+        static DocumentListener listener = new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+            public void insertUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+            public void removeUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+        };
+        
+        public static void start() {
+            doc = Registry.getMostActiveDocument();
+            doc.addDocumentListener(listener);
+            modified = false;
+            active = true;
+        }
+        
+        public static void stop() {
+            if (doc != null) {
+                doc.removeDocumentListener(listener);
+                doc = null;
+            }
+            active = false;
+        }
+        
+        public static boolean isModified() {
+            if (!active) {
+                throw new IllegalStateException("start() must be called before this.");
+            }
+            return modified;
+        }
+        
+        private static void setModified(boolean b) {
+            modified = b;
+            doc.removeDocumentListener(listener);
+            doc = null;
+        }
+        
     }
 }
