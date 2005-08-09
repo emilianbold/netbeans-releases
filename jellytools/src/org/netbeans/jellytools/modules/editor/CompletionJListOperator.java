@@ -48,9 +48,14 @@ import org.openide.text.DocumentLine;
 public class CompletionJListOperator extends JListOperator {
     public static final String INSTANT_SUBSTITUTION = "InstantSubstitution";
     
-//    private CompletionJListOperator() {
-//        this(findCompletionJList());
-//    }
+    /**
+     * This constructor is intended to use just for your own risk. 
+     * It could happen, that document is changed during invocation and 
+     * this costructor fails.
+     */
+    public CompletionJListOperator() {
+        this(findCompletionJList());
+    }
     
     private CompletionJListOperator(JList list) {
         super(list);
@@ -276,8 +281,10 @@ public class CompletionJListOperator extends JListOperator {
         
         private static void setModified(boolean b) {
             modified = b;
-            doc.removeDocumentListener(listener);
-            doc = null;
+            if(doc!=null){
+                doc.removeDocumentListener(listener);
+                doc = null;
+            }
         }
         
     }
