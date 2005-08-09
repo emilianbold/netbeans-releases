@@ -33,7 +33,6 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
-import java.lang.IllegalArgumentException;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
@@ -256,7 +255,7 @@ public class NbEditorUtilities {
     
     private static String getString(String key) {
         try {
-            return NbBundle.getBundle(FormatterIndentEngine.class).getString(key);
+            return NbBundle.getBundle(NbEditorUtilities.class).getString(key);
         } catch (MissingResourceException e) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             return key;
