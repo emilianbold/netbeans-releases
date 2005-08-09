@@ -7,19 +7,39 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.xml;
 
+import java.io.CharConversionException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.lang.reflect.Method;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import org.openide.ErrorManager;
-import org.w3c.dom.*;
-import org.xml.sax.*;
-
-import java.io.*;
-
-import javax.xml.parsers.*;
-
+import org.w3c.dom.DOMException;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  * Utility class collecting library methods related to XML processing.
@@ -304,19 +324,101 @@ public final class XMLUtil extends Object {
     }
 
     /**
-     * Write Document into OutputStream using given encoding.
-     * It is a shortcut for writing configurations etc. It guarantees
-     * just that data will be written. Structure and indentation may change.
-     *
-     * @param doc DOM Document to be written
-     * @param out data sink
-     * @param enc XML defined encoding name (i.e. IANA defined, one of UTF-8, UNICODE, ASCII)
-     *
-     * @throws IOException if an I/O exception occurs
+     * Identity transformation in XSLT with indentation added.
+     * Just using the identity transform and calling
+     * t.setOutputProperty(OutputKeys.INDENT, "yes");
+     * t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+     * does not work currently.
+     * You really have to use this bogus stylesheet.
+     * @see "JDK bug #5064280"
      */
-    public static void write(Document doc, OutputStream out, String enc)
-    throws IOException {
-        XMLUtilImpl.write(doc, out, enc);
+    private static final String IDENTITY_XSLT_WITH_INDENT =
+            "<xsl:stylesheet version='1.0' " + // NOI18N
+            "xmlns:xsl='http://www.w3.org/1999/XSL/Transform' " + // NOI18N
+            "xmlns:xalan='http://xml.apache.org/xslt' " + // NOI18N
+            "exclude-result-prefixes='xalan'>" + // NOI18N
+            "<xsl:output method='xml' indent='yes' xalan:indent-amount='4'/>" + // NOI18N
+            "<xsl:template match='@*|node()'>" + // NOI18N
+            "<xsl:copy>" + // NOI18N
+            "<xsl:apply-templates select='@*|node()'/>" + // NOI18N
+            "</xsl:copy>" + // NOI18N
+            "</xsl:template>" + // NOI18N
+            "</xsl:stylesheet>"; // NOI18N
+    /**
+     * Writes a DOM document to a stream.
+     * The precise output format is not guaranteed but this method will attempt to indent it sensibly.
+     * 
+     * @param doc DOM document to be written
+     * @param out data sink
+     * @param enc XML-defined encoding name (e.g. "UTF-8")
+     * @throws IOException if JAXP fails or the stream cannot be written to
+     */
+    public static void write(Document doc, OutputStream out, String enc) throws IOException {
+        if (enc == null) {
+            throw new NullPointerException("You must set an encoding; use \"UTF-8\" unless you have a good reason not to!"); // NOI18N
+        }
+        if (System.getProperty("java.specification.version").startsWith("1.4")) { // NOI18N
+            // Hack for JDK 1.4. Using JAXP won't work; e.g. JDK bug #6308026.
+            // Try using Xerces instead - let's hope it's loadable...
+            try {
+                writeXerces(doc, out, enc);
+                return;
+            } catch (ClassNotFoundException e) {
+                throw (IOException) new IOException("You need to have xerces.jar available to use XMLUtil.write under JDK 1.4: " + e).initCause(e); // NOI18N
+            } catch (Exception e) {
+                throw (IOException) new IOException(e.toString()).initCause(e);
+            }
+        }
+        try {
+            Transformer t = TransformerFactory.newInstance().newTransformer(
+                    new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
+            DocumentType dt = doc.getDoctype();
+            if (dt != null) {
+                String pub = dt.getPublicId();
+                if (pub != null) {
+                    t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, pub);
+                }
+                t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
+            }
+            t.setOutputProperty(OutputKeys.ENCODING, enc);
+            Source source = new DOMSource(doc);
+            Result result = new StreamResult(out);
+            t.transform(source, result);
+        } catch (Exception e) {
+            throw (IOException) new IOException(e.toString()).initCause(e);
+        }
+    }
+    /**
+     * Serialize a document using Xerces' library.
+     * This library is available in the JDK starting with version 1.5 (where we do not need it anyway),
+     * but in 1.4 you need to have Xerces loaded in the system somewhere.
+     */
+    private static void writeXerces(Document doc, OutputStream out, String encoding) throws ClassNotFoundException, Exception {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Class xmlSerializerClazz = Class.forName("org.apache.xml.serialize.XMLSerializer", true, cl); // NOI18N
+        Class outputFormatClazz = Class.forName("org.apache.xml.serialize.OutputFormat", true, cl); // NOI18N
+        Object xmlSerializer = xmlSerializerClazz.newInstance();
+        Object outputFormat = outputFormatClazz.newInstance();
+        Method setMethod = outputFormatClazz.getMethod("setMethod", new Class[] {String.class}); // NOI18N
+        setMethod.invoke(outputFormat, new Object[] {"xml"}); // NOI18N
+        Method setIndenting = outputFormatClazz.getMethod("setIndenting", new Class[] {Boolean.TYPE}); // NOI18N
+        setIndenting.invoke(outputFormat, new Object[] {Boolean.TRUE}); // NOI18N
+        Method setLineWidth = outputFormatClazz.getMethod("setLineWidth", new Class[] {Integer.TYPE}); // NOI18N
+        setLineWidth.invoke(outputFormat, new Object[] {new Integer(0)});
+        Method setLineSeparator = outputFormatClazz.getMethod("setLineSeparator", new Class[] {String.class}); // NOI18N
+        setLineSeparator.invoke(outputFormat, new String[] {System.getProperty("line.separator")}); // NOI18N
+        Method setOutputByteStream = xmlSerializerClazz.getMethod("setOutputByteStream", new Class[] {OutputStream.class}); // NOI18N
+        setOutputByteStream.invoke(xmlSerializer, new Object[] {out});
+        Method setEncoding = outputFormatClazz.getMethod("setEncoding", new Class[] {String.class}); // NOI18N
+        setEncoding.invoke(outputFormat, new Object[] {encoding});
+        Method setOutputFormat = xmlSerializerClazz.getMethod("setOutputFormat", new Class[] {outputFormatClazz}); // NOI18N
+        setOutputFormat.invoke(xmlSerializer, new Object[] {outputFormat});
+        Method setNamespaces = xmlSerializerClazz.getMethod("setNamespaces", new Class[] {Boolean.TYPE}); // NOI18N
+        setNamespaces.invoke(xmlSerializer, new Object[] {Boolean.TRUE});
+        Method asDOMSerializer = xmlSerializerClazz.getMethod("asDOMSerializer", new Class[0]); // NOI18N
+        Object impl = asDOMSerializer.invoke(xmlSerializer, null);
+        Method serialize = impl.getClass().getMethod("serialize", new Class[] {Document.class}); // NOI18N
+        serialize.invoke(impl, new Object[] {doc});
     }
 
     /**
