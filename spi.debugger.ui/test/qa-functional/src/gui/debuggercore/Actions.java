@@ -161,7 +161,7 @@ public class Actions extends JellyTestCase {
         MainWindowOperator.getDefault().waitStatusText(Utilities.runningStatusBarText);
         Utilities.sleep(5000);
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.pauseItem).toString(), null).perform();
-        MainWindowOperator.getDefault().waitStatusText(Utilities.stoppedStatusBarText);
+        MainWindowOperator.getDefault().waitStatusText("Thread main stopped");
     }
    
     public void testFinishSession() {
