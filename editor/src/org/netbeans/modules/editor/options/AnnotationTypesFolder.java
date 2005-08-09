@@ -15,7 +15,6 @@ package org.netbeans.modules.editor.options;
 
 import java.io.OutputStream;
 import org.openide.ErrorManager;
-import org.openide.util.Task;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
 import java.lang.ClassNotFoundException;
