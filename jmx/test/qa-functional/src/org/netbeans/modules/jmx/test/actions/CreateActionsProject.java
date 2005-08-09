@@ -81,4 +81,7 @@ public class CreateActionsProject extends JellyTestCase {
     
     public static final String PACKAGE = "com.foo.bar";
     public static final String PROJECT = "ActionsFunctionalTest";
+    public static final String MENU = "Management";
+    public static final String DYNAMIC = "DynamicSupport";
+    public static final String MBEAN = "MBean";
 }
