@@ -17,7 +17,6 @@ import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -160,7 +159,6 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
     private static class Handler extends HandlerBase {
         private AnnotationType at;
         private int depth = 0;
-        private ResourceBundle bundle;
         private List combinations;
         
         Handler(AnnotationType at) {
