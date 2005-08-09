@@ -75,8 +75,8 @@ class CategoryDescriptor implements CategoryListener {
 
         itemsList = new CategoryList( category );
         itemsList.setModel (itemsListModel = new DefaultListModel ());
-        itemsList.setShowNames(palettePanel.getShowItemNames());
-        itemsList.setIconSize(palettePanel.getIconSize());
+        itemsList.setShowNames(palettePanel.getSettings().getShowItemNames());
+        itemsList.setIconSize(palettePanel.getSettings().getIconSize());
         itemsList.addMouseListener (listener);
         itemsList.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent e) {
@@ -107,7 +107,7 @@ class CategoryDescriptor implements CategoryListener {
                     }
                     Action[] actions = null == item ? category.getActions() : item.getActions();
                     JPopupMenu popup = Utilities.actionsToPopup( actions, getComponent() );
-                    Utils.addCustomizationMenuItems( popup, getPalettePanel() );
+                    Utils.addCustomizationMenuItems( popup, getPalettePanel().getController(), getPalettePanel().getSettings() );
                     popup.show(comp, event.getX(), event.getY());
                 }
             }

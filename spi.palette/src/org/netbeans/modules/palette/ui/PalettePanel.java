@@ -103,8 +103,8 @@ public class PalettePanel extends JPanel implements Scrollable {
             CategoryDescriptor descriptor = getCategoryDescriptor( category );
             if( descriptor == null ) {
                 descriptor = new CategoryDescriptor( this, category );
-                descriptor.setShowNames( getShowItemNames() );
-                descriptor.setIconSize( getIconSize() );
+                descriptor.setShowNames( getSettings().getShowItemNames() );
+                descriptor.setIconSize( getSettings().getIconSize() );
             } else {
                 descriptor.refresh();
             }
@@ -190,8 +190,8 @@ public class PalettePanel extends JPanel implements Scrollable {
                     CategoryDescriptor[] paletteCategoryDescriptors = computeDescriptors( null != model ? model.getCategories() : null );
                     setDescriptors (paletteCategoryDescriptors);
                     if( null != settings ) {
-                        doSetIconSize( settings.getIconSize() );
-                        doSetShowItemNames( settings.getShowItemNames() );
+                        setIconSize( settings.getIconSize() );
+                        setShowItemNames( settings.getShowItemNames() );
                     }
                     if( null != model ) {
                         Item item = model.getSelectedItem();
@@ -315,7 +315,8 @@ public class PalettePanel extends JPanel implements Scrollable {
                 public void mouseClicked(MouseEvent event) {
                     if( SwingUtilities.isRightMouseButton( event ) && null != model ) {
                         JPopupMenu popup = Utilities.actionsToPopup( model.getActions(), PalettePanel.this );
-                        Utils.addCustomizationMenuItems( popup, PalettePanel.this );
+                        Utils.addCustomizationMenuItems( popup, getController(), getSettings() );
+//                        Utils.addCustomizationMenuItems( popup, getSettings(), PalettePanel.this );
                         popup.show( (Component)event.getSource(), event.getX(), event.getY() );
                     }
                 }
@@ -324,50 +325,20 @@ public class PalettePanel extends JPanel implements Scrollable {
         return mouseListener;
     }
 
-    public void setShowItemNames( boolean showNames ) {
-        if( null != settings ) {
-            settings.setShowItemNames( showNames );
-        }
-        doSetShowItemNames( showNames );
-    }
-
-    private void doSetShowItemNames( boolean showNames ) {
+    private void setShowItemNames( boolean showNames ) {
         for( int i=0; i<descriptors.length; i++ ) {
             descriptors[i].setShowNames( showNames );
         }
         repaint();
     }
-    
-    public boolean getShowItemNames() {
-        boolean res = true;
-        if( null != settings ) {
-            res = settings.getShowItemNames();
-        }
-        return res;
-    }
 
-    public void setIconSize(int iconSize) {
-        if( null != settings ) {
-            settings.setIconSize( iconSize );
-        }
-        doSetIconSize( iconSize );
-    }
-    
-    private void doSetIconSize(int iconSize) {
+    private void setIconSize(int iconSize) {
         for( int i=0; i<descriptors.length; i++ ) {
             descriptors[i].setIconSize( iconSize );
         }
         repaint();
     }
-
-    public int getIconSize() {
-        int res = BeanInfo.ICON_COLOR_16x16;
-        if( null != settings ) {
-            res = settings.getIconSize();
-        }
-        return res;
-    }
-
+    
     public boolean getScrollableTracksViewportHeight () {
         return false;
     }
@@ -428,6 +399,14 @@ public class PalettePanel extends JPanel implements Scrollable {
                         for( int i=0; null != descriptors && i<descriptors.length; i++ ) {
                             descriptors[i].computeItems();
                         }
+                    } else if( evt.getPropertyName().equals( PaletteController.ATTR_ICON_SIZE ) ) {
+                        
+                        setIconSize( getSettings().getIconSize() );
+                        
+                    } else if( evt.getPropertyName().equals( PaletteController.ATTR_SHOW_ITEM_NAMES ) ) {
+                        
+                        setShowItemNames( getSettings().getShowItemNames() );
+                        
                     }
                 }
 
@@ -453,7 +432,7 @@ public class PalettePanel extends JPanel implements Scrollable {
         return settings;
     }
     
-    public PaletteController getController() {
+    PaletteController getController() {
         return controller;
     }
     

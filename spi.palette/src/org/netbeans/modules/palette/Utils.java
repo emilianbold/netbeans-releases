@@ -87,12 +87,12 @@ public final class Utils {
         }
     }
     
-    public static void addCustomizationMenuItems( JPopupMenu popup, PalettePanel panel ) {
+    public static void addCustomizationMenuItems( JPopupMenu popup, PaletteController controller, Settings settings ) {
         popup.addSeparator();
-        popup.add( new ShowNamesAction( panel ) );
-        popup.add( new ChangeIconSizeAction( panel ) );
+        popup.add( new ShowNamesAction( settings ) );
+        popup.add( new ChangeIconSizeAction( settings ) );
         popup.addSeparator();
-        popup.add( new ShowCustomizerAction( panel.getController() ) );
+        popup.add( new ShowCustomizerAction( controller ) );
     }
     
     /**
@@ -195,26 +195,25 @@ public final class Utils {
      */
     private static class ShowNamesAction extends AbstractAction {
         
-        private PalettePanel panel;
+        private Settings settings;
         
-        public ShowNamesAction( PalettePanel panel ) {
-            this.panel = panel;
+        public ShowNamesAction( Settings settings ) {
+            this.settings = settings;
         }
         
         public void actionPerformed(ActionEvent event) {
-            panel.setShowItemNames( !panel.getShowItemNames() );
+            settings.setShowItemNames( !settings.getShowItemNames() );
         }
         
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
-                boolean showNames = panel.getShowItemNames();
+                boolean showNames = settings.getShowItemNames();
                 String name = getBundleString(showNames ? "CTL_HideNames" : "CTL_ShowNames"); // NOI18N
                 return name;
             } else {
                 return super.getValue(key);
             }
         }
-        
     }
     
     /**
@@ -222,30 +221,29 @@ public final class Utils {
      */
     private static class ChangeIconSizeAction extends AbstractAction {
         
-        private PalettePanel panel;
+        private Settings settings;
         
-        public ChangeIconSizeAction( PalettePanel panel ) {
-            this.panel = panel;
+        public ChangeIconSizeAction( Settings settings ) {
+            this.settings = settings;
         }
         
         public void actionPerformed(ActionEvent event) {
-            int oldSize = panel.getIconSize();
+            int oldSize = settings.getIconSize();
             int newSize = (oldSize == BeanInfo.ICON_COLOR_16x16) ?
                 BeanInfo.ICON_COLOR_32x32 : BeanInfo.ICON_COLOR_16x16;
-            panel.setIconSize( newSize );
+            settings.setIconSize( newSize );
         }
         
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
                 String namePattern = getBundleString("CTL_IconSize"); // NOI18N
                 String name = MessageFormat.format(namePattern,
-                new Object[] {new Integer(panel.getIconSize())});
+                new Object[] {new Integer(settings.getIconSize())});
                 return name;
             } else {
                 return super.getValue(key);
             }
         }
-        
     }
     
     /**

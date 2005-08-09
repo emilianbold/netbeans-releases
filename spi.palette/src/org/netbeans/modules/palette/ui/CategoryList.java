@@ -91,6 +91,7 @@ public class CategoryList extends JList implements Autoscroll {
         setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         setCellRenderer (getItemRenderer ());
         setLayoutOrientation( HORIZONTAL_WRAP );
+        setFixedCellWidth( 100 );
     }
 
     Item getItemAt( int index ) {
