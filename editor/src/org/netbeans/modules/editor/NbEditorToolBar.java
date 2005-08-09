@@ -22,7 +22,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,26 +32,20 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.plaf.ToolBarUI;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.BaseTextUI;
-import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
@@ -85,10 +78,6 @@ import org.openide.util.actions.Presenter;
  */
 
 final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
-    
-    /** Flag for testing the support by debugging messages. */
-    private static final boolean debug
-        = Boolean.getBoolean("netbeans.debug.editor.toolbar"); // NOI18N
     
     /** Flag for testing the sorting support by debugging messages. */
     private static final boolean debugSort
