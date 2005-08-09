@@ -15,7 +15,6 @@ package org.netbeans.modules.editor;
 
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.openide.text.IndentEngine;
 
 /**
 * Java indentation engine that delegates to java formatter
