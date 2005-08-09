@@ -885,6 +885,8 @@ final class NbInstaller extends ModuleInstaller {
         // #36578: JDK 1.5 has DOM3
         if (pkg.equals("org/w3c/dom/ls/")) return true; // NOI18N
         if (pkg.equals("org/w3c/dom/ranges/")) return true; // NOI18N
+        // #61823: JDK 1.5 has JMX
+        if (pkg.startsWith("javax/management/")) return true; // NOI18N
         return super.isSpecialResource(pkg);
     }
     
