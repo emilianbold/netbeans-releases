@@ -171,6 +171,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/ide</project>
                 <project>../core/javahelp</project>
                 <project>../core/multiview</project>
+                <project>../core/navigator</project>
                 <project>../core/output2</project>
                 <project>../core/palette</project>
                 <project>../core/progress</project>
@@ -242,7 +243,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../java/j2seproject</project>
                 <project>../java/javacore</project>
                 <project>../java/javamodel</project>
-                <project>../java/parser</project>
+                <project>../java/navigation</project>
                 <project>../java/platform</project>
                 <project>../java/project</project>
                 <project>../java/srcmodel</project>
@@ -253,16 +254,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../libs/commons_logging</project>
                 <project>../libs/j2eeeditor</project>
                 <project>../libs/xerces</project>
-                <project>../mdr</project>
                 <project>../mdr/jmi</project>
-                <project>../mdr/jmiutils</project>
                 <project>../mdr/mdrapi</project>
                 <project>../mdr/module</project>
                 <project>../mdr/mof</project>
                 <project>../mdr/nbjmiutils</project>
                 <project>../monitor</project>
-                <project>../objectbrowser/navigator</project>
-                <project>../objectbrowser/navigator/javanavigation</project>
                 <project>../openide/actions</project>
                 <project>../openide/awt</project>
                 <project>../openide/compat</project>
@@ -290,12 +287,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../properties/syntax</project>
                 <project>../refactoring</project>
                 <project>../schema2beans/rt</project>
+                <project>../serverplugins/jboss4</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
                 <project>../serverplugins/sun/appsrvbridge</project>
                 <project>../serverplugins/sun/sunddapi</project>
                 <project>../serverplugins/sun/sunddui</project>
-                <project>../serverplugins/jboss4</project>
                 <project>../tasklist/api</project>
                 <project>../tasklist/core</project>
                 <project>../tasklist/docscan</project>
@@ -306,7 +303,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
                 <project>../utilities/project</project>
-                <project>../versioning</project>
+                <project>../versioncontrol</project>
                 <project>../web/core</project>
                 <project>../web/ddapi</project>
                 <project>../web/examples</project>
