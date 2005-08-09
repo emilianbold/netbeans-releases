@@ -682,6 +682,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 throw ex;
             }
             visualContainer.setOldLayoutSupport(false);
+            formModel.setFreeDesignDefaultLayout(true);
             LayoutModel layoutModel = formModel.getLayoutModel();
             layoutModel.addRootComponent(
                 new LayoutComponent(visualContainer.getId(), true));
@@ -718,6 +719,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         && formModel.getTopRADComponent() == visualContainer)
                     {
                         visualContainer.setOldLayoutSupport(false);
+                        formModel.setFreeDesignDefaultLayout(true);
                         formModel.getLayoutModel().addRootComponent(
                             new LayoutComponent(visualContainer.getId(), true));
                         newLayout = true;

@@ -689,7 +689,7 @@ public class MetaComponentCreator {
                 LayoutSupportManager laysup = newMetaCont.getLayoutSupport();
                 layoutInitialized = laysup.initializeLayoutDelegate(false);
                 // general containers should use the new layout support when created
-                if (!laysup.isDedicated() && FormEditor.isNaturalLayoutEnabled()) {
+                if (!laysup.isDedicated() && formModel.isFreeDesignDefaultLayout()) {
                     newMetaCont.setOldLayoutSupport(false);
                     FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
                 }

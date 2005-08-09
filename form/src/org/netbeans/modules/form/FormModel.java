@@ -72,6 +72,8 @@ public class FormModel
 //    private CodeGenerator codeGenerator; // [this reference should be removed]
     
     private FormSettings settings = new FormSettings();
+    
+    private boolean freeDesignDefaultLayout = false;
 
     // -------------
     // initialization
@@ -1004,6 +1006,14 @@ public class FormModel
 
     CodeStructure getCodeStructure() {
         return codeStructure;
+    }
+    
+    boolean isFreeDesignDefaultLayout() {
+        return freeDesignDefaultLayout;
+    }
+    
+    void setFreeDesignDefaultLayout(boolean freeDesignDefaultLayout) {
+        this.freeDesignDefaultLayout = freeDesignDefaultLayout;
     }
 
 //    CodeGenerator getCodeGenerator() {
