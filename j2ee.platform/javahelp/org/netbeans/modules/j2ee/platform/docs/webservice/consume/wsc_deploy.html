@@ -47,6 +47,20 @@
     </ul>
   </li>
 </ul>
+<p><b>To troubleshoot the deployment of a client:</b>
+<p>If error messages such as the following are returned, check your proxy settings.
+<ul><li><tt>org.netbeans.modules.websvc.registry.ui.ReflectionHelper.callMethodWithParams(ReflectionHelper.java:449)</tt>
+<li><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
+</ul>
+<p>Proxy settings that impact the testing and deployment of web services are the following:
+<ul>
+<li><b>Deployment proxy settings.</b> In the Runtime window, start the Sun Java System
+	 Application Server, expand its node, right-click the JVMs node, choose Properties, and
+	  add the following properties to the JVMOptions dialog box:
+	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
+	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i>
+	  <p>Restart the server for the	new proxy settings to take effect.
+	  <li><b>IDE proxy settings.</b> Go to Tools > Setup Wizard and check your proxy settings.</ul>
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See also</a></th>
