@@ -1188,7 +1188,8 @@ class LayoutFeeder implements LayoutConstants {
 
         // create the remainder group next to the aligned group
         if (!remainder.isEmpty()) {
-            operations.addGroupContent(remainder, commonSeq, commonSeq.indexOf(group), alignment/*, effAlign*/);
+            commonSeq.getCurrentSpace().set(dimension, commonSeq.getParent().getCurrentSpace());
+            operations.addGroupContent(remainder, commonSeq, commonSeq.indexOf(group), alignment, dimension/*, effAlign*/);
         }
     }
 
@@ -1581,7 +1582,8 @@ class LayoutFeeder implements LayoutConstants {
                 extractAlign = LEADING;
         }
         LayoutInterval subsubGroup;
-        if (extractAlign != DEFAULT) {
+        if (extractAlign != DEFAULT) { // intervals from one side will be grouped
+                // with the adding interval - instead of going into a side group
             subsubGroup = new LayoutInterval(PARALLEL);
             subsubGroup.setGroupAlignment(extractAlign);
         }
@@ -1607,6 +1609,7 @@ class LayoutFeeder implements LayoutConstants {
         }
 
         // 5th create groups of merged content around the adding component
+        int[] borderPos = commonGroup.getCurrentSpace().positions[dimension];
         LayoutInterval commonSeq;
         int index;
         if (commonGroup.getSubIntervalCount() == 0 && commonGroup.getParent() != null) {
@@ -1630,11 +1633,28 @@ class LayoutFeeder implements LayoutConstants {
             layoutModel.addInterval(commonSeq, commonGroup, -1);
             index = 0;
         }
+        if (commonSeq.getSubIntervalCount() == 0) {
+            commonSeq.getCurrentSpace().set(dimension, commonGroup.getCurrentSpace());
+        }
         if (!separatedLeading.isEmpty()) {
-            index = operations.addGroupContent(separatedLeading, commonSeq, index, LEADING); //, mainEffectiveAlign
+            int checkCount = commonSeq.getSubIntervalCount(); // remember ...
+            LayoutInterval sideGroup = operations.addGroupContent(
+                    separatedLeading, commonSeq, index, dimension, LEADING); //, mainEffectiveAlign
+            if (sideGroup != null) {
+                sideGroup.getCurrentSpace().set(
+                        dimension, borderPos[LEADING], addingSpace.positions[dimension][LEADING]);
+                operations.optimizeGaps(sideGroup, dimension);
+            }
+            index += commonSeq.getSubIntervalCount() - checkCount;
         }
         if (!separatedTrailing.isEmpty()) {
-            operations.addGroupContent(separatedTrailing, commonSeq, index, TRAILING); //, mainEffectiveAlign
+            LayoutInterval sideGroup = operations.addGroupContent(
+                    separatedTrailing, commonSeq, index, dimension, TRAILING); //, mainEffectiveAlign
+            if (sideGroup != null) {
+                sideGroup.getCurrentSpace().set(
+                        dimension, addingSpace.positions[dimension][TRAILING], borderPos[TRAILING]);
+                operations.optimizeGaps(sideGroup, dimension);
+            }
         }
 
         // resolve subgroup

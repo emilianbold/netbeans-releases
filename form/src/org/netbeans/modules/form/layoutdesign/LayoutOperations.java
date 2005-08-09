@@ -113,104 +113,64 @@ class LayoutOperations implements LayoutConstants {
      *        group (LEADING or TRAILING)
      * @param mainAlignment effective alignment of the main group (LEADING or
      *        TRAILING or something else meaning not aligned)
-     * @return index of
+     * @return parallel group if it has been created, or null
      */
-    int addGroupContent(List list, LayoutInterval seq,
-                        int index, int position/*, int mainAlignment*/)
+    LayoutInterval addGroupContent(List list, LayoutInterval seq,
+                                   int index, int dimension, int position/*, int mainAlignment*/)
     {
         assert seq.isSequential() && (position == LEADING || position == TRAILING);
-//        if (position == TRAILING) {
-//            index++;
-//        }
-        // [revisit the way how spaces are handled - in accordance to optimizeGaps]
-        
-        LayoutInterval gap = null;
-        LayoutInterval leadingGap = null;
-        LayoutInterval trailingGap = null;
+
+        boolean resizingFillGap = false;
+        LayoutInterval commonGap = null;
         boolean onlyGaps = true;
-        boolean gapLeads = true;
-        boolean gapTrails = true;
 
         // Remove sequences just with one gap
-        for (int i = list.size()-1; i>=0; i--) {
+        for (int i=list.size()-1; i >= 0; i--) {
             List subList = (List)list.get(i);
+            assert subList.size() >= 2;
             if (subList.size() == 2) { // there is just one interval
                 int alignment = ((Integer)subList.get(0)).intValue();
                 LayoutInterval li = (LayoutInterval) subList.get(1);
                 if (li.isEmptySpace()) {
-                    if (gap == null || li.getMaximumSize() > gap.getMaximumSize()) {
-                        gap = li;
-                    }
-                    if (LayoutInterval.isFixedDefaultPadding(li)) {
-                        if (alignment == LEADING) {
-                            leadingGap = li;
-                            gapTrails = false;
-                        }
-                        else if (alignment == TRAILING) {
-                            trailingGap = li;
-                            gapLeads = false;
-                        }
-                    }
-                    else {
-                        gapLeads = false;
-                        gapTrails = false;
-                    }
+                    if (commonGap == null || li.getPreferredSize() > commonGap.getPreferredSize())
+                        commonGap = li;
+                    if (LayoutInterval.canResize(li))
+                        resizingFillGap = true;
                     list.remove(i);
                 }
-                else {
-                    onlyGaps = false;
-                }
+                else onlyGaps = false;
             }
+            else onlyGaps = false;
         }
 
-        if (list.size() == 1) { // just one sequence, need not a group
+        if (onlyGaps) { // just one gap
+            if (resizingFillGap && !LayoutInterval.canResize(commonGap))
+                layoutModel.setIntervalSize(commonGap, NOT_EXPLICITLY_DEFINED,
+                                                       commonGap.getPreferredSize(),
+                                                       Short.MAX_VALUE);
+            insertGapIntoSequence(commonGap, seq, index, dimension);
+            return null;
+        }
+
+        if (list.size() == 1) { // just one sequence
             List subList = (List) list.get(0);
-            Iterator itr = subList.iterator();
-            itr.next(); // skip alignment
-            do {
-                LayoutInterval li = (LayoutInterval) itr.next();
-                layoutModel.addInterval(li, seq, index++);
-            }
-            while (itr.hasNext());
-            return index;
-        }
-
-        // find common ending gaps, possibility to eliminate some...
-        for (Iterator it=list.iterator(); it.hasNext(); ) {
-            List subList = (List) it.next();
-            if (subList.size() != 2) { // there are more intervals (will form a sequential group)
-                onlyGaps = false;
-
-                boolean first = true;
-                Iterator itr = subList.iterator();
-                itr.next(); // skip seq. alignment
-                do {
-                    LayoutInterval li = (LayoutInterval) itr.next();
-                    if (first) {
-                        first = false;
-                        if (LayoutInterval.isFixedDefaultPadding(li))
-                            leadingGap = li;
-                        else
-                            gapLeads = false;
-                    }
-                    else if (!itr.hasNext()) { // last
-                        if (LayoutInterval.isFixedDefaultPadding(li))
-                            trailingGap = li;
-                        else
-                            gapTrails = false;
-                    }
+            for (int n=subList.size(),i=n-1; i > 0; i--) { // skip alignment at 0
+                LayoutInterval li = (LayoutInterval) subList.get(i);
+                if (resizingFillGap && li.isEmptySpace() && !LayoutInterval.canResize(li)
+                    && ((i == 1 && position == TRAILING) || (i == n-1 && position == LEADING)))
+                {   // make the end gap resizing
+                    layoutModel.setIntervalSize(
+                            li, NOT_EXPLICITLY_DEFINED, li.getPreferredSize(), Short.MAX_VALUE);
                 }
-                while (itr.hasNext());
+                if (i == 1 && li.isEmptySpace()) // first gap
+                    insertGapIntoSequence(li, seq, index, dimension);
+                else
+                    layoutModel.addInterval(li, seq, index);
             }
+            return null;
         }
 
-        if (onlyGaps) {
-            layoutModel.addInterval(gap, seq, index++);
-//            assertSingleGap(gap);
-            return index;
-        }
-
-        // create group
+        // create parallel group for multiple intervals/sequences
         LayoutInterval group = new LayoutInterval(PARALLEL);
 //        if (position == mainAlignment) {
 //            // [but this should eliminate resizability only for gaps...]
@@ -222,48 +182,35 @@ class LayoutOperations implements LayoutConstants {
         // fill the group
         for (Iterator it=list.iterator(); it.hasNext(); ) {
             List subList = (List) it.next();
-
-            if (gapLeads) {
-                subList.remove(1);
-            }
-            if (gapTrails) {
-                subList.remove(subList.size()-1);
-            }
-
             LayoutInterval interval;
             if (subList.size() == 2) { // there is just one interval - use it directly
                 int alignment = ((Integer)subList.get(0)).intValue();
                 interval = (LayoutInterval) subList.get(1);
-                if (alignment == LEADING || alignment == TRAILING) {
+                if (alignment == LEADING || alignment == TRAILING)
                     layoutModel.setIntervalAlignment(interval, alignment);
-                }
             }
-            else { // there are more intervals - group them in a sequence
+            else { // there are more intervals - create sequence
                 interval = new LayoutInterval(SEQUENTIAL);
-                Iterator itr = subList.iterator();
-                int alignment = ((Integer)itr.next()).intValue();
-                if (alignment == LEADING || alignment == TRAILING) {
+                int alignment = ((Integer)subList.get(0)).intValue();
+                if (alignment == LEADING || alignment == TRAILING)
                     interval.setAlignment(alignment);
-                }
-                do {
-                    LayoutInterval li = (LayoutInterval) itr.next();
+                for (int i=1,n=subList.size(); i < n; i++) {
+                    LayoutInterval li = (LayoutInterval) subList.get(i);
+                    if (resizingFillGap && li.isEmptySpace() && !LayoutInterval.canResize(li)
+                        && ((i == 1 && position == TRAILING) || (i == n-1 && position == LEADING)))
+                    {   // make the end gap resizing
+                        layoutModel.setIntervalSize(
+                                li, NOT_EXPLICITLY_DEFINED, li.getPreferredSize(), Short.MAX_VALUE);
+                    }
                     layoutModel.addInterval(li, interval, -1);
                 }
-                while (itr.hasNext());
             }
             layoutModel.addInterval(interval, group, -1);
         }
 
-        // add the group to the sequence
-        if (gapLeads) {
-            layoutModel.addInterval(leadingGap, seq, index++);
-        }
         layoutModel.addInterval(group, seq, index++);
-        if (gapTrails) {
-            layoutModel.addInterval(trailingGap, seq, index++);
-        }
 
-        return index;
+        return group;
     }
 
     /**
@@ -928,6 +875,7 @@ class LayoutOperations implements LayoutConstants {
     LayoutInterval insertGap(LayoutInterval gap, LayoutInterval interval, int pos, int dimension, int alignment) {
         assert alignment == LEADING || alignment == TRAILING;
         assert !interval.isSequential();
+        assert gap.isEmptySpace();
 
         LayoutInterval parent = interval.getParent();
         if (parent == null) {
@@ -960,6 +908,7 @@ class LayoutOperations implements LayoutConstants {
             }
         }
         if (parent.isSequential()) {
+            // we can't use insertGapIntoSequence here because 'pos' can be special
             LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
             if (neighbor != null && neighbor.isEmptySpace()) {
                 LayoutInterval next = LayoutInterval.getDirectNeighbor(neighbor, alignment, false);
@@ -983,6 +932,39 @@ class LayoutOperations implements LayoutConstants {
         }
 
         return interval;
+    }
+
+    int insertGapIntoSequence(LayoutInterval gap, LayoutInterval seq, int index, int dimension) {
+        assert gap.isEmptySpace();
+        LayoutInterval otherGap = null;
+        int alignment = DEFAULT;
+        if (index >= 0 && index < seq.getSubIntervalCount()) {
+            otherGap = seq.getSubInterval(index);
+            if (otherGap.isEmptySpace())
+                alignment = TRAILING;
+        }
+        if (alignment == DEFAULT && index > 0) {
+            otherGap = seq.getSubInterval(index-1);
+            if (otherGap.isEmptySpace())
+                alignment = LEADING;
+        }
+        if (alignment == DEFAULT) {
+            layoutModel.addInterval(gap, seq, index);
+                return index; // gap was added normally
+        }
+
+        int pos1, pos2;
+        LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(otherGap, alignment, true);
+        pos1 = neighbor != null ?
+               neighbor.getCurrentSpace().positions[dimension][alignment^1] :
+               seq.getCurrentSpace().positions[dimension][alignment];
+        neighbor = LayoutInterval.getDirectNeighbor(otherGap, alignment^1, true);
+        pos2 = neighbor != null ?
+               neighbor.getCurrentSpace().positions[dimension][alignment] :
+               seq.getCurrentSpace().positions[dimension][alignment^1];
+
+        eatGap(otherGap, gap, Math.abs(pos2 - pos1));
+        return alignment == LEADING ? index-1 : index; // gap was eaten
     }
 
     void eatGap(LayoutInterval main, LayoutInterval eaten, int currentMergedSize) {
