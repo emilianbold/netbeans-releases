@@ -26,7 +26,6 @@ import javax.swing.table.*;
 import org.openide.*;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.NotifyDescriptor;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -80,7 +79,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         
         abbrevsTable.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent evt) { 
-                SwingUtilities.getAncestorOfClass(Window.class, AbbrevsEditorPanel.this).hide();
+                SwingUtilities.getAncestorOfClass(Window.class, AbbrevsEditorPanel.this).setVisible(false);
             }},
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
             JComponent.WHEN_FOCUSED
@@ -255,7 +254,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         DialogDescriptor dd = new DialogDescriptor ( input, getBundleString("AEP_EnterAbbrev" ) ); // NOI18N
         Dialog dial = org.openide.DialogDisplayer.getDefault().createDialog(dd);
         input.requestFocus();  // Place caret in it, hopefully
-        dial.show(); // let the user tell us their wish
+        dial.setVisible(true); // let the user tell us their wish
 
         if( dd.getValue() == DialogDescriptor.OK_OPTION ) {
             String[] retVal = input.getAbbrev();
@@ -366,7 +365,9 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
     
      private final class FontSizeTable extends JTable{
  
-         private boolean needCalcRowHeight = true;        
+         private boolean needCalcRowHeight = true; 
+         
+         public FontSizeTable () {}
          
          public void updateUI() {
              super.updateUI();
