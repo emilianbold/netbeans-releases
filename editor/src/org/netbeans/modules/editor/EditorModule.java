@@ -13,33 +13,26 @@
 
 package org.netbeans.modules.editor;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
@@ -53,10 +46,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
-import org.openide.options.SystemOption;
 import org.openide.text.CloneableEditor;
-import org.openide.text.PrintSettings;
-import org.openide.util.SharedClassObject;
 import org.openide.windows.TopComponent;
 import org.openidex.search.SearchHistory;
 import org.openidex.search.SearchPattern;
@@ -85,13 +75,6 @@ public class EditorModule extends ModuleInstall {
         BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
         bpo.init();
     }
-    
-    private boolean getFindBooleanProperty(String name){
-        FindSupport fs = FindSupport.getFindSupport();
-        Boolean prop = (Boolean) fs.getFindProperty(name);
-        return (prop!=null) ? prop.booleanValue() : false;
-    }
-    
     
     /** Module installed again. */
     public void restored () {
