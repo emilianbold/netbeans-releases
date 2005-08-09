@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.jellytools;
@@ -23,6 +23,7 @@ import javax.swing.tree.TreePath;
 
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.Timeout;
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.MouseDriver;
@@ -89,6 +90,21 @@ public class TreeTableOperator extends JTableOperator {
         // and it is need for example for popup menu operations on JTree
         makeComponentVisible();
         return _tree;
+    }
+    
+    /** Selects node in this TreeTable.
+     * @param path path to node (e.g. "System|Settings")
+     * @return row number of selected node
+     */
+    public int selectNode(String path) {
+        TreePath treePath = tree().findPath(path, "|");
+        if(!tree().isPathSelected(treePath)) {
+            tree().selectPath(treePath);
+        }
+        int result = tree().getRowForPath(treePath);
+        scrollToCell(result, 0);
+        new EventTool().waitNoEvent(500);
+        return result;
     }
 
     /** Registers RenderedMouseDriver to be used by RenderedTreeOperator. */
