@@ -143,7 +143,7 @@ public class Installer extends org.openide.modules.ModuleInstall {
             String [] instanceURLs = InstanceProperties.getInstanceList();
             for (int i=0;i<instanceURLs.length;i++){
                 InstanceProperties ip =  InstanceProperties.getInstanceProperties(instanceURLs[i]);
-                if (ip.getDeploymentManager() instanceof SunDeploymentManagerInterface){
+                if (ip.getDeploymentManager() instanceof org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager){
                     ip.refreshServerInstance();
                     
                 }
