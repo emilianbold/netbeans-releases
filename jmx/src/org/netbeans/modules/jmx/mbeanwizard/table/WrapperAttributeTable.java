@@ -100,6 +100,7 @@ public class WrapperAttributeTable extends AttributeTable{
                      wiz.event();
                  }
              });
+             selBox.setName("wrapperAttrSelBox");// NOI18N
              //return new DefaultCellEditor(selBox);
              return new JCheckBoxCellEditor(selBox,this);
          } else {
@@ -143,6 +144,7 @@ public class WrapperAttributeTable extends AttributeTable{
                          }
                          jcb.setEditable(false);
                          jcb.setEnabled(true);
+                         jcb.setName("wrapperAttrAccessBox");// NOI18N
                          return new JComboBoxCellEditor(jcb, this);
                      } else {
                          if (column == 4) { //attribute description
