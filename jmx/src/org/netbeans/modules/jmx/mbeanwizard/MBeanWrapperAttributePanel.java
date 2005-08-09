@@ -55,6 +55,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
         
         attributeModel = new MBeanWrapperAttributeTableModel(); 
         attributeTable = new WrapperAttributeTable(attributeModel,wiz); 
+        attributeTable.setName("wrapperAttributeTable");// NOI18N
         attributeTable.getSelectionModel().addListSelectionListener(this);
         
         // Accessibility
@@ -94,6 +95,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
         Mnemonics.setLocalizedText(tableLabel,
                      bundle.getString("LBL_AttrTable_FromExistingClass"));//NOI18N 
         tableLabel.setLabelFor(attributeTable);
+        
+        attrRemoveJButton.setName("wrapperAttributeRemoveButton");//NOI18N 
         
         /* New ActionListener for the remove button that overrides the one from
          * the super class: Now, to be able to remove a line, it must not be 

@@ -66,6 +66,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
         
         operationModel = new MBeanWrapperOperationTableModel();
         operationTable = new WrapperOperationTable(this,getModel(), wiz);
+        operationTable.setName("wrapperOperationTable");// NOI18N
         operationTable.getSelectionModel().addListSelectionListener(this);
         
         // Accessibility
