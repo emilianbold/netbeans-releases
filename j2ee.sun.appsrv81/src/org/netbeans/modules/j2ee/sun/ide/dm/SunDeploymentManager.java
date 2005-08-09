@@ -116,7 +116,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
-        isConnected = userName != null;
         try {
             if (userName == null) {
                 this.userName = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
@@ -130,6 +129,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
             } else {
                 this.password = password;
             }
+            isConnected = this.userName != null;
         } catch (IllegalStateException ise) {
             // get before set throws an ISE.  Instance registration time
             // triggers this
