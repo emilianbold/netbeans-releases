@@ -100,7 +100,7 @@ class ItemNode extends FilterNode {
     }
 
     public Transferable drag() throws IOException {
-        ExTransferable t = ExTransferable.create( NodeTransfer.transferable(this, NodeTransfer.DND_MOVE) );
+        ExTransferable t = ExTransferable.create( super.drag() );//NodeTransfer.transferable(this, NodeTransfer.DND_MOVE) );
         
         customizeTransferable( t );
         t.put( createTransferable() );
