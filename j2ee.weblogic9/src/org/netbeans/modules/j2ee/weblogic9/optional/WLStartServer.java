@@ -233,9 +233,15 @@ public class WLStartServer extends StartServer {
         // try to get an open socket to the target host/port
         try {
             new Socket(dm.getHost(), new Integer(dm.getPort()).intValue());
-            
-            // if we are successful, return true
-            return true;
+            try {
+                //try getting connected DeploymentManager to test that the server is really running
+                DeploymentManager testDM = WLDeploymentFactory.getInstance().getDeploymentManager(dm.getURI(), dm.getUsername(), dm.getPassword());
+                // if we are successful, return true
+                return true;
+            } catch (DeploymentManagerCreationException ex) {
+                //error most likely means we are not connected
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "getting reponse from server but cannot create connected deployment manager");
+            }
         } catch (UnknownHostException e) {
             ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
         } catch (IOException e) {

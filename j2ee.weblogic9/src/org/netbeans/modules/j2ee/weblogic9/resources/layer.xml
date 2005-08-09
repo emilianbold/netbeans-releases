@@ -31,7 +31,7 @@
                     plugin
                 -->
                 <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory.create"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory.getInstance"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>

@@ -63,7 +63,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
      * 
      * @return the singleton instance of the factory
      */
-    public static synchronized DeploymentFactory create() {
+    public static synchronized DeploymentFactory getInstance() {
         if (instance == null) {
             instance = new WLDeploymentFactory();
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance);
@@ -118,8 +118,8 @@ public class WLDeploymentFactory implements DeploymentFactory {
             WLDebug.notify(WLDeploymentFactory.class, "getDM, uri:" + uri+" username:" + username+" password:"+password+" host:"+host+" port:"+port);
         }
         DeploymentManagerCreationException dmce = null;
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
-            ClassLoader orig = Thread.currentThread().getContextClassLoader();
             ClassLoader loader = getWLClassLoader();
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
@@ -134,15 +134,15 @@ public class WLDeploymentFactory implements DeploymentFactory {
             dmce = new DeploymentManagerCreationException ("Cannot create weblogic DeploymentManager instance.");
             ErrorManager.getDefault().annotate(dmce, e);
         } finally {
-            Thread.currentThread().setContextClassLoader(loader);
+            Thread.currentThread().setContextClassLoader(orig);
         }
         throw dmce;
     }
     
     private DeploymentManager getDiscoDM(String uri) throws DeploymentManagerCreationException {
         DeploymentManagerCreationException dmce = null;
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
-            ClassLoader orig = Thread.currentThread().getContextClassLoader();
             ClassLoader loader = getWLClassLoader();
             Thread.currentThread().setContextClassLoader(loader);
             Class helperClazz = loader.loadClass("weblogic.deploy.api.tools.SessionHelper"); //NOI18N
@@ -157,7 +157,7 @@ public class WLDeploymentFactory implements DeploymentFactory {
             dmce = new DeploymentManagerCreationException ("Cannot create weblogic disconnected DeploymentManager instance.");
             ErrorManager.getDefault().annotate(dmce, e);
         } finally {
-            Thread.currentThread().setContextClassLoader(loader);
+            Thread.currentThread().setContextClassLoader(orig);
         }
         throw dmce;
     }
