@@ -16,13 +16,10 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.editor.errorstripe.api</code-name-base>
-            <module-dependencies>
-
-                </module-dependencies>
+            <module-dependencies/>
             <public-packages>
                 <package>org.netbeans.spi.editor.errorstripe</package>
             </public-packages>
-            <javadoc/>
         </data>
     </configuration>
 </project>

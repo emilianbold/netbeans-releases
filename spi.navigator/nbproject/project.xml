@@ -69,8 +69,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.spi.navigator</package>
             </public-packages>
 
-            <javadoc/>
-            
         </data>
     </configuration>
 </project>
