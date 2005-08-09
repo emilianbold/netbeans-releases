@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
@@ -23,6 +24,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.*;
 
@@ -46,16 +48,25 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
         //System.err.println("findSourceRoot: " + binaryRoot);
         SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get (binaryRoot);
         if (res == null) {
-            if (binaryRoot.equals(getModuleJarUrl())) {
-                FileObject srcDir = project.getSourceDirectory();
-                //System.err.println("\t-> " + srcDir);
-                if (srcDir != null) {
-                    res = new Result (new FileObject[] {srcDir});
+            URL binaryJar = FileUtil.getArchiveFile(binaryRoot);
+            if (binaryJar != null) {
+                File binaryJarF = new File(URI.create(binaryJar.toExternalForm()));
+                File moduleJarF = new File(URI.create(
+                        FileUtil.getArchiveFile(getModuleJarUrl()).toExternalForm()));
+                // XXX should be more strict (e.g. compare also clusters)
+                if (binaryJarF.getName().equals(moduleJarF.getName())) {
+                    FileObject srcDir = project.getSourceDirectory();
+                    //System.err.println("\t-> " + srcDir);
+                    if (srcDir != null) {
+                        res = new Result(new FileObject[] {srcDir});
+                        return res;
+                    }
                 }
-            } else if (binaryRoot.equals(getClassesUrl())) {
+            }
+            if (binaryRoot.equals(getClassesUrl())) {
                 FileObject srcDir = project.getSourceDirectory();
                 if (srcDir != null) {
-                    res = new Result (new FileObject[] {srcDir});
+                    res = new Result(new FileObject[] {srcDir});
                 }
             } else if (binaryRoot.equals(getTestClassesUrl())) {
                 FileObject testSrcDir = project.getTestSourceDirectory();

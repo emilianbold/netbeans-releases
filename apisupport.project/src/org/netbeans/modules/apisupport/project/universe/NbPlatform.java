@@ -491,7 +491,8 @@ public final class NbPlatform implements Comparable {
             Iterator it2 = entries.iterator();
             while (it2.hasNext()) {
                 ModuleEntry entry = (ModuleEntry) it2.next();
-                if (!entry.getJarLocation().equals(jar)) {
+                // XXX should be more strict (e.g. compare also clusters)
+                if (!entry.getJarLocation().getName().equals(jar.getName())) {
                     continue;
                 }
                 File src = entry.getSourceLocation();
