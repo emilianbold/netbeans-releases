@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"
+                       "http://java.sun.com/products/javahelp/index_2_0.dtd">
+
+<index version="2.0">
+	<indexitem text="changing default conversation access" target="collab_starting_conversation" />
+	<indexitem text="Collaboration features" target="collab_about_collab" />
+	<indexitem text="contacts" target="collab_ww_groups_contacts" />
+	<indexitem text="groups and contacts" target="collab_ww_groups_contacts" />
+	<indexitem text="logging into Collaboration" target="collab_login_to_server" />
+	<indexitem text="managing Collaboration accounts" target="collab_creating_accounts" />
+	<indexitem text="managing public conversations" target="collab_starting_conversation" />
+	<indexitem text="starting a conversation" target="collab_starting_conversation" />
+</index>

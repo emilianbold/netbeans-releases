@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE index PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Index Version 2.0//EN"
+                       "http://java.sun.com/products/javahelp/index_2_0.dtd">
+
+<index version="2.0">
+	<indexitem text="editing shared files" target="collab_editing_files" />
+	<indexitem text="fiilesharing" target="collab_sharing_files">
+		<indexitem text="compiling shared files" target="collab_working_projects" />
+		<indexitem text="compiling shared projects" target="collab_working_projects" />
+		<indexitem text="editable and non-editable files" target="collab_sharing_files" />
+		<indexitem text="sharing files" target="collab_sharing_files" />
+		<indexitem text="sharing form files" target="collab_sharing_form_files" />
+		<indexitem text="sharing projects" target="collab_sharing_projects" />
+		<indexitem text="working with projects" target="collab_working_projects" />
+	</indexitem>
+	<indexitem text="shared files" target="collab_sharing_files">
+		<indexitem text="editing shared files" target="collab_editing_files" />
+		<indexitem text="working with shared files" target="collab_working_projects" />
+		<indexitem text="compiling shared files" target="collab_working_projects" />
+	</indexitem>
+	<indexitem text="shared projects" target="collab_sharing_projects">
+		<indexitem text="compiling shared projects" target="collab_working_projects" />
+		<indexitem text="editing shared projects" target="collab_editing_files" />
+		<indexitem text="working with shared projects" target="collab_working_projects" />
+	</indexitem>
+	<indexitem text="sharing form files" target="collab_sharing_form_files" />
+	<indexitem text="sharing projects" target="collab_sharing_projects" />
+</index>

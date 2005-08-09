@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/toc_2_0.dtd">
+
+<toc version="2.0">
+	<tocitem text="Collaboration">
+		<tocitem text="Filesharing">
+			<tocitem text="Sharing Files" target="collab_sharing_files" />
+			<tocitem text="Editing Shared Files" target="collab_editing_files" />
+			<tocitem text="Sharing Projects" target="collab_sharing_projects" />
+			<tocitem text="Working with Shared Projects and Project Files" target="collab_working_projects" />
+			<tocitem text="Sharing Form Files" target="collab_sharing_form_files" />
+		</tocitem>
+	</tocitem>
+</toc>

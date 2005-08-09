@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+<head>
+<title>Working with Shared Projects and Project Files</title>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Working with Shared Projects and Project Files</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You can perform actions on projects and project files that share. Which actions you can perform depend on whether you are a local or remote user -- that is, whether you are the original owner of the shared files, and whether the actions you want to perform are on projects or on project files. </p>
+<p>Projects and files that are shared are subject to the following rules::</p>
+<ul>
+<li>File owners can run <a href="#compile">compilation</a> and debugging actions on original files in their local file systems.</li>
+<li>Remote users who are sharing Projects or Project Files can see the output of a local compilation in the output window. Remote users can perform remote compilation, and run actions on Shared projects.To do so, they must invoke the actions on the shared Project node</li>
+<li>When the original owner shares a Project, <tt>src</tt> files are shared. If you want to share <tt>nbproject</tt> and <tt>build.xml</tt> files you must drag and drop or copy these files individually from the IDE's Files Tab into the File Sharing Channel. </li>
+<li>You can share all files in a Project. Files that are not part of a Project will reside in the Shared Non Project Files folder in the File Sharing Channel. </li>
+<li>You can right-click on the New operation from the root node in the File Sharing Channel to create new shared files that are not affiliated with existing Projects in the IDE. </li>
+</ul>
+<p><b>To build projects that are shared (local user):</b></p>
+<ol>
+<li>Right-click a project node in either the original file system or in the File Sharing Channel.</li>
+<li>Select the action you want to perform.<br>
+You can run any project-related action, either locally or on your file system or from the File Sharing Channel. </li>
+</ol>
+<p><b><a name="compile">To compile files that are shared (local user):</a></b></p>
+<ol>
+<li>Right-click a source file in the original file system to perform any action related to compiling a file. </li>
+<li>Select the action you want to perform. <br>
+Local and remote users will see the output of this project. <br>
+Local users cannot compile source files in the File Sharing Channel. </li>
+</ol>
+<p><b>To build projects that are shared (remote user):</b></p>
+<ol>
+<li>Right-click on a project node in the File Sharing Channel. </li>
+<li>Select an action you want to perform. (Local and remote users will see the output of this project.) </li>
+</ol>
+<p><b>To work with shared files if you are the remote user: </b></p>
+<ul>
+<li>Double-click a shared file in your File Sharing Channel to open or edit the file.</li>
+</ul>
+<p><b>To rename shared files if you are a local user:</b></p>
+<ol>
+<li>Select a project node or a source node on a project.</li>
+<li>Drag the project node to the File Sharing Channel.</li>
+<li>On the Project Tab, select the file you want to rename.</li>
+<li>Right-click that file and select Refactor.</li>
+<li>Select Rename and rename the file to a name of your choosing.</li>
+</ol>
+<p><b>To delete a shared project file if you are a local user:</b></p>
+<ol>
+<li>In the Projects window, select the file you want to delete.</li>
+<li>Right-click and select Delete.<br>
+The file is deleted from the Projects window, from the File Sharing Channel, and from the remote user's File Sharing Channel. </li>
+</ol>
+<p><b>To unshare a file if you are a local user:</b></p>
+<ol>
+<li>Select a project node or source node in the Projects window.</li>
+<li>Drag the project node to the File Sharing Channel.</li>
+<li>In the File Sharing Channel, select the file you want to unshare.</li>
+<li>Right-click and select Stop Sharing.</li>
+</ol>
+<table border="0">
+<tr valign="top">
+<th scope="col" colspan="2" align="left"><a name="seealso">See Also</a></th>
+</tr>
+<tr valign="top">
+<td width="23px" align="left" nowrap>&nbsp;</td>
+<td nowrap>
+<a href="sharing_files.html">Sharing Files</a><br>
+<a href="sharing_projects.html">Sharing Projects</a></td>
+</tr>
+</table>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

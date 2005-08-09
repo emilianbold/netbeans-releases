@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+<head>
+<title>Sharing Projects</title>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Sharing Projects</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You can use the Developer Collaboration feature to share projects with other developers within a conversation. Projects are shared using the Shared Files collaboration channel visible within each conversation window. When you share projects, you share the project structure, and many, but not all, of the files in the original project. References in the original project structure are not kept when projects are shared.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top">
+<td><img src="images/tip.gif" alt="note">&nbsp;</td>
+<td>If the original owner of a file attempts to share the file with a second remote sharer, the original owner will receive a warning popup. Thus you cannot share files across different conversations.<br>
+When the file owner leaves a conversation, ownership of a project file will be transferred to a random participant.</td>
+</tr>
+</table>
+<p>You can share the following types of projects directly:</p>
+<ul>
+<li>Java Application</li>
+<li>J2EE Application</li>
+<li>Web Application</li>
+<li>EJB Application</li>
+<li>Ant Application </li>
+</ul>
+<p>When you share a project, most, but not all, Project files, folders and nodes are copied to the Shared Files collaboration Channel. The <b>Libraries</b> and <b>Test Libraries</b> Project nodes are not copied when you share Projects. The following Project files or folders are not copied when you share Projects:</p>
+<ul>
+<li>build.xml</li>
+<li>nbproject</li>
+<li>build</li>
+<li>dist</li>
+</ul>
+<p><b>To share projects:</b></p>
+<ul>
+<li>To share an existing project, drag or copy the project into the File Sharing channel of a conversation. </li>
+<li>To share a new project, select a folder node in the File Sharing channel of a conversation and use the contextual menu or File &gt; New to create the desired project.</li>
+</ul>
+<p>The projects are sent to the other conversation participants automatically, except for project artifacts. Note that when you create new Projects in the File Sharing Channel, you create a new Project in your original filesystem.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top">
+<td><img src="images/tip.gif" alt="note">&nbsp;</td>
+<td>When other participants share projects, their files appear in your File Sharing channel a short time after a short delay. Each project shows the owner, or person who originally shared the project, after the project name.<br>
+Most project files shared within a conversation can be collaboratively edited in real time. In general, if the IDE can edit the content of a file within a project locally, it will be editable once shared. See <a href="editing_files.html">Editing Shared Files</a> for more information.</td>
+</tr>
+</table>
+<p><b>To delete a shared file or folder in a shared project:</b></p>
+<ul>
+<li>Select the file or folder node of the project file and press Delete or use the contextual menu to remove the file or folder.<br>
+Only project file owners may delete a shared project file.</li>
+</ul>
+<p><b>To save changes made to a shared file:</b></p>
+<ul>
+<li>Drag or copy the shared file within a shared project from the File Sharing channel back to a local filesystem.</li>
+</ul>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top">
+<td><img src="images/tip.gif" alt="note">&nbsp;</td>
+<td>When a conversation is ended (all participants leave), all shared project files are discarded and are no longer accessible. However, backups of shared project files are kept for a time in your IDE user directory under the <tt>collab/shared_files</tt> folder. The number of conversation backups to keep is configurable in the File Sharing channel options under Tools &gt; Options, in the <tt>Collaboration</tt> <tt>/</tt><tt>Channels</tt> category.<br>
+</td>
+</tr>
+</table>
+<table border="0">
+<tr valign="top">
+<th scope="col" colspan="2" align="left"><a name="seealso">See Also</a></th>
+</tr>
+<tr valign="top">
+<td width="23px" align="left" nowrap>&nbsp;</td>
+<td nowrap> <a href="sharing_files.html">Sharing Files</a><br>
+<a href="editing_files.html">Editing Shared Files</a></td>
+</tr>
+</table>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

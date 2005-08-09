@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<html>
+<head>
+<title>Editing Shared Files</title>
+<link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Editing Shared Files</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>Not only can you share either Project or non-Project files with other developers, but most files are also editable in real time. This means that you and your colleagues can edit a file together simultaneously. Similar to the way a database table prevents clients from overwriting the same records at the same time by locking rows, a change to a part of a shared file is protected by a guarded region so that only one person at a time may modify that part of the file.</p>
+<p>Files you share can be files that are part of projects you have created., or are non-Project files, When you share a file that is not part of a project, the file is placed in a structure in your Shared Files Pane called &quot;Shared Common Files&quot;. </p>
+<p>Types of files that are not parts of projects and which would be shared under Shared Common Files include: <tt>jar</tt> files and <tt>zip</tt> files. </p>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top">
+<td><img src="images/tip.gif" alt="note">&nbsp;</td>
+<td>Before a file can be edited, it must be shared. See <a href="sharing_files.html">Sharing Files</a> for more information.</td>
+</tr>
+</table>
+<p>Keep in mind that although a file is sharable, it may not be editable. In general, if a file can be edited locally in the IDE, it will be editable when shared. The following are examples of editable and non-editable files:</p>
+<table cellpadding="5" cellspacing="0" border="0">
+<tr valign="top">
+<th scope="col" align="left">Editable</th>
+<th scope="col" align="left">Non-Editable</th>
+</tr>
+<tr valign="top">
+<td><tt>*.css<br>
+*.dtd<br>
+*.html<br>
+*.java<br>
+*.js</tt> <small><sup>(1)</sup></small><br>
+<tt>*.jsp<br>
+*.mf</tt> <small><sup>(2)</sup></small><br>
+<tt>*.properties<br>
+*.tld<br>
+*.txt<br>
+*.xml<br>
+*.xsd<br>
+*.xsl</tt></td>
+<td><tt>*.gif<br>
+*.jpg<br>
+*.png<br>
+*.jar<br>
+*.zip</tt><br>
+binary files</td>
+</tr>
+</table>
+<p><small><sup>(1)</sup></small> not recognized by the IDE, but sharable as text<br>
+<small><sup>(2)</sup></small> manifest file</p>
+<p><b>To add a new file to the Shared Common Area:</b></p>
+<ol>
+<li>Right-click the root node and select New, then select Folder.</li>
+<li>Provide a name for the folder.<br>
+The folder is created under Shared Non-project files.</li>
+<li>Right-click the folder to create an empty file, and provide a File Name for the new file. </li>
+</ol>
+<p><b>To edit a shared file:</b></p>
+<ol>
+<li>Share (or have a colleague share) the file you want to edit within a conversation.</li>
+<li>Open the shared file by double-clicking the file or by using the contextual menu to invoke the Open action.<br>
+The opened file has an annotation on its document tab to show that it is a shared file.</li>
+<li>Begin editing the file.<br>
+As you make changes to the file, other participants will see a colored highlight around the region where you are making changes, and they will be unable to change the same section of the file. However, they may change other (unlocked) areas of the file while you are making your changes.<br>
+Other participants will not see your changes until the area you are changing is unlocked. Changed regions of the file are automatically unlocked when you stop editing for a short time, or when you move out of that region and begin editing another region. You can set the guarded region timeout in the File Sharing channel options under Tools &gt; Options, in the Collaboration &gt; Channels category.</li>
+<li>When you have finished editing the file, you can save the file and then drag or copy it back to a local filesystem to preserve any changes made during the conversation.</li>
+</ol>
+<table border="0">
+<tr valign="top">
+<th scope="col" colspan="2" align="left"><a name="seealso">See Also</a></th>
+</tr>
+<tr valign="top">
+<td width="23px" align="left" nowrap>&nbsp;</td>
+<td nowrap>
+<a href="sharing_files.html">Sharing Files</a><br>
+<a href="sharing_projects.html">Sharing Projects</a></td>
+</tr>
+</table>
+<hr>
+<small><a href="credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>
