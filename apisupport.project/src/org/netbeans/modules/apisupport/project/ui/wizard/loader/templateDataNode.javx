@@ -5,14 +5,14 @@ import org.openide.nodes.Children;
 
 public class @@PREFIX@@DataNode extends DataNode {
 
-    private static final String IMAGE_ICON_BASE = "@@ICONPATH@@"; //NOI18N
+    private static final String IMAGE_ICON_BASE = "@@ICONPATH@@";
 
     public @@PREFIX@@DataNode(@@PREFIX@@DataObject obj) {
         super(obj, Children.LEAF);
         setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
-//    /** Creates property sheet. Ovrrides superclass method. */
+//    /** Creates a property sheet. */
 //    protected Sheet createSheet() {
 //        Sheet s = super.createSheet();
 //        Sheet.Set ss = s.get(Sheet.PROPERTIES);
@@ -20,7 +20,7 @@ public class @@PREFIX@@DataNode extends DataNode {
 //            ss = Sheet.createPropertiesSet();
 //            s.put(ss);
 //        }
-//        //TODO put some relevant properties
+//        // TODO add some relevant properties: ss.put(...)
 //        return s;
 //    }
 

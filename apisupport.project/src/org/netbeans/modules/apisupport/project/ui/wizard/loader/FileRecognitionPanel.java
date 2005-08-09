@@ -138,10 +138,10 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
         data.setExtensionBased(rbByExtension.isSelected());
         if (data.isExtensionBased()) {
             data.setExtension(txtExtension.getText().trim());
-            data.setElement(null);
+            data.setNamespace(null);
         } else {
             data.setExtension(null);
-            data.setElement(txtNamespace.getText().trim());
+            data.setNamespace(txtNamespace.getText().trim());
         }
     }
     
@@ -162,7 +162,7 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
         txtExtension.setEnabled(rbByExtension.isSelected());
         txtNamespace.setEnabled(rbByElement.isSelected());
         txtExtension.setText(data.getExtension());
-        txtNamespace.setText(data.getElement());
+        txtNamespace.setText(data.getNamespace());
         
         checkValidity();
     }

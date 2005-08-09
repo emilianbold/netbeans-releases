@@ -1,4 +1,3 @@
-
 package @@PACKAGENAME@@;
 
 import java.io.IOException;
@@ -16,9 +15,8 @@ public class @@PREFIX@@DataObject extends MultiDataObject {
 @@EDITOR_SUPPORT_SNIPPET@@
     }
     
-    protected Node createNodeDelegate () {
-        return new @@PREFIX@@DataNode (this);
+    protected Node createNodeDelegate() {
+        return new @@PREFIX@@DataNode(this);
     }
-
 
 }

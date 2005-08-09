@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.loader;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -36,6 +37,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  * Wizard for creating new DataLoaders
@@ -88,7 +90,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         private String mimeType = null;
         private boolean extensionBased = true;
         private String extension = null;
-        private String element = null;
+        private String namespace = null;
         
         private CreatedModifiedFiles files;
         
@@ -152,12 +154,12 @@ public class NewLoaderIterator extends BasicWizardIterator {
             this.extension = extension;
         }
 
-        public String getElement() {
-            return element;
+        public String getNamespace() {
+            return namespace;
         }
 
-        public void setElement(String element) {
-            this.element = element;
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
         }
 
     }
@@ -173,7 +175,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
         replaceTokens.put("@@MIMETYPE@@", mime);//NOI18N
         replaceTokens.put("@@EXTENSIONS@@", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
-        replaceTokens.put("@@NAMESPACES@@", formatNameSpace(model.isExtensionBased(), model.getElement(), mime));//NOI18N
+        replaceTokens.put("@@NAMESPACES@@", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
 
         // 0. move icon file if necessary
         String icon = model.getIconPath();
@@ -202,6 +204,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         // 1. create dataloader file
         String loaderName = getRelativePath(model.getProject(), model.getPackageName(), 
                                             namePrefix, "DataLoader.java"); //NOI18N
+        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewLoaderIterator.class.getResource("templateDataLoader.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
         String loaderInfoName = getRelativePath(model.getProject(), model.getPackageName(), 
@@ -215,8 +218,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         if (isEditable) {
             StringBuffer editorBuf = new StringBuffer();
             editorBuf.append("        CookieSet cookies = getCookieSet();\n");//NOI18N
-            editorBuf.append("        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(),\n");//NOI18N
-            editorBuf.append("                    cookies));\n");//NOI18N
+            editorBuf.append("        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));"); // NOI18N
             replaceTokens.put("@@EDITOR_SUPPORT_SNIPPET@@", editorBuf.toString());//NOI18N
             replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "import org.openide.text.DataEditorSupport;");//NOI18N
         } else {
@@ -303,7 +305,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         
         // 6. update/create bundle file
         String bundlePath = getRelativePath(model.getProject(), model.getPackageName(), "", "Bundle.properties"); //NOI18N
-        fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "loader_name",  //NOI18N
+        fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                                 NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
         
         // 7. register manifest entry
@@ -372,7 +374,11 @@ public class NewLoaderIterator extends BasicWizardIterator {
         if (model.isExtensionBased()) {
             buf.append("sample contents]]>");
         } else {
-            buf.append("<root xmlns=\"").append(model.getElement()).append("\"/>]]>");
+            try {
+                buf.append("<root xmlns=\"").append(XMLUtil.toElementContent(model.getNamespace())).append("\"/>]]>");
+            } catch (CharConversionException ex) {
+                assert false : ex;
+            }
         }
         buf.append("</file>\n");
         fileChanges.add(fileChanges.createLayerSubtree("Templates/Other",//NOI18N
@@ -396,7 +402,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
             return "";
         }
         StringBuffer buff = new StringBuffer();
-        StringTokenizer tokens = new StringTokenizer(ext," ,");
+        StringTokenizer tokens = new StringTokenizer(ext, " ,"); // NOI18N
         while (tokens.hasMoreTokens()) {
             String element = tokens.nextToken();
             if (element.startsWith(".")) {
@@ -411,7 +417,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
     private static String getFirstExtension(String ext) {
         StringBuffer buff = new StringBuffer();
         StringTokenizer tokens = new StringTokenizer(ext," ,");
-        String element = "someextenstion"; //NOI18N
+        String element = "someextension"; // NOI18N
         if (tokens.hasMoreTokens()) {
             element = tokens.nextToken();
             if (element.startsWith(".")) { //NOI18N
@@ -429,7 +435,11 @@ public class NewLoaderIterator extends BasicWizardIterator {
         buff.append("        <ext name=\"xml\"/>\n"); //NOI18N
         buff.append("        <resolver mime=\"").append(mime).append("\">\n"); //NOI18N
         buff.append("            <xml-rule>\n");
-        buff.append("                <element ns=\"").append(namespace).append("\"/>\n"); //NOI18N
+        try {
+            buff.append("                <element ns=\"").append(XMLUtil.toElementContent(namespace)).append("\"/>\n"); //NOI18N
+        } catch (CharConversionException ex) {
+            assert false : ex;
+        }
         buff.append("            </xml-rule>\n"); //NOI18N
         buff.append("        </resolver>\n"); //NOI18N
         return buff.toString();
@@ -437,11 +447,12 @@ public class NewLoaderIterator extends BasicWizardIterator {
     
     private static String formatImageSnippet(String path) {
         if (path == null) {
+        // XXX Utilities is unconditionally imported
             return "return null;\n"; //NOI18N
         }
         StringBuffer buff = new StringBuffer(); 
         buff.append("        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {\n"); //NOI18N
-        buff.append("            return org.openide.util.Utilities.loadImage(\""); //NOI18N
+        buff.append("            return Utilities.loadImage(\""); //NOI18N
         buff.append(path).append("\");\n"); //NOI18N
         buff.append("        } else {\n"); //NOI18N
         buff.append("            return null;\n        }\n"); //NOI18N
