@@ -22,12 +22,12 @@ import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.java.editor.options.JavaOptions;
 import org.netbeans.modules.java.settings.JavaSettings;
 
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.ComponentChooser;
@@ -118,7 +118,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         // invoke the completion dialog
         editorOperator.pushKey('.');
         // wait for the completion window
-        return new ComponentOperator(MainWindowOperator.getDefault(), new CodeCompletionSubchooser());
+        return new CompletionJListOperator();
     }
     
     public void shutdown() {
@@ -136,23 +136,5 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             return c.getClass().getName().equals("org.netbeans.modules.editor.completion.ScrollCompletionPane") || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
         }
     };
-
-    
-    /** SubChooser to determine codecompletion panel
-     */
-    private static final class CodeCompletionSubchooser implements ComponentChooser {
-
-        public boolean checkComponent(Component comp) {
-            return (comp.getClass().getName().equals("javax.swing.Popup$HeavyWeightWindow"));
-        }
-
-        public String getDescription() {
-            return "javax.swing.Popup$HeavyWeightWindow";
-        }
-    }
-    
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new JavaCompletionInEditor("measureTime"));
-    }
     
 }
