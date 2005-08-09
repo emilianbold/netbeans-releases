@@ -276,6 +276,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         add(buttonsPanel, gridBagConstraints);
 
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
+        stateLabel.setName("stateLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

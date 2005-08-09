@@ -121,6 +121,7 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
         infoTextArea.setFont(new java.awt.Font("Arial", 0, 12));
         infoTextArea.setBorder(null);
         infoTextArea.setFocusable(false);
+        infoTextArea.setName("infoTextArea");
         infoTextArea.setSelectionColor(javax.swing.UIManager.getDefaults().getColor("textText"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
