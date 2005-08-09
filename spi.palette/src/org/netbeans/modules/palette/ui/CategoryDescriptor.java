@@ -208,6 +208,10 @@ class CategoryDescriptor implements CategoryListener {
         itemsList.setIconSize( iconSize );
     }
 
+    void setItemWidth( int itemWidth ) {
+        itemsList.setFixedCellWidth( itemWidth );
+    }
+
     PalettePanel getPalettePanel () {
         return palettePanel;
     }

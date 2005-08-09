@@ -67,6 +67,15 @@ public final class PaletteController {
     // palette's initial state.
     
     /**
+     * The width of palette items in pixels, if this attribute is set to -1 or is
+     * missing then the item width will be calculated dynamically depending on the length of 
+     * item display names and may differ for each category (therefore each category
+     * may have a different number of columns).
+     * This attribute applies to palette's root only and is read-only.
+     * Default value is "-1".
+     */
+    public static final String ATTR_ITEM_WIDTH = "itemWidth";
+    /**
      * "true" to show item names in the palette panel, "false" to show item icons only.
      * This attribute applies to palette's root only.
      * Default value is "true".

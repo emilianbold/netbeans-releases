@@ -192,6 +192,7 @@ public class PalettePanel extends JPanel implements Scrollable {
                     if( null != settings ) {
                         setIconSize( settings.getIconSize() );
                         setShowItemNames( settings.getShowItemNames() );
+                        setItemWidth( settings.getShowItemNames() ? settings.getItemWidth() : -1 );
                     }
                     if( null != model ) {
                         Item item = model.getSelectedItem();
@@ -316,7 +317,6 @@ public class PalettePanel extends JPanel implements Scrollable {
                     if( SwingUtilities.isRightMouseButton( event ) && null != model ) {
                         JPopupMenu popup = Utilities.actionsToPopup( model.getActions(), PalettePanel.this );
                         Utils.addCustomizationMenuItems( popup, getController(), getSettings() );
-//                        Utils.addCustomizationMenuItems( popup, getSettings(), PalettePanel.this );
                         popup.show( (Component)event.getSource(), event.getX(), event.getY() );
                     }
                 }
@@ -335,6 +335,13 @@ public class PalettePanel extends JPanel implements Scrollable {
     private void setIconSize(int iconSize) {
         for( int i=0; i<descriptors.length; i++ ) {
             descriptors[i].setIconSize( iconSize );
+        }
+        repaint();
+    }
+    
+    private void setItemWidth(int itemWidth) {
+        for( int i=0; i<descriptors.length; i++ ) {
+            descriptors[i].setItemWidth( itemWidth );
         }
         repaint();
     }
@@ -406,6 +413,7 @@ public class PalettePanel extends JPanel implements Scrollable {
                     } else if( evt.getPropertyName().equals( PaletteController.ATTR_SHOW_ITEM_NAMES ) ) {
                         
                         setShowItemNames( getSettings().getShowItemNames() );
+                        setItemWidth( getSettings().getShowItemNames() ? getSettings().getItemWidth() : -1 );
                         
                     }
                 }
@@ -415,15 +423,6 @@ public class PalettePanel extends JPanel implements Scrollable {
         return settingsListener;
     }
 
-    private boolean isItemInCategory( Category category, Item item ) {
-        Item[] categoryItems = category.getItems();
-        for( int i=0; i<categoryItems.length; i++ ) {
-            if( item.equals( categoryItems[i] ) )
-                return true;
-        }
-        return false;
-    }
-    
     Model getModel() {
         return model;
     }

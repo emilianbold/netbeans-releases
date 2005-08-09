@@ -378,6 +378,11 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         }
         return settingsRoot;
     }
+
+    public int getItemWidth() {
+        Node node = getNode( model.getRoot() );
+        return get( node, PaletteController.ATTR_ITEM_WIDTH, -1 );
+    }
     
     private class SettingsHandler extends DefaultHandler {
         private Node currentCategory = null;
