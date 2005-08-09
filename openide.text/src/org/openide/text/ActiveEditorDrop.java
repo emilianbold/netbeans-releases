@@ -12,8 +12,8 @@
  */
 package org.openide.text;
 
-import java.awt.Component;
 import java.awt.datatransfer.DataFlavor;
+import javax.swing.text.JTextComponent;
 
 /**
  * ActiveEditorDrop with artificial DataFlavor. Drag and drop initiator sometimes needs
@@ -50,11 +50,42 @@ import java.awt.datatransfer.DataFlavor;
  *           return super.getTransferData(flavor);
  *       }
  *       
- *       public boolean handleTransfer(java.awt.Component targetComponent) {
+ *       public boolean handleTransfer(JTextComponent targetComponent) {
  *          // your implementation
  *       }
  *   }
  *   </pre>
+ *
+ *   or simplified solution: <br>
+ *   <pre>
+ *
+ *   private class MyDrop implements ActiveEditorDrop, Transferable {
+ * 
+ *      public MyDrop(){
+ *      }
+ *      
+ *      public boolean isDataFlavorSupported(DataFlavor f) {
+ *          return ActiveEditorDrop.FLAVOR == f;
+ *      }
+ *      
+ *      public final DataFlavor[] getTransferDataFlavors() {
+ *          DataFlavor delegatorFlavor[] = new DataFlavor[1];
+ *          delegatorFlavor[0] = ActiveEditorDrop.FLAVOR;
+ *          return delegatorFlavor;
+ *      }
+ *      
+ *      public final Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+ *          return (flavor == ActiveEditorDrop.FLAVOR) ? this : null;
+ *      }
+ *      
+ *      public boolean handleTransfer(JTextComponent targetComponent) {
+ *          //your implementation
+ *      }
+ *      
+ *  }
+ *
+ *   </pre>
+ *   
  *
  * @author Martin Roskanin
  * @since org.openide.text 6.5 
@@ -74,6 +105,6 @@ public interface ActiveEditorDrop {
      * @param targetComponent a Component where drop operation occured.
      * @return true if implementor allowed a drop operation into the targetComponent
      */
-    abstract boolean handleTransfer(Component targetComponent);
+    abstract boolean handleTransfer(JTextComponent targetComponent);
     
 }

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.text
-OpenIDE-Module-Specification-Version: 6.5
+OpenIDE-Module-Specification-Version: 6.6
 OpenIDE-Module-Localizing-Bundle: org/openide/text/Bundle.properties
 

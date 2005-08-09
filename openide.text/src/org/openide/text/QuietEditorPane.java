@@ -138,8 +138,8 @@ final class QuietEditorPane extends JEditorPane {
             try {
                 if (t.isDataFlavorSupported(ActiveEditorDrop.FLAVOR)){
                     Object obj = t.getTransferData(ActiveEditorDrop.FLAVOR);
-                    if (obj instanceof ActiveEditorDrop){
-                        return ((ActiveEditorDrop)obj).handleTransfer(comp);
+                    if (obj instanceof ActiveEditorDrop && comp instanceof JTextComponent){
+                        return ((ActiveEditorDrop)obj).handleTransfer((JTextComponent)comp);
                     }
                 }
             } catch (Exception exc){
@@ -149,6 +149,11 @@ final class QuietEditorPane extends JEditorPane {
         }
 
         public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
+            for (int i=0; i<transferFlavors.length; i++){
+                if (transferFlavors[i] == ActiveEditorDrop.FLAVOR){
+                    return true;
+                }
+            }
             return delegator.canImport(comp, transferFlavors);
         }
 

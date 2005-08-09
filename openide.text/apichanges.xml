@@ -20,8 +20,8 @@ Microsystems, Inc. All Rights Reserved.
     <change id="ActiveEditorDrop">
         <api name="text"/>
         <summary>Added ActiveEditorDrop interface</summary>
-        <version major="6" minor="5"/>
-        <date day="2" month="8" year="2005"/>
+        <version major="6" minor="6"/>
+        <date day="9" month="8" year="2005"/>
         <author login="mroskanin"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
         <description>
