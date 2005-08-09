@@ -32,7 +32,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
-/////////ludo nb5 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 //nb5  org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
 
@@ -50,23 +50,16 @@ public class AdminAuthenticator extends java.net.Authenticator {
         java.net.InetAddress site = getRequestingSite();
         ResourceBundle bundle = NbBundle.getBundle( AdminAuthenticator.class );
         String host = site == null ? bundle.getString( "CTL_PasswordProtected" ) : site.getHostName(); // NOI18N
-        String [] instanceURLs = null;///ludo nb5 InstanceProperties.getInstanceList();
         String title = getRequestingPrompt();
-       // DeploymentManagerProperties currentDMProps=null;
-        for (int i=0;i<instanceURLs.length;i++){
-          /*nb5  InstanceProperties ip =  InstanceProperties.getInstanceProperties(instanceURLs[i]);
-            if (ip.getDeploymentManager() instanceof SunDeploymentManagerInterface){
-                sdm= (SunDeploymentManagerInterface)ip.getDeploymentManager();
-                if (sdm.getHost().equals(site.getHostName()) &&(sdm.getPort()==getRequestingPort())){
-                    //System.out.println("FIND CORREC SunDeploymentManagerInterface");
-                    currentDMProps = new DeploymentManagerProperties((DeploymentManager)sdm) ;
-                    title = bundle.getString( "LBL_AdminAuthenticatorTitle");
-                    String currentPassword = currentDMProps.getPassword();
-
-                }
-                
-            }*/
+        InstanceProperties ip = null;
+        ip= InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+site.getHostName()+":"+getRequestingPort());
+        if (ip==null){
+            ip= InstanceProperties.getInstanceProperties("deployer:Sun:GlassFishAppServer::"+site.getHostName()+":"+getRequestingPort());
         }
+        if (ip!=null){
+            title = bundle.getString( "LBL_AdminAuthenticatorTitle");
+        }
+        
         
         
         PasswordPanel passwordPanel = new PasswordPanel();
@@ -77,17 +70,18 @@ public class AdminAuthenticator extends java.net.Authenticator {
         dialog.show();
         
         if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ){
-
-   /*         if (currentDMProps!=null){
-                String oldpass = currentDMProps.getPassword();
-                currentDMProps.setUserName(passwordPanel.getUsername());
-                currentDMProps.setPassword(passwordPanel.getTPassword());
-                currentDMProps.refreshServerInstance();
+            
+            if (ip!=null){
+                String oldpass = ip.getProperty(InstanceProperties.PASSWORD_ATTR);
+                ip.setProperty(InstanceProperties.USERNAME_ATTR, passwordPanel.getUsername());
+                ip.setProperty(InstanceProperties.PASSWORD_ATTR, passwordPanel.getTPassword());
+                ip.refreshServerInstance();
+                
                 if ("".equals(oldpass)){
-                    currentDMProps.setPassword(oldpass);
+                    ip.setProperty(InstanceProperties.PASSWORD_ATTR ,oldpass);
                     
                 }
-            }*/
+            }
             
             return new java.net.PasswordAuthentication( passwordPanel.getUsername(), passwordPanel.getPassword() );
         } else{
