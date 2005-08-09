@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -339,7 +339,7 @@ public class MIMEOptionFolder{
                     try {
                         OutputStream os = fileObj[0].getOutputStream(lock);
                         try {
-                            XMLUtil.write(doc, os, null);
+                            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                             os.flush();                            
                         } finally {
                             os.close();

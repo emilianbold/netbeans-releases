@@ -214,7 +214,7 @@ public class OptionUtilities {
         try{
             FileLock lock = file.lock();
             try {
-                XMLUtil.write(doc, file.getOutputStream(lock), null);
+                XMLUtil.write(doc, file.getOutputStream(lock), "UTF-8"); // NOI18N
             } catch (Exception e){
                 e.printStackTrace();
             } finally {
@@ -250,7 +250,7 @@ public class OptionUtilities {
         try{
             FileLock lock = file.lock();
             try {
-                XMLUtil.write(doc, file.getOutputStream(lock), null);
+                XMLUtil.write(doc, file.getOutputStream(lock), "UTF-8"); // NOI18N
             } catch (Exception e){
                 e.printStackTrace();
             } finally {
@@ -287,7 +287,7 @@ public class OptionUtilities {
         try{
             FileLock lock = file.lock();
             try {
-                XMLUtil.write(doc, file.getOutputStream(lock), null);
+                XMLUtil.write(doc, file.getOutputStream(lock), "UTF-8"); // NOI18N
             } catch (Exception e){
                 e.printStackTrace();
             } finally {

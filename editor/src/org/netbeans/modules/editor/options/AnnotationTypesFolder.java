@@ -196,7 +196,7 @@ public class AnnotationTypesFolder extends FolderInstance{
             OutputStream os = null;
             try {
                 os = fo.getOutputStream(lock);
-                XMLUtil.write(doc, os, null);
+                XMLUtil.write(doc, os, "UTF-8"); // NOI18N
             } catch (Exception ex){
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {

@@ -110,7 +110,7 @@ public class MultiPropertyFolder {
                         try {
                             OutputStream os = fo.getOutputStream(lock);
                             try {
-                                XMLUtil.write(doc, fo.getOutputStream(lock), null);
+                                XMLUtil.write(doc, fo.getOutputStream(lock), "UTF-8"); // NOI18N
                             } finally {
                                 os.close();
                             }

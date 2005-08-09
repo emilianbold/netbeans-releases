@@ -167,7 +167,7 @@ public abstract class MIMEOptionFile{
                 OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
                 try {
                     wasSaved = true;
-                    XMLUtil.write(doc, os, null);
+                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
                     os.flush();
                 } catch (Exception e){
                     wasSaved = false;
