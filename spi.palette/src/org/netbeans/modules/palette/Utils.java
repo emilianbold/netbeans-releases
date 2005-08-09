@@ -15,12 +15,12 @@
 package org.netbeans.modules.palette;
 
 import java.beans.BeanInfo;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
-import java.io.File;
 import java.awt.event.ActionEvent;
 import java.awt.datatransfer.*;
+import java.util.Arrays;
+import java.util.Comparator;
 import javax.swing.*;
 import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.palette.ui.PalettePanel;
@@ -87,9 +87,12 @@ public final class Utils {
         }
     }
     
-    public static void addCustomizerMenuItem( JPopupMenu popup, PaletteController controller ) {
+    public static void addCustomizationMenuItems( JPopupMenu popup, PalettePanel panel ) {
         popup.addSeparator();
-        popup.add( new ShowCustomizerAction( controller ) );
+        popup.add( new ShowNamesAction( panel ) );
+        popup.add( new ChangeIconSizeAction( panel ) );
+        popup.addSeparator();
+        popup.add( new ShowCustomizerAction( panel.getController() ) );
     }
     
     /**
@@ -154,18 +157,57 @@ public final class Utils {
     }
     
     /**
-     * An action to show/hide palette item names.
+     * An action to sort categories alphabetically.
      */
-    static class ShowNamesAction extends AbstractAction {
+    static class SortCategoriesAction extends AbstractAction {
+        private Node paletteNode;
+        public SortCategoriesAction( Node paletteNode ) {
+            putValue(Action.NAME, getBundleString("CTL_SortCategories")); // NOI18N
+            this.paletteNode = paletteNode;
+        }
         
         public void actionPerformed(ActionEvent event) {
-            PalettePanel panel = PalettePanel.getDefault();
+            Index order = (Index)paletteNode.getCookie(Index.class);
+            if (order != null) {
+                final Node[] nodes = paletteNode.getChildren().getNodes( DefaultModel.canBlock() );
+                Arrays.sort( nodes, new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        Node n1 = (Node)o1;
+                        Node n2 = (Node)o2;
+                        return n1.getDisplayName().compareTo( n2.getDisplayName() );
+                    }
+                } );
+                int[] perm = new int[nodes.length];
+                for( int i=0; i<perm.length; i++ ) {
+                    perm[i] = order.indexOf( nodes[i] );
+                }
+                order.reorder( perm );
+            }
+        }
+        
+        public boolean isEnabled() {
+            return (paletteNode.getCookie(Index.class) != null);
+        }
+    }
+    
+    /**
+     * An action to show/hide palette item names.
+     */
+    private static class ShowNamesAction extends AbstractAction {
+        
+        private PalettePanel panel;
+        
+        public ShowNamesAction( PalettePanel panel ) {
+            this.panel = panel;
+        }
+        
+        public void actionPerformed(ActionEvent event) {
             panel.setShowItemNames( !panel.getShowItemNames() );
         }
         
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
-                boolean showNames = PalettePanel.getDefault().getShowItemNames();
+                boolean showNames = panel.getShowItemNames();
                 String name = getBundleString(showNames ? "CTL_HideNames" : "CTL_ShowNames"); // NOI18N
                 return name;
             } else {
@@ -178,10 +220,15 @@ public final class Utils {
     /**
      * An action to change the size of palette icons.
      */
-    static class ChangeIconSizeAction extends AbstractAction {
+    private static class ChangeIconSizeAction extends AbstractAction {
+        
+        private PalettePanel panel;
+        
+        public ChangeIconSizeAction( PalettePanel panel ) {
+            this.panel = panel;
+        }
         
         public void actionPerformed(ActionEvent event) {
-            PalettePanel panel = PalettePanel.getDefault();
             int oldSize = panel.getIconSize();
             int newSize = (oldSize == BeanInfo.ICON_COLOR_16x16) ?
                 BeanInfo.ICON_COLOR_32x32 : BeanInfo.ICON_COLOR_16x16;
@@ -191,7 +238,6 @@ public final class Utils {
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
                 String namePattern = getBundleString("CTL_IconSize"); // NOI18N
-                PalettePanel panel = PalettePanel.getDefault();
                 String name = MessageFormat.format(namePattern,
                 new Object[] {new Integer(panel.getIconSize())});
                 return name;
@@ -289,10 +335,10 @@ public final class Utils {
     /**
      * An action to change the order of items in a category.
      */
-    static class ReorderCategoryAction extends AbstractAction {
+    static class ReorderItemsAction extends AbstractAction {
         private Node categoryNode;
         
-        public ReorderCategoryAction(Node categoryNode) {
+        public ReorderItemsAction(Node categoryNode) {
             this.categoryNode = categoryNode;
             putValue(Action.NAME, getBundleString("CTL_OrderItems")); // NOI18N
         }
@@ -301,6 +347,41 @@ public final class Utils {
             Index order = (Index)categoryNode.getCookie(Index.class);
             if (order != null) {
                 order.reorder();
+            }
+        }
+        
+        public boolean isEnabled() {
+            return (categoryNode.getCookie(Index.class) != null);
+        }
+    }
+    
+    
+    /**
+     * An action to sort categories alphabetically.
+     */
+    static class SortItemsAction extends AbstractAction {
+        private Node categoryNode;
+        public SortItemsAction( Node categoryNode ) {
+            putValue(Action.NAME, getBundleString("CTL_SortItems")); // NOI18N
+            this.categoryNode = categoryNode;
+        }
+        
+        public void actionPerformed(ActionEvent event) {
+            Index order = (Index)categoryNode.getCookie(Index.class);
+            if (order != null) {
+                final Node[] nodes = categoryNode.getChildren().getNodes( DefaultModel.canBlock() );
+                Arrays.sort( nodes, new Comparator() {
+                    public int compare(Object o1, Object o2) {
+                        Node n1 = (Node)o1;
+                        Node n2 = (Node)o2;
+                        return n1.getDisplayName().compareTo( n2.getDisplayName() );
+                    }
+                } );
+                int[] perm = new int[nodes.length];
+                for( int i=0; i<perm.length; i++ ) {
+                    perm[i] = order.indexOf( nodes[i] );
+                }
+                order.reorder( perm );
             }
         }
         

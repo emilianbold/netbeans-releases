@@ -23,6 +23,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
@@ -56,6 +57,16 @@ class CategoryNode extends FilterNode {
         }
     }
 
+    public Node.Cookie getCookie( Class clazz ) {
+        if( clazz == Index.class ) {
+            DataFolder df = (DataFolder)getOriginal().getCookie( DataFolder.class );
+            if( null != df ) {
+                return new DataFolder.Index( df, this );
+            }
+        }
+        return super.getCookie (clazz);
+    }
+    
     // -------
 
     public void setName(String name) {
@@ -98,13 +109,11 @@ class CategoryNode extends FilterNode {
                 new Utils.DeleteCategoryAction(this),
                 new Utils.RenameCategoryAction(this),
                 null,
-                new Utils.ShowNamesAction(),
-                new Utils.ChangeIconSizeAction(),
-//                    null,
-//                    new PaletteUtils.PasteBeanAction(this),
+                new Utils.ReorderItemsAction(this),
+                new Utils.SortItemsAction(this),
                 null,
-                new Utils.ReorderCategoryAction(this),
                 new Utils.ReorderCategoriesAction( getParentNode() ),
+                new Utils.SortCategoriesAction( getParentNode() ),
                 null,
                 new Utils.RefreshPaletteAction()
             };

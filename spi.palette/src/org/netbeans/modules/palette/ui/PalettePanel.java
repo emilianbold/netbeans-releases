@@ -315,7 +315,7 @@ public class PalettePanel extends JPanel implements Scrollable {
                 public void mouseClicked(MouseEvent event) {
                     if( SwingUtilities.isRightMouseButton( event ) && null != model ) {
                         JPopupMenu popup = Utilities.actionsToPopup( model.getActions(), PalettePanel.this );
-                        Utils.addCustomizerMenuItem( popup, controller );
+                        Utils.addCustomizationMenuItems( popup, PalettePanel.this );
                         popup.show( (Component)event.getSource(), event.getX(), event.getY() );
                     }
                 }
@@ -453,7 +453,7 @@ public class PalettePanel extends JPanel implements Scrollable {
         return settings;
     }
     
-    PaletteController getController() {
+    public PaletteController getController() {
         return controller;
     }
     

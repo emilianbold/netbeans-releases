@@ -58,16 +58,16 @@ class ItemNode extends FilterNode {
     public Action[] getActions(boolean context) {
         if (actions == null) {
             actions = new Action[] {
-                new Utils.ShowNamesAction(),
-                new Utils.ChangeIconSizeAction(),
-                null,
                 new Utils.CutItemAction( this ),
                 new Utils.CopyItemAction( this ),
                 new Utils.PasteItemAction( getParentNode() ),
                 null,
                 new Utils.RemoveItemAction( this ),
                 null,
-                new Utils.ReorderCategoryAction( getParentNode() )
+                new Utils.ReorderItemsAction( getParentNode() ),
+                new Utils.SortItemsAction( getParentNode() ),
+                null,
+                new Utils.RefreshPaletteAction()
             };
         }
         PaletteActions customActions = getCustomActions();
@@ -153,5 +153,9 @@ class ItemNode extends FilterNode {
     public boolean canDestroy() {
 
         return !Utils.isReadonly( getOriginal() );
+    }
+    
+    Node getOriginalNode() {
+        return getOriginal();
     }
 }

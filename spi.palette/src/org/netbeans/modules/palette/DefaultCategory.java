@@ -179,21 +179,11 @@ public class DefaultCategory implements Category, NodeListener {
         }
         Node node = (Node)item.getLookup().lookup( Node.class );
         if( null != node ) {
-            Node[] nodes = categoryNode.getChildren().getNodes( DefaultModel.canBlock() );
-            for( int i=0; i<nodes.length; i++ ) {
-                if( nodes[i].equals( node ) ) {
-                    return i;
-                }
+            Index order = (Index)categoryNode.getCookie( Index.class );
+            if( null != order ) {
+                return order.indexOf( node );
             }
         }
-//        categoryNode.getChildren().getNodes( DefaultModel.canBlock() );
-//        Node node = (Node)item.getLookup().lookup( Node.class );
-//        if( null != node ) {
-//            Index order = (Index)categoryNode.getCookie( Index.class );
-//            if( null != order ) {
-//                return order.indexOf( node );
-//            }
-//        }
         return -1;
     }
     

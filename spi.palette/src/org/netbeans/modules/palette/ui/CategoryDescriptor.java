@@ -107,7 +107,7 @@ class CategoryDescriptor implements CategoryListener {
                     }
                     Action[] actions = null == item ? category.getActions() : item.getActions();
                     JPopupMenu popup = Utilities.actionsToPopup( actions, getComponent() );
-                    Utils.addCustomizerMenuItem( popup, getPalettePanel().getController() );
+                    Utils.addCustomizationMenuItems( popup, getPalettePanel() );
                     popup.show(comp, event.getX(), event.getY());
                 }
             }

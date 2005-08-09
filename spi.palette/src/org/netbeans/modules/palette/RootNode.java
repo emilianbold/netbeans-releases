@@ -57,6 +57,16 @@ public final class RootNode extends FilterNode {
         setDisplayName(Utils.getBundleString("CTL_Component_palette")); // NOI18N
     }
 
+    public Node.Cookie getCookie( Class clazz ) {
+        if( clazz == Index.class ) {
+            DataFolder df = (DataFolder)getOriginal().getCookie( DataFolder.class );
+            if( null != df ) {
+                return new DataFolder.Index( df, this );
+            }
+        }
+        return super.getCookie (clazz);
+    }
+    
     // --------
 
     public NewType[] getNewTypes() {
@@ -68,10 +78,8 @@ public final class RootNode extends FilterNode {
             actions = new Action[] {
                 new Utils.NewCategoryAction( this ),
                 null,
-                new Utils.ShowNamesAction(),
-                new Utils.ChangeIconSizeAction(),
-                null,
                 new Utils.ReorderCategoriesAction( this ),
+                new Utils.SortCategoriesAction( this ),
                 null,
                 new Utils.RefreshPaletteAction()
             };
