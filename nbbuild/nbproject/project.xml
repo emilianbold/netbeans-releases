@@ -246,6 +246,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../java/platform</project>
                 <project>../java/project</project>
                 <project>../java/srcmodel</project>
+                <project>../javacvs/cvsmodule</project>
                 <project>../javacvs/libmodule</project>
                 <project>../javadoc</project>
                 <project>../junit</project>
@@ -305,12 +306,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../usersguide/j2seexamples</project>
                 <project>../utilities</project>
                 <project>../utilities/project</project>
-                <project>../vcscore</project>
-                <project>../vcscore/javacorebridge</project>
-                <project>../vcsgeneric</project>
-                <project>../vcsgeneric/profiles/cvsprofiles</project>
-                <project>../vcsgeneric/profiles/pvcs</project>
-                <project>../vcsgeneric/profiles/vss</project>
+                <project>../versioning</project>
                 <project>../web/core</project>
                 <project>../web/ddapi</project>
                 <project>../web/examples</project>
