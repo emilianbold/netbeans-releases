@@ -29,6 +29,9 @@ public class MBean {
     private ArrayList<Operation> mBeanOperations = null;
     private ArrayList<Notification> mBeanNotifications = null;
     
+    private boolean wrapped = false;
+    private String classToWrap = "";
+    
     /*
     private boolean mbeanItfImpl = false;
     private boolean keepPreRegParam = false; 
@@ -37,7 +40,7 @@ public class MBean {
     private boolean genSeqNumber = false;
     
      */
-    /** MBean constructor which is not wrapper and does not implement mbritf */
+    /** MBean constructor which is not wrapper **/
     public MBean(String mBeanName, String mBeanType,
             String mBeanPackage, String mBeanComment,
             ArrayList<Attribute> mBeanAttributes,
@@ -50,6 +53,17 @@ public class MBean {
         this.mBeanAttributes = mBeanAttributes;
         this.mBeanOperations = mBeanOperations;
         this.mBeanNotifications = mBeanNotifications;
+    }
+    
+    /** MBean constructor which is wrapper **/
+    public MBean(String mBeanName, String mBeanPackage, 
+            String mBeanComment, String classToWrap) {
+        this.mBeanName = mBeanName;
+        this.mBeanType = "ExtendedStandardMBean";
+        this.mBeanPackage = mBeanPackage;
+        this.mBeanComment = mBeanComment;
+        this.setWrapped(true);
+        this.setClassToWrap(classToWrap);
     }
     
     /* MBean for mbeans which implement mbean reg itf */
@@ -298,4 +312,20 @@ public class MBean {
         this.genSeqNumber = genSeqNumber;
     }
 */
+
+    public boolean isWrapped() {
+        return wrapped;
+    }
+
+    public void setWrapped(boolean wrapped) {
+        this.wrapped = wrapped;
+    }
+
+    public String getClassToWrap() {
+        return classToWrap;
+    }
+
+    public void setClassToWrap(String classToWrap) {
+        this.classToWrap = classToWrap;
+    }
 }
