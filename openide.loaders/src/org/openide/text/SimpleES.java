@@ -7,16 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.openide.text;
 
-
 import java.io.IOException;
-
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -29,9 +26,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node.Cookie;
-import org.openide.text.DataEditorSupport;
 import org.openide.windows.CloneableOpenSupport;
-
 
 /** 
  * Basic editor support.
@@ -58,7 +53,6 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     SimpleES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
         super(obj, new Environment(obj, entry));
         this.set = set;
-        setMIMEType("text/plain"); // NOI18N
     }
     
     /** 
