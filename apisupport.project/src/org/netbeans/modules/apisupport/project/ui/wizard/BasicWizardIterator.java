@@ -70,7 +70,12 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         public BasicDataModel(WizardDescriptor wiz) {
             Project tmpProject = Templates.getProject(wiz);
             
+            if (tmpProject == null) {
+                throw new IllegalArgumentException();
+            }
+            // XXX never cast to NbModuleProject... use lookup instead
             if (!(tmpProject instanceof NbModuleProject)) {
+                // XXX this happens after apisupport/project reload, which is annoying...
                 throw new IllegalArgumentException(project.getClass().toString());
             }
             
