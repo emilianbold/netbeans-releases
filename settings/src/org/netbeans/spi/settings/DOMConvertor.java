@@ -187,6 +187,13 @@ public abstract class DOMConvertor extends Convertor {
                 if (n.getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE) {
                     content = n.getNodeValue();
                     break;
+                } else if (n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                    // #62018: some serializers may not produce CDATA.
+                    String text = n.getNodeValue().trim();
+                    if (text.length() > 0) {
+                        content = text;
+                        break;
+                    }
                 }
             }
             
