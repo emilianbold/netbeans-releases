@@ -41,7 +41,7 @@ public class ConvertorTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        
+        clearWorkDir();
         File work = getWorkDir();
         LocalFileSystem lfs = new LocalFileSystem();
         lfs.setRootDirectory(work);
