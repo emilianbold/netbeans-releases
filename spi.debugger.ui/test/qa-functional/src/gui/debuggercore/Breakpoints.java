@@ -93,8 +93,7 @@ public class Breakpoints extends JellyTestCase {
     public void tearDown() {
         try {
             PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screenBeforeTearDown.png");
-        } finally {
-        }
+        } catch (java.io.IOException ex) {}
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         Utilities.deleteAllBreakpoints();
