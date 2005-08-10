@@ -165,7 +165,7 @@ final class ListViewDropSupport implements DropTargetListener, Runnable {
 
         // get paste types for given transferred transferable
         PasteType pt = DragDropUtilities.getDropType(
-                (Node) obj,
+                dropNode,
                 ExplorerDnDManager.getDefault().getDraggedTransferable((DnDConstants.ACTION_MOVE & dropAction) != 0),
                 dropAction
             );
