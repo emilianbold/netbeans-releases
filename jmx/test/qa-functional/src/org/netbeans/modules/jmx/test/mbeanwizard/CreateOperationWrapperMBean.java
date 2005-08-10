@@ -53,8 +53,8 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CreateOperationWrapperMBean("createClass"));
-        //suite.addTest(new CreateOperationWrapperMBean("constructTest15MBean"));
-        //suite.addTest(new CreateOperationWrapperMBean("constructTest16MBean"));
+        suite.addTest(new CreateOperationWrapperMBean("constructTest15MBean"));
+        suite.addTest(new CreateOperationWrapperMBean("constructTest16MBean"));
         
         return suite;
     }
@@ -77,14 +77,14 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         createMissingClass(PROJECT_NAME, CLASS_TO_WRAP, PACKAGE_NAME);
     }
     
-    public void constructTest13MBean() {
+    public void constructTest15MBean() {
         
         MBean wrapper3 = createThirdWrapperMBean();
         wizardExecution(wrapper3);  
         //TODO Diff between generated and master files
     }
     
-    public void constructTest14MBean() {
+    public void constructTest16MBean() {
         
         MBean wrapper4 = createFourthWrapperMBean();
         wizardExecution(wrapper4);
@@ -105,10 +105,9 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         nfwo.next();
         nfwo.next();
         
-        //operationStep(nfwo, mbean);
+        operationStep(nfwo, mbean);
         nfwo.next();
       
-        nfwo.next();
         nfwo.next();
       
         junitStep(nfwo, mbean);
@@ -176,8 +175,8 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         eo.setCaretPositionToLine(17);
   
         eo.insert(createWrapperClass(fileName));
-        eo.deleteLine(27);
-        eo.deleteLine(29);
+        eo.deleteLine(33);
+        eo.deleteLine(34);
     }
      
     private String createWrapperClass(String fileName) {
@@ -191,7 +190,9 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private String createWrapperSuperClass(String fileName) {
         return  "class " +fileName+ " { \n" +
-                "\t public Integer op2(Object[] s, int t) {} \n"+
+                "\t public Integer op2(Object[] s, int t) { \n" +
+                "\t return new Integer(0); \n" +
+                "\t } \n"+
                 "} \n";
     }
     
@@ -200,11 +201,15 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     }
     
     private String operation1() {
-        return  "public boolean op1(java.util.List l) {} \n";
+        return  "public boolean op1(java.util.List l) { \n" +
+                "\t return false; \n" +
+                "\t } \n";
     }
     
     private String operation2() {
-        return  "public Integer op2(String[] s, int t) {} \n";
+        return  "public Integer op2(String[] s, int t) { \n" +
+                "\t return new Integer(0); \n" +
+                "\t } \n";
     }
      
     //========================= Class Name generation ===========================//
@@ -253,30 +258,19 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private void operationStep(NewFileWizardOperator nfwo, MBean mbean) {
       
-        assertTrue(JellyToolsHelper.verifyTableEnabled("methodTable",nfwo));
-        assertTrue(JellyToolsHelper.verifyButtonEnabled("methAddJButton",nfwo));
-        assertFalse(JellyToolsHelper.verifyButtonEnabled("methRemoveJButton",nfwo));
+        assertTrue(JellyToolsHelper.verifyTableEnabled("wrapperOperationTable",nfwo));
+        assertFalse(JellyToolsHelper.verifyButtonEnabled("wrapperOpRemoveJButton",nfwo));
         
-        // check/uncheck attributes to keep
-        JTableOperator jto = JellyToolsHelper.getPanelTableOperator("wrapperOperationTable", nfwo);
-        JTableMouseDriver mouseDriver = new JTableMouseDriver();
-        
-        if (mbean.getMBeanName().equals("constructTest15MBean"))
-            wrapper15Operations(nfwo, mouseDriver, jto);
-        else 
-            wrapper16Operations(nfwo, mouseDriver, jto);
+        if (mbean.getMBeanName().equals("constructTest16MBean")) {
+           // check/uncheck attributes to keep
+            JTableOperator jto = JellyToolsHelper.getPanelTableOperator("wrapperOperationTable", nfwo);
+            JTableMouseDriver mouseDriver = new JTableMouseDriver(); 
+            mouseDriver.selectCell(jto,0,0);
+            mouseDriver.selectCell(jto,1,0);
+            mouseDriver.selectCell(jto,2,0);
+        }
     }
     
-    private void wrapper15Operations(NewFileWizardOperator nfwo,
-            JTableMouseDriver mouseDriver, JTableOperator jto) {
-        
-    }
-    
-    private void wrapper16Operations(NewFileWizardOperator nfwo,
-            JTableMouseDriver mouseDriver, JTableOperator jto) {
-        
-    }
- 
     private void junitStep(NewFileWizardOperator nfwo, MBean mbean) {
         JellyToolsHelper.changeCheckBoxSelection("junitJChckBox", nfwo, true);
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("junitJChckBox", nfwo));
