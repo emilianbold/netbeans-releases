@@ -486,8 +486,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected List getAllTags(String prefix) {
         List items = new ArrayList();
         
-        
-        
         // standard JSP tags (jsp:)
         initCompletionData();
         if (STANDARD_JSP_PREFIX.equals(prefix)) {
@@ -701,6 +699,29 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     // nothing to do
                 }
             }
+            f = InstalledFileLocator.getDefault().locate("docs/struts-tags.zip", null, false);
+            if (f != null){
+                try {
+                    URL urll = f.toURL();
+                    urll = FileUtil.getArchiveRoot(urll);
+                    url = urll.toString();
+                    helpMap.put("http://jakarta.apache.org/struts/tags-bean", url + "bean/");
+                    helpMap.put("http://struts.apache.org/tags-bean", url + "bean/");
+                    helpMap.put("http://jakarta.apache.org/struts/tags-html", url + "html/");
+                    helpMap.put("http://struts.apache.org/tags-html", url + "html/");
+                    helpMap.put("http://jakarta.apache.org/struts/tags-logic", url + "logic/");
+                    helpMap.put("http://struts.apache.org/tags-logic", url + "logic/");
+                    helpMap.put("http://jakarta.apache.org/struts/tags-nested", url + "nested/");
+                    helpMap.put("http://struts.apache.org/tags-nested", url + "nested/");
+                    helpMap.put("http://jakarta.apache.org/struts/tags-tiles", url + "tiles/");
+                    helpMap.put("http://struts.apache.org/tags-tiles", url + "tiles/");
+                }
+                catch (java.net.MalformedURLException e){
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    // nothing to do
+                }
+            }
+            
         }
         
     }

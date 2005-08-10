@@ -442,7 +442,7 @@ public class JspCompletionItem {
                 
                 String to = surl.substring(last);
                 last = text.indexOf(to);
-                if (last > 0 && last > first)
+                if (last > 0)
                     text = text.substring(0, last);
                 return text;
             }
