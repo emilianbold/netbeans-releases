@@ -4,18 +4,34 @@
 
 <map version="1.0">
 
-	<mapID target="about_plugins" url="nbmodule-about.html"/>
-
-<mapID target="org.netbeans.modules.apisupport.project.ui.SuiteCustomizer" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformInfoWizardPanel" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="tbd.html" />
-<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="tbd.html" />
+	<mapID target="tbd" url="tbd.html"/>
 	
+	<mapID target="about_plugins" url="nbmodule-about.html"/>
+	<mapID target="about_system_filesystem" url="nbmodule-about-system-filesystem.html"/>
+	<mapID target="about_xml_layers" url="about-xml-layers.html"/>
+	<mapID target="about_ide_extensions" url="tbd.html"/>
+	<mapID target="about_creating_ide_extensions" url="tbd.html"/>
+	<mapID target="about_file_types" url="tbd.html"/>
+	<mapID target="creating_file_types" url="tbd.html"/>
+	<mapID target="about_actions" url="tbd.html"/>
+	<mapID target="creating_actions" url="tbd.html"/>
+	<mapID target="about_projtemps" url="tbd.html"/>
+	<mapID target="creating_projtemps" url="tbd.html"/>
+	<mapID target="testing_ide_extensions" url="tbd.html"/>
+	<mapID target="sharing_ide_extensions" url="tbd.html"/>
+	<mapID target="about_netbeans_platform" url="tbd.html"/>
+
+		
+
+	<mapID target="org.netbeans.modules.apisupport.project.ui.SuiteCustomizer" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformChooserWizardPanel" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.platform.PlatformInfoWizardPanel" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="tbd.html" />
+	<mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel" url="tbd.html" />
 
 </map>
 
