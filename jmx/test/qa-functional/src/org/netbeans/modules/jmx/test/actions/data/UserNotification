@@ -1,0 +1,7 @@
+package com.foo.bar;
+
+public class UserNotification extends javax.management.Notification {
+    public UserNotification(String type, Object source, long seqNumber) {
+        super(type, source, seqNumber);
+    }
+}

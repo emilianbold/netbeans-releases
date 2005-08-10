@@ -34,6 +34,10 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/managerwizard/ConstructManager.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/CreateActionsProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/MBeanRegistTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/AddMBeanAttributesTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/AddMBeanOperationsTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/ImplNotifEmitterTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/CreateJUnitTests.class"/>
             </patternset>
         </testset>
     </testbag>
