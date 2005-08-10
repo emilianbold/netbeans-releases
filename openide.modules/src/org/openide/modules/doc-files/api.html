@@ -58,12 +58,7 @@ authors.
 <li> <a href="#std-sec">Standard Module Sections</a>
 <ul>
 <li> <a href="#sec-action">Action</a>
-<li> <a href="#sec-option">Option</a>
 <li> <a href="#sec-loader">Data loader</a>
-<li> <a href="#sec-executor">Service</a>
-<li> <a href="#sec-filesystem">Filesystem</a>
-<li> <a href="#sec-environment">Node</a>
-<li> <a href="#sec-clipboardconvertor">Clipboard convertor</a>
 </ul>
 
 <li> <a href="#deploy">Deployment of Modules</a>
@@ -142,9 +137,11 @@ giving additional more specific deployment information.
 <p>For basic cases, you should need to do very little to create a module
 besides writing the basic source code.</p>
 
+<!-- XXX currently tips.html is not published anywhere:
 <p class="nonnormative">Please see a list of <a
 href="../../doc-files/tips.html">tips</a> on writing modules,
 installing them into the IDE, testing and debugging them.</p>
+-->
 
 <h3><a name="how-jar">Build a JAR</a></h3>
 
@@ -281,9 +278,7 @@ OpenIDE-Module-Class: Action
 </pre>
 
 Module authors are strongly encouraged to use the
-
-<a href="http://apisupport.netbeans.org/">API Support module</a>
-
+module development support in the IDE
 which among other advantages, provides interactive parsing of
 manifests that can help the beginning API developer immediately see
 how the IDE will parse his manifest, including possible parse errors.
@@ -601,13 +596,11 @@ into the IDE's global menus, toolbars, or keymap.</li>
 
 <li>Other things such as bookmarks, Component Palette beans, Welcome
 panel buttons, and so on - according to the
-
-<a href="http://www.netbeans.org/community/guidelines/installation.html#system">structure</a>
-
+structure
 of the system filesystem.</li>
 
 <li>Most generally, to install arbitrary
-<a href="../../doc-files/services-api.html#instance-folders">services</a>
+<a href="@org-openide-util@/org/openide/util/doc-files/api.html#instance-folders">services</a>
 into the system.</li>
 
 </ol>
@@ -695,7 +688,7 @@ installed by the module; however they take precedence over the
 less-specific variants, and thus can replace files, or even remove
 (suppress) them, using <samp>*_hidden</samp> masks as used by
 
-<a href="@org-openide-filesystems@/org/openide/filesystems/doc-files/api.html#multifs"><code>MultiFileSystem</code></a>.
+<a href="@org-openide-filesystems@/org/openide/filesystems/MultiFileSystem.html"><code>MultiFileSystem</code></a>.
 
 In fact, if module A depends on module B, then A's layer(s) will take
 precedence over B's layers, and it may replace or remove files
@@ -717,7 +710,7 @@ the primary file for a data object, the data node's display name as
 annotated by the filesystem will be taken from that resource bundle
 (given as a string). The bundle will be found using
 
-<a href="../../util/NbBundle.html#getBundle(java.lang.String)"><code>NbBundle.getBundle(String)</code></a>,
+<a href="@org-openide-util@/org/openide/util/NbBundle.html#getBundle(java.lang.String)"><code>NbBundle.getBundle(String)</code></a>,
 
 meaning that it should be of the form
 <samp>org.domain.pkg.Bundle</samp> and will be found using the
@@ -785,11 +778,10 @@ is more specialized semantics given to the implementation version.
 using the Versioning Specification - modules can request general or
 specific versions of other modules
 (<code>OpenIDE-Module-Module-Dependencies</code>), Java packages
-(<code>OpenIDE-Module-Package-Dependencies</code>), Java itself
-(<code>OpenIDE-Module-Java-Dependencies</code>), or the IDE
-(<code>OpenIDE-Module-IDE-Dependencies</code>).
+(<code>OpenIDE-Module-Package-Dependencies</code>), or Java itself
+(<code>OpenIDE-Module-Java-Dependencies</code>).
 
-<p><em>As of 2.3</em> the tags
+<p>The tags
 <code>OpenIDE-Module-Provides</code> and <code>OpenIDE-Module-Requires</code>
 can also be used to specify dependencies between modules without naming
 the exact module to depend on. A module may <em>provide</em> one or more
@@ -1061,7 +1053,7 @@ classes, as if both modules formed part of the same code base.</p>
 
 <p class="nonnormative">Confused by all these restrictions on classloading? See the
 
-<a href="../../doc-files/classpath.html">Class Path</a>
+<a href="classpath.html">Class Path</a>
 
 document which gives a fuller, more informal explanation.</p>
 
@@ -1317,7 +1309,7 @@ uninstalled or reinstalled.
 the NetBeans core implementation (i.e. its mechanism is not specified by
 the APIs), which presents guided dialogs prompting users to
 automatically upgrade modules or install new ones from an update server.
-This functionality is provided by a <a href="http://autoupdate.netbeans.org/">module</a>.
+This functionality is provided by the Auto Update module.
 
 <h4>Upgrades</h4>
 
@@ -1329,9 +1321,7 @@ With the advent of XML layers, most of these reasons for using <code>updated()</
 have disappeared.
 
 <p>A proper module will store all of its configurable state using
-
-<a href="#sec-option">options</a>
-
+options
 (excepting service types, module externalization, etc.), and the
 contents of these will be automatically carried over, one option at
 a time (according to

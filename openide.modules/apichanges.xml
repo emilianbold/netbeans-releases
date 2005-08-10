@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         <author login="jtulach"/>
         <compatibility binary="compatible" source="compatible" semantic="incompatible" deprecation="no" addition="yes" deletion="no" modification="yes"/>
         <description>
-            Due to <a href="#split-of-openide-jar">split of openide.jar</a> some important branding files used during startup change their location. 
+            Due to <a href="apichanges.html#split-of-openide-jar">split of openide.jar</a> some important branding files used during startup change their location. 
             Especially the to splash screen picture, location and color of progress bar and the application icon are now in <code>org.netbeans.core.startup</code>
             package. Here is an example of the branding <a href="http://www.netbeans.org/source/browse/ide/branding/core/src/org/netbeans/core/startup/">as used by NetBeans IDE</a>.
         </description>
@@ -132,7 +132,7 @@ OpenIDE-Module-Requires: org.openide.modules.ModuleFormat1</code>
         <author login="jtulach"/>
         <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
         <description>
-            A module can now <a href="@TOP@org/openide/modules/doc-files/api.html#friend" shape="rect">restrict the list</a> of modules that can
+            A module can now <a href="@TOP@org/openide/modules/doc-files/api.html#friend">restrict the list</a> of modules that can
             access its public packages, by enumerating their code names 
             in manifest.
         </description>
@@ -183,7 +183,7 @@ OpenIDE-Module-Requires: org.openide.modules.ModuleFormat1</code>
             </pre>
             Such a module will then be enabled only on specified class of 
             operating systems. See also the 
-            	<a href="org/openide/modules/doc-files/api.html#how-os-specific" shape="rect">modules api</a>
+            	<a href="org/openide/modules/doc-files/api.html#how-os-specific">modules api</a>
             description.
         </description>
         <issue number="46833"/>
@@ -519,7 +519,7 @@ OpenIDE-Module-Requires: org.openide.compiler.CompilationEngine,
         API. Other packages are blocked from client modules.</p>
         <p>Utilizing this feature for already released modules
         is <b>very dangerous</b>. See issue
-        <a href="http://xml.netbeans.org/issues/show_bug.cgi?id=31637" shape="rect">#31637</a>
+        <a href="http://www.netbeans.org/issues/show_bug.cgi?id=31637">#31637</a>
         for details.</p>
       </description>
       <issue number="19621"/>
@@ -886,5 +886,3 @@ Specification versions: 5.0 begins after this point.</li>
 
   
 </apichanges>
-
-
