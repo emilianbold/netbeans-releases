@@ -12,6 +12,9 @@
  */
 package org.netbeans.modules.j2ee.jboss4.ide;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
@@ -58,6 +61,7 @@ import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 public class JBStartServer extends StartServer implements ProgressObject{
     
     private JBDeploymentManager dm;
+    private static Map isDebugModeUri = Collections.synchronizedMap((Map)new HashMap(2,1));
     
     public JBStartServer(DeploymentManager dm) {
         if (!(dm instanceof JBDeploymentManager)) {
@@ -69,11 +73,19 @@ public class JBStartServer extends StartServer implements ProgressObject{
     public ProgressObject startDebugging(Target target) {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS"))); //NOI18N
         RequestProcessor.getDefault().post(new JBStartRunnable(true), 0, Thread.NORM_PRIORITY);
+        isDebugModeUri.put(dm.getUrl(), new Object());
         return this;
     }
     
     public boolean isDebuggable(Target target) {
-        return false;
+        if (!isDebugModeUri.containsKey(dm.getUrl())) {
+            return false;
+        }
+        if (!isRunning()) {
+            isDebugModeUri.remove(dm.getUrl());
+            return false;
+        }
+        return true;
     }
     
     public boolean isAlsoTargetServer(Target target) {
@@ -101,6 +113,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     public ProgressObject stopDeploymentManager() {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_IN_PROGRESS")));//NOI18N
         RequestProcessor.getDefault().post(new JBStopRunnable(), 0, Thread.NORM_PRIORITY);
+        isDebugModeUri.remove(dm.getUrl());
         return this;
     }
     
@@ -110,6 +123,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     public ProgressObject startDeploymentManager() {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
         RequestProcessor.getDefault().post(new JBStartRunnable(false), 0, Thread.NORM_PRIORITY);
+        isDebugModeUri.remove(dm.getUrl());
         return this;
     }
     
