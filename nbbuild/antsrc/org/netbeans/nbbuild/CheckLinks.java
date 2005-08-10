@@ -272,7 +272,7 @@ public class CheckLinks extends MatchingTask {
                             try {
                                 URI relUri = new URI(fixedUri);
                                 if (!relUri.isOpaque()) {
-                                    URI o = base.resolve(relUri);
+                                    URI o = base.resolve(relUri).normalize();
                                     //task.log("href: " + o);
                                     if (!others.containsKey(o)) {
                                         // Only keep location info for first reference.
@@ -311,8 +311,9 @@ public class CheckLinks extends MatchingTask {
                 String[] nue = m.getImplementation().mapFileName(path);
                 if (nue != null) {
                     for (int i = 0; i < nue.length; i++) {
-                        if (new File(nue[i]).isFile()) {
-                            return nue[i];
+                        File f = new File(nue[i]);
+                        if (f.isFile()) {
+                            return new File(f.toURI().normalize()).getAbsolutePath();
                         }
                     }
                 }
