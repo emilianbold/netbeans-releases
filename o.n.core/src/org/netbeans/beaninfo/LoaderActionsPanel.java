@@ -7,26 +7,34 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.beaninfo;
 
 import java.awt.Component;
-import java.beans.*;
-import javax.swing.*;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyEditor;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
+import org.netbeans.core.ActionsPoolNode;
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.nodes.Node;
-import org.openide.util.*;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-
-import org.netbeans.core.ActionsPoolNode;
 
 /** Custom editor for data loader actions list.
  *
@@ -355,8 +363,12 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
         } else {
             label.setText (NbBundle.getBundle(LoaderActionsPanel.class).getString("LBL_separator_rather_than_action"));
             // For alignment:
-            label.setIcon (new ImageIcon (SystemAction.class.getClassLoader ().getResource
-                                          ("org/openide/resources/actions/empty.gif"))); // NOI18N
+            try {
+                // For alignment:
+                label.setIcon(new ImageIcon(new URL("nbresloc:/org/openide/resources/actions/empty.gif"))); // NOI18N
+            } catch (MalformedURLException ex) {
+                assert false : ex;
+            }
         }
         if (isSelected) {
             label.setBackground(list.getSelectionBackground());
