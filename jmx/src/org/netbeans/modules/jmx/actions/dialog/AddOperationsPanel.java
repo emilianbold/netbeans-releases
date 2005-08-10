@@ -268,6 +268,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         leftPanel.add(removeButton, gridBagConstraints);
 
+        addButton.setName("opAddJButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -286,6 +287,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
         add(buttonsPanel, gridBagConstraints);
 
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
+        stateLabel.setName("stateLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
