@@ -15,6 +15,8 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
 import java.awt.Color;
 import java.io.File;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
@@ -22,14 +24,13 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
-
-
 
 /**
  * the second panel in loaders wizard.
@@ -274,6 +275,18 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         chooser.addChoosableFileFilter(new GifPngFilter());
+        chooser.setFileView(new FileView() {
+            public Icon getIcon(File f) {
+                // Show icons right in the chooser, to make it easier to find the right one.
+                if (f.getName().endsWith(".gif") || f.getName().endsWith(".png")) { // NOI18N
+                    Icon icon = new ImageIcon(f.getAbsolutePath());
+                    if (icon.getIconWidth() == 16 && icon.getIconHeight() == 16) {
+                        return icon;
+                    }
+                }
+                return null;
+            }
+        });
         int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
