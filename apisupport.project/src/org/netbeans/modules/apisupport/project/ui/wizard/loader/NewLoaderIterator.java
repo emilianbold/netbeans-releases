@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -33,9 +34,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -245,7 +243,9 @@ public class NewLoaderIterator extends BasicWizardIterator {
         template = NewLoaderIterator.class.getResource("templateresolver.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "resolver.xml", //NOI18N
                                                      null, template, resolverName, 
-                                                     replaceTokens, NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
+                                                     replaceTokens, 
+                                                     NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
+                                                     null)); 
         
         //5. update project.xml with dependencies
         ProjectXMLManager manager = new ProjectXMLManager(model.getProject().getHelper());
@@ -361,29 +361,30 @@ public class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createLayerSubtree("Loaders/" + mime + "/Actions",//NOI18N
                         buf.toString(), false));
         //9. create sample template
-        buf = new StringBuffer();
-        
-        buf.append("<file name=\"new");
+        String suffix = null;
         if (model.isExtensionBased()) {
-            buf.append(namePrefix).append(".").append(getFirstExtension(model.getExtension())).append("\">\n");
+            suffix = "Template." + getFirstExtension(model.getExtension());
+            template = NewLoaderIterator.class.getResource("templateNew1");//NOI18N
         } else {
-            buf.append(namePrefix).append(".xml\">\n");
-        }
-        buf.append("<attr boolvalue=\"true\" name=\"template\"/>");
-        buf.append("<![CDATA[");
-        if (model.isExtensionBased()) {
-            buf.append("sample contents]]>");
-        } else {
+            template = NewLoaderIterator.class.getResource("templateNew2");//NOI18N
+            suffix = "Template.xml";
             try {
-                buf.append("<root xmlns=\"").append(XMLUtil.toElementContent(model.getNamespace())).append("\"/>]]>");
+                replaceTokens.put("@@NAMESPACE@@", XMLUtil.toElementContent(model.getNamespace()));
             } catch (CharConversionException ex) {
-                assert false : ex;
+                assert false: ex;
             }
         }
-        buf.append("</file>\n");
-        fileChanges.add(fileChanges.createLayerSubtree("Templates/Other",//NOI18N
-                buf.toString(), true));
-        
+        String templateName = getRelativePath(model.getProject(), model.getPackageName(), 
+                                            namePrefix, suffix); //NOI18N
+        File templateFile = new File(FileUtil.toFile(model.getProject().getProjectDirectory()), templateName);
+        buf = new StringBuffer();
+        Map attrs = new HashMap();
+        attrs.put("template", Boolean.TRUE);
+        fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + templateFile.getName(), //NOI18N
+                                                     null, template, templateName, 
+                                                     replaceTokens, 
+                                                     NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix), 
+                                                     attrs)); //NOI18N
         model.setCreatedModifiedFiles(fileChanges);
     }
     

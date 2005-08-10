@@ -81,9 +81,9 @@ final class CreatedModifiedFilesFactory {
     
     static CreatedModifiedFiles.Operation createLayerEntry(NbModuleProject project,
             String layerPath, String contentResourcePath, URL content, String generatedPath,
-            Map/*<String,String>*/ substitutionTokens, String localizedDisplayName) {
+            Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
         return new CreateLayerEntry(project, layerPath, contentResourcePath, content,
-                generatedPath, substitutionTokens, localizedDisplayName);
+                generatedPath, substitutionTokens, localizedDisplayName, attrs);
     }
     
     static CreatedModifiedFiles.Operation createLayerSubtree(NbModuleProject project,
@@ -397,19 +397,21 @@ final class CreatedModifiedFilesFactory {
         private String contentResourcePath;
         private String generatedPath;
         private Map/*<String,String>*/ tokens;
+        private Map/*<String, Object>*/ fileAttributes;
         
         private Operation createBundleKey;
         private Operation createContentResource;
         
         public CreateLayerEntry(NbModuleProject project, String layerPath,
                 String contentResourcePath, URL content, String generatedPath,
-                Map/*<String,String>*/ substitutionTokens, String localizedDisplayName) {
+                Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
             
             super(project);
             this.layerPath = layerPath;
             this.contentResourcePath = contentResourcePath;
             this.generatedPath = generatedPath;
             this.tokens = substitutionTokens;
+            this.fileAttributes = attrs;
             addCreatedOrModifiedPath(getLayerFile());
             
             if (content != null) {
@@ -447,7 +449,7 @@ final class CreatedModifiedFilesFactory {
             }
             
             LayerUtil.createFile(getProject().getProjectDirectory(), getLayerFile(),
-                    layerPath, contentResourcePath, lbDotted);
+                    layerPath, contentResourcePath, lbDotted, fileAttributes);
         }
     }
     

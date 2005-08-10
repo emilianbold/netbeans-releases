@@ -276,6 +276,11 @@ public final class CreatedModifiedFiles {
      *        <em>SystemFileSystem.localizingBundle</em> attribute will be
      *        created with the stringvalue to a default bundle (from manifest).
      *        Also an appropriate entry will be added into the bundle.
+     * @param fileAttributes a map of <String,Object>s. key in the map is the name of the file attribute
+     *        value is the actual value, currently supported types are Boolean and String
+     *        Generates <pre>
+     *               <attr name="KEY" stringvalue="VALUE"/> or <attr name="KEY" booleanvalue="VALUE"/>
+     *           </pre>
      * @return see {@link Operation}
      */
     public Operation createLayerEntry(
@@ -284,10 +289,11 @@ public final class CreatedModifiedFiles {
             URL content,
             String generatedPath,
             Map/*<String,String>*/ substitutionTokens,
-            String localizedDisplayName) {
+            String localizedDisplayName,
+            Map/*<String,Object>*/ fileAttributes) {
         return CreatedModifiedFilesFactory.createLayerEntry(project, layerPath,
                 contentResourcePath, content, generatedPath, substitutionTokens,
-                localizedDisplayName);
+                localizedDisplayName, fileAttributes);
     }
     
     /**

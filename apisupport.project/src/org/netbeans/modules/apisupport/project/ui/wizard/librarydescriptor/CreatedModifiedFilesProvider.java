@@ -80,7 +80,7 @@ final class CreatedModifiedFilesProvider  {
         libraryDescPath = PropertyUtils.relativizeFile(layerFolder, libraryDescFile);
 
         libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,
-                template,libraryDescRelativePath ,tokens,null/*data.getLibraryDisplayName()*/);
+                template,libraryDescRelativePath ,tokens,null/*data.getLibraryDisplayName()*/, null);
         
         
         fileSupport.add(libDescrOperation);
