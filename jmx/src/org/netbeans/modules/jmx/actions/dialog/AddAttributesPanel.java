@@ -258,6 +258,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         leftPanel.add(removeButton, gridBagConstraints);
 
+        addButton.setName("attrAddJButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
