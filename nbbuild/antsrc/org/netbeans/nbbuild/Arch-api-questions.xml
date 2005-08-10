@@ -31,7 +31,7 @@ edits in the text of a question, you need not change the version number.
 Also rerun openide/www/tutorial/build.xml#question when you are done and commit
 openide/www/tutorial/questions.html.
 -->
-<api-questions version="1.25">
+<api-questions version="1.26">
     <category id="arch" name="General Information">
         <question id="arch-what" when="init" >
             What is this project good for?
