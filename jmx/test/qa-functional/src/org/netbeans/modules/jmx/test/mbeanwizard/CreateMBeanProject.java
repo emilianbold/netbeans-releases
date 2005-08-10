@@ -17,6 +17,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.jmx.test.helpers.JellyConstants;
 
 /**
  *
@@ -58,13 +59,13 @@ public class CreateMBeanProject extends JellyTestCase {
      public static void createProject() {
         
         NewProjectWizardOperator project = NewProjectWizardOperator.invoke();
-        project.selectCategory("General");
-        project.selectProject("Java Application");
+        project.selectCategory(JellyConstants.PROJECT_CAT); 
+        project.selectProject(JellyConstants.PROJECT_APP); 
         project.next();
         NewFileNameLocationStepOperator projectName =
                 new NewFileNameLocationStepOperator();
          
-        projectName.setObjectName("MBeanFunctionalTest");
+        projectName.setObjectName(JellyConstants.PROJECT_NAME);
          
         project.finish();
     }

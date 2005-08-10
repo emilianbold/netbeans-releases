@@ -25,6 +25,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.Attribute;
 import org.netbeans.modules.jmx.test.helpers.JellyToolsHelper;
+import org.netbeans.modules.jmx.test.helpers.JellyConstants;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import org.netbeans.modules.jmx.test.helpers.Notification;
 import org.netbeans.modules.jmx.test.helpers.Operation;
@@ -37,15 +38,6 @@ import org.netbeans.modules.jmx.test.helpers.Parameter;
  * @author an156382
  */
 public class CreateOneFeatureMBean extends JellyTestCase {
-    
-    public final String PROJECT_NAME = "MBeanFunctionalTest";
-    
-    public final String TWO   = "2";
-    public final String THREE  = "3";
-    public final String SIX    = "6";
-    public final String SEVEN   = "7";
-    public final String TEN    = "10";
-    public final String ELEVEN   = "11";
     
     /** Need to be defined because of JUnit */
     public CreateOneFeatureMBean(String name) {
@@ -74,7 +66,7 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     }
     
     public void setUp() {
-        JellyToolsHelper.grabProjectNode(PROJECT_NAME);
+        JellyToolsHelper.grabProjectNode(JellyConstants.PROJECT_NAME);
     }
     
     public void tearDown() {
@@ -83,14 +75,14 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     public void constructTest2MBean() {
         
-        MBean standardMBean = createStandardMBean(TWO);
+        MBean standardMBean = createStandardMBean(JellyConstants.MBEAN_TWO);
         wizardExecution(standardMBean);  
         //TODO Diff between generated and master files
     }
     
     public void constructTest6MBean() {
         
-        MBean extendedMBean = createExtendedStandardMBean(SIX);
+        MBean extendedMBean = createExtendedStandardMBean(JellyConstants.MBEAN_SIX);
         wizardExecution(extendedMBean);
         
         //TODO Diff between generated and master files
@@ -99,7 +91,7 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     public void constructTest10MBean() {
         
-        MBean dynamicMBean = createDynamicMBean(TEN);
+        MBean dynamicMBean = createDynamicMBean(JellyConstants.MBEAN_TEN);
         wizardExecution(dynamicMBean);
         
         //TODO Diff between generated and master files
@@ -108,14 +100,14 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     public void constructTest3MBean() {
         
-        MBean standardMBean = createStandardMBean(THREE);
+        MBean standardMBean = createStandardMBean(JellyConstants.MBEAN_THREE);
         wizardExecution(standardMBean);  
         //TODO Diff between generated and master files
     }
     
     public void constructTest7MBean() {
         
-        MBean extendedMBean = createExtendedStandardMBean(SEVEN);
+        MBean extendedMBean = createExtendedStandardMBean(JellyConstants.MBEAN_SEVEN);
         wizardExecution(extendedMBean);
         
         //TODO Diff between generated and master files
@@ -124,7 +116,7 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     public void constructTest11MBean() {
         
-        MBean dynamicMBean = createDynamicMBean(ELEVEN);
+        MBean dynamicMBean = createDynamicMBean(JellyConstants.MBEAN_ELEVEN);
         wizardExecution(dynamicMBean);
         
         //TODO Diff between generated and master files
@@ -135,7 +127,7 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     private void wizardExecution(MBean mbean) {
         
-        NewFileWizardOperator nfwo = JellyToolsHelper.init("JMX MBean", 
+        NewFileWizardOperator nfwo = JellyToolsHelper.init(JellyConstants.CATEGORY, 
                 mbean.getMBeanName(), mbean.getMBeanPackage());
         nfwo.next();
         
@@ -157,45 +149,45 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     //========================= Class Name generation ===========================//
     
-    private MBean createStandardMBean(String number) {
+    private MBean createStandardMBean(String mbeanNumber) {
         
         return new MBean(
-                "ConstructTest"+number+"MBean", 
-                "StandardMBean", 
-                "com.foo.bar", 
-                "StandardMBean with one simple attribute, one two parameter operation and one notification", 
+                mbeanNumber, 
+                JellyConstants.STDMBEAN, 
+                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_TWO_COMMENT, 
                 constructMBeanAttributes(), constructMBeanOperations(), 
-                constructMBeanNotifications(number));
+                constructMBeanNotifications(mbeanNumber));
     }
     
-    private MBean createExtendedStandardMBean(String number) {
+    private MBean createExtendedStandardMBean(String mbeanNumber) {
         
         return new MBean(
-                "ConstructTest"+number+"MBean", 
-                "ExtendedStandardMBean", 
-                "com.foo.bar", 
-                "Extended StandardMBean with one simple attribute, one two parameter operation and " +
-                "one notification", 
+                mbeanNumber, 
+                JellyConstants.EXTSTDMBEAN, 
+                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_SIX_COMMENT, 
                 constructMBeanAttributes(), constructMBeanOperations(), 
-                constructMBeanNotifications(number));
+                constructMBeanNotifications(mbeanNumber));
     }
     
-    private MBean createDynamicMBean(String number) {
+    private MBean createDynamicMBean(String mbeanNumber) {
         
         return new MBean(
-                "ConstructTest"+number+"MBean", 
-                "DynamicMBean", 
-                "com.foo.bar", 
-                "DynamicMBean with one simple attribute, one two parameter operation and one notification", 
+                mbeanNumber, 
+                JellyConstants.DYNMBEAN, 
+                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_TEN_COMMENT, 
                 constructMBeanAttributes(), 
                 constructMBeanOperations(), 
-                constructMBeanNotifications(number));
+                constructMBeanNotifications(mbeanNumber));
     }
     
     private ArrayList<Attribute> constructMBeanAttributes() {
         
-        Attribute mBeanAttribute = new Attribute("firstAttribute", "int", "ReadOnly", 
-                "First Attribute description");
+        Attribute mBeanAttribute = new Attribute(JellyConstants.ATTR1_NAME, 
+                JellyConstants.INT_TYPE, JellyConstants.RO, 
+                JellyConstants.ATTR1_DESCR);
         ArrayList<Attribute> attrs = new ArrayList<Attribute>();
         attrs.add(mBeanAttribute);
         
@@ -204,32 +196,37 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     
     private ArrayList<Operation> constructMBeanOperations() {
         
-        Parameter mBeanOperationParameter1 = new Parameter("firstParameter", "String",
-                "First Parameter Description");
-        Parameter mBeanOperationParameter2 = new Parameter("secondParameter", "ObjectName",
-                "Second Parameter Description");
+        Parameter mBeanOperationParameter1 = new Parameter(JellyConstants.PARAM1_NAME, 
+                JellyConstants.STR_TYPE,
+                JellyConstants.PARAM1_DESCR);
+        Parameter mBeanOperationParameter2 = new Parameter(JellyConstants.PARAM2_NAME, 
+                JellyConstants.OBJNAME_TYPE,
+                JellyConstants.PARAM2_DESCR);
         ArrayList<Parameter> params = new ArrayList<Parameter>();
         params.add(mBeanOperationParameter1);
         params.add(mBeanOperationParameter2);
         
         //operation construction
-        Operation mBeanOperation = new Operation("FirstOperation", "void", params, null, 
-                "First Operation Description");
+        Operation mBeanOperation = new Operation(JellyConstants.OP1_NAME, 
+                JellyConstants.VOID_TYPE, params, null, 
+                JellyConstants.OP1_DESCR);
         ArrayList<Operation> ops = new ArrayList<Operation>();
         ops.add(mBeanOperation);
         
         return ops;
     }
     
-    private ArrayList<Notification> constructMBeanNotifications(String number) {
+    private ArrayList<Notification> constructMBeanNotifications(String mbeanNumber) {
         Notification mBeanNotification;
         //Notification construction
-        if (number.equals(THREE) || number.equals(SEVEN) || number.equals(ELEVEN)) 
-            mBeanNotification = new Notification("javax.management.AttributeChangeNotification",
-                "First Notification Description", null);
-        else
-            mBeanNotification = new Notification("javax.management.Notification",
-                "First Notification Description", null);
+        if (mbeanNumber.equals(JellyConstants.MBEAN_THREE) || 
+                mbeanNumber.equals(JellyConstants.MBEAN_SEVEN) || 
+                mbeanNumber.equals(JellyConstants.MBEAN_ELEVEN)) 
+            mBeanNotification = new Notification(JellyConstants.NOTIF_CHANGE,   
+                JellyConstants.NOTIF1_DESCR, null);
+        else 
+            mBeanNotification = new Notification(JellyConstants.NOTIF_,   
+                JellyConstants.NOTIF1_DESCR, null);
         ArrayList<Notification> notifs = new ArrayList<Notification>();
         notifs.add(mBeanNotification);
         
@@ -239,11 +236,11 @@ public class CreateOneFeatureMBean extends JellyTestCase {
     //========================= Class Name generation ===========================//
     
     private String getCompleteGeneratedFileName(NewFileWizardOperator nfwo) {
-        return JellyToolsHelper.getTextFieldContent("generatedFileJTextField", nfwo);
+        return JellyToolsHelper.getTextFieldContent(JellyConstants.GENFILE_TXT, nfwo);
     }
     
     private String getClassName(String completeFileName, String mbeanName) {
-        return JellyToolsHelper.replaceMBeanClassName(completeFileName, mbeanName+".java");
+        return JellyToolsHelper.replaceMBeanClassName(completeFileName, mbeanName+JellyConstants.JAVA_EXT);
     }
     
     private String getInterfaceName(String completeFileName) {
@@ -260,124 +257,124 @@ public class CreateOneFeatureMBean extends JellyTestCase {
         String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
         String itfName = getInterfaceName(completeGeneratedFileName);
         
-        assertFalse(JellyToolsHelper.verifyCheckBoxSelected("ExistingClassCheckBox", nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEnabled("ExistingClassTextField", nfwo));
+        assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.EXISTINGCLASS_CBX, nfwo));
+        assertFalse(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.EXISTINGCLASS_TXT, nfwo));
         
         JellyToolsHelper.changeRadioButtonSelection(mbean.getMBeanType(), nfwo, true);
         assertTrue(JellyToolsHelper.verifyRadioButtonSelected(mbean.getMBeanType(), nfwo));
         assertTrue(checkMBeanTypeButtons(nfwo, mbean));
         
         String name = mbean.getMBeanName();
-        if (name.equals("ConstructTest11MBean") ||
-                name.equals("ConstructTest7MBean") ||
-                name.equals("ConstructTest3MBean")) {
-            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("ImplementMBeanItf", nfwo));
-            assertFalse(JellyToolsHelper.verifyCheckBoxSelected("ImplementMBeanItf", nfwo));
-            assertFalse(JellyToolsHelper.verifyCheckBoxEnabled("PreRegisterParam", nfwo));
+        if (name.equals(JellyConstants.MBEAN_ELEVEN) ||
+                name.equals(JellyConstants.MBEAN_SEVEN) ||
+                name.equals(JellyConstants.MBEAN_THREE)) {
+            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.PREREGPARAM_CBX, nfwo));
         } else {
-            JellyToolsHelper.changeCheckBoxSelection("ImplementMBeanItf", nfwo, true);
-            assertTrue(JellyToolsHelper.verifyCheckBoxSelected("ImplementMBeanItf", nfwo));
-            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("PreRegisterParam", nfwo));
-            assertFalse(JellyToolsHelper.verifyCheckBoxSelected("PreRegisterParam", nfwo));
+            JellyToolsHelper.changeCheckBoxSelection(JellyConstants.IMPLEMMBEAN_CBX, nfwo, true);
+            assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
+            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.PREREGPARAM_CBX, nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.PREREGPARAM_CBX, nfwo));
         }
         
-        JellyToolsHelper.setTextFieldContent("mbeanDescriptionJTextField", nfwo, 
+        JellyToolsHelper.setTextFieldContent(JellyConstants.MBEANDESCR_TXT, nfwo, 
                 mbean.getMBeanComment());
         assertEquals(mbean.getMBeanComment(), JellyToolsHelper.getTextFieldContent(
-                "mbeanDescriptionJTextField", nfwo));
+                JellyConstants.MBEANDESCR_TXT, nfwo));
     }
     
     private void attributeStep(NewFileWizardOperator nfwo, MBean mbean) {
         // attributes
-        assertTrue(JellyToolsHelper.verifyTableEnabled("attributeTable",nfwo));
-        assertTrue(JellyToolsHelper.verifyButtonEnabled("attrAddJButton",nfwo));
-        assertFalse(JellyToolsHelper.verifyButtonEnabled("attrRemoveJButton",nfwo)); 
+        assertTrue(JellyToolsHelper.verifyTableEnabled(JellyConstants.ATTR_TBL,nfwo));
+        assertTrue(JellyToolsHelper.verifyButtonEnabled(JellyConstants.ATTR_ADD_BTN,nfwo));
+        assertFalse(JellyToolsHelper.verifyButtonEnabled(JellyConstants.ATTR_REM_BTN,nfwo)); 
         
         JellyToolsHelper.fillMBeanAttributes(nfwo, mbean);
     }
  
     private void operationStep(NewFileWizardOperator nfwo, MBean mbean) {
       
-        assertTrue(JellyToolsHelper.verifyTableEnabled("methodTable",nfwo));
-        assertTrue(JellyToolsHelper.verifyButtonEnabled("methAddJButton",nfwo));
-        assertFalse(JellyToolsHelper.verifyButtonEnabled("methRemoveJButton",nfwo));
+        assertTrue(JellyToolsHelper.verifyTableEnabled(JellyConstants.OPER_TBL,nfwo));
+        assertTrue(JellyToolsHelper.verifyButtonEnabled(JellyConstants.OPER_ADD_BTN,nfwo));
+        assertFalse(JellyToolsHelper.verifyButtonEnabled(JellyConstants.OPER_REM_BTN,nfwo));
         
         JellyToolsHelper.fillMBeanOperation(nfwo, mbean);
     }
    
     private void notificationStep(NewFileWizardOperator nfwo, MBean mbean) {
         
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("implNotifEmitCheckBox", nfwo));
-        JellyToolsHelper.changeCheckBoxSelection("implNotifEmitCheckBox", nfwo, true);
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("implNotifEmitCheckBox", nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.IMPLNOTIFEMIT_CBX, nfwo));
+        JellyToolsHelper.changeCheckBoxSelection(JellyConstants.IMPLNOTIFEMIT_CBX, nfwo, true);
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.IMPLNOTIFEMIT_CBX, nfwo));
         
         String name = mbean.getMBeanName();
-        if (name.equals("ConstructTest11MBean") ||
-                name.equals("ConstructTest7MBean") ||
-                name.equals("ConstructTest3MBean")) {
+        if (name.equals(JellyConstants.MBEAN_ELEVEN) ||
+                name.equals(JellyConstants.MBEAN_SEVEN) ||
+                name.equals(JellyConstants.MBEAN_THREE)) {
                 
-            JellyToolsHelper.changeCheckBoxSelection("genDelegationCheckBox", nfwo, true);
-            assertTrue(JellyToolsHelper.verifyCheckBoxSelected("genDelegationCheckBox", nfwo));
-            JellyToolsHelper.changeCheckBoxSelection("genSeqNbCheckBox", nfwo, true);
-            assertTrue(JellyToolsHelper.verifyCheckBoxSelected("genSeqNbCheckBox", nfwo));
+            JellyToolsHelper.changeCheckBoxSelection(JellyConstants.GENDELEG_CBX, nfwo, true);
+            assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.GENDELEG_CBX, nfwo));
+            JellyToolsHelper.changeCheckBoxSelection(JellyConstants.GENSEQNUM_CBX, nfwo, true);
+            assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.GENSEQNUM_CBX, nfwo));
         } else {
-            assertFalse(JellyToolsHelper.verifyCheckBoxSelected("genDelegationCheckBox", nfwo));
-            assertFalse(JellyToolsHelper.verifyCheckBoxSelected("genSeqNbCheckBox", nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.GENDELEG_CBX, nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.GENSEQNUM_CBX, nfwo));
         }
         
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("genDelegationCheckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("genSeqNbCheckBox", nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.GENDELEG_CBX, nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.GENSEQNUM_CBX, nfwo));
         
-        assertTrue(JellyToolsHelper.verifyTableEnabled("notificationTable",nfwo));
-        assertTrue(JellyToolsHelper.verifyButtonEnabled("notifAddJButton",nfwo));
-        assertFalse(JellyToolsHelper.verifyButtonEnabled("notifRemJButton",nfwo));
+        assertTrue(JellyToolsHelper.verifyTableEnabled(JellyConstants.NOTIF_TBL,nfwo));
+        assertTrue(JellyToolsHelper.verifyButtonEnabled(JellyConstants.NOTIF_ADD_BTN,nfwo));
+        assertFalse(JellyToolsHelper.verifyButtonEnabled(JellyConstants.NOTIF_REM_BTN,nfwo));
         
         JellyToolsHelper.fillMBeanNotification(nfwo, mbean);
     }
     
     private void junitStep(NewFileWizardOperator nfwo, MBean mbean) {
-        JellyToolsHelper.changeCheckBoxSelection("junitJChckBox", nfwo, true);
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("junitJChckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("junitJChckBox", nfwo));
+        JellyToolsHelper.changeCheckBoxSelection(JellyConstants.JU_CBX, nfwo, true);
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JU_CBX, nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JU_CBX, nfwo));
         
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled("tfClassToTest", nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfClassToTest", nfwo));
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled("tfTestClass", nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfTestClass", nfwo));
+        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.CLASSTOTEST_TXT, nfwo));
+        assertFalse(JellyToolsHelper.verifyTextFieldEditable(JellyConstants.CLASSTOTEST_TXT, nfwo));
+        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.TESTCLASS_TXT, nfwo));
+        assertFalse(JellyToolsHelper.verifyTextFieldEditable(JellyConstants.TESTCLASS_TXT, nfwo));
         
         String name = mbean.getMBeanName();
-        if (name.equals("ConstructTest11MBean") ||
-                name.equals("ConstructTest7MBean") ||
-                name.equals("ConstructTest3MBean")) {
-            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("defaultMethodBodyJCheckBox", nfwo));
-            assertTrue(JellyToolsHelper.verifyCheckBoxSelected("defaultMethodBodyJCheckBox", nfwo));
+        if (name.equals(JellyConstants.MBEAN_ELEVEN) ||
+                name.equals(JellyConstants.MBEAN_SEVEN) ||
+                name.equals(JellyConstants.MBEAN_THREE)) {
+            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.DEFMETHBODY_CBX, nfwo));
+            assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.DEFMETHBODY_CBX, nfwo));
             
-            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("javaDocJCheckBox", nfwo));
-            assertTrue(JellyToolsHelper.verifyCheckBoxSelected("javaDocJCheckBox", nfwo));
+            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JAVADOC_CBX, nfwo));
+            assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JAVADOC_CBX, nfwo));
         } else {
-            JellyToolsHelper.changeCheckBoxSelection("defaultMethodBodyJCheckBox", nfwo, false);
-            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("defaultMethodBodyJCheckBox", nfwo));
-            assertFalse(JellyToolsHelper.verifyCheckBoxSelected("defaultMethodBodyJCheckBox", nfwo));
+            JellyToolsHelper.changeCheckBoxSelection(JellyConstants.DEFMETHBODY_CBX, nfwo, false);
+            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.DEFMETHBODY_CBX, nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.DEFMETHBODY_CBX, nfwo));
             
-            JellyToolsHelper.changeCheckBoxSelection("javaDocJCheckBox", nfwo, false);
-            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("javaDocJCheckBox", nfwo));
-            assertFalse(JellyToolsHelper.verifyCheckBoxSelected("javaDocJCheckBox", nfwo));
+            JellyToolsHelper.changeCheckBoxSelection(JellyConstants.JAVADOC_CBX, nfwo, false);
+            assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JAVADOC_CBX, nfwo));
+            assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JAVADOC_CBX, nfwo));
         }
     }
     
     private boolean checkMBeanTypeButtons(NewFileWizardOperator nfwo, MBean mbean) {
         String type = mbean.getMBeanType();
-           if (type.equals("StandardMBean")) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("ExtendedStandardMBean", nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("DynamicMBean", nfwo));
+           if (type.equals(JellyConstants.STDMBEAN)) {
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
                 return true;
-           } else if (type.equals("ExtendedStandardMBean")) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("StandardMBean", nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("DynamicMBean", nfwo));
+           } else if (type.equals(JellyConstants.EXTSTDMBEAN)) {
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
                 return true;
-        } else if (type.equals("DynamicMBean")) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("StandardMBean", nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("ExtendedStandardMBean", nfwo));
+        } else if (type.equals(JellyConstants.DYNMBEAN)) {
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
                 return true;
         }
         return false;

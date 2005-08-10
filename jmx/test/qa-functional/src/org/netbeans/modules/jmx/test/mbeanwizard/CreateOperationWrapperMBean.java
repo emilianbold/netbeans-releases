@@ -29,6 +29,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.JellyToolsHelper;
+import org.netbeans.modules.jmx.test.helpers.JellyConstants;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 
 
@@ -39,10 +40,6 @@ import org.netbeans.modules.jmx.test.helpers.MBean;
  * @author an156382
  */
 public class CreateOperationWrapperMBean extends JellyTestCase {
-    
-    public final String PROJECT_NAME = "MBeanFunctionalTest";
-    public final String PACKAGE_NAME = "com.foo.bar";
-    public final String CLASS_TO_WRAP = "WrappedOperation";
     
     /** Need to be defined because of JUnit */
     public CreateOperationWrapperMBean(String name) {
@@ -66,7 +63,7 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     }
     
     public void setUp() {
-        JellyToolsHelper.grabProjectNode(PROJECT_NAME);
+        JellyToolsHelper.grabProjectNode(JellyConstants.PROJECT_NAME);
     }
     
     public void tearDown() {
@@ -74,7 +71,8 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     }
     
     public void createClass() {
-        createMissingClass(PROJECT_NAME, CLASS_TO_WRAP, PACKAGE_NAME);
+        createMissingClass(JellyConstants.PROJECT_NAME, 
+                JellyConstants.OPCLASS_TO_WRAP, JellyConstants.PACKAGE_NAME);
     }
     
     public void constructTest15MBean() {
@@ -97,7 +95,7 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private void wizardExecution(MBean mbean) {
         
-        NewFileWizardOperator nfwo = JellyToolsHelper.init("JMX MBean", 
+        NewFileWizardOperator nfwo = JellyToolsHelper.init(JellyConstants.CATEGORY, 
                 mbean.getMBeanName(), mbean.getMBeanPackage());
         nfwo.next();
         
@@ -118,18 +116,20 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private MBean createThirdWrapperMBean() {
         return new MBean(
-                "constructTest15MBean", 
-                PACKAGE_NAME, 
-                "Wrapped ExtendedStandardMBean with all operations",
-                PACKAGE_NAME+"."+CLASS_TO_WRAP);
+                JellyConstants.MBEAN_FIFTEEN, 
+                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_FIFTEEN_COMMENT,
+                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
+                JellyConstants.OPCLASS_TO_WRAP);
     }
     
     private MBean createFourthWrapperMBean() {
         return new MBean(
-                "constructTest16MBean", 
-                PACKAGE_NAME, 
-                "Wrapped ExtendedStandardMBean with no operations",
-                PACKAGE_NAME+"."+CLASS_TO_WRAP);
+                JellyConstants.MBEAN_SIXTEEN, 
+                JellyConstants.PACKAGE_NAME, 
+                JellyConstants.MBEAN_SIXTEEN_COMMENT,
+                JellyConstants.PACKAGE_NAME+JellyConstants.PT+
+                JellyConstants.OPCLASS_TO_WRAP);
     }
    
      //========================= Utility class generation  ===========================//
@@ -141,8 +141,8 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         
         //select the config wizard
         nfwoForFile.selectProject(projectName);
-        nfwoForFile.selectCategory("Java Classes");
-        nfwoForFile.selectFileType("Java Class");
+        nfwoForFile.selectCategory(JellyConstants.JAVA_FILE_CATEG);
+        nfwoForFile.selectFileType(JellyConstants.JAVA_FILE_TYPE);
         nfwoForFile.next();
         
         NewFileNameLocationStepOperator nfnlsoForFile =
@@ -160,10 +160,11 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         
         JTreeOperator tree = pto.tree();
-        ProjectRootNode prn = pto.getProjectRootNode("MBeanFunctionalTest");
+        ProjectRootNode prn = pto.getProjectRootNode(JellyConstants.PROJECT_NAME);
         
         prn.select();
-        Node node = new Node(prn, "Source Packages|" + packageName + "|" + fileName);
+        Node node = new Node(prn, JellyConstants.SRC_PKG + packageName + 
+                JellyConstants.PIPE + fileName);
         
         node.select();
         
@@ -215,11 +216,12 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     //========================= Class Name generation ===========================//
     
     private String getCompleteGeneratedFileName(NewFileWizardOperator nfwo) {
-        return JellyToolsHelper.getTextFieldContent("generatedFileJTextField", nfwo);
+        return JellyToolsHelper.getTextFieldContent(JellyConstants.GENFILE_TXT, nfwo);
     }
     
     private String getClassName(String completeFileName, String mbeanName) {
-        return JellyToolsHelper.replaceMBeanClassName(completeFileName, mbeanName+".java");
+        return JellyToolsHelper.replaceMBeanClassName(completeFileName, mbeanName+
+                JellyConstants.JAVA_EXT);
     }
     
     private String getInterfaceName(String completeFileName) {
@@ -236,72 +238,72 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
         String itfName = getInterfaceName(completeGeneratedFileName);
         
-        JellyToolsHelper.changeCheckBoxSelection("ExistingClassCheckBox", nfwo, true);
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("ExistingClassCheckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled("ExistingClassTextField", nfwo));
-        JellyToolsHelper.setTextFieldContent("ExistingClassTextField", nfwo, mbean.getClassToWrap());
+        JellyToolsHelper.changeCheckBoxSelection(JellyConstants.EXISTINGCLASS_CBX, nfwo, true);
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.EXISTINGCLASS_CBX, nfwo));
+        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.EXISTINGCLASS_TXT, nfwo));
+        JellyToolsHelper.setTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo, mbean.getClassToWrap());
         assertEquals(mbean.getClassToWrap(), 
-                JellyToolsHelper.getTextFieldContent("ExistingClassTextField", nfwo));
+                JellyToolsHelper.getTextFieldContent(JellyConstants.EXISTINGCLASS_TXT, nfwo));
         
         assertTrue(JellyToolsHelper.verifyRadioButtonSelected(mbean.getMBeanType(), nfwo));
         assertTrue(checkMBeanTypeButtons(nfwo, mbean));
         
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("ImplementMBeanItf", nfwo));
-        assertFalse(JellyToolsHelper.verifyCheckBoxSelected("ImplementMBeanItf", nfwo));
-        assertFalse(JellyToolsHelper.verifyCheckBoxEnabled("PreRegisterParam", nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
+        assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.IMPLEMMBEAN_CBX, nfwo));
+        assertFalse(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.PREREGPARAM_CBX, nfwo));
         
-        JellyToolsHelper.setTextFieldContent("mbeanDescriptionJTextField", nfwo,
+        JellyToolsHelper.setTextFieldContent(JellyConstants.MBEANDESCR_TXT, nfwo,
                 mbean.getMBeanComment());
         assertEquals(mbean.getMBeanComment(), JellyToolsHelper.getTextFieldContent(
-                "mbeanDescriptionJTextField", nfwo));
+                JellyConstants.MBEANDESCR_TXT, nfwo));
     }
     
     private void operationStep(NewFileWizardOperator nfwo, MBean mbean) {
       
-        assertTrue(JellyToolsHelper.verifyTableEnabled("wrapperOperationTable",nfwo));
-        assertFalse(JellyToolsHelper.verifyButtonEnabled("wrapperOpRemoveJButton",nfwo));
+        assertTrue(JellyToolsHelper.verifyTableEnabled(JellyConstants.W_OPER_TBL,nfwo));
+        assertFalse(JellyToolsHelper.verifyButtonEnabled(JellyConstants.W_OPER_REM_BTN,nfwo));
         
-        if (mbean.getMBeanName().equals("constructTest16MBean")) {
+        if (mbean.getMBeanName().equals(JellyConstants.MBEAN_SIXTEEN)) {
            // check/uncheck attributes to keep
-            JTableOperator jto = JellyToolsHelper.getPanelTableOperator("wrapperOperationTable", nfwo);
+            JTableOperator jto = JellyToolsHelper.getPanelTableOperator(JellyConstants.W_OPER_TBL, nfwo);
             JTableMouseDriver mouseDriver = new JTableMouseDriver(); 
-            mouseDriver.selectCell(jto,0,0);
-            mouseDriver.selectCell(jto,1,0);
-            mouseDriver.selectCell(jto,2,0);
+            mouseDriver.selectCell(jto,JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL);
+            mouseDriver.selectCell(jto,JellyConstants.LINE_ONE,JellyConstants.INCLUDE_COL);
+            mouseDriver.selectCell(jto,JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL);
         }
     }
     
     private void junitStep(NewFileWizardOperator nfwo, MBean mbean) {
-        JellyToolsHelper.changeCheckBoxSelection("junitJChckBox", nfwo, true);
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("junitJChckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("junitJChckBox", nfwo));
+        JellyToolsHelper.changeCheckBoxSelection(JellyConstants.JU_CBX, nfwo, true);
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JU_CBX, nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JU_CBX, nfwo));
         
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled("tfClassToTest", nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfClassToTest", nfwo));
-        assertTrue(JellyToolsHelper.verifyTextFieldEnabled("tfTestClass", nfwo));
-        assertFalse(JellyToolsHelper.verifyTextFieldEditable("tfTestClass", nfwo));
+        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.CLASSTOTEST_TXT, nfwo));
+        assertFalse(JellyToolsHelper.verifyTextFieldEditable(JellyConstants.CLASSTOTEST_TXT, nfwo));
+        assertTrue(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.TESTCLASS_TXT, nfwo));
+        assertFalse(JellyToolsHelper.verifyTextFieldEditable(JellyConstants.TESTCLASS_TXT, nfwo));
         
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("defaultMethodBodyJCheckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("defaultMethodBodyJCheckBox", nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.DEFMETHBODY_CBX, nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.DEFMETHBODY_CBX, nfwo));
         
-        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled("javaDocJCheckBox", nfwo));
-        assertTrue(JellyToolsHelper.verifyCheckBoxSelected("javaDocJCheckBox", nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JAVADOC_CBX, nfwo));
+        assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JAVADOC_CBX, nfwo));
         
     }
     
     private boolean checkMBeanTypeButtons(NewFileWizardOperator nfwo, MBean mbean) {
         String type = mbean.getMBeanType();
-           if (type.equals("StandardMBean")) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("ExtendedStandardMBean", nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("DynamicMBean", nfwo));
+           if (type.equals(JellyConstants.STDMBEAN)) {
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
                 return true;
-           } else if (type.equals("ExtendedStandardMBean")) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("StandardMBean", nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("DynamicMBean", nfwo));
+           } else if (type.equals(JellyConstants.EXTSTDMBEAN)) {
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.DYNMBEAN, nfwo));
                 return true;
-        } else if (type.equals("DynamicMBean")) {
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("StandardMBean", nfwo));
-                assertFalse(JellyToolsHelper.verifyRadioButtonSelected("ExtendedStandardMBean", nfwo));
+        } else if (type.equals(JellyConstants.DYNMBEAN)) {
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.STDMBEAN, nfwo));
+                assertFalse(JellyToolsHelper.verifyRadioButtonSelected(JellyConstants.EXTSTDMBEAN, nfwo));
                 return true;
         }
         return false;
