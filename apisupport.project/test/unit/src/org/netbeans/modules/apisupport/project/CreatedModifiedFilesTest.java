@@ -252,6 +252,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                 null,
                 null,
                 null,
+                null, 
                 null);
         layerOp.run();
         
@@ -261,6 +262,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                 null,
                 null,
                 null,
+                null, 
                 null);
         cmf.add(layerOp);
         assertRelativePath("src/org/example/module1/resources/layer.xml", layerOp.getModifiedPaths());
@@ -276,6 +278,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                 null,
                 null,
                 null,
+                null, 
                 null);
         cmf.add(layerOp);
         
@@ -286,6 +289,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                 createFile(HTML_CONTENT),
                 createMePath,
                 null,
+                null, 
                 null);
         cmf.add(layerOp);
 
@@ -296,6 +300,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                 createFile(HTML_CONTENT),
                 tokenMePath,
                 TOKENS_MAP,
+                null,
                 null);
         cmf.add(layerOp);
 
@@ -306,7 +311,8 @@ public class CreatedModifiedFilesTest extends TestBase {
                 createFile(HTML_CONTENT),
                 localizeAndTokenMePath,
                 TOKENS_MAP,
-                "Some Settings");
+                "Some Settings",
+                null);
         cmf.add(layerOp);
 
         assertRelativePaths(
