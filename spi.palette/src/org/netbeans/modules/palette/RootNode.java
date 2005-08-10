@@ -34,6 +34,8 @@ import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -51,20 +53,18 @@ public final class RootNode extends FilterNode {
     // --------
 
     public RootNode( Node originalRoot, Lookup lkp ) {
-        super( originalRoot, 
-                new Children( originalRoot, lkp ),
-                new ProxyLookup( new Lookup[] { lkp, originalRoot.getLookup() } ) );
-        setDisplayName(Utils.getBundleString("CTL_Component_palette")); // NOI18N
+        this( originalRoot, new InstanceContent(), lkp );
     }
 
-    public Node.Cookie getCookie( Class clazz ) {
-        if( clazz == Index.class ) {
-            DataFolder df = (DataFolder)getOriginal().getCookie( DataFolder.class );
-            if( null != df ) {
-                return new DataFolder.Index( df, this );
-            }
+    private RootNode( Node originalRoot, InstanceContent content, Lookup lkp ) {
+        super( originalRoot, 
+                new Children( originalRoot, lkp ),
+                new ProxyLookup( new Lookup[] { lkp, new AbstractLookup( content ), originalRoot.getLookup() } ) );
+        DataFolder df = (DataFolder)getOriginal().getCookie( DataFolder.class );
+        if( null != df ) {
+            content.add( new DataFolder.Index( df, this ) );
         }
-        return super.getCookie (clazz);
+        setDisplayName(Utils.getBundleString("CTL_Component_palette")); // NOI18N
     }
     
     // --------

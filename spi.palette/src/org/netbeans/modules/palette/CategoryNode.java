@@ -28,6 +28,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -44,27 +46,22 @@ class CategoryNode extends FilterNode {
     private Action[] actions;
 
     CategoryNode( Node originalNode, Lookup lkp ) {
+        this( originalNode, new InstanceContent(), lkp );
+    }
+    
+    private CategoryNode( Node originalNode, InstanceContent content, Lookup lkp ) {
         super( originalNode, 
                new Children( originalNode, lkp ),
-               new ProxyLookup( new Lookup[] { lkp, originalNode.getLookup() } ) );
+               new ProxyLookup( new Lookup[] { lkp, new AbstractLookup(content), originalNode.getLookup() } ) );
         
         DataFolder folder = (DataFolder)originalNode.getCookie( DataFolder.class );
         if( null != folder ) {
+            content.add( new DataFolder.Index( folder, this ) );
             FileObject fob = folder.getPrimaryFile();
             Object catName = fob.getAttribute( CAT_NAME );
             if (catName instanceof String)
                 setName((String)catName, false);
         }
-    }
-
-    public Node.Cookie getCookie( Class clazz ) {
-        if( clazz == Index.class ) {
-            DataFolder df = (DataFolder)getOriginal().getCookie( DataFolder.class );
-            if( null != df ) {
-                return new DataFolder.Index( df, this );
-            }
-        }
-        return super.getCookie (clazz);
     }
     
     // -------
