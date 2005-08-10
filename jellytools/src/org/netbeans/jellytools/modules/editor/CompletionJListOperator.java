@@ -97,7 +97,7 @@ public class CompletionJListOperator extends JListOperator {
             Object compSPane = waitFor(new Waitable() {                
                 public Object actionProduced(Object obj) {
                     Object o = null;
-                    if (DocumentWatcher.isModified()) {
+                    if (DocumentWatcher.isActive() && DocumentWatcher.isModified()) {
                         return INSTANT_SUBSTITUTION;
                     }
                     try {
@@ -279,6 +279,10 @@ public class CompletionJListOperator extends JListOperator {
             return modified;
         }
         
+        public static boolean isActive() {
+            return active;
+        }
+
         private static void setModified(boolean b) {
             modified = b;
             if(doc!=null){
