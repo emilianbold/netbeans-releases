@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+  <folder name="Menu">
+        <folder name="Tools">
+            <folder name="DerbyMenu">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.derby.Bundle" />
+                <file name="StartServer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.StartAction"/>
+                </file>
+                <file name="StopServer.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.StopAction"/>
+                </file>
+            </folder>
+        </folder>
+  </folder>
+</filesystem>
+
