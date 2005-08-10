@@ -13,10 +13,14 @@
 
 package org.netbeans.modules.apisupport.project.ui.platform;
 
+import java.awt.EventQueue;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents <em>Modules</em> tab in the NetBeans platforms customizer.
@@ -26,17 +30,32 @@ import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 final class NbPlatformCustomizerModules extends JPanel {
     
     private static final ListModel EMPTY_MODEL = new DefaultListModel();
+    private static final DefaultListModel WAIT_MODEL = new DefaultListModel();
+    
+    static {
+        WAIT_MODEL.addElement(NbBundle.getMessage(
+                NbPlatformCustomizerModules.class, "LBL_PleaseWait")); // NOI18N
+    }
     
     /** Creates new form NbPlatformCustomizerModules */
     NbPlatformCustomizerModules() {
         initComponents();
     }
     
-    void setPlatform(NbPlatform plaf) {
-        moduleList.setModel(
-                new ComponentFactory.ModuleEntryListModel(plaf.getModules()));
+    void setPlatform(final NbPlatform plaf) {
+        moduleList.setModel(WAIT_MODEL);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final ModuleEntry[] modules = plaf.getModules();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        moduleList.setModel(new ComponentFactory.ModuleEntryListModel(modules));
+                    }
+                });
+            }
+        });
     }
-
+    
     void reset() {
         moduleList.setModel(EMPTY_MODEL);
     }
