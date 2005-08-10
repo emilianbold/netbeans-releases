@@ -1,4 +1,4 @@
-<isjeProject name="NetBeans Installer" class="com.installshield.isje.product.MixTypicalProject" framework="com.installshield.isje.product.ProductWizardFramework" savedIn="11" compatibility="9">
+<isjeProject name="NetBeans IDE Installer" class="com.installshield.isje.product.MixTypicalProject" framework="com.installshield.isje.product.ProductWizardFramework" savedIn="11" compatibility="9">
 <section name="projectProperties" class="com.installshield.isje.project.ProjectPropertiesSection">
     <property name="authorName" displayName="Author Name" category="Author Info"></property>
     <property name="authorEmail" displayName="Author Email" category="Author Info"></property>
