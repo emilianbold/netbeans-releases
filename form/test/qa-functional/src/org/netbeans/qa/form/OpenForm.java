@@ -88,14 +88,15 @@ public class OpenForm extends JellyTestCase {
     
     public void testOpenForm() {
         
-//        System.out.println("XXXXXXXXXXXXX");
-//        System.out.println("xtest.data          = " + System.getProperty("xtest.data"));
-//        System.out.println("getDataDir          = " + getDataDir());
-//        System.out.println("getDataDirPath      = " + getWorkDirPath());
-//        System.out.println("xtest.module        = " + System.getProperty("xtest.module"));
-//        System.out.println("system.dir          = " + System.getProperty("system.dir"));
-//        System.out.println("xtest.workdir       = " + System.getProperty("xtest.workdir"));
-//        System.out.println("XXXXXXXXXXXXX");
+        System.out.println("XXXXXXXXXXXXX");
+        System.out.println("xtest.data          = " + System.getProperty("xtest.data"));
+        System.out.println("getDataDir          = " + getDataDir());
+        System.out.println("getDataDirPath      = " + getWorkDirPath());
+        System.out.println("xtest.module        = " + System.getProperty("xtest.module"));
+        System.out.println("system.dir          = " + System.getProperty("system.dir"));
+        System.out.println("xtest.workdir       = " + System.getProperty("xtest.workdir"));
+        
+        System.out.println("XXXXXXXXXXXXX");
         String dataDir = getDataDir().getAbsolutePath();
         String workdirpath = getWorkDirPath();
         List list = getJavaFormList();

@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
 
-<!-- Marek G. -->
+<!-- Marek G. 
    <testbag testattribs="validation, full" executor="ide" name="testbag_visual_development">
         <testset dir="qa-functional/src">
             <patternset>
@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-<!-- -->    
+ -->    
 
 <!--   <testbag testattribs="validation, full" executor="ide" name="testbag_compatibility">
         <testset dir="qa-functional/src">
@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
 
 -->
     
-<!-- Marek G. -->
+<!-- Marek G. 
     <testbag testattribs="validation, full" executor="ide" name="testbag_undo_redo">
         <testset dir="qa-functional/src">
             <patternset>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-<!-- -->    
+ -->    
     
     <testbag testattribs="unstable" executor="ide" name="testbag_palette">
         <testset dir="qa-functional/src">
