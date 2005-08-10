@@ -40,8 +40,14 @@ public final class Parameter extends Field {
         return (Parameter[])paramList.toArray(new Parameter[0]);
     }
 
+    private static Parameter createParameter (String name, String type, ClassFile classFile,
+            DataInputStream visibleAnnotations, DataInputStream invisibleAnnotations) {
+        return new Parameter (name, type, classFile,
+            visibleAnnotations, invisibleAnnotations);
+    }
+    
     /** Creates new Parameter */
-    Parameter(String name, String type, ClassFile classFile,
+    private Parameter(String name, String type, ClassFile classFile,
             DataInputStream visibleAnnotations, DataInputStream invisibleAnnotations) {
         super(name, type, classFile);
         loadParameterAnnotations(visibleAnnotations, invisibleAnnotations);
@@ -187,21 +193,21 @@ public final class Parameter extends Field {
                         case 'Z':
                         case 'V': {
                             String type = signature.substring(sigStart, ++isig);
-                            return new Parameter(name, type, classFile, 
+                            return Parameter.createParameter(name, type, classFile, 
                                     visibleAnnotations, invisibleAnnotations);
                         }
                         case 'D':
                         case 'J': {
                             ivar++;  // longs and doubles take two slots
                             String type = signature.substring(sigStart, ++isig);
-                            return new Parameter(name, type, classFile, 
+                            return Parameter.createParameter(name, type, classFile, 
                                     visibleAnnotations, invisibleAnnotations);
                         }
                         case 'L': {
                             int end = signature.indexOf(';', isig) + 1;
                             String type = signature.substring(isig, end);
                             isig = end;
-                            return new Parameter(name, type, classFile, 
+                            return Parameter.createParameter(name, type, classFile, 
                                     visibleAnnotations, invisibleAnnotations);
                         }
 
