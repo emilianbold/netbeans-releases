@@ -372,10 +372,18 @@ public class LayoutModel implements LayoutConstants {
      *
      * @param idToComponent maps component Id to <code>Component</code>.
      */
-    public void createModel(String containerId, Map idToComponent) {
+    public void createModel(String containerId, Container cont, Map idToComponent) {
         if (idToComponent.isEmpty()) return;
         LayoutComponent lCont = getLayoutComponent(containerId);
         assert (lCont != null);
+        Insets insets = new Insets(0, 0, 0, 0);
+        if (cont instanceof javax.swing.JComponent) {
+            javax.swing.border.Border border = ((javax.swing.JComponent)cont).getBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(cont);
+            }
+        }
+        Map idToBounds = new HashMap();
         Iterator iter = idToComponent.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry)iter.next();
@@ -387,28 +395,251 @@ public class LayoutModel implements LayoutConstants {
                 addComponent(lComp, lCont, -1);
             }
             Rectangle bounds = component.getBounds();
+            bounds = new Rectangle(bounds.x - insets.left, bounds.y - insets.top, bounds.width, bounds.height);
+            idToBounds.put(id, bounds);
             Dimension dim = component.getPreferredSize();
-            createModelHelper(lCont, lComp, bounds.x, bounds.width, dim.width, HORIZONTAL);
-            createModelHelper(lCont, lComp, bounds.y, bounds.height, dim.height, VERTICAL);
+            if (dim.width != bounds.width) {
+                LayoutInterval interval = lComp.getLayoutInterval(HORIZONTAL);
+                setIntervalSize(interval, interval.getMinimumSize(), bounds.width, interval.getMaximumSize());
+            }
+            if (dim.height != bounds.height) {
+                LayoutInterval interval = lComp.getLayoutInterval(VERTICAL);
+                setIntervalSize(interval, interval.getMinimumSize(), bounds.height, interval.getMaximumSize());
+            }
         }
+        RegionInfo region = new RegionInfo(idToBounds);
+        region.calculateIntervals();
+        // PENDING don't insert parallel group to parallel group
+        addInterval(region.getInterval(HORIZONTAL), lCont.getLayoutRoot(HORIZONTAL), -1);
+        addInterval(region.getInterval(VERTICAL), lCont.getLayoutRoot(VERTICAL), -1);
     }
     
-    private void createModelHelper(LayoutComponent cont, LayoutComponent comp,
-        int pos, int size, int prefSize, int dimension) {
-        LayoutInterval root = cont.getLayoutRoot(dimension);
-        LayoutInterval interval = comp.getLayoutInterval(dimension);
-        if (size != prefSize) {
-            setIntervalSize(interval, interval.getMinimumSize(), size, interval.getMaximumSize());
+    private class RegionInfo {
+        private LayoutInterval horizontal = null;
+        private LayoutInterval vertical = null;
+        private Map idToBounds;
+        private int minx;
+        private int maxx;
+        private int miny;
+        private int maxy;
+        private int dimension;
+
+        public RegionInfo(Map idToBounds) {
+            this.idToBounds = idToBounds;
+            this.dimension = -1;
+            minx = miny = 0;
+            updateRegionBounds();
         }
-        if (pos > 0) {
-            LayoutInterval group = new LayoutInterval(SEQUENTIAL);
-            LayoutInterval gap = new LayoutInterval(SINGLE);
-            gap.setSize(pos);
-            addInterval(gap, group, -1);
-            addInterval(interval, group, -1);
-            interval = group;
+        
+        private RegionInfo(Map idToBounds, int dimension) {
+            this.idToBounds = idToBounds;
+            this.dimension = dimension;
+            minx = miny = Short.MAX_VALUE;
+            updateRegionBounds();
         }
-        addInterval(interval, root, -1);
+        
+        private void updateRegionBounds() {
+            maxy = maxx = Short.MIN_VALUE;
+            Iterator iter = idToBounds.values().iterator();
+            while (iter.hasNext()) {
+                Rectangle bounds = (Rectangle)iter.next();
+                minx = Math.min(minx, bounds.x);
+                miny = Math.min(miny, bounds.y);
+                maxx = Math.max(maxx, bounds.x + bounds.width);
+                maxy = Math.max(maxy, bounds.y + bounds.height);
+            }
+        }
+
+        public void calculateIntervals() {
+            if (idToBounds.size() == 1) {
+                String id = (String)idToBounds.keySet().iterator().next();
+                Rectangle bounds = (Rectangle)idToBounds.get(id);
+                LayoutComponent comp = getLayoutComponent(id);
+                horizontal = comp.getLayoutInterval(HORIZONTAL);
+                horizontal = prefixByGap(horizontal, bounds.x - minx);
+                vertical = comp.getLayoutInterval(VERTICAL);
+                vertical = prefixByGap(vertical, bounds.y - miny);
+                return;
+            }
+            int effDim = -1;
+            List parts = null;
+            Map removedIdToBounds = null;
+            do {                
+                boolean remove = ((dimension == -1) && (effDim == HORIZONTAL))
+                    || ((dimension != -1) && (effDim != -1));
+                if (remove) {
+                    effDim = -1;
+                }
+                if (dimension == -1) {
+                    switch (effDim) {
+                        case -1: effDim = VERTICAL; break;
+                        case VERTICAL: effDim = HORIZONTAL; break;
+                        case HORIZONTAL: remove = true;
+                    }
+                } else {
+                    effDim = dimension;
+                }
+                if (remove) { // no cut found, remove some component
+                    String id = (String)idToBounds.keySet().iterator().next();
+                    Rectangle bounds = (Rectangle)idToBounds.remove(id);
+                    if (removedIdToBounds == null) {
+                        removedIdToBounds = new HashMap();
+                    }
+                    removedIdToBounds.put(id, bounds);
+                }
+                Set cutSet = createPossibleCuts(effDim);
+                parts = cutIntoParts(cutSet, effDim);            
+            } while (!idToBounds.isEmpty() && parts.isEmpty());
+            dimension = effDim;
+            List regions = new LinkedList();
+            Iterator iter = parts.iterator();
+            while (iter.hasNext()) {
+                Map part = (Map)iter.next();
+                RegionInfo region = new RegionInfo(part, (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL);
+                region.calculateIntervals();
+                regions.add(region);
+            }
+            mergeSubRegions(regions, dimension);
+            if (removedIdToBounds != null) {
+                for (int dim = HORIZONTAL; dim <= VERTICAL; dim++) {
+                    iter = removedIdToBounds.entrySet().iterator();
+                    LayoutInterval parent = (dim == HORIZONTAL) ? horizontal : vertical;
+                    if (!parent.isParallel()) {
+                        LayoutInterval parGroup = new LayoutInterval(PARALLEL);
+                        addInterval(parent, parGroup, -1);
+                        if (dim == HORIZONTAL) {
+                            horizontal = parGroup;
+                        } else {
+                            vertical = parGroup;
+                        }
+                        parent = parGroup;
+                    }
+                    while (iter.hasNext()) {
+                        Map.Entry entry = (Map.Entry)iter.next();
+                        String id = (String)entry.getKey();
+                        Rectangle bounds = (Rectangle)entry.getValue();
+                        LayoutComponent comp = getLayoutComponent(id);
+                        LayoutInterval interval = comp.getLayoutInterval(dim);
+                        int gap = (dim == HORIZONTAL) ? bounds.x - minx : bounds.y - miny;
+                        interval = prefixByGap(interval, gap);
+                        addInterval(interval, parent, -1);
+                    }
+                }
+            }
+        }
+        
+        private SortedSet createPossibleCuts(int dimension) {
+            SortedSet cutSet = new TreeSet();
+            Iterator iter = idToBounds.keySet().iterator();
+            while (iter.hasNext()) {
+                String id = (String)iter.next();
+                Rectangle bounds = (Rectangle)idToBounds.get(id);
+                // Leading lines are sufficient
+                int leading = (dimension == HORIZONTAL) ? bounds.x : bounds.y;
+                cutSet.add(new Integer(leading));
+            }
+            cutSet.add(new Integer((dimension == HORIZONTAL) ? maxx : maxy));
+            return cutSet;
+        }
+        
+        private List cutIntoParts(Set cutSet, int dimension) {
+            List parts = new LinkedList();
+            Iterator iter = cutSet.iterator();
+            while (iter.hasNext()) {
+                Integer cutInt = (Integer)iter.next();
+                int cut = cutInt.intValue();
+                boolean isCut = true;
+                Map preIdToBounds = new HashMap();
+                Map postIdToBounds = new HashMap();
+                Iterator it = idToBounds.entrySet().iterator();                
+                while (isCut && it.hasNext()) {
+                    Map.Entry entry = (Map.Entry)it.next();
+                    String id = (String)entry.getKey();
+                    Rectangle bounds = (Rectangle)entry.getValue();
+                    int leading = (dimension == HORIZONTAL) ? bounds.x : bounds.y;
+                    int trailing = leading + ((dimension == HORIZONTAL) ? bounds.width : bounds.height);
+                    if (leading >= cut) {
+                        postIdToBounds.put(id, bounds);
+                    } else if (trailing <= cut) {
+                        preIdToBounds.put(id, bounds);
+                    } else {
+                        isCut = false;
+                    }
+                }
+                if (isCut && !preIdToBounds.isEmpty()
+                    // the last cut candidate (end of the region) cannot be the first cut
+                    && (!parts.isEmpty() || (preIdToBounds.size() != idToBounds.size()))) {
+                    idToBounds.keySet().removeAll(preIdToBounds.keySet());
+                    parts.add(preIdToBounds);
+                }
+            }
+            return parts;
+        }
+        
+        private void mergeSubRegions(List regions, int dimension) {
+            if (regions.size() == 0) {
+                horizontal = new LayoutInterval(PARALLEL);
+                vertical = new LayoutInterval(PARALLEL);
+                return;
+            }
+            LayoutInterval seqGroup = new LayoutInterval(SEQUENTIAL);
+            LayoutInterval parGroup = new LayoutInterval(PARALLEL);
+            int lastSeqTrailing = (dimension == HORIZONTAL) ? minx : miny;
+            Iterator iter = regions.iterator();
+            while (iter.hasNext()) {
+                RegionInfo region = (RegionInfo)iter.next();
+                LayoutInterval seqInterval;
+                LayoutInterval parInterval;
+                int seqGap;
+                int parGap;
+                if (dimension == HORIZONTAL) {
+                    seqInterval = region.horizontal;
+                    parInterval = region.vertical;
+                    parGap = region.miny - miny;
+                    seqGap = region.minx - lastSeqTrailing;
+                    lastSeqTrailing = region.maxx;
+                } else {
+                    seqInterval = region.vertical;
+                    parInterval = region.horizontal;
+                    parGap = region.minx - minx;
+                    seqGap = region.miny - lastSeqTrailing;
+                    lastSeqTrailing = region.maxy;
+                }
+                // PENDING optimization of the resulting layout model
+                if (seqGap > 0) {
+                    LayoutInterval gap = new LayoutInterval(SINGLE);
+                    gap.setSize(seqGap);
+                    addInterval(gap, seqGroup, -1);
+                }
+                addInterval(seqInterval, seqGroup, -1);
+                parInterval = prefixByGap(parInterval, parGap);
+                addInterval(parInterval, parGroup, -1);
+            }
+            if (dimension == HORIZONTAL) {
+                horizontal = seqGroup;
+                vertical = parGroup;
+            } else {
+                horizontal = parGroup;
+                vertical = seqGroup;
+            }
+        }
+        
+        private LayoutInterval prefixByGap(LayoutInterval interval, int size) {
+            if (size > 0) {
+                LayoutInterval group = new LayoutInterval(SEQUENTIAL);
+                LayoutInterval gap = new LayoutInterval(SINGLE);
+                gap.setSize(size);
+                addInterval(gap, group, -1);
+                addInterval(interval, group, -1);
+                interval = group;
+            }
+            return interval;
+        }
+        
+        public LayoutInterval getInterval(int dimension) {
+            return (dimension == HORIZONTAL) ? horizontal : vertical;
+        }
+
     }
 
     // -----

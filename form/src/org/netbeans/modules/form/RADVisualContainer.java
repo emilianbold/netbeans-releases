@@ -93,7 +93,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                         LayoutModel layoutModel = formModel.getLayoutModel();
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                        layoutModel.createModel(getId(), idToComponent);
+                        layoutModel.createModel(getId(), (Container)formDesigner.getComponent(this), idToComponent);
                         if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                             formModel.addUndoableEdit(ue);
                         }
