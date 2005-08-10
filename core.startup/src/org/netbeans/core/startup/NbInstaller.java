@@ -1330,7 +1330,7 @@ final class NbInstaller extends ModuleInstaller {
                 ClassLoaderCache old = packagesCache;
                 if (old != null) {
                     packagesCache = null;
-                    old.close();
+                    old.delete();
                 }
                 
                 ClassLoaderCache pkgs = ClassLoaderCache.create(f);
