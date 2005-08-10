@@ -22,6 +22,9 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
+import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
+
+import org.w3c.dom.Document;
 /**
  *
  * @author Nitya Doraisamy
@@ -522,24 +525,72 @@ public class SunWebAppProxy implements SunWebApp {
         if (this.version.equals(newVersion)) 
             return;
         if (webRoot != null) {
-            org.w3c.dom.Document document = null;
-            if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp) {
-                document = 
-                    ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+            Document document = null;
+            if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+            }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+            }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp)webRoot).graphManager().getXmlDocument();
+            }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp) {
+                document =
+                        ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp)webRoot).graphManager().getXmlDocument();
             }
-            if (document!=null) {
-                org.w3c.dom.Element docElement = document.getDocumentElement();
-                if (docElement!=null) {
-                    org.w3c.dom.DocumentType docType = document.getDoctype();
-                    if (docType!=null) {
-                        document.removeChild(docType); //NOI18N
-                    }
-                    //Do required set Attributes
+            
+            //remove the doctype
+            //document = removeDocType(document);
+            
+            if(newVersion.equals(SunWebApp.VERSION_2_5_0)){
+                //This will always be an upgrade
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp webGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.createGraph(document);
+                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_250_DTD_SYSTEM_ID);
+                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+            }
+            if(newVersion.equals(SunWebApp.VERSION_2_4_1)){
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp webGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp.createGraph(document); 
+                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_241_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_241_DTD_SYSTEM_ID);
+                if(this.version.equals(SunWebApp.VERSION_2_5_0)){
+                   //need to remove elements 
                 }
+                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+            }
+            if(newVersion.equals(SunWebApp.VERSION_2_4_0)){
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp webGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp.createGraph(document);
+                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_240_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_240_DTD_SYSTEM_ID);
+                if(! this.version.equals(SunWebApp.VERSION_2_3_0)){
+                    //need to remove elements 
+                }
+                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+            }
+            if(newVersion.equals(SunWebApp.VERSION_2_3_0)){
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp webGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp.createGraph(document);
+                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_230_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_230_DTD_SYSTEM_ID);
+                //need to remove elements
+                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
             }
         }
     }
 
+    private Document removeDocType(Document document){
+        if (document != null) {
+            org.w3c.dom.Element docElement = document.getDocumentElement();
+            if (docElement != null) {
+                org.w3c.dom.DocumentType docType = document.getDoctype();
+                if (docType != null) {
+                    document.removeChild(docType); //NOI18N
+                }
+            }
+        }
+        return document;
+    } 
+    
     public java.math.BigDecimal getVersion() {
         return new java.math.BigDecimal(version);
     }
@@ -651,6 +702,38 @@ public class SunWebAppProxy implements SunWebApp {
                 webRoot.merge(((SunWebAppProxy)root).getOriginal(), mode);
             else webRoot.merge(root, mode);
         }
+    }
+
+    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?-1:webRoot.removeMessageDestinationRef(value);
+    }
+
+    public int addMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?-1:webRoot.addMessageDestinationRef(value);
+    }
+
+    public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getMessageDestinationRef(index);
+    }
+
+    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setMessageDestinationRef(index, value);
+    }
+
+    public void setMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        if (webRoot!=null) webRoot.setMessageDestinationRef(value);
+    }
+
+    public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?-1:webRoot.sizeMessageDestinationRef();
+    }
+
+    public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.newMessageDestinationRef();
+    }
+
+    public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+        return webRoot==null?null:webRoot.getMessageDestinationRef();
     }
     
     

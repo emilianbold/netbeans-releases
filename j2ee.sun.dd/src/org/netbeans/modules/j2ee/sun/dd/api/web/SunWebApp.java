@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
 
 public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
     
@@ -290,4 +291,14 @@ public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
          * @return property value
          */
         public java.math.BigDecimal getVersion();
+        
+         //Required for web 2.5.0
+        public void setMessageDestinationRef(int index, MessageDestinationRef value) throws VersionNotSupportedException;
+        public MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException;
+        public int sizeMessageDestinationRef() throws VersionNotSupportedException;
+        public void setMessageDestinationRef(MessageDestinationRef[] value) throws VersionNotSupportedException;
+        public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException;
+        public int addMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException;
+        public int removeMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException;
+        public MessageDestinationRef newMessageDestinationRef() throws VersionNotSupportedException;
 }

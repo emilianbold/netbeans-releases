@@ -100,7 +100,12 @@ public final class DTDRegistry {
         "-//Sun Microsystems, Inc.//DTD Application Server 8.0 J2EE Application 1.4//EN";
     public static final String SUN_APPLICATION_140_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-application_1_4-0.dtd";    
-
+    
+    public static final String SUN_APPLICATION_50_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 9.0 J2EE Application 5.0//EN";
+    public static final String SUN_APPLICATION_50_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-application_5_0-0.dtd";
+    
     /**
      * EJB: Sun ONE App Server specific dtd info.
      */
@@ -125,7 +130,12 @@ public final class DTDRegistry {
         "-//Sun Microsystems, Inc.//DTD Application Server 8.1 EJB 2.1//EN";
     public static final String SUN_EJBJAR_211_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_2_1-1.dtd";    
-
+    
+    public static final String SUN_EJBJAR_300_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 EJB 3.0//EN";
+    public static final String SUN_EJBJAR_300_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-ejb-jar_3_0-0.dtd";  
+    
     /**
      * Application Client: Sun ONE App Server specific dtd info.
      */
@@ -181,6 +191,11 @@ public final class DTDRegistry {
     public static final String SUN_WEBAPP_241_DTD_SYSTEM_ID =
         "http://www.sun.com/software/appserver/dtds/sun-web-app_2_4-1.dtd";	
 
+    public static final String SUN_WEBAPP_250_DTD_PUBLIC_ID =
+        "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN";	
+    public static final String SUN_WEBAPP_250_DTD_SYSTEM_ID =
+        "http://www.sun.com/software/appserver/dtds/sun-web-app_2_5-0.dtd";
+    
     /**
      * Application Client Container: Sun ONE App Server specific dtd info.
      */
