@@ -23,6 +23,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 public class StartDebugger extends JellyTestCase {
@@ -54,6 +55,9 @@ public class StartDebugger extends JellyTestCase {
     
     /** tearDown method */
     public void tearDown() {
+        try {
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screenBeforeTearDown.png");
+        } catch (java.io.IOException ex) {}
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         new Action(null, null, Utilities.killSessionShortcut).performShortcut();
     }

@@ -207,7 +207,7 @@ public class Utilities {
         setCaret(row, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         new Action(null, null, Utilities.toggleBreakpointShortcut).performShortcut();
-        Utilities.sleep(200);
+        Utilities.sleep(1000);
     }
     
     public static NbDialogOperator newBreakpoint(int row, int column) {

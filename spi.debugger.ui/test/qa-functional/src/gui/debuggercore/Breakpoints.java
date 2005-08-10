@@ -31,6 +31,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.NbTestSuite;
 
 public class Breakpoints extends JellyTestCase {
@@ -90,6 +91,10 @@ public class Breakpoints extends JellyTestCase {
     
     /** tearDown method */
     public void tearDown() {
+        try {
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screenBeforeTearDown.png");
+        } finally {
+        }
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         Utilities.deleteAllBreakpoints();
@@ -113,7 +118,6 @@ public class Breakpoints extends JellyTestCase {
     
     public void testLineBreakpointCreation() {
         Utilities.toggleBreakpoint(73);
-        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
         if (!"Line MemoryView.java:73".equals(jTableOperator.getValueAt(0, 0).toString()) )
             assertTrue("Line breakpoint was not created.", false);
@@ -167,6 +171,7 @@ public class Breakpoints extends JellyTestCase {
             NbDialogOperator dialog = new NbDialogOperator("Customize Breakpoint");
             new JTextFieldOperator(dialog, 0).setText("i > 10");
             dialog.ok();
+            Utilities.sleep(1000);
         } else
             assertTrue("Line breakpoint was not created.", false);
         Utilities.startDebugger("Thread main stopped at MemoryView.java:62.");
@@ -227,6 +232,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Method breakpoint hit in examples.advanced.Helper.test at line 147 by thread main.");
     }
     
@@ -237,6 +243,7 @@ public class Breakpoints extends JellyTestCase {
         new JCheckBoxOperator(dialog, 1).setSelected(true);
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Method breakpoint hit in examples.advanced.MemoryView.<clinit> at line 33 by thread main.");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
@@ -322,6 +329,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Class breakpoint hit for class examples.advanced.MemoryView");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
@@ -333,6 +341,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 0).selectItem("Class");
         Utilities.sleep(1000);
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Class breakpoint hit for class examples.advanced.Helper");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
@@ -345,6 +354,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(1000);
         new JTextFieldOperator(dialog, 1).setText("*");
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Class breakpoint hit for class examples.advanced.Helper.");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
@@ -384,6 +394,7 @@ public class Breakpoints extends JellyTestCase {
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Access");
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Field breakpoint hit at line 98 in class examples.advanced.MemoryView by thread main.");
     }
     
@@ -416,10 +427,18 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 0).selectItem("Thread");
         Utilities.sleep(1000);
         dialog.ok();
-        Utilities.startDebugger("Thread breakpoint hit by thread Signal Dispatcher.");
-        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
-        new Action(null, null, Utilities.continueShortcut).performShortcut();
-        MainWindowOperator.getDefault().waitStatusText("Thread breakpoint hit by thread main.");
+        Utilities.sleep(1000);
+        if (System.getProperty("os.name").startsWith("Windows")) {
+            Utilities.startDebugger("Thread breakpoint hit by thread Signal Dispatcher.");
+            //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+            new Action(null, null, Utilities.continueShortcut).performShortcut();
+            MainWindowOperator.getDefault().waitStatusText("Thread breakpoint hit by thread main.");
+        } else {
+            Utilities.startDebugger("Thread breakpoint hit by thread main.");
+            //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+            new Action(null, null, Utilities.continueShortcut).performShortcut();
+            MainWindowOperator.getDefault().waitStatusText("Thread breakpoint hit by thread Signal Dispatcher.");
+        }
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread breakpoint hit by thread Thread-0.");
@@ -456,6 +475,7 @@ public class Breakpoints extends JellyTestCase {
         new JComboBoxOperator(dialog, 2).typeText("ClassNotFoundException");
         new JComboBoxOperator(dialog, 1).selectItem("Caught or Uncaught");
         dialog.ok();
+        Utilities.sleep(1000);
         Utilities.startDebugger("Exception breakpoint hit in java.lang.ClassLoader");
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
         new Action(null, null, Utilities.continueShortcut).performShortcut();
