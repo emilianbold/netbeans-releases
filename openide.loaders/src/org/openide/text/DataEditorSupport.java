@@ -7,41 +7,50 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.text;
 
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.lang.ref.Reference;
-
-import javax.swing.text.*;
+import java.util.Arrays;
+import java.util.Date;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
 import org.openide.DialogDisplayer;
-
-import org.openide.actions.*;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.OpenSupport;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
-import org.openide.loaders.*;
 import org.openide.util.Mutex;
-import org.openide.util.WeakListeners;
-import org.openide.windows.*;
 import org.openide.util.NbBundle;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.*;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.CloneableOpenSupport;
 
-/** Support for associating an editor and a Swing {@link Document} to a data object.
-* 
-*
-* @author Jaroslav Tulach
-*/
+/**
+ * Support for associating an editor and a Swing {@link Document} to a data object.
+ * @author Jaroslav Tulach
+ */
 public class DataEditorSupport extends CloneableEditorSupport {
     /** Which data object we are associated with */
     private final DataObject obj;
@@ -69,8 +78,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * entry of a given DataObject. The common use inside DataObject looks like
      * this:
      * <pre>
-     *  Node.Cookie cookie = (Node.Cookie)DataEditorSupport.create(this, getPrimaryEntry(), getCookieSet ());
-     *  getCookieSet ().add (cookie);
+     *  getCookieSet().add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), getCookieSet()));
      * </pre>
      *
      * @param obj the data object
@@ -149,14 +157,15 @@ public class DataEditorSupport extends CloneableEditorSupport {
     private String addFlagsToName(String name) {
         int version = 3;
         if (isModified ()) {
-            if (obj.getPrimaryFile ().isReadOnly ()) {
+            if (!obj.getPrimaryFile().canWrite()) {
                 version = 2;
             } else {
                 version = 1;
             }
-        } else
-        if (obj.getPrimaryFile ().isReadOnly ()) {
-            version = 0;
+        } else {
+            if (!obj.getPrimaryFile().canWrite()) {
+                version = 0;
+            }
         }
 
         return NbBundle.getMessage (DataObject.class, "LAB_EditorName",
@@ -284,7 +293,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     /** Indicates whether the <code>Env</code> is read only. */
     boolean isEnvReadOnly() {
         CloneableEditorSupport.Env env = desEnv();
-        return env instanceof Env && ((Env)env).getFileImpl().isReadOnly();
+        return env instanceof Env && !((Env) env).getFileImpl().canWrite();
     }
     
     /** Needed for EditorSupport */
@@ -486,7 +495,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 fileLock = takeLock ();
             }
             
-            if(getFileImpl().isReadOnly()) {
+            if (!getFileImpl().canWrite()) {
                 if(fileLock != null && fileLock.isValid()) {
                     fileLock.releaseLock();
                 }
