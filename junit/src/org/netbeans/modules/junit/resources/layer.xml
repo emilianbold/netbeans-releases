@@ -117,11 +117,11 @@
     <folder name="Windows2">
         <folder name="Modes">
             <folder name="output">        <!-- "output" is defined in core/ui -->
-                <file name="test-results.wstcref" url="../output/test-results.wstcref"/>
+                <file name="junit-test-results.wstcref" url="../output/junit-test-results.wstcref"/>
             </folder>
         </folder>
         <folder name="Components">
-            <file name="test-results.settings" url="../output/test-results.settings"/>
+            <file name="junit-test-results.settings" url="../output/junit-test-results.settings"/>
         </folder>
     </folder>
 

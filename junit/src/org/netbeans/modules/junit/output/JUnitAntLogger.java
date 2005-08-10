@@ -72,14 +72,19 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void taskStarted(final AntEvent event) {
-        final AntSession session = event.getSession();
-        getOutputReader(session).taskStarted(session);
+        Manager.getInstance().taskStarted(event.getSession());
     }
     
     /**
      */
-    public void taskFinished(final AntEvent event) {
-        getOutputReader(event.getSession()).taskFinished(event.getException());
+    public void buildFinished(final AntEvent event) {
+        final AntSession session = event.getSession();
+        final JUnitOutputReader reader = getOutputReader(session);
+        session.putCustomData(this, null);
+        
+        reader.finishReport(event.getException());
+        //PENDING: status - may be shown in the output window
+        Manager.getInstance().sessionFinished(session, reader.getReport());
     }
     
     /**
@@ -94,7 +99,7 @@ public final class JUnitAntLogger extends AntLogger {
         
         JUnitOutputReader outputReader;
         if (o == null) {
-            outputReader = new JUnitOutputReader();
+            outputReader = new JUnitOutputReader(session);
             session.putCustomData(this, outputReader);
         } else {
             outputReader = (JUnitOutputReader) o;

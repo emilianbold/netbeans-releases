@@ -13,8 +13,14 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import org.openide.util.NbBundle;
 
 /**
@@ -26,6 +32,7 @@ import org.openide.util.NbBundle;
  */
 final class Report {
 
+    File antScript;
     String suiteClassName;
     String[] outputStd;
     String[] outputErr;
@@ -33,21 +40,37 @@ final class Report {
     int failures;
     int errors;
     int elapsedTimeMillis;
-    List/*<Testcase>*/ testcases;
+    private final Map/*<String, TestcaseGroup>*/ testcaseGroupMap;
+    final Collection testcaseGroups;
     
     /**
      */
     Report(String suiteClassName) {
         this.suiteClassName = suiteClassName;
+        this.antScript = antScript;
+        testcaseGroupMap = new TreeMap/*<String, TestcaseGroup>*/();
+        testcaseGroups = testcaseGroupMap.values();
     }
     
     /**
      */
     void reportTestcase(Testcase testcase) {
-        if (testcases == null) {
-            testcases = new ArrayList(64);
+        final String className = testcase.className;
+        final String mapKey = (className != null)
+                              ? className
+                              : Report.TestcaseGroup.NO_NAME;
+        //assert testcase.className != null;
+        
+        TestcaseGroup group = null;
+        try {
+            group = (TestcaseGroup) testcaseGroupMap.get(mapKey);
+        } catch (Exception ex) {
+            return;
         }
-        testcases.add(testcase);
+        if (group == null) {
+            testcaseGroupMap.put(mapKey, group = new TestcaseGroup(className));
+        }
+        group.addTestcase(testcase);
     }
     
     /**
@@ -62,7 +85,45 @@ final class Report {
                                         report.elapsedTimeMillis);
         outputStd = appendOutput(outputStd, report.outputStd);
         outputErr = appendOutput(outputErr, report.outputErr);
-        testcases = appendTestcaseList(testcases, report.testcases);
+        mergeTestcases(testcaseGroupMap, report.testcaseGroupMap);
+    }
+    
+    /**
+     *
+     */
+    static final class TestcaseGroup {
+        static final String NO_NAME = new String();
+        final String className;
+        private final List/*<Testcase>*/ testcases;
+        private boolean containsFailed = false;
+        private boolean containsPassed = false;
+        
+        /**
+         */
+        TestcaseGroup(final String className) {
+            this.className = className;
+            testcases = new ArrayList/*<Testcase>*/(8);
+        }
+        
+        private void addTestcase(final Testcase testcase) {
+            testcases.add(testcase);
+            final boolean isFailed = (testcase.trouble != null);
+            containsFailed |= isFailed;
+            containsPassed |= !isFailed;
+        }
+        
+        Collection getTestcases() {
+            return Collections.unmodifiableList(testcases);
+        }
+        
+        boolean containsFailed() {
+            return containsFailed;
+        }
+        
+        boolean containsPassed() {
+            return containsPassed;
+        }
+        
     }
     
     /**
@@ -126,16 +187,32 @@ final class Report {
     
     /**
      */
-    private List/*<Testcase>*/ appendTestcaseList(List/*<Testcase>*/ top,
-                                                  List/*<Testcase>*/ curr) {
-        if ((top == null) || top.isEmpty()) {
-            return curr;
+    private static void mergeTestcases(Map/*<String, TestcaseGroup>*/ thisMap,
+                                       Map/*<String, TestcaseGroup>*/ thatMap) {
+        /* append testcases: */
+        boolean thisEmpty = thisMap.isEmpty();
+        boolean thatEmpty = thatMap.isEmpty();
+        if (!thatEmpty) {
+            if (thisEmpty) {
+                thisMap.putAll(thatMap);
+            } else {
+                mergeTestcaseGroups(thisMap, thatMap);
+            }
         }
-        if ((curr == null) || curr.isEmpty()) {
-            return top;
+    }
+    
+    /**
+     */
+    private static void mergeTestcaseGroups(
+                                final Map/*<String, TestcaseGroup>*/ first,
+                                final Map/*<String, TestcaseGroup>*/ sec) {
+        for (Iterator i = first.values().iterator(); i.hasNext(); ) {
+            final TestcaseGroup a = (TestcaseGroup) i.next();
+            Object o = sec.remove(a.className);
+            if (o != null) {
+                a.testcases.addAll(((TestcaseGroup) o).testcases);
+            }
         }
-        top.addAll(curr);
-        return top;
     }
     
 }

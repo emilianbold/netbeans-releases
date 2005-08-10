@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import org.apache.tools.ant.module.spi.AntSession;
-import org.openide.util.Mutex;
 import org.xml.sax.SAXException;
 
 /**
@@ -30,10 +29,12 @@ import org.xml.sax.SAXException;
  * @see  Report
  * @author  Marian Petras
  */
-public class JUnitOutputReader {
+final class JUnitOutputReader {
     
     /** */
-    private File antScript;
+    private final AntSession session;
+    /** */
+    private final File antScript;
     
     /** */
     private RegexpUtils regexp = RegexpUtils.getInstance();
@@ -70,7 +71,9 @@ public class JUnitOutputReader {
     private boolean waitingForIssueStatus;
 
     /** Creates a new instance of JUnitOutputReader */
-    JUnitOutputReader() {
+    JUnitOutputReader(final AntSession session) {
+        this.session = session;
+        antScript = session.getOriginatingScript();
     }
     
     /**
@@ -105,6 +108,7 @@ public class JUnitOutputReader {
                     String xmlOutput = xmlOutputBuffer.toString();
                     xmlOutputBuffer = null;     //allow GC before parsing XML
                     report = XmlOutputParser.parseXmlOutput(xmlOutput);
+                    report.antScript = antScript;
                 } catch (SAXException ex) {
                     /* initialization of the parser failed, ignore the output */
                 }
@@ -222,6 +226,7 @@ public class JUnitOutputReader {
             if (regexp.getFullJavaIdPattern().matcher(suiteName).matches()){
                 closePreviousReport();
                 report = new Report(suiteName);
+                report.antScript = antScript;
             }
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_STATS_PREFIX">
@@ -251,21 +256,7 @@ public class JUnitOutputReader {
     
     /**
      */
-    void taskStarted(final AntSession session) {
-        this.antScript = session.getOriginatingScript();
-        
-        Mutex.EVENT.postWriteRequest(new Runnable() {
-            public void run() {
-                ResultView.getInstance().clear();
-                
-                report = null;
-            }
-        });
-    }
-    
-    /**
-     */
-    void taskFinished(final Throwable exception) {
+    void finishReport(final Throwable exception) {
         if (waitingForIssueStatus) {
             assert testcase != null;
             
@@ -273,22 +264,38 @@ public class JUnitOutputReader {
         }
         closePreviousReport();
         
-        int errStatus = ResultView.ERR_STATUS_OK;
+        //PENDING:
+        /*
+        int errStatus = ResultWindow.ERR_STATUS_OK;
         if (exception != null) {
             if (exception instanceof java.lang.ThreadDeath) {
-                errStatus = ResultView.ERR_STATUS_INTERRUPTED;
+                errStatus = ResultWindow.ERR_STATUS_INTERRUPTED;
             } else {
-                errStatus = ResultView.ERR_STATUS_EXCEPTION;
+                errStatus = ResultWindow.ERR_STATUS_EXCEPTION;
             }
         }
+         */
         
-        final int status = errStatus;
+        /*
+        //PENDING: final int status = errStatus;
         Mutex.EVENT.postWriteRequest(new Runnable() {
             public void run() {
-                ResultView resultView = ResultView.getInstance();
-                resultView.displayReport(topReport, status, antScript);
+                //PENDING:
+                //ResultWindow resultView = ResultWindow.getInstance();
+                //resultView.displayReport(topReport, status, antScript);
+                
+                final TopComponent resultWindow = ResultWindow.getDefault();
+                resultWindow.open();
+                resultWindow.requestActive();
             }
         });
+         */
+    }
+    
+    /**
+     */
+    Report getReport() {
+        return topReport;
     }
     
     /**

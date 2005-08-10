@@ -67,8 +67,9 @@ final class RegexpUtils {
               + ") *\\) *:" + TESTCASE_ISSUE_REGEX;                     //NOI18N
     /** */
     static final String TESTCASE_EXCEPTION_REGEX
-            = "((?:" + RegexpPatterns.JAVA_ID_REGEX_FULL
-              + "\\.?(?:Exception|Error))|java\\.lang\\.Throwable)"     //NOI18N
+            = "((?:" + RegexpPatterns.JAVA_ID_REGEX_FULL                //NOI18N
+              + "\\.?(?:Exception|Error|ComparisonFailure))"            //NOI18N
+                        + "|java\\.lang\\.Throwable)"                   //NOI18N
               + "(?: *: *(.*))?";                                       //NOI18N
     /** */
     static final String CALLSTACK_LINE_PREFIX = "at ";                  //NOI18N
