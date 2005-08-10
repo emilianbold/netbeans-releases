@@ -283,7 +283,8 @@ class LayoutFeeder implements LayoutConstants {
                 alignment = interval.getAlignment();
             }
             nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
-            if (nonEmptyCount <= 2) { // parallel group will not survive when the interval is removed
+            if (nonEmptyCount <= 2 && parent.getParent() != null) {
+                // parallel group will not survive when the interval is removed
                 parent = parent.getParent();
                 if (parent.isSequential()) {
                     boolean ortOverlap = false;
@@ -316,7 +317,7 @@ class LayoutFeeder implements LayoutConstants {
 
         if (aligned) { // check for parallel aligning
             nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
-            if (nonEmptyCount > 2) { // aligned to the whole group
+            if (nonEmptyCount > 2 || parent.getParent() == null) { // aligned to the whole group
                 iDesc.snappedParallel = parent;
             }
             else { // aligned with the other subinterval only
@@ -352,6 +353,8 @@ class LayoutFeeder implements LayoutConstants {
     private static boolean isFixedRelativePosition(LayoutInterval interval, int edge) {
         assert edge == LEADING || edge == TRAILING;
         LayoutInterval parent = interval.getParent();
+        if (parent == null)
+            return true;
         if (parent.isSequential()) {
             LayoutInterval li = LayoutInterval.getDirectNeighbor(interval, edge, false);
             if (li != null)
@@ -362,7 +365,6 @@ class LayoutFeeder implements LayoutConstants {
             }
         }
         if (!LayoutInterval.isAlignedAtBorder(interval, parent, edge)
-                && !LayoutInterval.wantResize(interval)
                 && LayoutInterval.contentWantResize(parent))
             return false;
 
@@ -625,6 +627,7 @@ class LayoutFeeder implements LayoutConstants {
                 operations.moveInsideSequential(parent, dimension);
             }
         }
+        else operations.optimizeGaps(parent, dimension); // also removes supporting gap in container
     }
 
     private void addToGroup(IncludeDesc iDesc1, IncludeDesc iDesc2) {
@@ -1534,8 +1537,7 @@ class LayoutFeeder implements LayoutConstants {
                         // [what about the alignment?]
                         layoutModel.addInterval(neighbor, commonGroup, -1);
                         if (group.getSubIntervalCount() == 1) {
-                            LayoutInterval last = group.getSubInterval(0);
-                            layoutModel.removeInterval(last);
+                            LayoutInterval last = layoutModel.removeInterval(group, 0);
                             operations.addContent(last, group.getParent(), layoutModel.removeInterval(group));
                         }
                         if (iDesc.parent == group)
@@ -1916,7 +1918,12 @@ class LayoutFeeder implements LayoutConstants {
      *         allows parallel align with 'interval'
      */
     private boolean canAlignWith(LayoutInterval interval, LayoutInterval group, int alignment) {
-        LayoutInterval parent = LayoutInterval.getFirstParent(interval, PARALLEL);
+        LayoutInterval parent = interval.getParent();
+        if (parent == null)
+            parent = interval;
+        else if (parent.isSequential())
+            parent = parent.getParent();
+
         while (parent != null && parent != group && !parent.isParentOf(group)) {
             if (canSubstAlignWithParent(interval, dimension, alignment, dragger.isResizing(dimension))) {
                 interval = parent;
