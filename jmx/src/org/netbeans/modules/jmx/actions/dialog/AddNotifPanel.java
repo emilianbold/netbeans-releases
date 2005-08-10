@@ -233,6 +233,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         leftPanel.add(removeButton, gridBagConstraints);
 
+        addButton.setName("notifAddJButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -250,6 +251,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(buttonsPanel, gridBagConstraints);
 
+        genDelegationCheckBox.setName("genDelegationCheckBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -260,6 +262,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(genDelegationCheckBox, gridBagConstraints);
 
+        genSeqNbCheckBox.setName("genSeqNbCheckBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
