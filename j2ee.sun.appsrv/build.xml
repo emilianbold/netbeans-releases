@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
   <import file="../../../nbbuild/templates/projectized.xml"/>
 
     <target depends="init" name="compile">
+        <ant dir="../../external" target="unscramble"/>
 	<antcall target="projectized-common.compile"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         
