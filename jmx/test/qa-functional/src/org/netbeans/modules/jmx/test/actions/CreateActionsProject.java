@@ -34,6 +34,8 @@ public class CreateActionsProject extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new CreateActionsProject("createProject"));
         suite.addTest(new CreateActionsProject("createNotAMBean"));
+        suite.addTest(new CreateActionsProject("createNotAStdMBean"));
+        suite.addTest(new CreateActionsProject("createUserException"));
         return suite;
     }
     
@@ -61,6 +63,24 @@ public class CreateActionsProject extends JellyTestCase {
         
     }
     
+    public void createNotAStdMBean() {
+        String className = "NotAStdMBean";
+        
+        // create a Dynamic MBean class which is not a Standard MBean.
+        String content =
+                JellyToolsHelper.getFileContent(CreateActionsProject.class, className);
+        JellyToolsHelper.createJavaFile(PROJECT,className,PACKAGE,content);
+    }
+    
+    public void createUserException() {
+        String className = "UserException";
+        
+        // create an exception class file.
+        String content =
+                JellyToolsHelper.getFileContent(CreateActionsProject.class, className);
+        JellyToolsHelper.createJavaFile(PROJECT,className,PACKAGE,content);
+    }
+    
     /**
      * Functional test which constructs a J2SE project to generate Agents
      *
@@ -84,4 +104,5 @@ public class CreateActionsProject extends JellyTestCase {
     public static final String MENU = "Management";
     public static final String DYNAMIC = "DynamicSupport";
     public static final String MBEAN = "MBean";
+    public static final String SUPER = "Super";
 }

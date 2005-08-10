@@ -1,0 +1,11 @@
+
+
+package com.foo.bar;
+
+public class UserException extends Exception {
+    
+    /** Creates a new instance of UserException */
+    public UserException() {
+    }
+    
+}
