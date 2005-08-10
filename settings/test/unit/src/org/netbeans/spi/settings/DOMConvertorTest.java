@@ -19,6 +19,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.InstanceDataObject;
@@ -79,8 +80,14 @@ public class DOMConvertorTest extends NbTestCase {
         assertNotNull("missing InstanceCookie", ic);
         assertEquals(cs.getClass(), ic.instanceClass());
         
-        ComposedSetting cs2 = (ComposedSetting) ic.instanceCreate();
-        assertEquals(cs2.b1, cs2.b2);
+        try {
+            ComposedSetting cs2 = (ComposedSetting) ic.instanceCreate();
+            assertEquals(cs2.b1, cs2.b2);
+        } catch (IOException e) {
+            System.err.println("File contents:\n");
+            FileUtil.copy(fo.getInputStream(), System.err);
+            throw e;
+        }
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             throw ex;
