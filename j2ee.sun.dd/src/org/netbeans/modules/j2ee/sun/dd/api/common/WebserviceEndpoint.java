@@ -26,7 +26,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
  */
 public interface WebserviceEndpoint extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
     public static final String VERSION_SERVER_8_0 = "Server 8.0"; 
-            
+    public static final String VERSION_SERVER_8_1 = "Server 8.1";
+    
     public static final String PORT_COMPONENT_NAME = "PortComponentName";	// NOI18N
     public static final String ENDPOINT_ADDRESS_URI = "EndpointAddressUri";	// NOI18N
     public static final String LOGIN_CONFIG = "LoginConfig";	// NOI18N
@@ -34,7 +35,10 @@ public interface WebserviceEndpoint extends org.netbeans.modules.j2ee.sun.dd.api
     public static final String SERVICE_QNAME = "ServiceQname";	// NOI18N
     public static final String TIE_CLASS = "TieClass";	// NOI18N
     public static final String SERVLET_IMPL_CLASS = "ServletImplClass";	// NOI18N
-        
+    public static final String MESSAGE_SECURITY_BINDING = "MessageSecurityBinding";	// NOI18N
+    public static final String DEBUGGING_ENABLED = "DebuggingEnabled";	// NOI18N
+    public static final String PROPERTY = "PropertyElement";	// NOI18N
+
     /** Setter for port-component-name property
      * @param value property value
      */
@@ -83,6 +87,8 @@ public interface WebserviceEndpoint extends org.netbeans.modules.j2ee.sun.dd.api
      */
     public ServiceQname getServiceQname(); 
     
+    public ServiceQname newServiceQname();
+
     /** Setter for tie-class property
      * @param value property value
      */
@@ -101,7 +107,7 @@ public interface WebserviceEndpoint extends org.netbeans.modules.j2ee.sun.dd.api
      */
     public java.lang.String getServletImplClass();
     
-    //For AppServer 8.1
+    //For AppServer 8.1 & 9.0
     /** Setter for message-security-binding property
      * @param value property value
      */
@@ -112,5 +118,19 @@ public interface WebserviceEndpoint extends org.netbeans.modules.j2ee.sun.dd.api
     public MessageSecurityBinding getMessageSecurityBinding() throws VersionNotSupportedException; 
     
     public MessageSecurityBinding newMessageSecurityBinding() throws VersionNotSupportedException; 
+    
+    //For Appserver 9.0
+    public void setDebuggingEnabled(String value) throws VersionNotSupportedException; 
+   
+    public String getDebuggingEnabled() throws VersionNotSupportedException; 
+     
+    public PropertyElement[] getPropertyElement() throws VersionNotSupportedException;
+    public PropertyElement getPropertyElement(int index) throws VersionNotSupportedException;
+    public void setPropertyElement(PropertyElement[] value) throws VersionNotSupportedException;
+    public void setPropertyElement(int index, PropertyElement value) throws VersionNotSupportedException;
+    public int addPropertyElement(PropertyElement value) throws VersionNotSupportedException;
+    public int removePropertyElement(PropertyElement value) throws VersionNotSupportedException;
+    public int sizePropertyElement() throws VersionNotSupportedException;
+    public PropertyElement newPropertyElement() throws VersionNotSupportedException;
     
 }

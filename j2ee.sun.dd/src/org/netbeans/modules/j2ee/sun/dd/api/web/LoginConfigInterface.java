@@ -19,6 +19,9 @@
 package org.netbeans.modules.j2ee.sun.dd.api.web;
 
 public interface LoginConfigInterface extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
+    
+        public static final String AUTH_METHOD = "AuthMethod";	// NOI18N
+
 	public void setAuthMethod(String value);
 
 	public String getAuthMethod();

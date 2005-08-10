@@ -26,6 +26,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceEnvRef;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
+import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef;
 
 /**
  *
@@ -59,7 +60,8 @@ public interface Ejb extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
     public static final String CHECKPOINTED_METHODS = "CheckpointedMethods";	// NOI18N
     public static final String CHECKPOINT_AT_END_OF_METHOD = "CheckpointAtEndOfMethod";	// NOI18N
     public static final String AVAILABILITYENABLED = "AvailabilityEnabled";	// NOI18N
-        
+    public static final String MESSAGE_DESTINATION_REF = "MessageDestinationRef";	// NOI18N
+    
     public void setEjbName(java.lang.String value);
     public java.lang.String getEjbName();
     
@@ -202,4 +204,15 @@ public interface Ejb extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
      * @return attribute value
      */
     public java.lang.String getAvailabilityEnabled() throws VersionNotSupportedException; 
+    
+    //Required for ejb 3.0
+    public void setMessageDestinationRef(int index, MessageDestinationRef value) throws VersionNotSupportedException; 
+    public MessageDestinationRef getMessageDestinationRef(int index) throws VersionNotSupportedException; 
+    public int sizeMessageDestinationRef() throws VersionNotSupportedException; 
+    public void setMessageDestinationRef(MessageDestinationRef[] value) throws VersionNotSupportedException; 
+    public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException; 
+    public int addMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException; 
+    public int removeMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException; 
+    public MessageDestinationRef newMessageDestinationRef() throws VersionNotSupportedException; 
+    
 }

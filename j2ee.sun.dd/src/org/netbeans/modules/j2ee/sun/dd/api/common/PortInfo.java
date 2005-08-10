@@ -32,6 +32,8 @@ public interface PortInfo extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDB
     public static final String WSDL_PORT = "WsdlPort";	// NOI18N
     public static final String STUB_PROPERTY = "StubProperty";	// NOI18N
     public static final String CALL_PROPERTY = "CallProperty";	// NOI18N
+    public static final String MESSAGE_SECURITY_BINDING = "MessageSecurityBinding";	// NOI18N
+
         
     /** Setter for service-endpoint-interface property
      * @param value property value
@@ -69,7 +71,7 @@ public interface PortInfo extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDB
     public int sizeCallProperty();
     public CallProperty newCallProperty();
     
-    //For AppServer 8.1
+    //For AppServer 8.1 & 9.0
     /** Setter for message-security-binding property
      * @param value property value
      */

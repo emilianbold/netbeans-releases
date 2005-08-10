@@ -19,6 +19,11 @@
 package org.netbeans.modules.j2ee.sun.dd.api.web;
 
 public interface PropertyElement extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
+    
+        public static final String NAME = "Name";	// NOI18N
+        public static final String VALUE = "Value";	// NOI18N
+        public static final String DESCRIPTION = "Description";	// NOI18N  
+     
         /** Setter for name attribute
          * @param value attribute value
          */

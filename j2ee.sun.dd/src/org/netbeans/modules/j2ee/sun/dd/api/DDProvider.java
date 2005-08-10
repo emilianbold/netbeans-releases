@@ -40,16 +40,19 @@ import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 
 public final class DDProvider {
     // !PW FIXME refer to DTDRegistry file directly, or at least map to it, rather than redeclaring.
+    private static final String EJB_30_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 9.0 EJB 3.0//EN"; //NOI18N     "sun-ejb-jar_3_0-0.dtd"
     private static final String EJB_21_81_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.1 EJB 2.1//EN"; //NOI18N
     private static final String EJB_21_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 EJB 2.1//EN"; //NOI18N
     private static final String EJB_20_70_DOCTYPE_SUNONE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 EJB 2.0//EN"; //NOI18N   "sun-ejb-jar_2_0-0.dtd" ,
     private static final String EJB_21_80_DOCTYPE_SUNONE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 EJB 2.1//EN"; //NOI18N    "sun-ejb-jar_2_1-0.dtd" , ///[THIS IS DEPRECATED]
 
+    private static final String WEB_25_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Servlet 2.5//EN"; //NOI18N  "sun-web-app_2_5-0"
     private static final String WEB_21_81_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.1 Servlet 2.4//EN"; //NOI18N
     private static final String WEB_21_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 Servlet 2.4//EN"; //NOI18N
     private static final String WEB_20_70_DOCTYPE_SUNONE =  "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Servlet 2.3//EN" ; //NOI18N   "sun-web-app_2_3-0.dtd" ,
     private static final String WEB_21_80_DOCTYPE_SUNONE =  "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 8.0 Servlet 2.4//EN"; //NOI18N    "sun-web-app_2_4-0.dtd" , ///[THIS IS DEPRECATED]
     
+    private static final String APP_50_90_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 9.0 J2EE Application 5.0//EN"; //NOI18N     "sun-application_5_0-0.dtd" 
     private static final String APP_14_81_DOCTYPE =  "-//Sun Microsystems, Inc.//DTD Application Server 8.1 J2EE Application 1.4//EN"; //NOI18N     "sun-application_1_4-0.dtd" 
     private static final String APP_14_80_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Application Server 8.0 J2EE Application 1.4//EN"; //NOI18N      "sun-application_1_4-0.dtd" 
     private static final String APP_13_70_DOCTYPE_SUNONE   =  "-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 J2EE Application 1.3//EN"; //NOI18N  "sun-application_1_3-0.dtd" 
@@ -232,7 +235,9 @@ public final class DDProvider {
     private static SunEjbJar createEjbJar(DDParse parse) {        
           SunEjbJar jar = null;
           String version = parse.getVersion();
-          if (SunEjbJar.VERSION_2_1_1.equals(version)) {
+          if (SunEjbJar.VERSION_3_0_0.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES); 
+          } else if (SunEjbJar.VERSION_2_1_1.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1.SunEjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES); 
           } else if (SunEjbJar.VERSION_2_1_0.equals(version)) {//ludo fix that!!!2.1.0 below
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_0.SunEjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
@@ -240,8 +245,8 @@ public final class DDProvider {
               return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_0_0.SunEjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } //LUDO CHANGE LATER!!!
           else{
-              //What should we do there? ludo throws somethig or try with 2.1.1? FIXTIT
-              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1.SunEjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+              //What should we do there? ludo throws somethig or try with 3.0.0? FIXTIT
+              return new org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0.SunEjbJar(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           }
           
         //  return jar;
@@ -250,7 +255,9 @@ public final class DDProvider {
     private static SunWebApp createWebApp(DDParse parse) throws DDException {
         SunWebApp webRoot = null;
         String version = parse.getVersion();
-        if (SunWebApp.VERSION_2_4_1.equals(version)) {
+        if (SunWebApp.VERSION_2_5_0.equals(version)) {
+            return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp(parse.getDocument(),  Common.USE_DEFAULT_VALUES); 
+        } else if (SunWebApp.VERSION_2_4_1.equals(version)) {
             return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp(parse.getDocument(),  Common.USE_DEFAULT_VALUES); 
         } else if (SunWebApp.VERSION_2_4_0.equals(version)){ //ludo fix that!!!2_4_0 below
             return new org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp(parse.getDocument(),  Common.USE_DEFAULT_VALUES); 
@@ -264,7 +271,9 @@ public final class DDProvider {
     private static SunApplication createApplication(DDParse parse) {        
           SunApplication jar = null;
           String version = parse.getVersion();
-          if (SunApplication.VERSION_1_4_0.equals(version)) {
+          if (SunApplication.VERSION_5_0_0.equals(version)) {
+              return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
+          } else if (SunApplication.VERSION_1_4_0.equals(version)) {
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
           } else if(SunApplication.VERSION_1_3_0.equals(version)){
               return new org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication(parse.getDocument(),  Common.USE_DEFAULT_VALUES);
@@ -280,9 +289,12 @@ public final class DDProvider {
                 resolver=new DDResolver();
             }
             return resolver;
-        }        
+        }       
         public InputSource resolveEntity (String publicId, String systemId) {
-            if (EJB_21_81_DOCTYPE.equals(publicId)) { 
+            if (EJB_30_90_DOCTYPE.equals(publicId)) { 
+                //return ejb30 input source
+                return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-0.dtd"); //NOI18N
+            }else if (EJB_21_81_DOCTYPE.equals(publicId)) { 
                   // return a special input source
              return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-1.dtd"); //NOI18N
             } else if (EJB_21_80_DOCTYPE.equals(publicId)) {
@@ -294,7 +306,10 @@ public final class DDProvider {
             } else if (EJB_20_70_DOCTYPE_SUNONE.equals(publicId)) {////LUDO this 2.0.0 is missing FIXIT
                   // return a special input source
              return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd"); //NOI18N
-            } else if (WEB_21_81_DOCTYPE.equals(publicId)) {
+            } else if (WEB_25_90_DOCTYPE.equals(publicId)) {
+                  // return a special input source
+             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_5-0.dtd"); //NOI18N
+            }else if (WEB_21_81_DOCTYPE.equals(publicId)) {
                   // return a special input source
              return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-1.dtd"); //NOI18N
             } else if (WEB_21_80_DOCTYPE.equals(publicId)) {
@@ -306,7 +321,10 @@ public final class DDProvider {
             } else if (WEB_20_70_DOCTYPE_SUNONE.equals(publicId)) {//LUDO this 2.3.0 is missing FIXIT
                   // return a special input source
              return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_3-0.dtd"); //NOI18N
-            } else if (APP_14_80_DOCTYPE.equals(publicId) || APP_14_81_DOCTYPE.equals(publicId) || APP_14_80_DOCTYPE_SUNONE.equals(publicId) ) {
+            } else if (APP_50_90_DOCTYPE.equals(publicId)) {
+                  // return a special input source
+             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd"); //NOI18N
+            }else if (APP_14_80_DOCTYPE.equals(publicId) || APP_14_81_DOCTYPE.equals(publicId) || APP_14_80_DOCTYPE_SUNONE.equals(publicId) ) {
                   // return a special input source
              return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd"); //NOI18N
             } else if(APP_13_70_DOCTYPE_SUNONE.equals(publicId)){
@@ -399,14 +417,18 @@ public final class DDProvider {
             // first check the doc type to see if there is one
             DocumentType dt = document.getDoctype();
             // This is the default version
-            version = SunEjbJar.VERSION_2_1_1;
+            version = SunEjbJar.VERSION_3_0_0;
             if (dt != null) {
-                if (EJB_21_80_DOCTYPE.equals(dt.getPublicId())) {
+                if (EJB_21_81_DOCTYPE.equals(dt.getPublicId())) {
+                    version = SunEjbJar.VERSION_2_1_1;
+                }else if (EJB_21_80_DOCTYPE.equals(dt.getPublicId())) {
                     version = SunEjbJar.VERSION_2_1_0;
                 }else if(EJB_21_80_DOCTYPE_SUNONE.equals(dt.getPublicId())) {
                     version = SunEjbJar.VERSION_2_1_0;
                 }else if(EJB_20_70_DOCTYPE_SUNONE.equals(dt.getPublicId())) {
                     version = SunEjbJar.VERSION_2_0_0;
+                }else if(WEB_25_90_DOCTYPE.equals(dt.getPublicId())){
+                    version = SunWebApp.VERSION_2_5_0;
                 }else if(WEB_21_81_DOCTYPE.equals(dt.getPublicId())){
                     version = SunWebApp.VERSION_2_4_1;
                 }else if(WEB_21_80_DOCTYPE.equals(dt.getPublicId())){
@@ -415,6 +437,8 @@ public final class DDProvider {
                     version = SunWebApp.VERSION_2_4_0;
                 }else if(WEB_21_80_DOCTYPE_SUNONE.equals(dt.getPublicId())){
                     version = SunWebApp.VERSION_2_4_0;
+                }else if(APP_50_90_DOCTYPE.equals(dt.getPublicId())){
+                    version = SunApplication.VERSION_5_0_0;
                 }else if(APP_14_80_DOCTYPE.equals(dt.getPublicId()) || APP_14_81_DOCTYPE.equals(dt.getPublicId()) || APP_14_80_DOCTYPE_SUNONE.equals(dt.getPublicId())){
                     version = SunApplication.VERSION_1_4_0;
                 }else if(APP_13_70_DOCTYPE_SUNONE.equals(dt.getPublicId())) {

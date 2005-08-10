@@ -30,6 +30,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 
 public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
     
+        public static final String VERSION_2_5_0 = "2.50"; //NOI18N
         public static final String VERSION_2_4_1 = "2.41"; //NOI18N
         public static final String VERSION_2_4_0 = "2.40"; //NOI18N
         public static final String VERSION_2_3_0 = "2.30"; //NOI18N
@@ -62,6 +63,7 @@ public interface SunWebApp extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
 	public static final String PROPERTY = "WebProperty";	// NOI18N
 	public static final String MESSAGE_DESTINATION = "MessageDestination";	// NOI18N
 	public static final String WEBSERVICE_DESCRIPTION = "WebserviceDescription";	// NOI18N
+        public static final String MESSAGE_DESTINATION_REF = "MessageDestinationRef";	// NOI18N
 
         
         /** Setter for error-url property
