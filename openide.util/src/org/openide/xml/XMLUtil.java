@@ -369,6 +369,7 @@ public final class XMLUtil extends Object {
                 throw (IOException) new IOException(e.toString()).initCause(e);
             }
         }
+        // XXX should try to use org.w3c.dom.ls.LSSerializer if it exists...
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
