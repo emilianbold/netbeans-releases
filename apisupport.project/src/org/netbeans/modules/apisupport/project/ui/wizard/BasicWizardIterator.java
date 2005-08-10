@@ -14,7 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
-import java.io.File;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -27,7 +26,6 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,13 +44,13 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     /** @return all panels provided by this {@link org.openide.WizardDescriptor.InstantiatingIterator} */
     protected abstract BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz);
     
-    /** Basic visual panel.*/    
+    /** Basic visual panel.*/
     public abstract static class Panel extends BasicVisualPanel {
         /** @return name of panel */
         protected abstract String getPanelName();
         /** update state of instance of {@link BasicWizardIterator.BasicDataModel}*/
         protected abstract void storeToDataModel();
-        /** read state of instance of {@link BasicWizardIterator.BasicDataModel}*/        
+        /** read state of instance of {@link BasicWizardIterator.BasicDataModel}*/
         protected abstract void readFromDataModel();
         
         protected Panel(WizardDescriptor wiz) {
@@ -61,7 +59,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         
     }
 
-    /** DataModel that is passed through individual panels.*/        
+    /** DataModel that is passed through individual panels.*/
     public static class BasicDataModel {
         private NbModuleProject project;
         private FileObject srcRoot = null;
@@ -76,26 +74,16 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
                 throw new IllegalArgumentException(project.getClass().toString());
             }
             
-            project = (NbModuleProject)tmpProject;
+            project = (NbModuleProject) tmpProject;
         }
         
         public NbModuleProject getProject() {
             return project;
         }
         
-        public FileObject getSourceRoot() {
-            if (srcRoot == null) {
-                NbModuleProject nbmProject  = getProject();
-                File f  = nbmProject.getHelper().resolveFile(nbmProject.evaluator().getProperty("src.dir")); // NOI18N
-                srcRoot = FileUtil.toFileObject(f);
-            }
-            
-            return srcRoot;
-        }
-        
         public SourceGroup getSourceRootGroup() {
             if (sourceRootGroup == null) {
-                FileObject tempSrcRoot = getSourceRoot();
+                FileObject tempSrcRoot = getProject().getSourceDirectory();
                 assert tempSrcRoot != null;
                 
                 Sources sources = ProjectUtils.getSources(project);
@@ -111,10 +99,9 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     }
     
     public void initialize(WizardDescriptor wiz) {
-        
-      // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
+        // mkleint: copied from the NewJavaFileWizardIterator.. there must be something painfully wrong..
         String[] beforeSteps = null;
-        Object prop = wiz.getProperty ("WizardPanel_contentData"); // NOI18N
+        Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
         if (prop != null && prop instanceof String[]) {
             beforeSteps = (String[])prop;
         }
@@ -136,7 +123,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         if (before == null) {
             before = new String[0];
         } else if (before.length > 0) {
-            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
+            diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
         }
         String[] res = new String[ (before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
@@ -200,7 +187,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         private BasicWizardIterator.Panel panel;
         PrivateWizardPanel(BasicWizardIterator.Panel panel, String[] allSteps, int stepIndex) {
             super(panel.getSettings());
-            panel.addPropertyChangeListener(this);            
+            panel.addPropertyChangeListener(this);
             panel.setName(panel.getPanelName()); // NOI18N
             this.panel = panel;
             if (panel instanceof JComponent) { // assume Swing components
@@ -224,16 +211,15 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             panel.storeToDataModel();
             //XXX hack
             ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", null); // NOI18N
-            
         }
         
         public void readSettings(Object settings) {
-    // mkleint - copied from someplace.. is definitely weird..
-        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-        // this name is used in NewProjectWizard to modify the title
+            // mkleint - copied from someplace.. is definitely weird..
+            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+            // this name is used in NewProjectWizard to modify the title
             Object substitute = ((JComponent)getPanel()).getClientProperty("NewFileWizard_Title"); // NOI18N
             if (substitute != null) {
-                ((WizardDescriptor)settings).putProperty("NewFileWizard_Title", substitute); // NOI18N
+                ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", substitute); // NOI18N
             }
             
             panel.readFromDataModel();
