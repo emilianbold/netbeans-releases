@@ -235,7 +235,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         passwordLabel = new JLabel();
         passwordField = new JPasswordField();
         formattingPanel = new JPanel();
-        serverTypeCombo = new JComboBox(new Object[] {NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_LOCAL"), NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_REMOTE")}); // NOI18N
+        serverTypeCombo = new JComboBox(new Object[] {NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_LOCAL")/*, NbBundle.getMessage(ServerPropertiesPanel.class, "SERVER_TYPE_REMOTE")*/}); // NOI18N
         localInstanceLabel = new JLabel();
         localInstancesCombo = new JComboBox(new InstancesModel(getServerInstances()));
         serverTypeLabel = new JLabel();
