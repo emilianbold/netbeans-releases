@@ -78,6 +78,10 @@ public class DriverListUtil {
         urls.add("jdbc:derby:<DB>");
         
         names.add("Apache Derby (Net)");
+        drivers.add("org.apache.derby.jdbc.ClientDriver");
+        urls.add("jdbc:derby://<HOST>[:<PORT>]/databaseName[;URLAttributes=<VALUE> [;...]]");
+        
+        names.add("Apache Derby (Net)");
         drivers.add("com.ibm.db2.jcc.DB2Driver");
         urls.add("jdbc:derby:net://<HOST>[:<PORT>]/<DB>");
         
