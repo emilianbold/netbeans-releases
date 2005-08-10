@@ -16,12 +16,16 @@ Microsystems, Inc. All Rights Reserved.
   <import file="../../../nbbuild/templates/projectized.xml"/>
   <property name="s2b_root_common_2_1_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/common/model_2_1_0"/>
   <property name="s2b_root_common_2_1_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/common/model_2_1_1"/>
+  <property name="s2b_root_common_3_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/common/model_3_0_0"/>
+  <property name="s2b_root_ejb_3_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_3_0_0"/>
   <property name="s2b_root_ejb_2_1_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_2_1_1"/>
   <property name="s2b_root_ejb_2_1_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_2_1_0"/>
   <property name="s2b_root_ejb_2_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/ejb/model_2_0_0"/>
+  <property name="s2b_root_web_2_5_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/web/model_2_5_0"/>
   <property name="s2b_root_web_2_4_1" location="src/org/netbeans/modules/j2ee/sun/dd/impl/web/model_2_4_1"/>
   <property name="s2b_root_web_2_4_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/web/model_2_4_0"/>
   <property name="s2b_root_web_2_3_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/web/model_2_3_0"/>
+  <property name="s2b_root_app_5_0_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/app/model_5_0_0"/>
   <property name="s2b_root_app_1_4_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/app/model_1_4_0"/>
   <property name="s2b_root_app_1_3_0" location="src/org/netbeans/modules/j2ee/sun/dd/impl/app/model_1_3_0"/>
   <property name="s2b_root_server_resources" location="src/org/netbeans/modules/j2ee/sun/dd/impl/serverresources/model"/>
@@ -59,7 +63,23 @@ Microsystems, Inc. All Rights Reserved.
 	  validate="true"
 	  attrProp="true"
 	  rootDir="src"/>
-	<schema2beans schema="${s2b_res_root}/sun-ejb-jar_2_1-1.dtd"
+        <schema2beans schema="${s2b_res_root}/common_elements_3_0-0.dtd"
+ 	  mddFile="${s2b_res_root}/common_elements_3_0-0.mdd"
+          docRoot="dummy"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0"
+	  useInterfaces="true"
+	  validate="true"
+	  attrProp="true"
+	  rootDir="src"/>  
+	<schema2beans schema="${s2b_res_root}/sun-ejb-jar_3_0-0.dtd"
+ 	  mddFile="${s2b_res_root}/sun-ejb-jar_3_0-0.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0"
+          docRoot="sun-ejb-jar"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>
+        <schema2beans schema="${s2b_res_root}/sun-ejb-jar_2_1-1.dtd"
  	  mddFile="${s2b_res_root}/sun-ejb-jar_2_1-1.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_2_1_1"
           docRoot="sun-ejb-jar"
@@ -83,6 +103,14 @@ Microsystems, Inc. All Rights Reserved.
 	  validate="false"
 	  attrProp="true"
 	  rootDir="src"/>   
+        <schema2beans schema="${s2b_res_root}/sun-web-app_2_5-0.dtd"
+ 	  mddFile="${s2b_res_root}/sun-web-app_2_5-0.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0"
+          docRoot="sun-web-app"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>  
         <schema2beans schema="${s2b_res_root}/sun-web-app_2_4-1.dtd"
  	  mddFile="${s2b_res_root}/sun-web-app_2_4-1.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1"
@@ -107,6 +135,14 @@ Microsystems, Inc. All Rights Reserved.
 	  validate="false"
 	  attrProp="true"
 	  rootDir="src"/>   
+        <schema2beans schema="${s2b_res_root}/sun-application_5_0-0.dtd"
+ 	  mddFile="${s2b_res_root}/sun-application_5_0-0.mdd"
+	  package="org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0"
+          docRoot="sun-application"
+	  useInterfaces="true"
+	  validate="false"
+	  attrProp="true"
+	  rootDir="src"/>
         <schema2beans schema="${s2b_res_root}/sun-application_1_4-0.dtd"
  	  mddFile="${s2b_res_root}/sun-application_1_4-0.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0"
@@ -114,7 +150,7 @@ Microsystems, Inc. All Rights Reserved.
 	  useInterfaces="true"
 	  validate="false"
 	  attrProp="true"
-	  rootDir="src"/>
+	  rootDir="src"/>  
         <schema2beans schema="${s2b_res_root}/sun-application_1_3-0.dtd"
  	  mddFile="${s2b_res_root}/sun-application_1_3-0.mdd"
 	  package="org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0"
@@ -156,12 +192,16 @@ Microsystems, Inc. All Rights Reserved.
   <target name="clean-ddgen-src">
         <mkdir dir="${s2b_root_common_2_1_0}"/>
         <mkdir dir="${s2b_root_common_2_1_1}"/>
+        <mkdir dir="${s2b_root_common_3_0_0}"/>
+        <mkdir dir="${s2b_root_ejb_3_0_0}"/>
         <mkdir dir="${s2b_root_ejb_2_1_1}"/>
         <mkdir dir="${s2b_root_ejb_2_1_0}"/>
         <mkdir dir="${s2b_root_ejb_2_0_0}"/>
+        <mkdir dir="${s2b_root_web_2_5_0}"/>
         <mkdir dir="${s2b_root_web_2_4_1}"/>
         <mkdir dir="${s2b_root_web_2_4_0}"/>
         <mkdir dir="${s2b_root_web_2_3_0}"/>
+        <mkdir dir="${s2b_root_app_5_0_0}"/>
         <mkdir dir="${s2b_root_app_1_4_0}"/>
         <mkdir dir="${s2b_root_app_1_3_0}"/>
         <mkdir dir="${s2b_root_server_resources}"/>
@@ -178,6 +218,18 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete dir="${s2b_root_common_2_1_1}"/>
+        <delete>
+            <fileset dir="${s2b_root_common_3_0_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_common_3_0_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_ejb_3_0_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_ejb_3_0_0}"/>
         <delete>
             <fileset dir="${s2b_root_ejb_2_1_1}">
                 <include name="*.java"/>
@@ -197,6 +249,12 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${s2b_root_ejb_2_0_0}"/>
         <delete>
+            <fileset dir="${s2b_root_web_2_5_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_web_2_5_0}"/>
+        <delete>
             <fileset dir="${s2b_root_web_2_4_1}">
                 <include name="*.java"/>
             </fileset>
@@ -214,6 +272,12 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete dir="${s2b_root_web_2_3_0}"/>
+        <delete>
+            <fileset dir="${s2b_root_app_5_0_0}">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${s2b_root_app_5_0_0}"/>
         <delete>
             <fileset dir="${s2b_root_app_1_4_0}">
                 <include name="*.java"/>
