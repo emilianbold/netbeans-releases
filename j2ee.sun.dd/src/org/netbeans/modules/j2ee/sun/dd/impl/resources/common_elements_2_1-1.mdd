@@ -160,6 +160,39 @@
 		<dtd-name>webservice-endpoint</dtd-name>
 		<bean-name>WebserviceEndpoint</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint</implements>
+                <user-code>
+                //needed for 3_0-0
+                public void setDebuggingEnabled(String value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public String getDebuggingEnabled() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }        
+                public org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement[] getPropertyElement() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                } 
+                public org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement getPropertyElement(int index) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public void setPropertyElement(org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement[] value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public void setPropertyElement(int index, org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public int addPropertyElement(org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public int removePropertyElement(org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public int sizePropertyElement() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                public org.netbeans.modules.j2ee.sun.dd.api.common.PropertyElement newPropertyElement() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(WebserviceEndpoint.VERSION_SERVER_8_1);
+                }
+                </user-code>
 	</meta-element>
 	<meta-element>
 		<dtd-name>group-name</dtd-name>

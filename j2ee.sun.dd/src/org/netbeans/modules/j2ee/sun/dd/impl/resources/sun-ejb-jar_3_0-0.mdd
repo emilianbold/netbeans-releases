@@ -5,13 +5,12 @@
                 <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.SecurityRoleMapping</import>
 		<dtd-name>sun-ejb-jar</dtd-name>
 		<bean-name>SunEjbJar</bean-name>
-		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar</implements>
-                <user-code>
+                <implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar</implements>
+		<user-code>
                 public void setVersion(java.math.BigDecimal value) {
                 }
                 public java.math.BigDecimal getVersion() {
-//                    return new java.math.BigDecimal(org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar.VERSION_2_1_1);
-                    return new java.math.BigDecimal("2.11");
+                    return new java.math.BigDecimal("3.0");
                 }
                 </user-code>
 	</meta-element>
@@ -43,36 +42,11 @@
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.EjbRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ResourceEnvRef</import>
 		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.ServiceRef</import>
-		<import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_2_1_1.WebserviceEndpoint</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.MessageDestinationRef</import>
+                <import>org.netbeans.modules.j2ee.sun.dd.impl.common.model_3_0_0.WebserviceEndpoint</import>
 		<dtd-name>ejb</dtd-name>
 		<bean-name>Ejb</bean-name>
-		<implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb</implements>
-                <user-code>
-                public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                } 
-                public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                }  
-                public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                } 
-                public void setMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                } 
-                public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                } 
-                public int addMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                } 
-                public int removeMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                } 
-                public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
-                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_1_1);
-                }  
-                </user-code>
+                <implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb</implements>
 	</meta-element>
 	<meta-element>
 		<dtd-name>pm-descriptors</dtd-name>
@@ -226,6 +200,12 @@
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef</implements>
 	</meta-element>
 	<meta-element>
+                <skip-generation/>
+		<dtd-name>message-destination-ref</dtd-name>
+		<bean-name>MessageDestinationRef</bean-name>
+		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef</implements>
+	</meta-element>
+	<meta-element>
 		<dtd-name>pass-by-reference</dtd-name>
 		<bean-name>PassByReference</bean-name>
 		<wrapper-class>String</wrapper-class>
@@ -308,7 +288,7 @@
 	</meta-element>
 	<meta-element>
                 <skip-generation/>
-		<dtd-name>webservice-endpoint</dtd-name>
+                <dtd-name>webservice-endpoint</dtd-name>
 		<bean-name>WebserviceEndpoint</bean-name>
 		<implements>org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint</implements>
 	</meta-element>
@@ -388,6 +368,11 @@
 	<meta-element>
 		<dtd-name>servlet-impl-class</dtd-name>
 		<bean-name>ServletImplClass</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>debugging-enabled</dtd-name>
+		<bean-name>DebuggingEnabled</bean-name>
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>
@@ -649,6 +634,11 @@
 	<meta-element>
 		<dtd-name>query-ordering</dtd-name>
 		<bean-name>QueryOrdering</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+	<meta-element>
+		<dtd-name>message-destination-ref-name</dtd-name>
+		<bean-name>MessageDestinationRefName</bean-name>
 		<wrapper-class>String</wrapper-class>
 	</meta-element>
 	<meta-element>

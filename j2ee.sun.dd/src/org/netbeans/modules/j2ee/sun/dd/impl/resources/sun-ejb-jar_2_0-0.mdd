@@ -86,7 +86,31 @@
 		<dtd-name>ejb</dtd-name>
 		<bean-name>Ejb</bean-name>
                 <implements>org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb</implements>
-		<user-code>
+		<user-code>                  
+                    public void setMessageDestinationRef(int index, org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    } 
+                    public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef getMessageDestinationRef(int index) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    }  
+                    public int sizeMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    } 
+                    public void setMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    } 
+                    public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef[] getMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    } 
+                    public int addMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    } 
+                    public int removeMessageDestinationRef(org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    } 
+                    public org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestinationRef newMessageDestinationRef() throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException { 
+                        throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
+                    }  
                     // needed for 2_1-1
                     public void setFlushAtEndOfMethod (org.netbeans.modules.j2ee.sun.dd.api.ejb.FlushAtEndOfMethod  value) throws org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException {
                         throw new org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException(SunEjbJar.VERSION_2_0_0);
