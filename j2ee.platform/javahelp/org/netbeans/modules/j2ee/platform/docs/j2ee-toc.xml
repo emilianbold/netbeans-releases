@@ -210,6 +210,15 @@
             <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
             <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
         </tocitem>
+        <tocitem text="CMP Mapping for Entity Beans">
+            <tocitem text="Mapping an Entity Bean to a Database" target="map_bean_to_db" />
+            <tocitem text="Generating Database Tables in the IDE" target="gen_tables" />
+            <tocitem text="Editing CMP Mappings in the IDE" target="edit_mappings" />
+            <tocitem text="Specifying Primary and Secondary Tables" target="prim_sec_tables" />
+            <tocitem text="Modifying Field and Relationship Mappings" target="modify_mappings" />
+            <tocitem text="Mapping Fields to Multiple Columns" target="fields_mult_cols" />
+            <tocitem text="Mapping Relationship Fields" target="map_rel_fields" />
+        </tocitem>
         <tocitem text="Configuring EJB Modules" >
             <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
             <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />

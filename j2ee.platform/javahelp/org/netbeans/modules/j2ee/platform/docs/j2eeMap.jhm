@@ -301,6 +301,14 @@
     <mapID target="refactor_ejb" url="ejb/editing/refactor_ejb.html" />
     <mapID target="generate_cmp_beans" url="ejb/editing/generate_cmp_beans.html" />
 
+    <mapID target="edit_mappings" url="ejb/cmp/edit_mappings.html" />
+    <mapID target="fields_mult_cols" url="ejb/cmp/fields_mult_cols.html" />
+    <mapID target="gen_tables" url="ejb/cmp/gen_tables.html" />
+    <mapID target="map_bean_to_db" url="ejb/cmp/map_bean_to_db.html" />
+    <mapID target="map_rel_fields" url="ejb/cmp/map_rel_fields.html" />
+    <mapID target="modify_mappings" url="ejb/cmp/modify_mappings.html" />
+    <mapID target="prim_sec_tables" url="ejb/cmp/prim_sec_tables.html" />
+    
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
 
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
