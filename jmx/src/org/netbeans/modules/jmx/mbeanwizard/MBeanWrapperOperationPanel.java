@@ -103,6 +103,8 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                      bundle.getString("LBL_OpTable_FromExistingClass"));//NOI18N 
         tableLabel.setLabelFor(operationTable);
         
+        opRemoveJButton.setName("wrapperOpRemoveJButton");
+        
         /* New ActionListener for the remove button that overrides the one from
          * the super class: Now, to be able to remove a line, it must not be 
          * an introspected Operation
