@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.net.URL;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.util.Vector;
 import java.io.File;
@@ -24,6 +25,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,21 +81,22 @@ public class WLDeployer implements ProgressObject, Runnable {
         
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         
-        try{
-            wait(2000);
-        }catch(Exception e){
-        }
-        
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         
         try{
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
+            fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
         }catch(Exception e){
             fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }
         try{
-            wait(2000);
+//            URLWait.waitForStartup(new URL (module_id.getWebURL()), 30000);
+            for (int i = 0; i < 6; i++) {
+                Thread.sleep(1000);
+                fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+            }
         }catch(Exception e){
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
 
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));

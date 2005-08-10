@@ -319,9 +319,6 @@ public class WLDeploymentManager implements DeploymentManager {
         modifiedLoader();
         try {
             TargetModuleID t[] = dm.getAvailableModules(moduleType, target);
-            for (int i=0; i < t.length; i++) {
-                System.out.println("available module:" + t[i]);
-            }
             return t;
         } finally {
             originalLoader();
