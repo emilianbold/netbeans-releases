@@ -9,10 +9,14 @@ package org.netbeans.qa.form;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -20,6 +24,7 @@ import junit.framework.*;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.FrameOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.junit.*;
@@ -62,10 +67,8 @@ public class OpenForm extends JellyTestCase {
             bufferedReader = new BufferedReader(fileReader);
             String line = null;
             while ((line = bufferedReader.readLine()) != null){
-                
-                System.out.println("File: " + line);
+//                System.out.println("File: " + line);
                 list.add(line);
-                
             }
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
@@ -93,7 +96,7 @@ public class OpenForm extends JellyTestCase {
 //        System.out.println("system.dir          = " + System.getProperty("system.dir"));
 //        System.out.println("xtest.workdir       = " + System.getProperty("xtest.workdir"));
 //        System.out.println("XXXXXXXXXXXXX");
-        
+        String dataDir = getDataDir().getAbsolutePath();
         String workdirpath = getWorkDirPath();
         List list = getJavaFormList();
 //        String prePath = "/space/cvs-netbeans/form/src";
@@ -102,8 +105,10 @@ public class OpenForm extends JellyTestCase {
         String formPath = null;
         String fileSeparator = System.getProperty("file.separator");
         String lineSeparator = System.getProperty("line.separator");
+        String xtest_sketchpad   = System.getProperty("xtest.sketchpad");
         
-        String dataDir = getDataDir().getAbsolutePath();
+        
+        
         FileReader fileReader = null;
         FileWriter fileWriter = null;
         BufferedReader bufferedReader = null;
@@ -130,7 +135,7 @@ public class OpenForm extends JellyTestCase {
             ActionNoBlock actionNoBlock;
             JFileChooserOperator jFileChooserOperator;
             FormDesignerOperator formDesignerOperator = null;
-            FrameOperator FrameOperator = null;
+            FrameOperator frameOperator = null;
             for (ListIterator listIterator = list.listIterator(); listIterator.hasNext(); ) {
                 formPath = (String) listIterator.next();
                 fullPath = new StringBuffer(prePath).append(fileSeparator).append(formPath).toString();
@@ -146,16 +151,20 @@ public class OpenForm extends JellyTestCase {
                 jFileChooserOperator.selectFile(filename);
                 jFileChooserOperator.approve();
                 formDesignerOperator = new FormDesignerOperator(filenamenoext);
-
                 
-                formDesignerOperator.btTestForm().push();
-                FrameOperator frameOperator = new FrameOperator("Form Preview [" + filenamenoext +"]");
-
+                
+                formDesignerOperator.btPreviewForm().push();
+                frameOperator = new FrameOperator("Form Preview [" + filenamenoext +"]");
+                
 //                org.netbeans.jemmy.util.PNGEncoder.captureScreen(formDesignerOperator.fakePane().getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
-
-                org.netbeans.jemmy.util.PNGEncoder.captureScreen(frameOperator.getSource(), workdirpath + fileSeparator + filenamenoext + ".png");                
-
-                frameOperator.close();                
+                
+                new EventTool().waitNoEvent(1000);
+                
+                copy(new File(dataDir + fileSeparator + "OpenForm"+ fileSeparator + filenamenoext + ".png"), new File(xtest_sketchpad + fileSeparator + filenamenoext + ".png"));
+                
+                org.netbeans.jemmy.util.PNGEncoder.captureScreen(frameOperator.getSource(), workdirpath + fileSeparator + filenamenoext + ".png");
+                
+                frameOperator.close();
                 formDesignerOperator.editor().closeDiscardAll(); // strange, but have to do it !!!
                 
                 bufferedWriter.write("<TABLE width=\"98%\" cellspacing=\"2\" cellpadding=\"5\" border=\"0\">");
@@ -168,7 +177,7 @@ public class OpenForm extends JellyTestCase {
                 bufferedWriter.write("</TR>");
                 bufferedWriter.write("<TR>");
                 bufferedWriter.write("<TD ALIGN=\"CENTER\"><IMG BORDER=\"2\" TITLE=\"" + filenamenoext + "\" SRC=\"" + filenamenoext + ".png" + "\"></IMG></TD>");
-                bufferedWriter.write("<TD bgcolor=\"#EEEE0E\" ALIGN=\"CENTER\"><IMG BORDER=\"2\" TITLE=\"" + filenamenoext + "\" SRC=\"" + filenamenoext + ".png" + "\"></IMG></TD>");
+                bufferedWriter.write("<TD bgcolor=\"#EEEE0E\" ALIGN=\"CENTER\"><IMG BORDER=\"2\" TITLE=\"" + filenamenoext + "\" SRC=\"" + "../../sketch-pad" + fileSeparator + filenamenoext + ".png" + "\"></IMG></TD>");
                 bufferedWriter.write("</TR>");
                 bufferedWriter.write("</TABLE>");
                 bufferedWriter.write("<HR>");
@@ -200,6 +209,23 @@ public class OpenForm extends JellyTestCase {
         assertTrue("Look at the work directory for particular form's screenshots", true);
     }
     
-    
+    private void copy(File source, File destination) throws IOException {
+        FileChannel input = null, output = null;
+        try {
+            input = new FileInputStream(source).getChannel();
+            output = new FileOutputStream(destination).getChannel();
+            
+            long size = input.size();
+            MappedByteBuffer buffer = input.map(FileChannel.MapMode.READ_ONLY, 0, size);
+            
+            output.write(buffer);
+            
+        } finally {
+            if (input != null)
+                input.close();
+            if (output != null)
+                output.close();
+        }
+    }
     
 }
