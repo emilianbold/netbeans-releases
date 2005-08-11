@@ -99,16 +99,15 @@ public class OpenForm extends JellyTestCase {
         System.out.println("XXXXXXXXXXXXX");
         String dataDir = getDataDir().getAbsolutePath();
         String workdirpath = getWorkDirPath();
-        List list = getJavaFormList();
-//        String prePath = "/space/cvs-netbeans/form/src";
-        String prePath = workdirpath.substring(0,workdirpath.indexOf("/testOpenForm"));
-//        System.out.println("prePath : " + prePath);
         String formPath = null;
         String fileSeparator = System.getProperty("file.separator");
         String lineSeparator = System.getProperty("line.separator");
         String xtest_sketchpad   = System.getProperty("xtest.sketchpad");
-        
-        
+
+        List list = getJavaFormList();
+//        String prePath = "/space/cvs-netbeans/form/src";
+        String prePath = workdirpath.substring(0,workdirpath.indexOf(fileSeparator + "testOpenForm"));
+//        System.out.println("prePath : " + prePath);
         
         FileReader fileReader = null;
         FileWriter fileWriter = null;
