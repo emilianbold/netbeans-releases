@@ -211,6 +211,7 @@
             <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
         </tocitem>
         <tocitem text="CMP Mapping for Entity Beans">
+            <tocitem text="About CMP Mappings" target="about_cmp" />
             <tocitem text="Mapping an Entity Bean to a Database" target="map_bean_to_db" />
             <tocitem text="Generating Database Tables in the IDE" target="gen_tables" />
             <tocitem text="Editing CMP Mappings in the IDE" target="edit_mappings" />
