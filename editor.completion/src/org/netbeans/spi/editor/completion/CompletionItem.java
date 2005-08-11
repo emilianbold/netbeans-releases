@@ -33,6 +33,8 @@ public interface CompletionItem {
     /**
      * Gets invoked when user presses <code>VK_ENTER</code> key
      * or when she double-clicks on this item with the mouse cursor.
+     * <br/>
+     * This method gets invoked from AWT thread.
      *
      * @param component non-null text component for which the completion was invoked.
      */
@@ -41,6 +43,8 @@ public interface CompletionItem {
     /**
      * Process the key pressed when this completion item was selected
      * in the completion popup window.
+     * <br/>
+     * This method gets invoked from AWT thread.
      *
      * @param evt non-null key event of the pressed key. It should be consumed
      *  in case the item is sensitive to the given key. The source of this 
@@ -97,6 +101,8 @@ public interface CompletionItem {
      * <br>
      * The implementation can invoke the {@link #defaultAction(JTextComponent)}
      * if necessary.
+     * <br/>
+     * This method gets invoked from AWT thread.
      *
      * @param component non-null text component for which the completion was invoked.
      * @return <code>true</code> if the instant substitution was successfully done.
