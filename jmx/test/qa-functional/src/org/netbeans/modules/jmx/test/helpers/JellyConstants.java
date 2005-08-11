@@ -195,11 +195,25 @@ public class JellyConstants {
    public static final int LINE_ZERO = 0;
    public static final int LINE_ONE = 1;
    public static final int LINE_TWO = 2;
+   public static final int LINE_THREE = 3;
    public static final int LINE_FOUR = 4;
    public static final int LINE_FIVE = 5;
    public static final int LINE_SIX = 6;
    
-   //Wrapper Attribute table columns
+   //Wrapper Attribute and Operations table columns
    public static final int INCLUDE_COL = 0;
    public static final int ACCESS_COL = 3;
+   public static final int PARAM_COL = 3;
+   public static final int EXCEP_COL = 4;
+   
+   //Wrapper Parameter and Exception columns
+   public static final int W_EXCEP_DESCR_COL = 1;
+   public static final int W_PARAM_DESCR_COL = 2;
+   
+   //Wrapper Operation Parameter and Exception comments
+   public static final String W_PA_COMMENT1 = "First wrapped parameter comment";
+   public static final String W_PA_COMMENT2 = "Second wrapped parameter comment";
+   public static final String W_PA_COMMENT3 = "Third wrapped parameter comment";
+   
+   public static final String W_EX_COMMENT1 = "First wrapped exception comment";
 }
