@@ -774,6 +774,7 @@ public class ListView extends JScrollPane implements Externalizable {
             // do search forward the selected index
             int startIndex = (getSelectedIndex() == -1) ? 0 : getSelectedIndex();
             int size = getModel().getSize();
+            if (size == 0) return results; // nothing to search
 
             while (true) {
                 startIndex = startIndex % size;
