@@ -544,7 +544,8 @@ public final class LayoutInterval implements LayoutConstants {
 
     static LayoutInterval getDirectNeighbor(LayoutInterval interval, int alignment, boolean nonEmpty) {
         LayoutInterval parent = interval.getParent();
-        assert parent.isSequential();
+        if (parent == null || parent.isParallel())
+            return null;
 
         LayoutInterval neighbor = null;
         int d = (alignment == LEADING ? -1 : 1);

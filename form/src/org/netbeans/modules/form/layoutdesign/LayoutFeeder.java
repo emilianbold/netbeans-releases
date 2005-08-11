@@ -750,7 +750,7 @@ class LayoutFeeder implements LayoutConstants {
                 if (outerNeighbor != null && outerNeighbor.isEmptySpace())
                     continue; // unaligned ending gap not needed
                 else // minor gap if the other edge is going to align in parallel
-                    minorGap = iiDesc == null && iDesc1.snappedParallel != null;
+                    minorGap = iiDesc == null && iDesc1.snappedParallel != null  && parent.isParentOf(iDesc1.snappedParallel);
             }
 
             boolean fixedGap = aligned;
@@ -1017,7 +1017,7 @@ class LayoutFeeder implements LayoutConstants {
      */
     private void alignInParallel(/*LayoutInterval interval,*/ LayoutInterval toAlignWith, /*int dimension,*/ int alignment) {
         if (toAlignWith.getParent() == null)
-            return; // aligning with root - nothing to do
+            return; // aligning with root - nothing to do (the interval must be already aligned)
 
         LayoutInterval interval = addingInterval;
         boolean resizing = dragger.isResizing(dimension);
@@ -1042,6 +1042,8 @@ class LayoutFeeder implements LayoutConstants {
         LayoutInterval alignParent;
         do {
             alignParent = LayoutInterval.getFirstParent(toAlignWith, PARALLEL);
+            if (alignParent == null)
+                return; // aligning with parent (the interval must be already aligned)
             if (canSubstAlignWithParent(toAlignWith, dimension, alignment, resizing)) { // toAlignWith is at border and we use parent instead
                 if (alignParent == parParent)
                     alignWithParent = true;
@@ -1108,6 +1110,7 @@ class LayoutFeeder implements LayoutConstants {
                     commonSeq = new LayoutInterval(SEQUENTIAL);
                     commonSeq.setAlignment(group.getAlignment());
                     layoutModel.addInterval(commonSeq, groupParent, index);
+//                    commonSeq.getCurrentSpace().set(dimension, groupParent.getCurrentSpace());
                     layoutModel.setIntervalAlignment(group, DEFAULT);
                     layoutModel.addInterval(group, commonSeq, -1);
                 }
@@ -1124,6 +1127,7 @@ class LayoutFeeder implements LayoutConstants {
                     commonSeq.setAlignment(effAlign);
                 }
                 layoutModel.addInterval(commonSeq, parParent, -1);
+//                commonSeq.getCurrentSpace().set(dimension, parParent.getCurrentSpace());
             }
             else {
                 commonSeq = null;
@@ -1193,8 +1197,16 @@ class LayoutFeeder implements LayoutConstants {
 
         // create the remainder group next to the aligned group
         if (!remainder.isEmpty()) {
-            commonSeq.getCurrentSpace().set(dimension, commonSeq.getParent().getCurrentSpace());
-            operations.addGroupContent(remainder, commonSeq, commonSeq.indexOf(group), alignment, dimension/*, effAlign*/);
+            LayoutInterval sideGroup = operations.addGroupContent(
+                    remainder, commonSeq, commonSeq.indexOf(group), alignment, dimension/*, effAlign*/);
+            if (sideGroup != null) {
+                int pos1 = parParent.getCurrentSpace().positions[dimension][alignment];
+                int pos2 = toAlignWith.getCurrentSpace().positions[dimension][alignment];
+                sideGroup.getCurrentSpace().set(dimension,
+                                                alignment == LEADING ? pos1 : pos2,
+                                                alignment == LEADING ? pos2 : pos1);
+                operations.optimizeGaps(sideGroup, dimension);
+            }
         }
     }
 
