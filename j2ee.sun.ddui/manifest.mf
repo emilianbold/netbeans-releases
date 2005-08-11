@@ -4,18 +4,23 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/share/configbean/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Module-Dependencies: 
+ org.openide.dialogs > 6.2,
+ org.openide.execution > 1.3,
+ org.openide.explorer > 6.2,
  org.openide.filesystems > 6.2,
+ org.openide.io,
+ org.openide.loaders > 5.3,
+ org.openide.nodes > 6.2,
+ org.openide.src > 1.5, 
+ org.openide.util > 6.2,
  org.netbeans.modules.j2ee.sun.appsrv/1 = 1,
  org.netbeans.modules.javahelp/1 > 1.0,
- org.openide.io, org.openide.execution > 1.3,
  org.netbeans.modules.j2eeserver/3 > 1.5,
  org.netbeans.modules.schema2beans/1,
  org.netbeans.modules.j2eeapis/1, 
  org.netbeans.modules.j2ee.dd/1 > 1.3, 
- org.openide.src > 1.5, 
  org.netbeans.api.java/1, 
  org.netbeans.modules.dbschema/1 = 2,
- org.openide.dialogs > 6.2,
  org.netbeans.modules.j2ee.sun.dd/1 = 1
 Class-Path: ext/persistence-tool-support.jar 
 
