@@ -36,6 +36,8 @@ public class CreateActionsProject extends JellyTestCase {
         suite.addTest(new CreateActionsProject("createNotAMBean"));
         suite.addTest(new CreateActionsProject("createNotAStdMBean"));
         suite.addTest(new CreateActionsProject("createUserException"));
+        suite.addTest(new CreateActionsProject("createRegistMBean"));
+        suite.addTest(new CreateActionsProject("createRegistWrapClass"));
         return suite;
     }
     
@@ -63,8 +65,32 @@ public class CreateActionsProject extends JellyTestCase {
         
     }
     
+    public void createRegistWrapClass() {
+        String className = "RegistWrapClass";
+        
+        // create an interface
+        String intfContent =
+                JellyToolsHelper.getFileContent(CreateActionsProject.class, className + "Intf");
+        JellyToolsHelper.createJavaFile(PROJECT,className + "Intf",PACKAGE,intfContent);
+        
+        // create a class
+        String content =
+                JellyToolsHelper.getFileContent(CreateActionsProject.class, className);
+        JellyToolsHelper.createJavaFile(PROJECT,className,PACKAGE,content);
+        
+    }
+    
     public void createNotAStdMBean() {
         String className = "NotAStdMBean";
+        
+        // create a Dynamic MBean class which is not a Standard MBean.
+        String content =
+                JellyToolsHelper.getFileContent(CreateActionsProject.class, className);
+        JellyToolsHelper.createJavaFile(PROJECT,className,PACKAGE,content);
+    }
+    
+    public void createRegistMBean() {
+        String className = "RegistMBean";
         
         // create a Dynamic MBean class which is not a Standard MBean.
         String content =
