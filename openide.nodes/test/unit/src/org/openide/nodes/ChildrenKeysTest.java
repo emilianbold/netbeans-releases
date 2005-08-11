@@ -39,6 +39,46 @@ public class ChildrenKeysTest extends NbTestCase {
         assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
         ErrManager.messages.delete (0, ErrManager.messages.length ());
     }
+
+    public void testGetNodesFromTwoThreads57769() throws Exception {
+        final Ticker t1 = new Ticker();
+        
+        final int[] count = new int[1];
+        Children children= new Children.Keys() {
+            protected Node[] createNodes(Object key) {
+                count[0]++;
+                AbstractNode n = new AbstractNode(Children.LEAF);
+                n.setName(key.toString());
+                try {Thread.sleep(2000);}catch(InterruptedException e) {}
+                return n == null ? new Node[]{} : new Node[]{n};
+            }
+
+            protected void addNotify() {
+                setKeys(Arrays.asList(new Object[] {"1", "2"}));
+            }            
+        };
+        final Node node = new AbstractNode(children);
+        
+        // Get optimal nodes from other thread
+        Thread t = new Thread() {
+            public void run() {
+                t1.tick();
+                node.getChildren().getNodes(true);
+            }
+        };
+        t.start();
+        t1.waitOn();
+        
+        // and also from main thread
+        node.getChildren().getNodes();
+        
+        // wait for other thread
+        t.join();
+        
+        // verify creation count
+        assertEquals("Just two nodes created", 2, count[0]);
+    }
+
     
     public void testDestroyIsCalledWhenANodeIsRemovedOrig () throws Exception {
         class K extends Keys {
@@ -739,5 +779,32 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         
     } // end of Listener
+
+    Ticker t1 = new Ticker();
+        
+    private static class Ticker {
+        boolean state;
+        
+        public void waitOn() {
+            synchronized(this) {
+                while (!state) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        throw new InternalError();
+                    }
+                }
+                state = false; // reusable
+            }
+        }
+        
+        public void tick() {
+            synchronized(this) {
+                state = true;
+                notifyAll();
+            }
+        }
+    }
+
     
 }
