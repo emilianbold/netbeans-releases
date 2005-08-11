@@ -756,8 +756,11 @@ class LayoutOperations implements LayoutConstants {
                                 defaultPaddingLeading = true;
                             }
                         }
-                        if (!anyAlignedLeading && gap.getMaximumSize() >= Short.MAX_VALUE) {
-                            resizingGapLeading = true;
+                        if (gap.getMaximumSize() >= Short.MAX_VALUE) {
+                            if (li.getAlignment() == LEADING) // need to change alignment as we removed resizing gap
+                                layoutModel.setIntervalAlignment(li, TRAILING);
+                            if (!anyAlignedLeading) // resizability goes out of the group
+                                resizingGapLeading = true;
                         }
                     }
                 }
@@ -776,8 +779,11 @@ class LayoutOperations implements LayoutConstants {
                                 defaultPaddingTrailing = true;
                             }
                         }
-                        if (!anyAlignedTrailing && gap.getMaximumSize() >= Short.MAX_VALUE) {
-                            resizingGapTrailing = true;
+                        if (gap.getMaximumSize() >= Short.MAX_VALUE) {
+                            if (li.getAlignment() == TRAILING) // need to change alignment as we removed resizing gap
+                                layoutModel.setIntervalAlignment(li, LEADING);
+                            if (!anyAlignedTrailing) // resizability goes out of the group
+                                resizingGapTrailing = true;
                         }
                     }
                 }
