@@ -309,7 +309,7 @@ final class NbDocsStreamHandler extends URLStreamHandler {
                 if (len == -1) {
                     result = new byte[readLen];
                     System.arraycopy(sum,0,result,0,readLen);
-                    return sum;
+                    return result;
                 }
                 if (allocLen < (readLen + len)) {
                     byte [] tmp = new byte[sum.length];
