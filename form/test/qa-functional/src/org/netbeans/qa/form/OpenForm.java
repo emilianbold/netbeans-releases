@@ -91,9 +91,9 @@ public class OpenForm extends JellyTestCase {
         System.out.println("XXXXXXXXXXXXX");
         System.out.println("xtest.data          = " + System.getProperty("xtest.data"));
         System.out.println("getDataDir          = " + getDataDir());
-        System.out.println("getDataDirPath      = " + getWorkDirPath());
+        System.out.println("getWorkDirPath      = " + getWorkDirPath());
         System.out.println("xtest.module        = " + System.getProperty("xtest.module"));
-        System.out.println("system.dir          = " + System.getProperty("system.dir"));
+        System.out.println("xtest.home          = " + System.getProperty("xtest.home"));
         System.out.println("xtest.workdir       = " + System.getProperty("xtest.workdir"));
         
         System.out.println("XXXXXXXXXXXXX");
@@ -101,7 +101,7 @@ public class OpenForm extends JellyTestCase {
         String workdirpath = getWorkDirPath();
         List list = getJavaFormList();
 //        String prePath = "/space/cvs-netbeans/form/src";
-        String prePath = workdirpath.substring(0,workdirpath.indexOf("/form"));
+        String prePath = workdirpath.substring(0,workdirpath.indexOf("/testOpenForm"));
 //        System.out.println("prePath : " + prePath);
         String formPath = null;
         String fileSeparator = System.getProperty("file.separator");
@@ -141,8 +141,8 @@ public class OpenForm extends JellyTestCase {
                 formPath = (String) listIterator.next();
                 fullPath = new StringBuffer(prePath).append(fileSeparator).append(formPath).toString();
                 lastindex = fullPath.lastIndexOf(fileSeparator);
-                module = formPath.substring(0, formPath.indexOf(fileSeparator));
-                directory = fullPath.substring(0,lastindex);
+//                module = formPath.substring(0, formPath.indexOf(fileSeparator));
+                directory = dataDir + fileSeparator + "OpenForm"; //fullPath.substring(0,lastindex);
                 filename  = fullPath.substring(lastindex + 1);
                 filenamenoext = filename.substring(0, filename.lastIndexOf("."));
                 actionNoBlock = new ActionNoBlock("File|Open File...", null);
@@ -170,7 +170,7 @@ public class OpenForm extends JellyTestCase {
                 
                 bufferedWriter.write("<TABLE width=\"98%\" cellspacing=\"2\" cellpadding=\"5\" border=\"0\">");
                 bufferedWriter.write("<TR bgcolor=\"#A6CAF0\" align=\"center\">");
-                bufferedWriter.write("<TD ALIGN=\"LEFT\" colspan=\"2\">.../" + directory.substring(directory.indexOf(module)) + "/<B>" + filenamenoext + "</B></TD>");
+                bufferedWriter.write("<TD ALIGN=\"LEFT\" colspan=\"2\"> " + "<B>" + filenamenoext + "</B></TD>");
                 bufferedWriter.write("</TR>");
                 bufferedWriter.write("<TR bgcolor=\"#A6CAF0\" align=\"center\">");
                 bufferedWriter.write("<TD ALIGN=\"LEFT\" >" + "<B>" + " Current testing " + "</B></TD>");
