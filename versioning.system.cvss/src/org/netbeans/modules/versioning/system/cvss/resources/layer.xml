@@ -75,7 +75,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Menu"> 
-        <attr name="Tools/CVS" boolvalue="true" />
+        <attr name="CVS/Tools" boolvalue="true" />
+        <attr name="RunProject/CVS" boolvalue="true" />
         <!-- Hide current Versioning menu -->
         <folder name="Versioning_hidden"/>
             
