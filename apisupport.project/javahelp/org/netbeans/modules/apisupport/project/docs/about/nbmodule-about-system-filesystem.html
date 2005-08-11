@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+
+	<title>About the System Filesystem</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+	<h2>About the System Filesystem</h2>
+
+	<p>The system filesystem is the general registry for publicly accessible data and objects.
+	It is a virtual filesystem that contains NetBeans configuration information.
+	NetBeans stores a wide variety of configuration information in the system filesystem. For example, the system filesystem 
+	contains a folder called <tt>/Menu</tt>, which contains subfolders with names such as "File" and "Edit". 
+	These subfolders contain files that represent Java classes which implement the actions that appear in 
+	the "File" and "Edit" menus.
+	
+	<p>When you create a plug-in, you are free to create your own folders in the system filesystem to 
+	store data that relate to your plug-in. You can also add objects to existing folders that have defined 
+	meanings within NetBeans. One of the reasons to use the system filesystem is that it allows objects to 
+	be declared, but their classes not actually loaded by the JVM until something needs to use them, thus saving
+       	memory.
+
+	<p>One important aspect of a NetBeans virtual filesystem is that it can fire events to notify the rest of 
+	the system when something in it changes. NetBeans listens for changes in the system filesystem, and if, 
+	for example, something creates a new object in one of the menu folders, that new item will appear in the menu. 
+	
+
+<hr>
+<small><a href="credits.html">Legal Notices</a> </small>
+</body></html>

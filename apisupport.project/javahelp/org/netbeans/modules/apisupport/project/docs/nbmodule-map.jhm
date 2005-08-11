@@ -6,9 +6,11 @@
 
 	<mapID target="tbd" url="tbd.html"/>
 	
-	<mapID target="about_plugins" url="nbmodule-about.html"/>
-	<mapID target="about_system_filesystem" url="nbmodule-about-system-filesystem.html"/>
-	<mapID target="about_xml_layers" url="about-xml-layers.html"/>
+	<mapID target="about_plugins" url="about/nbmodule-about.html"/>
+	<mapID target="about_system_filesystem" url="about/nbmodule-about-system-filesystem.html"/>
+	<mapID target="about_xml_layers" url="about/about-xml-layers.html"/>
+	<mapID target="about_open_apis" url="about/about-open-apis.html"/>
+	<mapID target="about_a_first_plugin" url="about/about-a-first-plugin.html"/>
 	<mapID target="about_ide_extensions" url="tbd.html"/>
 	<mapID target="about_creating_ide_extensions" url="tbd.html"/>
 	<mapID target="about_file_types" url="tbd.html"/>

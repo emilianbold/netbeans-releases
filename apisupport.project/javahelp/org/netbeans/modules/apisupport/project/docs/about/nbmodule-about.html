@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+
+<title>About NetBeans Plug-in Modules</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+	<h2>About NetBeans Plug-in Modules</h2>
+	<p>A NetBeans plug-in module ("plug-in") is a Java archive (JAR) file which contains Java classes written to interact with the 
+	<a href="about-open-apis.html">NetBeans Open APIs</a>. 
+	A plug-in identifies 
+	itself as a plug-in by an entry in its manifest file. NetBeans plug-ins are packaged as NBM files (<tt>.nbm</tt> extension) for non-installer
+	distribution, usually via the NetBeans Update Center.
+
+	<p>When an application based on a NetBeans platform is run, the platform's Main class is run. 
+	It then finds the available plug-ins and builds an in-memory registry of them, and performs any 
+	tasks they specify for startup. Generally, a plug-in's code is loaded into memory as it is needed.
+
+	<p>Applications can install plug-ins dynamically - any application can include the Update Center plug-in,
+	to allow users of that application to download digitally-signed upgrades and new features via the web,
+	directly into the running application. Installing an upgrade or a new release does not force users to 
+	download the entire application again. And in an application with multiple plug-ins, upgrades of specific
+       	functionality can be incremental, further improving customer response time and time-to-market. 
+
+<hr>
+<small><a href="credits.html">Legal Notices</a> </small>
+</body></html>
