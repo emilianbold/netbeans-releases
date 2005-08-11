@@ -707,14 +707,19 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     url = urll.toString();
                     helpMap.put("http://jakarta.apache.org/struts/tags-bean", url + "bean/");
                     helpMap.put("http://struts.apache.org/tags-bean", url + "bean/");
+                    helpMap.put("/WEB-INF/struts-bean.tld", url + "bean/");
                     helpMap.put("http://jakarta.apache.org/struts/tags-html", url + "html/");
                     helpMap.put("http://struts.apache.org/tags-html", url + "html/");
+                    helpMap.put("/WEB-INF/struts-html.tld", url + "html/");
                     helpMap.put("http://jakarta.apache.org/struts/tags-logic", url + "logic/");
                     helpMap.put("http://struts.apache.org/tags-logic", url + "logic/");
+                    helpMap.put("/WEB-INF/struts-logic.tld", url + "logic/");
                     helpMap.put("http://jakarta.apache.org/struts/tags-nested", url + "nested/");
                     helpMap.put("http://struts.apache.org/tags-nested", url + "nested/");
+                    helpMap.put("/WEB-INF/struts-nested.tld", url + "nested/");
                     helpMap.put("http://jakarta.apache.org/struts/tags-tiles", url + "tiles/");
                     helpMap.put("http://struts.apache.org/tags-tiles", url + "tiles/");
+                    helpMap.put("/WEB-INF/struts-tiles.tld", url + "tiles/");
                 }
                 catch (java.net.MalformedURLException e){
                     ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
