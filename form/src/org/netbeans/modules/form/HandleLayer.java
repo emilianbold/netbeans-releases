@@ -1850,11 +1850,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     if (!isTopComponent()) {
                         showingComponents[i].setBounds(movingBounds[i]);
                         doLayout(showingComponents[i]);
-                        if (showingComponents[i] instanceof JComponent) {
-                            showingComponents[i].paint(gg);
-                        } else {
-                            showingComponents[i].getPeer().paint(gg);
-                        }
+                        paintDraggedComponent(showingComponents[i], gg);
                     } // resized top design component is painted automatically
 
                     // paint the selection rectangle
@@ -1875,10 +1871,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     if (!isOldLayoutSource()) { // don't paint if component dragged from old layout
                         comp.setBounds(movingBounds[i]);
                         doLayout(comp);
-                        if (comp instanceof JComponent)
-                            comp.paint(gg);
-                        else
-                            comp.getPeer().paint(gg);
+                        paintDraggedComponent(comp, gg);
                     }
                 }
             }
@@ -1976,6 +1969,19 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             for (int i=0, n=cont.getComponentCount(); i < n; i++) {
                 doLayout(cont.getComponent(i));
             }
+        }
+    }
+
+    private static void paintDraggedComponent(Component comp, Graphics g) {
+        try {
+            if (comp instanceof JComponent)
+                comp.paint(g);
+            else
+                comp.getPeer().paint(g);
+        }
+        catch (RuntimeException ex) { // inspired by bug #62041 (JProgressBar bug #5035852)
+            org.openide.ErrorManager.getDefault().notify(
+                org.openide.ErrorManager.INFORMATIONAL, ex);
         }
     }
 
@@ -2084,10 +2090,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             // don't paint if component dragged from old layout (may have strange size)
             Component comp = showingComponents[0];
             if (!isOldLayoutSource()) {
-                if (comp instanceof JComponent)
-                    comp.paint(gg);
-                else
-                    comp.getPeer().paint(gg);
+                paintDraggedComponent(comp, gg);
             }
         }
     }
@@ -2459,10 +2462,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                                      g);
             g.translate(-contPos.x, -contPos.y);
 //                    g.setStroke(stroke);
-            if (showingComponents[0] instanceof JComponent)
-                showingComponents[0].paint(gg);
-            else
-                showingComponents[0].getPeer().paint(gg);
+            paintDraggedComponent(showingComponents[0], gg);
         }
     }
     
