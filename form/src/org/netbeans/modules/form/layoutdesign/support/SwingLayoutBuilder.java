@@ -189,7 +189,7 @@ public class SwingLayoutBuilder {
                 }
             } else {
                 assert interval.isEmptySpace();
-                if (interval.isDefaultPadding()) {
+                if (interval.isDefaultPadding(true)) {
                     assert (group instanceof GroupLayout.SequentialGroup);
                     GroupLayout.SequentialGroup seqGroup = (GroupLayout.SequentialGroup)group;
                     if (first || last) {

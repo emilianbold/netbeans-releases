@@ -747,7 +747,7 @@ class LayoutOperations implements LayoutConstants {
                     LayoutInterval gap = li.getSubInterval(idx);
                     if (gap.isEmptySpace()) {
                         layoutModel.removeInterval(li, idx);
-                        if (gap.isDefaultPadding()) {
+                        if (LayoutInterval.isDefaultPadding(gap)) {
                             paddingLeading = true;
                             if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
                                 && li.getSubInterval(idx).getCurrentSpace().positions[dimension][LEADING]
@@ -767,7 +767,7 @@ class LayoutOperations implements LayoutConstants {
                     LayoutInterval gap = li.getSubInterval(idx);
                     if (gap.isEmptySpace()) {
                         layoutModel.removeInterval(li, idx--);
-                        if (gap.isDefaultPadding()) {
+                        if (LayoutInterval.isDefaultPadding(gap)) {
                             paddingTrailing = true;
                             if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
                                 && li.getSubInterval(idx).getCurrentSpace().positions[dimension][TRAILING]

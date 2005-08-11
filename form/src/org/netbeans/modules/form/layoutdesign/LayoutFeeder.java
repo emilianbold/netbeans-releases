@@ -559,24 +559,26 @@ class LayoutFeeder implements LayoutConstants {
      */
     private void addSimplyAligned() {
         int alignment = aEdge;
+        assert alignment == CENTER || alignment == BASELINE;
+        layoutModel.setIntervalAlignment(toAdd, alignment);
+
+        if (aSnappedParallel.isParallel() && aSnappedParallel.getGroupAlignment() == alignment) {
+            layoutModel.addInterval(toAdd, aSnappedParallel, -1);
+            return;
+        }
         LayoutInterval parent = aSnappedParallel.getParent();
         if (parent.isParallel() && parent.getGroupAlignment() == alignment) {
-            layoutModel.setIntervalAlignment(addingInterval, alignment);
             layoutModel.addInterval(toAdd, parent, -1);
             return;
         }
 
         int alignIndex = layoutModel.removeInterval(aSnappedParallel);
-
         LayoutInterval subGroup = new LayoutInterval(PARALLEL);
         subGroup.setGroupAlignment(alignment);
         if (parent.isParallel()) {
             subGroup.setAlignment(aSnappedParallel.getAlignment());
         }
-
         layoutModel.setIntervalAlignment(aSnappedParallel, alignment);
-        layoutModel.setIntervalAlignment(addingInterval, alignment);
-
         layoutModel.addInterval(aSnappedParallel, subGroup, -1);
         layoutModel.addInterval(toAdd, subGroup, -1);
         layoutModel.addInterval(subGroup, parent, alignIndex);

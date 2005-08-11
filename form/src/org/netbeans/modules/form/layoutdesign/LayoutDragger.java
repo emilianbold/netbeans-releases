@@ -205,6 +205,8 @@ class LayoutDragger implements LayoutConstants {
                         sizeDef.preferredGapSize = LayoutUtils.getSizeOfDefaultGap(resGap, visualMapper);
                         sizeDef.preferredSize = sizeDef.originalSize
                                 - sizeDef.originalGapSize + sizeDef.preferredGapSize;
+                        sizeDef.zeroPreferredSize = isZeroResizingGap(resGap) ?
+                                sizeDef.originalSize - sizeDef.originalGapSize : Short.MIN_VALUE;
                     }
                     else {
                         if (prefSize == null) {
@@ -237,6 +239,11 @@ class LayoutDragger implements LayoutConstants {
             }
         }
         return null;
+    }
+
+    private static boolean isZeroResizingGap(LayoutInterval gap) {
+        return LayoutInterval.getNeighbor(gap, LEADING, false, true, false) == null
+            || LayoutInterval.getNeighbor(gap, TRAILING, false, true, false) == null;
     }
 
     void setTargetContainer(LayoutComponent container) {
@@ -397,8 +404,8 @@ class LayoutDragger implements LayoutConstants {
     }
 
     void paintMoveFeedback(Graphics2D g) {
-        if (targetContainer == null) {
-            return;
+        if (movingSpace == null) {
+            return; // paint requested before the move actually started ('move' not called yet)
         }
         final int OVERLAP = 10;
         for (int i=0; i < DIM_COUNT; i++) {    
@@ -467,6 +474,27 @@ class LayoutDragger implements LayoutConstants {
                 }
                 g.setStroke(oldStroke);
             }
+            else { // check for resizing snapped to preferred size
+                int resAlign = movingEdges[i];
+                if (resAlign == LEADING || resAlign == TRAILING) { // resizing in this dimension
+                    int size = movingSpace.size(i);
+                    if (size == sizing[i].preferredSize || size == sizing[i].zeroPreferredSize) { // snapped
+                        int align = movingEdges[i];
+                        int x1 = movingSpace.positions[i][align];
+                        int x2 = movingSpace.positions[i][align^1];
+                        int y = movingSpace.positions[i^1][CENTER];
+                        Stroke oldStroke = g.getStroke();
+                        g.setStroke(dashedStroke);
+                        if (i == HORIZONTAL) {
+                            g.drawLine(x1, y, x2, y);
+                        }
+                        else {
+                            g.drawLine(y, x1, y, x2);
+                        }
+                        g.setStroke(oldStroke);
+                    }
+                }
+            }
         }
     }
 
@@ -532,7 +560,10 @@ class LayoutDragger implements LayoutConstants {
 
         if (snapping) {
             if (isResizing(dimension)) {
-                int sizeDiff = movingSpace.size(dimension) - sizing[dimension].preferredSize;
+                int prefSizeDiff = movingSpace.size(dimension) - sizing[dimension].preferredSize;
+                int zeroSizeDiff = movingSpace.size(dimension) - sizing[dimension].zeroPreferredSize;
+                int sizeDiff = Math.abs(prefSizeDiff) <= Math.abs(zeroSizeDiff) ?
+                               prefSizeDiff : zeroSizeDiff;
                 int absDiff = Math.abs(sizeDiff);
                 if (absDiff < SNAP_DISTANCE && (best == null || absDiff < Math.abs(best.distance))) {
                     best = null; // snapping to preferred size has precedence here
@@ -1286,7 +1317,8 @@ class LayoutDragger implements LayoutConstants {
     static class SizeDef {
         private int originalSize;
         private int preferredSize;
-        private LayoutInterval resizingGap;
+        private int zeroPreferredSize; // size of container if resizing gap goes to zero
+        private LayoutInterval resizingGap; // inside resizing container
         private int originalGapSize;
         private int preferredGapSize;
 
@@ -1297,11 +1329,12 @@ class LayoutDragger implements LayoutConstants {
         }
 
         int getResizingGapSize(int currentSize) {
-            if (resizingGap == null) {
+            if (resizingGap == null)
                 return LayoutRegion.UNKNOWN;
-            }
+            if (currentSize == zeroPreferredSize)
+                return 0;
             int gapSize = originalGapSize - originalSize + currentSize;
-            return currentSize == preferredSize || gapSize < preferredGapSize ?
+            return currentSize == preferredSize || gapSize < 0 ? //preferredGapSize
                    NOT_EXPLICITLY_DEFINED : gapSize;
         }
     }

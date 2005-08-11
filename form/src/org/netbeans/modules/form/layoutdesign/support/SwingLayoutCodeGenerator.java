@@ -205,7 +205,7 @@ public class SwingLayoutCodeGenerator {
                     generateSizeParams(layout, min, pref, max);
                 }
             } else if (interval.isEmptySpace()) {
-                if (interval.isDefaultPadding()) {
+                if (interval.isDefaultPadding(false)) {
                     if (first || last) {
                         layout.append(".addContainerGap("); // NOI18N
                     } else {

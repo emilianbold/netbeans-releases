@@ -1401,17 +1401,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     // mouse not pressed with Shift only (which is reserved for
                     // interval or area selection - applied on mouse release or
                     // mouse dragged)
-                    if (draggedComponent == null && !modifier
-                        && (resizeType & DESIGNER_RESIZING) != 0)
-                    {   // start designer resizing
-                        if (e.getClickCount() != 2) {
-                            draggedComponent = new ResizeComponentDrag(
-                                new RADVisualComponent[] { formDesigner.getTopDesignComponent() },
-                                lastLeftMousePoint,
-                                resizeType&~DESIGNER_RESIZING);
-                        }
-                    }
-                    else if (!mouseOnVisual(lastLeftMousePoint)) {
+                    if (!mouseOnVisual(lastLeftMousePoint)) {
                         if ((resizeType == 0) && (selectedComponentAt(lastLeftMousePoint, 0) == null))
                             selectOtherComponentsNode();
                     }
@@ -1463,14 +1453,18 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                  && !e.isControlDown() && (!e.isShiftDown() || e.isAltDown())
                  && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6))
             {   // start component dragging
-                RADVisualComponent[] draggedComps = getComponentsToDrag();
+                RADVisualComponent[] draggedComps =
+                    (resizeType & DESIGNER_RESIZING) == 0 ? getComponentsToDrag() :
+                    new RADVisualComponent[] { formDesigner.getTopDesignComponent() };
                 if (draggedComps != null) {
-                    if (resizeType == 0)
+                    if (resizeType == 0) {
                         draggedComponent = new ExistingComponentDrag(
                             draggedComps, lastLeftMousePoint, e.getModifiers());
-                    else 
+                    }
+                    else  {
                         draggedComponent = new ResizeComponentDrag(
-                            draggedComps, lastLeftMousePoint, resizeType);
+                            draggedComps, lastLeftMousePoint, resizeType&~DESIGNER_RESIZING);
+                    }
                 }
             }
             if (draggedComponent == null // component dragging has not started

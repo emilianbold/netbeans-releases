@@ -287,10 +287,9 @@ public final class LayoutInterval implements LayoutConstants {
         return type == SINGLE && layoutComponent == null;
     }
 
-    public boolean isDefaultPadding() {
-        return isEmptySpace() && (minSize == NOT_EXPLICITLY_DEFINED
-                                  || prefSize == NOT_EXPLICITLY_DEFINED
-                                  || maxSize == NOT_EXPLICITLY_DEFINED);
+    public boolean isDefaultPadding(boolean designTime) {
+        return isEmptySpace() && (getMinimumSize(designTime) == NOT_EXPLICITLY_DEFINED
+                                  || getPreferredSize(designTime) == NOT_EXPLICITLY_DEFINED);
     }
 
     public boolean isSingle() {
@@ -792,6 +791,11 @@ public final class LayoutInterval implements LayoutConstants {
             }
         }
         return false;
+    }
+
+    static boolean isDefaultPadding(LayoutInterval interval) {
+        return interval.isEmptySpace() && (interval.getMinimumSize() == NOT_EXPLICITLY_DEFINED
+                                           || interval.getPreferredSize() == NOT_EXPLICITLY_DEFINED);
     }
 
     static boolean isFixedDefaultPadding(LayoutInterval interval) {
