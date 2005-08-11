@@ -567,7 +567,7 @@ class LayoutDragger implements LayoutConstants {
                 int absDiff = Math.abs(sizeDiff);
                 if (absDiff < SNAP_DISTANCE && (best == null || absDiff < Math.abs(best.distance))) {
                     best = null; // snapping to preferred size has precedence here
-                    snapDistance = sizeDiff;
+                    snapDistance = movingEdges[dimension] == LEADING ? -sizeDiff : sizeDiff;
                 }
             }
             if (best != null) {
