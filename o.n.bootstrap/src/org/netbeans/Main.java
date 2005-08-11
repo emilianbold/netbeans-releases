@@ -193,15 +193,10 @@ public class Main extends Object {
     implements Runnable {
         private List allCLIs;
         private Set allCLIclasses;
-        private Set allKnownLoaders;
         
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
-
-            allKnownLoaders = new HashSet(parents.length * 2 + 1);
-            allKnownLoaders.addAll(Arrays.asList(parents));
-            allKnownLoaders.add (this);
-            
+    
             if (cp.isEmpty ()) {
                 return;
             }
@@ -343,8 +338,11 @@ public class Main extends Object {
             return allCLIs;
         }
 
-        protected Set packageOwners(String pkg) {
-            return allKnownLoaders;
+        protected boolean isSpecialResource (String pkg) {
+            boolean retValue = super.isSpecialResource (pkg);
+            if (retValue) return true;
+
+            return false;
         }
     } // end of BootClassLoader
     

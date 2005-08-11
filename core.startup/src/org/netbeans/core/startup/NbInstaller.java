@@ -40,6 +40,7 @@ import org.openide.filesystems.*;
  * @author Jesse Glick, Jan Pokorsky, Jaroslav Tulach, et al.
  */
 final class NbInstaller extends ModuleInstaller {
+    
     /** set of manifest sections for each module */
     private final Map sections = new HashMap(100); // Map<Module,Set<ManifestSection>>
     /** ModuleInstall classes for each module that declares one */
@@ -192,7 +193,6 @@ final class NbInstaller extends ModuleInstaller {
         // we need to update the classloader as otherwise we might not find
         // all the needed classes
         MainLookup.systemClassLoaderChanged(Thread.currentThread().getContextClassLoader());
-        maybeSaveClassLoaderCache();
         ev.log(Events.PERF_TICK, "META-INF/services/ additions registered"); // NOI18N
         
         Iterator it = modules.iterator();
@@ -862,22 +862,49 @@ final class NbInstaller extends ModuleInstaller {
      * Disable the domain cache for them.
      */
     public boolean isSpecialResource(String pkg) {
-        if (pkg.startsWith("META-INF/")) return true; // NOI18N
+        // JST-PENDING here is experimental enumeration of shared packages in openide
+        // maybe this will speed up startup, but it is not accurate as if
+        // someone enables some long time deprecated openide jar list will
+        // get wrong.
+        // Probably I need to watch for list of modules that export org.openide
+        // or subclass and if longer than expected, disable this optimization
         
-        // #38368: do not cache the default package
-        if (pkg.length() == 0) return true;
-        
-        // util & dialogs
-        if ("org/openide/".equals (pkg)) return true; // NOI18N
+        // the old good way:
+        if (pkg.startsWith("org/openide/")) {
+            
+            // if (withoutOptimizations) {
+            //   return true; // NOI18N
+            // }
 
-        // utils (on classpath) 
-        if ("org/openide/resources/".equals (pkg)) return true; // NOI18N
-        
-        // util & nodes
-        if ("org/openide/util/actions/".equals (pkg)) return true; // NOI18N
+            // util & dialogs
+            if ("org/openide/".equals (pkg)) return true; // NOI18N
+            // loaders, actions, and who know what else
+            if ("org/openide/actions/".equals (pkg)) return true; // NOI18N
+            // loaders & awt
+            if ("org/openide/awt/".equals (pkg)) return true; // NOI18N
+            // loaders, nodes, text...
+            if ("org/openide/cookies/".equals (pkg)) return true; // NOI18N
 
-        // these should be removed as soon as we get rid of org-openide-compat
-        if ("org/openide/util/".equals (pkg)) return true; // NOI18N
+            // someone should really clear these two
+            if ("org/openide/resources/".equals (pkg)) return true; // NOI18N
+            if ("org/openide/resources/propertysheet/".equals (pkg)) return true; // NOI18N
+
+            // some are provided by java/srcmodel
+            if ("org/openide/explorer/propertysheet/editors/".equals (pkg)) return true; // NOI18N
+
+            // windows & io 
+            if ("org/openide/windows/".equals (pkg)) return true; // NOI18N
+
+            // text & loaders
+            if ("org/openide/text/".equals (pkg)) return true; // NOI18N
+
+            // util & nodes
+            if ("org/openide/util/actions/".equals (pkg)) return true; // NOI18N
+
+            // these should be removed as soon as we get rid of org-openide-compat
+            if ("org/openide/explorer/".equals (pkg)) return true; // NOI18N
+            if ("org/openide/util/".equals (pkg)) return true; // NOI18N
+        }
 
         
         
@@ -885,9 +912,6 @@ final class NbInstaller extends ModuleInstaller {
         if (pkg.equals("org/w3c/dom/")) return true; // NOI18N
         // #36578: JDK 1.5 has DOM3
         if (pkg.equals("org/w3c/dom/ls/")) return true; // NOI18N
-        if (pkg.equals("org/w3c/dom/ranges/")) return true; // NOI18N
-        // #61823: JDK 1.5 has JMX
-        if (pkg.startsWith("javax/management/")) return true; // NOI18N
         return super.isSpecialResource(pkg);
     }
     
@@ -1134,146 +1158,7 @@ final class NbInstaller extends ModuleInstaller {
      */
     private boolean manifestCacheDirty = false;
     
-    /** packages cache */
-    private ClassLoaderCache packagesCache; 
-    /** true if we can use the cache */
-    private boolean optimizeLoading;
-    /** classloaders indexed */
-    private ClassLoader[] indexed;
-
-    
-    /** A special set that searches in index of classloaders
-     */
-    private class ContainsLoader extends AbstractSet {
-        private int[] arr;
-            
-        public ContainsLoader(int[] arr) {
-            this.arr = arr;
-        }
-
-        public int size() {
-            return arr.length;
-        }
-
-        public Iterator iterator() {
-            Object[] objs = new Object[arr.length];
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == Integer.MAX_VALUE) {
-                    objs[i] = getClass().getClassLoader();
-                } else {
-                    objs[i] = indexed[arr[i]];
-                }
-            }
-            return Arrays.asList (objs).iterator();
-        }
-
-        public boolean contains(Object o) {
-            if (arr == null) {
-                return false;
-            }
-
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] == Integer.MAX_VALUE) {
-                    if (o == getClass().getClassLoader()) {
-                        return true;
-                    }
-                    continue;
-                }
-                if (o == indexed[arr[i]]) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-    }
-    private static class ContainsAll extends AbstractSet {
-        public static final ContainsAll ALL = new ContainsAll();
-        
-        public int size() {
-            return Integer.MAX_VALUE;
-        }
-
-        public Iterator iterator() {
-            return null;
-        }
-
-        public boolean contains(Object o) {
-            return true;
-        }
-    }
-    
-    /** Creates an read only Set with only one implemented mehtod - contains
-     * that checks whether given classloader provides the package.
-     * @param pkg the package name ala java/lang/
-     * @return the set<ClassLoader> or null if no cache created
-     */
-    protected final Set packageOwners(String pkg) {
-        if (manifestCacheDirty || !optimizeLoading || packagesCache == null) {
-            return ContainsAll.ALL;
-        }
-        
-        if (isSpecialResource(pkg)) {
-            // if this is special package we need to search everything
-            return ContainsAll.ALL;
-        }
-        
-        if (indexed == null) {
-            rebuildIndex();
-        }
-        
-        
-        int[] classloaders = packagesCache.find(pkg);
-        if (classloaders == null) {
-            // not known package, search only in system classloader
-            // as no ProxyClassLoader owns this package
-            return null;
-        }
-
-        // set of all classloaders that own this package
-        return new ContainsLoader(classloaders);
-    }
-    
-    
-    public void refineClassLoader(Module m, List parents) {
-        // called when a new classloader is about to be created
-        // we need to disable the classloader cache or at least 
-        // update it
-        if (manifestCache != null) {
-            Datafest fest = (Datafest)manifestCache.get(m.getJarFile());
-            if (fest != null && fest.loaderIndex != -1) {
-                // clear the cache -> might recompute it, but 
-                // then we would need 
-                indexed = null;
-                return;
-            }
-        }
-        
-        optimizeLoading = false;
-    }
-    
-    private void rebuildIndex() {
-        Set s = mgr.getModules();
-        ClassLoader[] arr = new ClassLoader[s.size()];
-        Iterator it = s.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
-            if (!m.isEnabled() || m.isFixed()) {
-                continue;
-            }
-            Datafest fest = (Datafest)manifestCache.get(m.getJarFile());
-            if (fest.loaderIndex != -1) {
-                arr[fest.loaderIndex] = m.getClassLoader();
-            }
-        }
-        indexed = arr;
-    }
-    
     // XXX consider logging using Events
-    
-    private static File packagesCacheFile(File f) {
-        return new File(f.getParentFile(), "all-packages.dat"); // NOI18N
-    }
     
     /** Overrides superclass method to keep a cache of module manifests,
      * so that their JARs do not have to be opened twice during startup.
@@ -1284,15 +1169,13 @@ final class NbInstaller extends ModuleInstaller {
         }
         if (manifestCache == null) {
             manifestCache = loadManifestCache(manifestCacheFile);
-            packagesCache = ClassLoaderCache.read(packagesCacheFile(manifestCacheFile));
-            optimizeLoading = packagesCache != null;
         }
-        Datafest entry = (Datafest)manifestCache.get(jar);
+        Object[] entry = (Object[])manifestCache.get(jar);
         if (entry != null) {
-            if (entry.time == jar.lastModified()) {
+            if (((Date)entry[0]).getTime() == jar.lastModified()) {
                 // Cache hit.
                 Util.err.log("Found manifest for " + jar + " in cache");
-                return entry.manifest;
+                return (Manifest)entry[1];
             } else {
                 Util.err.log("Wrong timestamp for " + jar + " in manifest cache");
             }
@@ -1302,11 +1185,11 @@ final class NbInstaller extends ModuleInstaller {
         // Cache miss.
         Manifest m = super.loadManifest(jar);
         // (If that threw IOException, we leave it out of the cache.)
-        manifestCache.put(jar, new Datafest(jar.lastModified(), m));
+        manifestCache.put(jar, new Object[] {new Date(jar.lastModified()), m});
         manifestCacheDirty = true;
         return m;
     }
-
+    
     /** If the manifest cache had been in use, and is now dirty, write it to disk.
      */
     private void maybeSaveManifestCache() {
@@ -1319,77 +1202,7 @@ final class NbInstaller extends ModuleInstaller {
             usingManifestCache = false;
             manifestCacheDirty = false;
             manifestCache = null;
-        }
-    }
-    
-    private void maybeSaveClassLoaderCache() {
-        if (manifestCache != null && mgr != null && !optimizeLoading) {
-            File f = packagesCacheFile(manifestCacheFile);
-            try {
-                f.getParentFile().mkdirs();
-                
-                ClassLoaderCache old = packagesCache;
-                if (old != null) {
-                    packagesCache = null;
-                    old.delete();
-                }
-                
-                ClassLoaderCache pkgs = ClassLoaderCache.create(f);
-
-                int allIndex = 0;
-                Iterator it = mgr.getModules().iterator();
-                while (it.hasNext()) {
-                    Module m = (Module)it.next();
-                    if (!m.isEnabled() || m.isFixed()) {
-                        continue;
-                    }
-
-                    ClassLoader l = m.getClassLoader();
-
-                    String[] populated;
-
-                    Datafest fest = (Datafest)manifestCache.get(m.getJarFile());
-                    fest = new Datafest(fest.time, fest.manifest, allIndex++);
-                    manifestCache.put(m.getJarFile(), fest);
-                    
-                    if (l instanceof ProxyClassLoader) {
-                        populated = ((ProxyClassLoader)l).listPopulatedPackages();
-                    } else {
-                        populated = null;
-                    }
-
-                    if (populated == null) {
-                        // register for default package where all "non-known" loaders
-                        // are registered
-                        assert false : "Not implemented"; // NOI18N
-                    } else {
-                        for (int i = 0; i < populated.length; i++) {
-                            if (!populated[i].startsWith("META-INF/")) {
-                                pkgs.registerPackage(populated[i], fest.loaderIndex);
-                            }
-                        }
-                    }
-                }
-                if (getClass().getClassLoader() instanceof ProxyClassLoader) {
-                    String[] populated = ((ProxyClassLoader)getClass().getClassLoader()).listPopulatedPackages();
-                    for (int i = 0; i < populated.length; i++) {
-                        if (!populated[i].startsWith("META-INF/")) {
-                            pkgs.registerPackage(populated[i], Integer.MAX_VALUE);
-                        }
-                    }
-                }
-                pkgs.flush();
-                
-                // share this with others
-                packagesCache = pkgs;
-                rebuildIndex();
-                optimizeLoading = true;
-            } catch (IOException ioe) {
-                Util.err.notify(ErrorManager.WARNING, ioe);
-                optimizeLoading = false;
-                f.delete();
-                f.deleteOnExit();
-            }
+            manifestCacheFile = null;
         }
     }
     
@@ -1403,27 +1216,21 @@ final class NbInstaller extends ModuleInstaller {
         try {
             try {
                 os = new BufferedOutputStream(os);
-                DataOutputStream dos = new DataOutputStream(os);
                 Iterator it = manifestCache.entrySet().iterator();
                 while (it.hasNext()) {
-                    Map.Entry en = (Map.Entry)it.next();
-                    File jar = (File)en.getKey();
-                    Datafest v = (Datafest)en.getValue();
-                    
-                    Manifest m = new Manifest (v.manifest);
+                    Map.Entry e = (Map.Entry)it.next();
+                    File jar = (File)e.getKey();
+                    Object[] v = (Object[])e.getValue();
+                    long time = ((Date)v[0]).getTime();
+                    Manifest m = (Manifest)v[1];
                     os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
                     os.write(0);
                     for (int i = 7; i >= 0; i--) {
-                        os.write((int)((v.time >> (i * 8)) & 0xFF));
+                        os.write((int)((time >> (i * 8)) & 0xFF));
                     }
                     m.write(os);
                     os.write(0);
-
-                    for (int i = 3; i >= 0; i--) {
-                        os.write((int)((v.loaderIndex >> (i * 8)) & 0xFF));
-                    }
                 }
-                
             } finally {
                 os.close();
             }
@@ -1498,7 +1305,6 @@ final class NbInstaller extends ModuleInstaller {
             pos = end + 9;
             end = findNullByte(data, pos);
             if (end == -1) throw new IOException("Could not find manifest body for " + jar); // NOI18N
-
             Manifest mani;
             try {
                 mani = new Manifest(new ByteArrayInputStream(data, pos, end - pos));
@@ -1506,24 +1312,11 @@ final class NbInstaller extends ModuleInstaller {
                 Util.err.annotate(ioe, ErrorManager.UNKNOWN, "While in entry for " + jar, null, null, null);
                 throw ioe;
             }
-            
-            if (end + 5 > data.length) throw new IOException("Ran out of space for loader index for " + jar); // NOI18N
-            // read loader index
-            int loaderIndex = 0;
-            for (int i = 0; i < 4; i++) {
-                int b = data[end + i + 1];
-                if (b < 0) b += 256;
-                int exponent = 3 - i;
-                int addin = b << (exponent * 8);
-                loaderIndex |= addin;
-                //System.err.println("i=" + i + " b=0x" + Long.toHexString(b) + " exponent=" + exponent + " addin=0x" + Long.toHexString(addin) + " time=0x" + Long.toHexString(time));
-            }
-            pos = end + 5;
-            
-            m.put(jar, new Datafest(time, mani, loaderIndex));
+            m.put(jar, new Object[] {new Date(time), mani});
             if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
                 Util.err.log("Manifest cache entry: jar=" + jar + " date=" + new Date(time) + " codename=" + mani.getMainAttributes().getValue("OpenIDE-Module"));
             }
+            pos = end + 1;
         }
     }
     
@@ -1572,32 +1365,4 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
 
-    /** For test purposes only. We need to know 
-     * whether indexes are correctly computed.
-     */
-    final int getIndex(File f) {
-        if (manifestCache == null) {
-            return -1;
-        }
-        Datafest fest = (Datafest)manifestCache.get(f);
-        return fest == null ? -1 : fest.loaderIndex;
-    }
-    
-    /** Structure that describes info about a cached module. Used just internally in
-     * cache map.
-     */
-    private static final class Datafest {
-        public final long time;
-        public final Manifest manifest;
-        public final int loaderIndex;
-        
-        Datafest(long t, Manifest m) {
-            this(t, m, -1);
-        }
-        Datafest(long t, Manifest m, int l) {
-            this.time = t;
-            this.manifest = m;
-            this.loaderIndex = l;
-        }
-    }
 }

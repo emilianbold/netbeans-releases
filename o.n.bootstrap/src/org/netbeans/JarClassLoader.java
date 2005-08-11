@@ -31,7 +31,7 @@ import java.util.*;
  *
  * @author  Petr Nejedly
  */
-public abstract class JarClassLoader extends ProxyClassLoader {
+public class JarClassLoader extends ProxyClassLoader {
     private Source[] sources;
     /** temp copy JARs which ought to be deleted */
     private Set deadJars = null; // Set<JarFile>
@@ -147,8 +147,7 @@ public abstract class JarClassLoader extends ProxyClassLoader {
             // to have the same Package object, proper sealing check, etc.; so be safe,
             // overhead is probably small (check in parents, nope, check super which
             // delegates to system loaders).
-            boolean special = isSpecialResource(pkgnameSlashes) || packageOwners(pkgnameSlashes).size() > 1;
-            Package pkg = getPackageFast(pkgName, pkgnameSlashes, special);
+            Package pkg = getPackageFast(pkgName, pkgnameSlashes, isSpecialResource(pkgnameSlashes));
             if (pkg != null) {
                 // XXX full sealing check, URLClassLoader does something more
                 if (pkg.isSealed() && !pkg.isSealed(src.getURL())) throw new SecurityException("sealing violation"); // NOI18N
@@ -263,14 +262,6 @@ public abstract class JarClassLoader extends ProxyClassLoader {
             }
         }
     }
-    
-    public String[] listPopulatedPackages() {
-        TreeSet set = new TreeSet();
-        for (int i = 0; i < sources.length; i++) {
-            sources[i].listPopulatedPackages(set);
-        }
-        return (String[])set.toArray(new String[0]);
-    }
 
     abstract class Source {
         private URL url;
@@ -318,11 +309,6 @@ public abstract class JarClassLoader extends ProxyClassLoader {
         public Manifest getManifest() {
             return null;
         }
-        
-        /** Lists all packages in the source
-         * @param set the set of Strings to add package names to
-         */
-        protected abstract void listPopulatedPackages(Set pkgs);
     }
 
     class JarSource extends Source {
@@ -386,23 +372,6 @@ public abstract class JarClassLoader extends ProxyClassLoader {
             }
             return data;
         }
-        
-        protected void listPopulatedPackages(Set pkgs) {
-            Enumeration en = this.src.entries();
-            while (en.hasMoreElements()) {
-                java.util.jar.JarEntry entry = (java.util.jar.JarEntry)en.nextElement();
-                String s = entry.getName();
-                int indx = s.lastIndexOf('/');
-                if (indx == -1) {
-                    continue;
-                }
-                if (indx == s.length() - 1) {
-                    continue;
-                }
-                s = s.substring(0, indx + 1);
-                pkgs.add(s);
-            }
-        }
     }
 
     class DirSource extends Source {
@@ -431,24 +400,8 @@ public abstract class JarClassLoader extends ProxyClassLoader {
             }
             return data;
         }
-
-        protected void listPopulatedPackages(Set pkgs) {
-            listPopulatedPackages(pkgs, dir, ""); // NOI18N
-        }
         
-        private void listPopulatedPackages(Set pkgs, File folder, String pref) {
-            File[] arr = folder.listFiles();
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i].isFile()) {
-                    pkgs.add(pref);
-                }
-                if (arr[i].isDirectory()) {
-                    listPopulatedPackages(pkgs, arr[i], pref + arr[i].getName() + "/"); // NOI18N
-                }
-            }
-        }
     }
-    
     
     //
     // ErrorManager's methods

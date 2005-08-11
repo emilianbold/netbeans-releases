@@ -140,12 +140,6 @@ public abstract class ModuleInstaller {
             jarFile.close();
         }
     }
-
-    /** May suggest list of ClassLoader or active modules that provide the
-     * the package.
-     * @since org.netbeans JST-PENDING
-     */
-    protected abstract Set packageOwners(String pkg);
     
     /** Permit a module installer to add extra parent classloaders for a module.
      * Called during enablement of a module.
