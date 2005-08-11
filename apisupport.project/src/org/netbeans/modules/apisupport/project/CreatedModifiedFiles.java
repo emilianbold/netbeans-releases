@@ -212,7 +212,8 @@ public final class CreatedModifiedFiles {
      *
      * @param dataLoaderClass e.g. org/netbeans/modules/myprops/MyPropsLoader
      *        (<strong>without</strong> .class extension)
-     * @param installBefore content of Install-Before attribute, or null if not specified
+     * @param installBefore content of Install-Before attribute, or null if not
+     *        specified
      */
     public Operation addLoaderSection(String dataLoaderClass, String installBefore) {
         return CreatedModifiedFilesFactory.addLoaderSection(project, dataLoaderClass, installBefore);
@@ -240,8 +241,10 @@ public final class CreatedModifiedFiles {
      * parameters refers to a module this module will depend on.
      *
      * @param codeNameBase codename base
-     * @param releaseVersion release version, if -1 will be taken from the entry found in platform
-     * @param version specification version (see {@link SpecificationVersion}), if null will be taken from the entry found in platform
+     * @param releaseVersion release version, if -1 will be taken from the
+     *        entry found in platform
+     * @param version specification version (see {@link SpecificationVersion}),
+     *        if null will be taken from the entry found in platform
      * @param useInCompiler do this module needs a module beeing added at a
      *        compile time?
      */
@@ -259,8 +262,8 @@ public final class CreatedModifiedFiles {
      *        yet will be created. (e.g.
      *        <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
      * @param contentResourcePath represents an <em>url</em> attribute of entry
-     *        being created, if null, will try to guess the path by comparing layer file location with the 
-     *        generatedPath
+     *        being created, if null, will try to guess the path by comparing
+     *        layer file location with the generatedPath
      * @param content became content of a file represented by the
      *        <code>generatedPath</code>
      * @param generatedPath path relative to a project directory where a new
@@ -276,11 +279,12 @@ public final class CreatedModifiedFiles {
      *        <em>SystemFileSystem.localizingBundle</em> attribute will be
      *        created with the stringvalue to a default bundle (from manifest).
      *        Also an appropriate entry will be added into the bundle.
-     * @param fileAttributes a map of <String,Object>s. key in the map is the name of the file attribute
-     *        value is the actual value, currently supported types are Boolean and String
-     *        Generates <pre>
-     *               <attr name="KEY" stringvalue="VALUE"/> or <attr name="KEY" booleanvalue="VALUE"/>
-     *           </pre>
+     * @param fileAttributes a map of <String,Object>s. key in the map is the
+     *        name of the file attribute value is the actual value, currently
+     *        supported types are Boolean and String Generates
+     *        <pre>
+     *          <attr name="KEY" stringvalue="VALUE"/> or <attr name="KEY" booleanvalue="VALUE"/>
+     *        </pre>
      * @return see {@link Operation}
      */
     public Operation createLayerEntry(
@@ -291,21 +295,42 @@ public final class CreatedModifiedFiles {
             Map/*<String,String>*/ substitutionTokens,
             String localizedDisplayName,
             Map/*<String,Object>*/ fileAttributes) {
+        // XXX refactoring: analyze calls to this methods and provide more than
+        // one implementation. Seven paremeters seems to be too much ;)
         return CreatedModifiedFilesFactory.createLayerEntry(project, layerPath,
                 contentResourcePath, content, generatedPath, substitutionTokens,
                 localizedDisplayName, fileAttributes);
     }
     
     /**
-     * Creates an element subtree in layer file. Also
-     * may create and/or modify other files as it is needed.
+     * Creates a new arbitrary <em>&lt;attr&gt;</em> element.
+     *
+     * @param parentPath path to a <em>file</em> or a <em>folder</em> in a
+     *        project's layer. It <strong>must</strong> exist.
+     * @param attrName value of the name attribute of the <em>&lt;attr&gt;</em>
+     *        element.
+     * @param secondAttrName name of the second attribute (e.g. stringvalue,
+     *        methodvalue, &hellip;)
+     * @param secondAttrValue value of the second attribute
+     * @return see {@link Operation}
+     */
+    public CreatedModifiedFiles.Operation createLayerAttribute(String parentPath,
+            String attrName, String secondAttrName, String secondAttrValue) {
+        return CreatedModifiedFilesFactory.createLayerAttribute(project,
+                parentPath, attrName, secondAttrName, secondAttrValue);
+    }
+    
+    /**
+     * Creates an element subtree in a layer file. Also may create and/or
+     * modify other files as it is needed.
      *
      * @param layerPath path in a project's layer. Folders which don't exist
      *        yet will be created. (e.g.
      *        <em>Loader/text/x-type/Actions</em>).
      * @param subtreeContent content of the subtree to place in the layer file.
-     * @param includeSubtreeRootElement if truek will place the root element in the layer file, if not
-     *        will ignore the root and place it's children only.
+     * @param includeSubtreeRootElement if true will place the root element in
+     *        the layer file, if not will ignore the root and place its
+     *        children only.
      * @return see {@link Operation}
      */
     public Operation createLayerSubtree(
@@ -314,7 +339,6 @@ public final class CreatedModifiedFiles {
             boolean includeSubtreeRootElement) {
         return CreatedModifiedFilesFactory.createLayerSubtree(project, layerPath,
                 subtreeContent, includeSubtreeRootElement);
-        
     }
     
     /**

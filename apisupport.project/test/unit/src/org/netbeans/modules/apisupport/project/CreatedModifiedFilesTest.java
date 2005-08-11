@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,6 +33,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -186,7 +188,6 @@ public class CreatedModifiedFilesTest extends TestBase {
         assertFileContent(binaryFile, new File(getWorkDir(), "module1/" + templatePath));
     }
     
-    
     public void testCreateFileWithSubstitutions() throws Exception {
         NbModuleProject project = generateStandaloneModule("module1");
         
@@ -330,8 +331,6 @@ public class CreatedModifiedFilesTest extends TestBase {
         assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + tokenMePath));
 
         // check layer content
-        BufferedReader reader = new BufferedReader(new FileReader(
-                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml")));
         String[] supposedContent = new String[] {
             "<filesystem>",
                     "<folder name=\"Menu\">",
@@ -351,27 +350,7 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "</folder>",
                     "</filesystem>"
         };
-        List actualContent = new ArrayList();
-        boolean fsElementReached = false;
-        String line;
-        
-        try {
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (!fsElementReached && line.equals(supposedContent[0])) {
-                    fsElementReached = true;
-                    actualContent.add(line);
-                    continue;
-                }
-                if (fsElementReached) {
-                    actualContent.add(line);
-                }
-            }
-        } finally {
-            reader.close();
-        }
-        
-        assertEquals("content of layer", Arrays.asList(supposedContent), actualContent);
+        assertLayerContent(supposedContent, "module1/src/org/example/module1/resources/layer.xml");
         
         // check bundle content
         EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(
@@ -381,18 +360,53 @@ public class CreatedModifiedFilesTest extends TestBase {
         assertEquals("module name", "Testing Module", ep.getProperty("OpenIDE-Module-Name"));
     }
     
-    private void assertRelativePath(String expectedPath, String[] paths) {
-        assertEquals("one path", 1, paths.length);
-        assertEquals("created, modified paths", expectedPath, paths[0]);
+    public void testCreateLayerAttribute() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        String fqClassName = "org.example.module1" + '.' + "BeepAction";
+        String dashedFqClassName = fqClassName.replace('.', '-');
+        String layerPath = "Actions/Tools/" + dashedFqClassName + ".instance";
+        
+        Operation op = cmf.createLayerEntry(layerPath, null, null, null, null, null, null);
+        cmf.add(op);
+        
+        op = cmf.createLayerAttribute(
+                layerPath, "instanceClass", "stringvalue", fqClassName);
+        assertRelativePath("src/org/example/module1/resources/layer.xml", op.getModifiedPaths());
+        
+        cmf.add(op);
+        cmf.run();
+        
+        String[] supposedContent = new String[] {
+            "<filesystem>",
+                    "<folder name=\"Actions\">",
+                    "<folder name=\"Tools\">",
+                    "<file name=\"org-example-module1-BeepAction.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"org.example.module1.BeepAction\"/>",
+                    "</file>",
+                    "</folder>",
+                    "</folder>",
+                    "</filesystem>"
+        };
+        assertLayerContent(supposedContent, "module1/src/org/example/module1/resources/layer.xml");
     }
     
-    private void assertRelativePath(String expectedPath, SortedSet paths) {
+//    TODO: mkleint
+//    public void testCreateLayerSubtree() throws Exception {
+//    }
+    
+    public static void assertRelativePath(String expectedPath, String[] paths) {
+        TestCase.assertEquals("one path", 1, paths.length);
+        TestCase.assertEquals("created, modified paths", expectedPath, paths[0]);
+    }
+    
+    public static void assertRelativePath(String expectedPath, SortedSet paths) {
         String[] s = new String[paths.size()];
         assertRelativePath(expectedPath, (String[]) paths.toArray(s));
     }
     
-    private void assertRelativePaths(String[] expectedPaths, String[] paths) {
-        assertEquals("created, modified paths", Arrays.asList(expectedPaths), Arrays.asList(paths));
+    public static void assertRelativePaths(String[] expectedPaths, String[] paths) {
+        TestCase.assertEquals("created, modified paths", Arrays.asList(expectedPaths), Arrays.asList(paths));
     }
     
     private URL createFile(String[] content) throws IOException {
@@ -426,7 +440,6 @@ public class CreatedModifiedFilesTest extends TestBase {
         return myTemplate;
     }
     
-    
     private void assertFileContent(String[] content, File file) throws IOException {
         assertTrue("file exist and is a regular file", file.isFile());
         BufferedReader br = new BufferedReader(new FileReader(file));
@@ -458,6 +471,33 @@ public class CreatedModifiedFilesTest extends TestBase {
             is.close();
             is2.close();
         }
+    }
+    
+    private void assertLayerContent(final String[] supposedContent,
+            final String layerPath) throws IOException, FileNotFoundException {
+        BufferedReader reader = new BufferedReader(new FileReader(
+                new File(getWorkDir(), layerPath)));
+        List actualContent = new ArrayList();
+        boolean fsElementReached = false;
+        String line;
+        
+        try {
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (!fsElementReached && line.equals(supposedContent[0])) {
+                    fsElementReached = true;
+                    actualContent.add(line);
+                    continue;
+                }
+                if (fsElementReached) {
+                    actualContent.add(line);
+                }
+            }
+        } finally {
+            reader.close();
+        }
+        
+        assertEquals("content of layer", Arrays.asList(supposedContent), actualContent);
     }
     
 }

@@ -89,13 +89,18 @@ final class CreatedModifiedFilesFactory {
     static CreatedModifiedFiles.Operation createLayerSubtree(NbModuleProject project,
             String layerPath, String content, boolean includeRootElement) {
         return new CreateLayerSubtree(project, layerPath, content, includeRootElement);
-    }    
+    }
     
     static CreatedModifiedFiles.Operation orderLayerEntry(NbModuleProject project,
             String layerPath, String precedingItemName, String followingItemName) {
         return new OrderLayerEntry(project, layerPath, precedingItemName, followingItemName);
     }
-
+    
+    static CreatedModifiedFiles.Operation createLayerAttribute(NbModuleProject project,
+            String parentPath, String attrName, String secondAttrName, String secondAttrValue) {
+        return new CreateLayerAttribute(project, parentPath, attrName, secondAttrName, secondAttrValue);
+    }
+    
     private static abstract class OperationBase implements Operation {
         
         private NbModuleProject project;
@@ -495,6 +500,30 @@ final class CreatedModifiedFilesFactory {
         public void run() throws IOException{
             LayerUtil.orderEntry(getProject().getProjectDirectory(), getLayerFile(),
                     layerPath, precedingItemName, followingItemName);
+        }
+    }
+    
+    private static final class CreateLayerAttribute extends OperationBase {
+        
+        private String parentPath;
+        private String attrName;
+        private String secondAttrName;
+        private String secondAttrValue;
+        
+        public CreateLayerAttribute(NbModuleProject project, String parentPath,
+                String attrName, String secondAttrName, String secondAttrValue) {
+            
+            super(project);
+            this.parentPath = parentPath;
+            this.attrName = attrName;
+            this.secondAttrName = secondAttrName;
+            this.secondAttrValue = secondAttrValue;
+            addCreatedOrModifiedPath(getLayerFile());
+        }
+        
+        public void run() throws IOException{
+            LayerUtil.createAttribute(getProject().getProjectDirectory(), getLayerFile(),
+                    parentPath, attrName, secondAttrName, secondAttrValue);
         }
     }
     
