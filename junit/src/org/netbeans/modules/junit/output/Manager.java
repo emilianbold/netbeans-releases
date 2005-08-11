@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.openide.util.Mutex;
 
@@ -34,6 +36,17 @@ final class Manager {
     //private List/*<AntSession>*/ displayedSessions;
     /** */
     //private List/*<Report>*/ displayedReports;
+    /**
+     * dummy object for use in the weak set of JUnit sessions
+     *
+     * @see  #junitSessions
+     */
+    private final Object dummy = new Object();
+    /**
+     * this map serves as a weak set of running JUnit sessions.
+     * All its keys have assigned the same value - the {@link #dummy} object.
+     */
+    private final Map junitSessions = new WeakHashMap(5);
 
     /**
      */
@@ -62,6 +75,8 @@ final class Manager {
     /**
      */
     private void sessionStarted(final AntSession session) {
+        junitSessions.put(session, dummy);
+        
         /*
          * This method is called only from method taskStarted(AntSession)
          * which is synchronized.
@@ -119,6 +134,11 @@ final class Manager {
      */
     synchronized void sessionFinished(final AntSession session,
                                       final Report report) {
+        if (junitSessions.remove(session) == null) {
+            /* This session did not run the "junit" task. */
+            return;
+        }
+        
         /*
         assert ((pendingSessions != null
                         && pendingSessions.contains(session)))
