@@ -363,7 +363,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     public void testCreateLayerAttribute() throws Exception {
         NbModuleProject project = generateStandaloneModule("module1");
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
-        String fqClassName = "org.example.module1" + '.' + "BeepAction";
+        String fqClassName = "org.example.module1.BeepAction";
         String dashedFqClassName = fqClassName.replace('.', '-');
         String layerPath = "Actions/Tools/" + dashedFqClassName + ".instance";
         
