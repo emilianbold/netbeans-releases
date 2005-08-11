@@ -474,6 +474,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(objectNameLabel, gridBagConstraints);
 
+        objectNameTextField.setName("objectNameTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -486,6 +487,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
 
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
         stateLabel.setMinimumSize(new java.awt.Dimension(0, 20));
+        stateLabel.setName("stateLabel");
         stateLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -498,6 +500,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(stateLabel, gridBagConstraints);
 
         mbeanClassComboBox.setEditable(true);
+        mbeanClassComboBox.setName("mbeanClassComboBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -508,6 +511,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         northPanel.add(mbeanClassComboBox, gridBagConstraints);
 
+        classNameTextField.setName("classNameTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -535,6 +539,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(mbeanClassLabel, gridBagConstraints);
 
         mbeanGroup.add(userMBeanRadioButton);
+        userMBeanRadioButton.setName("userMBeanRadioButton");
         userMBeanRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 userMBeanRadioButtonActionPerformed(evt);
@@ -551,6 +556,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(userMBeanRadioButton, gridBagConstraints);
 
         mbeanGroup.add(standardMBeanRadioButton);
+        standardMBeanRadioButton.setName("standardMBeanRadioButton");
         standardMBeanRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stabdardMBeanRadioButtonActionPerformed(evt);
@@ -574,6 +580,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(stdMBObjectNameLabel, gridBagConstraints);
 
+        stdMBObjectNameTextField.setName("stdMBObjectNameTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -593,6 +600,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         northPanel.add(interfaceLabel, gridBagConstraints);
 
         interfaceComboBox.setMinimumSize(new java.awt.Dimension(270, 25));
+        interfaceComboBox.setName("interfaceComboBox");
         interfaceComboBox.setPreferredSize(new java.awt.Dimension(270, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -612,6 +620,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(constructorLabel, gridBagConstraints);
 
+        constructorComboBox.setName("constructorComboBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -630,6 +639,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(stdMBConstructorLabel, gridBagConstraints);
 
+        stdMBConstructorComboBox.setName("stdMBConstructorComboBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
