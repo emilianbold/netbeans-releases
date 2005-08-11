@@ -585,9 +585,7 @@ the Options window:-->
 
    <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
 
-   <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
-<!--This ID is used for CSH as well for the Javadoc Index Search window:-->
-      <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
+
 
 
 
@@ -595,6 +593,13 @@ the Options window:-->
    <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/new-interface.html" />
 <!--Help button on synchronize  dialog-->
    <mapID target="java.sync.csh.confirmchanges" url="java/synchronizing/new-interface.html" /> 
+
+<!--This ID is for the Auto Comment Tool tab in Source Editor:-->
+   <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
+
+<!--CSH for the Javadoc Index Search window:-->
+      <mapID target="javadoc.search.window" url="javadoc/show_in_editor.html" />
+
 
    <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="configure/modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.Settings" url="configure/modules/autoupdate.html" />
