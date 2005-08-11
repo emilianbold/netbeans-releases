@@ -101,6 +101,8 @@ public class VariablesTableModel implements TableModel, Constants {
                      row instanceof JPDAWatch
                 )
                     return false;
+                else
+                    return true;
             }
         }
         if (row.toString().startsWith("SubArray")) {
