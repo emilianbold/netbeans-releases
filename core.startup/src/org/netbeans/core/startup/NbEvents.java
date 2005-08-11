@@ -91,9 +91,6 @@ final class NbEvents extends Events {
             }
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_finish_disable_modules"));
-        } else if (message == CONVERTING) {
-            setStatusText(
-                NbBundle.getMessage(NbEvents.class, "TEXT_converting"));
         } else if (message == START_DEPLOY_TEST_MODULE) {
             // No need to print anything. ModuleSystem.deployTestModule prints
             // its own stuff (it needs to be printed synchronously to console
@@ -188,7 +185,6 @@ final class NbEvents extends Events {
             // Again avoid finding display name now.
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_load_section"/*, ((Module)args[0]).getDisplayName()*/));
-            incrementSplashProgressBar();
         } else if (message == LOAD_LAYERS) {
             setStatusText(
                 NbBundle.getMessage(NbEvents.class, "MSG_load_layers"));

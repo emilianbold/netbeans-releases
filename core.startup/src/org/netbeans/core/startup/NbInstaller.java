@@ -206,6 +206,7 @@ final class NbInstaller extends ModuleInstaller {
 	
         it = modules.iterator();
 	ev.log(Events.PERF_START, "NbInstaller.load - sections"); // NOI18N
+        ev.log(Events.LOAD_SECTION);
         CoreBridge.conditionallyLoaderPoolTransaction(true);
         try {
             while (it.hasNext()) {
@@ -354,10 +355,10 @@ final class NbInstaller extends ModuleInstaller {
         // Whether we yet had occasion to attach to the module actions list.
         boolean attachedToMA = false;
         try {
+            Main.incrementSplashProgressBar();
             Iterator it = s.iterator();
             while (it.hasNext()) {
                 ManifestSection sect = (ManifestSection)it.next();
-                ev.log(load ? Events.LOAD_SECTION : Events.UNLOAD_SECTION, m, sect);
                 if (sect instanceof ManifestSection.ActionSection) {
                     if (! attachedToMA) {
                         // First categorize the actions we will add.

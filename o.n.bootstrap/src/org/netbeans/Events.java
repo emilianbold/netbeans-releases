@@ -81,12 +81,6 @@ public abstract class Events {
     public static final String UPDATE = "update"; // NOI18N
     /** Module home, ManifestSection section */
     public static final String LOAD_SECTION = "loadSection"; // NOI18N
-    /** Module home, ManifestSection section */
-    public static final String UNLOAD_SECTION = "unloadSection"; // NOI18N
-    /** Module home */
-    public static final String LOAD_HELP = "loadHelp"; // NOI18N
-    /** Module home */
-    public static final String UNLOAD_HELP = "unloadHelp"; // NOI18N
     /** no args */
     public static final String CLOSE = "close"; // NOI18N
     /** no args */
@@ -103,8 +97,6 @@ public abstract class Events {
     public static final String FAILED_INSTALL_NEW = "failedInstallNew"; // NOI18N
     /** Module notInstalled, InvalidException problem */
     public static final String FAILED_INSTALL_NEW_UNEXPECTED = "failedInstallNewUnexpected"; // NOI18N
-    /** File installedModulesXML */
-    public static final String CONVERTING = "converting"; // NOI18N
     /** Set<Module> modules */
     public static final String LOAD_LAYERS = "loadLayers"; // NOI18N
     /** Set<Module> modules */
