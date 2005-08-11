@@ -140,11 +140,8 @@ public class Utils {
                     dataObject = ((DataShadow) dataObject).getOriginal();
                 }
                 if (dataObject != null) {
-                    FileObject fo = dataObject.getPrimaryFile();
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        nodeFiles.add(file);
-                    }
+                    Collection doFiles = toFileCollection(dataObject.files());
+                    nodeFiles.addAll(doFiles);
                 }
             }
         }
