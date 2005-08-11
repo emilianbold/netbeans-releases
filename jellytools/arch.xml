@@ -111,8 +111,7 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="arch-usecases">
   <p>
     Majority of operator classes has a use case in javadoc. An overall summary
-    can be found in this <a href="http://jellytools.netbeans.org/writingJellyTestsGuide.html">
-    document</a>.
+    can be found in jellytools documentation.
   </p>
  </answer>
 
@@ -981,6 +980,27 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="security-policy">
   <p>
     No.
+  </p>
+ </answer>
+
+
+
+
+<!--
+        <question id="arch-where" when="init">
+            Where one can find sources for your module?
+            <hint>
+                Please provide link to the CVS web client at
+                http://www.netbeans.org/download/source_browse.html
+                or just use tag defaultanswer generate='here'
+            </hint>
+        </question>
+-->
+ <answer id="arch-where">
+  <p>
+    <a href="http://www.netbeans.org/source/browse/jellytools">
+        http://www.netbeans.org/source/browse/jellytools
+    </a>
   </p>
  </answer>
 

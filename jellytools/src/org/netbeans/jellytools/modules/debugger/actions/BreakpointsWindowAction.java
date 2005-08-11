@@ -20,8 +20,8 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 /**
  * Used to call "Window | Debugging | Breakpoints" main menu item or Alt-Shift-F5
  * shortcut.
- * @see Action
- * @see ActionNoBlock
+ * @see org.netbeans.jellytools.actions.Action
+ * @see org.netbeans.jellytools.actions.ActionNoBlock
  * @author <a href="mailto:martin.schovanek@sun.com">Martin Schovanek</a> 
  */
 public class BreakpointsWindowAction extends ActionNoBlock {

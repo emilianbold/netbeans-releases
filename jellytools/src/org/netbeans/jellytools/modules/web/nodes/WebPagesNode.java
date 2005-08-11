@@ -31,8 +31,7 @@ public class WebPagesNode extends Node {
     
     /**
      * creates new WebPagesNode
-     * @param tree JTreeOperator of tree
-     * @param treePath String tree path
+     * @param projectName project name
      */
     public WebPagesNode(String projectName) {
         super(new ProjectsTabOperator().getProjectRootNode(projectName), treePath);

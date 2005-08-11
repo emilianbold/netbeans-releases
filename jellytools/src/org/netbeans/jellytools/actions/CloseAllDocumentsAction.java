@@ -59,7 +59,7 @@ public class CloseAllDocumentsAction extends Action {
 
     /** Performs popup action Close All Documents on given top component operator 
      * which is activated before the action.
-     * @param compOperator operator which should be activated
+     * @param tco operator which should be activated
      */
     public void performPopup(TopComponentOperator tco) {
         tco.pushMenuOnTab(popupPath);

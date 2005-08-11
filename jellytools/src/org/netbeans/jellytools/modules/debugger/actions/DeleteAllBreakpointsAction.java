@@ -18,8 +18,8 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  * Used to call "Delete All" popup menu item in Breakpoints window.
- * @see Action
- * @see ActionNoBlock
+ * @see org.netbeans.jellytools.actions.Action
+ * @see org.netbeans.jellytools.actions.ActionNoBlock
  * @author <a href="mailto:martin.schovanek@sun.com">Martin Schovanek</a> 
  */
 public class DeleteAllBreakpointsAction extends ActionNoBlock {

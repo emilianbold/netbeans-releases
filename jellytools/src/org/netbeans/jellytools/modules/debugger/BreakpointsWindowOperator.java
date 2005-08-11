@@ -29,7 +29,7 @@ import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsActi
  * </pre>
  *
  * @author Martin.Schovanek@sun.com
- * @see OutputTabOperator
+ * @see org.netbeans.jellytools.OutputTabOperator
  */
 public class BreakpointsWindowOperator extends TopComponentOperator {
     

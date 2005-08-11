@@ -58,7 +58,7 @@ public class CloseViewAction extends Action {
 
     /** Performs popup action Close Window on given top component operator 
      * which is activated before the action.
-     * @param compOperator operator which should be activated and closed
+     * @param tco operator which should be activated and closed
      */
     public void performPopup(TopComponentOperator tco) {
         tco.pushMenuOnTab(popupPath);
