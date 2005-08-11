@@ -608,6 +608,7 @@ the Options window:-->
    <mapID target="org.netbeans.modules.autoupdate.AutoupdateType" url="configure/modules/autoupdate.html" />
     <!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
     <mapID target="org.netbeans.modules.junit.JUnitSettings" url="junit/junit_configuring.html" />
+<!--Create Tests dialog box-->
     <mapID target="org.netbeans.modules.junit.JUnitCfgOfCreate" url="junit/junit_creatingtests.html" />  
         <!--TODO - help topic for Actions dialog; if topic is written, close 39369: -->   
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
