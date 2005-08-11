@@ -162,18 +162,23 @@ public class JBStartServer extends StartServer implements ProgressObject{
             Object target = method.invoke(null, new Object[]{"jboss.system:type=ServerConfig"});
             Object serverName = srv.getClass().getMethod("getAttribute", new Class[]{loader.loadClass("javax.management.ObjectName"),String.class}).invoke(srv, new Object[]{target, "ServerName"});
             String configName = (String)serverName;
-            
+            //temporary debug message
+            System.out.println("INFO for #61477 : ServerConfig attribute is:" + configName + " expected:" + checkingConfigName);
             if (checkingConfigName.equals(configName)){
                 return true;
             }else{
                 return false;
             }
         }catch(NameNotFoundException e){
+        	  System.out.println("INFORMATIONAL exception trace for #61477");
+            e.printStackTrace();
             if (checkingConfigName.equals("minimal"))
                 return true;
             else
                 return false;
         }catch(Exception e){
+        	  System.out.println("INFORMATIONAL exception trace for #61477");
+            e.printStackTrace();
             return false;
         } finally{
             Thread.currentThread().setContextClassLoader(oldLoader);
