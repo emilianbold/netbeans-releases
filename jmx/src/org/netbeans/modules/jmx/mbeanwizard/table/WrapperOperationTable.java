@@ -149,7 +149,7 @@ public class WrapperOperationTable extends OperationTable {
                      else
                          methParamPopup = new OperationParameterPopup(
                              ancestorPanel, model, paramField,
-                             editedRow, wiz);
+                             editedRow, wiz); 
                  }
              });
              
