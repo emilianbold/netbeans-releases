@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -119,7 +120,7 @@ public class RegisterDerby implements DatabaseRuntime {
     /** Returns a file suffix for shell files, either ".ksh" or ".bat"
      */
     private String getFileSuffix() {
-        if (File.separator.equals("\\")) { // NOI18N
+        if (Utilities.isWindows()) {
             return ".bat"; // NOI18N
         } else {
             return ".ksh"; // NOI18N
@@ -145,7 +146,7 @@ public class RegisterDerby implements DatabaseRuntime {
         if (installLoc == null)
             return null;
         return new String[] {"DERBY_INSTALL=" + installLoc.getAbsolutePath(), 
-                             "SystemRoot=" + System.getenv("SystemRoot"), // needed on Windows
+                             "SystemRoot=" + System.getProperty("Env-SystemRoot"), // needed on Windows
                              "JAVA_HOME=" + javaHome};
     }
     
