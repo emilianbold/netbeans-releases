@@ -24,6 +24,10 @@ import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -61,7 +65,7 @@ public class RegisterDerby implements DatabaseRuntime {
      * Whether this runtime accepts this connection string.
      */
     public boolean acceptsConnectionUrl(String url){
-        if (url.startsWith("jdbc:pointbase"))
+        if (url.startsWith("jdbc:derby://"))
             return true;
         else
             return false;
@@ -103,51 +107,39 @@ public class RegisterDerby implements DatabaseRuntime {
         return InstalledFileLocator.getDefault().locate(INST_DIR, null, false);
     }
     
+    private String getNetworkServerClasspath() {
+        return 
+            getDerbyFile("lib/derby.jar").getAbsolutePath() + File.pathSeparator + 
+            getDerbyFile("lib/derbytools.jar").getAbsolutePath() + File.pathSeparator + 
+            getDerbyFile("lib/derbynet.jar").getAbsolutePath();
+    }
+    
+    private File getDerbyFile(String relPath) {
+        return InstalledFileLocator.getDefault().locate(INST_DIR + "/" + relPath, null, false);
+    }
+    
     /* can return null
      * of the location of the derby scripts to be used
      *
      **/
     private File getScriptsLocation() {
-        File installRoot = getInstallLocation();
-        if (installRoot == null) {
-            showInformation(NbBundle.getMessage(StartAction.class, "ERR_NotThere"));
-            return null;
-        }
-        return new File(installRoot, 
-            "frameworks" + File.separator + "NetworkServer" + File.separator + "bin");
-    }
-    
-    /** Returns a file suffix for shell files, either ".ksh" or ".bat"
-     */
-    private String getFileSuffix() {
-        if (Utilities.isWindows()) {
-            return ".bat"; // NOI18N
-        } else {
-            return ".ksh"; // NOI18N
-        }
+        return getDerbyFile("frameworks/NetworkServer/bin");
     }
     
     private String[] getEnvironment() {
-        /*
-        Map env = System.getenv();
-        String[] result = new String[env.size() + 1];
-        int index = 0;
-        Iterator it = env.keySet().iterator();
-        while (it.hasNext()) {
-            String key = (String)it.next();
-            result[index] = key + "=" + env.get(key);
-            System.out.println("currentEnv " + result[index]);
-            index++;
-        }
-        result[result.length - 1] = "DERBY_INSTALL=" + installLoc.getAbsolutePath();
-         */
-        String javaHome = System.getProperty("java.home");
+        //String javaHome = System.getProperty("java.home");
         File installLoc = getInstallLocation();
         if (installLoc == null)
             return null;
-        return new String[] {"DERBY_INSTALL=" + installLoc.getAbsolutePath(), 
-                             "SystemRoot=" + System.getProperty("Env-SystemRoot"), // needed on Windows
-                             "JAVA_HOME=" + javaHome};
+        // PENDING - set derby.system.home to $userdir/derby, so the log file is written there
+        return new String[] {"DERBY_INSTALL=" + installLoc.getAbsolutePath()};
+        //                     "SystemRoot=" + System.getProperty("Env-SystemRoot"), // needed on Windows
+        //                     "JAVA_HOME=" + javaHome};
+    }
+    
+    private JavaPlatform getJavaPlatform() {
+        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+        return jpm.getDefaultPlatform(); 
     }
     
     /**
@@ -157,16 +149,27 @@ public class RegisterDerby implements DatabaseRuntime {
         if (process!=null){// seems to be already running?
             stop();
         }
-        String suffix = getFileSuffix();
-        File loc =  getScriptsLocation();
-        if (loc==null){
-            return;//nothing to start...
-        }
-        File script = new File(loc, "startNetworkServer" + suffix);
         try {
             ExecSupport ee= new ExecSupport();
-            String[] environment = getEnvironment();
-            process= Runtime.getRuntime().exec(script.getAbsolutePath(), environment, loc);
+            String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
+            if (java == null)
+                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+            // java -Dderby.system.home=<userdir/derbytemp> -classpath  
+            //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
+            //     org.apache.derby.drda.NetworkServerControl start
+            NbProcessDescriptor desc = new NbProcessDescriptor(
+              java,
+              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + "derbytemp " +
+              "-classpath " + getNetworkServerClasspath() +
+              " org.apache.derby.drda.NetworkServerControl start"
+            );
+            process = desc.exec (
+                null,
+                getEnvironment(),
+                true,
+                getScriptsLocation()
+            );
+
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
             if (waitTime>0){
                 Thread.sleep(waitTime);// to make sure the server is up and running
@@ -191,15 +194,26 @@ public class RegisterDerby implements DatabaseRuntime {
             //BufferedWriter processIn = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             //processIn.write("q\ny\n");
             //processIn.flush();
-            String suffix = getFileSuffix();
-            File loc =  getScriptsLocation();
-            if (loc==null){
-                return;//nothing to start...
-            }
-            File script = new File(loc, "stopNetworkServer" + suffix);
-            ExecSupport ee= new ExecSupport();
-            Runtime.getRuntime().exec(script.getAbsolutePath(), getEnvironment(), loc);
-            
+            String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
+            if (java == null)
+                throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+            // java -Dderby.system.home=<userdir/derbytemp> -classpath  
+            //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
+            //     org.apache.derby.drda.NetworkServerControl shutdown
+            NbProcessDescriptor desc = new NbProcessDescriptor(
+              java,
+              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + "derbytemp " +
+              "-classpath " + getNetworkServerClasspath() +
+              " org.apache.derby.drda.NetworkServerControl shutdown"
+            );
+            Process shutwownProcess = desc.exec (
+                null,
+                getEnvironment(),
+                true,
+                getScriptsLocation()
+            );
+            shutwownProcess.waitFor();
+
             process.destroy();
         } 
         catch (Exception e) {

@@ -5,11 +5,17 @@
         <folder name="Tools">
             <folder name="DerbyMenu">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.derby.Bundle" />
+                <attr name="StartServer.instance/StopServer.instance" boolvalue="true"/>
+                <attr name="StopServer.instance/CreateDatabaseAction.instance" boolvalue="true"/>
+                
                 <file name="StartServer.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.StartAction"/>
                 </file>
                 <file name="StopServer.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.StopAction"/>
+                </file>
+                <file name="CreateDatabaseAction.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.derby.CreateDatabaseAction"/>
                 </file>
             </folder>
         </folder>
