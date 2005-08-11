@@ -248,6 +248,9 @@ public class FormEditorSupport extends JavaEditor
     }
 
     protected org.openide.util.Task reloadDocument() {
+        if (multiviewTC == null)
+            return super.reloadDocument();
+
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         MultiViewPerspective[] mvps = handler.getPerspectives();
         int openedElement = 0;
