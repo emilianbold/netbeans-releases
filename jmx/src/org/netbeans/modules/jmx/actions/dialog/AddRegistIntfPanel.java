@@ -165,7 +165,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         northPanel.add(keepRefCheckBox, gridBagConstraints);
 
         add(northPanel, java.awt.BorderLayout.NORTH);
