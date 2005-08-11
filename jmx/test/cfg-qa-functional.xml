@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/actions/AddMBeanOperationsTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/ImplNotifEmitterTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/CreateJUnitTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/actions/RegisterMBeansTests.class"/>
             </patternset>
         </testset>
     </testbag>
