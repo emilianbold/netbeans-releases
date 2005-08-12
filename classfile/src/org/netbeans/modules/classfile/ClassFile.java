@@ -504,7 +504,7 @@ public class ClassFile {
 	return annotations.get(annotationClass) != null;
     }
     
-    /* Return the collection of all unique class references in this class.
+    /** Return the collection of all unique class references in this class.
      *
      * @return a Set of ClassNames specifying the referenced classnames.
      */
