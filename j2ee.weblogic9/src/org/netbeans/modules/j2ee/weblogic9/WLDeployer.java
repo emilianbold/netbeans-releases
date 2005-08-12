@@ -25,6 +25,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import org.netbeans.modules.j2ee.jboss4.URLWait;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
@@ -41,6 +42,8 @@ import org.openide.util.NbBundle;
  */
 public class WLDeployer implements ProgressObject, Runnable {
     private static final String AUTO_DEPLOY_DIR = "/autodeploy"; //NOI18N
+    /** timeout for waiting for URL connection */
+    private static final int TIMEOUT = 60000;
     
     Target[] target;
     File file;
@@ -60,7 +63,7 @@ public class WLDeployer implements ProgressObject, Runnable {
         this.file = file;
         this.file2 = file2;
         this.module_id = module_id;
-        fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+        fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
     }
@@ -78,25 +81,28 @@ public class WLDeployer implements ProgressObject, Runnable {
             toDeploy.delete();
         
         fileName = fileName.substring(0,fileName.lastIndexOf('.'));
-        
-        fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
-        
-        fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+        String msg = NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath());
+        fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
         
         try{
+            URL url = new URL (module_id.getWebURL());
+            String waitingMsg = NbBundle.getMessage(WLDeployer.class, "MSG_Waiting_For_Url", url);
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
-            fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
-        }catch(Exception e){
-            fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
-        }
-        try{
-//            URLWait.waitForStartup(new URL (module_id.getWebURL()), 30000);
-            for (int i = 0; i < 6; i++) {
+            fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+            //delay to prevent hitting the old content before reload
+            for (int i = 0; i < 3; i++) {
                 Thread.sleep(1000);
-                fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(WLDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+                fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+            }
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < TIMEOUT) {
+                if (URLWait.waitForUrlReady(url, 1000)) {
+                    break;
+                }
+                fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
             }
         }catch(Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
         }
 
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
