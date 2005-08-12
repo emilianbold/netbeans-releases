@@ -482,26 +482,14 @@ final class ModuleListParser {
             if (nball == null) {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File((String) properties.get("basedir")));
             }
-            String netbeansDestDir = (String)properties.get("netbeans.dest.dir");
-            boolean scanNetBeansSources = false;
-            File d1 = new File(netbeansDestDir);
-            if (d1.getName().equals("netbeans")) {
-                File d2 = d1.getParentFile();
-                if (d2 != null && d2.getName().equals("nbbuild")) {
-                    File d3 = d2.getParentFile();
-                    if (d3 != null && d3.equals(new File(nball))) {
-                        scanNetBeansSources = true;
-                    }
-                }
-            }
-            // If netbeans.dest.dir is <nball>/nbbuild/netbeans scan sources otherwise binaries.
-            if (scanNetBeansSources) {
-              entries = scanNetBeansOrgSources(new File(nball), properties, project);
+            // If run from tests scan binaries otherwise sources.
+            if (properties.get("xtest.home") != null) {
+                entries = scanBinaries(properties, project);
+                // module itself has to be added because it doesn't have to be in binaries
+                Entry e = scanStandaloneSource(properties, project);
+                entries.put(e.getCnb(), e);
             } else {
-              entries = scanBinaries(properties, project);
-              // module itself has to be added because it doesn't have to be in binaries
-              Entry e = scanStandaloneSource(properties, project);
-              entries.put(e.getCnb(), e);
+                entries = scanNetBeansOrgSources(new File(nball), properties, project);
             }
         }
     }
