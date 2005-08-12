@@ -51,7 +51,7 @@ public class RemoveExecutor extends ExecutorSupport {
      */
     public static RemoveExecutor [] executeCommand(RemoveCommand cmd, CvsVersioningSystem cvs, GlobalOptions options) {
         Command [] cmds = new org.netbeans.lib.cvsclient.command.Command[0];
-        if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RemoveCommand.class, "MSG_RemoveExecutor_CmdDisplayName"));
+        if (cmd.getDisplayName() == null) cmd.setDisplayName(NbBundle.getMessage(RemoveExecutor.class, "MSG_RemoveExecutor_CmdDisplayName"));
         try {
             cmds = prepareBasicCommand(cmd);
         } catch (IOException e) {
