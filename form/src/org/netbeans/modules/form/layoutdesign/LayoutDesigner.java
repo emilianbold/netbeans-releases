@@ -438,13 +438,13 @@ public class LayoutDesigner implements LayoutConstants {
                     layoutModel.addComponent(components[i], targetContainer, -1);
                 }
 
-                if (dragger.isResizing() || (newComponent && components[0].isLayoutContainer())) {
+                if (dragger.isResizing() || (newComponent && components[0].isLayoutContainer()))
                     imposeCurrentSize(components[0], dragger.getSizes());
-                }
+
+                updateDesignModifications(targetContainer);
             }
             else { // resizing root container
                 assert dragger.isResizing();
-//                modelListener.deactivate(); // do not react on model changes
                 LayoutRegion space = dragger.getMovingBounds()[0];
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     components[0].getLayoutInterval(dim).setCurrentSpace(space);
@@ -453,7 +453,8 @@ public class LayoutDesigner implements LayoutConstants {
                 // not changing structure, need not set "dirty"
             }
 
-            updateDesignModifications(targetContainer != null ? targetContainer : components[0]);
+            if (dragger.isResizing() && components[0].isLayoutContainer())
+                updateDesignModifications(components[0]);
 
             modelListener.activate();
         }
