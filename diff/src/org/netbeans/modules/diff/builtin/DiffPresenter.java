@@ -21,6 +21,8 @@ import java.beans.PropertyEditorManager;
 import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.io.IOException;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyModel;
@@ -53,23 +55,18 @@ public class DiffPresenter extends javax.swing.JPanel {
     private DiffPresenter.Info diffInfo;
     private DiffProvider defaultProvider;
     private DiffVisualizer defaultVisualizer;
-    private JPanel progressPanel;
+    private JComponent progressPanel;
 
     /**
      * Creates <i>just computing diff</i> presenter. The mode
      * is left on {@link #initWithDiffInfo} call.
      */
     public DiffPresenter() {
-        progressPanel = new JPanel(new BorderLayout());
-        JLabel progressLabel = new JLabel();
-        JProgressBar progress = new JProgressBar();
-
-        progress.setIndeterminate(true);
         String label = NbBundle.getMessage(DiffPresenter.class, "diff.prog");
-        progressLabel.setText(label);
-        progressPanel.add(progress, BorderLayout.CENTER);
-        progressPanel.add(progressLabel, BorderLayout.LINE_START);
+        ProgressHandle progress = ProgressHandleFactory.createHandle(label);
+        progressPanel = ProgressHandleFactory.createProgressComponent(progress);
         add(progressPanel);
+        progress.start();
     }
 
     /** Creates new DiffPresenter with given content. */
