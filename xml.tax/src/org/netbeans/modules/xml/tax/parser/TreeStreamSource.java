@@ -7,28 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.xml.tax.parser;
 
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.EntityResolver;
-
-import org.openide.*;
-import org.openide.awt.StatusDisplayer;
-
+import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.tax.io.TreeBuilder;
 import org.netbeans.tax.io.TreeInputSource;
 import org.netbeans.tax.io.TreeStreamBuilderErrorHandler;
-
-import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.modules.xml.tax.parser.ParserLoader;
+import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Creates DOM-like structure called Tree.
@@ -245,7 +241,8 @@ public class TreeStreamSource implements TreeInputSource {
 
             // parse catalogs explicitly eliminating timeout on first resolution
             // we use such IDs that there is not reason for I/O i.e. block (#19779)
-            res.resolveEntity(null, null);  
+            // [jglick] It is illegal to pass null for systemId! breaks e.g. contrib/docbook
+            res.resolveEntity(null, "urn:nowhere"); // NOI18N
 
             final ErrorManager emgr = ErrorManager.getDefault();
             final InputSource MARK = new InputSource("mark"); // NOI18N
@@ -323,7 +320,7 @@ public class TreeStreamSource implements TreeInputSource {
                     final IOException CANNOT_CONNECT =
                         new IOException("Resolution timeout \"" + systemId + "\" (" + publicId + ")"); // NOI18N
                     String pattern = Util.THIS.getString("MSG_cannot_connect");
-                    String params[] = new String[] {publicId, systemId};
+                    Object[] params = new String[] {publicId, systemId};
                     String annotation = MessageFormat.format(pattern, params);
                     emgr.annotate(CANNOT_CONNECT, annotation);
                     
@@ -338,7 +335,7 @@ public class TreeStreamSource implements TreeInputSource {
                     new IOException("Resolution interrupted \"" + systemId + "\" (" + publicId + ")"); // NOI18N
 
                 String pattern = Util.THIS.getString("MSG_interrupted");
-                String params[] = new String[] {publicId, systemId};
+                Object[] params = new String[] {publicId, systemId};
                 String annotation = MessageFormat.format(pattern, params);
                 emgr.annotate(INTERRUPTED, annotation);
 
