@@ -167,7 +167,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
 
         
         categories = new ProjectCustomizer.Category[] {
-            sources, display, libraries, versioning, build
+            sources, libraries, display, versioning, build
         };
         
         // sources customizer
