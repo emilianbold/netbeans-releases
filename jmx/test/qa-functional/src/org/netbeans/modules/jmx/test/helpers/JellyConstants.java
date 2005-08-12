@@ -17,11 +17,28 @@ package org.netbeans.modules.jmx.test.helpers;
 public class JellyConstants {
     
    //Package
+   public static final String MANAGER_PROJ = "ManagerFunctionalTest";
+    
    public static final String PROJECT_NAME = "MBeanFunctionalTest";
    public static final String PROJECT_CAT = "General";
    public static final String PROJECT_APP = "Java Application";
+   public static final String JAVA_PACKAGE = "Java Package";
    public static final String PACKAGE_NAME = "com.foo.bar";
    public static final String CATEGORY = "JMX MBean";
+   public static final String MGMT = "Management";
+   public static final String SOURCE_PACKAGE = "Source Packages";
+   public static final String TEST_PACKAGE = "Test Packages";
+   
+   //Extensions
+   public static final String JAVA_EXT = ".java";
+   public static final String PT = ".";
+   public static final String D_PT = ":";
+   public static final String JAVA_FILE_CATEG = "Java Classes";
+   public static final String JAVA_FILE_TYPE = "Java Class";
+   public static final String SRC_PKG = "Source Packages|";
+   public static final String LINE = "line"; 
+   public static final String PIPE = "|";
+   public static final String EMPTYSTRING = "";
    
    //MBean type
    public static final String STDMBEAN = "StandardMBean";
@@ -75,6 +92,7 @@ public class JellyConstants {
    public static final String ATTR_TBL = "attributeTable";
    public static final String ATTR_ADD_BTN = "attrAddJButton";
    public static final String ATTR_REM_BTN = "attrRemoveJButton";
+   public static final String ATTR_ACCESS_CB = "attrAccessBox";
    
    public static final String W_ATTR_TBL = "wrapperAttributeTable";
    public static final String W_ATTR_REM_BTN = "wrapperAttributeRemoveButton";
@@ -84,9 +102,22 @@ public class JellyConstants {
    public static final String OPER_TBL = "methodTable";
    public static final String OPER_ADD_BTN = "methAddJButton";
    public static final String OPER_REM_BTN = "methRemoveJButton";
+   public static final String OPER_TYPE_BX = "methTypeBox";
+   
+   public static final String PARAM_POP_TBL = "ParamPopupTable";
+   public static final String PARAM_ADD_BTN = "methAddParamButton";
+   public static final String ADD_PARAM_BTN = "addParamJButton";
+   
+   public static final String EXCEP_POP_TBL = "ExcepPopupTable";
+   public static final String EXCEP_ADD_BTN = "methAddExcepJButton";
+   
+   public static final String OP_TBL = "operationTable";
+   public static final String ADD_OP_BTN = "opAddJButton";
    
    public static final String W_OPER_TBL = "wrapperOperationTable";
    public static final String W_OPER_REM_BTN = "wrapperOpRemoveJButton";
+   
+   public static final String CLOSE_BTN = "closeJButton";
    
    //Notification step
    public static final String IMPLNOTIFEMIT_CBX = "implNotifEmitCheckBox";
@@ -95,6 +126,12 @@ public class JellyConstants {
    public static final String NOTIF_TBL = "notificationTable";
    public static final String NOTIF_ADD_BTN = "notifAddJButton";
    public static final String NOTIF_REM_BTN = "notifRemJButton";
+   public static final String NOTIF_CLSS_BX = "notifClassBox";
+   
+   public static final String NT_POP_TBL = "notifPopupTable";
+   public static final String NT_ADD_BTN = "notifTypePopupJButton";
+   public static final String ADD_NT_BTN = "addNotifTypeJButton";
+   public static final String NT_CLOSE_BTN = "closeNotifTypeJButton";
 
    //Junit step
    public static final String JU_CBX = "junitJChckBox";
@@ -181,14 +218,6 @@ public class JellyConstants {
    public static final String ATTRCLASS_TO_WRAP = "WrappedAttribute";
    public static final String OPCLASS_TO_WRAP = "WrappedOperation";
    
-   //================= Extensions =======================//
-   public static final String JAVA_EXT = ".java";
-   public static final String PT = ".";
-   public static final String JAVA_FILE_CATEG = "Java Classes";
-   public static final String JAVA_FILE_TYPE = "Java Class";
-   public static final String SRC_PKG = "Source Packages|";
-   public static final String PIPE = "|";
-   
    //================ Index for tables ==================//
    
    //Lines
@@ -216,4 +245,10 @@ public class JellyConstants {
    public static final String W_PA_COMMENT3 = "Third wrapped parameter comment";
    
    public static final String W_EX_COMMENT1 = "First wrapped exception comment";
+   
+   //======================== Diff files =====================================//
+   public static final String DATE_TIME = "<current Date and Time>";
+   public static final String AUTHOR = "<author>";
+   public static final String EXP_LINE = "expected line :";
+   
 }
