@@ -14,48 +14,118 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
 import javax.swing.*;
-import java.awt.Dimension;
 import java.io.File;
+import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Contains all components of the Search History panel.
  *
  * @author Maros Sandor
  */
-class SearchHistoryPanel extends javax.swing.JPanel {
+class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener {
 
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
     
     private SearchExecutor          currentSearch;
     private RequestProcessor.Task   currentSearchTask;
+    
+    private boolean                 searchInProgress;
+    private List                    results;
+    private List                    dispResults;
+    private SummaryView             summaryView;    
+    private DiffResultsView         diffView;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
         this.criteria = criteria;
+        explorerManager = new ExplorerManager ();
         initComponents();
-        setupComponents();
+        refreshComponents();
     }
 
-    private void setupComponents() {
-        int maxWidth = tbSummary.getPreferredSize().width;
-        if (tbDiff.getPreferredSize().width > maxWidth) maxWidth = tbDiff.getPreferredSize().width; 
-        if (bSearch.getPreferredSize().width > maxWidth) maxWidth = bSearch.getPreferredSize().width;
-        tbSummary.setPreferredSize(new Dimension(maxWidth, tbSummary.getPreferredSize().height));
-        tbDiff.setPreferredSize(new Dimension(maxWidth, tbDiff.getPreferredSize().height));
-        bSearch.setPreferredSize(new Dimension(maxWidth, bSearch.getPreferredSize().height));
-        tbSummary.setSelected(true);
+    private ExplorerManager             explorerManager;
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
+            if (tc == null) return;
+            tc.setActivatedNodes((Node[]) evt.getNewValue());
+        }
     }
 
+    public void addNotify() {
+        super.addNotify();
+        explorerManager.addPropertyChangeListener(this);
+    }
+
+    public void removeNotify() {
+        explorerManager.removePropertyChangeListener(this);
+        super.removeNotify();
+    }
+    
+    public ExplorerManager getExplorerManager () {
+        return explorerManager;
+    }
+    
+    private void refreshComponents() {
+        bNext.setEnabled(!tbSummary.isSelected());
+        bPrev.setEnabled(!tbSummary.isSelected());
+        resultsPanel.removeAll();
+        if (results == null) {
+            if (searchInProgress) {
+                resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching")));
+            } else {
+                resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults")));
+            }
+        } else {
+            if (tbSummary.isSelected()) {
+                if (summaryView == null) {
+                    summaryView = new SummaryView(this, dispResults);
+                }
+                resultsPanel.add(summaryView.getComponent());
+            } else {
+                if (diffView == null) {
+                    diffView = new DiffResultsView(dispResults);
+                }
+                resultsPanel.add(diffView.getComponent());
+            }
+        }
+        resultsPanel.revalidate();        
+        resultsPanel.repaint();
+    }
+    
     public void setTopPanel(JComponent panel) {
         searchCriteriaPanel.removeAll();
         searchCriteriaPanel.add(panel);
         revalidate();
     }
 
+    public void setResults(List newResults) {
+        setResults(newResults, false);
+    }
+
+    private void setResults(List newResults, boolean searching) {
+        this.results = newResults;
+        if (results != null) this.dispResults = createDisplayList(results);
+        this.searchInProgress = searching;
+        summaryView = null;
+        diffView = null;
+        refreshComponents();
+    }
+    
     public File[] getRoots() {
         return roots;
     }
@@ -64,17 +134,135 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         return criteria;
     }
 
-    public JPanel getResultsPanel() {
-        return resultsPanel;
-    }
-
     private synchronized void search() {
         if (currentSearchTask != null) {
             currentSearchTask.cancel();
         }
+        setResults(null, true);
         currentSearch = new SearchExecutor(this);
         currentSearchTask = RequestProcessor.getDefault().create(currentSearch);
         currentSearchTask.schedule(0);
+    }
+    
+    private static List createDisplayList(List list) {
+        List dispResults = new ArrayList();
+        List results = new ArrayList(list);
+        Collections.sort(results, new ByRemotePathRevisionNumberComparator());
+        ResultsContainer currentContainer = null;
+        LogInformation.Revision lastRevision = null;
+        int n = results.size();
+        for (int i = 0; i < n; i++) {
+            LogInformation.Revision revision = (LogInformation.Revision) results.get(i);
+            if (!sameCategory(revision, lastRevision)) {
+                if (i < n - 1) {
+                    LogInformation.Revision nextRevision = (LogInformation.Revision) results.get(i + 1);
+                    if (sameCategory(revision, nextRevision)) {
+                        currentContainer = new ResultsContainer(revision);
+                        dispResults.add(currentContainer);
+                    } else {
+                        currentContainer = null;
+                    }
+                }
+            } else {
+                if (currentContainer != null) {
+                    currentContainer.add(revision);
+                }
+            }
+            if (currentContainer == null) {
+                dispResults.add(new DispRevision(revision, false));
+            }
+            lastRevision = revision;
+        }
+        return dispResults;
+    }
+
+    private static boolean sameCategory(LogInformation.Revision revision, LogInformation.Revision lastRevision) {
+        if (lastRevision == null) return false;
+        if (!revision.getLogInfoHeader().getRepositoryFilename().equals(lastRevision.getLogInfoHeader().getRepositoryFilename())) return false;
+        String b1 = revision.getNumber().substring(0, revision.getNumber().lastIndexOf('.'));
+        String b2 = lastRevision.getNumber().substring(0, lastRevision.getNumber().lastIndexOf('.'));
+        return b1.equals(b2);
+    }
+
+    void executeSearch() {
+        search();
+    }
+
+    static class ResultsContainer {
+        
+        private List revisions = new ArrayList(2);
+        private String name;
+
+        public ResultsContainer(LogInformation.Revision newestRevision) {
+            revisions.add(newestRevision);
+            File file = newestRevision.getLogInfoHeader().getFile();
+            try {
+                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
+            } catch (Exception e) {
+                name = newestRevision.getLogInfoHeader().getRepositoryFilename();
+                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
+            }
+        }
+
+        public void add(LogInformation.Revision revision) {
+            revisions.add(revisions.size(), revision);
+        }
+        
+        public String getName() {
+            return name;
+        }
+
+        public List getRevisions() {
+            return revisions;
+        }
+    }
+
+    static class DispRevision {
+        
+        private final LogInformation.Revision revision;
+        private final boolean indented;
+        private String name;
+
+        public DispRevision(LogInformation.Revision revision, boolean indented) {
+            this.revision = revision;
+            File file = revision.getLogInfoHeader().getFile();
+            try {
+                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
+            } catch (Exception e) {
+                name = revision.getLogInfoHeader().getRepositoryFilename();
+                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
+            }
+            this.indented = indented;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public LogInformation.Revision getRevision() {
+            return revision;
+        }
+
+        public boolean isIndented() {
+            return indented;
+        }
+    }
+
+    private static class ByRemotePathRevisionNumberComparator implements Comparator {
+
+        public int compare(Object o1, Object o2) {
+            LogInformation.Revision r1 = (LogInformation.Revision) o1;
+            LogInformation.Revision r2 = (LogInformation.Revision) o2;
+            int namec = r1.getLogInfoHeader().getRepositoryFilename().compareTo(r2.getLogInfoHeader().getRepositoryFilename());
+            if (namec != 0) return namec;
+            // 1.2  ?  1.4.4.2
+            int revc = r2.getNumber().length() - r1.getNumber().length();
+            if (revc != 0) return revc;
+            // 1.4.4.3  ?  1.4.4.2
+            long r1l = Long.parseLong(r1.getNumber().replaceAll("\\.", ""));
+            long r2l = Long.parseLong(r2.getNumber().replaceAll("\\.", ""));
+            return r1l < r2l ? 1 : r1l > r2l ? -1 : 0;
+        }
     }
     
     /** This method is called from within the constructor to
@@ -99,7 +287,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
+        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 0, 8)));
         searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -134,6 +322,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         add(jSeparator1, gridBagConstraints);
 
         buttonGroup1.add(tbSummary);
+        tbSummary.setSelected(true);
         tbSummary.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowSummary"));
         tbSummary.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -157,6 +346,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(tbDiff, gridBagConstraints);
 
@@ -192,6 +382,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
         add(jSeparator2, gridBagConstraints);
 
@@ -205,7 +396,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         add(resultsPanel, gridBagConstraints);
 
     }
@@ -220,7 +411,7 @@ class SearchHistoryPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_onNext
 
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
-// TODO add your handling code here:
+        refreshComponents();
     }//GEN-LAST:event_onViewToggle
 
     private void onSearch(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSearch

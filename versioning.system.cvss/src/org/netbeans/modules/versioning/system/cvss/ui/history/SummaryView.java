@@ -14,7 +14,6 @@
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
@@ -40,7 +39,6 @@ import java.io.File;
 class SummaryView implements MouseListener {
 
     private final SearchHistoryPanel master;
-    private final List  results;
     
     private JList       resultsList;
     private JScrollPane scrollPane;
@@ -49,13 +47,27 @@ class SummaryView implements MouseListener {
     
     public SummaryView(SearchHistoryPanel master, List results) {
         this.master = master;
-        this.results = results;
-        dispResults = new ArrayList(results.size());
-        createDisplayList();
+        this.dispResults = expandResults(results);
         resultsList = new JList(new SummaryListModel());
         resultsList.addMouseListener(this);
         resultsList.setCellRenderer(new SummaryCellRenderer());
         scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    }
+
+    private List expandResults(List results) {
+        ArrayList newResults = new ArrayList(results.size());
+        for (Iterator i = results.iterator(); i.hasNext();) {
+            Object o = i.next();
+            newResults.add(o);
+            if (o instanceof SearchHistoryPanel.ResultsContainer) {
+                SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
+                for (Iterator j = container.getRevisions().iterator(); j.hasNext();) {
+                    LogInformation.Revision revision = (LogInformation.Revision) j.next();
+                    newResults.add(new SearchHistoryPanel.DispRevision(revision, true));
+                }
+            }
+        }
+        return newResults;
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -86,9 +98,9 @@ class SummaryView implements MouseListener {
         final int [] selection = resultsList.getSelectedIndices();
         
         JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_FindAssociateChanges")) {
+        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_Action_FindAssociateChanges")) {
             {
-                setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof DispRevision);
+                setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
             }
             public void actionPerformed(ActionEvent e) {
                 findAssociateChanges(selection[0]);
@@ -97,14 +109,14 @@ class SummaryView implements MouseListener {
 
         String previousRevision = null;
         try {
-            DispRevision drev = (DispRevision) dispResults.get(selection[0]);
+            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) dispResults.get(selection[0]);
             previousRevision = Utils.previousRevision(drev.getRevision().getNumber().trim());
         } catch (Exception ex) {
             previousRevision = NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_Previous");
         }
         menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) {
             {
-                setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof DispRevision);
+                setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
             }
             public void actionPerformed(ActionEvent e) {
                 diffPrevious(selection[0]);
@@ -115,8 +127,8 @@ class SummaryView implements MouseListener {
 
     private void diffPrevious(int idx) {
         Object o = dispResults.get(idx);
-        if (o instanceof DispRevision) {
-            DispRevision drev = (DispRevision) o;
+        if (o instanceof SearchHistoryPanel.DispRevision) {
+            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
             DiffExecutor de = new DiffExecutor(NbBundle.getMessage(SummaryView.class, "CTL_DiffToPrevious_Title", file.getName()));
             String revision = drev.getRevision().getNumber().trim();
@@ -126,111 +138,12 @@ class SummaryView implements MouseListener {
 
     private void findAssociateChanges(int idx) {
         Object o = dispResults.get(idx);
-        if (o instanceof DispRevision) {
-            DispRevision drev = (DispRevision) o;
+        if (o instanceof SearchHistoryPanel.DispRevision) {
+            SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
-            SearchHistoryAction.openSearch(master.getRoots(), NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), drev.getRevision().getNumber()), 
+            SearchHistoryAction.openSearch(NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), drev.getRevision().getNumber()), 
                                            drev.getRevision().getMessage().trim(), drev.getRevision().getAuthor(), drev.getRevision().getDate());
         }
-    }
-
-    private static class ResultsContainer {
-        
-        private final LogInformation.Revision newestRevision;
-        private LogInformation.Revision eldestRevision;
-        private String name;
-
-        public ResultsContainer(LogInformation.Revision newestRevision) {
-            this.newestRevision = newestRevision;
-            File file = newestRevision.getLogInfoHeader().getFile();
-            try {
-                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
-            } catch (Exception e) {
-                name = newestRevision.getLogInfoHeader().getRepositoryFilename();
-                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setEldestRevision(LogInformation.Revision eldestRevision) {
-            this.eldestRevision = eldestRevision;
-        }
-
-        public LogInformation.Revision getNewestRevision() {
-            return newestRevision;
-        }
-
-        public LogInformation.Revision getEldestRevision() {
-            return eldestRevision;
-        }
-    }
-
-    private static class DispRevision {
-        
-        private final LogInformation.Revision revision;
-        private final boolean indented;
-        private String name;
-
-        public DispRevision(LogInformation.Revision revision, boolean indented) {
-            this.revision = revision;
-            File file = revision.getLogInfoHeader().getFile();
-            try {
-                name = CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParentFile().getAbsolutePath(), "") + "/" + file.getName();
-            } catch (Exception e) {
-                name = revision.getLogInfoHeader().getRepositoryFilename();
-                if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
-            }
-            this.indented = indented;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public LogInformation.Revision getRevision() {
-            return revision;
-        }
-
-        public boolean isIndented() {
-            return indented;
-        }
-    }
-
-    private void createDisplayList() {
-        Collections.sort(results, new ByRemotePathRevisionNumberComparator());
-        ResultsContainer currentContainer = null;
-        LogInformation.Revision lastRevision = null;
-        int n = results.size();
-        for (int i = 0; i < n; i++) {
-            LogInformation.Revision revision = (LogInformation.Revision) results.get(i);
-            if (!sameCategory(revision, lastRevision)) {
-                if (i < n - 1) {
-                    LogInformation.Revision nextRevision = (LogInformation.Revision) results.get(i + 1);
-                    if (sameCategory(revision, nextRevision)) {
-                        currentContainer = new ResultsContainer(revision);
-                        dispResults.add(currentContainer);
-                    } else {
-                        currentContainer = null;
-                    }
-                }
-            }
-            if (currentContainer != null) {
-                currentContainer.setEldestRevision(lastRevision);
-            }
-            lastRevision = revision;
-            dispResults.add(new DispRevision(revision, currentContainer != null));
-        }
-    }
-
-    private boolean sameCategory(LogInformation.Revision revision, LogInformation.Revision lastRevision) {
-        if (lastRevision == null) return false;
-        if (!revision.getLogInfoHeader().getRepositoryFilename().equals(lastRevision.getLogInfoHeader().getRepositoryFilename())) return false;
-        String b1 = revision.getNumber().substring(0, revision.getNumber().lastIndexOf('.'));
-        String b2 = lastRevision.getNumber().substring(0, lastRevision.getNumber().lastIndexOf('.'));
-        return b1.equals(b2);
     }
 
     public JComponent getComponent() {
@@ -284,15 +197,15 @@ class SummaryView implements MouseListener {
         
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             
-            if (value instanceof ResultsContainer) {
-                renderContainer((ResultsContainer) value, index, isSelected);
+            if (value instanceof SearchHistoryPanel.ResultsContainer) {
+                renderContainer((SearchHistoryPanel.ResultsContainer) value, index, isSelected);
             } else {
-                renderRevision((DispRevision) value, index, isSelected);
+                renderRevision((SearchHistoryPanel.DispRevision) value, index, isSelected);
             }
             return this;
         }
 
-        private void renderContainer(ResultsContainer container, int index, boolean isSelected) {
+        private void renderContainer(SearchHistoryPanel.ResultsContainer container, int index, boolean isSelected) {
 
             StyledDocument sd = getStyledDocument();
 
@@ -311,8 +224,12 @@ class SummaryView implements MouseListener {
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, true);
                 sd.insertString(0, container.getName() + "\n", null);
                 sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
-                sd.insertString(sd.getLength(), container.getEldestRevision().getNumber() + " - " + container.getNewestRevision().getNumber() + FIELDS_SEPARATOR, null);
-                sd.insertString(sd.getLength(), defaultFormat.format(container.getNewestRevision().getDate()) + "\n", null);
+                
+                LogInformation.Revision newestRev = (LogInformation.Revision) container.getRevisions().get(0);
+                LogInformation.Revision oldestRev = (LogInformation.Revision) container.getRevisions().get(container.getRevisions().size() - 1);
+                
+                sd.insertString(sd.getLength(), oldestRev.getNumber() + " - " + newestRev.getNumber() + FIELDS_SEPARATOR, null);
+                sd.insertString(sd.getLength(), defaultFormat.format(newestRev.getDate()) + "\n", null);
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 sd.setParagraphAttributes(0, Integer.MAX_VALUE, noindentStyle, false);
             } catch (BadLocationException e) {
@@ -320,7 +237,7 @@ class SummaryView implements MouseListener {
             }
         }
 
-        private void renderRevision(DispRevision dispRevision, int index, boolean isSelected) {
+        private void renderRevision(SearchHistoryPanel.DispRevision dispRevision, int index, boolean isSelected) {
             Style style;
             StyledDocument sd = getStyledDocument();
 
@@ -356,21 +273,5 @@ class SummaryView implements MouseListener {
             }
         }
     }
-    
-    private static class ByRemotePathRevisionNumberComparator implements Comparator {
 
-        public int compare(Object o1, Object o2) {
-            LogInformation.Revision r1 = (LogInformation.Revision) o1;
-            LogInformation.Revision r2 = (LogInformation.Revision) o2;
-            int namec = r1.getLogInfoHeader().getRepositoryFilename().compareTo(r2.getLogInfoHeader().getRepositoryFilename());
-            if (namec != 0) return namec;
-            // 1.2  ?  1.4.4.2
-            int revc = r2.getNumber().length() - r1.getNumber().length();
-            if (revc != 0) return revc;
-            // 1.4.4.3  ?  1.4.4.2
-            long r1l = Long.parseLong(r1.getNumber().replaceAll("\\.", ""));
-            long r2l = Long.parseLong(r2.getNumber().replaceAll("\\.", ""));
-            return r1l < r2l ? 1 : r1l > r2l ? -1 : 0;
-        }
-    }
 }

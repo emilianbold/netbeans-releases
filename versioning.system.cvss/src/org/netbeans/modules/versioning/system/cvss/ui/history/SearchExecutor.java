@@ -126,17 +126,9 @@ class SearchExecutor implements Runnable {
         results = processResults(rexecutors, lexecutors);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                showResults();
+                master.setResults(results);
             }
         });
-    }
-
-    private void showResults() {
-        JPanel resultsPanel = master.getResultsPanel();
-        resultsPanel.removeAll();
-        SummaryView summary = new SummaryView(master, results);
-        resultsPanel.add(summary.getComponent());
-        resultsPanel.revalidate();
     }
 
     private List processResults(RLogExecutor[] rexecutors, LogExecutor[] lexecutors) {
@@ -151,14 +143,14 @@ class SearchExecutor implements Runnable {
         }
         String commitMessage = criteria.getCommitMessage();
 
-        List results = new ArrayList(log.size());
+        List newResults = new ArrayList(log.size());
         for (Iterator i = log.iterator(); i.hasNext();) {
             LogInformation info = (LogInformation) i.next();
-            results.addAll(info.getRevisionList());
+            newResults.addAll(info.getRevisionList());
         }
 
         if (commitMessage != null) {
-            for (Iterator i = results.iterator(); i.hasNext();) {
+            for (Iterator i = newResults.iterator(); i.hasNext();) {
                 LogInformation.Revision revision = (LogInformation.Revision) i.next();
                 String msg = revision.getMessage();
                 if (msg.indexOf(commitMessage) == -1) {
@@ -167,7 +159,7 @@ class SearchExecutor implements Runnable {
             }
         }
 
-        return results;
+        return newResults;
     }
     
     private Date parseDate(String s) {

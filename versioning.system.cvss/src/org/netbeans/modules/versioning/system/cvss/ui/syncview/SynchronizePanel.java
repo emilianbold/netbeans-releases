@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
@@ -69,7 +70,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
 
     private static final RequestProcessor   rp = new RequestProcessor("CVS-VersioningView", 1);
 
-    private final NoContentComponent noContentComponent = new NoContentComponent();
+    private final NoContentPanel noContentComponent = new NoContentPanel();
 
     /**
      * Creates a new Synchronize Panel managed by the given versioning system.
@@ -395,24 +396,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         }
     }
 
-    /**
-     * Displayed when there are no files in view.
-     */ 
-    private class NoContentComponent extends JComponent {
-        private JLabel label = new JLabel();
-
-        public NoContentComponent() {
-            setLayout(new BorderLayout());
-            setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-            label.setHorizontalAlignment(JLabel.CENTER);
-            add(label, BorderLayout.CENTER);
-        }
-        
-        public void setLabel(String text) {
-            label.setText(text);
-        }
-    }
-    
     /**
      * Hardcoded toolbar layout. It eliminates need
      * for nested panels their look is hardly maintanable

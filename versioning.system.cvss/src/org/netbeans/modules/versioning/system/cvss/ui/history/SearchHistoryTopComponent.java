@@ -27,6 +27,8 @@ import java.util.*;
  */
 public class SearchHistoryTopComponent extends TopComponent {
     
+    private SearchHistoryPanel shp;
+
     public SearchHistoryTopComponent() {
     }
     
@@ -40,6 +42,10 @@ public class SearchHistoryTopComponent extends TopComponent {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
 
+    public void search() {
+        shp.executeSearch();
+    }
+    
     private void initComponents(File[] roots, String commitMessage, String username, Date from, Date to) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(roots);
@@ -47,7 +53,7 @@ public class SearchHistoryTopComponent extends TopComponent {
         scp.setUsername(username);
         if (from != null) scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
         if (to != null) scp.setTo(SearchExecutor.simpleDateFormat.format(to));
-        SearchHistoryPanel shp = new SearchHistoryPanel(roots, scp);
+        shp = new SearchHistoryPanel(roots, scp);
         shp.setTopPanel(scp);
         add(shp);
     }

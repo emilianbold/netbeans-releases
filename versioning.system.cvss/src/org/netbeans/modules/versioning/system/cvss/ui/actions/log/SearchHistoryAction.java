@@ -16,6 +16,9 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.log;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.ui.history.SearchHistoryTopComponent;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -55,15 +58,19 @@ public class SearchHistoryAction extends AbstractSystemAction  {
     }
 
     /**
-     * Called from Annotation Bar.
+     * Opens the Seach History panel with given pre-filled values. The search is executed in default context
+     * (all open projects). 
      * 
-     * @param context 
-     * @param title 
-     * @param commitMessage
-     * @param username
-     * @param date
+     * @param title title of the search
+     * @param commitMessage commit message to search for
+     * @param username user name to search for
+     * @param date date of the change in question
      */ 
-    public static void openSearch(File [] context, String title, String commitMessage, String username, Date date) {
+    public static void openSearch(String title, String commitMessage, String username, Date date) {
+        openSearch(getDefaultContext(), title, commitMessage, username, date);
+    }
+    
+    private static void openSearch(File [] context, String title, String commitMessage, String username, Date date) {
         Date from = date;
         Calendar c = Calendar.getInstance();
         c.setTime(date);
@@ -75,5 +82,12 @@ public class SearchHistoryAction extends AbstractSystemAction  {
         tc.setName(tcTitle);
         tc.open();
         tc.requestActive();
+        tc.search();
+    }
+
+    private static File[] getDefaultContext() {
+        Project [] projects = OpenProjects.getDefault().getOpenProjects();
+        List list = Utils.getProjectsSources(projects);
+        return (File[]) list.toArray(new File[list.size()]);
     }
 }

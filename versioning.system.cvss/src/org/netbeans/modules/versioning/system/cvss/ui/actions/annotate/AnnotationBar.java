@@ -20,8 +20,6 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.xml.parsers.DocumentInputSource;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogOutputListener;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
@@ -323,8 +321,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                 if (al == null) return;
                 String message = (String) commitMessages.get(al.getRevision());
                 File file = getCurrentFile();
-                File [] context = getContext(file);
-                SearchHistoryAction.openSearch(context, NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision), 
+                SearchHistoryAction.openSearch(NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision), 
                                                message, al.getAuthor(), al.getDate());
             }
         });
@@ -377,12 +374,6 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         doc.addDocumentListener(this);
         foldHierarchy.addFoldHierarchyListener(this);
         editorUI.addPropertyChangeListener(this);
-    }
-
-    private File[] getContext(File currentFile) {
-        Project project = FileOwnerQuery.getOwner(FileUtil.toFileObject(currentFile));
-        List list = Utils.getProjectsSources(new Project [] { project });
-        return (File[]) list.toArray(new File[list.size()]);
     }
 
     private int getCurrentLine() {
