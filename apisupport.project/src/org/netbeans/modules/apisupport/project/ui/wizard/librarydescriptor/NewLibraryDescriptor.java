@@ -14,9 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;

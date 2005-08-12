@@ -13,12 +13,10 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
-import java.awt.Color;
 import java.io.File;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;

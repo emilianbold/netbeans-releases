@@ -16,7 +16,6 @@ package org.netbeans.modules.apisupport.project.ui.wizard;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.WizardDescriptor;
 

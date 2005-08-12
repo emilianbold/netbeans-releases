@@ -25,7 +25,6 @@ import org.openide.util.NbBundle;
 public abstract class BasicVisualPanel extends JPanel {
     
     private WizardDescriptor settings;
-    private Boolean valid = Boolean.FALSE;
     
     protected BasicVisualPanel(WizardDescriptor setting) {
         this.settings = setting;
@@ -61,7 +60,6 @@ public abstract class BasicVisualPanel extends JPanel {
      * See {@link BasicWizardPanel#propertyChange} for what happens further.
      */
     protected final void setValid(Boolean newValid) {
-        this.valid = newValid;
         firePropertyChange("valid", Boolean.valueOf(!newValid.booleanValue()), newValid); // NOI18N
     }
     
