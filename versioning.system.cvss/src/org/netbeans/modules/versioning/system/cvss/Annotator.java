@@ -53,8 +53,8 @@ import java.lang.reflect.Field;
  */
 public class Annotator {
 
-    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
-    private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");            
+    private static MessageFormat newLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");
+    private static MessageFormat addedLocallyFormat = new MessageFormat("<html><font color=\"#007000\">{0}</font></html>");            
     private static MessageFormat modifiedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
     private static MessageFormat removedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
     private static MessageFormat deletedLocallyFormat = new MessageFormat("<html><font color=\"#0000A0\">{0}</font></html>");
