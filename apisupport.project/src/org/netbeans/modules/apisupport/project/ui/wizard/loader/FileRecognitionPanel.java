@@ -99,7 +99,6 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
             }
         }
         setErrorMessage(message);
-        setValid(Boolean.valueOf(message == null));
     }
     
     public void addNotify() {

@@ -35,15 +35,23 @@ public abstract class BasicVisualPanel extends JPanel {
         return settings;
     }
     
-    /** Set error message and always update panel validity. */
+    /**
+     * Set an error message and always update panel's validity. See {@link
+     * #setErrorMessage(String, boolean)} for more details.
+     */
     protected final void setErrorMessage(String errorMessage) {
         setErrorMessage(errorMessage, true);
     }
     
-    /** Set error message and eventually update panel validity. */
-    protected final void setErrorMessage(String errorMessage, boolean fireChange) {
+    /** 
+     * Set an error message and eventually update panel's validity. If an
+     * <em>updateValidity</em> is <code>true</code> also set a validity of this
+     * panel. i.e. if the given error message is equal to <code>null</code>
+     * panel is treat as valid; invalid otherwise.
+     */
+    protected final void setErrorMessage(String errorMessage, boolean updateValidity) {
         settings.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
-        if (fireChange) {
+        if (updateValidity) {
             setValid(Boolean.valueOf(errorMessage == null));
         }
     }
