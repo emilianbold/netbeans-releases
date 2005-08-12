@@ -15,16 +15,12 @@ package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
 import java.awt.Color;
 import java.io.File;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -38,6 +34,7 @@ import org.openide.WizardDescriptor;
  * @author Milos Kleint
  */
 final class NameAndLocationPanel extends BasicWizardIterator.Panel {
+    
     private NewLoaderIterator.DataModel data;
     
     /** Creates new NameAndLocationPanel */
@@ -45,10 +42,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle"));
-        modifiedFilesValue.setBackground(lblBgr);
-        createdFilesValue.setBackground(lblBgr);
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -63,7 +57,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             JTextField txt = (JTextField)comPackageName.getEditor().getEditorComponent();
             txt.getDocument().addDocumentListener(dListener);
         }
-        
     }
     
     protected void storeToDataModel() {
@@ -100,8 +93,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         //TODO:
         setValid(Boolean.TRUE);
     }
-    
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -242,7 +233,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.weighty = 1.0;
         add(filler, gridBagConstraints);
 
+        createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         createdFilesValue.setColumns(20);
+        createdFilesValue.setEditable(false);
         createdFilesValue.setRows(5);
         createdFilesValue.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -254,7 +247,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
         add(createdFilesValue, gridBagConstraints);
 
+        modifiedFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         modifiedFilesValue.setColumns(20);
+        modifiedFilesValue.setEditable(false);
         modifiedFilesValue.setRows(5);
         modifiedFilesValue.setToolTipText("modifiedFilesValue");
         modifiedFilesValue.setBorder(null);
@@ -268,33 +263,16 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void btnIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconActionPerformed
-        JFileChooser chooser = new JFileChooser();
-//        chooser.setSelectedFile();
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setMultiSelectionEnabled(false);
-        chooser.addChoosableFileFilter(new GifPngFilter());
-        chooser.setFileView(new FileView() {
-            public Icon getIcon(File f) {
-                // Show icons right in the chooser, to make it easier to find the right one.
-                if (f.getName().endsWith(".gif") || f.getName().endsWith(".png")) { // NOI18N
-                    Icon icon = new ImageIcon(f.getAbsolutePath());
-                    if (icon.getIconWidth() == 16 && icon.getIconHeight() == 16) {
-                        return icon;
-                    }
-                }
-                return null;
-            }
-        });
+        JFileChooser chooser = UIUtil.getIconFileChooser();
         int ret = chooser.showDialog(this, getMessage("LBL_Select"));
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             txtIcon.setText(file.getAbsolutePath());
-        }        
-        
+        }
     }//GEN-LAST:event_btnIconActionPerformed
-        
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnIcon;
     private javax.swing.JComboBox comPackageName;
@@ -322,18 +300,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
                 sb.append(relPaths[i]);
             }
         }
-        
         return sb.toString();
     }
     
-    
-    private static final class GifPngFilter extends FileFilter {
-             public boolean accept(File pathname) {
-                 return  pathname.isDirectory() || pathname.getName().toLowerCase().endsWith("gif") || pathname.getName().toLowerCase().endsWith("png");
-             }
-             public String getDescription() {
-                 return "*.gif, *.png";
-             }
-        
-    }    
 }

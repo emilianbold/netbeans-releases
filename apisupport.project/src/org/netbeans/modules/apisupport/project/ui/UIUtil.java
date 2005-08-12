@@ -14,8 +14,13 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.io.File;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileView;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -61,8 +66,8 @@ public final class UIUtil {
         textComp.setText(text);
         textComp.setCaretPosition(text == null ? 0 : text.length());
     }
-
-    /** 
+    
+    /**
      * Convenient class for listening to document changes. Use it if you don't
      * care what exact change really happened. {@link #removeUpdate} and {@link
      * #changedUpdate} just delegates to {@link #insertUpdate}. So everything
@@ -74,5 +79,42 @@ public final class UIUtil {
         public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
         public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
     }
+    
+    /**
+     * Returns an instance of {@link javax.swing.JFileChooser} permitting
+     * selection only a regular <em>icon</em>.
+     */
+    public static JFileChooser getIconFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        chooser.addChoosableFileFilter(new IconFilter());
+        chooser.setFileView(new FileView() {
+            public Icon getIcon(File f) {
+                // Show icons right in the chooser, to make it easier to find
+                // the right one.
+                if (f.getName().endsWith(".gif") || f.getName().endsWith(".png")) { // NOI18N
+                    Icon icon = new ImageIcon(f.getAbsolutePath());
+                    if (icon.getIconWidth() == 16 && icon.getIconHeight() == 16) {
+                        return icon;
+                    }
+                }
+                return null;
+            }
+        });
+        return chooser;
+    }
+    
+    private static final class IconFilter extends FileFilter {
+        public boolean accept(File pathname) {
+            return pathname.isDirectory() ||
+                    pathname.getName().toLowerCase().endsWith("gif") || // NOI18N
+                    pathname.getName().toLowerCase().endsWith("png"); // NOI18N
+        }
+        public String getDescription() {
+            return "*.gif, *.png"; // NOI18N
+        }
+    }
+    
 }
 

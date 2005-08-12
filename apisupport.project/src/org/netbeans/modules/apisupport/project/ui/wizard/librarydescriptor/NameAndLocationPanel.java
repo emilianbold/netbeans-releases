@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
+
 import java.awt.Color;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -26,14 +27,13 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 
-
-
 /**
  * Represents <em>Name and Location</em> panel in J2SE Library Descriptor Wizard.
  *
  * @author Radek Matous
  */
 final class NameAndLocationPanel extends BasicWizardIterator.Panel {
+    
     private NewLibraryDescriptor.DataModel data;
     
     /** Creates new NameAndLocationPanel */
@@ -41,10 +41,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
         putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
-        modifiedFilesValue.setBackground(lblBgr);
-        createdFilesValue.setBackground(lblBgr);
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -59,7 +56,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             JTextField txt = (JTextField)packageNameValue.getEditor().getEditorComponent();
             txt.getDocument().addDocumentListener(dListener);
         }
-        
     }
     
     protected void storeToDataModel() {}
@@ -71,7 +67,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         
         CreatedModifiedFiles files = CreatedModifiedFilesProvider.createInstance(data);
         data.setCreatedModifiedFiles(files);
-
+        
         CreatedModifiedFilesProvider.setCreatedFiles(files, createdFilesValue);
         CreatedModifiedFilesProvider.setModifiedFiles(files, modifiedFilesValue);
     }
@@ -97,8 +93,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         //TODO:
         setValid(Boolean.TRUE);
     }
-    
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -203,7 +197,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
         add(createdFiles, gridBagConstraints);
 
+        createdFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         createdFilesValue.setColumns(20);
+        createdFilesValue.setEditable(false);
         createdFilesValue.setRows(5);
         createdFilesValue.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -224,7 +220,9 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(modifiedFiles, gridBagConstraints);
 
+        modifiedFilesValue.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         modifiedFilesValue.setColumns(20);
+        modifiedFilesValue.setEditable(false);
         modifiedFilesValue.setRows(5);
         modifiedFilesValue.setToolTipText("modifiedFilesValue");
         modifiedFilesValue.setBorder(null);
@@ -246,7 +244,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-        
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel createdFiles;
     private javax.swing.JTextArea createdFilesValue;

@@ -131,7 +131,11 @@
     </Component>
     <Component class="javax.swing.JTextArea" name="createdFilesValue">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ee" green="ee" id="Label.background" palette="3" red="ee" type="palette"/>
+        </Property>
         <Property name="columns" type="int" value="20"/>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="rows" type="int" value="5"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="null"/>
@@ -160,7 +164,11 @@
     </Component>
     <Component class="javax.swing.JTextArea" name="modifiedFilesValue">
       <Properties>
+        <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+          <Color blue="ee" green="ee" id="Label.background" palette="3" red="ee" type="palette"/>
+        </Property>
         <Property name="columns" type="int" value="20"/>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="rows" type="int" value="5"/>
         <Property name="toolTipText" type="java.lang.String" value="modifiedFilesValue"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
