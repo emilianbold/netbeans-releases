@@ -21,6 +21,7 @@ import org.openide.loaders.DataShadow;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
@@ -35,6 +36,8 @@ import java.awt.Window;
 import java.awt.KeyboardFocusManager;
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 /**
  * Provides static utility methods for CVS module.
@@ -42,6 +45,15 @@ import java.awt.Frame;
  * @author Maros Sandor
  */
 public class Utils {
+
+    private static int      activatedNodesSerial;
+    private static int      activatedFilesSerial = -1;
+    private static File []  activatedFilesCached;
+    private static ActivatedNodesListener anl = new ActivatedNodesListener();
+
+    static {
+        TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(anl, TopComponent.getRegistry()));
+    }
 
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
@@ -54,7 +66,7 @@ public class Utils {
     public static File [] getActivatedFiles() {
         return getActivatedFiles(~0, ~0);
     }
-            
+
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
      * method returns File objects instead od Nodes. Every node is examined for Files it represents. File and Folder
@@ -66,8 +78,10 @@ public class Utils {
      * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
      */ 
     public static File [] getActivatedFiles(int includingFileStatus, int includingFolderStatus) {
-        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        int nodesSerial = activatedNodesSerial;
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (activatedFilesSerial == nodesSerial) return activatedFilesCached;
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         List files = new ArrayList(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
@@ -90,7 +104,9 @@ public class Utils {
             }
             if (!addFileObjects(node, files, includingFileStatus, includingFolderStatus)) return new File[0];
         }
-        return (File[]) files.toArray(new File[files.size()]);
+        activatedFilesCached = (File[]) files.toArray(new File[files.size()]);
+        activatedFilesSerial = nodesSerial;
+        return activatedFilesCached;
     }    
     
     /**
@@ -446,4 +462,11 @@ public class Utils {
         }
     }
     
+    private static class ActivatedNodesListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())) {
+                activatedNodesSerial++;
+            }
+        }
+    }
 }
