@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         <for-each locations="lib"/>
 
         <echo message="Compiling TAX module classes..."/>
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
             <classpath refID="cp"/>
         </javac>
     </target>
