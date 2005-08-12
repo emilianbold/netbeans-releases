@@ -496,6 +496,11 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         return change;
     }
 
+    void refresh() {
+        rebuildPanel();
+        rebuildMenu();
+    }
+    
     private int lastConfigurationHash = -1;
     private void rebuildMenu() {
         if (toolbarMenu != null) {
@@ -730,7 +735,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         toolbarMenu = menu;
         return menu;
     }
-
+    
     /** Fills given menu instance with list of toolbars and configurations */
     private void fillToolbarsMenu (JComponent menu) {
         lastConfigurationHash = Utilities.arrayHashCode(ToolbarPool.getDefault().getConfigurations());
@@ -805,6 +810,17 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
               }
         });
         menu.add (cbmi);
+        
+        menu.add( new JPopupMenu.Separator() );
+
+        JMenuItem menuItem = new JMenuItem(getBundleString( "CTL_CustomizeToolbars" ) );
+        menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent event) {
+                ConfigureToolbarPanel.showConfigureDialog();
+            }
+        });
+        menu.add( menuItem );
+        
     } // getContextMenu
 
     /** Make toolbar visible/invisible in this configuration

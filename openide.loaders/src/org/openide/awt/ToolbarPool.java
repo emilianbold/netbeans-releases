@@ -143,7 +143,7 @@ public final class ToolbarPool extends JComponent implements Accessible {
     public int getPreferredIconSize () {
         return preferredIconSize;
     }
-
+    
     /**
      * Sets preferred size of icons used by toolbar buttons.
      * @param preferredIconSize size of toolbar icons in pixels; currently one of 16 or 24
@@ -392,6 +392,13 @@ public final class ToolbarPool extends JComponent implements Accessible {
         }
         return isXP.booleanValue();
     }    
+    
+    /**
+     * @return True if the Toolbar Customizer is visible and toolbar buttons can be dragged.
+     */
+    boolean isInEditMode() {
+        return null != getClientProperty( "editMode" );
+    }
 
     /**
      * This class is used for delayed setting of configuration after instance

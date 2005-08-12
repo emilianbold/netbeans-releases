@@ -181,6 +181,7 @@ public class ToolbarLayout implements LayoutManager2, java.io.Serializable {
                     completed.add(iter.next());
                 }
             }
+            parent.repaint();
         }
     }
      

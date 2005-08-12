@@ -14,8 +14,6 @@
 package org.openide.awt;
 
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -29,6 +27,7 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
+import java.awt.dnd.DragSourceMotionListener;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -49,11 +48,15 @@ import javax.swing.border.*;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.openide.*;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.nodes.Node;
 import org.openide.util.actions.Presenter;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
+import org.openide.util.datatransfer.ExTransferable;
+
 
 /**
  * Toolbar provides a component which is useful for displaying commonly used
@@ -225,6 +228,65 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         g.drawLine( x-2, height-3, x-2-2, height-3 );
         g.setColor( oldColor );
     }
+    
+    /**
+     * Remove a toolbar button represented by the given Transferable.
+     */
+    private void removeButton( Transferable t ) {
+        try {
+            Object o = null;
+            if( t.isDataFlavorSupported( buttonDataFlavor ) ) {
+                o = t.getTransferData( buttonDataFlavor ); //XXX
+            }
+            if( null != o && o instanceof DataObject ) {
+                ((DataObject) o).delete();
+                repaint();
+                if( backingFolder.getChildren().length == 0 ) {
+                    SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            try {
+                                backingFolder.delete();
+                            } catch( IOException e ) {
+                                ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
+                            }
+                        }
+                    });
+                }
+            }
+        } catch( UnsupportedFlavorException ex ) {
+            ErrorManager.getDefault().notify( ex );
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify( ioe );
+        }
+    }
+    
+    /**
+     * Perform the drop operation.
+     *
+     * @return True if the drop has been successful.
+     */
+    private boolean handleDrop( Transferable t ) {
+        try {
+            Object o;
+            if( t.isDataFlavorSupported( actionDataFlavor ) ) {
+                o = t.getTransferData( actionDataFlavor );
+                if( o instanceof Node ) {
+                    DataObject dobj = (DataObject)((Node)o).getLookup().lookup( DataObject.class );
+                    return addButton( dobj, dropTargetButtonIndex-1, insertBefore );
+                }
+            } else {
+                o = t.getTransferData( buttonDataFlavor );
+                if( o instanceof DataObject ) {
+                    return moveButton( (DataObject)o, dropTargetButtonIndex-1, insertBefore );
+                }
+            }
+        } catch (UnsupportedFlavorException e) {
+            ErrorManager.getDefault().notify (e);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+        return false;
+    }
 
     /**
      * Component index of the button under the drag cursor, or -1 when the cursor
@@ -246,15 +308,19 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      */
     boolean isDragSourceToolbar = false;
     
+    private static DataFlavor buttonDataFlavor = new DataFlavor( DataObject.class, "Toolbar Item" );
+    private static DataFlavor actionDataFlavor = new DataFlavor( Node.class, "Action Node" );
+
     private DnDSupport dnd = new DnDSupport();
-    private class DnDSupport implements DragSourceListener, DragGestureListener, DropTargetListener {
+    private class DnDSupport implements DragSourceListener, DragGestureListener, DropTargetListener, DragSourceMotionListener {
         private DragSource dragSource = new DragSource();
         
         private Cursor dragMoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsmovesingle.gif"), "ACTION_MOVE" );
         private Cursor dragNoDropCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/cursorsnone.gif"), "NO_ACTION_MOVE" );
+        private Cursor dragRemoveCursor = Utilities.createCustomCursor( Toolbar.this, Utilities.loadImage( "org/openide/resources/delete.gif"), "NO_ACTION_MOVE" );
         
         public DnDSupport() {
-            dragSource.addDragSourceListener(this);
+            dragSource.addDragSourceMotionListener(this);
         }
         
         public void register(Component c) {
@@ -271,57 +337,59 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         DragGestureRecognizer dgr = null;
 
         public void dragEnter(DragSourceDragEvent e) {
-            DragSourceContext context = e.getDragSourceContext();
-            int myaction = e.getDropAction();
-            if ((myaction & DnDConstants.ACTION_MOVE) != 0) {
-                context.setCursor( dragMoveCursor ); //DragSource.DefaultMoveDrop);
-            } else {
-                context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
-            }
+            //handled in dragMouseMoved
         }
 
         public void dragOver(DragSourceDragEvent e) {
-            DragSourceContext context = e.getDragSourceContext();
-            int action = e.getDropAction();
-            if ((action & DnDConstants.ACTION_MOVE) != 0) {
-                context.setCursor( dragMoveCursor ); //DragSource.DefaultMoveDrop);
-            } else {
-                context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
-            }
+            //handled in dragMouseMoved
         }
         
         public void dragExit(DragSourceEvent e) {
-            DragSourceContext context = e.getDragSourceContext();
-            context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
+            //handled in dragMouseMoved
             resetDropGesture();
         }
 
         public void dragDropEnd(DragSourceDropEvent e) {
             isDragSourceToolbar = false;
-            if ( e.getDropSuccess() == false ) {
-                  return;
-                }
-            e.getDragSourceContext().getComponent().repaint();
+            Component sourceComponent = e.getDragSourceContext().getComponent();
+            if( sourceComponent instanceof JButton ) {
+                ((JButton)sourceComponent).getModel().setRollover( false );
+            }
+            sourceComponent.repaint();
             resetDropGesture();
+            if ( e.getDropSuccess() == false && !isInToolbarPanel( e.getLocation() ) ) {
+                removeButton( e.getDragSourceContext().getTransferable() );
+            }
         }
         
         public void dragGestureRecognized(DragGestureEvent e) {
-              try {
+            if( !ToolbarPool.getDefault().isInEditMode() )  
+                return;
+            try {
                  Component c = e.getComponent();
                  //do not allow to drag toolbar separators
                  if( c instanceof JToolBar.Separator || "grip".equals( c.getName() ) )
                      return;
                  Transferable t = null;
                  if (c instanceof JComponent) {
-                     DataObject dob = (DataObject) ((JComponent) c).getClientProperty("file");
+                     final DataObject dob = (DataObject) ((JComponent) c).getClientProperty("file");
                      if (dob != null) {
-                         t = new TbTransferable(dob);
+                         t = new ExTransferable.Single( buttonDataFlavor ) {
+                             public Object getData() {
+                                 return dob;
+                             }
+                         };
                      }
+                 }
+                 if( c instanceof JButton ) {
+                     ((JButton)c).getModel().setArmed( false );
+                     ((JButton)c).getModel().setPressed( false );
+                     ((JButton)c).getModel().setRollover( true );
                  }
                  if (t != null) {
                     dragSourceButtonIndex = Toolbar.this.getComponentIndex( c );
                     isDragSourceToolbar = true;
-                    dragSource.startDrag(e, dragMoveCursor/*DragSource.DefaultCopyNoDrop*/, t, this);
+                    dragSource.startDrag(e, dragMoveCursor, t, this);
                  }
                 
               } catch ( InvalidDnDOperationException idoe ) {
@@ -330,33 +398,14 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
 
         public void dropActionChanged (DragSourceDragEvent e) {
-            DragSourceContext context = e.getDragSourceContext();
-            int myaction = e.getDropAction();
-            if ((myaction & DnDConstants.ACTION_MOVE) != 0) {
-                context.setCursor( dragMoveCursor ); //DragSource.DefaultMoveDrop);
-            } else {
-                context.setCursor( dragNoDropCursor ); //DragSource.DefaultCopyNoDrop);                
-            }
+            //ignore
         }
         
         public void drop(DropTargetDropEvent dtde) {
-            if( !validateDropPosition() ) {
-                resetDropGesture();
-                return;
+            if( validateDropPosition() ) {
+                dtde.dropComplete( handleDrop( dtde.getTransferable() ) );
             }
-            Transferable t = dtde.getTransferable();
-            try {
-                Object o = t.getTransferData( tiDataFlavor ); //XXX
-                if( o instanceof DataObject ) {
-                    doDrop( (DataObject) o, dropTargetButtonIndex-1, insertBefore );
-                    
-                    resetDropGesture();
-                }
-            } catch (UnsupportedFlavorException e) {
-                ErrorManager.getDefault().notify (e);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
+            resetDropGesture();
         }
         
         public void dragExit(DropTargetEvent dte) {
@@ -364,70 +413,131 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         }
         
         public void dropActionChanged(DropTargetDragEvent dtde) {
-            
+            //ignore
         }
 
         public void dragEnter(DropTargetDragEvent e) {
-            if( e.isDataFlavorSupported( tiDataFlavor ) ) {
-                e.acceptDrag(DnDConstants.ACTION_MOVE);
+            if( e.isDataFlavorSupported( buttonDataFlavor ) 
+                || e.isDataFlavorSupported( actionDataFlavor ) ) {
+                e.acceptDrag(DnDConstants.ACTION_COPY_OR_MOVE);
             } else {
                 e.rejectDrag();
             }
         }
 
         public void dragOver(DropTargetDragEvent e) {
-            if( e.isDataFlavorSupported( tiDataFlavor ) ) {
+            if( e.isDataFlavorSupported( buttonDataFlavor ) 
+                || e.isDataFlavorSupported( actionDataFlavor ) ) {
                 updateDropGesture( e );
                 if( !validateDropPosition() ) {
                     e.rejectDrag();
                 } else {
-                    e.acceptDrag( DnDConstants.ACTION_MOVE );
+                    e.acceptDrag( DnDConstants.ACTION_COPY_OR_MOVE );
                 }
             } else {
                 e.rejectDrag();
             }
         }
+
+        public void dragMouseMoved(DragSourceDragEvent e) {
+            DragSourceContext context = e.getDragSourceContext();
+            int action = e.getDropAction();
+            if ((action & DnDConstants.ACTION_MOVE) != 0) {
+                context.setCursor( dragMoveCursor );
+            } else {
+                if( isInToolbarPanel( e.getLocation() ) ) 
+                    context.setCursor( dragNoDropCursor );
+                else
+                    context.setCursor( dragRemoveCursor );
+            }
+        }
     }
     
-    void doDrop( DataObject ob, int dropIndex, boolean dropBefore ) throws IOException {
+    private boolean isInToolbarPanel( Point p ) {
+        Component c = ToolbarPool.getDefault();
+        SwingUtilities.convertPointFromScreen( p, c );
+        return c.contains( p );
+    }
+    
+    /**
+     * Add a new toolbar button represented by the given DataObject.
+     */
+    private boolean addButton( DataObject dobj, int dropIndex, boolean dropBefore ) throws IOException {
+        if( null == dobj )
+            return false;
+        //check if the dropped button (action) already exists in this toolbar
+        if( dobj instanceof InstanceDataObject ) {
+            DataObject[] children = backingFolder.getChildren();
+            String instanceName = ((InstanceDataObject)dobj).instanceName();
+            for( int i=0; i<children.length; i++ ) {
+                if( !(children[i] instanceof InstanceDataObject) )
+                    continue;
+                //TODO is comparing instance names ok?
+                InstanceDataObject instChild = (InstanceDataObject)children[i];
+                if( instanceName.equals( instChild.instanceName() ) ) {
+                    //user dropped to toolbat a new button that already exists in this toolbar
+                    //just move the existing button to a new position
+                    isDragSourceToolbar = true;
+                    return moveButton( children[i], dropIndex, dropBefore );
+                }
+            } 
+        }
+
+        DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex, dropBefore );
+
+        Node folderNode = backingFolder.getNodeDelegate();
+        DataObject copy = dobj.copy( backingFolder );
+        
+        reorderButtons( copy, objUnderCursor );
+        return true;
+    }
+    
+    /**
+     * Move toolbar button to a new position.
+     */
+    private boolean moveButton( DataObject ob, int dropIndex, boolean dropBefore ) throws IOException {
         //find out which button is currently under the drag cursor
+        DataObject objUnderCursor = getDataObjectUnderDropCursor( dropIndex, dropBefore );
+
+        if( !isDragSourceToolbar ) {
+            //move button to the new toolbar
+            ob.move(backingFolder);                 
+        }
+
+        reorderButtons( ob, objUnderCursor );
+        //else we're dragging a button to an empty toolbar
+        return true;
+    }
+    
+    private void reorderButtons( DataObject objToMove, DataObject objUnderCursor ) throws IOException {
+        java.util.List children = new ArrayList( Arrays.asList( backingFolder.getChildren() ) );
+        if( null == objUnderCursor ) {
+            children.remove( objToMove );
+            children.add( objToMove );
+        } else {
+            int targetIndex = children.indexOf( objUnderCursor );
+            int currentIndex = children.indexOf( objToMove );
+            if( currentIndex < targetIndex )
+                targetIndex--;
+            children.remove( objToMove );
+            children.add( targetIndex, objToMove );
+        }
+
+        backingFolder.setOrder( (DataObject[])children.toArray( new DataObject[children.size()]) );
+    }
+    
+    private DataObject getDataObjectUnderDropCursor( int dropIndex, boolean dropBefore ) {
         DataObject[] buttons = backingFolder.getChildren();
         DataObject objUnderCursor = null;
         boolean appendToEnd = false;
         if( buttons.length > 0 ) {
             if( !dropBefore )
                 dropIndex++;
-            if( dropIndex >= buttons.length ) {
-                objUnderCursor = buttons[buttons.length-1];
-                appendToEnd = true;
-            } else {
+            if( dropIndex < buttons.length ) {
                 objUnderCursor = buttons[dropIndex];
             }
         }
-
-        if( Toolbar.this.isDragSourceToolbar ) {
-            //do nothing, we're just reordering buttons in this toolbar
-        } else {
-            //move button to the new toolbar
-            ob.move(backingFolder);                 
-        }
-
-        if( null != objUnderCursor ) {
-            //reorder children
-            java.util.List children = new ArrayList( Arrays.asList( backingFolder.getChildren() ) );
-            int targetIndex = children.indexOf( objUnderCursor );
-            int currentIndex = children.indexOf( ob );
-            if( currentIndex < targetIndex )
-                targetIndex--;
-            children.remove( ob );
-            if( appendToEnd )
-                children.add( ob );
-            else
-                children.add( targetIndex, ob );
-
-            backingFolder.setOrder( (DataObject[])children.toArray( new DataObject[children.size()]) );
-        }
-        //else we're dragging a button to an empty toolbar
+        return objUnderCursor;
     }
     
     private boolean validateDropPosition() {
@@ -441,39 +551,6 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                //dragging a button to an empty toolbar
                || (dropTargetButtonIndex < 0 && getComponentCount() == 1);
     }
-
-    private static DataFlavor tiDataFlavor = new DataFlavor( DataObject.class, "Toolbar Item" );
-
-    private static class TbTransferable implements Transferable, ClipboardOwner {
-        final DataObject obj;
-        
-      public TbTransferable (DataObject obj) {
-          this.obj = obj;
-      }
-        
-      public synchronized DataFlavor[] getTransferDataFlavors() {
-        return new DataFlavor[] { 
-            tiDataFlavor
-        };
-      }
-      
-      public boolean isDataFlavorSupported( DataFlavor flavor ) {
-        return flavor == tiDataFlavor;
-      }
-      
-      public synchronized Object getTransferData(DataFlavor flavor)
-        throws UnsupportedFlavorException, IOException {
-            if (!isDataFlavorSupported(flavor)) {
-                throw new UnsupportedFlavorException(flavor);
-            }
-            return obj; //XXX
-            
-      }
-      
-      public void lostOwnership (Clipboard clip, Transferable tf) {
-          //Hmm...
-      }
-    }    
 
     /** Start tracking content of the underlaying folder if not doing so yet */
     final Folder waitFinished() {
@@ -915,9 +992,13 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     }
                     if (obj instanceof Action) {
                         Action a = (Action)obj;
-                        JButton b = new JButton();
+                        JButton b = new DefaultIconButton();
                         if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
                             b.putClientProperty("PreferredIconSize",new Integer(24)); //NOI18N
+                        }
+                        if( null == a.getValue( Action.SMALL_ICON ) 
+                            && (null == a.getValue( Action.NAME) || a.getValue( Action.NAME ).toString().length() == 0) ) {
+                            a.putValue( Action.SMALL_ICON, getUnknownIcon() );
                         }
                         Actions.connect (b, a);
                         b.putClientProperty ("file", file);
@@ -1317,4 +1398,24 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             return type;
         }
     } // end of class DnDEvent
+    
+    private static Icon unknownIcon;
+    private static Icon getUnknownIcon() {
+        if( null == unknownIcon ) {
+            unknownIcon = new ImageIcon( Utilities.loadImage( "org/openide/resources/unknown.gif") );
+        }
+        return unknownIcon;
+    }
+    
+    /**
+     * A button that provides a default icon when no text and no custom icon have been set.
+     */
+    private static class DefaultIconButton extends JButton {
+        public Icon getIcon() {
+            Icon retValue = super.getIcon();
+            if( null == retValue && (null == getText() || getText().length() == 0 ) )
+                retValue = getUnknownIcon();
+            return retValue;
+        }
+    }
 } // end of class Toolbar
