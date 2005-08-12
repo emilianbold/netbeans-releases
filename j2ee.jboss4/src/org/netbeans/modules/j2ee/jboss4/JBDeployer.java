@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4;
 
+import java.net.URL;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -42,6 +43,8 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class JBDeployer implements ProgressObject, Runnable {
+    /** timeout for waiting for URL connection */
+    private static final int TIMEOUT = 60000;
     
     Target[] target;
     File file;
@@ -61,7 +64,7 @@ public class JBDeployer implements ProgressObject, Runnable {
         this.file = file;
         this.file2 = file2;
         this.module_id = module_id;
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
     }
@@ -79,24 +82,36 @@ public class JBDeployer implements ProgressObject, Runnable {
             toDeploy.delete();
         
         fileName = fileName.substring(0,fileName.lastIndexOf('.'));
-        
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+        String msg = NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath());
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
         
         try{
             wait(2000);
         }catch(Exception e){
         }
         
-        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING") + " "+file.getAbsolutePath()));
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
         
         try{
+            URL url = new URL (module_id.getWebURL());
+            String waitingMsg = NbBundle.getMessage(JBDeployer.class, "MSG_Waiting_For_Url", url);
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
+            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+            //delay to prevent hitting the old content before reload
+            for (int i = 0; i < 3; i++) {
+                Thread.sleep(1000);
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+            }
+            //wait until the url becomes active
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < TIMEOUT) {
+                if (URLWait.waitForUrlReady(url, 1000)) {
+                    break;
+                }
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+            }
         }catch(Exception e){
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
-        }
-        try{
-            wait(2000);
-        }catch(Exception e){
         }
 
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
