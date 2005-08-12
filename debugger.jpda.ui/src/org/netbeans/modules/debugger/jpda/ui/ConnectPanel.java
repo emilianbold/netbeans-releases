@@ -50,10 +50,13 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -272,36 +275,48 @@ Controller, ActionListener {
     
     public boolean ok () {
         int index = cbConnectors.getSelectedIndex ();
-        Connector connector = (Connector) connectors.get (index);
-        Map args = getEditedArgs (tfParams, connector);
+        final Connector connector = (Connector) connectors.get (index);
+        final Map args = getEditedArgs (tfParams, connector);
         if (args == null) return true; // CANCEL
         saveArgs (args, connector);
         
-        if (connector instanceof AttachingConnector)
-            DebuggerManager.getDebuggerManager ().startDebugging (
-                DebuggerInfo.create (
-                    AttachingDICookie.ID,
-                    new Object [] {
-                        AttachingDICookie.create (
-                            (AttachingConnector) connector,
-                            args
-                        )
-                    }
-                )
-            );
-        else
-        if (connector instanceof ListeningConnector)
-            DebuggerManager.getDebuggerManager ().startDebugging (
-                DebuggerInfo.create (
-                    ListeningDICookie.ID,
-                    new Object [] {
-                        ListeningDICookie.create (
-                            (ListeningConnector) connector,
-                            args
-                        )
-                    }
-                )
-            );
+        // Take the start off the AWT EQ:
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                ProgressHandle progress = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(ConnectPanel.class, "CTL_connectProgress"));
+                try {
+                    progress.start();
+                    if (connector instanceof AttachingConnector)
+                        DebuggerManager.getDebuggerManager ().startDebugging (
+                            DebuggerInfo.create (
+                                AttachingDICookie.ID,
+                                new Object [] {
+                                    AttachingDICookie.create (
+                                        (AttachingConnector) connector,
+                                        args
+                                    )
+                                }
+                            )
+                        );
+                    else
+                    if (connector instanceof ListeningConnector)
+                        DebuggerManager.getDebuggerManager ().startDebugging (
+                            DebuggerInfo.create (
+                                ListeningDICookie.ID,
+                                new Object [] {
+                                    ListeningDICookie.create (
+                                        (ListeningConnector) connector,
+                                        args
+                                    )
+                                }
+                            )
+                        );
+                } finally {
+                    progress.finish();
+                }
+            }
+        });
         return true;
     }
     
