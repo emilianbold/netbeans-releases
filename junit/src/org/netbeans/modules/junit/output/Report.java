@@ -189,30 +189,20 @@ final class Report {
      */
     private static void mergeTestcases(Map/*<String, TestcaseGroup>*/ thisMap,
                                        Map/*<String, TestcaseGroup>*/ thatMap) {
-        /* append testcases: */
-        boolean thisEmpty = thisMap.isEmpty();
-        boolean thatEmpty = thatMap.isEmpty();
-        if (!thatEmpty) {
-            if (thisEmpty) {
-                thisMap.putAll(thatMap);
-            } else {
-                mergeTestcaseGroups(thisMap, thatMap);
+        if (thatMap.isEmpty()) {
+            return;
+        }
+        
+        if (!thisMap.isEmpty()) {
+            for (Iterator i = thisMap.values().iterator(); i.hasNext(); ) {
+                final TestcaseGroup g = (TestcaseGroup) i.next();
+                Object o = thatMap.remove(g.className);
+                if (o != null) {
+                    g.testcases.addAll(((TestcaseGroup) o).testcases);
+                }
             }
         }
-    }
-    
-    /**
-     */
-    private static void mergeTestcaseGroups(
-                                final Map/*<String, TestcaseGroup>*/ first,
-                                final Map/*<String, TestcaseGroup>*/ sec) {
-        for (Iterator i = first.values().iterator(); i.hasNext(); ) {
-            final TestcaseGroup a = (TestcaseGroup) i.next();
-            Object o = sec.remove(a.className);
-            if (o != null) {
-                a.testcases.addAll(((TestcaseGroup) o).testcases);
-            }
-        }
+        thisMap.putAll(thatMap);
     }
     
 }
