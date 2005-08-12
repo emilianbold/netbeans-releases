@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.derby;
 
+import java.io.File;
 import javax.swing.Action;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -43,12 +44,18 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }    
     
     public void performAction() {
+        if (!RegisterDerby.getDefault().isRunning()) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                NbBundle.getMessage(CreateDatabaseAction.class, "ERR_DerbyNotRunningWhenCreatingDB"),
+                NotifyDescriptor.INFORMATION_MESSAGE));
+            return;
+        }
         NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine(
-            NbBundle.getBundle(CreateDatabaseAction.class).getString("CTL_SelectName"),
-            NbBundle.getBundle(CreateDatabaseAction.class).getString("CTL_CreateDBAction"));
+            NbBundle.getMessage(CreateDatabaseAction.class, "CTL_SelectName"),
+            NbBundle.getMessage(CreateDatabaseAction.class, "CTL_CreateDBAction"));
         if (DialogDisplayer.getDefault().notify(il) == NotifyDescriptor.OK_OPTION) {
             try {
-                makeDataSource(il.getInputText());
+                makeDatabase(il.getInputText());
             }
             catch (Exception e) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
@@ -64,12 +71,8 @@ public class CreateDatabaseAction extends CallableSystemAction {
         return null;
     }*/
     
-    DataSource makeDataSource(String dbname) throws Exception {
-        Class edsClass = Class.forName("org.apache.derby.jdbc.EmbeddedDataSource");
-        DataSource ds =  (DataSource)edsClass.newInstance();
-        Method setName = edsClass.getMethod("setDatabaseName", new Class[] {String.class});
-        setName.invoke(ds, new Object[] {dbname});
-        return ds;
+    void makeDatabase(String dbname) throws Exception {
+        RegisterDerby.getDefault().postCreateNewDatabase(new File(dbname));
     }
 
     protected boolean asynchronous() {

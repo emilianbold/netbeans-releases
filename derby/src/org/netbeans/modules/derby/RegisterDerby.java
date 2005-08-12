@@ -21,15 +21,29 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.Connection;
+import java.sql.Driver;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -44,6 +58,9 @@ import org.netbeans.modules.db.runtime.DatabaseRuntime;
 public class RegisterDerby implements DatabaseRuntime {
     
     public static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
+    public static final String NET_DRIVER_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
+    public static final String DERBY_DATABASES_DIR = "derby"; // NOI18N
+    
     
     private static RegisterDerby reg=null;
     
@@ -118,23 +135,108 @@ public class RegisterDerby implements DatabaseRuntime {
         return InstalledFileLocator.getDefault().locate(INST_DIR + "/" + relPath, null, false);
     }
     
+    private URL[] getDerbyNetDriverURLs() throws MalformedURLException {
+        URL[] driverURLs = new URL[1];
+        driverURLs[0] = getDerbyFile("lib/derbyclient.jar").toURI().toURL();
+        return driverURLs;
+    }
+    
+    private Driver getDerbyNetDriver() throws Exception {
+        URL[] driverURLs = getDerbyNetDriverURLs();
+        DbURLClassLoader l = new DbURLClassLoader(driverURLs);
+        Class c = Class.forName(NET_DRIVER_CLASS_NAME, true, l);
+        return (Driver)c.newInstance();
+    }
+    
+    /* Registers the driver and the DatabaseRuntime class with the JDBC explorer. 
+     * Returns the registered driver.
+     */
+    public JDBCDriver register() throws IOException {
+        DatabaseRuntimeManager.getDefault(). register(NET_DRIVER_CLASS_NAME, this);
+
+        JDBCDriverManager dm = JDBCDriverManager.getDefault();
+        JDBCDriver[] drvs = dm.getDriver(NET_DRIVER_CLASS_NAME);
+        
+        if (drvs.length>0)
+            return drvs[0]; //already there
+        
+        URL[] urls = getDerbyNetDriverURLs();
+        JDBCDriver newDriver = new JDBCDriver(NbBundle.getMessage(RegisterDerby.class, "LBL_DriverName"), 
+                NET_DRIVER_CLASS_NAME,urls);
+        dm.addDriver(newDriver);
+        return newDriver;
+    }
+    
+    private String getPort() {
+        return "1527";
+    }
+    
+    /** Posts the creation of the new database to request processor.
+     */
+    void postCreateNewDatabase(final File location) throws Exception {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run () {
+                try {
+                    createNewDatabase(location);
+                }
+                catch (Exception e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+            
+        });
+    }
+    
+    private void createNewDatabase(final File location) throws Exception {
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(
+                RegisterDerby.class, "MSG_CreatingDBProgressLabel", location));
+        ph.start();
+        try {
+            Driver driver = getDerbyNetDriver();
+            Properties props = new Properties();
+            String userName = "admin";
+            String password = "admin";
+            props.put("user", userName); // NOI18N
+            props.put("password", password); // NOI18N
+            String url = "jdbc:derby://localhost:" + getPort() + "/" + location; // NOI18N
+            String urlForCreation = url + ";create=true"; // NOI18N
+            Connection connection = driver.connect(urlForCreation, props);
+            connection.close();
+
+            JDBCDriver jdbcDriver = register();
+
+            DatabaseConnection cinfo = new DatabaseConnection();
+            cinfo.setDriverName(jdbcDriver.getName());
+            cinfo.setDriver(jdbcDriver.getClassName());
+            cinfo.setDatabase(url);
+            cinfo.setUser(userName);
+            cinfo.setSchema(null);
+            cinfo.setPassword(password);
+            cinfo.setRememberPassword( true );
+
+            DatabaseRuntimeManager drtm = DatabaseRuntimeManager.getDefault();
+            RootNodeInfo rni = drtm.getRootNodeInfo();
+            rni.addDatabaseConnection(cinfo);
+        }
+        finally {
+            ph.finish();
+        }
+    }
+            
+    
     /* can return null
      * of the location of the derby scripts to be used
      *
      **/
-    private File getScriptsLocation() {
+/*    private File getScriptsLocation() {
         return getDerbyFile("frameworks/NetworkServer/bin");
-    }
+    }*/
     
     private String[] getEnvironment() {
-        //String javaHome = System.getProperty("java.home");
         File installLoc = getInstallLocation();
         if (installLoc == null)
             return null;
-        // PENDING - set derby.system.home to $userdir/derby, so the log file is written there
         return new String[] {"DERBY_INSTALL=" + installLoc.getAbsolutePath()};
-        //                     "SystemRoot=" + System.getProperty("Env-SystemRoot"), // needed on Windows
-        //                     "JAVA_HOME=" + javaHome};
     }
     
     private JavaPlatform getJavaPlatform() {
@@ -150,16 +252,17 @@ public class RegisterDerby implements DatabaseRuntime {
             stop();
         }
         try {
+            register(); // PENDING - remove when rewriting to Andrei's branch
             ExecSupport ee= new ExecSupport();
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
-            // java -Dderby.system.home=<userdir/derbytemp> -classpath  
+            // java -Dderby.system.home=<userdir/derby> -classpath  
             //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
             //     org.apache.derby.drda.NetworkServerControl start
             NbProcessDescriptor desc = new NbProcessDescriptor(
               java,
-              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + "derbytemp " +
+              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + DERBY_DATABASES_DIR + " " +
               "-classpath " + getNetworkServerClasspath() +
               " org.apache.derby.drda.NetworkServerControl start"
             );
@@ -167,7 +270,7 @@ public class RegisterDerby implements DatabaseRuntime {
                 null,
                 getEnvironment(),
                 true,
-                getScriptsLocation()
+                getInstallLocation()
             );
 
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
@@ -197,12 +300,12 @@ public class RegisterDerby implements DatabaseRuntime {
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
-            // java -Dderby.system.home=<userdir/derbytemp> -classpath  
+            // java -Dderby.system.home=<userdir/derby> -classpath  
             //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
             //     org.apache.derby.drda.NetworkServerControl shutdown
             NbProcessDescriptor desc = new NbProcessDescriptor(
               java,
-              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + "derbytemp " +
+              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + DERBY_DATABASES_DIR + " " +
               "-classpath " + getNetworkServerClasspath() +
               " org.apache.derby.drda.NetworkServerControl shutdown"
             );
@@ -210,7 +313,7 @@ public class RegisterDerby implements DatabaseRuntime {
                 null,
                 getEnvironment(),
                 true,
-                getScriptsLocation()
+                getInstallLocation()
             );
             shutwownProcess.waitFor();
 
