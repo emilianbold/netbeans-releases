@@ -104,14 +104,6 @@ final class JUnitOutputReader {
             xmlOutputBuffer.append(msg).append('\n');
             if (msg.equals("</testsuite>")) {                           //NOI18N
                 closePreviousReport();
-                try {
-                    String xmlOutput = xmlOutputBuffer.toString();
-                    xmlOutputBuffer = null;     //allow GC before parsing XML
-                    report = XmlOutputParser.parseXmlOutput(xmlOutput);
-                    report.antScript = antScript;
-                } catch (SAXException ex) {
-                    /* initialization of the parser failed, ignore the output */
-                }
             }
             return;
         }//</editor-fold>
@@ -371,6 +363,18 @@ final class JUnitOutputReader {
     /**
      */
     private void closePreviousReport() {
+        
+        if (xmlOutputBuffer != null) {
+            try {
+                String xmlOutput = xmlOutputBuffer.toString();
+                xmlOutputBuffer = null;     //allow GC before parsing XML
+                report = XmlOutputParser.parseXmlOutput(xmlOutput);
+                report.antScript = antScript;
+            } catch (SAXException ex) {
+                /* initialization of the parser failed, ignore the output */
+            }
+        }
+        
         if (report == null) {                       //no previous report
             return;
         }
