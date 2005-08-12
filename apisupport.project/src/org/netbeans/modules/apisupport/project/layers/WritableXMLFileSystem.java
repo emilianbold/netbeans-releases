@@ -67,8 +67,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+
+// XXX use doc.getRootEventManager().setFirePolicy(TreeEventManager.FIRE_{LATER,NOW})
 
 /**
  * A filesystem which is based on a TAX document and implements
@@ -93,21 +94,27 @@ public class WritableXMLFileSystem extends AbstractFileSystem
         PropertyChangeListener {
     
     private final TreeEditorCookie cookie;
-    private TreeDocumentRoot doc;
+    private TreeDocumentRoot doc; // may be null if malformed
     private URL location;
     private String suffix; // for branding/localization like "_f4j_ce_ja"; never null, at worst ""
     private final FileChangeListener fileChangeListener;
     private ClassPath classpath; // OK to be null
     private final BadgingSupport status;
     
-    public WritableXMLFileSystem(URL location, TreeEditorCookie cookie) throws TreeException, IOException {
+    public WritableXMLFileSystem(URL location, TreeEditorCookie cookie) {
         this.attr = this;
         this.change = this;
         this.info = this;
         this.list = this;
         this.transfer = this;
         this.cookie = cookie;
-        doc = cookie.openDocumentRoot();
+        try {
+            doc = cookie.openDocumentRoot();
+        } catch (TreeException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        } catch (IOException e) {
+            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+        }
         fileChangeListener = FileUtil.weakFileChangeListener(this, null);
         status = new BadgingSupport(this);
         status.addFileStatusListener(new FileStatusListener() {
@@ -148,7 +155,12 @@ public class WritableXMLFileSystem extends AbstractFileSystem
     }
     
     public String getDisplayName() {
-        return "XML layer: " + location;
+        FileObject fo = URLMapper.findFileObject(location);
+        if (fo != null) {
+            return FileUtil.getFileDisplayName(fo);
+        } else {
+            return location.toExternalForm();
+        }
     }
     
     public boolean isReadOnly() {
@@ -156,6 +168,9 @@ public class WritableXMLFileSystem extends AbstractFileSystem
     }
     
     private TreeElement getRootElement() {
+        if (doc == null) {
+            return null;
+        }
         Iterator it;
         it = doc.getChildNodes().iterator();
         while (it.hasNext()) {

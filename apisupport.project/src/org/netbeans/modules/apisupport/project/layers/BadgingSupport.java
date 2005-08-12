@@ -85,11 +85,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     }
     
     public String annotateName(String name, Set files) {
-        return annotateNameGeneral(name, files, "<root folder>", suffix, fileChangeListener, classpath);
+        return annotateNameGeneral(name, files, suffix, fileChangeListener, classpath);
     }
     
-    private static String annotateNameGeneral(String name, Set files, String rootname,
-            String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
+    private static String annotateNameGeneral(String name, Set files, String suffix, FileChangeListener fileChangeListener, ClassPath cp) {
         Iterator it = files.iterator();
         while (it.hasNext()) {
             FileObject fo = (FileObject) it.next();
@@ -126,9 +125,6 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     return name + " <no such bundle: " + bundleName + ">";
                 }
             }
-        }
-        if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
-            return rootname;
         }
         return name;
     }
