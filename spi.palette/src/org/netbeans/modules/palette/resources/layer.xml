@@ -56,4 +56,25 @@ Microsystems, Inc. All Rights Reserved.
         <!-- Palette stores its non-public settings here -->
     </folder>
 
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans" >
+                <file name="Editor_Palette_Item_1_0" url="editor-palette-item-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//Editor Palette Item 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="lookups">
+            <folder name="NetBeans">
+                <file name="Editor_Palette_Item_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.palette.PaletteEnvironmentProvider"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.palette.PaletteEnvironmentProvider.createProvider"/>
+                </file>
+            </folder>
+        </folder>
+
+    </folder>
+
 </filesystem>
