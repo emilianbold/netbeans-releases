@@ -18,6 +18,8 @@ import java.io.IOException;
 
 import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.junit.NbTestCase;
 
 /**

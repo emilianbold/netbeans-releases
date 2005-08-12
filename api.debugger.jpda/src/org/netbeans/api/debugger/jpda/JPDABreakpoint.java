@@ -19,6 +19,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 
 /**
  * Abstract definition of JPDA breakpoint.

@@ -11,20 +11,18 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.api.debugger.jpda;
+package org.netbeans.api.debugger.jpda.event;
+
+import java.util.EventListener;
+import org.netbeans.api.debugger.jpda.*;
 
 
 /**
- * Represents "this" value for call stack frame.
- *
- * <pre style="background-color: rgb(255, 255, 102);">
- * Since JDI interfaces evolve from one version to another, it's strongly recommended
- * not to implement this interface in client code. New methods can be added to
- * this interface at any time to keep up with the JDI functionality.</pre>
- *
- * @see CallStackFrame#getThisVariable
+ * Notifies about breakpoint events.
  *
  * @author   Jan Jancura
  */
-public interface This extends ObjectVariable {
+public interface JPDABreakpointListener extends EventListener {
+    
+    public void breakpointReached (JPDABreakpointEvent event);
 }

@@ -21,6 +21,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import junit.framework.AssertionFailedError;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.junit.NbTestCase;
 
 

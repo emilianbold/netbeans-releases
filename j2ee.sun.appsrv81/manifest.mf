@@ -20,7 +20,7 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.j2eeserver/3 > 1.5,
  org.netbeans.modules.j2eeapis/1, 
  org.netbeans.api.debugger/1, 
- org.netbeans.api.debugger.jpda/1, 
+ org.netbeans.api.debugger.jpda/2, 
  org.netbeans.modules.j2ee.dd/1 > 1.3, 
  org.netbeans.modules.schema2beans/1,
  org.netbeans.modules.db/1 = 2, 

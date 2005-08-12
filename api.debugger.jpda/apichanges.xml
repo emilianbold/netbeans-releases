@@ -311,6 +311,28 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>JPDA API interfaces that correspond to JDI API declared as not to implement.</summary>
+        <version major="2" minor="0"/>
+        <date day="12" month="8" year="2005"/>
+        <author login="mentlicher"/>
+        <compatibility addition="no" source="incompatible" binary="incompatible"/>
+        <description>
+            <p>
+                JPDA API represents JDI functionality.
+                Since JDI interfaces evolve from one version to another, it's
+                necessary to declare that interfaces in
+                org.netbeans.api.debugger.jpda package should not be implemented,
+                since new methods can be added to these interfaces at any time
+                to keep up with the JDI functionality.
+            </p>
+            <p>
+                Also JPDABreakpointEvent and JPDABreakpointListener are moved to
+                newly created org.netbeans.api.debugger.jpda.event package.
+            </p>
+        </description>
+    </change>
 
 </changes>
 

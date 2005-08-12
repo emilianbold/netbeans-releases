@@ -31,7 +31,7 @@ import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.DebuggerManager;
