@@ -31,7 +31,7 @@ import java.io.*;
  * 
  * @author Maros Sandor
  */
-class DiffStreamSource extends StreamSource {
+public class DiffStreamSource extends StreamSource {
         
     private final File      baseFile;
     private final String    revision;
