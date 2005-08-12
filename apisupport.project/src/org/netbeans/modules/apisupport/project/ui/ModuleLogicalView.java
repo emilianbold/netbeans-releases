@@ -16,6 +16,8 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Manifest;
 import javax.swing.Action;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
@@ -31,6 +34,9 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.layers.LayerNode;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
@@ -49,7 +55,6 @@ import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Provides a logical view of a NetBeans module project.
@@ -272,6 +277,32 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 l.add(javadocDocfiles);
             }
             l.add(IMPORTANT_FILES_NAME);
+            {
+                // Try to add the layer node.
+                FileObject manifestXML = project.getManifestFile();
+                if (manifestXML != null) {
+                    try {
+                        InputStream is = manifestXML.getInputStream();
+                        try {
+                            Manifest m = new Manifest(is);
+                            String layerLoc = m.getMainAttributes().getValue("OpenIDE-Module-Layer");
+                            if (layerLoc != null) {
+                                FileObject src = project.getSourceDirectory();
+                                if (src != null) {
+                                    FileObject layer = src.getFileObject(layerLoc);
+                                    if (layer != null) {
+                                        l.add(layer);
+                                    }
+                                }
+                            }
+                        } finally {
+                            is.close();
+                        }
+                    } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
+            }
             setKeys(l);
         }
         
@@ -286,6 +317,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 n = PackageView.createPackageView((SourceGroup) key);
             } else if (key == IMPORTANT_FILES_NAME) {
                 n = new ImportantFilesNode(project);
+            } else if (key instanceof FileObject) {
+                n = new LayerNode((FileObject) key);
             } else {
                 throw new AssertionError("Unknown key: " + key);
             }
