@@ -44,10 +44,12 @@ class SummaryView implements MouseListener {
     private JScrollPane scrollPane;
 
     private final List  dispResults;
-    
+    private String      message;
+
     public SummaryView(SearchHistoryPanel master, List results) {
         this.master = master;
         this.dispResults = expandResults(results);
+        message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
         resultsList.addMouseListener(this);
         resultsList.setCellRenderer(new SummaryCellRenderer());
@@ -170,6 +172,7 @@ class SummaryView implements MouseListener {
         private Style filenameStyle;
         private Style indentStyle;
         private Style noindentStyle;
+        private Style hiliteStyle;
         
         private DateFormat defaultFormat;
 
@@ -185,6 +188,10 @@ class SummaryView implements MouseListener {
             noindentStyle = this.addStyle("noindent", null);
             StyleConstants.setLeftIndent(noindentStyle, 0);
             defaultFormat = DateFormat.getDateTimeInstance();
+
+            hiliteStyle = this.addStyle("hilite", normalStyle);
+            // TODO: take this color from Editor.Settings
+            StyleConstants.setBackground(hiliteStyle, new Color(246, 248, 139));
         }
 
         private static final double FACTOR = 0.95;
@@ -262,6 +269,14 @@ class SummaryView implements MouseListener {
                 sd.insertString(sd.getLength(), defaultFormat.format(revision.getDate()) + FIELDS_SEPARATOR, null);
                 sd.insertString(sd.getLength(), revision.getAuthor() + "\n", null);
                 sd.insertString(sd.getLength(), revision.getMessage(), null);
+                if (message != null && !isSelected) {
+                    int idx = revision.getMessage().indexOf(message);
+                    if (idx != -1) {
+                        int len = revision.getMessage().length();
+                        int doclen = sd.getLength();
+                        sd.setCharacterAttributes(doclen - len + idx, message.length(), hiliteStyle, false);
+                    }
+                }
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 if (dispRevision.isIndented()) {
                     sd.setParagraphAttributes(0, Integer.MAX_VALUE, indentStyle, false);

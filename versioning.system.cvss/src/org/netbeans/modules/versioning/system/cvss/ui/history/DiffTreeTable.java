@@ -57,6 +57,19 @@ class DiffTreeTable extends TreeTableView {
         setProperties(columns);
     }
     
+    private void setDefaultColumnSizes() {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                int width = getWidth();
+                treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 25 / 100);
+                treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);
+                treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 15 / 100);
+                treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);
+                treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 40 / 100);
+            }
+        });
+    }    
+    
     private static class ColumnDescriptor extends PropertySupport.ReadOnly {
         
         public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
@@ -73,6 +86,7 @@ class DiffTreeTable extends TreeTableView {
         rootNode = new RevisionsRootNode();
         ExplorerManager em = ExplorerManager.find(this);
         em.setRootContext(rootNode);
+        setDefaultColumnSizes();
     }
 
     public void setResults(List results) {

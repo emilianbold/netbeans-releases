@@ -19,6 +19,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
@@ -215,6 +216,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         public List getRevisions() {
             return revisions;
         }
+
+        public String getEldestRevision() {
+            LogInformation.Revision rev = (LogInformation.Revision) revisions.get(revisions.size() - 1);
+            return Utils.previousRevision(rev.getNumber());
+        }
     }
 
     static class DispRevision {
@@ -403,11 +409,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     // </editor-fold>//GEN-END:initComponents
 
     private void onPrev(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPrev
-// TODO add your handling code here:
+        diffView.onPrevButton();
     }//GEN-LAST:event_onPrev
 
     private void onNext(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onNext
-// TODO add your handling code here:
+        diffView.onNextButton();
     }//GEN-LAST:event_onNext
 
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle

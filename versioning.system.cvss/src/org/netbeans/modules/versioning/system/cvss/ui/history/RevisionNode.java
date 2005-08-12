@@ -116,8 +116,11 @@ class RevisionNode extends AbstractNode {
             } else {
                 List revs = container.getRevisions();
                 LogInformation.Revision newest = (LogInformation.Revision) revs.get(0);
-                LogInformation.Revision eldest = (LogInformation.Revision) revs.get(revs.size() - 1);
-                return newest.getNumber() + " - " + eldest.getNumber();
+                if (container.getEldestRevision() == null) {
+                    return newest.getNumber();
+                } else {
+                    return container.getEldestRevision() + " - " +  newest.getNumber();
+                }
             }
         }
     }
