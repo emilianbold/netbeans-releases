@@ -46,6 +46,7 @@ public abstract class AbstractDICookie {
      * Creates a new instance of VirtualMachine for this DebuggerInfo Cookie.
      *
      * @return a new instance of VirtualMachine for this DebuggerInfo Cookie
+     * @throws java.net.ConnectException When a connection is refused
      */
     public abstract VirtualMachine getVirtualMachine () throws IOException,
     IllegalConnectorArgumentsException, VMStartException;
