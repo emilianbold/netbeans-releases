@@ -118,6 +118,8 @@ class LayoutFeeder implements LayoutConstants {
             solveOverlap = overlapDim == dim;
             IncludeDesc originalPos1 = originalPositions1[dim];
             IncludeDesc originalPos2 = originalPositions2[dim];
+            correctNeighborInSequence(originalPos1);
+            correctNeighborInSequence(originalPos2);
 
             if (dragger.isResizing()) {
                 originalLPosFixed = originalLPositionsFixed[dim];
@@ -240,10 +242,6 @@ class LayoutFeeder implements LayoutConstants {
         }
     }
 
-    LayoutInterval getAddedInterval(int dim) {
-        return addingIntervals[dim];
-    }
-
     private static IncludeDesc findOutCurrentPosition(LayoutInterval interval, int dimension, int alignment) {
         LayoutInterval parent = interval.getParent();
         int nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
@@ -254,16 +252,17 @@ class LayoutFeeder implements LayoutConstants {
             if (alignment < 0)
                 alignment = LEADING;
             if (nonEmptyCount == 2) { // the sequence may not survive when the interval is removed
+                // (if it survives, the inclusion gets corrected by 'correctNeighborInSequence' method)
                 iDesc.parent = parent.getParent();
-                boolean after = true;
-                for (int i=0,n=parent.getSubIntervalCount(); i < n; i++) {
+                int index = 0;
+                for (int i=parent.getSubIntervalCount()-1; i >= 0; i--) {
                     LayoutInterval li = parent.getSubInterval(i);
                     if (li == interval) {
-                        after = false;
+                        index = i;
                     }
                     else if (!li.isEmptySpace()) {
                         iDesc.neighbor = li; // next to a single interval in parallel group
-                        iDesc.index = after ? i + 1 : 0;
+                        iDesc.index = index;
                         break;
                     }
                 }
@@ -369,6 +368,22 @@ class LayoutFeeder implements LayoutConstants {
             return false;
 
         return isFixedRelativePosition(parent, edge);
+    }
+
+    /**
+     * For inclusion derived from existing position (findOutCurrentPosition)
+     * checks if it does not refer to 'neighbor' being in sequential group.
+     * In such case the inclusion is changed to refer to the sequence (single
+     * neighbor is supposed to be in parallel group). This may happen if the
+     * sequence survived removal of the interval even with just one component
+     * remaining (because of gaps around it).
+     */
+    private static void correctNeighborInSequence(IncludeDesc iDesc) {
+        if (iDesc != null && iDesc.neighbor != null && iDesc.neighbor.getParent().isSequential()) {
+            assert iDesc.parent == iDesc.neighbor.getParent().getParent();
+            iDesc.parent = iDesc.neighbor.getParent();
+            iDesc.neighbor = null;
+        }
     }
 
     // -----
@@ -634,8 +649,8 @@ class LayoutFeeder implements LayoutConstants {
 
     private void addToGroup(IncludeDesc iDesc1, IncludeDesc iDesc2) {
         assert iDesc2 == null || (iDesc1.parent == iDesc2.parent
-                && iDesc1.newSubGroup == iDesc2.newSubGroup && iDesc1.neighbor == iDesc2.neighbor
-                && iDesc1.index == iDesc2.index);
+                                  && iDesc1.newSubGroup == iDesc2.newSubGroup
+                                  && iDesc1.neighbor == iDesc2.neighbor);
 
         LayoutInterval parent = iDesc1.parent;
         LayoutInterval seq;
@@ -664,18 +679,12 @@ class LayoutFeeder implements LayoutConstants {
         else { // parallel parent
             LayoutInterval neighbor = iDesc1.neighbor;
             if (neighbor != null) {
-                if (neighbor.getParent().isSequential()) {
-                    assert neighbor.getParent().getParent() == parent;
-                    seq = neighbor.getParent();
-                }
-                else {
-                    assert neighbor.getParent() == parent;
-                    seq = new LayoutInterval(SEQUENTIAL);
-                    layoutModel.addInterval(seq, parent, layoutModel.removeInterval(neighbor));
-                    seq.setAlignment(neighbor.getAlignment());
-                    layoutModel.setIntervalAlignment(neighbor, DEFAULT);
-                    layoutModel.addInterval(neighbor, seq, 0);
-                }
+                assert neighbor.getParent() == parent;
+                seq = new LayoutInterval(SEQUENTIAL);
+                layoutModel.addInterval(seq, parent, layoutModel.removeInterval(neighbor));
+                seq.setAlignment(neighbor.getAlignment());
+                layoutModel.setIntervalAlignment(neighbor, DEFAULT);
+                layoutModel.addInterval(neighbor, seq, 0);
                 index = iDesc1.index;
             }
             else {
@@ -1020,8 +1029,13 @@ class LayoutFeeder implements LayoutConstants {
             return; // aligning with root - nothing to do (the interval must be already aligned)
 
         LayoutInterval interval = addingInterval;
-        boolean resizing = dragger.isResizing(dimension);
+        if (toAlignWith.isParentOf(interval)) {
+            assert LayoutInterval.isAlignedAtBorder(interval, toAlignWith, alignment);
+            return; // already aligned to parent
+        }
+        else assert !interval.isParentOf(toAlignWith);
 
+        // if not in same parallel group try to substitute interval with parent
         LayoutInterval parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
         while (!parParent.isParentOf(toAlignWith)) {
             if (LayoutInterval.isAlignedAtBorder(interval, parParent, alignment)) {
@@ -1032,6 +1046,8 @@ class LayoutFeeder implements LayoutConstants {
             if (parParent == null)
                 return; // not parent of toAlignWith - can't align with interval from different branch
         }
+
+        boolean resizing = dragger.isResizing(dimension);
 
         // hack: remove the aligning interval temporarily not to influence the follwoing analysis
         LayoutInterval tempRemoved = interval.getParent().isSequential() ? interval.getParent() : interval;
@@ -1198,7 +1214,7 @@ class LayoutFeeder implements LayoutConstants {
         // create the remainder group next to the aligned group
         if (!remainder.isEmpty()) {
             LayoutInterval sideGroup = operations.addGroupContent(
-                    remainder, commonSeq, commonSeq.indexOf(group), alignment, dimension/*, effAlign*/);
+                    remainder, commonSeq, commonSeq.indexOf(group), dimension, alignment/*, effAlign*/);
             if (sideGroup != null) {
                 int pos1 = parParent.getCurrentSpace().positions[dimension][alignment];
                 int pos2 = toAlignWith.getCurrentSpace().positions[dimension][alignment];
@@ -1756,103 +1772,115 @@ class LayoutFeeder implements LayoutConstants {
         else
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
 
-        assert commonGroup.isSequential();
-
-        int startIndex = 0;
-        LayoutInterval ext1;
-        boolean startGap = false;
-        if (commonGroup.isParentOf(iDesc1.parent)) {
-            ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
-            if (ext1 != null)
-                startIndex = commonGroup.indexOf(ext1.getParent());
-        }
-        else {
-            ext1 = null;
-            startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
-        }
-
-        int endIndex = commonGroup.getSubIntervalCount() - 1;
-        LayoutInterval ext2;
-        boolean endGap = false;
-        if (commonGroup.isParentOf(iDesc2.parent)) {
-            ext2 = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
-            if (ext2 != null)
-                endIndex = commonGroup.indexOf(ext2.getParent());
-        }
-        else {
-            ext2 = null;
-            endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
-        }
-
-        if (endIndex > startIndex + 1
-            || (endIndex == startIndex+1 && !startGap && !endGap))
-        {   // there is a significant part of the common sequence to be parallelized
-            LayoutInterval parGroup;
-            if (startIndex == 0 && endIndex == commonGroup.getSubIntervalCount()-1) {
-                // parallel with whole sequence
-                parGroup = commonGroup.getParent();
+        if (commonGroup.isSequential()) {
+            int startIndex = 0;
+            LayoutInterval ext1;
+            boolean startGap = false;
+            if (commonGroup.isParentOf(iDesc1.parent)) {
+                ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
+                if (ext1 != null)
+                    startIndex = commonGroup.indexOf(ext1.getParent());
             }
-            else { // separate part of the original sequence
-                parGroup = new LayoutInterval(PARALLEL);
-                LayoutInterval parSeq = new LayoutInterval(SEQUENTIAL);
-                layoutModel.addInterval(parSeq, parGroup, 0);
-                int i = startIndex;
-                while (i <= endIndex) {
-                    LayoutInterval li = layoutModel.removeInterval(commonGroup, i);
-                    endIndex--;
-                    layoutModel.addInterval(li, parSeq, -1);
-                }
-                layoutModel.addInterval(parGroup, commonGroup, startIndex);
+            else {
+                ext1 = null;
+                startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
             }
-            LayoutInterval extSeq = new LayoutInterval(SEQUENTIAL); // sequence for the extracted inclusion targets
-            layoutModel.addInterval(extSeq, parGroup, -1);
-            if (ext1 != null) {
-                LayoutInterval parent = ext1.getParent();
-                layoutModel.removeInterval(ext1);
-                if (parent.getSubIntervalCount() == 1) {
-                    LayoutInterval last = layoutModel.removeInterval(parent, 0);
-                    operations.addContent(last, parent.getParent(), layoutModel.removeInterval(parent));
+
+            int endIndex = commonGroup.getSubIntervalCount() - 1;
+            LayoutInterval ext2;
+            boolean endGap = false;
+            if (commonGroup.isParentOf(iDesc2.parent)) {
+                ext2 = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
+                if (ext2 != null)
+                    endIndex = commonGroup.indexOf(ext2.getParent());
+            }
+            else {
+                ext2 = null;
+                endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
+            }
+
+            if (endIndex > startIndex + 1
+                || (endIndex == startIndex+1 && !startGap && !endGap))
+            {   // there is a significant part of the common sequence to be parallelized
+                LayoutInterval parGroup;
+                if (startIndex == 0 && endIndex == commonGroup.getSubIntervalCount()-1) {
+                    // parallel with whole sequence
+                    parGroup = commonGroup.getParent();
                 }
-                operations.addContent(ext1, extSeq, 0);
+                else { // separate part of the original sequence
+                    parGroup = new LayoutInterval(PARALLEL);
+                    LayoutInterval parSeq = new LayoutInterval(SEQUENTIAL);
+                    layoutModel.addInterval(parSeq, parGroup, 0);
+                    int i = startIndex;
+                    while (i <= endIndex) {
+                        LayoutInterval li = layoutModel.removeInterval(commonGroup, i);
+                        endIndex--;
+                        layoutModel.addInterval(li, parSeq, -1);
+                    }
+                    layoutModel.addInterval(parGroup, commonGroup, startIndex);
+                }
+                LayoutInterval extSeq = new LayoutInterval(SEQUENTIAL); // sequence for the extracted inclusion targets
+                layoutModel.addInterval(extSeq, parGroup, -1);
+                if (ext1 != null) {
+                    LayoutInterval parent = ext1.getParent();
+                    layoutModel.removeInterval(ext1);
+                    if (parent.getSubIntervalCount() == 1) {
+                        LayoutInterval last = layoutModel.removeInterval(parent, 0);
+                        operations.addContent(last, parent.getParent(), layoutModel.removeInterval(parent));
+                    }
+                    operations.addContent(ext1, extSeq, 0);
+                    if (ext2 != null) {
+                        LayoutInterval gap = new LayoutInterval(SINGLE);
+                        int size = LayoutRegion.distance(ext1.getCurrentSpace(), ext2.getCurrentSpace(), dimension, LEADING, TRAILING);
+                        gap.setSize(size);
+                        layoutModel.addInterval(gap, extSeq, -1);
+
+                        iDesc1.index = iDesc2.index = extSeq.indexOf(gap);
+                    }
+                    else iDesc2.index = iDesc1.index;
+                }
+                else iDesc1.index = iDesc2.index;
                 if (ext2 != null) {
-                    LayoutInterval gap = new LayoutInterval(SINGLE);
-                    int size = LayoutRegion.distance(ext1.getCurrentSpace(), ext2.getCurrentSpace(), dimension, LEADING, TRAILING);
-                    gap.setSize(size);
-                    layoutModel.addInterval(gap, extSeq, -1);
-
-                    iDesc1.index = iDesc2.index = extSeq.indexOf(gap);
+                    LayoutInterval parent = ext2.getParent();
+                    layoutModel.removeInterval(ext2);
+                    if (parent.getSubIntervalCount() == 1) {
+                        LayoutInterval last = layoutModel.removeInterval(parent, 0);
+                        operations.addContent(last, parent.getParent(), layoutModel.removeInterval(parent));
+                    }
+                    operations.addContent(ext2, extSeq, -1);
                 }
-                else iDesc2.index = iDesc1.index;
-            }
-            else iDesc1.index = iDesc2.index;
-            if (ext2 != null) {
-                LayoutInterval parent = ext2.getParent();
-                layoutModel.removeInterval(ext2);
-                if (parent.getSubIntervalCount() == 1) {
-                    LayoutInterval last = layoutModel.removeInterval(parent, 0);
-                    operations.addContent(last, parent.getParent(), layoutModel.removeInterval(parent));
-                }
-                operations.addContent(ext2, extSeq, -1);
-            }
 
-            iDesc1.parent = iDesc2.parent = extSeq;
-            iDesc1.newSubGroup = iDesc2.newSubGroup = false;
-            iDesc1.neighbor = iDesc2.neighbor = null;
+                iDesc1.parent = iDesc2.parent = extSeq;
+                iDesc1.newSubGroup = iDesc2.newSubGroup = false;
+                iDesc1.neighbor = iDesc2.neighbor = null;
+            }
+            else { // end position, stay in subgroup
+                if (iDesc2.parent.isParentOf(iDesc1.parent)) {
+                    iDesc2.parent = iDesc1.parent;
+                    iDesc2.index = iDesc1.index;
+                    iDesc2.neighbor = iDesc1.neighbor;
+                    if (endGap) // there's an outer gap
+                        iDesc2.fixedPosition = false;
+                }
+                else if (iDesc1.parent.isParentOf(iDesc2.parent)) {
+                    iDesc1.parent = iDesc2.parent;
+                    iDesc1.index = iDesc2.index;
+                    iDesc1.neighbor = iDesc2.neighbor;
+                    if (startGap) // there's an outer gap
+                        iDesc1.fixedPosition = false;
+                }
+            }
         }
-        else { // end position, stay in subgroup
-            if (iDesc2.parent.isParentOf(iDesc1.parent)) {
+        else { // common group is parallel - there is nothing in sequence, so nothing to extract
+            assert iDesc1.parent.isParallel() && iDesc2.parent.isParallel()
+                   && (commonGroup == iDesc1.parent || commonGroup == iDesc2.parent)
+                   && iDesc1.neighbor == null && iDesc2.neighbor == null;
+
+            if (iDesc1.parent == commonGroup || (iDesc2.snappedNextTo == null && iDesc2.snappedParallel == null)) {
                 iDesc2.parent = iDesc1.parent;
-                iDesc2.index = iDesc1.index;
-                iDesc2.neighbor = iDesc1.neighbor;
-                if (endGap) // there's an outer gap
-                    iDesc2.fixedPosition = false;
             }
-            else if (iDesc1.parent.isParentOf(iDesc2.parent)) {
+            else { // prefer iDesc2
                 iDesc1.parent = iDesc2.parent;
-                iDesc1.index = iDesc2.index;
-                iDesc1.neighbor = iDesc2.neighbor;
-                if (startGap) // there's an outer gap
-                    iDesc1.fixedPosition = false;
             }
         }
 

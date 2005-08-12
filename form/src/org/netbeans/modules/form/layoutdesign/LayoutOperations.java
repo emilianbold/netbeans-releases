@@ -109,16 +109,19 @@ class LayoutOperations implements LayoutConstants {
      * @param list the content of the group, output from 'extract' method
      * @param seq a sequential group where to add to
      * @param index the index of the main group in the sequence
+     * @param dimension
      * @param position the position of the remainder group relative to the main
      *        group (LEADING or TRAILING)
-     * @param mainAlignment effective alignment of the main group (LEADING or
-     *        TRAILING or something else meaning not aligned)
+//     * @param mainAlignment effective alignment of the main group (LEADING or
+//     *        TRAILING or something else meaning not aligned)
      * @return parallel group if it has been created, or null
      */
     LayoutInterval addGroupContent(List list, LayoutInterval seq,
                                    int index, int dimension, int position/*, int mainAlignment*/)
     {
         assert seq.isSequential() && (position == LEADING || position == TRAILING);
+        if (position == TRAILING)
+            index++; // add behind the group
 
         boolean resizingFillGap = false;
         LayoutInterval commonGap = null;
@@ -387,7 +390,7 @@ class LayoutOperations implements LayoutConstants {
             for (int i=index-d, n=parent.getSubIntervalCount(); i >= 0 && i < n; i-=d) {
                 LayoutInterval li = parent.getSubInterval(i);
                 if ((!li.isEmptySpace() || (i-d >= 0 && i-d < n)) // ignore last gap
-                    && LayoutInterval.wantResize(parent.getSubInterval(i)))
+                    && LayoutInterval.wantResize(li))
                 {   // resizing interval will close the group
                     // possibly need to separate the rest of the group not to be influenced
                     LayoutInterval endGap = parent.getSubInterval(alignment == LEADING ? n-1 : 0);
@@ -420,27 +423,40 @@ class LayoutOperations implements LayoutConstants {
 
             // move the intervals from outside inside the group, next to found interval (extend)
             LayoutInterval connectingGap = null;
-            for (int i=index-d; i >= 0 && i < parent.getSubIntervalCount(); ) {
-                LayoutInterval li = parent.getSubInterval(i);
+            int idx, addIdx;
+            if (alignment == LEADING) {
+                idx = index + 1; // start behind the group
+                addIdx = extend.getSubIntervalCount(); // add behind the interval
+            }
+            else {
+                idx = index - 1; // start before the group
+                addIdx = 0; // add before the interval
+            }
+            while (idx >= 0 && idx < parent.getSubIntervalCount()) {
+                LayoutInterval li = parent.getSubInterval(idx);
                 if (li.isEmptySpace()) {
                     if (connectingGap == null) { // first gap
                         if (extendPos != outGroup.getCurrentSpace().positions[dimension][alignment^1]) {
                             // need to extend the first gap (extended interval inside group is smaller than the group)
-                            int neighborPos = parent.getSubInterval(i-d).getCurrentSpace().positions[dimension][alignment];
+                            int neighborPos = parent.getSubInterval(idx-d).getCurrentSpace().positions[dimension][alignment];
                             int distance = d * (extendPos - neighborPos);
                             if (distance > 0)
                                 resizeInterval(li, distance);
                         }
                         connectingGap = li;
                     }
-                    else if ((i-d == 0 || i-d == parent.getSubIntervalCount())
+                    else if ((idx == 0 || idx == parent.getSubIntervalCount()-1)
                              && commonEndingGap)
                     {   // keep the last gap out
                         break;
                     }
                 }
                 layoutModel.removeInterval(li);
-                layoutModel.addInterval(li, extend, -1);
+                layoutModel.addInterval(li, extend, addIdx);
+                if (alignment == LEADING)
+                    addIdx++;
+                else
+                    idx--;
             }
 
             // check if the sequence was not whole moved into the group
