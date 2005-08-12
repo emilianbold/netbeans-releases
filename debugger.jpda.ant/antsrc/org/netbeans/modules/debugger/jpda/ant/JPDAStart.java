@@ -35,6 +35,8 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
+import org.netbeans.api.debugger.jpda.DebuggerStartException;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
@@ -257,8 +259,12 @@ public class JPDAStart extends Task implements Runnable {
                     args, 
                     new Object[] {properties}
                 );
-            } catch (Throwable e) {
-                lock [1] = e;
+            } catch (java.io.IOException ioex) {
+                lock[1] = ioex;
+            } catch (DebuggerStartException dsex) {
+                lock[1] = dsex;
+            } catch (com.sun.jdi.connect.IllegalConnectorArgumentsException icaex) {
+                lock[1] = icaex;
             } finally {
                 debug ("Notifying");
                 lock.notify ();
@@ -350,6 +356,14 @@ public class JPDAStart extends Task implements Runnable {
                 FileObject fos[] = SourceForBinaryQuery.findSourceRoots 
                     (url).getRoots();
                 int j, jj = fos.length;
+                /* ?? (#60640)
+                if (jj == 0) { // no sourcepath defined
+                    // Take all registered source roots
+                    Set allSourceRoots = GlobalPathRegistry.getDefault().getSourceRoots();
+                    fos = (FileObject[]) allSourceRoots.toArray(new FileObject[0]);
+                    jj = fos.length;
+                }
+                 */
                 for (j = 0; j < jj; j++) {
                     if (startVerbose)
                         System.out.println("source : " + fos [j]);
