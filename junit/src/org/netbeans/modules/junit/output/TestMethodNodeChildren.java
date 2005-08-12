@@ -36,9 +36,12 @@ final class TestMethodNodeChildren extends Children.Array {
     protected void addNotify() {
         final Report.Trouble trouble = testcase.trouble;
 
-        int nodesCount = 1 + trouble.stackTrace.length; //1 for excep. classname
+        int nodesCount = 1;                     //exception class name
         if (trouble.message != null) {
             nodesCount++;
+        }
+        if (trouble.stackTrace != null) {
+            nodesCount += trouble.stackTrace.length;
         }
         
         final Node[] children = new Node[nodesCount];
