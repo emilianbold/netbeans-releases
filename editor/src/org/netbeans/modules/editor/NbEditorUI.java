@@ -22,10 +22,12 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseKit;
@@ -62,6 +64,8 @@ public class NbEditorUI extends ExtEditorUI {
     private FocusListener focusL;
 
     private boolean attached = false;
+    private ChangeListener listener;
+
 
     /**
      *
@@ -142,15 +146,15 @@ public class NbEditorUI extends ExtEditorUI {
     
     protected JComponent createExtComponent() {
 
-        JTextComponent component = getComponent();
+        final JTextComponent component = getComponent();
         setLineNumberEnabled(true); // enable line numbering
 
         // extComponent will be a panel
-        JComponent ec = new JPanel(new BorderLayout());
+        final JComponent ec = new JPanel(new BorderLayout());
         ec.putClientProperty(JTextComponent.class, component);
 
         // Add the scroll-pane with the component to the center
-        JScrollPane scroller = new JScrollPane(component);
+        final JScrollPane scroller = new JScrollPane(component);
         
         scroller.getViewport().setMinimumSize(new Dimension(4,4));
 
@@ -161,9 +165,36 @@ public class NbEditorUI extends ExtEditorUI {
         //border! - Tim
         scroller.setBorder(empty);
         scroller.setViewportBorder(empty);
+
+        Class kitClass = Utilities.getKitClass(component);
         
         Map/*<SideBarPosition, JComponent>*/ sideBars = CustomizableSideBar.createSideBars(component);
+        if (listener == null){
+            listener = new ChangeListener(){
+                public void stateChanged(javax.swing.event.ChangeEvent e) {
+                    Map newMap = CustomizableSideBar.createSideBars(component);
+                    processSideBars(newMap, scroller, ec);
+                    ec.revalidate();
+                    ec.repaint();
+                    
+                }
+            };
+            CustomizableSideBar.addChangeListener(kitClass, listener);
+        }
         
+        processSideBars(sideBars, scroller, ec);
+        
+        initGlyphCorner(scroller);
+
+        ec.add(scroller);
+        return ec;
+    }
+    
+
+    private void processSideBars(Map sideBars, JScrollPane scroller, JComponent ec){
+        ec.removeAll();
+        scroller.setRowHeader(null);
+        scroller.setColumnHeaderView(null);
         for (Iterator entries = sideBars.entrySet().iterator(); entries.hasNext(); ) {
             Map.Entry entry = (Map.Entry) entries.next();
             SideBarPosition position = (SideBarPosition) entry.getKey();
@@ -183,11 +214,7 @@ public class NbEditorUI extends ExtEditorUI {
                 ec.add(sideBar, position.getBorderLayoutPosition());
             }
         }
-        
-        initGlyphCorner(scroller);
-
         ec.add(scroller);
-        return ec;
     }
     
     protected JToolBar createToolBarComponent() {
