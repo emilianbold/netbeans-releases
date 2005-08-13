@@ -29,9 +29,11 @@ import javax.swing.*;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.AncestorEvent;
 import java.util.*;
+import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.awt.*;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -60,7 +62,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
         diffView = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         diffView.setTopComponent(treeView);
-        diffView.setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")));
+        setBottomComponent(new NoContentPanel(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_NoRevisions")));
     }
 
     public void ancestorAdded(AncestorEvent event) {
@@ -93,12 +95,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
             SearchHistoryPanel.ResultsContainer container1 = (SearchHistoryPanel.ResultsContainer) nodes[0].getLookup().lookup(SearchHistoryPanel.ResultsContainer.class);
             LogInformation.Revision r1 = (LogInformation.Revision) nodes[0].getLookup().lookup(LogInformation.Revision.class);
             try {
+                currentIndex = treeView.getSelection()[0];
                 if (nodes.length == 1) {
                     if (container1 != null) {
-                        showContainerDiff(container1);
+                        showContainerDiff(container1, onSelectionshowLastDifference);
                     }
                     else if (r1 != null) {
-                        showRevisionDiff(r1);
+                        showRevisionDiff(r1, onSelectionshowLastDifference);
                     }
                 } else if (nodes.length == 2) {
                     LogInformation.Revision r2 = (LogInformation.Revision) nodes[1].getLookup().lookup(LogInformation.Revision.class);
@@ -107,7 +110,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                     }
                     String revision2 = r1.getNumber();
                     String revision1 = r2.getNumber();
-                    showDiff(r1.getLogInfoHeader(), revision1, revision2);
+                    showDiff(r1.getLogInfoHeader(), revision1, revision2, false);
                 }
             } catch (Exception e) {
                 showDiffError(NbBundle.getMessage(DiffResultsView.class, "MSG_DiffPanel_IllegalSelection"));
@@ -117,54 +120,57 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     }
 
     private void showDiffError(String s) {
-        diffView.setBottomComponent(new NoContentPanel(s));
+        setBottomComponent(new NoContentPanel(s));
     }
-    
-    private void showDiff(LogInformation header, String revision1, String revision2) {
+
+    private void setBottomComponent(Component component) {
+        int dl = diffView.getDividerLocation();
+        diffView.setBottomComponent(component);
+        diffView.setDividerLocation(dl);
+    }
+
+    private void showDiff(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
         synchronized(this) {
             if (currentShowDiffTask != null && !currentShowDiffTask.isFinished()) {
                 currentShowDiffTask.cancel();
             }
-            currentTask = new ShowDiffTask(header, revision1, revision2);
+            currentTask = new ShowDiffTask(header, revision1, revision2, showLastDifference);
             currentShowDiffTask = RequestProcessor.getDefault().create(currentTask);
             currentShowDiffTask.schedule(0);
         }
     }
 
-    private void setDiffIndex(int idx, int location) {
+    private boolean onSelectionshowLastDifference;
+
+    private void setDiffIndex(int idx, boolean showLastDifference) {
         currentIndex = idx;
-        Object o = results.get(idx);
-        if (o instanceof SearchHistoryPanel.ResultsContainer) {
-            showContainerDiff((SearchHistoryPanel.ResultsContainer) o);
-        } else {
-            SearchHistoryPanel.DispRevision dr = (SearchHistoryPanel.DispRevision) o;
-            showRevisionDiff(dr.getRevision());
-        }
+        onSelectionshowLastDifference = showLastDifference;
+        treeView.setSelection(idx);
     }
 
-    private void showRevisionDiff(LogInformation.Revision rev) {
+    private void showRevisionDiff(LogInformation.Revision rev, boolean showLastDifference) {
         String revision2 = rev.getNumber();
         String revision1 = Utils.previousRevision(revision2);
-        showDiff(rev.getLogInfoHeader(), revision1, revision2);
+        showDiff(rev.getLogInfoHeader(), revision1, revision2, showLastDifference);
     }
 
-    private void showContainerDiff(SearchHistoryPanel.ResultsContainer container) {
+    private void showContainerDiff(SearchHistoryPanel.ResultsContainer container, boolean showLastDifference) {
         List revs = container.getRevisions();
         LogInformation.Revision newest = (LogInformation.Revision) revs.get(0);
-        showDiff(newest.getLogInfoHeader(), container.getEldestRevision(), newest.getNumber());
+        showDiff(newest.getLogInfoHeader(), container.getEldestRevision(), newest.getNumber(), showLastDifference);
     }
 
     void onNextButton() {
         if (currentDiff != null) {
             if (++currentDifferenceIndex >= currentDiff.getDifferenceCount()) {
                 if (++currentIndex >= results.size()) currentIndex = 0;
-                setDiffIndex(currentIndex, 0);
+                setDiffIndex(currentIndex, false);
             } else {
                 currentDiff.setCurrentDifference(currentDifferenceIndex);
             }
         } else {
             if (++currentIndex >= results.size()) currentIndex = 0;
-            setDiffIndex(currentIndex, 0);
+            setDiffIndex(currentIndex, false);
         }
     }
 
@@ -172,13 +178,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         if (currentDiff != null) {
             if (--currentDifferenceIndex < 0) {
                 if (--currentIndex < 0) currentIndex = results.size() - 1;
-                setDiffIndex(currentIndex, -1);
+                setDiffIndex(currentIndex, true);
             } else {
                 currentDiff.setCurrentDifference(currentDifferenceIndex);
             }
         } else {
             if (--currentIndex < 0) currentIndex = results.size() - 1;
-            setDiffIndex(currentIndex, -1);
+            setDiffIndex(currentIndex, true);
         }
     }
     
@@ -187,11 +193,13 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         private final LogInformation header;
         private final String revision1;
         private final String revision2;
+        private boolean showLastDifference;
 
-        public ShowDiffTask(LogInformation header, String revision1, String revision2) {
+        public ShowDiffTask(LogInformation header, String revision1, String revision2, boolean showLastDifference) {
             this.header = header;
             this.revision1 = revision1;
             this.revision2 = revision2;
+            this.showLastDifference = showLastDifference;
         }
 
         public void run() {
@@ -206,11 +214,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                     public void run() {
                         if (currentTask == ShowDiffTask.this) {
                             currentDiff = view;
-                            int dl = diffView.getDividerLocation();
-                            diffView.setBottomComponent(currentDiff.getComponent());
-                            diffView.setDividerLocation(dl);
+                            setBottomComponent(currentDiff.getComponent());
                             if (currentDiff.getDifferenceCount() > 0) {
-                                currentDiff.setCurrentDifference(0);
+                                currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
+                                currentDiff.setCurrentDifference(currentDifferenceIndex);
                             }
                         }
                     }

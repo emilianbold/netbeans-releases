@@ -56,6 +56,13 @@ import org.openide.xml.XMLUtil;
 public abstract class ExecutorSupport implements CVSListener  {
     
     protected final FileStatusCache       cache;
+
+    /**
+     * List of {@link org.netbeans.lib.cvsclient.command.FileInfoContainer} objects that were collected during
+     * command execution. This list is meant to be processed by subclasses in the
+     * {@link #commandFinished(org.netbeans.modules.versioning.system.cvss.ClientRuntime.Result)} method.
+     * It is never cleared after command successfuly finishes.  
+     */
     protected List                        toRefresh = new ArrayList(10);
     
     protected final CvsVersioningSystem   cvs;
@@ -64,6 +71,8 @@ public abstract class ExecutorSupport implements CVSListener  {
     private RequestProcessor.Task       task;
     private Throwable                   failure;    
     private boolean                     terminated;
+
+    private boolean                     finishedExecution;
 
     private StringBuffer message = new StringBuffer();
     private ClientRuntime clientRuntime;
@@ -98,6 +107,10 @@ public abstract class ExecutorSupport implements CVSListener  {
                 clientRuntime.logError(e);
             }
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            synchronized(this) {
+                finishedExecution = true;
+                notifyAll();
+            }
         }
     }
 
@@ -150,45 +163,54 @@ public abstract class ExecutorSupport implements CVSListener  {
     }
 
     public void commandTerminated(TerminationEvent e) {
-        if (e.getSource() instanceof ClientRuntime.Result) {
-            assert !terminated;
-            terminated = true;
-            ClientRuntime.Result result = (ClientRuntime.Result) e.getSource();
-            Throwable error = result.getError();
-            if (error != null) {
-                if (result.isAborted()) {
-                    return;
-                }
-                if (retryConnection(error)) {
-                    terminated = false;
-                    String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), cmd.getDisplayName());
-                    executeImpl(msg + "\n"); // NOI18N
+        try {
+            if (e.getSource() instanceof ClientRuntime.Result) {
+                assert !terminated;
+                terminated = true;
+                ClientRuntime.Result result = (ClientRuntime.Result) e.getSource();
+                Throwable error = result.getError();
+                if (error != null) {
+                    toRefresh.clear();
+                    if (result.isAborted()) {
+                        return;
+                    }
+                    if (retryConnection(error)) {
+                        terminated = false;
+                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), cmd.getDisplayName());
+                        executeImpl(msg + "\n"); // NOI18N
+                    } else {
+                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), cmd.getDisplayName());
+                        clientRuntime.log(msg + "\n");  // NOI18N
+                        failure = result.getError();
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, failure);
+                    }
                 } else {
-                    String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), cmd.getDisplayName());
-                    clientRuntime.log(msg + "\n");  // NOI18N
-                    failure = result.getError();
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, failure);
+                    String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), cmd.getDisplayName());
+                    clientRuntime.log(msg + "\n"); // NOI18N
+                    commandFinished((ClientRuntime.Result) e.getSource());
+                    clientRuntime.focusLog();
+                    StringBuffer errorReport = new StringBuffer();
+                    errorReport.append(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"));
+                    errorReport.append("\n\n");
+                    for (Iterator i = errorMessages.iterator(); i.hasNext();) {
+                        errorReport.append(i.next());
+                        errorReport.append('\n');
+                    }
+                    if (cmd.hasFailed()) {
+                        JOptionPane.showMessageDialog(
+                                null,
+                                errorReport.toString(),
+                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
+                                JOptionPane.ERROR_MESSAGE
+                                );
+                    }
                 }
-            } else {
-                String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), cmd.getDisplayName());
-                clientRuntime.log(msg + "\n"); // NOI18N
-                commandFinished((ClientRuntime.Result) e.getSource());
-                toRefresh.clear();
-                clientRuntime.focusLog();
-                StringBuffer errorReport = new StringBuffer();
-                errorReport.append(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"));
-                errorReport.append("\n\n");
-                for (Iterator i = errorMessages.iterator(); i.hasNext();) {
-                    errorReport.append(i.next());
-                    errorReport.append('\n');
-                }
-                if (cmd.hasFailed()) {
-                    JOptionPane.showMessageDialog(
-                            null, 
-                            errorReport.toString(),
-                            NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
-                            JOptionPane.ERROR_MESSAGE
-                            );
+            }
+        } finally {
+            if (terminated) {
+                synchronized(this) {
+                    finishedExecution = true;
+                    notifyAll();
                 }
             }
         }
@@ -434,7 +456,15 @@ public abstract class ExecutorSupport implements CVSListener  {
         boolean success = true;
         for (int i = 0; i < executors.length; i++) {
             ExecutorSupport executor = executors[i];
-            executor.getTask().waitFinished();
+            synchronized(executor) {
+                while (!executor.finishedExecution) {
+                    try {
+                        executor.wait();
+                    } catch (InterruptedException e) {
+                        // not interested
+                    }
+                }
+            }
             if (executor.getFailure() != null) {
                 success = false;
             }

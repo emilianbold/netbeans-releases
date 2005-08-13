@@ -68,8 +68,16 @@ class DiffTreeTable extends TreeTableView {
                 treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 40 / 100);
             }
         });
-    }    
-    
+    }
+
+    public void setSelection(int idx) {
+        treeTable.getSelectionModel().setSelectionInterval(idx, idx);
+    }
+
+    public int [] getSelection() {
+        return treeTable.getSelectedRows();
+    }
+
     private static class ColumnDescriptor extends PropertySupport.ReadOnly {
         
         public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
