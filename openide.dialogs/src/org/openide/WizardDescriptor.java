@@ -1054,6 +1054,13 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private int getIntFromBundle(String key) {
+        // #61965: NumberFormatException when wizard in run with -J-Dorg.openide.util.NbBundle.DEBUG=true
+        String debug = System.getProperty ("org.openide.util.NbBundle.DEBUG");
+        if (debug != null && Boolean.valueOf (debug).booleanValue ()) {
+            String val = bundle.getString(key);
+            val = val.substring (0, val.indexOf (' ') == -1 ? val.length () - 1 : val.indexOf (' ')).trim ();
+            return Integer.parseInt (val);
+        }
         return Integer.parseInt(bundle.getString(key));
     }
 
