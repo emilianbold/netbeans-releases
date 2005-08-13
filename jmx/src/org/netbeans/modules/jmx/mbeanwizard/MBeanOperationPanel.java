@@ -65,7 +65,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
      * @param <code>wiz</code> the wizard panel
      */
     public MBeanOperationPanel(OperationWizardPanel wiz) {
-        super(new BorderLayout());
+        super(new BorderLayout(0,5));
         this.wiz = wiz;
         bundle = NbBundle.getBundle(MBeanOperationPanel.class);
         initComponents();

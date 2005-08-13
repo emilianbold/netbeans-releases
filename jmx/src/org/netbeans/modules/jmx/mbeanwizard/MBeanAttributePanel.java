@@ -70,7 +70,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
      */
     public MBeanAttributePanel(AttributesWizardPanel wiz) {
         //super(new GridLayout(1,1));
-        super(new BorderLayout());
+        super(new BorderLayout(0, 5));
         this.wiz = wiz;
         bundle = NbBundle.getBundle(MBeanAttributePanel.class);
         initComponents();
