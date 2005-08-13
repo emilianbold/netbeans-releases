@@ -21,6 +21,7 @@ import org.netbeans.modules.versioning.system.cvss.util.FlatFolder;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.lib.cvsclient.admin.Entry;
+import org.openide.filesystems.FileUtil;
 
 import java.io.*;
 import java.util.*;
@@ -174,7 +175,7 @@ public class FileStatusCache {
         if (fi != null) {
             return fi;            
         }
-        return file.exists() ? new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false) : FILE_INFORMATION_UNKNOWN;
+        return exists(file) ? new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false) : FILE_INFORMATION_UNKNOWN;
     }
 
     /**
@@ -312,7 +313,7 @@ public class FileStatusCache {
             } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                 // remove entries that were excluded but no longer exist
                 // cannot simply call refresh on excluded files because of 'excluded on server' status
-                if (!file.exists()) {
+                if (!exists(file)) {
                     refresh(file, REPOSITORY_STATUS_UNKNOWN);
                 }
             }
@@ -450,7 +451,7 @@ public class FileStatusCache {
         } else if (entry.isUserFileToBeRemoved()) {
             return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY, entry, false);
         } else {
-            if (!file.exists()) {
+            if (!exists(file)) {
                 return new FileInformation(FileInformation.STATUS_VERSIONED_DELETEDLOCALLY, entry, false);                
             }
             if (repositoryStatus == REPOSITORY_STATUS_UPTODATE) {
@@ -479,7 +480,7 @@ public class FileStatusCache {
             } else if (repositoryStatus == REPOSITORY_STATUS_REMOVED_REMOTELY) {
                 return new FileInformation(FileInformation.STATUS_VERSIONED_REMOVEDINREPOSITORY, entry, false);
             } else if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
-                if (file.exists()) {
+                if (exists(file)) {
                     if (isLocalConflict(entry, file)) {
                         return new FileInformation(FileInformation.STATUS_VERSIONED_CONFLICT, entry, false);
                     } else if (entryTimestampMatches(entry,  file)) {
@@ -497,7 +498,7 @@ public class FileStatusCache {
     }
 
     private boolean isLocalConflict(Entry entry, File file) {
-        return file.exists() && entry.hadConflicts() && entryTimestampMatches(entry, file);
+        return exists(file) && entry.hadConflicts() && entryTimestampMatches(entry, file);
     }
 
     /**
@@ -518,7 +519,7 @@ public class FileStatusCache {
              return FILE_INFORMATION_UPTODATE_DIRECTORY;
         }
         if (repositoryStatus == REPOSITORY_STATUS_UNKNOWN || repositoryStatus == '?') {
-            if (file.exists()) {
+            if (exists(file)) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
                 return new FileInformation(FileInformation.STATUS_UNKNOWN, false);
@@ -533,13 +534,18 @@ public class FileStatusCache {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
             }
         } else if (repositoryStatus == REPOSITORY_STATUS_REMOVED_REMOTELY) {
-            if (file.exists()) {
+            if (exists(file)) {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
                 return FILE_INFORMATION_UNKNOWN;
             }
         }
         throw new IllegalArgumentException("Unknown repository status: " + (char)repositoryStatus);
+    }
+
+    private boolean exists(File file) {
+        if (!file.exists()) return false;
+        return file.getAbsolutePath().equals(FileUtil.normalizeFile(file).getAbsolutePath());
     }
 
     private boolean entryTimestampMatches(Entry entry, File file) {
