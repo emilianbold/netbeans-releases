@@ -65,6 +65,7 @@ public interface EnterpriseBeans extends org.netbeans.modules.j2ee.sun.dd.api.Co
     public int addMessageDestination(MessageDestination value);
     public int removeMessageDestination(MessageDestination value);
     public int sizeMessageDestination(); 
+    public MessageDestination newMessageDestination();
     
     public WebserviceDescription[] getWebserviceDescription(); 
     public WebserviceDescription getWebserviceDescription(int index);
@@ -73,4 +74,7 @@ public interface EnterpriseBeans extends org.netbeans.modules.j2ee.sun.dd.api.Co
     public int addWebserviceDescription(WebserviceDescription value);
     public int removeWebserviceDescription(WebserviceDescription value);
     public int sizeWebserviceDescription(); 
+    public WebserviceDescription newWebserviceDescription();
+    
+    
 }
