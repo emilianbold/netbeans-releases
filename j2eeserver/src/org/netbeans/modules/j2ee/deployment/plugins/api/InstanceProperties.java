@@ -230,9 +230,18 @@ public abstract class InstanceProperties {
      *   	and the property that has changed.
      */
     protected void firePropertyChange(PropertyChangeEvent evt) {
-        Iterator i = changeListeners.iterator();
-        while (i.hasNext()) {
-            ((PropertyChangeListener)i.next()).propertyChange(evt);
+        ArrayList cloned = null;
+        synchronized (this) {
+            if (changeListeners != null) {
+                cloned = new ArrayList();
+                cloned.addAll(changeListeners);
+            }
+        }
+        if (cloned != null) {
+            Iterator i = cloned.iterator();
+            while (i.hasNext()) {
+                ((PropertyChangeListener)i.next()).propertyChange(evt);
+            }
         }
     }
 }
