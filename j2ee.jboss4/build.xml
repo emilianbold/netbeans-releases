@@ -13,5 +13,69 @@
 -->
 <project name="jboss4" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
+  <target name="build-init" depends="projectized.build-init"/>
+
+  <property name="jb_dir" location="src/org/netbeans/modules/j2ee/jboss4"/>
+  
+  <target name="s2binit" depends="build-init">
+	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
+	  <classpath>
+		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
+	  </classpath>
+	</taskdef>
+  </target>
+  
+  <target name="dd2beans_gen" depends="s2binit">
+      <echo message="generating bean graph for JBoss 4 Server configuration files" />
+	<schema2beans schema="${jb_dir}/resources/jboss-web_4_0.dtd"
+	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
+	  schemaType="dtd"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="jboss-web"
+	  rootDir="src"/>
+	<schema2beans schema="${jb_dir}/resources/jboss-app_4_0.dtd"
+	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
+	  schemaType="dtd"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="jboss-app"
+	  rootDir="src"/>
+	<schema2beans schema="${jb_dir}/resources/jboss_4_0.dtd"
+	  package="org.netbeans.modules.j2ee.jboss4.config.gen"
+	  schemaType="dtd"
+	  validate="true"
+	  attrProp="true"
+	  removeUnreferencedNodes="true"
+          docroot="jboss"
+	  rootDir="src"/>
+  </target>
+  
+  <target name="compile" depends="dd2beans_gen, copy_extra, projectized-common.compile"/>
+    
+    <target name="copy_extra">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        
+    </target>
+
+  <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
+
+  <target name="clean-ddgen-check">
+    <available property="have-config" file="${jb_dir}/config"/>
+  </target>
+
+  <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
+        <delete>
+            <fileset dir="${jb_dir}/config/gen">
+                <include name="*.java"/>
+            </fileset>
+        </delete>
+        <delete dir="${jb_dir}/config/gen"/>
+  </target>
 </project>
 

@@ -52,9 +52,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
             String jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
             try {
                 URL urls[] = new URL[]{
+                        new File(jbossRoot + "/client/jbossall-client.jar").toURL(),      //NOI18N
                         new File(jbossRoot + "/client/jboss-common-client.jar").toURL(),  //NOI18N
                         new File(jbossRoot + "/client/jboss-deployment.jar").toURL(),     //NOI18N
-                        new File(jbossRoot + "/client/jnp-client.jar").toURL(),           //NOI18N 
+                        new File(jbossRoot + "/client/jnp-client.jar").toURL(),           //NOI18N
                         new File(jbossRoot + "/lib/dom4j.jar").toURL()                    //NOI18N
                 };
                 URLClassLoader loader = new URLClassLoader(urls, getClass().getClassLoader());

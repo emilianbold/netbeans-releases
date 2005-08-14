@@ -15,7 +15,9 @@ package org.netbeans.modules.j2ee.jboss4;
 
 import java.io.FileInputStream;
 import java.util.jar.JarFile;
+import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.jboss4.ide.JBDeploymentStatus;
+import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import org.netbeans.modules.j2ee.jboss4.ide.JBLogWriter;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import java.io.File;
@@ -111,58 +113,16 @@ public class JBDeploymentManager implements DeploymentManager {
     public void setLogWriter(JBLogWriter logWriter) {
         this.logWriter = logWriter;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // DeploymentManager Implementation
     ////////////////////////////////////////////////////////////////////////////
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
-        JBDeployer deployer = new JBDeployer(realUri);
-        
-        org.w3c.dom.Document dom =null;
-        
-        
-        JBTargetModuleID module_id = new JBTargetModuleID(target[0], file.getName() );
-        
-        try{
-            String server_url = "http://" + getHost()+":"+getPort();
-            dom = org.openide.xml.XMLUtil.parse(new org.xml.sax.InputSource(new FileInputStream( file2 )), false, false,null, null);
-            String doctype = dom.getDocumentElement().getNodeName();
-            if (doctype.equals("application")){
-                NodeList nlist = dom.getElementsByTagName("module");
-                
-                for (int i = 0; i < nlist.getLength(); i++){
-                    Element module_node = (Element)((Element)nlist.item(i)).getElementsByTagName("*").item(0);
-                    JBTargetModuleID child_module = new JBTargetModuleID( target[0] );
-                    
-                    if ( module_node.getTagName().equals("web")) {
-                        //child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getTextContent().trim()); // jdk 1.5
-                        child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                        //child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
-                        child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                    } else if(module_node.getTagName().equals("ejb")){
-//                        child_module.setJARName(nlist.item(i).getTextContent().trim()); // jdk 1.5
-                        child_module.setJARName(nlist.item(i).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                    }
-                    module_id.addChild( child_module );
-                }
-                
-            } else if (doctype.equals("jboss-web")){
-               // module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
-                module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
-            } else if (doctype.equals("ejb-jar")) {
-                
-            }
-            
-        }catch(Exception e){
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
-        deployer.deploy(target, file, file2, module_id);
-        return deployer;
+        return new JBDeployer(realUri).deploy(target, file, file2, getHost(), getPort());
     }
     
-    
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
-        return new DepConfig(deployableObject,this);
+        return new JBDeploymentConfiguration(deployableObject);
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws UnsupportedOperationException, IllegalStateException {
@@ -208,7 +168,7 @@ public class JBDeploymentManager implements DeploymentManager {
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file, File file2) throws UnsupportedOperationException, IllegalStateException {
-        return dm.redeploy(targetModuleID, file, file2);
+        return new JBDeployer(realUri).redeploy(targetModuleID, file, file2);
     }
     
     public void setDConfigBeanVersion(DConfigBeanVersionType dConfigBeanVersionType) throws DConfigBeanVersionUnsupportedException {
@@ -246,5 +206,13 @@ public class JBDeploymentManager implements DeploymentManager {
     public Target[] getTargets() throws IllegalStateException {
         return dm.getTargets();
     }
+ 
+    private JBJ2eePlatformFactory.J2eePlatformImplImpl jbPlatform;
     
+    public JBJ2eePlatformFactory.J2eePlatformImplImpl getJBPlatform () {
+        if (jbPlatform == null) {
+            jbPlatform = new JBJ2eePlatformFactory.J2eePlatformImplImpl(this);
+        }
+        return jbPlatform;
+    }
 }

@@ -12,7 +12,13 @@
  */
 package org.netbeans.modules.j2ee.jboss4;
 
+import java.io.FileInputStream;
 import java.net.URL;
+import java.util.Enumeration;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.application.Module;
+import org.netbeans.modules.j2ee.jboss4.config.gen.JbossWeb;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
@@ -28,6 +34,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import org.openide.ErrorManager;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -37,6 +45,8 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 
 import org.openide.util.NbBundle;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -50,25 +60,68 @@ public class JBDeployer implements ProgressObject, Runnable {
     File file;
     File file2;
     String uri;
-    TargetModuleID module_id;
+    JBTargetModuleID module_id;
     /** Creates a new instance of JBDeployer */
     public JBDeployer(String serverUri) {
         uri = serverUri;
     }
     
     
-    public ProgressObject deploy(Target[] target, File file, File file2, TargetModuleID module_id){
+    public ProgressObject deploy(Target[] target, File file, File file2, String host, int port){
+        org.w3c.dom.Document dom =null;
         
+        //PENDING: distribute to all targets!
+        module_id = new JBTargetModuleID(target[0], file.getName() );
+        
+        try{
+            String server_url = "http://" + host+":"+port;
+            
+            if (file.getName().endsWith(".war")) {
+                module_id.setContextURL( server_url + JbossWeb.createGraph(file2).getContextRoot());
+            } else if (file.getName().endsWith(".ear")) {
+                JarFileSystem jfs = new JarFileSystem();
+                jfs.setJarFile(file);
+                FileObject appXml = jfs.getRoot().getFileObject("META-INF/application.xml");
+                if (appXml != null) {
+                    Application ear = DDProvider.getDefault().getDDRoot(appXml);
+                    Module modules [] = ear.getModule();
+                    for (int i = 0; i < modules.length; i++) {
+                        JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
+                        module_id.addChild(mod_id);
+                        if (modules[i].getWeb() != null) {
+                            String ctxRoot = server_url + modules[i].getWeb().getContextRoot();
+                            mod_id.setContextURL(ctxRoot);
+                            break;
+                        }
+                    }
+                } else {
+                    System.out.println("Cannot file META-INF/application.xml in " + file);
+                }
+            }
+            
+        }catch(Exception e){
+            e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
 
         this.target = target;
         this.file = file;
         this.file2 = file2;
-        this.module_id = module_id;
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
         RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
         return this;
     }
-    
+
+    public ProgressObject redeploy (TargetModuleID module_id[], File file, File file2) {
+        //PENDING: distribute all modules!
+        this.target = new Target[] {module_id[0].getTarget()};
+        this.file = file;
+        this.file2 = file2;
+        this.module_id = (JBTargetModuleID) module_id[0];
+        fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath())));
+        RequestProcessor.getDefault().post(this, 0, Thread.NORM_PRIORITY);
+        return this;
+    }
     
     public void run(){
 
@@ -93,22 +146,26 @@ public class JBDeployer implements ProgressObject, Runnable {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
         
         try{
-            URL url = new URL (module_id.getWebURL());
-            String waitingMsg = NbBundle.getMessage(JBDeployer.class, "MSG_Waiting_For_Url", url);
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
-            fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-            //delay to prevent hitting the old content before reload
-            for (int i = 0; i < 3; i++) {
-                Thread.sleep(1000);
+            System.out.println("Copying 1 file:" + fileName + " to: " + foDestDir.getPath());
+            String webUrl = module_id.getWebURL();
+            if (webUrl!= null) {
+                URL url = new URL (webUrl);
+                String waitingMsg = NbBundle.getMessage(JBDeployer.class, "MSG_Waiting_For_Url", url);
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-            }
-            //wait until the url becomes active
-            long start = System.currentTimeMillis();
-            while (System.currentTimeMillis() - start < TIMEOUT) {
-                if (URLWait.waitForUrlReady(url, 1000)) {
-                    break;
+                //delay to prevent hitting the old content before reload
+                for (int i = 0; i < 3; i++) {
+                    Thread.sleep(1000);
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 }
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+                //wait until the url becomes active
+                long start = System.currentTimeMillis();
+                while (System.currentTimeMillis() - start < TIMEOUT) {
+                    if (URLWait.waitForUrlReady(url, 1000)) {
+                        break;
+                    }
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+                }
             }
         }catch(Exception e){
             fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));

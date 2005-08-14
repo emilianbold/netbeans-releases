@@ -32,8 +32,8 @@
                 </file>
                                 
                  <file name="JBPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.JBPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.JBPlanSplitter"/>
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.config.JBPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.config.JBPlanSplitter"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
                 </file>
                 
