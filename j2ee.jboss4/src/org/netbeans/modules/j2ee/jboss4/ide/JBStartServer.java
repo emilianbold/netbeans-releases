@@ -273,7 +273,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(serverProcess.getInputStream()));
                 
                 try {
-                    int timeout = 300000;
+                    int timeout = 900000;
                     int elapsed = 0;
                     while (elapsed < timeout) {
                         while (reader.ready()) {
