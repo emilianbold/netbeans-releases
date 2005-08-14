@@ -32,7 +32,7 @@
         <property name="beanId">bean148</property>
         <extendedProperty name="macosxppk" type="com.installshield.wizard.platform.macosx.extras.MacOSXLauncherExtra">
             <property name="fileName">uninstaller</property>
-            <property name="jvmNotFoundMessage">No Java Runtime Environment(JRE) was found on this system.</property>
+            <property name="jvmNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
             <property name="launcherUIDisplayTime">0</property>
             <property name="showConsole">False</property>
         </extendedProperty>
@@ -814,7 +814,7 @@
                     <property name="wizardArguments"/>
                     <property array="True" length="0" name="systemProperties" type="string"/>
                     <property name="showConsole">False</property>
-                    <property name="JVMNotFoundMessage">No Java Runtime Environment(JRE) was found on this system.</property>
+                    <property name="JVMNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
                 </arrayItem>
             </property>
         </arrayItem>
