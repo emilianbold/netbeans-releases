@@ -66,7 +66,7 @@
   <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
 
   <target name="clean-ddgen-check">
-    <available property="have-config" file="${jb_dir}/config"/>
+    <available property="have-config" file="${jb_dir}/config/gen"/>
   </target>
 
   <target name="clean-ddgen-src" if="have-config" depends="clean-ddgen-check">
