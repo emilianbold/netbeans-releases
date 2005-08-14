@@ -23,8 +23,12 @@ import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
+import org.netbeans.modules.j2ee.sun.dd.impl.DDTreeWalker;
 
+import org.w3c.dom.*;
+import java.io.*;
 import org.w3c.dom.Document;
+
 /**
  *
  * @author Nitya Doraisamy
@@ -522,6 +526,7 @@ public class SunWebAppProxy implements SunWebApp {
     
     public void setVersion(java.math.BigDecimal version) {
         String newVersion = version.toString();
+        String currentVersion = null;
         if (this.version.equals(newVersion)) 
             return;
         if (webRoot != null) {
@@ -529,55 +534,59 @@ public class SunWebAppProxy implements SunWebApp {
             if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp) {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+                currentVersion = SunWebApp.VERSION_2_3_0;
             }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp) {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+                currentVersion = SunWebApp.VERSION_2_4_0;
             }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp) {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp)webRoot).graphManager().getXmlDocument();
+                currentVersion = SunWebApp.VERSION_2_4_1;
             }else if (webRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp) {
                 document =
                         ((org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp)webRoot).graphManager().getXmlDocument();
+                currentVersion = SunWebApp.VERSION_2_5_0;
             }
             
             //remove the doctype
-            //document = removeDocType(document);
+            document = removeDocType(document);
             
             if(newVersion.equals(SunWebApp.VERSION_2_5_0)){
                 //This will always be an upgrade
-                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp webGraph =
-                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.createGraph(document);
-                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_250_DTD_SYSTEM_ID);
-                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+                generate2_50Graph(document);
             }
             if(newVersion.equals(SunWebApp.VERSION_2_4_1)){
-                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp webGraph =
-                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp.createGraph(document); 
-                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_241_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_241_DTD_SYSTEM_ID);
-                if(this.version.equals(SunWebApp.VERSION_2_5_0)){
-                   //need to remove elements 
-                }
-                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+                if(currentVersion.equals(SunWebApp.VERSION_2_4_0) || currentVersion.equals(SunWebApp.VERSION_2_3_0))
+                    generate2_41Graph(document);
+                else
+                    downgradeWebGraph(document, newVersion, currentVersion);
             }
             if(newVersion.equals(SunWebApp.VERSION_2_4_0)){
-                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp webGraph =
-                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp.createGraph(document);
-                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_240_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_240_DTD_SYSTEM_ID);
-                if(! this.version.equals(SunWebApp.VERSION_2_3_0)){
-                    //need to remove elements 
-                }
-                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+                if(currentVersion.equals(SunWebApp.VERSION_2_3_0))
+                    generate2_40Graph(document);
+                else
+                    downgradeWebGraph(document, newVersion, currentVersion);
             }
             if(newVersion.equals(SunWebApp.VERSION_2_3_0)){
-                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp webGraph =
-                        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp.createGraph(document);
-                webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_230_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_230_DTD_SYSTEM_ID);
-                //need to remove elements
-                this.webRoot = new SunWebAppProxy(webGraph, webGraph.getVersion().toString());
+                ////This will always be a downgrade
+                downgradeWebGraph(document, newVersion, currentVersion);
             }
         }
     }
 
+    private void downgradeWebGraph(Document document, String downgradeVersion, String currentVersion){
+            DDTreeWalker downgradeScanner = new DDTreeWalker(document, downgradeVersion, currentVersion);
+            downgradeScanner.downgradeSunWebAppDocument();
+            if(downgradeVersion.equals(SunWebApp.VERSION_2_4_1)){
+                generate2_41Graph(document);
+            }else if(downgradeVersion.equals(SunWebApp.VERSION_2_4_0)){
+                generate2_40Graph(document);
+            }else if(downgradeVersion.equals(SunWebApp.VERSION_2_3_0)){
+                generate2_30Graph(document);
+            }
+    }
+        
     private Document removeDocType(Document document){
         if (document != null) {
             org.w3c.dom.Element docElement = document.getDocumentElement();
@@ -590,6 +599,34 @@ public class SunWebAppProxy implements SunWebApp {
         }
         return document;
     } 
+    
+    private void generate2_50Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp webGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_5_0.SunWebApp.createGraph(document);
+        webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_250_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_250_DTD_SYSTEM_ID);
+        this.webRoot = webGraph;
+    }
+    
+    private void generate2_41Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp webGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_1.SunWebApp.createGraph(document);
+        webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_241_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_241_DTD_SYSTEM_ID);
+        this.webRoot = webGraph;
+    }
+    
+    private void generate2_40Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp webGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_4_0.SunWebApp.createGraph(document);
+        webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_240_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_240_DTD_SYSTEM_ID);
+        this.webRoot = webGraph;
+    }
+    
+    private void generate2_30Graph(Document document){
+        org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp webGraph =
+                org.netbeans.modules.j2ee.sun.dd.impl.web.model_2_3_0.SunWebApp.createGraph(document);
+        webGraph.changeDocType(DTDRegistry.SUN_WEBAPP_230_DTD_PUBLIC_ID, DTDRegistry.SUN_WEBAPP_230_DTD_SYSTEM_ID);
+        this.webRoot = webGraph;
+    }
     
     public java.math.BigDecimal getVersion() {
         return new java.math.BigDecimal(version);

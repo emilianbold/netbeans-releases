@@ -21,7 +21,9 @@ package org.netbeans.modules.j2ee.sun.dd.impl.app;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
+import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 
+import org.w3c.dom.Document;
 /**
  *
  * @author Nitya Doraisamy
@@ -138,8 +140,53 @@ public class SunApplicationProxy implements SunApplication {
     }
 
     public void setVersion(java.math.BigDecimal version) {
+        String newVersion = version.toString();
+        
+        if (this.version.equals(newVersion))
+            return;
+        if (appRoot != null) {
+            Document document = null;
+            if(newVersion.equals(SunApplication.VERSION_5_0_0)){
+                //This will always be an upgrade
+                document = getDocument();
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication appGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication.createGraph(document);
+                appGraph.changeDocType(DTDRegistry.SUN_APPLICATION_50_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_50_DTD_SYSTEM_ID);
+                this.appRoot = appGraph;
+            }
+            if(newVersion.equals(SunApplication.VERSION_1_4_0)){
+                document = getDocument();
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication appGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication.createGraph(document);
+                appGraph.changeDocType(DTDRegistry.SUN_APPLICATION_140_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_140_DTD_SYSTEM_ID);
+                this.appRoot = appGraph;
+            }
+            if(newVersion.equals(SunApplication.VERSION_1_3_0)){
+                appRoot.setRealm(null);
+                document = getDocument();
+                org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication appGraph =
+                        org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication.createGraph(document);
+                appGraph.changeDocType(DTDRegistry.SUN_APPCLIENT_130_DTD_PUBLIC_ID, DTDRegistry.SUN_APPLICATION_130_DTD_SYSTEM_ID);
+                this.appRoot = appGraph;
+            }
+        }
     }
 
+    private Document getDocument(){
+        Document document = null;
+        if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_3_0.SunApplication)appRoot).graphManager().getXmlDocument();
+        }else if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_1_4_0.SunApplication)appRoot).graphManager().getXmlDocument();
+        }else if (appRoot instanceof org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication) {
+            document =
+                    ((org.netbeans.modules.j2ee.sun.dd.impl.app.model_5_0_0.SunApplication)appRoot).graphManager().getXmlDocument();
+        }
+        return document;
+    }
+    
     public void setWeb(org.netbeans.modules.j2ee.sun.dd.api.app.Web[] value) {
         if (appRoot!=null) appRoot.setWeb(value);
     }
