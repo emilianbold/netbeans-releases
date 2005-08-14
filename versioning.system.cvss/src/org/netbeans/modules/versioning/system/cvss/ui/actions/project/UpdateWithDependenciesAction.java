@@ -100,7 +100,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
     }
 
     private static void addProjectFiles(Collection files, Project project) {
-        Utils.addProjectFiles(files, project, ~0);
+        Utils.addProjectFiles(files, project);
         SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
         Iterator it = deps.getSubprojects().iterator();
         while (it.hasNext()) {

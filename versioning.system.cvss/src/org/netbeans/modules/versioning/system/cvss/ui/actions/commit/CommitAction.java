@@ -37,16 +37,13 @@ import java.text.MessageFormat;
 import java.util.*;
 
 /**
+ * Represents the "Commit" main/popup action and provides programmatic Commit action upon any context.
+ *
  * @author Maros Sandor
  */
 public class CommitAction extends AbstractSystemAction {
     
     private static CommitCommand   commandTemplate = new CommitCommand();
-    private static final int enabledForStatus = 
-            FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | 
-            FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | 
-            FileInformation.STATUS_VERSIONED_MODIFIEDLOCALLY | 
-            FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
 
     public CommitAction() {
         setIcon(null);
@@ -57,18 +54,25 @@ public class CommitAction extends AbstractSystemAction {
         return "CTL_MenuItem_Commit";
     }
 
-    // handle exclude from commit status which is not not modeled as status
+    /**
+     * Commit action should disabled only if current selection contains only files and these
+     * files are not all locally new/modified. This scenario is not supported by {@link AbstractSystemAction}
+     * so this method is overriden to return custom set of files to process.
+     *
+     * @return File[] all modified/new files in the current context
+     */
     protected File [] getFilesToProcess() {
         CvsModuleConfig config = CvsModuleConfig.getDefault();
-        File [] files = super.getFilesToProcess();
-        for (int i = 0; i < files.length; i++) {
-            if (config.isExcludedFromCommit(files[i].getAbsolutePath())) return new File[0];
+        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(
+                super.getFilesToProcess(), FileInformation.STATUS_LOCAL_CHANGE).getNodes();
+        Set modifiedFiles = new HashSet();
+        for (int i = 0; i < nodes.length; i++) {
+            File file = nodes[i].getFile();
+            if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
+                modifiedFiles.add(file);
+            }
         }
-        return files;
-    }
-
-    protected int getFileEnabledStatus() {
-        return enabledForStatus;
+        return (File[]) modifiedFiles.toArray(new File[modifiedFiles.size()]);
     }
 
     protected int getDirectoryEnabledStatus() {

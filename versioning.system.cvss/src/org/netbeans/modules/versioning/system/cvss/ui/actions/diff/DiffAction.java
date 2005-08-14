@@ -16,11 +16,15 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
+import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
+import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Show differencies between the current working copy and repository version we started from. 
@@ -44,8 +48,25 @@ public class DiffAction extends AbstractSystemAction {
         return "CTL_MenuItem_Diff";
     }
 
-    protected int getFileEnabledStatus() {
-        return enabledForStatus;
+    /**
+     * Diff action should disabled only if current selection contains only files and these
+     * files are not all changed locally/remotely. This scenario is not supported by {@link AbstractSystemAction}
+     * so this method is overriden to return custom set of files to process.
+     *
+     * @return File[] all changed files in the current context
+     */
+    protected File [] getFilesToProcess() {
+        CvsModuleConfig config = CvsModuleConfig.getDefault();
+        CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(
+                super.getFilesToProcess(), enabledForStatus).getNodes();
+        Set modifiedFiles = new HashSet();
+        for (int i = 0; i < nodes.length; i++) {
+            File file = nodes[i].getFile();
+            if (!config.isExcludedFromCommit(file.getAbsolutePath())) {
+                modifiedFiles.add(file);
+            }
+        }
+        return (File[]) modifiedFiles.toArray(new File[modifiedFiles.size()]);
     }
 
     public void actionPerformed(ActionEvent ev) {
