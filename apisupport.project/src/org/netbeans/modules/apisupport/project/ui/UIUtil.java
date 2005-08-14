@@ -16,12 +16,15 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -103,6 +106,36 @@ public final class UIUtil {
             }
         });
         return chooser;
+    }
+    
+    /**
+     * Create combobox containing packages from the given {@link SourceGroup}.
+     */
+    public static JComboBox createPackageComboBox(SourceGroup srcRoot) {
+        JComboBox packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
+        packagesComboBox.setRenderer(PackageView.listRenderer());
+        return packagesComboBox;
+    }
+    
+    /**
+     * Returns a string suitable for text areas respresenting content of {@link
+     * CreatedModifiedFiles} <em>paths</em>.
+     *
+     * @param relPaths should be either
+     *        {@link CreatedModifiedFiles#getCreatedPaths()} or
+     *        {@link CreatedModifiedFiles#getModifiedPaths()}.
+     */
+    public static String generateTextAreaContent(String[] relPaths) {
+        StringBuffer sb = new StringBuffer();
+        if (relPaths.length > 0) {
+            for (int i = 0; i < relPaths.length; i++) {
+                if (i > 0) {
+                    sb.append("\n");//NOI18N
+                }
+                sb.append(relPaths[i]);
+            }
+        }
+        return sb.toString();
     }
     
     private static final class IconFilter extends FileFilter {

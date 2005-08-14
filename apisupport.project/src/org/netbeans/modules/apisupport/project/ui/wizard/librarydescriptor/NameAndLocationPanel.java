@@ -13,16 +13,13 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
 
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 
 /**
@@ -39,7 +36,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle")); // NOI18N
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -77,14 +74,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         updateData();
     }
     
-    private static JComboBox createComboBox(SourceGroup srcRoot) {
-        JComboBox packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
-        packagesComboBox.setRenderer(PackageView.listRenderer());
-        return packagesComboBox;
-    }
-    
     protected String getPanelName() {
-        return getMessage("LBL_NameAndLocation_Title");
+        return getMessage("LBL_NameAndLocation_Title"); // NOI18N
     }
     
     private void checkValidity() {
@@ -108,7 +99,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         projectName = new javax.swing.JLabel();
         projectNameValue = new JTextField(ProjectUtils.getInformation(this.data.getProject()).getDisplayName());
         packageName = new javax.swing.JLabel();
-        packageNameValue = this.createComboBox(this.data.getSourceRootGroup());
+        packageNameValue = UIUtil.createPackageComboBox(data.getSourceRootGroup());
         createdFiles = new javax.swing.JLabel();
         createdFilesValue = new javax.swing.JTextArea();
         modifiedFiles = new javax.swing.JLabel();

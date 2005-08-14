@@ -46,6 +46,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     private DocumentListener layerDL;
     private DocumentListener bundleDL;
     private boolean libraryModule;
+    
     /** Creates new form BasicConfVisualPanel */
     public BasicConfVisualPanel(WizardDescriptor setting) {
         this(setting, false);
@@ -65,7 +66,7 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
                 public void insertUpdate(DocumentEvent e) { wasLayerUpdated = true; checkLayer(); }
             };
         } else {
-          // for library modules, don't generate any layer.
+            // for library modules, don't generate any layer.
             layer.setVisible(false);
             layerValue.setVisible(false);
         }

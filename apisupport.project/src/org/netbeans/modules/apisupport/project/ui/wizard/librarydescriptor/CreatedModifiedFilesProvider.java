@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
+
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
@@ -22,23 +23,23 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-
 
 /**
  *
  * @author Radek Matous
  */
 final class CreatedModifiedFilesProvider  {
+
     private static final String VOLUME_CLASS = "classpath";//NOI18N
     private static final String VOLUME_SRC = "src";//NOI18N
     private static final String VOLUME_JAVADOC = "javadoc";//NOI18N
     
     private static final String LIBRARY_LAYER_ENTRY = "org-netbeans-api-project-libraries/Libraries";//NOI18N
-    
     
     static CreatedModifiedFiles createInstance(NewLibraryDescriptor.DataModel data)  {
         
@@ -49,11 +50,11 @@ final class CreatedModifiedFilesProvider  {
     }
     
     public static void setCreatedFiles(CreatedModifiedFiles fileManipulator, JTextArea component) {
-        setCreatedModifiedFiles(fileManipulator, component, false);
+        component.setText(UIUtil.generateTextAreaContent(fileManipulator.getCreatedPaths()));
     }
     
     public  static void setModifiedFiles(CreatedModifiedFiles fileManipulator, JTextArea component) {
-        setCreatedModifiedFiles(fileManipulator, component, true);
+        component.setText(UIUtil.generateTextAreaContent(fileManipulator.getModifiedPaths()));
     }
     
     private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
@@ -101,8 +102,6 @@ final class CreatedModifiedFilesProvider  {
     
     
     private static String getPackagePlusBundle(NbModuleProject project) {
-        StringBuffer sb = new StringBuffer();
-        
         ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
         
         String bundle = mm.getLocalizingBundle().replace('/', '.');
@@ -110,19 +109,8 @@ final class CreatedModifiedFilesProvider  {
             bundle = bundle.substring(0, bundle.length() - 11);
         }
         
-        sb.append(bundle);
-        return sb.toString();//NOI18N
+        return bundle;
     }
-    
-    private static String getBundleRelativePath(NbModuleProject project) {
-        StringBuffer sb = new StringBuffer();
-        
-        ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
-        sb.append(project.getSourceDirectoryPath()).append("/").append(mm.getLocalizingBundle());//NOI18N
-        
-        return sb.toString();//NOI18N
-    }
-    
     
     private static String getPackageRelativePath(NbModuleProject project, String fullyQualifiedPackageName) {
         StringBuffer sb = new StringBuffer();
@@ -223,31 +211,6 @@ final class CreatedModifiedFilesProvider  {
             // posibility to use instead of URL InputStream and use lazy ByteArrayInputStream.
         }
         return retval;
-    }
-    
-    private  static void setCreatedModifiedFiles(CreatedModifiedFiles fileManipulator,
-            JTextArea component, boolean modified) {
-        
-        String textToSet = generateText(fileManipulator, modified);
-        if (textToSet.length() > 0) {
-            component.setText(generateText(fileManipulator, modified));
-        }
-    }
-    private static String generateText(CreatedModifiedFiles fileManipulator, boolean modified) {
-        StringBuffer sb = new StringBuffer();
-        String[] relPaths = (modified) ? fileManipulator.getModifiedPaths() :
-            fileManipulator.getCreatedPaths();
-        
-        if (relPaths.length > 0) {
-            for (int i = 0; i < relPaths.length; i++) {
-                if (i > 0) {
-                    sb.append("\n");//NOI18N
-                }
-                sb.append(relPaths[i]);
-            }
-        }
-        
-        return sb.toString();
     }
     
 }

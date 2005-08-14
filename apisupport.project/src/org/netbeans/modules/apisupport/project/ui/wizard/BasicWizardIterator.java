@@ -34,6 +34,7 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 abstract public class BasicWizardIterator implements WizardDescriptor.InstantiatingIterator {
+    
     private static final long serialVersionUID = 1L;
     private transient int position = 0;
     private transient BasicWizardIterator.PrivateWizardPanel[] wizardPanels;
@@ -46,25 +47,41 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     
     /** Basic visual panel.*/
     public abstract static class Panel extends BasicVisualPanel {
-        /** @return name of panel */
-        protected abstract String getPanelName();
-        /** update state of instance of {@link BasicWizardIterator.BasicDataModel}*/
-        protected abstract void storeToDataModel();
-        /** read state of instance of {@link BasicWizardIterator.BasicDataModel}*/
-        protected abstract void readFromDataModel();
         
         protected Panel(WizardDescriptor wiz) {
             super(wiz);
         }
         
+        /**
+         * Returned name is used by a wizard. e.g. on its left side in the
+         * <em>step list</em>.
+         * @return name of panel
+         */
+        protected abstract String getPanelName();
+        
+        /**
+         * Gives a chance to store an instance of {@link
+         * BasicWizardIterator.BasicDataModel}. It is called when a panel is
+         * going to be <em>hidden</em> (e.g. when switching to next/previous
+         * panel).
+         */
+        protected abstract void storeToDataModel();
+        
+        /**
+         * Gives a chance to refresh a panel (usually by reading a state of an
+         * instance of {@link BasicWizardIterator.BasicDataModel}. It is called
+         * when a panel is going to be <em>displayed</em> (e.g. when switching
+         * from next/previous panel).
+         */
+        protected abstract void readFromDataModel();
+        
     }
-
+    
     /** DataModel that is passed through individual panels.*/
     public static class BasicDataModel {
-        private NbModuleProject project;
-        private FileObject srcRoot = null;
-        private SourceGroup sourceRootGroup;
         
+        private NbModuleProject project;
+        private SourceGroup sourceRootGroup;
         
         /** Creates a new instance of NewFileDescriptorData */
         public BasicDataModel(WizardDescriptor wiz) {
@@ -187,9 +204,10 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     public final void addChangeListener(ChangeListener  l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    
     private static final class PrivateWizardPanel extends BasicWizardPanel {
+        
         private BasicWizardIterator.Panel panel;
+        
         PrivateWizardPanel(BasicWizardIterator.Panel panel, String[] allSteps, int stepIndex) {
             super(panel.getSettings());
             panel.addPropertyChangeListener(this);
@@ -201,7 +219,6 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
                 // names of currently used steps
                 jc.putClientProperty("WizardPanel_contentData", allSteps); // NOI18N
             }
-            
         }
         
         private BasicWizardIterator.Panel getPanel() {

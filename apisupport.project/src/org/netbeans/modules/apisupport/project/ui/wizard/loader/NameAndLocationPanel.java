@@ -14,16 +14,13 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.loader;
 
 import java.io.File;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
-import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 
 /**
@@ -40,7 +37,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle"));
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LoaderWizardTitle")); // NOI18N
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -67,8 +64,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         data.setIconPath(icon.length() == 0 ? (String)null : icon);
         data.setPrefix(txtPrefix.getText().trim());
         NewLoaderIterator.generateFileChanges(data);
-        createdFilesValue.setText(generateText(data.getCreatedModifiedFiles().getCreatedPaths()));
-        modifiedFilesValue.setText(generateText(data.getCreatedModifiedFiles().getModifiedPaths()));
+        createdFilesValue.setText(UIUtil.generateTextAreaContent(
+                data.getCreatedModifiedFiles().getCreatedPaths()));
+        modifiedFilesValue.setText(UIUtil.generateTextAreaContent(
+                data.getCreatedModifiedFiles().getModifiedPaths()));
     }
     
     protected void readFromDataModel() {
@@ -77,14 +76,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         txtIcon.setText(data.getPrefix());
     }
     
-    private static JComboBox createComboBox(SourceGroup srcRoot) {
-        JComboBox packagesComboBox = new JComboBox(PackageView.createListView(srcRoot));
-        packagesComboBox.setRenderer(PackageView.listRenderer());
-        return packagesComboBox;
-    }
-    
     protected String getPanelName() {
-        return getMessage("LBL_NameLocation_Title");
+        return getMessage("LBL_NameLocation_Title"); // NOI18N
     }
     
     private void checkValidity() {
@@ -109,7 +102,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         lblProjectName = new javax.swing.JLabel();
         txtProjectName = new JTextField(ProjectUtils.getInformation(this.data.getProject()).getDisplayName());
         lblPackageName = new javax.swing.JLabel();
-        comPackageName = this.createComboBox(this.data.getSourceRootGroup());
+        comPackageName = UIUtil.createPackageComboBox(data.getSourceRootGroup());
         createdFiles = new javax.swing.JLabel();
         modifiedFiles = new javax.swing.JLabel();
         filler = new javax.swing.JLabel();
@@ -264,7 +257,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     
     private void btnIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIconActionPerformed
         JFileChooser chooser = UIUtil.getIconFileChooser();
-        int ret = chooser.showDialog(this, getMessage("LBL_Select"));
+        int ret = chooser.showDialog(this, getMessage("LBL_Select")); // NOI18N
         if (ret == JFileChooser.APPROVE_OPTION) {
             File file =  chooser.getSelectedFile();
             txtIcon.setText(file.getAbsolutePath());
@@ -287,18 +280,5 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JTextField txtPrefix;
     private javax.swing.JTextField txtProjectName;
     // End of variables declaration//GEN-END:variables
-    
-    private static String generateText(String[] relPaths) {
-        StringBuffer sb = new StringBuffer();
-        if (relPaths.length > 0) {
-            for (int i = 0; i < relPaths.length; i++) {
-                if (i > 0) {
-                    sb.append("\n");//NOI18N
-                }
-                sb.append(relPaths[i]);
-            }
-        }
-        return sb.toString();
-    }
     
 }
