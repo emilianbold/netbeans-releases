@@ -34,7 +34,7 @@
         <property name="beanId">bean148</property>
         <extendedProperty name="win32ppk" type="com.installshield.wizard.platform.win32.Win32LauncherExtra">
             <property name="fileName">uninstaller.exe</property>
-            <property name="jvmNotFoundMessage">No Java Runtime Environment(JRE) was found on this system.</property>
+            <property name="jvmNotFoundMessage">No Java Development Kit(JDK) was found on this system.</property>
             <property name="launcherUIDisplayTime">0</property>
             <property name="showConsole">False</property>
             <property name="userInterface">0</property>
