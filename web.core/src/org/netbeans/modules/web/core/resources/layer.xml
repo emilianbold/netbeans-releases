@@ -206,4 +206,63 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="JSPPalette">
+
+        <folder name="HTML.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="HTMLPalette/HTML"/>
+        </folder>
+        
+        <folder name="HTML_Forms.shadow">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+            <attr name="originalFile" stringvalue="HTMLPalette/HTML_Forms"/>
+        </folder>
+
+        <folder name="JSP">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+
+            <file name="UseBean.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/UseBean.xml" />
+            <file name="GetProperty.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/GetProperty.xml" />
+            <file name="SetProperty.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/SetProperty.xml" />
+            <file name="Choose.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Choose.xml" />
+            <file name="If.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/If.xml" />
+            <file name="ForEach.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/ForEach.xml" />
+
+            <attr name="UseBean.xml/GetProperty.xml" boolvalue="true" />
+            <attr name="GetProperty.xml/SetProperty.xml" boolvalue="true" />
+            <attr name="SetProperty.xml/Choose.xml" boolvalue="true" />
+            <attr name="Choose.xml/If.xml" boolvalue="true" />
+            <attr name="If.xml/ForEach.xml" boolvalue="true" />
+
+        </folder>
+
+        <folder name="Database">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+
+            <file name="Query.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Query.xml" />
+            <file name="Report.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Report.xml" />
+            <file name="Insert.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Insert.xml" />
+            <file name="Update.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Update.xml" />
+            <file name="Delete.xml" url="nbresloc:/org/netbeans/modules/web/core/palette/items/resources/Delete.xml" />
+
+            <attr name="Query.xml/Report.xml" boolvalue="true" />
+            <attr name="Report.xml/Insert.xml" boolvalue="true" />
+            <attr name="Insert.xml/Update.xml" boolvalue="true" />
+            <attr name="Update.xml/Delete.xml" boolvalue="true" />
+        
+        </folder>
+<!--        
+        <folder name="Enterprise">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.palette.Bundle"/>
+
+        </folder>
+-->
+        <attr name="HTML.shadow/HTML_Forms.shadow" boolvalue="true" />
+        <attr name="HTML_Forms.shadow/JSP" boolvalue="true" />
+        <attr name="JSP/Database" boolvalue="true" />
+<!--        
+        <attr name="Database/Enterprise" boolvalue="true" />
+-->
+    </folder>
+
 </filesystem>
