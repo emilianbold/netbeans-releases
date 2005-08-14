@@ -32,7 +32,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.EditorKit;
+import org.netbeans.modules.web.core.palette.JSPPaletteFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 
@@ -46,6 +48,7 @@ import org.openide.util.TaskListener;
 import org.openide.util.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -54,6 +57,7 @@ import org.openide.util.NbBundle;
 
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.palette.PaletteController;
 
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
@@ -380,9 +384,20 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
-  /* A method to create a new component. Overridden in subclasses.
-   * @return the {@link BaseJspEditor} for this support
-   */
+    /** Initialize the editor. This method is called after the editor component
+     * is deserialized and also when the component is created. It allows
+     * the subclasses to annotate the component with icon, selected nodes, etc.
+     *
+     * @param editor the editor that has been created and should be annotated
+     */
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+        if (editor instanceof BaseJspEditor)
+            ((BaseJspEditor) editor).associatePalette(this);
+    }
+
+    /** A method to create a new component. Overridden in subclasses.
+     * @return the {@link BaseJspEditor} for this support
+     */
     protected CloneableEditor createCloneableEditor() {
         return new BaseJspEditor(this);
     }
@@ -410,12 +425,54 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     
     public static class BaseJspEditor extends CloneableEditor {
         
+        public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+        public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+
         /** Listener on caret movements */
         CaretListener caretListener;
         //BaseJspEditorSupport support;
         
         public BaseJspEditor() {
             super();
+        }
+        
+        private static WebModule getWebModule(FileObject fo){
+            WebModule wm = WebModule.getWebModule(fo);
+            if (wm != null){
+                FileObject wmRoot = wm.getDocumentBase();
+                if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+                    return wm;
+                }
+            }
+            return null;
+        }
+        
+        public static boolean isXmlSyntax(DataObject dataObject) {
+            
+            FileObject fileObject = (dataObject != null) ? dataObject.getPrimaryFile() : null;
+            if (fileObject == null)
+                return false;
+            
+            JspParserAPI.JspOpenInfo info = JspParserFactory.getJspParser().getJspOpenInfo(fileObject, JspParserAccess.getJspParserWM (getWebModule (fileObject)), false);
+            boolean isXmlSyntax = info.isXmlSyntax();
+            
+            return isXmlSyntax;
+        }
+        
+        void associatePalette(BaseJspEditorSupport s) {
+        
+            DataObject dataObject = s.getDataObject();
+            String mimeType = dataObject.getPrimaryFile().getMIMEType();
+            if (dataObject instanceof JspDataObject && mimeType.equals(JSP_MIME_TYPE) && !isXmlSyntax(dataObject)) {
+                try {
+                    PaletteController pc = JSPPaletteFactory.getPalette();
+                    associateLookup(Lookups.fixed(new Object[] { pc }));
+                } 
+                catch (IOException ioe) {
+                    //TODO exception handling
+                    ioe.printStackTrace();
+                }
+            }
         }
         
         /** Creates new editor */
@@ -545,4 +602,5 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
         
     } // end of JavaEditorComponent inner class
+    
 }

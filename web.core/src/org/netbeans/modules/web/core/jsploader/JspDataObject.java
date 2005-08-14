@@ -79,7 +79,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         cookies.add (createJspEditorSupport());
         initialize();
     }
-
+    
     // Public accessibility for e.g. JakartaServerPlugin.
     // [PENDING] Handle this more nicely.
     public org.openide.nodes.CookieSet getCookieSet0 () {
