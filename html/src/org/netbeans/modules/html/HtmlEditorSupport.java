@@ -13,8 +13,6 @@
 
 
 package org.netbeans.modules.html;
-
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,6 +25,8 @@ import java.io.OutputStreamWriter;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.html.palette.HTMLPaletteFactory;
+import org.netbeans.spi.palette.PaletteController;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
@@ -36,10 +36,14 @@ import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node.Cookie;
+import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
+
 
 
 /** 
@@ -257,4 +261,50 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     } // End of nested Environment class.
 
+    
+    /** Initialize the editor. This method is called after the editor component
+     * is deserialized and also when the component is created. It allows
+     * the subclasses to annotate the component with icon, selected nodes, etc.
+     *
+     * @param editor the editor that has been created and should be annotated
+     */
+    protected void initializeCloneableEditor(CloneableEditor editor) {
+        if (editor instanceof HtmlEditor)
+            ((HtmlEditor) editor).associatePalette(this);
+    }
+
+    /** A method to create a new component. Overridden in subclasses.
+     * @return the {@link HtmlEditor} for this support
+     */
+    protected CloneableEditor createCloneableEditor() {
+        return new HtmlEditor(this);
+    }
+    
+    public static class HtmlEditor extends CloneableEditor {
+        
+        public HtmlEditor() {
+        }
+        
+        void associatePalette(HtmlEditorSupport s) {
+            
+            DataObject dataObject = s.getDataObject();
+            if (dataObject instanceof HtmlDataObject) {
+                try {
+                    PaletteController pc = HTMLPaletteFactory.getPalette();
+                    associateLookup(Lookups.fixed(new Object[] { pc }));
+                }
+                catch (IOException ioe) {
+                    //TODO exception handling
+                    ioe.printStackTrace();
+                }
+            }
+        }
+        
+        /** Creates new editor */
+        public HtmlEditor(HtmlEditorSupport s) {
+            super(s);
+        }
+
+    }
+    
 }

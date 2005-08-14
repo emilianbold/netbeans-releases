@@ -112,4 +112,51 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+
+    <folder name="HTMLPalette">
+
+        <folder name="HTML">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.palette.Bundle"/>
+
+            <file name="TABLE.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/TABLE.xml" />
+            <file name="OL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/OL.xml" />
+            <file name="UL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/UL.xml" />
+            <file name="IMG.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/IMG.xml" />
+            <file name="A.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/A.xml" />
+            <file name="META.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/META.xml" />
+
+            <attr name="TABLE.xml/OL.xml" boolvalue="true" />
+            <attr name="OL.xml/UL.xml" boolvalue="true" />
+            <attr name="UL.xml/IMG.xml" boolvalue="true" />
+            <attr name="IMG.xml/A.xml" boolvalue="true" />
+            <attr name="A.xml/META.xml" boolvalue="true" />
+
+        </folder>
+
+        <folder name="HTML_Forms">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.palette.Bundle"/>
+
+            <file name="FORM.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/FORM.xml" />
+            <file name="INPUT.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/INPUT.xml" />
+            <file name="TEXTAREA.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/TEXTAREA.xml" />
+            <file name="SELECT.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/SELECT.xml" />
+            <file name="CHECKBOX.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/CHECKBOX.xml" />
+            <file name="RADIO.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/RADIO.xml" />
+            <file name="FILESEL.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/FILESEL.xml" />
+            <file name="BUTTON.xml" url="nbresloc:/org/netbeans/modules/html/palette/items/resources/BUTTON.xml" />
+
+            <attr name="FORM.xml/INPUT.xml" boolvalue="true" />
+            <attr name="INPUT.xml/TEXTAREA.xml" boolvalue="true" />
+            <attr name="TEXTAREA.xml/SELECT.xml" boolvalue="true" />
+            <attr name="SELECT.xml/CHECKBOX.xml" boolvalue="true" />
+            <attr name="CHECKBOX.xml/RADIO.xml" boolvalue="true" />
+            <attr name="RADIO.xml/FILESEL.xml" boolvalue="true" />
+            <attr name="FILESEL.xml/BUTTON.xml" boolvalue="true" />
+
+        </folder>
+
+        <attr name="HTML/HTML_Forms" boolvalue="true" />
+
+    </folder>
+  
 </filesystem>
