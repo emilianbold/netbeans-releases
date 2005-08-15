@@ -693,7 +693,7 @@ public class LayoutModel implements LayoutConstants {
     }
 
     public Object getChangeMark() {
-        return new Integer(changeMark + redoMap.size());
+        return new Integer(changeMark);
     }
 
     public UndoableEdit getUndoableEdit() {
@@ -711,12 +711,9 @@ public class LayoutModel implements LayoutConstants {
 
     private void addChange(LayoutEvent change) {
         if (recordingChanges && !undoRedoInProgress) {
-            changeMark += redoMap.size(); // to ensure unique marks
             redoMap.clear();
-
-            if (undoMap.size() == 0) {
+            if (undoMap.size() == 0)
                 oldestMark = changeMark;
-            }
 
             undoMap.put(new Integer(changeMark++), change);
 
@@ -726,17 +723,18 @@ public class LayoutModel implements LayoutConstants {
         }
     }
 
-    boolean undoToMark(Object mark) {
+    boolean undo(Object startMark, Object endMark) {
         assert !undoRedoInProgress;
-        if (!undoMap.containsKey(mark)) {
+        if (!undoMap.containsKey(startMark)) {
             return false; // the mark is not present in the undo queue
         }
 
-        int lastMark = ((Integer)mark).intValue();
+        int start = ((Integer)startMark).intValue();
+        int end = ((Integer)endMark).intValue();
         undoRedoInProgress = true;
 
-        while (changeMark > lastMark) {
-            Object key = new Integer(--changeMark);
+        while (end > start) {
+            Object key = new Integer(--end);
             LayoutEvent change = (LayoutEvent) undoMap.remove(key);
             if (change != null) {
                 change.undo();
@@ -748,17 +746,18 @@ public class LayoutModel implements LayoutConstants {
         return true;
     }
 
-    boolean redoToMark(Object mark) {
+    boolean redo(Object startMark, Object endMark) {
         assert !undoRedoInProgress;
-//        if (!redoMap.containsKey(mark)) {
-//            return false; // the mark is not present in the redo queue
-//        }
+        if (!redoMap.containsKey(startMark)) {
+            return false; // the mark is not present in the redo queue
+        }
 
-        int toMark = ((Integer)mark).intValue();
+        int start = ((Integer)startMark).intValue();
+        int end = ((Integer)endMark).intValue();
         undoRedoInProgress = true;
 
-        while (changeMark < toMark) {
-            Object key = new Integer(changeMark++);
+        while (start < end) {
+            Object key = new Integer(start++);
             LayoutEvent change = (LayoutEvent) redoMap.remove(key);
             if (change != null) {
                 change.redo();
@@ -796,12 +795,12 @@ public class LayoutModel implements LayoutConstants {
                 endMark = getChangeMark();
                 lastUndoableEdit = null;
             }
-            undoToMark(startMark);
+            LayoutModel.this.undo(startMark, endMark);
         }
 
         public void redo() throws CannotRedoException {
             super.redo();
-            redoToMark(endMark);
+            LayoutModel.this.redo(startMark, endMark);
         }
 
         public String getUndoPresentationName() {

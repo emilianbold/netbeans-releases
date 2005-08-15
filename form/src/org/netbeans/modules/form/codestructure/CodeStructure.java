@@ -45,11 +45,10 @@ public class CodeStructure {
     private boolean undoRedoRecording = false;
     private int undoRedoMark = 0;
     private int oldestMark = 0;
+    private int lastUndone = -1;
     private int undoRedoHardLimit = 10000;
     private Map undoMap;
     private Map redoMap;
-    private Set providedMarksUndo;
-    private Set providedMarksRedo;
 
     // --------
     // constructor
@@ -680,8 +679,6 @@ public class CodeStructure {
         if (record && undoMap == null) {
             undoMap = new HashMap(500);
             redoMap = new HashMap(100);
-            providedMarksUndo = new HashSet(100);
-            providedMarksRedo = new HashSet(100);
         }
     }
 
@@ -690,9 +687,8 @@ public class CodeStructure {
     }
 
     void logUndoableChange(CodeStructureChange change) {
-        undoRedoMark += redoMap.size(); // to ensure unique marks
         redoMap.clear();
-        providedMarksRedo.clear();
+        lastUndone = -1;
 
         if (undoMap.size() == 0)
             oldestMark = undoRedoMark;
@@ -708,59 +704,42 @@ public class CodeStructure {
         while (undoMap.size() > undoRedoHardLimit) {
             Object mark = new Integer(oldestMark++);
             undoMap.remove(mark);
-            providedMarksUndo.remove(mark);
         }
     }
 
     public Object markForUndo() {
-        undoRedoMark += redoMap.size(); // to ensure unique marks
         redoMap.clear();
-        providedMarksRedo.clear();
 
         t("mark for undo: "+undoRedoMark); // NOI18N
 
         Object newMark = new Integer(undoRedoMark);
-        if (!providedMarksUndo.contains(newMark))
-            providedMarksUndo.add(newMark);
 
         return newMark;
     }
 
-    public boolean releaseUndoableChanges(Object fromMark, Object toMark) {
+    public void releaseUndoableChanges(Object fromMark, Object toMark) {
         int m1 = ((Integer)fromMark).intValue();
         int m2 = ((Integer)toMark).intValue();
 
         t("release marks from " + m1 + " to " + m2); // NOI18N
 
-        if (undoMap.get(fromMark) != null) {
-            while (m1 < m2) {
-                Object m = new Integer(m1);
-                undoMap.remove(m);
-                providedMarksUndo.remove(m);
-                m1++;
-            }
+        while (m1 < m2) {
+            Object m = new Integer(m1);
+            undoMap.remove(m);
+            redoMap.remove(m);
+            m1++;
         }
-        else if (redoMap.get(fromMark) != null) {
-            while (m1 < m2) {
-                Object m = new Integer(m1);
-                redoMap.remove(m);
-                providedMarksRedo.remove(m);
-                m1++;
-            }
-        }
-        else return false;
-
-        return true;
     }
 
     public boolean undoToMark(Object mark) {
         int lastMark = ((Integer)mark).intValue();
-        if (undoRedoMark <= lastMark)
+        int currentMark = undoRedoMark;
+        if (currentMark <= lastMark)
             return false; // invalid parameter
 
         t("undo to mark "+mark); // NOI18N
 
-        if (undoMap.get(mark) == null || !providedMarksUndo.contains(mark)) {
+        if (undoMap.get(mark) == null) {
             t("mark already dropped from the queue"); // NOI18N
             return false;
         }
@@ -768,19 +747,17 @@ public class CodeStructure {
         boolean undoRedoOn = undoRedoRecording;
         undoRedoRecording = false;
 
-        while (undoRedoMark > lastMark) {
-            Object key = new Integer(--undoRedoMark);
+        while (currentMark > lastMark) {
+            Object key = new Integer(--currentMark);
             CodeStructureChange change = (CodeStructureChange)
                                          undoMap.remove(key);
             if (change != null) {
                 change.undo();
                 redoMap.put(key, change);
+                lastUndone = currentMark;
 
                 t("undone: "+key); // NOI18N
             }
-
-            if (providedMarksUndo.remove(key))
-                providedMarksRedo.add(key);
         }
 
         if (undoRedoOn)
@@ -790,8 +767,10 @@ public class CodeStructure {
     }
 
     public boolean redoToMark(Object mark) {
+        if (lastUndone < 0)
+            return false;
         int toMark = ((Integer)mark).intValue();
-        if (undoRedoMark >= toMark)
+        if (lastUndone >= toMark || toMark > undoRedoMark)
             return false; // invalid parameter
 
         t("redo to mark "+mark); // NOI18N
@@ -799,8 +778,8 @@ public class CodeStructure {
         boolean undoRedoOn = undoRedoRecording;
         undoRedoRecording = false;
 
-        while (undoRedoMark < toMark) {
-            Object key = new Integer(undoRedoMark++);
+        while (lastUndone < toMark) {
+            Object key = new Integer(lastUndone++);
             CodeStructureChange change = (CodeStructureChange)
                                          redoMap.remove(key);
             if (change != null) {
@@ -809,9 +788,6 @@ public class CodeStructure {
 
                 t("redone: "+key); // NOI18N
             }
-
-            if (providedMarksRedo.remove(key))
-                providedMarksUndo.add(key);
         }
 
         if (undoRedoOn)
