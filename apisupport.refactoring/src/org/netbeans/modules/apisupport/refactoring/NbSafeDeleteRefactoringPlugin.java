@@ -210,7 +210,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            String content = readFileIntoString(parentFile);
+            String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
                 longName = longName.replaceAll("[.]", "\\."); //NOI18N
@@ -226,7 +226,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                     }
                 }
                 if (hasMoreThanComments) {
-                    writeFileFromString(parentFile, content);
+                    Utility.writeFileFromString(parentFile, content);
                 } else {
                     try {
                         parentFile.delete();

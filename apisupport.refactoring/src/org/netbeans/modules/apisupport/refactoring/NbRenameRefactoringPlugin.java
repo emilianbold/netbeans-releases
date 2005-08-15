@@ -128,7 +128,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     }
 
     protected final void checkMetaInfServices(Project project, JavaPackage pack, RefactoringElementsBag refactoringElements) {
-        FileObject services = findMetaInfServices(project);
+        FileObject services = Utility.findMetaInfServices(project);
         if (services == null) {
             return;
         }
@@ -180,14 +180,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            String content = readFileIntoString(parentFile);
+            String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
                 String newName = clazz.getName();
                 longName = longName.replace('.', '/') + ".class"; //NOI18N
                 newName = newName.replace('.', '/') + ".class"; //NOI18N
                 content = content.replaceAll(longName, newName);
-                writeFileFromString(parentFile, content);
+                Utility.writeFileFromString(parentFile, content);
             }
             
         }
@@ -215,13 +215,13 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            String content = readFileIntoString(parentFile);
+            String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
                 String newName = clazz.getName();
                 longName = longName.replaceAll("[.]", "\\.");
                 content = content.replaceAll("^" + longName + "[ \\\n]?", newName + "\n");
-                writeFileFromString(parentFile, content);
+                Utility.writeFileFromString(parentFile, content);
             }
         }
     }
@@ -249,13 +249,13 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
-            String content = readFileIntoString(parentFile);
+            String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
                 String newName = pack.getName();
                 longName = longName.replaceAll("[.]", "\\.");
                 content = content.replaceAll("^" + longName, newName);
-                writeFileFromString(parentFile, content);
+                Utility.writeFileFromString(parentFile, content);
             }
         }
     }

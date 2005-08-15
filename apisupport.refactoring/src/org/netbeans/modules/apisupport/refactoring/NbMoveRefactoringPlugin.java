@@ -132,7 +132,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                         cachedProject = (NbModuleProject)project;
                         cachedServices = loadMetaInfServices(cachedProject);
                         cachedManifest = cachedProject.getManifest();
-                        FileObject services = AbstractRefactoringPlugin.findMetaInfServices(cachedProject);
+                        FileObject services = Utility.findMetaInfServices(cachedProject);
                         if (services == null) {
                             cachedServicesFiles = new FileObject[0];
                         } else {
@@ -242,7 +242,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
     }
     
     protected final String[] loadMetaInfServices(Project project) {
-        FileObject services = AbstractRefactoringPlugin.findMetaInfServices(project);
+        FileObject services = Utility.findMetaInfServices(project);
         if (services == null) {
             return new String[0];
         }
@@ -250,7 +250,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
         FileObject[] files = services.getChildren();
         String[] ret = new String[files.length];
         for (int i = 0; i < files.length; i++) {
-            ret[i] = AbstractRefactoringPlugin.readFileIntoString(files[i]);
+            ret[i] = Utility.readFileIntoString(files[i]);
         }
         return ret;
     }
@@ -412,7 +412,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
             NbModuleProject newproject = (NbModuleProject)FileOwnerQuery.getOwner(move.getTargetClassPathRoot());
             FileObject newFile = parentFile;
             if (newproject != project) {
-                FileObject services = AbstractRefactoringPlugin.findMetaInfServices(newproject);
+                FileObject services = Utility.findMetaInfServices(newproject);
                 try {
                     if (services == null) {
                         services = createMetaInf(newproject);
@@ -425,7 +425,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                     err.notify(ex);
                 }
             }
-            String oldcontent = AbstractRefactoringPlugin.readFileIntoString(parentFile);
+            String oldcontent = Utility.readFileIntoString(parentFile);
             String longName = oldName;
             String newName = clazz.getName();
             if (oldcontent != null) {
@@ -433,13 +433,13 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                 if (newFile == parentFile) {
                     // same file, just replace
                     oldcontent = oldcontent.replaceAll("^" + longName, newName); //NOI18N
-                    AbstractRefactoringPlugin.writeFileFromString(parentFile, oldcontent);
+                    Utility.writeFileFromString(parentFile, oldcontent);
                 } else {
                     // moving to a different file.
                     oldcontent = oldcontent.replaceAll("^" + longName + "[ \\\n]?", ""); //NOI18N
-                    String newcontent = AbstractRefactoringPlugin.readFileIntoString(newFile);
+                    String newcontent = Utility.readFileIntoString(newFile);
                     newcontent = newName + "\n" + newcontent;
-                    AbstractRefactoringPlugin.writeFileFromString(newFile, newcontent);
+                    Utility.writeFileFromString(newFile, newcontent);
                     //check if we want to delete the old file or just update it.
                     StringTokenizer tok = new StringTokenizer(oldcontent, "\n"); //NOI18N
                     boolean hasMoreThanComments = false;
@@ -451,7 +451,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                         }
                     }
                     if (hasMoreThanComments) {
-                        AbstractRefactoringPlugin.writeFileFromString(parentFile, oldcontent);
+                        Utility.writeFileFromString(parentFile, oldcontent);
                     } else {
                         try {
                             parentFile.delete();
