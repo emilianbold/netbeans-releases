@@ -45,8 +45,6 @@ import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
 
 import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -68,8 +66,6 @@ public class JBDeployer implements ProgressObject, Runnable {
     
     
     public ProgressObject deploy(Target[] target, File file, File file2, String host, int port){
-        org.w3c.dom.Document dom =null;
-        
         //PENDING: distribute to all targets!
         module_id = new JBTargetModuleID(target[0], file.getName() );
         
