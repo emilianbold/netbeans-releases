@@ -603,14 +603,11 @@ class LayoutFeeder implements LayoutConstants {
         addToGroup(iDesc1, iDesc2);
 
         // align in parallel if required
-        boolean alignedInParallel = false;
         if (iDesc2 != null && iDesc2.snappedParallel != null) {
             alignInParallel(iDesc2.snappedParallel, iDesc2.alignment);
-            alignedInParallel = true;
         }
         if (iDesc1.snappedParallel != null) {
             alignInParallel(iDesc1.snappedParallel, iDesc1.alignment);
-            alignedInParallel = true;
         }
 
         // post processing
@@ -632,11 +629,8 @@ class LayoutFeeder implements LayoutConstants {
         if (parent.isSequential()) {// && !alignedInParallel)
             int nonEmptyCount = LayoutInterval.getCount(parent, LayoutRegion.ALL_POINTS, true);
             if (nonEmptyCount == 1) { // this is a newly created sequence
-                operations.optimizeGaps(parent.getParent(), dimension);
-                parent = addingInterval.getParent(); // the parent might have changed
-                if (parent.isParallel()) { // the sequence was eliminated
-                    operations.mergeParallelGroups(parent); // the added interval might go to parallel subgroup
-                }
+                operations.optimizeGaps(parent.getParent(), dimension); // may eliminate the sequence
+                operations.mergeParallelGroups(LayoutInterval.getFirstParent(addingInterval, PARALLEL));
             }
             else if (dimension == HORIZONTAL) {
                 // check whether the added interval could not be rather placed
@@ -696,6 +690,7 @@ class LayoutFeeder implements LayoutConstants {
 
         assert iDesc1.alignment >= 0 || iDesc2 == null;
         assert iDesc2 == null || iDesc2.alignment == (iDesc1.alignment^1);
+        assert parent.isParallel();
 
         LayoutInterval[] neighbors = new LayoutInterval[2]; // LEADING, TRAILING
         LayoutInterval[] gaps = new LayoutInterval[2]; // LEADING, TRAILING
@@ -758,8 +753,13 @@ class LayoutFeeder implements LayoutConstants {
                 LayoutInterval outerNeighbor = LayoutInterval.getNeighbor(parent, i, false, true, false);
                 if (outerNeighbor != null && outerNeighbor.isEmptySpace())
                     continue; // unaligned ending gap not needed
-                else // minor gap if the other edge is going to align in parallel
-                    minorGap = iiDesc == null && iDesc1.snappedParallel != null  && parent.isParentOf(iDesc1.snappedParallel);
+                else { // minor gap if the other edge is going to align in parallel
+                    IncludeDesc otherDesc = iDesc1.alignment == (i^1) ? iDesc1 : iDesc2;
+                    LayoutInterval parallel = otherDesc != null ? otherDesc.snappedParallel : null;
+                    minorGap = (parallel != null && parallel.getParent() != null)
+                               || LayoutInterval.getCount(parent, i^1, true) > 0;
+//                    minorGap = iiDesc == null && iDesc1.snappedParallel != null && parent.isParentOf(iDesc1.snappedParallel);
+                }
             }
 
             boolean fixedGap = aligned;
@@ -776,7 +776,7 @@ class LayoutFeeder implements LayoutConstants {
             }
 
             LayoutInterval gap = new LayoutInterval(SINGLE);
-            if (iiDesc == null || iiDesc.snappedNextTo == null) {//&& !minorGap
+            if (!minorGap && (iiDesc == null || iiDesc.snappedNextTo == null)) {
                 // the gap possibly needs an explicit size
                 int distance = neighbors[i] != null ?
                     LayoutRegion.distance(neighbors[i].getCurrentSpace(), addingSpace, dimension, i^1, i) :
@@ -1098,6 +1098,7 @@ class LayoutFeeder implements LayoutConstants {
                 if (parent == null || !parent.isSequential()) {
                     if (parent != null) {
                         layoutModel.removeInterval(li);
+                        layoutModel.setIntervalAlignment(li, DEFAULT);
                     }
                     seq = new LayoutInterval(SEQUENTIAL);
                     layoutModel.addInterval(li, seq, 0);
@@ -1213,8 +1214,11 @@ class LayoutFeeder implements LayoutConstants {
 
         // create the remainder group next to the aligned group
         if (!remainder.isEmpty()) {
+            int index = commonSeq.indexOf(group);
+            if (alignment == TRAILING)
+                index++;
             LayoutInterval sideGroup = operations.addGroupContent(
-                    remainder, commonSeq, commonSeq.indexOf(group), dimension, alignment/*, effAlign*/);
+                    remainder, commonSeq, index, dimension, alignment/*, effAlign*/);
             if (sideGroup != null) {
                 int pos1 = parParent.getCurrentSpace().positions[dimension][alignment];
                 int pos2 = toAlignWith.getCurrentSpace().positions[dimension][alignment];
@@ -1758,12 +1762,6 @@ class LayoutFeeder implements LayoutConstants {
         if (iDesc1.parent == iDesc2.parent)
             return true;
 
-        if (iDesc1.alignment == TRAILING) {
-            IncludeDesc temp = iDesc1;
-            iDesc1 = iDesc2;
-            iDesc2 = temp;
-        }
-
         LayoutInterval commonGroup;
         if (iDesc1.parent.isParentOf(iDesc2.parent))
             commonGroup = iDesc1.parent;
@@ -1773,6 +1771,12 @@ class LayoutFeeder implements LayoutConstants {
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
 
         if (commonGroup.isSequential()) {
+            if (iDesc1.alignment == TRAILING) {
+                IncludeDesc temp = iDesc1;
+                iDesc1 = iDesc2;
+                iDesc2 = temp;
+            } // so iDesc1 is leading and iDesc2 trailing
+
             int startIndex = 0;
             LayoutInterval ext1;
             boolean startGap = false;
@@ -1876,12 +1880,54 @@ class LayoutFeeder implements LayoutConstants {
                    && (commonGroup == iDesc1.parent || commonGroup == iDesc2.parent)
                    && iDesc1.neighbor == null && iDesc2.neighbor == null;
 
-            if (iDesc1.parent == commonGroup || (iDesc2.snappedNextTo == null && iDesc2.snappedParallel == null)) {
+            if ((iDesc2.snappedNextTo == null && iDesc2.snappedParallel == null)
+                || (iDesc2.snappedParallel != null && canAlignWith(iDesc2.snappedParallel, iDesc1.parent, iDesc2.alignment)))
+            {   // iDesc2 can adapt to iDesc1
                 iDesc2.parent = iDesc1.parent;
+                return true;
             }
-            else { // prefer iDesc2
+
+            if (iDesc2.parent == commonGroup) {
+                IncludeDesc temp = iDesc1;
+                iDesc1 = iDesc2;
+                iDesc2 = temp;
+            } // so iDesc1 is super-group and iDesc2 subgroup
+
+            if (iDesc2.snappedParallel == iDesc2.parent) {
+                iDesc2.parent = LayoutInterval.getFirstParent(iDesc2.parent, PARALLEL);
+                if (iDesc2.parent == iDesc1.parent)
+                    return true;
+            }
+
+            if (LayoutInterval.isAlignedAtBorder(iDesc2.parent, iDesc1.parent, iDesc1.alignment)) {
                 iDesc1.parent = iDesc2.parent;
+                return true; // subgroup is aligned to parent group edge
             }
+
+            LayoutInterval seq = iDesc2.parent.getParent();
+            if (seq.isSequential() && seq.getParent() == iDesc1.parent) {
+                int index = seq.indexOf(iDesc2.parent) + (iDesc1.alignment == LEADING ? -1 : 1);
+                LayoutInterval gap = (index == 0 || index == seq.getSubIntervalCount()-1) ?
+                                     seq.getSubInterval(index) : null;
+                if (gap != null
+                    && LayoutInterval.isFixedDefaultPadding(gap)
+                    && iDesc1.snappedNextTo == iDesc1.parent
+                    && LayoutInterval.wantResize(seq))
+                {   // subgroup is at preferred gap from parent - corresponds to parent's snappedNextTo
+                    iDesc1.parent = iDesc2.parent;
+                    iDesc1.snappedNextTo = null;
+                    iDesc1.snappedParallel = iDesc2.parent;
+                    return true;
+                }
+
+                if (gap != null && gap.isEmptySpace() && iDesc1.snappedParallel == iDesc1.parent) {
+                    // need to make the subgroup aligned to parent group
+                    // [TBD]
+                    //iDesc1.parent = iDesc2.parent;
+                }
+            }
+
+            iDesc2.parent = iDesc1.parent; // prefer super-group otherwise
         }
 
         return true;

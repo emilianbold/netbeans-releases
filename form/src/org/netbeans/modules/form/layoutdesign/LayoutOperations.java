@@ -104,11 +104,11 @@ class LayoutOperations implements LayoutConstants {
     }
 
     /**
-     * Creates a remainder parallel group (remainder to a main group of
-     * aligned intervals).
+     * Adds parallel content of a group specified in List to given sequence.
+     * Used to create a remainder parallel group to a group of aligned intervals.
      * @param list the content of the group, output from 'extract' method
      * @param seq a sequential group where to add to
-     * @param index the index of the main group in the sequence
+     * @param index the index in the sequence where to add
      * @param dimension
      * @param position the position of the remainder group relative to the main
      *        group (LEADING or TRAILING)
@@ -120,9 +120,6 @@ class LayoutOperations implements LayoutConstants {
                                    int index, int dimension, int position/*, int mainAlignment*/)
     {
         assert seq.isSequential() && (position == LEADING || position == TRAILING);
-        if (position == TRAILING)
-            index++; // add behind the group
-
         boolean resizingFillGap = false;
         LayoutInterval commonGap = null;
         boolean onlyGaps = true;
@@ -543,7 +540,7 @@ class LayoutOperations implements LayoutConstants {
             subGroup.setAlignment(alignment^1);
             int index = -1;
             do {
-                LayoutInterval li = (LayoutInterval) overlapList.get(0);
+                LayoutInterval li = (LayoutInterval) overlapList.remove(0);
                 int idx = layoutModel.removeInterval(li);
                 if (index < 0) {
                     index = idx;
@@ -646,8 +643,6 @@ class LayoutOperations implements LayoutConstants {
         LayoutInterval commonGapTrailing = null;
 
         // first analyze the group
-//        for (Iterator it=group.getSubIntervals(); it.hasNext(); ) {
-//            LayoutInterval li = (LayoutInterval) it.next();
         for (int i=0; i < group.getSubIntervalCount(); i++) {
             LayoutInterval li = group.getSubInterval(i);
             if (li.isEmptySpace()) { // remove container supporting gap
@@ -821,7 +816,7 @@ class LayoutOperations implements LayoutConstants {
         if (anyGapLeading) {
             if (!anyAlignedLeading) { // group is open at leading edge
                 int size = groupInnerPosLeading - groupOuterPos[LEADING];
-                if (size > 0) {
+                if (size > 0 || defaultPaddingLeading) {
                     leadingGap = new LayoutInterval(SINGLE);
                     if (!paddingLeading) {
                         leadingGap.setMinimumSize(USE_PREFERRED_SIZE);
@@ -845,7 +840,7 @@ class LayoutOperations implements LayoutConstants {
         if (anyGapTrailing) {
             if (!anyAlignedTrailing) { // group is open at trailing edge
                 int size = groupOuterPos[TRAILING] - groupInnerPosTrailing;
-                if (size > 0) {
+                if (size > 0 || defaultPaddingTrailing) {
                     trailingGap = new LayoutInterval(SINGLE);
                     if (!paddingTrailing) {
                         trailingGap.setMinimumSize(USE_PREFERRED_SIZE);
