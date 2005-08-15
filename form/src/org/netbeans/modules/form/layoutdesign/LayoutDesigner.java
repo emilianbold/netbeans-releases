@@ -409,7 +409,7 @@ public class LayoutDesigner implements LayoutConstants {
                 // Remove components from original location
                 for (int i=0; i<components.length; i++) {
                     if (components[i].getParent() != null) {
-                        LayoutComponent comp = components[0];
+                        LayoutComponent comp = components[i];
                         layoutModel.removeComponent(comp);
                         if (components.length == 1) { // remove also the intervals
                             for (int dim=0; dim < DIM_COUNT; dim++) {
