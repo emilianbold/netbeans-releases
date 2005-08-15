@@ -13,13 +13,17 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
+import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Data model used across the <em>New Action Wizard</em>.
@@ -53,7 +57,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     // third panel data (Name, Icon, and Location)
     private String className;
     private String displayName;
-    private String iconOrigPath;
+    private String origIconPath;
     private String packageName;
     
     // XXX such constans should be probably on more proper place (or generated
@@ -73,17 +77,33 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf = new CreatedModifiedFiles(getProject());
         
         // Create CallableSystemAction from template
-        String actionPath = getRelativePath(getProject(), packageName,
-                className + ".java"); // NOI18N
+        String actionPath = getDefaultPackagePath(className + ".java"); // NOI18N
         // XXX use nbresloc URL protocol rather than NewActionIterator.class.getResource(...):
         URL template = NewActionIterator.class.getResource("callableSystemAction.javx"); // NOI18N
         Map replaceTokens = new HashMap();
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
         replaceTokens.put("@@PACKAGE_NAME@@", packageName); // NOI18N
         replaceTokens.put("@@DISPLAY_NAME@@", displayName); // NOI18N
-        // XXX copy and relativize icon path
-        String icon = iconOrigPath == null ? "null" : '"' + iconOrigPath + '"';
-        replaceTokens.put("@@ICON_RESOURCE@@", icon); // NOI18N
+        
+        if (origIconPath != null) {
+            FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
+            String relativeIconPath = null;
+            if (!FileUtil.isParentOf(getProject().getSourceDirectory(), origIconFO)) {
+                String iconPath = getDefaultPackagePath(origIconFO.getNameExt());
+                try {
+                    cmf.add(cmf.createFile(iconPath, origIconFO.getURL()));
+                    relativeIconPath = packageName.replace('.', '/') + '/' + origIconFO.getNameExt();
+                } catch (FileStateInvalidException exc) {
+                    Util.err.notify(exc);
+                    relativeIconPath = "null"; // NOI18N
+                }
+            } else {
+                relativeIconPath = FileUtil.getRelativePath(getProject().getSourceDirectory(), origIconFO);
+            }
+            replaceTokens.put("@@ICON_RESOURCE@@", '"' + relativeIconPath + '"'); // NOI18N
+        } else {
+            replaceTokens.put("@@ICON_RESOURCE@@", "null"); // NOI18N
+        }
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
         // add layer entry about the action
@@ -131,6 +151,17 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             String parentPath = "Shortcuts"; // NOI18N
             generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N
         }
+    }
+    
+    private String getDefaultPackagePath(String fileName) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(getProject().getSourceDirectoryPath()).
+                append("/"). // NOI18N
+                append(packageName.replace('.','/')). // NOI18N
+                append("/"). // NOI18N
+                append(fileName);
+        
+        return sb.toString();
     }
     
     /**
@@ -181,9 +212,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.displayName = displayName;
     }
     
-    void setIcon(String iconOrigPath) {
+    void setIcon(String origIconPath) {
         reset();
-        this.iconOrigPath = iconOrigPath;
+        this.origIconPath = origIconPath;
     }
     
     void setPackageName(String pkg) {
@@ -282,19 +313,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 null, null, null, null, null, null));
         cmf.add(cmf.createLayerAttribute(sepPath, "instanceClass", // NOI18N
                 STRING_VALUE, "javax.swing.JSeparator")); // NOI18N
-    }
-    
-    // XXX stolen from NewLoaderIterator (move both to some utils or BasicWizardIterator)
-    private static String getRelativePath(NbModuleProject project,
-            String fullyQualifiedPackageName, String fileName) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(project.getSourceDirectoryPath()).
-                append("/"). // NOI18N
-                append(fullyQualifiedPackageName.replace('.','/')). // NOI18N
-                append("/"). // NOI18N
-                append(fileName);
-        
-        return sb.toString();
     }
     
 }

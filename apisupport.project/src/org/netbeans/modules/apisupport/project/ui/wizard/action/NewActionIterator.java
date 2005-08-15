@@ -44,11 +44,15 @@ final class NewActionIterator extends BasicWizardIterator {
         Set set = new HashSet();
         for (int i = 0; i < paths.length; i++) {
             FileObject fo = data.getProject().getProjectDirectory().getFileObject(paths[i]);
-            if (fo != null) {
+            if (fo != null && !isIcon(fo)) {
                 set.add(fo);
             }
         }
         return set;
+    }
+    
+    private boolean isIcon(FileObject icon) {
+        return icon.getExt().equals("gif") || icon.getExt().equals("png"); // NOI18N
     }
     
     protected BasicWizardIterator.Panel[] createPanels(WizardDescriptor wiz) {

@@ -85,7 +85,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void refreshBaseData() {
         data.setClassName(className.getText());
         data.setPackageName(packageName.getEditor().getItem().toString());
-        data.setIcon(icon.equals(NONE_LABEL) ? null : displayName.getText());
+        data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
     }
     
     private void checkValidity() {
