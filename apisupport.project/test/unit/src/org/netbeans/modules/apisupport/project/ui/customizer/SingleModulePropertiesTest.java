@@ -26,15 +26,18 @@ import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.PublicPackagesTableModel;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -79,11 +82,13 @@ public class SingleModulePropertiesTest extends TestBase {
         assertTrue("suite directory", props.getSuiteDirectory().endsWith("suite2"));
     }
     
-    public void testThatPropertiesAreRefreshed() throws IOException {
-        SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
+    public void testThatPropertiesAreRefreshed() throws Exception {
+        FileObject suiteProjectFO = suite2FO.getFileObject("misc-project");
+        SingleModuleProperties props = loadProperties(suiteProjectFO,
                 "src/org/netbeans/examples/modules/misc/Bundle.properties");
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
+        assertEquals("number of dependencies", 0, props.getDependenciesListModel().getSize());
         
         // silently change manifest
         InputStream is = new FileInputStream(props.getManifestFile());
@@ -117,15 +122,30 @@ public class SingleModulePropertiesTest extends TestBase {
             os.close();
         }
         
+        // modify project.xml
+        NbModuleProject miscProject = (NbModuleProject) ProjectManager.getDefault().findProject(suiteProjectFO);
+        final ProjectXMLManager miscPXM = new ProjectXMLManager(miscProject.getHelper());
+        ModuleEntry me = miscProject.getModuleList().getEntry(
+                "org.netbeans.modules.java.project");
+        final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                miscPXM.addDependency(md);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("adding dependencies", result.booleanValue());
+        ProjectManager.getDefault().saveProject(miscProject);
+        
         // simple reload
-        FileObject miscProjectFO = suite2FO.getFileObject("misc-project");
-        Project miscProject = ProjectManager.getDefault().findProject(miscProjectFO);
+        miscProject = (NbModuleProject) ProjectManager.getDefault().findProject(suiteProjectFO);
         Lookup lookup = miscProject.getLookup();
         props.refresh(getModuleType(miscProject), getSuiteProvider(miscProject));
         
         // check that manifest and bundle has been reloaded
         assertEquals("spec. version", "1.1", props.getSpecificationVersion());
         assertEquals("display name should be changed", "Miscellaneous", props.getBundleInfo().getDisplayName());
+        assertEquals("number of dependencies", 1, props.getDependenciesListModel().getSize());
     }
     
     public void testThatPropertiesListen() throws IOException {

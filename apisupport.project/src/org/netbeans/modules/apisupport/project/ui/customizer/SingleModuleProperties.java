@@ -160,6 +160,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         dependencyListModel = null;
         friendListModel = null;
         requiredTokensListModel = null;
+        projectXMLManager = null;
         ManifestManager manifestManager = ManifestManager.getInstance(getManifestFile(), false);
         majorReleaseVersion = manifestManager.getReleaseVersion();
         specificationVersion = manifestManager.getSpecificationVersion();
@@ -507,9 +508,9 @@ public final class SingleModuleProperties extends ModuleProperties {
             manifestFO = FileUtil.createData(
                     getHelper().getProjectDirectory(), "manifest.mf"); // NOI18N
         }
-        String module = "".equals(getMajorReleaseVersion()) ? // NOI18N
+        String module = "".equals(getMajorReleaseVersion()) ?
             getCodeNameBase() :
-            getCodeNameBase() + "/" + getMajorReleaseVersion(); // NOI18N
+            getCodeNameBase() + '/' + getMajorReleaseVersion();
         setManifestAttribute(em, ManifestManager.OPENIDE_MODULE, module);
         setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION,
                 getSpecificationVersion());
@@ -534,7 +535,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     // XXX should be something similar provided be EditableManifest?
     private void setManifestAttribute(EditableManifest em, String key, String value) {
         assert value != null;
-        if ("".equals(value)) { // NOI18N
+        if ("".equals(value)) {
             if (em.getAttribute(key, null) != null) {
                 em.removeAttribute(key, null);
             }
@@ -616,7 +617,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             FileObject subDir = (FileObject) en1.nextElement();
             for (Enumeration en2 = subDir.getData(false); en2.hasMoreElements(); ) {
                 FileObject kid = (FileObject) en2.nextElement();
-                if (kid.hasExt(ext)) { // NOI18N
+                if (kid.hasExt(ext)) {
                     String pkg = isJarRoot ? subDir.getPath() :
                         PropertyUtils.relativizeFile(
                             FileUtil.toFile(root),
