@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Repository whose getDefaultFileSystem() returns a writeable FS containing
- * the layer of the Database Explorer module. It is put in the default lookup,
+ * the layer of the Core - Component Palette module. It is put in the default lookup,
  * thus it is returned by Repository.getDefault().
  *
  * @author Libor Kotouc
