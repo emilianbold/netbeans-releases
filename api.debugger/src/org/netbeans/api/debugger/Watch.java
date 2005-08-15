@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,7 +27,7 @@ public final class Watch {
     
     /** Name of the property for the watched expression. */
     public static final String PROP_EXPRESSION = "expression"; // NOI18N
-    /** Name of the property for the value of the watched expression. */
+    /** Name of the property for the value of the watched expression. This constant is not used at all. */
     public static final String PROP_VALUE = "value"; // NOI18N
 
     private String          expression;
