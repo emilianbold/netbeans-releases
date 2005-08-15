@@ -94,10 +94,10 @@ Microsystems, Inc. All Rights Reserved.
         <!-- ...but that would be more difficult to do, since you would need to parse netbeans.sources. -->
         <path id="test.unit.lib.cp">
             <pathelement path="${test.unit.lib.cp}"/> <!-- for manual override -->
-            <pathelement location="${netbeans.dest.dir}/ide5/modules/ext/junit-3.8.1.jar"/>
+            <pathelement location="${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar"/>
             <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar"/>
             <pathelement location="${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar"/>
-            <pathelement location="${netbeans.home}/../ide5/modules/ext/junit-3.8.1.jar"/>
+            <pathelement location="${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar"/>
             <pathelement location="${netbeans.home}/../testtools/modules/ext/nbjunit.jar"/>
             <pathelement location="${netbeans.home}/../testtools/modules/ext/insanelib.jar"/>
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/junit.jar"/>
