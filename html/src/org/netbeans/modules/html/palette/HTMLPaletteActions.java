@@ -17,12 +17,15 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JOptionPane;
+import javax.swing.text.JTextComponent;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.palette.PaletteActions;
 import org.netbeans.spi.palette.PaletteController;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -71,13 +74,27 @@ public class HTMLPaletteActions extends PaletteActions {
                 drop = new HTMLEditorDropDefault(body);
             }
             
-            drop.handleTransfer(Utilities.getFocusedComponent());
+            JTextComponent target = Utilities.getFocusedComponent();
+            if (target == null) {
+                String msg = NbBundle.getMessage(HTMLPaletteActions.class, "MSG_ErrorNoFocusedDocument");
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+                return;
+            }
+            
+            try {
+                drop.handleTransfer(target);
+            }
+            finally {
+                Utilities.requestFocus(target);
+            }
             
             try {
                 PaletteController pc = HTMLPaletteFactory.getPalette();
                 pc.clearSelection();
             }
-            catch (IOException ioe) {} //should not occur
+            catch (IOException ioe) {
+            } //should not occur
+
         }
     }
     

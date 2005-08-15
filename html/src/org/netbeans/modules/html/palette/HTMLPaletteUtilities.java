@@ -18,16 +18,15 @@ import java.util.StringTokenizer;
 import javax.swing.JTree;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.openide.filesystems.FileObject;
@@ -151,15 +150,16 @@ public final class HTMLPaletteUtilities {
         if (s == null)
             s = "";
         
-        EditorUI eui = Utilities.getEditorUI(target);
-        BaseDocument doc = eui.getDocument();
-
+        Document doc = target.getDocument();
+        if (doc == null)
+            return;
+        
         int start = insert(s, target, doc);
         
-        if (reformat && start >= 0) {  // format the inserted text
+        if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
             int end = start + s.length();
-            Formatter f = doc.getFormatter();
-            f.reformat(doc, start, end);
+            Formatter f = ((BaseDocument)doc).getFormatter();
+            f.reformat((BaseDocument)doc, start, end);
         }
 
 //        if (select && start >= 0) { // select the inserted text
@@ -172,7 +172,7 @@ public final class HTMLPaletteUtilities {
         
     }
     
-    private static int insert(String s, JTextComponent target, BaseDocument doc) 
+    private static int insert(String s, JTextComponent target, Document doc) 
     throws BadLocationException 
     {
 
