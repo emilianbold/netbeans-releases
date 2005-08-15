@@ -89,19 +89,24 @@ final class RepositoryPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 3, 0, 3);
         add(jPanel2, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(extInternalSshCheckBox, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1010"));
+        sshButtonGroup.add(internalSshRadioButton);
+        internalSshRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(internalSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1100"));
+        internalSshRadioButton.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        internalSshRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
-        add(extInternalSshCheckBox, gridBagConstraints);
+        add(internalSshRadioButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(extPasswordLabel5, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1011"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
+        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
         add(extPasswordLabel5, gridBagConstraints);
 
         extPasswordField.setColumns(12);
@@ -120,10 +125,27 @@ final class RepositoryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
         add(extREmemberPasswordCheckBox, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(proxyConfigurationButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0005"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 18, 0, 0);
+        add(proxyConfigurationButton, gridBagConstraints);
+
+        sshButtonGroup.add(extSshRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(extSshRadioButton, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1101"));
+        extSshRadioButton.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        extSshRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
+        add(extSshRadioButton, gridBagConstraints);
+
         org.openide.awt.Mnemonics.setLocalizedText(extCommandLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1013"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
+        gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
         add(extCommandLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -131,13 +153,6 @@ final class RepositoryPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
         add(extCommandTextField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(proxyConfigurationButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0005"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
-        add(proxyConfigurationButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -155,11 +170,12 @@ final class RepositoryPanel extends javax.swing.JPanel {
     final javax.swing.JLabel descLabel = new javax.swing.JLabel();
     final javax.swing.JLabel extCommandLabel = new javax.swing.JLabel();
     final javax.swing.JTextField extCommandTextField = new javax.swing.JTextField();
-    final javax.swing.JCheckBox extInternalSshCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPasswordField extPasswordField = new javax.swing.JPasswordField();
     final javax.swing.JLabel extPasswordLabel5 = new javax.swing.JLabel();
     final javax.swing.JCheckBox extREmemberPasswordCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JRadioButton extSshRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JLabel headerLabel = new javax.swing.JLabel();
+    final javax.swing.JRadioButton internalSshRadioButton = new javax.swing.JRadioButton();
     final javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
     final javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
     final javax.swing.JLabel pPaswordLabel = new javax.swing.JLabel();
@@ -167,6 +183,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
     final javax.swing.JButton proxyConfigurationButton = new javax.swing.JButton();
     final javax.swing.JComboBox rootComboBox = new javax.swing.JComboBox();
     final javax.swing.JLabel rootsLabel = new javax.swing.JLabel();
+    final javax.swing.ButtonGroup sshButtonGroup = new javax.swing.ButtonGroup();
     // End of variables declaration//GEN-END:variables
     
 }

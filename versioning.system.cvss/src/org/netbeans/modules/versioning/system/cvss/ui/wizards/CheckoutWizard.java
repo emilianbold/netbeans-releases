@@ -485,8 +485,6 @@ public final class CheckoutWizard {
             repositoryPanel.proxyConfigurationButton.setEnabled(hostName == null);
             repositoryPanel.proxyConfigurationButton.addActionListener(this);
 
-            repositoryPanel.extInternalSshCheckBox.addActionListener(this);
-
             valid();
             onCvsRootChange();
 
@@ -538,7 +536,7 @@ public final class CheckoutWizard {
                         pconnection.setEncodedPassword(password);
                         pconnection.verify();
                     } else if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
-                        if (repositoryPanel.extInternalSshCheckBox.isSelected()) {
+                        if (repositoryPanel.internalSshRadioButton.isSelected()) {
                             port = port == 0 ? 22 : port;  // default port
                             String password = repositoryPanel.extPasswordField.getText();
                             SSHConnection sshConnection = new SSHConnection(factory, host, port, userName, password);
@@ -608,7 +606,8 @@ public final class CheckoutWizard {
 
             repositoryPanel.proxyConfigurationButton.setEnabled(editable);
             repositoryPanel.extREmemberPasswordCheckBox.setEnabled(editable);
-            repositoryPanel.extInternalSshCheckBox.setEnabled(editable);
+            repositoryPanel.internalSshRadioButton.setEnabled(editable);
+            repositoryPanel.extSshRadioButton.setEnabled(editable);
         }
 
 
@@ -630,7 +629,7 @@ public final class CheckoutWizard {
                     err.notify(e);
                 }
             } else if (root.startsWith(":ext:")) {  // NOI18N
-                boolean internalSsh = repositoryPanel.extInternalSshCheckBox.isSelected();
+                boolean internalSsh = repositoryPanel.internalSshRadioButton.isSelected();
                 storeProxySettings = internalSsh;
                 CvsRootSettings.ExtSettings extSettings = new CvsRootSettings.ExtSettings();
                 extSettings.extUseInternalSsh = internalSsh;
@@ -698,7 +697,7 @@ public final class CheckoutWizard {
                 }
                 if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
                     CvsRootSettings.ExtSettings extSettings = CvsRootSettings.getExtSettingsFor(root);
-                    repositoryPanel.extInternalSshCheckBox.setSelected(extSettings.extUseInternalSsh);
+                    repositoryPanel.internalSshRadioButton.setSelected(extSettings.extUseInternalSsh);
                     repositoryPanel.extPasswordField.setText(extSettings.extPassword);
                     repositoryPanel.extREmemberPasswordCheckBox.setSelected(extSettings.extRememberPassword);
                     repositoryPanel.extCommandTextField.setText(extSettings.extCommand);
@@ -730,22 +729,21 @@ public final class CheckoutWizard {
             String root = selectedCvsRoot();
             boolean showPserverFields = root.startsWith(":pserver:");
             boolean showExtFields = root.startsWith(":ext:");
-            boolean showShellFields = showExtFields && repositoryPanel.extInternalSshCheckBox.isSelected() == false;
-            boolean showInternalSshFields = showExtFields && repositoryPanel.extInternalSshCheckBox.isSelected();
 
             repositoryPanel.passwordTextField.setVisible(showPserverFields);
             repositoryPanel.pPaswordLabel.setVisible(showPserverFields);
 
-            repositoryPanel.extInternalSshCheckBox.setVisible(showExtFields);
+            repositoryPanel.internalSshRadioButton.setVisible(showExtFields);
+            repositoryPanel.extSshRadioButton.setVisible(showExtFields);
 
-            repositoryPanel.extPasswordLabel5.setVisible(showInternalSshFields);
-            repositoryPanel.extPasswordField.setVisible(showInternalSshFields);
-            repositoryPanel.extREmemberPasswordCheckBox.setVisible(showInternalSshFields);
+            repositoryPanel.extPasswordLabel5.setVisible(showExtFields);
+            repositoryPanel.extPasswordField.setVisible(showExtFields);
+            repositoryPanel.extREmemberPasswordCheckBox.setVisible(showExtFields);
 
-            repositoryPanel.extCommandLabel.setVisible(showShellFields);
-            repositoryPanel.extCommandTextField.setVisible(showShellFields);
+            repositoryPanel.extCommandLabel.setVisible(showExtFields);
+            repositoryPanel.extCommandTextField.setVisible(showExtFields);
 
-            repositoryPanel.proxyConfigurationButton.setVisible(showPserverFields || showInternalSshFields);
+            repositoryPanel.proxyConfigurationButton.setVisible(showPserverFields || showExtFields);
         }
 
         /**
@@ -828,8 +826,6 @@ public final class CheckoutWizard {
                 onProxyConfiguration();
             } else if (repositoryPanel.rootComboBox == e.getSource()) {
                 onCvsRootChange();
-            } else if (repositoryPanel.extInternalSshCheckBox == e.getSource()) {
-                updateVisibility();
             } else {
                 assert false : "Unexpected event source: " + e.getSource();
             }
