@@ -26,8 +26,11 @@ class LayoutOperations implements LayoutConstants {
 
     private LayoutModel layoutModel;
 
-    LayoutOperations(LayoutModel model) {
+    private VisualMapper visualMapper;
+
+    LayoutOperations(LayoutModel model, VisualMapper mapper) {
         layoutModel = model;
+        visualMapper = mapper;
     }
 
     LayoutModel getModel() {
@@ -754,16 +757,13 @@ class LayoutOperations implements LayoutConstants {
             LayoutInterval li = group.getSubInterval(i);
             if (li.isSequential()) {
                 if (anyGapLeading && (!anyAlignedLeading || sameMinGapLeading)) {
-                    int idx = 0;
-                    LayoutInterval gap = li.getSubInterval(idx);
+                    LayoutInterval gap = li.getSubInterval(0);
                     if (gap.isEmptySpace()) {
-                        layoutModel.removeInterval(li, idx);
                         if (LayoutInterval.isDefaultPadding(gap)) {
                             paddingLeading = true;
                             if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                                && li.getSubInterval(idx).getCurrentSpace().positions[dimension][LEADING]
-                                     == groupInnerPosLeading) // [would be better to check if the current space corresponds to the default gap]
-                            {   // outer-most gap has default preferred size
+                                && isEndingDefaultGapEffective(li, dimension, LEADING))
+                            {   // default padding to be used as common gap
                                 defaultPaddingLeading = true;
                             }
                         }
@@ -773,20 +773,18 @@ class LayoutOperations implements LayoutConstants {
                             if (!anyAlignedLeading) // resizability goes out of the group
                                 resizingGapLeading = true;
                         }
+                        layoutModel.removeInterval(gap);
                     }
                 }
 
                 if (anyGapTrailing && (!anyAlignedTrailing || sameMinGapTrailing)) {
-                    int idx = li.getSubIntervalCount() - 1;
-                    LayoutInterval gap = li.getSubInterval(idx);
+                    LayoutInterval gap = li.getSubInterval(li.getSubIntervalCount() - 1);
                     if (gap.isEmptySpace()) {
-                        layoutModel.removeInterval(li, idx--);
                         if (LayoutInterval.isDefaultPadding(gap)) {
                             paddingTrailing = true;
                             if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                                && li.getSubInterval(idx).getCurrentSpace().positions[dimension][TRAILING]
-                                     == groupInnerPosTrailing) // [would be better to check if the current space corresponds to the default gap]
-                            {   // outer-most gap has default preferred size
+                                && isEndingDefaultGapEffective(li, dimension, TRAILING))
+                            {   // default padding to be used as common gap
                                 defaultPaddingTrailing = true;
                             }
                         }
@@ -796,6 +794,7 @@ class LayoutOperations implements LayoutConstants {
                             if (!anyAlignedTrailing) // resizability goes out of the group
                                 resizingGapTrailing = true;
                         }
+                        layoutModel.removeInterval(gap);
                     }
                 }
 
@@ -876,6 +875,28 @@ class LayoutOperations implements LayoutConstants {
             return parent != null ? parent.indexOf(group) : -1;//idx;
         }
         return -1;
+    }
+
+    private boolean isEndingDefaultGapEffective(LayoutInterval seq, int dimension, int alignment) {
+        assert seq.isSequential() && (alignment == LEADING || alignment == TRAILING);
+        int idx = alignment == LEADING ? 0 : seq.getSubIntervalCount() - 1;
+        int d = alignment == LEADING ? 1 : -1;
+        LayoutInterval gap = seq.getSubInterval(idx);
+        LayoutInterval neighbor = seq.getSubInterval(idx+d);
+
+        if (LayoutInterval.getEffectiveAlignment(neighbor, alignment) == alignment) {
+            return true; // aligned
+        }
+        else {
+            int prefDistance = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
+            int pos1 = neighbor.getCurrentSpace().positions[dimension][alignment];
+            LayoutInterval outerNeighbor = LayoutInterval.getNeighbor(gap, alignment, true, true, false);
+            int pos2 = outerNeighbor != null ?
+                       outerNeighbor.getCurrentSpace().positions[dimension][alignment^1] :
+                       LayoutInterval.getRoot(seq).getCurrentSpace().positions[dimension][alignment];
+            int currentDistance = (pos1 - pos2) * d;
+            return currentDistance <= prefDistance;
+        }
     }
 
     /**
@@ -986,30 +1007,36 @@ class LayoutOperations implements LayoutConstants {
 
     void eatGap(LayoutInterval main, LayoutInterval eaten, int currentMergedSize) {
         int min;
-        if (eaten.getMinimumSize() == 0 || LayoutInterval.canResize(main)) {
-            min = main.getMinimumSize();
-        }
-        else if (main.getMinimumSize() == 0 && eaten.getMinimumSize() != eaten.getPreferredSize()) {
-            min = eaten.getMinimumSize();
-        }
-        else {
+        int min1 = main.getMinimumSize();
+        if (min1 == USE_PREFERRED_SIZE)
+            min1 = main.getPreferredSize();
+        int min2 = eaten.getMinimumSize();
+        if (min2 == USE_PREFERRED_SIZE)
+            min2 = eaten.getPreferredSize();
+
+        if (min1 == 0)
+            min = min2;
+        else if (min2 == 0)
+            min = min1;
+        else if (!LayoutInterval.canResize(main) && !LayoutInterval.canResize(eaten))
             min = USE_PREFERRED_SIZE;
-        }
+        else if (min1 == NOT_EXPLICITLY_DEFINED || min2 == NOT_EXPLICITLY_DEFINED)
+            min = NOT_EXPLICITLY_DEFINED;
+        else
+            min = min1 + min2;
 
         int pref;
-        if (eaten.getPreferredSize() == 0) {
-            pref = main.getPreferredSize();
-        }
-        else if (main.getPreferredSize() == 0) {
-            pref = eaten.getPreferredSize();
-        }
-        else if (main.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                || eaten.getPreferredSize() == NOT_EXPLICITLY_DEFINED) {
+        int pref1 = main.getPreferredSize();
+        int pref2 = eaten.getPreferredSize();
+
+        if (pref1 == 0)
+            pref = pref2;
+        else if (pref2 == 0)
+            pref = pref1;
+        else if (pref1 == NOT_EXPLICITLY_DEFINED || pref2 == NOT_EXPLICITLY_DEFINED)
             pref = currentMergedSize;
-        }
-        else {
-            pref = main.getPreferredSize() + eaten.getPreferredSize();
-        }
+        else
+            pref = pref1 + pref2;
 
         int max = main.getMaximumSize() >= Short.MAX_VALUE || eaten.getMaximumSize() >= Short.MAX_VALUE ?
                   Short.MAX_VALUE : USE_PREFERRED_SIZE;

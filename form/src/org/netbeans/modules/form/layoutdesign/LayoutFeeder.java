@@ -390,6 +390,9 @@ class LayoutFeeder implements LayoutConstants {
     // overlap analysis
 
     private int getDimensionSolvingOverlap(LayoutDragger.PositionDef[] positions) {
+        if (dragger.isResizing(HORIZONTAL) && !dragger.isResizing(VERTICAL)) {
+            return HORIZONTAL;
+        }
         if ((dragger.isResizing(VERTICAL) && !dragger.isResizing(HORIZONTAL))
             || (positions[HORIZONTAL] != null && positions[HORIZONTAL].snapped && (positions[VERTICAL] == null || !positions[VERTICAL].snapped))
             || (positions[VERTICAL] != null && !positions[VERTICAL].nextTo && positions[VERTICAL].snapped
@@ -811,6 +814,12 @@ class LayoutFeeder implements LayoutConstants {
             else layoutModel.addInterval(seq, parent, -1);
         }
 
+        // aligning in parallel with interval in the same sequence was resolved
+        // by substituting its position
+        if (iDesc1.snappedParallel != null && iDesc1.snappedParallel.getParent() == seq) {
+            iDesc1.snappedParallel = null; // set to null not to try alignInParallel later
+        }
+
         // finally add the surrounding gaps and the interval
         if (originalGap != null) {
             index = layoutModel.removeInterval(originalGap);
@@ -1033,7 +1042,9 @@ class LayoutFeeder implements LayoutConstants {
             assert LayoutInterval.isAlignedAtBorder(interval, toAlignWith, alignment);
             return; // already aligned to parent
         }
-        else assert !interval.isParentOf(toAlignWith);
+        else assert !interval.isParentOf(toAlignWith)
+                    && (!interval.getParent().isSequential() || !interval.getParent().isParentOf(toAlignWith));
+        // can't align with own subinterval or interval in the same sequence
 
         // if not in same parallel group try to substitute interval with parent
         LayoutInterval parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
@@ -1278,6 +1289,7 @@ class LayoutFeeder implements LayoutConstants {
 
     private void analyzeParallel(LayoutInterval group, List inclusions) {
         int point = aEdge < 0 ? CENTER : aEdge;
+        int dropEdge = dragger.isResizing(dimension) ? dragger.getResizingEdge(dimension)^1 : point;
 
         boolean usable = canUseGroup(group);
 
@@ -1324,7 +1336,7 @@ class LayoutFeeder implements LayoutConstants {
                 IncludeDesc iDesc = addInclusion(group, false, distance, 0, inclusions);
                 if (iDesc != null) {
                     iDesc.neighbor = sub;
-                    iDesc.index = getAddDirection(addingSpace, subSpace, dimension, point) == LEADING ? 0 : 1;
+                    iDesc.index = getAddDirection(addingSpace, subSpace, dimension, dropEdge) == LEADING ? 0 : 1;
                 }
             }
         }
@@ -1342,6 +1354,8 @@ class LayoutFeeder implements LayoutConstants {
 
     private void analyzeSequential(LayoutInterval group, List inclusions) {
         int point = aEdge < 0 ? CENTER : aEdge;
+        int dropEdge = dragger.isResizing(dimension) ? dragger.getResizingEdge(dimension)^1 : point;
+
 
         boolean inSequence = false;
         boolean parallelWithSequence = false;
@@ -1406,7 +1420,7 @@ class LayoutFeeder implements LayoutConstants {
                             ortDistance = dstT;
                     }
                 }
-                if (getAddDirection(addingSpace, subSpace, dimension, point) == LEADING) {
+                if (getAddDirection(addingSpace, subSpace, dimension, dropEdge) == LEADING) {
                     index = i;
                     break; // this interval is already after the adding one, no need to continue
                 }
@@ -1892,11 +1906,18 @@ class LayoutFeeder implements LayoutConstants {
                 iDesc1 = iDesc2;
                 iDesc2 = temp;
             } // so iDesc1 is super-group and iDesc2 subgroup
+            assert iDesc2.snappedNextTo == null;
 
             if (iDesc2.snappedParallel == iDesc2.parent) {
                 iDesc2.parent = LayoutInterval.getFirstParent(iDesc2.parent, PARALLEL);
                 if (iDesc2.parent == iDesc1.parent)
                     return true;
+            }
+
+            if (iDesc2.snappedParallel == null || canAlignWith(iDesc2.snappedParallel, iDesc1.parent, iDesc2.alignment)) {
+                // subgroup is either not snapped at all, or can align also in parent group
+                iDesc2.parent = iDesc1.parent;
+                return true;
             }
 
             if (LayoutInterval.isAlignedAtBorder(iDesc2.parent, iDesc1.parent, iDesc1.alignment)) {

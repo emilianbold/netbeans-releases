@@ -41,7 +41,7 @@ public class LayoutDesigner implements LayoutConstants {
     public LayoutDesigner(LayoutModel model, VisualMapper mapper) {
         layoutModel = model;
         visualMapper = mapper;
-        operations = new LayoutOperations(model);
+        operations = new LayoutOperations(model, mapper);
         modelListener = new Listener();
         modelListener.activate();
     }
@@ -426,16 +426,16 @@ public class LayoutDesigner implements LayoutConstants {
                     }
                 }
 
-                // to place the intervals
+                // Add components to the target container
+                for (int i=0; i<components.length; i++) {
+                    layoutModel.addComponent(components[i], targetContainer, -1);
+                }
+
+                // add the intervals
                 layoutFeeder.add();
 
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     destroyGroupIfRedundant(addingInts[dim], addingInts[dim].getParent());
-                }
-
-                // Add components to the target container
-                for (int i=0; i<components.length; i++) {
-                    layoutModel.addComponent(components[i], targetContainer, -1);
                 }
 
                 if (dragger.isResizing() || (newComponent && components[0].isLayoutContainer()))
