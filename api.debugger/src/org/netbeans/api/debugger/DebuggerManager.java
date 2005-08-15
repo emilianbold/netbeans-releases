@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -139,15 +139,15 @@ public final class DebuggerManager {
     private static DebuggerManager            debuggerManager;
     private Session                           currentSession;
     private DebuggerEngine                    currentEngine;
-    private Session[]                         sessions = new Session [0];
+    private List                              sessions = new ArrayList();
     private Set                               engines = new HashSet ();
     private Vector                            breakpoints = new Vector ();
     private boolean                           breakpointsInitialized = false;
     private Vector                            watches = new Vector ();
     private boolean                           watchesInitialized = false;
     private SessionListener                   sessionListener = new SessionListener ();
-    private Vector                            listener = new Vector ();
-    private HashMap                           listeners = new HashMap ();
+    private Vector                            listeners = new Vector ();
+    private HashMap                           listenersMap = new HashMap ();
     private ActionsManager                    actionsManager = null;
     
     private Lookup                            lookup = new Lookup.MetaInf (null);
@@ -172,7 +172,7 @@ public final class DebuggerManager {
     }
 
 
-    public ActionsManager getActionsManager () {
+    public synchronized ActionsManager getActionsManager () {
         if (actionsManager == null)
             actionsManager = new ActionsManager (lookup);
         return actionsManager;
@@ -355,21 +355,35 @@ public final class DebuggerManager {
      * @param session a session to be current
      */
     public void setCurrentSession (Session session) {
-        // 1) check if the session is registerred
-        if (session != null) {
-            int i, k = sessions.length;
-            for (i = 0; i < k; i++)
-                if (session == sessions [i]) break;
-            if (i == k) 
-                return;
+        Session oldSession;
+        Session newSession;
+        DebuggerEngine oldEngine;
+        DebuggerEngine newEngine;
+        synchronized (sessions) {
+            // 1) check if the session is registerred
+            if (session != null) {
+                int i, k = sessions.size();
+                for (i = 0; i < k; i++)
+                    if (session == sessions.get(i)) break;
+                if (i == k) 
+                    return;
+            }
+            
+            // fire all changes
+            oldSession = getCurrentSession ();
+            if (session == oldSession) return;
+            currentSession = newSession = session;
+            
+            oldEngine = currentEngine;
+            newEngine = null;
+            if (getCurrentSession () != null)
+                newEngine = getCurrentSession ().getCurrentEngine ();
+            currentEngine = newEngine;
         }
-        
-        // fire all changes
-        Session old = getCurrentSession ();
-        if (session == old) return;
-        currentSession = session;
-        updateCurrentEngine ();
-        firePropertyChange (PROP_CURRENT_SESSION, old, currentSession);
+        if (oldEngine != newEngine) {
+            firePropertyChange (PROP_CURRENT_ENGINE, oldEngine, newEngine);
+        }
+        firePropertyChange (PROP_CURRENT_SESSION, oldSession, newSession);
     }
 
     /**
@@ -378,7 +392,9 @@ public final class DebuggerManager {
      * @return set of running debugger sessions
      */
     public Session[] getSessions () {
-        return sessions;
+        synchronized (sessions) {
+            return (Session[]) sessions.toArray(new Session[0]);
+        }
     }
 
     /**
@@ -387,7 +403,9 @@ public final class DebuggerManager {
      * @return set of running debugger engines
      */
     public DebuggerEngine[] getDebuggerEngines () {
-        return (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        synchronized (engines) {
+            return (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        }
     }
     
     /**
@@ -410,7 +428,7 @@ public final class DebuggerManager {
     public void addBreakpoint (
         Breakpoint breakpoint
     ) {
-        if (!breakpointsInitialized) initBreakpoints ();
+        initBreakpoints ();
         breakpoints.addElement (breakpoint);
         fireBreakpointCreated (breakpoint);
     }
@@ -423,7 +441,7 @@ public final class DebuggerManager {
     public void removeBreakpoint (
         Breakpoint breakpoint
     ) {
-        if (!breakpointsInitialized) initBreakpoints ();
+        initBreakpoints ();
         breakpoints.removeElement (breakpoint);
         breakpoint.disposeOut ();
         fireBreakpointRemoved (breakpoint);
@@ -435,13 +453,8 @@ public final class DebuggerManager {
      * @return all breakpoints
      */
     public Breakpoint[] getBreakpoints () {
-        if (!breakpointsInitialized) initBreakpoints ();
-        Breakpoint[] b;
-        synchronized (breakpoints) {
-            b = new Breakpoint [breakpoints.size ()];
-            breakpoints.copyInto (b);
-        }
-        return b;
+        initBreakpoints ();
+        return (Breakpoint[]) breakpoints.toArray(new Breakpoint[0]);
     }
 
     
@@ -459,7 +472,7 @@ public final class DebuggerManager {
      * @return the new watch
      */
     public Watch createWatch (String expr) {
-        if (!watchesInitialized) initWatches ();
+        initWatches ();
         Watch w = new Watch (expr);
         watches.addElement (w);
         fireWatchCreated (w);
@@ -472,21 +485,15 @@ public final class DebuggerManager {
     * @return all watches
     */
     public Watch[] getWatches () {
-        if (!watchesInitialized) initWatches ();
-        Watch[] w;
-        if (watches == null) return new Watch [0];
-        synchronized (watches) {
-            w = new Watch [watches.size ()];
-            watches.copyInto (w);
-        }
-        return w;
+        initWatches ();
+        return (Watch[]) watches.toArray(new Watch[0]);
     }
 
     /**
-    * Removes all watches from the system.
-    */
+     * Removes all watches from the system.
+     */
     public void removeAllWatches () {
-        if (!watchesInitialized) initWatches ();
+        initWatches ();
         Vector v = (Vector) watches.clone ();
         int i, k = v.size ();
         for (i = k - 1; i >= 0; i--)
@@ -499,13 +506,13 @@ public final class DebuggerManager {
     * @param w watch to be removed
     */
     void removeWatch (Watch w) {
-        if (!watchesInitialized) initWatches ();
+        initWatches ();
         watches.removeElement (w);
         fireWatchRemoved (w);
     }
 
     
-    // listeners ...............................................................
+    // listenersMap ...............................................................
 
     
     /**
@@ -513,13 +520,16 @@ public final class DebuggerManager {
     */
     private void firePropertyChange (String name, Object o, Object n) {
         initDebuggerManagerListeners ();
-        Vector l = (Vector) listener.clone ();
-        Vector l1 = (Vector) listeners.get (name);
+        Vector l = (Vector) listeners.clone ();
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (name);
+            if (l1 != null)
+                l1 = (Vector) l1.clone ();
+        }
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, name, o, n
         );
-        if (l1 != null)
-            l1 = (Vector) l1.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++)
             ((DebuggerManagerListener)l.elementAt (i)).propertyChange (ev);
@@ -536,7 +546,7 @@ public final class DebuggerManager {
     * @param l listener object.
     */
     public void addDebuggerListener (DebuggerManagerListener l) {
-        listener.addElement (l);
+        listeners.addElement (l);
     }
 
     /**
@@ -545,7 +555,7 @@ public final class DebuggerManager {
     * @param l listener object.
     */
     public void removeDebuggerListener (DebuggerManagerListener l) {
-        listener.removeElement (l);
+        listeners.removeElement (l);
     }
 
     /** 
@@ -558,12 +568,14 @@ public final class DebuggerManager {
         String propertyName, 
         DebuggerManagerListener l
     ) {
-        Vector listener = (Vector) listeners.get (propertyName);
-        if (listener == null) {
-            listener = new Vector ();
-            listeners.put (propertyName, listener);
+        synchronized (listenersMap) {
+            Vector listeners = (Vector) listenersMap.get (propertyName);
+            if (listeners == null) {
+                listeners = new Vector ();
+                listenersMap.put (propertyName, listeners);
+            }
+            listeners.addElement (l);
         }
-        listener.addElement (l);
     }
 
     /** 
@@ -576,16 +588,18 @@ public final class DebuggerManager {
         String propertyName, 
         DebuggerManagerListener l
     ) {
-        Vector listener = (Vector) listeners.get (propertyName);
-        if (listener == null) return;
-        listener.removeElement (l);
-        if (listener.size () == 0)
-            listeners.remove (propertyName);
+        synchronized (listenersMap) {
+            Vector listeners = (Vector) listenersMap.get (propertyName);
+            if (listeners == null) return;
+            listeners.removeElement (l);
+            if (listeners.size () == 0)
+                listenersMap.remove (propertyName);
+        }
     }
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a breakpoint
+     * Notifies {@link #listeners registered listeners} that a breakpoint
      * {@link DebuggerManagerListener#breakpointAdded was added}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -599,7 +613,7 @@ public final class DebuggerManager {
             this, PROP_BREAKPOINTS, null, null
         );
         
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).breakpointAdded 
@@ -607,7 +621,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
         
-        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -620,8 +637,8 @@ public final class DebuggerManager {
     }
 
     /**
-     * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a breakpoint
+     * Notifies registered listenersMap about a change.
+     * Notifies {@link #listeners registered listenersMap} that a breakpoint
      * {@link DebuggerManagerListener#breakpointRemoved was removed}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -635,7 +652,7 @@ public final class DebuggerManager {
             this, PROP_BREAKPOINTS, null, null
         );
 
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).breakpointRemoved 
@@ -643,7 +660,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
         
-        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -656,41 +676,56 @@ public final class DebuggerManager {
     }
 
     private void initBreakpoints () {
-        breakpointsInitialized = true; 
-        initDebuggerManagerListeners ();
-        PropertyChangeEvent ev = new PropertyChangeEvent (
-            this, PROP_BREAKPOINTS_INIT, null, null
-        );
-
-        Vector l = (Vector) listener.clone ();
-        int i, k = l.size ();
-        for (i = 0; i < k; i++) {
-            breakpoints.addAll (Arrays.asList (
-                ((DebuggerManagerListener) l.elementAt (i)).initBreakpoints ()
-            ));
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
-        }
-
-        Vector l1 = (Vector) listeners.get (PROP_BREAKPOINTS_INIT);
-        if (l1 != null) {
-            l1 = (Vector) l1.clone ();
-            k = l1.size ();
+        List createdBreakpoints;
+        // All is under the lock, including DebuggerManagerListener.initBreakpoints()
+        // and DebuggerManagerListener.propertyChange(..PROP_BREAKPOINTS_INIT..) calls.
+        // Clients should return the breakpoints via that listener, not add them
+        // directly. Therefore this should not lead to deadlock...
+        synchronized (breakpoints) {
+            if (breakpointsInitialized) return ;
+            breakpointsInitialized = true; 
+            initDebuggerManagerListeners ();
+            PropertyChangeEvent ev = new PropertyChangeEvent (
+                this, PROP_BREAKPOINTS_INIT, null, null
+            );
+            
+            createdBreakpoints = new ArrayList();
+            
+            Vector l = (Vector) listeners.clone ();
+            int i, k = l.size ();
             for (i = 0; i < k; i++) {
-                breakpoints.addAll (Arrays.asList (
-                    ((DebuggerManagerListener) l1.elementAt (i)).initBreakpoints ()
+                createdBreakpoints.addAll (Arrays.asList (
+                    ((DebuggerManagerListener) l.elementAt (i)).initBreakpoints ()
                 ));
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
             }
+            
+            Vector l1;
+            synchronized (listenersMap) {
+                l1 = (Vector) listenersMap.get (PROP_BREAKPOINTS_INIT);
+            }
+            if (l1 != null) {
+                l1 = (Vector) l1.clone ();
+                k = l1.size ();
+                for (i = 0; i < k; i++) {
+                    createdBreakpoints.addAll (Arrays.asList (
+                        ((DebuggerManagerListener) l1.elementAt (i)).initBreakpoints ()
+                    ));
+                    ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                }
+            }
+            
+            breakpoints.addAll(createdBreakpoints);
         }
-        
-        k = breakpoints.size ();
-        for (i = 0; i < k; i++) 
-            fireBreakpointCreated ((Breakpoint) breakpoints.get (i));
+        int k = createdBreakpoints.size ();
+        for (int i = 0; i < k; i++) {
+            fireBreakpointCreated ((Breakpoint) createdBreakpoints.get (i));
+        }
     }
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a watch
+     * Notifies {@link #listeners registered listeners} that a watch
      * {@link DebuggerManagerListener#watchAdded was added}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -704,7 +739,7 @@ public final class DebuggerManager {
             this, PROP_WATCHES, null, null
         );
 
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).watchAdded 
@@ -712,7 +747,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
 
-        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_WATCHES);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -726,7 +764,7 @@ public final class DebuggerManager {
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a watch
+     * Notifies {@link #listeners registered listeners} that a watch
      * {@link DebuggerManagerListener#watchRemoved was removed}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -740,7 +778,7 @@ public final class DebuggerManager {
             this, PROP_WATCHES, null, null
         );
 
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).watchRemoved 
@@ -749,7 +787,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
 
-        Vector l1 = (Vector) listeners.get (PROP_WATCHES);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_WATCHES);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -763,20 +804,26 @@ public final class DebuggerManager {
     }
 
     private void initWatches () {
-        watchesInitialized = true; 
-        initDebuggerManagerListeners ();
+        synchronized (watches) {
+            if (watchesInitialized) return ;
+            watchesInitialized = true;
+        }
+        // The rest must not be synchronized, since initWatches() does call createWatch()
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_WATCHES_INIT, null, null
         );
         
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).initWatches ();
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
 
-        Vector l1 = (Vector) listeners.get (PROP_WATCHES_INIT);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_WATCHES_INIT);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -789,7 +836,7 @@ public final class DebuggerManager {
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a session
+     * Notifies {@link #listeners registered listeners} that a session
      * {@link DebuggerManagerListener#sessionAdded was added}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -807,7 +854,7 @@ public final class DebuggerManager {
             this, PROP_SESSIONS, old, ne
         );
         
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).sessionAdded 
@@ -815,7 +862,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
         
-        Vector l1 = (Vector) listeners.get (PROP_SESSIONS);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_SESSIONS);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -829,7 +879,7 @@ public final class DebuggerManager {
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a session
+     * Notifies {@link #listeners registered listeners} that a session
      * {@link DebuggerManagerListener#sessionRemoved was removed}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -847,7 +897,7 @@ public final class DebuggerManager {
             this, PROP_SESSIONS, old, ne
         );
 
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).sessionRemoved 
@@ -855,7 +905,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
 
-        Vector l1 = (Vector) listeners.get (PROP_SESSIONS);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_SESSIONS);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -869,7 +922,7 @@ public final class DebuggerManager {
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a engine
+     * Notifies {@link #listeners registered listeners} that a engine
      * {@link DebuggerManagerListener#engineAdded was added}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -887,7 +940,7 @@ public final class DebuggerManager {
             this, PROP_DEBUGGER_ENGINES, old, ne
         );
         
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).engineAdded 
@@ -895,7 +948,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
         
-        Vector l1 = (Vector) listeners.get (PROP_DEBUGGER_ENGINES);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_DEBUGGER_ENGINES);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -909,7 +965,7 @@ public final class DebuggerManager {
 
     /**
      * Notifies registered listeners about a change.
-     * Notifies {@link #listener registered listeners} that a engine
+     * Notifies {@link #listeners registered listeners} that a engine
      * {@link DebuggerManagerListener#engineRemoved was removed}
      * and its properties
      * {@link PropertyChangeSupport#firePropertyChange(PropertyChangeEvent)}
@@ -927,7 +983,7 @@ public final class DebuggerManager {
             this, PROP_DEBUGGER_ENGINES, old, ne
         );
 
-        Vector l = (Vector) listener.clone ();
+        Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
             ((DebuggerManagerListener) l.elementAt (i)).engineRemoved 
@@ -935,7 +991,10 @@ public final class DebuggerManager {
             ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
         }
 
-        Vector l1 = (Vector) listeners.get (PROP_DEBUGGER_ENGINES);
+        Vector l1;
+        synchronized (listenersMap) {
+            l1 = (Vector) listenersMap.get (PROP_DEBUGGER_ENGINES);
+        }
         if (l1 != null) {
             l1 = (Vector) l1.clone ();
             k = l1.size ();
@@ -953,101 +1012,118 @@ public final class DebuggerManager {
     private boolean listerersLoaded = false;
     
     private void initDebuggerManagerListeners () {
-        if (listerersLoaded) return;
-        listerersLoaded = true;
-        List listeners = lookup.lookup (null, LazyDebuggerManagerListener.class);
-        int i, k = listeners.size ();
-        for (i = 0; i < k; i++) {
-            LazyDebuggerManagerListener l = (LazyDebuggerManagerListener)
-                listeners.get (i);
-            String[] props = l.getProperties ();
-            if ((props == null) || (props.length == 0)) {
-                addDebuggerListener (l);
-                continue;
-            }
-            int j, jj = props.length;
-            for (j = 0; j < jj; j++) {
-                addDebuggerListener (props [j], l);
+        synchronized (listenersMap) {
+            if (listerersLoaded) return;
+            listerersLoaded = true;
+            List listenersMap = lookup.lookup (null, LazyDebuggerManagerListener.class);
+            int i, k = listenersMap.size ();
+            for (i = 0; i < k; i++) {
+                LazyDebuggerManagerListener l = (LazyDebuggerManagerListener)
+                    listenersMap.get (i);
+                String[] props = l.getProperties ();
+                if ((props == null) || (props.length == 0)) {
+                    addDebuggerListener (l);
+                    continue;
+                }
+                int j, jj = props.length;
+                for (j = 0; j < jj; j++) {
+                    addDebuggerListener (props [j], l);
+                }
             }
         }
     }
     
     private void addSession (Session session) {
-        int i, k = sessions.length;
-        for (i = 0; i < k; i++)
-            if (session == sessions [i]) return;
-            
-        Session[] nds = new Session [sessions.length + 1];
-        System.arraycopy (sessions, 0, nds, 0, sessions.length);
-        nds [sessions.length] = session;
-        
-        session.addPropertyChangeListener (sessionListener);
-        
-        Session[] o = sessions;
-        sessions = nds;
-        updateCurrentEngine ();
-        fireSessionAdded (session, o, sessions);
+        Session[] oldSessions;
+        Session[] newSessions;
+        synchronized (sessions) {
+            oldSessions = getSessions();
+            int i, k = oldSessions.length;
+            for (i = 0; i < k; i++)
+                if (session == oldSessions[i]) return;
+
+            newSessions = new Session [oldSessions.length + 1];
+            System.arraycopy (oldSessions, 0, newSessions, 0, oldSessions.length);
+            newSessions[oldSessions.length] = session;
+            this.sessions.add(session);
+
+            session.addPropertyChangeListener (sessionListener);
+        }
+        fireSessionAdded (session, oldSessions, newSessions);
     }
     
     private void removeSession (Session session) {
-        // find index of given debugger and new instance of currentDebugger
-        Session nCurrentSesson = null;
-        int i, k = sessions.length;
-        for (i = 0; i < k; i++)
-            if (sessions [i] == session) break;
-            else 
-            if (nCurrentSesson == null) 
-                nCurrentSesson = sessions [i];
-        if (i == k) return; // this debugger is not registered
+        Session[] oldSessions;
+        Session[] newSessions;
+        DebuggerEngine oldEngine;
+        DebuggerEngine newEngine;
+        synchronized (sessions) {
+            oldSessions = getSessions();
+            // find index of given debugger and new instance of currentDebugger
+            Session nCurrentSesson = null;
+            int i, k = oldSessions.length;
+            for (i = 0; i < k; i++) {
+                if (oldSessions[i] == session) {
+                    break;
+                } else if (nCurrentSesson == null) {
+                    nCurrentSesson = oldSessions[i];
+                }
+            }
+            if (i == k) return; // this debugger is not registered
             
-        // set new current debugger     
-        if (session == getCurrentSession ()) {
-            if ((nCurrentSesson == null) && (k > 1))
-                nCurrentSesson = sessions [1];
-            setCurrentSession (nCurrentSesson);
+            // set new current debugger session
+            if (session == getCurrentSession ()) {
+                if ((nCurrentSesson == null) && (k > 1))
+                    nCurrentSesson = oldSessions[1];
+                setCurrentSession (nCurrentSesson);
+            }
+            
+            newSessions = new Session [oldSessions.length - 1];
+            System.arraycopy (oldSessions, 0, newSessions, 0, i);
+            if ((oldSessions.length - i) > 1)
+                System.arraycopy (
+                    oldSessions, i + 1, newSessions, i, oldSessions.length - i - 1
+                );
+            sessions.remove(i);
+            
+            session.removePropertyChangeListener (sessionListener);
+            
+            oldEngine = currentEngine;
+            newEngine = null;
+            if (getCurrentSession () != null)
+                newEngine = getCurrentSession ().getCurrentEngine ();
+            currentEngine = newEngine;
         }
-            
-        Session[] nds = new Session [sessions.length - 1];
-        System.arraycopy (sessions, 0, nds, 0, i);
-        if ((sessions.length - i) > 1)
-            System.arraycopy (
-                sessions, i + 1, nds, i, sessions.length - i - 1
-            );
-        
-        session.removePropertyChangeListener (sessionListener);
-        updateCurrentEngine ();
-        
-        Session[] o = sessions;
-        sessions = nds;
-        fireSessionRemoved (session, o, sessions);
+        if (oldEngine != newEngine) {
+            firePropertyChange (PROP_CURRENT_ENGINE, oldEngine, newEngine);
+        }
+        fireSessionRemoved (session, oldSessions, newSessions);
     }
     
     void addEngine (DebuggerEngine engine) {
-        if (engines.contains (engine)) return;
-        DebuggerEngine[] old = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
-        engines.add (engine);
-        DebuggerEngine[] ne = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        DebuggerEngine[] old;
+        DebuggerEngine[] ne;
+        synchronized (engines) {
+            if (engines.contains (engine)) return;
+            old = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+            engines.add (engine);
+            ne = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        }
         fireEngineAdded (engine, old, ne);
     }
     
     void removeEngine (DebuggerEngine engine) {
-        if (!engines.contains (engine)) return;
-        DebuggerEngine[] old = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
-        engines.remove (engine);
-        DebuggerEngine[] ne = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        DebuggerEngine[] old;
+        DebuggerEngine[] ne;
+        synchronized (engines) {
+            if (!engines.contains (engine)) return;
+            old = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+            engines.remove (engine);
+            ne = (DebuggerEngine[]) engines.toArray (new DebuggerEngine [engines.size ()]);
+        }
         fireEngineRemoved (engine, old, ne);
     }
     
-    private void updateCurrentEngine () {
-        DebuggerEngine ne = null;
-        if (getCurrentSession () != null)
-            ne = getCurrentSession ().getCurrentEngine ();
-        DebuggerEngine old = currentEngine;
-        currentEngine = ne;
-        if (ne != old)
-            firePropertyChange (PROP_CURRENT_ENGINE, old, currentEngine);
-    }
-
 
     
     // innerclasses ............................................................
@@ -1067,8 +1143,19 @@ public final class DebuggerManager {
                      (!e.getPropertyName ().equals
                       (Session.PROP_SUPPORTED_LANGUAGES))
                 ) return;
-                // update list of engines and current engine
-                updateCurrentEngine ();
+                // update the current engine
+                DebuggerEngine oldEngine;
+                DebuggerEngine newEngine;
+                synchronized (sessions) {
+                    oldEngine = currentEngine;
+                    newEngine = null;
+                    if (getCurrentSession () != null)
+                        newEngine = getCurrentSession ().getCurrentEngine ();
+                    currentEngine = newEngine;
+                }
+                if (newEngine != oldEngine) {
+                    firePropertyChange (PROP_CURRENT_ENGINE, oldEngine, newEngine);
+                }
                 Session s = (Session) e.getSource ();
                 if (s.getSupportedLanguages ().length == 0)
                     removeSession (s);
