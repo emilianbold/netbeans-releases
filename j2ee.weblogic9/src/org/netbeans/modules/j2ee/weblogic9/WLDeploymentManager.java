@@ -131,57 +131,7 @@ public class WLDeploymentManager implements DeploymentManager {
         
         if (isLocal()) {
             //autodeployment version
-            WLDeployer deployer = new WLDeployer(uri);
-
-            org.w3c.dom.Document dom =null;
-
-
-            WLTargetModuleID module_id = new WLTargetModuleID(target[0], file.getName() );
-
-            try{
-                String server_url = "http://" + getHost()+":"+getPort();
-                if (file2 != null){
-                    dom = org.openide.xml.XMLUtil.parse(new org.xml.sax.InputSource(new FileInputStream( file2 )), false, false,null, null);
-                    String doctype = dom.getDocumentElement().getNodeName();
-                    if (doctype.equals("weblogic-application")){
-
-        //TODO  for application try using context root from application.xml
-                        NodeList nlist = dom.getElementsByTagName("module");
-
-                        for (int i = 0; i < nlist.getLength(); i++){
-                            Element module_node = (Element)((Element)nlist.item(i)).getElementsByTagName("*").item(0);
-                            WLTargetModuleID child_module = new WLTargetModuleID( target[0] );
-
-                            if ( module_node.getTagName().equals("web")) {
-                                //child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getTextContent().trim()); // jdk 1.5
-                                child_module.setJARName(module_node.getElementsByTagName("web-uri").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                                //child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
-                                child_module.setContextURL("http://" + getHost()+":"+getPort() + module_node.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                            } else if(module_node.getTagName().equals("ejb")){
-        //                        child_module.setJARName(nlist.item(i).getTextContent().trim()); // jdk 1.5
-                                child_module.setJARName(nlist.item(i).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                            }
-                            module_id.addChild( child_module );
-                        }
-
-                    } else if (doctype.equals("weblogic-web-app")){
-                       // module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getTextContent().trim()); // jdk 1.5
-                        module_id.setContextURL( server_url + dom.getElementsByTagName("context-root").item(0).getFirstChild().getNodeValue().trim()); // jdk 1.4
-                    } else if (doctype.equals("weblogic-ejb-jar")) {
-
-                    }
-                } else {
-                    String fname = file.getName();
-                    int dot = fname.lastIndexOf('.');
-                    if (dot > 0)
-                        fname = fname.substring(0, dot);
-                    module_id.setContextURL(server_url+"/"+fname);
-                }
-            }catch(Exception e){
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-            deployer.deploy(target, file, file2, module_id);
-            return deployer;
+            return new WLDeployer(uri).deploy(target, file, file2, getHost(), getPort());
         } else {
             //weblogic jsr88 version
             modifiedLoader();

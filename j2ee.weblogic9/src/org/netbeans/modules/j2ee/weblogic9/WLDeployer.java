@@ -13,6 +13,9 @@
 package org.netbeans.modules.j2ee.weblogic9;
 
 import java.net.URL;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
+import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.util.Vector;
 import java.io.File;
@@ -25,8 +28,9 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import org.netbeans.modules.j2ee.jboss4.URLWait;
+import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.openide.ErrorManager;
+import org.openide.filesystems.JarFileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,8 +60,42 @@ public class WLDeployer implements ProgressObject, Runnable {
     }
     
     
-    public ProgressObject deploy(Target[] target, File file, File file2, TargetModuleID module_id){
-        
+    public ProgressObject deploy(Target[] target, File file, File file2, String host, String port){
+        //PENDING: distribute to all targets!
+        WLTargetModuleID module_id = new WLTargetModuleID(target[0], file.getName() );
+
+        try{
+            String server_url = "http://" + host+":"+port;
+            
+            if (file.getName().endsWith(".war")) {
+                String ctx [] = WeblogicWebApp.createGraph(file2).getContextRoot();
+                if (ctx != null && ctx.length > 0) {
+                    module_id.setContextURL( server_url + ctx[0]);
+                }
+            } else if (file.getName().endsWith(".ear")) {
+                JarFileSystem jfs = new JarFileSystem();
+                jfs.setJarFile(file);
+                FileObject appXml = jfs.getRoot().getFileObject("META-INF/application.xml");
+                if (appXml != null) {
+                    Application ear = DDProvider.getDefault().getDDRoot(appXml);
+                    Module modules [] = ear.getModule();
+                    for (int i = 0; i < modules.length; i++) {
+                        WLTargetModuleID mod_id = new WLTargetModuleID(target[0]);
+                        if (modules[i].getWeb() != null) {
+                            mod_id.setContextURL(server_url + modules[i].getWeb().getContextRoot());
+                        }
+                        module_id.addChild(mod_id);
+                    }
+                } else {
+                    System.out.println("Cannot file META-INF/application.xml in " + file);
+                }
+            }
+            
+        }catch(Exception e){
+            e.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+
 
         this.target = target;
         this.file = file;
@@ -85,21 +123,38 @@ public class WLDeployer implements ProgressObject, Runnable {
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
         
         try{
-            URL url = new URL (module_id.getWebURL());
-            String waitingMsg = NbBundle.getMessage(WLDeployer.class, "MSG_Waiting_For_Url", url);
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
-            fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-            //delay to prevent hitting the old content before reload
-            for (int i = 0; i < 3; i++) {
-                Thread.sleep(1000);
-                fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
-            }
-            long start = System.currentTimeMillis();
-            while (System.currentTimeMillis() - start < TIMEOUT) {
-                if (URLWait.waitForUrlReady(url, 1000)) {
-                    break;
+            System.out.println("Copying 1 file to: " + foDestDir.getPath());
+            String webUrl = module_id.getWebURL();
+            if (webUrl == null) {
+                TargetModuleID ch [] = module_id.getChildTargetModuleID();
+                if (ch != null) {
+                    for (int i = 0; i < ch.length; i++) {
+                        webUrl = ch [i].getWebURL();
+                        if (webUrl != null) {
+                            break;
+                        }
+                    }
                 }
+                
+            }
+            if (webUrl!= null) {
+                URL url = new URL (webUrl);
+                String waitingMsg = NbBundle.getMessage(WLDeployer.class, "MSG_Waiting_For_Url", url);
+                
                 fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+                //delay to prevent hitting the old content before reload
+                for (int i = 0; i < 3; i++) {
+                    Thread.sleep(1000);
+                    fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+                }
+                long start = System.currentTimeMillis();
+                while (System.currentTimeMillis() - start < TIMEOUT) {
+                    if (URLWait.waitForUrlReady(url, 1000)) {
+                        break;
+                    }
+                    fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+                }
             }
         }catch(Exception e){
             fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));

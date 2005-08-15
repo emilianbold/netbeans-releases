@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.j2ee.jboss4;
+package org.netbeans.modules.j2ee.weblogic9;
 
 import java.io.IOException;
 import java.net.Socket;
