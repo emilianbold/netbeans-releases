@@ -87,12 +87,10 @@ public class JBDeployer implements ProgressObject, Runnable {
                     Module modules [] = ear.getModule();
                     for (int i = 0; i < modules.length; i++) {
                         JBTargetModuleID mod_id = new JBTargetModuleID(target[0]);
-                        module_id.addChild(mod_id);
                         if (modules[i].getWeb() != null) {
-                            String ctxRoot = server_url + modules[i].getWeb().getContextRoot();
-                            mod_id.setContextURL(ctxRoot);
-                            break;
+                            mod_id.setContextURL(server_url + modules[i].getWeb().getContextRoot());
                         }
+                        module_id.addChild(mod_id);
                     }
                 } else {
                     System.out.println("Cannot file META-INF/application.xml in " + file);
@@ -149,6 +147,18 @@ public class JBDeployer implements ProgressObject, Runnable {
             org.openide.filesystems.FileUtil.copyFile(foIn, foDestDir, fileName); // copy version
             System.out.println("Copying 1 file:" + fileName + " to: " + foDestDir.getPath());
             String webUrl = module_id.getWebURL();
+            if (webUrl == null) {
+                TargetModuleID ch [] = module_id.getChildTargetModuleID();
+                if (ch != null) {
+                    for (int i = 0; i < ch.length; i++) {
+                        webUrl = ch [i].getWebURL();
+                        if (webUrl != null) {
+                            break;
+                        }
+                    }
+                }
+                
+            }
             if (webUrl!= null) {
                 URL url = new URL (webUrl);
                 String waitingMsg = NbBundle.getMessage(JBDeployer.class, "MSG_Waiting_For_Url", url);
