@@ -1,8 +1,14 @@
 /*
- * PaletteItemTest.java
- * JUnit based test
+ *                 Sun Public License Notice
  *
- * Created on August 10, 2005, 3:33 PM
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.spi.palette;
@@ -11,6 +17,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import junit.framework.Assert;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
@@ -23,13 +30,19 @@ import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Libor Kotouc
  */
 public class PaletteItemTest extends NbTestCase {
+  
+    static {
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+    }     
     
     private static final String PALETTE_ROOT = "FooPalette";
     private static final String ITEMS_FOLDER = PALETTE_ROOT + "/FooCategory";
@@ -139,6 +152,23 @@ public class PaletteItemTest extends NbTestCase {
 
     
     //----------------------------------   helpers  ------------------------------------------------------------------
+
+    public static final class Lkp extends ProxyLookup {
+        private static Lkp DEFAULT;
+        public Lkp() {
+            Assert.assertNull(DEFAULT);
+            DEFAULT = this;
+            setLookup(new Object[] { new RepositoryImpl() });
+        }
+        public static void setLookup(Object[] instances) {
+            ClassLoader cl = Lkp.class.getClassLoader();
+            DEFAULT.setLookups(new Lookup[] {
+                Lookups.fixed(instances),
+                Lookups.metaInfServices(cl),
+                Lookups.singleton(cl),
+            });
+        }
+    } 
 
     private class PaletteListener implements PropertyChangeListener {
         PaletteController pc;
