@@ -289,51 +289,39 @@ public final class DDProvider {
                 resolver=new DDResolver();
             }
             return resolver;
-        }       
-        public InputSource resolveEntity (String publicId, String systemId) {
-            if (EJB_30_90_DOCTYPE.equals(publicId)) { 
-                //return ejb30 input source
-                return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-0.dtd"); //NOI18N
-            }else if (EJB_21_81_DOCTYPE.equals(publicId)) { 
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-1.dtd"); //NOI18N
+        }
+        public InputSource resolveEntity(String publicId, String systemId) {
+            String resource = null;
+            if (EJB_30_90_DOCTYPE.equals(publicId)) {
+                //return ejb30
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_3_0-0.dtd"); //NOI18N
+            }else if (EJB_21_81_DOCTYPE.equals(publicId)) {
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-1.dtd"); //NOI18N
             } else if (EJB_21_80_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd"); //NOI18N
             } else if (EJB_21_80_DOCTYPE_SUNONE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_1-0.dtd"); //NOI18N
             } else if (EJB_20_70_DOCTYPE_SUNONE.equals(publicId)) {////LUDO this 2.0.0 is missing FIXIT
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-ejb-jar_2_0-0.dtd"); //NOI18N
             } else if (WEB_25_90_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_5-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_5-0.dtd"); //NOI18N
             }else if (WEB_21_81_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-1.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-1.dtd"); //NOI18N
             } else if (WEB_21_80_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd"); //NOI18N
+                resource ="/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd"; //NOI18N
             } else if (WEB_21_80_DOCTYPE_SUNONE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_4-0.dtd"); //NOI18N
             } else if (WEB_20_70_DOCTYPE_SUNONE.equals(publicId)) {//LUDO this 2.3.0 is missing FIXIT
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_3-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-web-app_2_3-0.dtd"); //NOI18N
             } else if (APP_50_90_DOCTYPE.equals(publicId)) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_5_0-0.dtd"); //NOI18N
             }else if (APP_14_80_DOCTYPE.equals(publicId) || APP_14_81_DOCTYPE.equals(publicId) || APP_14_80_DOCTYPE_SUNONE.equals(publicId) ) {
-                  // return a special input source
-             return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd"); //NOI18N
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_4-0.dtd"); //NOI18N
             } else if(APP_13_70_DOCTYPE_SUNONE.equals(publicId)){
-                return new InputSource("nbres:/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_3-0.dtd"); //NOI18N
-                
-            }else {
-                // use the default behaviour
-                return null;
+                resource = ("/org/netbeans/modules/j2ee/sun/dd/impl/resources/sun-application_1_3-0.dtd"); //NOI18N
             }
+            java.net.URL url = this.getClass().getResource(resource);
+            return new InputSource(url.toString());
         }
     }
     
