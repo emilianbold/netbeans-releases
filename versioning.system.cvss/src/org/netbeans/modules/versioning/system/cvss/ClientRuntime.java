@@ -306,10 +306,15 @@ public class ClientRuntime {
             this.runnable = runnable;
         }
 
+        /**
+         * Get reason why command has not finished succesfully.
+         * For user cancels return an exception too.
+         */
         public Throwable getError() {
             return runnable.getFailure();
         }
 
+        /** Has it been stopped by user's cancel? */
         public boolean isAborted() {
             return runnable.isAborted();
         }

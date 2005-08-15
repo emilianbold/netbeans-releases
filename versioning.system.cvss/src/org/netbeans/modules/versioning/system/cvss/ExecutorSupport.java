@@ -27,6 +27,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
+import org.openide.util.TaskListener;
 
 import javax.swing.*;
 import java.util.*;
@@ -69,7 +70,8 @@ public abstract class ExecutorSupport implements CVSListener  {
     protected final Command             cmd;
     private final GlobalOptions         options;
     private RequestProcessor.Task       task;
-    private Throwable                   failure;    
+    private List taskListeners = new ArrayList(2);
+    private Throwable                   failure;
     private boolean                     terminated;
 
     private boolean                     finishedExecution;
@@ -123,6 +125,7 @@ public abstract class ExecutorSupport implements CVSListener  {
         return failure;
     }
 
+    /** @return task instance actually used (can change on retry) or null. */
     public RequestProcessor.Task getTask() {
         return task;
     }
@@ -172,6 +175,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                 if (error != null) {
                     toRefresh.clear();
                     if (result.isAborted()) {
+                        failure = result.getError();
                         return;
                     }
                     if (retryConnection(error)) {
@@ -212,7 +216,29 @@ public abstract class ExecutorSupport implements CVSListener  {
                     finishedExecution = true;
                     notifyAll();
                 }
+
+                Iterator it;
+                synchronized(taskListeners) {
+                    it = new ArrayList(taskListeners).iterator();
+                }
+                while (it.hasNext()) {
+                    TaskListener listener = (TaskListener) it.next();
+                    listener.taskFinished(task);
+                }
             }
+        }
+    }
+
+    /** Retry aware task events source*/
+    public void addTaskListener(TaskListener l) {
+        synchronized(taskListeners) {
+            taskListeners.add(l);
+        }
+    }
+
+    public void removeTaskListener(TaskListener l) {
+        synchronized(taskListeners) {
+            taskListeners.remove(l);
         }
     }
 

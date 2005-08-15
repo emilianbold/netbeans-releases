@@ -136,8 +136,7 @@ public final class CheckoutAction extends SystemAction {
 
         executor.execute();
         if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 || openProject) {
-            RequestProcessor.Task task = executor.getTask();
-            task.addTaskListener(new CheckoutCompletedController(executor, workingFolder, openProject));
+            executor.addTaskListener(new CheckoutCompletedController(executor, workingFolder, openProject));
         }
     }
 
@@ -162,6 +161,7 @@ public final class CheckoutAction extends SystemAction {
 
             // XXX does it catch user errors such as incorrect module name spec?
             Throwable t = executor.getFailure();
+            executor.removeTaskListener(this);
             if (t != null) {
                 ErrorManager.getDefault().notify(ErrorManager.USER, t);
                 return;

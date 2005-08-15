@@ -97,6 +97,7 @@ class CommandRunnable implements Runnable, Cancellable {
         if (finished || aborted) return false;
         aborted = true;
         client.abort();
+        failure = new InterruptedException();
         runnableThread.interrupt();
         return true;
     }
