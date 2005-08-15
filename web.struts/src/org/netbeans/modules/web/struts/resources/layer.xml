@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+    <folder name="Services">
+        <!-- Recognize text/struts+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-web-struts-resources-mime-resolver.xml" url="mime-resolver.xml">           
+            </file>
+        </folder>
+    </folder>
+    <folder name="Plugins">
+        <!-- Register XML module catalog plugin -->
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-web-struts-StrutsCatalog.instance">
+                    <attr name="instanceCreate" 
+                    newvalue="org.netbeans.modules.web.struts.StrutsCatalog"/>
+                    <attr name="instanceOf" 
+                    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="xml">
+                <folder name="HyperlinkProviders">
+                    <file name="StrutsConfigHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.struts.editor.StrutsConfigHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-struts+xml">
+                <folder name="Popup"> 
+                    <file name="org-netbeans-modules-web-struts-editor-StrutsPopupAction.instance">
+                    </file>
+                    <attr name="org-netbeans-modules-web-struts-editor-StrutsPopupAction.instance/Separator0.instance" boolvalue="true"/>
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    
+                </folder>
+
+            </folder>
+            
+        </folder>
+    </folder>
+    <folder name="j2ee">
+        <folder name="webtier">
+            <folder name="framework">
+                <file name="org-netbeans-modules-web-struts-StrutsFrameworkProvider.instance"/> 
+            </folder>
+        </folder>
+    </folder>
+
+
+    <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <folder name="Struts">
+                <file name="StrutsAction.java" url="templates/StrutsAction.template">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                    <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
+                    <attr name="templateCategory" stringvalue="servlet-types"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsAction.html"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.ActionIterator"  />          
+                </file>
+                <file name="DispatchAction.java" url="templates/DispatchAction.template"/>
+                <file name="MappingDispatchAction.java" url="templates/MappingDispatchAction.template"/>
+                <file name="LookupDispatchAction.java" url="templates/LookupDispatchAction.template"/>
+                <file name="StrutsFormBean.java" url="templates/StrutsFormBean.template">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.struts.Bundle"/>
+                    <attr name="template" boolvalue="true"/>
+                    <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
+                    <attr name="templateCategory" stringvalue="servlet-types"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/struts/resources/StrutsFormBean.html"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.struts.wizards.FormBeanIterator"  />          
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="struts.xml" url="struts.xml"/>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-web-struts">
+        <file name="struts-config.xml" url="struts-config.xml"/>
+        <file name="welcome.jsp" url="welcome.jsp"/>
+        <file name="MessageResources.properties" url="MessageResources.properties"/>
+        <file name="tiles-defs.xml" url="tiles-defs.xml"/>
+        <file name="validation.xml" url="validation.xml"/>
+        <file name="validator-rules.xml" url="validator-rules.xml"/>
+        <file name="struts-bean.tld" url="struts-bean.tld"/>
+        <file name="struts-html.tld" url="struts-html.tld"/>
+        <file name="struts-logic.tld" url="struts-logic.tld"/>
+        <file name="struts-nested.tld" url="struts-nested.tld"/>
+        <file name="struts-tiles.tld" url="struts-tiles.tld"/>
+    </folder>
+</filesystem>

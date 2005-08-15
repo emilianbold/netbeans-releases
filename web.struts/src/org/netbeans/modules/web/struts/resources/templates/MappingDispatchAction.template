@@ -1,0 +1,37 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+ 
+package Templates.JSP_Servlet;           
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.struts.actions.MappingDispatchAction;
+import org.apache.struts.action.ActionForm;
+import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionForward;
+/** 
+ *
+ * @author __USER__
+ * @version 
+ */
+
+public class NewStrutsAction extends MappingDispatchAction {
+    
+    /* forward name="success" path="" */
+    private final static String SUCCESS = "success";
+    
+    /**
+     * This is the Struts Action method specified in struts-config file using the parameter attribute
+     * ( <action parameter="customMethod" .../> )
+     */
+    public ActionForward customMethod(ActionMapping mapping, ActionForm  form,
+            HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        
+        return mapping.findForward(SUCCESS);
+    }
+}

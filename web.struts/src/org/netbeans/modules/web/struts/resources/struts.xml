@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>struts</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/modules/web/struts/resources/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/struts/antlr.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/commons-beanutils.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/commons-digester.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/commons-fileupload.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/commons-logging.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/commons-validator.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/jakarta-oro.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/struts/struts.jar!/</resource>
+    </volume>
+</library>
