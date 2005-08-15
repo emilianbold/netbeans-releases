@@ -16,6 +16,7 @@ Microsystems, Inc. All Rights Reserved.
   <!ENTITY links SYSTEM "links.xml">
   <!ENTITY properties SYSTEM "properties.xml">
   <!ENTITY replaces SYSTEM "replaces.xml">
+  <!ENTITY disallowed-links SYSTEM "disallowed-links.xml">
 ]>
 
 <project name="template" default="die" basedir=".">
@@ -389,31 +390,8 @@ cause it to fail.
             <mapper type="glob" from="${javadoc.out.dir}/architecture-summary.html" to="${javadoc.arch}"/>
             <mapper type="glob" from="${javadoc.out.dir}/*.html" to="${javadoc.docfiles}/*.html"/>
             <mapper type="glob" from="${javadoc.out.dir}/*.html" to="${javadoc.src}/*.html"/>
-    
-            <!-- if you find a general URL from netbeans.org site that make sence to reference, feel free
-              to add it here with accept='true' 
-              -->
-            <filter pattern="http://www\.netbeans\.org/(unbranded-)?source/browse/.*" accept="true"/>
-            <filter pattern="http://openide\.netbeans\.org/versioning-policy\.html.*" accept="true"/>
-            <filter pattern="http://www\.netbeans\.org/issues/show_bug\.cgi.*" accept="true"/>
-            <filter pattern="http://openide\.netbeans\.org.*tutorial.*api-design.*" accept="true"/>
-            <filter pattern="http://mdr\.netbeans\.org/example\.html" accept="true"/>
-            <filter pattern="http://mdr\.netbeans\.org/uml2mof.*" accept="true"/>
-            <filter pattern="http://java\.netbeans\.org/models/java/java\.xml" accept="true"/>
-            <filter pattern="http://autoupdate\.netbeans\.org/nbm/nbm_package\.html.*" accept="true"/>
-            <!-- UI specifications -->
-            <filter pattern="http://ui\.netbeans\.org/docs/hi/javamdr/.*" accept="true"/>
-            <filter pattern="http://ui\.netbeans\.org/docs/ui/code_folding/cf_uispec\.html" accept="true"/>
-            <!-- is used in generated question from arch.xml -->
-            <filter pattern="http://www\.netbeans\.org/community/guidelines/q-evangelism\.html" accept="true"/>
-            <!-- direct link to main website is ok as well -->
-            <filter pattern="http://www\.netbeans\.org/" accept="true"/>
-            <filter pattern="http://translatedfiles\.netbeans\.org/" accept="true"/>
-            <!-- dtd are fine they cannot change anyway -->
-            <filter pattern="http://www\.netbeans\.org/dtds/.*" accept="true"/>
-            
-            <!-- forbid the rest of NetBeans sites -->
-            <filter pattern="http://.*netbeans\.org/.*" accept="false"/>
+
+						&disallowed-links;    
         </checklinks>
         <!-- XXX run doctorj (doctorj.sf.net) if it is installed? -->
     </target>

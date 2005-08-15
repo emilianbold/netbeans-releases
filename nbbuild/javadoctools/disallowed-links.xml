@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+    <!-- if you find a general URL from netbeans.org site that make sence to reference, feel free
+      to add it here with accept='true' 
+      -->
+    <filter pattern="http://www\.netbeans\.org/(unbranded-)?source/browse/.*" accept="true"/>
+    <filter pattern="http://openide\.netbeans\.org/versioning-policy\.html.*" accept="true"/>
+    <filter pattern="http://www\.netbeans\.org/issues/show_bug\.cgi.*" accept="true"/>
+    <filter pattern="http://openide\.netbeans\.org.*tutorial.*api-design.*" accept="true"/>
+    <filter pattern="http://mdr\.netbeans\.org/example\.html" accept="true"/>
+    <filter pattern="http://mdr\.netbeans\.org/uml2mof.*" accept="true"/>
+    <filter pattern="http://java\.netbeans\.org/models/java/java\.xml" accept="true"/>
+    <filter pattern="http://autoupdate\.netbeans\.org/nbm/nbm_package\.html.*" accept="true"/>
+    <!-- UI specifications -->
+    <filter pattern="http://ui\.netbeans\.org/docs/hi/javamdr/.*" accept="true"/>
+    <filter pattern="http://ui\.netbeans\.org/docs/ui/code_folding/cf_uispec\.html" accept="true"/>
+    <!-- is used in generated question from arch.xml -->
+    <filter pattern="http://www\.netbeans\.org/community/guidelines/q-evangelism\.html" accept="true"/>
+    <!-- direct link to main website is ok as well -->
+    <filter pattern="http://www\.netbeans\.org/" accept="true"/>
+    <filter pattern="http://translatedfiles\.netbeans\.org/" accept="true"/>
+    <!-- dtd are fine they cannot change anyway -->
+    <filter pattern="http://www\.netbeans\.org/dtds/.*" accept="true"/>
+    
+    <!-- forbid the rest of NetBeans sites -->
+    <filter pattern="http://.*netbeans\.org/.*" accept="false"/>

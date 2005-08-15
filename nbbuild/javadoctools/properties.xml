@@ -88,3 +88,5 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-editor-completion" value="${javadoc.web.root}/org-netbeans-modules-editor-completion"/>
 <property name="javadoc.docs.org-netbeans-modules-adaptable" value="${javadoc.web.root}/org-netbeans-modules-adaptable"/>
 <property name="javadoc.docs.org-netbeans-spi-navigator" value="${javadoc.web.root}/org-netbeans-spi-navigator"/>
+<property name="javadoc.docs.org-netbeans-spi-palette" value="${javadoc.web.root}/org-netbeans-spi-palette"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-hints" value="${javadoc.web.root}/org-netbeans-modules-editor-hints"/>

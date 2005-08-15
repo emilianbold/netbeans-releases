@@ -11,6 +11,10 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+<!DOCTYPE someant  [
+  <!ENTITY disallowed-links SYSTEM "javadoctools/disallowed-links.xml">
+]>
+
 <project name="nbbuild" default="all" basedir=".">
 
   <import file="default.xml"/>
@@ -405,23 +409,7 @@ Link to<A HREF="overview-summary.html">Non-frame version.</A>
             <include name="*/**/package-summary.html"/>
             <include name="*/**/doc-files/**/*.html"/>
                 
-                
-            <!-- if you find a general URL from netbeans.org site that make sence to reference, feel free
-              to add it here with accept='true' 
-              -->
-            <filter pattern="http://www.netbeans.org/source/browse/.*" accept='true' />
-            <filter pattern="http://openide.netbeans.org/versioning-policy.html.*" accept='true' />
-            <filter pattern="http://www.netbeans.org/issues/show_bug.cgi.*" accept='true' />
-            <filter pattern="http://openide.netbeans.org.*tutorial.*api-design.*" accept='true' />
-            <!-- is used in generated question from arch.xml -->
-            <filter pattern="http://www.netbeans.org/community/guidelines/q-evangelism.html" accept='true' />
-            <!-- direct link to main website is ok as well -->
-            <filter pattern="http://www.netbeans.org/" accept='true' />
-            <!-- dtd are fine they cannot change anyway -->
-            <filter pattern="http://www.netbeans.org/dtds/.*" accept='true' />
-            
-            <!-- forbid the rest of NetBeans sites -->
-            <filter pattern="http://.*netbeans.org/.*" accept='false' />
+            &disallowed-links;
         </checklinks>
   </target>
 
