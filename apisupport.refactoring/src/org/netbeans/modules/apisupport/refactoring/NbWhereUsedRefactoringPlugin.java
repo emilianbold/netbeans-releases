@@ -44,7 +44,7 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint - inspired by j2eerefactoring
  */
-public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
+public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
@@ -57,29 +57,14 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
         return null;
     }
     
-    private AbstractRefactoring refactoring;
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.j2ee.refactoring.whereused");   // NOI18N
     
     /**
      * Creates a new instance of NbWhereUsedRefactoringPlugin
      */
     public NbWhereUsedRefactoringPlugin(AbstractRefactoring refactoring) {
-        this.refactoring = refactoring;
+        super(refactoring);
     }
     
-    /** Checks pre-conditions of the refactoring and returns problems.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem preCheck() {
-        return null;
-    }
-    
-    /** Checks parameters of the refactoring.
-     * @return Problems found or null (if no problems were identified)
-     */
-    public Problem checkParameters() {
-        return null;
-    }
     
     /** Collects refactoring elements for a given refactoring.
      * @param refactoringElements Collection of refactoring elements - the implementation of this method
@@ -119,103 +104,22 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
             semafor.set(null);
         }
     }
-    
-    private void checkMetaInfServices(Project project, JavaClass clzz, RefactoringElementsBag refactoringElements) {
-        FileObject services = findMetaInfServices(project);
-        if (services == null) {
-            return;
-        }
-        String name = clzz.getName();
-        // Easiest to check them all; otherwise would need to find all interfaces and superclasses:
-        FileObject[] files = services.getChildren();
-        for (int i = 0; i < files.length; i++) {
-            int line = checkContentOfFile(files[i], name);
-            if (line != -1) {
-                RefactoringElementImplementation elem =
-                        new ServicesWhereUsedRefactoringElement(clzz.getSimpleName(), files[i]);
-                refactoringElements.add(refactoring, elem);
-            }
-        }
+
+    protected RefactoringElementImplementation createManifestRefactoring(JavaClass clazz, 
+                                                                         FileObject manifestFile, 
+                                                                         String attributeKey, 
+                                                                         String attributeValue, 
+                                                                         String section) 
+    {
+        return new ManifestWhereUsedRefactoringElement(attributeValue, manifestFile, 
+                                                       attributeKey, section);
+    }
+
+    protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile) {
+        return new ServicesWhereUsedRefactoringElement(clazz.getSimpleName(), serviceFile);
     }
     
-    
-    private FileObject findMetaInfServices(Project project) {
-        Sources srcs = (Sources)project.getLookup().lookup(Sources.class);
-        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        for (int i = 0; i < grps.length; i++) {
-            FileObject fo = grps[i].getRootFolder().getFileObject("META-INF/services");
-            if (fo != null) {
-                return fo;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * returns the line number in the file if found, otherwise -1
-     */
-    private int checkContentOfFile(FileObject fo, String classToLookFor) {
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), "UTF-8")); // NOI18N
-            String line = reader.readLine();
-            int counter = 0;
-            while (line != null) {
-                if (line.indexOf(classToLookFor) != -1) {
-                    return counter;
-                }
-                counter = counter + 1;
-                line = reader.readLine();
-            }
-        } catch (IOException exc) {
-            //TODO
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException x) {
-                    // ignore
-                }
-            }
-        }
-        return -1;
-    }
-    
-    private void checkManifest(NbModuleProject project, JavaClass clzz, RefactoringElementsBag refactoringElements) {
-        String name = clzz.getName();
-        String pathName = name.replace('.', '/') + ".class"; //NOI18N
-        Manifest mf = project.getManifest();
-        Attributes attrs = mf.getMainAttributes();
-        Iterator it = attrs.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            String val = (String)entry.getValue();
-            if (val.indexOf(name) != -1 || val.indexOf(pathName) != -1) {
-                RefactoringElementImplementation elem =
-                   new ManifestWhereUsedRefactoringElement(val, project.getManifestFile(), 
-                                           ((Attributes.Name)entry.getKey()).toString());
-                refactoringElements.add(refactoring, elem);
-            }
-        }
-        Map entries = mf.getEntries();
-        if (entries != null) {
-            it = entries.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry secEnt = (Map.Entry)it.next();
-                attrs = (Attributes)secEnt.getValue();
-                String val = (String)secEnt.getKey();
-                    if (val.indexOf(name) != -1 || val.indexOf(pathName) != -1) {
-                        String section = attrs.getValue("OpenIDE-Module-Class"); //NOI18N
-                        RefactoringElementImplementation elem =
-                           new ManifestWhereUsedRefactoringElement(val, project.getManifestFile(), 
-                                                   null, section);
-                        refactoringElements.add(refactoring, elem);
-                    }
-            }
-        }
-    }
-    
-    public final class ManifestWhereUsedRefactoringElement extends AbstractWhereUsedRefactoringElement {
+    public final class ManifestWhereUsedRefactoringElement extends AbstractRefactoringElement {
         
         private String attrName;
         private String sectionName = null;
@@ -241,7 +145,7 @@ public class NbWhereUsedRefactoringPlugin implements RefactoringPlugin {
         }
     }
     
-    public final class ServicesWhereUsedRefactoringElement extends AbstractWhereUsedRefactoringElement {
+    public final class ServicesWhereUsedRefactoringElement extends AbstractRefactoringElement {
         
         
         /**

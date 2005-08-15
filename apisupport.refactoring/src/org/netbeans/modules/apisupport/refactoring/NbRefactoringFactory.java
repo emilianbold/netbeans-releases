@@ -17,10 +17,10 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
-import org.openide.ErrorManager;
 
 /**
  * netbeans related support for refactoring
@@ -28,7 +28,6 @@ import org.openide.ErrorManager;
  */
 public class NbRefactoringFactory implements RefactoringPluginFactory {
     
-    private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.refactoring");   // NOI18N
 
     /**
      * Creates a new instance of NbRefactoringFactory
@@ -37,20 +36,26 @@ public class NbRefactoringFactory implements RefactoringPluginFactory {
 
     /** Creates and returns a new instance of the refactoring plugin or returns
      * null if the plugin is not suitable for the passed refactoring.
-     * @param refactoring Refactoring, the plugin should operate on.
+     * @param refactoring Refactoring, the plugin shimport org.openide.ErrorManager;
+ould operate on.
      * @return Instance of RefactoringPlugin or null if the plugin is not applicable to
      * the passed refactoring.
      */
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-
-        err.log("Create instance called: " + refactoring);
-        
         
         if (refactoring instanceof WhereUsedQuery) {
-            err.log("Where used refactoring");
             return new NbWhereUsedRefactoringPlugin(refactoring);
         }
-
+        
+        if (refactoring instanceof RenameRefactoring) {
+            return new NbRenameRefactoringPlugin(refactoring); 
+        }
+        if (refactoring instanceof MoveClassRefactoring) {
+            return new NbMoveRefactoringPlugin(refactoring);
+        }
+        if (refactoring instanceof SafeDeleteRefactoring) {
+            return new NbSafeDeleteRefactoringPlugin(refactoring);
+        }
         return null;
     }
     
