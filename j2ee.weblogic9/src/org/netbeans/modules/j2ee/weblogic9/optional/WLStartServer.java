@@ -372,7 +372,7 @@ public class WLStartServer extends StartServer {
          * The amount of time in milliseconds during which the server should
          * start
          */
-        private static final int TIMEOUT = 180000;
+        private static final int TIMEOUT = 900000;
         
         /**
          * The amount of time in milliseconds that we should wait between checks
@@ -492,7 +492,7 @@ public class WLStartServer extends StartServer {
          * The amount of time in milliseconds during which the server should
          * start
          */
-        private static final int TIMEOUT = 240000;
+        private static final int TIMEOUT = 900000;
         
         /**
          * The amount of time in milliseconds that we should wait between checks
