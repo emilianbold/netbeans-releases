@@ -238,7 +238,8 @@ public final class CreatedModifiedFiles {
     /**
      * Add a dependency to a list of module dependencies of this project. This
      * means editing of project's <em>nbproject/project.xml</em>. All
-     * parameters refers to a module this module will depend on.
+     * parameters refers to a module this module will depend on. If a project
+     * already has a given dependency it will not be added.
      *
      * @param codeNameBase codename base
      * @param releaseVersion release version, if -1 will be taken from the

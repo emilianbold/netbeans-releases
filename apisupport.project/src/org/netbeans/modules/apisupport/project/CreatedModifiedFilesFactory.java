@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.ProjectManager;
@@ -33,6 +34,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -330,14 +332,25 @@ final class CreatedModifiedFilesFactory {
         
         public void run() throws IOException {
             ModuleEntry me = getProject().getModuleList().getEntry(codeNameBase);
-            assert me != null : "Cannot find module with the given codeNameBase (" +
-                    codeNameBase + ") in the project's universe";
+            assert me != null : "Cannot find module with the given codeNameBase (" + // NOI18N
+                    codeNameBase + ") in the project's universe"; // NOI18N
             
-            ModuleDependency md = new ModuleDependency(me, 
-                    releaseVersion == -1 ? me.getReleaseVersion() : String.valueOf(releaseVersion),
-                    version == null ? me.getSpecificationVersion() : version.toString(), 
-                    useInCompiler, false);
             ProjectXMLManager pxm = new ProjectXMLManager(getProject().getHelper());
+            
+            // firstly check if the dependency is already not there
+            Set currentDeps = pxm.getDirectDependencies(getProject().getPlatform());
+            for (Iterator it = currentDeps.iterator(); it.hasNext(); ) {
+                ModuleDependency md = (ModuleDependency) it.next();
+                if (codeNameBase.equals(md.getModuleEntry().getCodeNameBase())) {
+                    Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
+                    return;
+                }
+            }
+            
+            ModuleDependency md = new ModuleDependency(me,
+                    releaseVersion == -1 ? me.getReleaseVersion() : String.valueOf(releaseVersion),
+                    version == null ? me.getSpecificationVersion() : version.toString(),
+                    useInCompiler, false);
             pxm.addDependency(md);
             // XXX consider this carefully
             ProjectManager.getDefault().saveProject(getProject());

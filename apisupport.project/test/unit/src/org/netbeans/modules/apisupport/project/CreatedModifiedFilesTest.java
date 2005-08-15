@@ -228,6 +228,26 @@ public class CreatedModifiedFilesTest extends TestBase {
         assertFalse("implementation dependeny", antDep.hasImplementationDepedendency());
     }
     
+    public void testTheSameModuleDependencyTwice() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
+        
+        Operation op = cmf.addModuleDependency("org.apache.tools.ant.module", -1, null, false);
+        
+        assertRelativePath("nbproject/project.xml", op.getModifiedPaths());
+        
+        cmf.add(op);
+        cmf.add(op);
+        cmf.run();
+        
+        ProjectXMLManager pxm = new ProjectXMLManager(project.getHelper());
+        Set deps = pxm.getDirectDependencies(NbPlatform.getDefaultPlatform());
+        assertEquals("one dependency", 1, deps.size());
+        ModuleDependency antDep = (ModuleDependency) deps.toArray()[0];
+        assertEquals("cnb", "org.apache.tools.ant.module", antDep.getModuleEntry().getCodeNameBase());
+    }
+    
     public void testOrderLayerEntry() throws Exception {
         // also tested in testCreateLayerEntry where is also tested generated content
         NbModuleProject project = generateStandaloneModule("module1");
@@ -350,7 +370,8 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "</folder>",
                     "</filesystem>"
         };
-        assertLayerContent(supposedContent, "module1/src/org/example/module1/resources/layer.xml");
+        assertLayerContent(supposedContent, 
+                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
         
         // check bundle content
         EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(
@@ -388,7 +409,8 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "</folder>",
                     "</filesystem>"
         };
-        assertLayerContent(supposedContent, "module1/src/org/example/module1/resources/layer.xml");
+        assertLayerContent(supposedContent, 
+                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
     }
     
 //    TODO: mkleint
@@ -473,10 +495,9 @@ public class CreatedModifiedFilesTest extends TestBase {
         }
     }
     
-    private void assertLayerContent(final String[] supposedContent,
-            final String layerPath) throws IOException, FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new FileReader(
-                new File(getWorkDir(), layerPath)));
+    public static void assertLayerContent(final String[] supposedContent,
+            final File layerF) throws IOException, FileNotFoundException {
+        BufferedReader reader = new BufferedReader(new FileReader(layerF));
         List actualContent = new ArrayList();
         boolean fsElementReached = false;
         String line;
