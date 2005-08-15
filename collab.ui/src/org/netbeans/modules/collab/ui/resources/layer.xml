@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
 	<folder name="Menu">
+		<attr name="CVS/Collaboration" boolvalue="true"/>
 		<attr name="Versioning/Collaboration" boolvalue="true"/>
 		<attr name="Modeling/Collaboration" boolvalue="true"/>
 		<folder name="Collaboration">
