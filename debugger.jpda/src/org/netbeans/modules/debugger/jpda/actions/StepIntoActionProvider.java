@@ -93,8 +93,12 @@ implements Executor, Runnable, PropertyChangeListener {
         synchronized (getDebuggerImpl ().LOCK) {
             if (ssverbose)
                 System.out.println("\nSS:  STEP INTO !!! *************");
-            setStepRequest (StepRequest.STEP_INTO);
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
+            if (t == null || !t.isSuspended()) {
+                // Can not step when it's not suspended.
+                return ;
+            }
+            setStepRequest (StepRequest.STEP_INTO);
             position = t.getClassName () + '.' +
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
