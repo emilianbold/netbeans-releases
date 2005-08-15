@@ -15,12 +15,11 @@ package org.netbeans.modules.web.core.palette;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspTagTokenContext;
@@ -72,9 +71,11 @@ public final class JSPPaletteUtilities {
     public static void insert(String s, JTextComponent target, boolean reformat) 
     throws BadLocationException 
     {
+        Document doc = target.getDocument();
+        if (doc == null)
+            return;
+        
         //check whether we are not in a scriptlet 
-        EditorUI eui = Utilities.getEditorUI(target);
-        BaseDocument doc = eui.getDocument();
 //        JspSyntaxSupport sup = (JspSyntaxSupport)(doc.getSyntaxSupport().get(JspSyntaxSupport.class));
 //        int start = target.getCaret().getDot();
 //        TokenItem token = sup.getTokenChain(start, start + 1);
@@ -86,10 +87,10 @@ public final class JSPPaletteUtilities {
         
         int start = insert(s, target, doc);
         
-        if (reformat && start >= 0) {  // format the inserted text
+        if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
             int end = start + s.length();
-            Formatter f = doc.getFormatter();
-            f.reformat(doc, start, end);
+            Formatter f = ((BaseDocument)doc).getFormatter();
+            f.reformat((BaseDocument)doc, start, end);
         }
 
 //        if (select && start >= 0) { // select the inserted text
@@ -102,7 +103,7 @@ public final class JSPPaletteUtilities {
         
     }
     
-    private static int insert(String s, JTextComponent target, BaseDocument doc) 
+    private static int insert(String s, JTextComponent target, Document doc) 
     throws BadLocationException 
     {
 
