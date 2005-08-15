@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <map version="2.0">
 
+<mapID target="ide.credits" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/credits.html" />
 <mapID target="org.netbeans.modules.db.HOMEID" url="dbexpovew.html" />
 <mapID target="dbexpovew" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 
@@ -39,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
 <mapID target="viewdata" url="viewdata.html" />
 
 <mapID target="dbmod" url="dbmod.html" />
+<mapID target="dbdrivernodes" url="dbdrivernodes.html" />
 
 <mapID target="org.netbeans.modules.db.explorer.nodes.DriverNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
 <mapID target="org.netbeans.modules.db.explorer.nodes.DriverListNode" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/files/files_runtime.html" />
