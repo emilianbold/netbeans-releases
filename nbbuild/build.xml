@@ -1007,6 +1007,30 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <ant dir="test" target="runtests"/>
     <nbbrowse file="test/results/index.html"/>
   </target>
+  <target name="localtest-single-nb-debug" depends="bootstrap">
+    <property name="unit.test.base" location="test/unit/src"/>
+    <pathconvert property="xtest.includes" pathsep=",">
+        <path path="${includes}"/>
+        <mapper type="glob" from="${unit.test.base}${file.separator}*.java" to="*.class"/>
+    </pathconvert>
+    <property name="xtest.attribs" value="empty"/>
+    <ant dir="test" target="cleanresults"/>
+    <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
+        <classpath>
+            <!--
+            <path location="test/work/sys/tests/unit/classes"/>
+            <path location="test/work/sys/tests/"/>
+            <path location="test/unit/src/"/>
+            -->
+            <path location="nbantext.jar"/>
+        </classpath>
+    </nbjpdastart>
+    <ant dir="test" target="runtests">
+        <property name="xtest.debug.address" value="${jpda.address}" />
+        <property name="xtest.debug.pause" value="false" />
+    </ant>
+    <nbbrowse file="test/results/index.html"/>
+  </target>
 
   <target name="cleanall" depends="init">
     <cleanall topdir=".." 

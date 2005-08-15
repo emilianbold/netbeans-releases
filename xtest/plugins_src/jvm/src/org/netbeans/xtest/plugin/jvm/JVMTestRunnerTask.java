@@ -122,10 +122,21 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
         this.enableAssertions = enableAssertions;
     }
     
+    /** Debug address to connect to 
+     */
+    public void setDebugAddress(String address) {
+       if (address.equals("")) return;
+
+       this.debugAddress = address;
+    }
+    
     /**
      * when port is set > 0, JVM is started in debugging mode
      */
     public void setDebugPort(int port) {
+       if (port == 0) return;
+       
+       
         this.debugPort=port;
     }
     
@@ -201,6 +212,9 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
     // debug port to which debugger is connected. When 0 - debugging is not started
     protected int debugPort = 0;
     
+    /** debug address to connect to */
+    private String debugAddress;
+    
  
     //
     private void checkInputValuesValidity() throws BuildException {
@@ -274,10 +288,21 @@ public class JVMTestRunnerTask extends Task implements TestBoardLauncher {
         }
         // debugger
         if (debugPort > 0) {
+            if (debugAddress != null) {
+                throw new BuildException("Cannot set debug port and address at once: " + debugPort + " address: " + debugAddress);
+            }
             String suspendArg = debugSuspend ? "y" : "n";
             String debugArgument = "-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend="+suspendArg+",address="+debugPort;
             commandLine.createVmArgument().setLine(debugArgument);
-        }        
+        } else {
+            if (debugAddress != null) {
+                String suspendArg = debugSuspend ? "y" : "n";
+                String debugArgument = "-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,suspend="+suspendArg+",address="+debugAddress;
+                commandLine.createVmArgument().setLine(debugArgument);
+            }
+        }
+        
+        
         // add runnerproperties file sys property
         Environment.Variable runnerProperties = new Environment.Variable();
         runnerProperties.setKey(JUnitTestRunner.TESTRUNNER_PROPERTIES_FILENAME_KEY);

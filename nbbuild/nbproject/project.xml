@@ -70,6 +70,19 @@ Microsystems, Inc. All Rights Reserved.
                         </arity>
                     </context>
                 </action>
+                <action name="debug.single">
+                    <script>${ant.script}</script>
+                    <target>localtest-single-nb-debug</target>
+                    <context>
+                        <property>includes</property>
+                        <folder>test/unit/src</folder>
+                        <pattern>\.java$</pattern>
+                        <format>absolute-path</format>
+                        <arity>
+                            <separated-files>:</separated-files>
+                        </arity>
+                    </context>
+                </action>
                 <action name="javadoc">
                     <script>${ant.script}</script>
                     <target>bootstrap-javadoc</target>
