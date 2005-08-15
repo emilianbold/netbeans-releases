@@ -47,26 +47,38 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="APISupport/Samples" boolvalue="true"/>
         </folder>
         
-        <!-- J2SE Library Descriptor -->
         <attr name="JUnit/NetBeansModuleDevelopment" boolvalue="true"/>
         <folder name="NetBeansModuleDevelopment">        
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>            
+            <!-- New Action wizard -->
+            <!--
+            <file name="newAction">
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.action.NewActionIterator.createIterator" name="instantiatingIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.action.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newAction.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file>
+            -->
+            <!-- J2SE Library Descriptor wizard -->
             <file name="emptyLibraryDescriptor">
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.createIterator"/>                
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.createIterator" name="instantiatingIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>                            
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>            
+            </file>
+            <!-- New File Type wizard -->
             <file name="newLoader">
-                <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator"/>                
+                <attr boolvalue="true" name="template"/>
+                <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator" name="instantiatingIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>                            
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>            
+            </file>
         </folder>
     </folder>
 
