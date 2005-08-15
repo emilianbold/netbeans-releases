@@ -413,6 +413,7 @@ public final class CheckoutWizard {
         private ProgressHandle progress;
         private JComponent progressComponent;
         private volatile boolean internalDocumentChange;
+        private Thread backgroundValidationThread;
 
         protected JComponent createComponent() {
             repositoryPanel = new RepositoryPanel();
@@ -492,9 +493,9 @@ public final class CheckoutWizard {
         }
 
         /**
-         * Sets as invalid to disable next button and starts
-         * background validation. Shows progress bar. Finally
-         * it's called on backround valication success
+         * Heavy validation over network.
+         * Sets wizard as invalid to disable next button
+         * and starts. It's invoked in background validation thread.
          */
         protected void validateBeforeNext() {
 
@@ -506,6 +507,8 @@ public final class CheckoutWizard {
             Socket sock = null;
             Connection connection = null;
             try {
+
+                backgroundValidationThread = Thread.currentThread();
 
                 if (root.isLocal()) {
                     LocalConnection lconnection = new LocalConnection();
@@ -590,12 +593,22 @@ public final class CheckoutWizard {
                     }
                 }
 
-                progress.finish();
-                repositoryPanel.jPanel1.remove(progressComponent);
-                repositoryPanel.jPanel1.revalidate();
-                editable(true);
+                backgroundValidationThread = null;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        validationDone();
+                    }
+                });
             }
 
+        }
+
+        private void validationDone() {
+            progress.finish();
+            repositoryPanel.jPanel1.remove(progressComponent);
+            repositoryPanel.jPanel1.revalidate();
+            repositoryPanel.jPanel1.repaint();
+            editable(true);
         }
 
         private void editable(boolean editable) {
@@ -861,7 +874,19 @@ public final class CheckoutWizard {
 
         public void prepareValidation() {
             progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CheckoutWizard.class, "BK2012"));
-            progressComponent = ProgressHandleFactory.createProgressComponent(progress);
+            JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
+            JButton stopButton = new JButton("Stop");
+            stopButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (backgroundValidationThread != null) {
+                        backgroundValidationThread.interrupt();
+                    }
+                }
+            });
+            progressComponent = new JPanel();
+            progressComponent.setLayout(new BorderLayout());
+            progressComponent.add(bar, BorderLayout.CENTER);
+            progressComponent.add(stopButton, BorderLayout.LINE_END);
             progress.start(/*2, 5*/);
             repositoryPanel.jPanel1.setLayout(new BorderLayout());
             repositoryPanel.jPanel1.add(progressComponent, BorderLayout.SOUTH);
