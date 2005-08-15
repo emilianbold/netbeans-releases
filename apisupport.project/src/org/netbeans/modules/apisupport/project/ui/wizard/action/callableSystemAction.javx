@@ -1,0 +1,32 @@
+package @@PACKAGE_NAME@@;
+
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CallableSystemAction;
+
+public final class @@CLASS_NAME@@ extends CallableSystemAction {
+
+    public void performAction() {
+        // your code here
+    }
+
+    public String getName() {
+        return "@@DISPLAY_NAME@@";
+    }
+
+    public String iconResources() {
+        return @@ICON_RESOURCE@@;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+//    protected void initialize() {
+//        super.initialize();
+//    }
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
+}
