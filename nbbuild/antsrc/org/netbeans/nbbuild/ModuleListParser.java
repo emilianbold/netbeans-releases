@@ -483,7 +483,7 @@ final class ModuleListParser {
                 throw new IOException("You must declare either <suite-component/> or <standalone/> for an external module in " + new File((String) properties.get("basedir")));
             }
             // If run from tests scan binaries otherwise sources.
-            if (properties.get("xtest.home") != null) {
+            if (properties.get("xtest.home") != null && properties.get("xtest.testtype") != null) {
                 entries = scanBinaries(properties, project);
                 // module itself has to be added because it doesn't have to be in binaries
                 Entry e = scanStandaloneSource(properties, project);
