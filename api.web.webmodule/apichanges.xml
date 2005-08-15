@@ -74,6 +74,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Adding_Framework_Support">
+            <api name="WebModuleAPI"/>
+            <summary>Adding Web Extension support</summary>
+            <version major="1" minor="4"/>
+            <date day="28" month="7" year="2005"/>
+            <author login="ppisl@netbeans.org"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    There are some frameworks like Struts, JSF, Spring etc., which extend the web applications. 
+                    When we want to support the extensions we need add the support for the extensions into 
+                    the Web Module API/SPI. 
+                </p>
+            </description>
+            <class package="org.netbeans.modules.web.api.webmodule" name="WebExtensionSupport"/>
+            <class package="org.netbeans.modules.web.spi.webmodule" name="WebExtensionProvider"/>
+        </change>
+         
         <change id="Remove_URLCookie">
             <api name="WebModuleAPI"/>
             <summary>Replace URLCookie with a RequestParametersQuery API and RequestParametersProvider SPI</summary>
