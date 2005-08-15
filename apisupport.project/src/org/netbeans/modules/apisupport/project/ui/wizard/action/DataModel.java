@@ -154,14 +154,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     private String getDefaultPackagePath(String fileName) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(getProject().getSourceDirectoryPath()).
-                append("/"). // NOI18N
-                append(packageName.replace('.','/')). // NOI18N
-                append("/"). // NOI18N
-                append(fileName);
-        
-        return sb.toString();
+        return getProject().getSourceDirectoryPath() + '/' +
+                packageName.replace('.','/') + '/' + fileName;
     }
     
     /**
@@ -173,6 +167,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         if (before != null && after != null) {
             cmf.add(cmf.orderLayerEntry(layerPath, before, after));
         }
+    }
+    
+    /** Checks whether a proposed class exists. */
+    boolean classExists() {
+        FileObject classFO = getProject().getProjectDirectory().getFileObject(
+                getDefaultPackagePath(className + ".java")); // NOI18N
+        return classFO != null;
     }
     
     private void generateShadow(final String itemPath, final String origInstance) {

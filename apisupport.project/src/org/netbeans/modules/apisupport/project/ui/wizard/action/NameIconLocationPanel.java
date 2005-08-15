@@ -91,9 +91,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     private void checkValidity() {
         if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) { // NOI18N
             setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered")); // NOI18N
+        } else if (classAlreadyExists()) {
+            setErrorMessage(getMessage("MSG_ClassAlreadyExists")); // NOI18N
         } else {
             setErrorMessage(null);
         }
+    }
+    
+    private boolean classAlreadyExists() {
+        return data.classExists();
     }
     
     private String getDisplayName() {
