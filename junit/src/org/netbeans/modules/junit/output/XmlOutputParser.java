@@ -403,7 +403,19 @@ final class XmlOutputParser extends DefaultHandler {
     /**
      */
     private String[] getOutput(String string) {
-        return string.split("(?:\\r|\\r\\n|\\n)");                      //NOI18N
+        String[] lines = string.split("(?:\\r|\\r\\n|\\n)");            //NOI18N
+        
+        /*
+         * The XML output produces an extra empty line at the end of the output:
+         */
+        if ((lines.length >= 1) && (lines[lines.length - 1].length() == 0)) {
+            String[] temp = lines;
+            lines = new String[lines.length - 1];
+            if (lines.length > 0) {
+                System.arraycopy(temp, 0, lines, 0, lines.length);
+            }
+        }
+        return lines;
     }
     
 }
