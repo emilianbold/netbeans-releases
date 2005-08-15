@@ -226,16 +226,12 @@ public class LayoutUtils implements LayoutConstants {
                 while (targetIter.hasNext()) {
                     LayoutInterval targetCandidate = (LayoutInterval)targetIter.next();
                     String targetId = targetCandidate.getComponent().getId();
-                    // areParallelSiblings check
-                    if (boundsMap.containsKey(srcId) || boundsMap.containsKey(targetId)
-                        || LayoutInterval.getCommonParent(srcCandidate, targetCandidate).isParallel()) {
-                        LayoutRegion targetRegion = sizeOfEmptySpaceHelper(targetCandidate, boundsMap);
-                        int targetDelta = targetRegion.positions[dimension][LEADING] - min;
-                        int padding = visualMapper.getPreferredPadding(srcId,
-                            targetId, dimension, LEADING, VisualMapper.PADDING_RELATED);
-                        if (!positionsNotUpdated) padding -= srcDelta + targetDelta;
-                        size = Math.max(size, padding);
-                    }
+                    LayoutRegion targetRegion = sizeOfEmptySpaceHelper(targetCandidate, boundsMap);
+                    int targetDelta = targetRegion.positions[dimension][LEADING] - min;
+                    int padding = visualMapper.getPreferredPadding(srcId,
+                        targetId, dimension, LEADING, VisualMapper.PADDING_RELATED);
+                    if (!positionsNotUpdated) padding -= srcDelta + targetDelta;
+                    size = Math.max(size, padding);
                 }
             }
         }
