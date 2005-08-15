@@ -161,7 +161,12 @@ public final class ProjectXMLManager {
                     ProjectXMLManager.RUN_DEPENDENCY,
                     NbModuleProjectType.NAMESPACE_SHARED);
             if (runDepEl == null) {
-                directDeps.add(new ModuleDependency(me));
+                if (!directDeps.add(new ModuleDependency(me))) {
+                    String errMessage = "Corrupted project metadata (project.xml). " + // NOI18N
+                            "Duplicate dependency entry found: " + me; // NOI18N
+                    Util.err.log(ErrorManager.WARNING, errMessage);
+                    throw new IllegalStateException(errMessage);
+                }
                 continue;
             }
             
@@ -189,8 +194,14 @@ public final class ProjectXMLManager {
                     ProjectXMLManager.IMPLEMENTATION_VERSION,
                     NbModuleProjectType.NAMESPACE_SHARED);
             
-            directDeps.add(new ModuleDependency(
-                    me, relVer, specVer, compDepEl != null, impleVerEl != null));
+            ModuleDependency depToAdd = new ModuleDependency(
+                    me, relVer, specVer, compDepEl != null, impleVerEl != null);
+            if (!directDeps.add(depToAdd)) {
+                String errMessage = "Corrupted project metadata (project.xml). " + // NOI18N
+                        "Duplicate dependency entry found: " + depToAdd; // NOI18N
+                Util.err.log(ErrorManager.WARNING, errMessage);
+                throw new IllegalStateException(errMessage);
+            }
         }
         return directDeps;
     }

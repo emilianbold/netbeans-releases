@@ -223,6 +223,27 @@ public class ProjectXMLManagerTest extends TestBase {
         assertTrue("following dependencies were found: " + assumed, assumed.isEmpty());
     }
     
+    public void testExceptionWhenAddingTheSameModuleDependencyTwice() throws Exception {
+        ModuleEntry me = actionProject.getModuleList().getEntry(
+                "org.netbeans.modules.java.project");
+        final ModuleDependency md = new ModuleDependency(me, "1", null, false, true);
+        Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+            public Object run() throws IOException {
+                actionPXM.addDependency(md);
+                actionPXM.addDependency(md);
+                return Boolean.TRUE;
+            }
+        });
+        assertTrue("adding dependencies", result.booleanValue());
+        ProjectManager.getDefault().saveProject(actionProject);
+        try {
+            Set deps = actionPXM.getDirectDependencies(null);
+            fail("IllegalStateException was expected");
+        } catch (IllegalStateException ise) {
+            // OK, expected exception was thrown
+        }
+    }
+    
     public void testFindPublicPackages() throws Exception {
         final File projectXML = new File(FileUtil.toFile(extexamples),
                 "/suite2/misc-project/nbproject/project.xml");
