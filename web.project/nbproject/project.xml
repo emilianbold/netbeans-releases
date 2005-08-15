@@ -161,6 +161,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -314,13 +315,14 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
                 <classpath>${module.classpath}:${ant.jar}</classpath>
                 <built-to>build/antclasses</built-to>
+
                 <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
+            <public-packages/>
         </data>
     </configuration>
 </project>

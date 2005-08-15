@@ -31,7 +31,6 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.modules.web.project.ProjectWebModule;
 
 import org.netbeans.modules.web.project.SourceRoots;
-import org.netbeans.modules.web.project.WebSources;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
@@ -55,6 +54,7 @@ import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -164,6 +164,9 @@ public class WebProjectProperties {
 
     public ClassPathSupport cs;
 
+    //list of frameworks to add to the application
+    private List newFrameworks;
+    
     // MODELS FOR VISUAL CONTROLS
     
     // CustomizerSources
@@ -475,7 +478,15 @@ public class WebProjectProperties {
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
-        updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
+        updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
+        
+        //add framework extensions
+        if (newFrameworks != null) {
+            for(int i = 0; i < newFrameworks.size(); i++)
+                ((WebFrameworkProvider) newFrameworks.get(i)).extend(project.getAPIWebModule());
+
+            newFrameworks.clear();
+        }
     }
     
     private void storeAdditionalProperties(EditableProperties projectProperties) {
@@ -824,4 +835,7 @@ public class WebProjectProperties {
         }
     }
     
+    public void setNewFrameworks(List frameworks) {
+        newFrameworks = frameworks;
+    }
 }

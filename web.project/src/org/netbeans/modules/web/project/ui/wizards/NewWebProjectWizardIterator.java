@@ -18,13 +18,12 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.web.project.UpdateHelper;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -36,15 +35,19 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
+
 /**
  * Wizard to create a new Web project.
- * @author Jesse Glick
+ * @author Jesse Glick, Radko Najman
  */
-public class NewWebProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
+public class NewWebProjectWizardIterator implements WizardDescriptor.InstantiatingIterator/*, TableModelListener*/ {
     
     private static final long serialVersionUID = 1L;
     
@@ -52,16 +55,11 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
 
     /** Create a new wizard iterator. */
     public NewWebProjectWizardIterator() {}
-    
-    private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new PanelConfigureProject(),
-        };
-    }
-    
+        
     private String[] createSteps() {
         return new String[] {
-            NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName") //NOI18N
+            NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP1_ProjectTitleName"), //NOI18N
+            NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NWP2_Frameworks") //NOI18N
         };
     }
     
@@ -117,30 +115,41 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         }
 
         resultSet.add(dir);
-        
+
+        //add framework extensions
+        List selectedFrameworks = (List) wiz.getProperty(WizardProperties.FRAMEWORKS);
+        if (selectedFrameworks != null){
+            for(int i = 0; i < selectedFrameworks.size(); i++) {
+                Object o = ((WebFrameworkProvider) selectedFrameworks.get(i)).extend(createdWebProject.getAPIWebModule());
+                if (o != null && o instanceof Set)
+                    resultSet.addAll((Set)o);
+            }
+        }
         // Returning set of FileObject of project diretory. 
         // Project will be open and set as main
         return resultSet;
     }
     
     private transient int index;
+    private transient int panelsCount;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
-        panels = createPanels();
+
+        //two standerd panels + configurable framework panels
+        panels = new WizardDescriptor.Panel[] {
+            new PanelConfigureProject(),
+            new PanelSupportedFrameworks()
+        };
+        panelsCount = panels.length;
+        
         // Make sure list of steps is accurate.
         String[] steps = createSteps();
-        for (int i = 0; i < panels.length; i++) {
+        for (int i = 0; i < steps.length; i++) {
             Component c = panels[i].getComponent();
-            if (steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
@@ -150,6 +159,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
             }
         }
     }
+    
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
         this.wiz.putProperty(WizardProperties.NAME,null);
@@ -162,19 +172,23 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
     }
     
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < panelsCount - 1;
     }
+    
     public boolean hasPrevious() {
         return index > 0;
     }
+    
     public void nextPanel() {
         if (!hasNext()) throw new NoSuchElementException();
         index++;
     }
+    
     public void previousPanel() {
         if (!hasPrevious()) throw new NoSuchElementException();
         index--;
     }
+    
     public WizardDescriptor.Panel current() {
         return panels[index];
     }

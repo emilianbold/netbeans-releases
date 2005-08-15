@@ -125,6 +125,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     private static final String SOURCES = "Sources";
     private static final String LIBRARIES = "Libraries";
+    private static final String FRAMEWORKS = "Frameworks";
     
     private static final String BUILD = "Build";
     private static final String BUILD_TESTS = "BuildTests";
@@ -145,6 +146,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString ("LBL_Config_Sources"),
                 null,
                 null);
+        
+        ProjectCustomizer.Category frameworks = ProjectCustomizer.Category.create (
+                FRAMEWORKS,
+                bundle.getString( "LBL_Config_Frameworks" ), // NOI18N
+                null,
+                null );
         
         ProjectCustomizer.Category libraries = ProjectCustomizer.Category.create (
                 LIBRARIES,
@@ -220,7 +227,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 
         categories = new ProjectCustomizer.Category[] { 
                 sources,
-                libraries,        
+                frameworks,
+                libraries,
                 buildCategory,
                 run,  
                 webServices
@@ -228,6 +236,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         
         Map panels = new HashMap();
         panels.put( sources, new CustomizerSources( uiProperties ) );
+        panels.put(frameworks, new CustomizerFrameworks(uiProperties));
         panels.put( libraries, new CustomizerLibraries( uiProperties ) );
         panels.put( build, new CustomizerCompile( uiProperties ) );
         panels.put( war, new CustomizerWar( uiProperties ) );

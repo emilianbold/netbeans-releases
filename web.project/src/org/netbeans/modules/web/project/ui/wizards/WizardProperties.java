@@ -33,4 +33,6 @@ public class WizardProperties {
     
     public static final String JAVA_PLATFORM = "setJavaPlatform"; // NOI18N
     public static final String SOURCE_LEVEL = "setSourceLevel"; // NOI18N
+    
+    public static final String FRAMEWORKS = "frameworks"; // NOI18N
 }
