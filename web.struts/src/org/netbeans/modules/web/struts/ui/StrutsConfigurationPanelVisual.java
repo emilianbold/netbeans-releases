@@ -14,10 +14,12 @@
 package org.netbeans.modules.web.struts.ui;
 
 import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener {
     
@@ -40,7 +42,8 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
             jCheckBoxWAR.setVisible(true);
             enableComponents(true);
         }
-            
+        
+        ((JTextComponent)jComboBoxURLPattern.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -166,10 +169,33 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
     // End of variables declaration//GEN-END:variables
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        //NOT IMPLEMENTED YET
+        String urlPattern = (String)jComboBoxURLPattern.getEditor().getItem();
+        if (urlPattern == null || urlPattern.trim().equals("")){
+          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
+                NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));  
+          return false;
+        }
+        if (!isPatternValid(urlPattern)){
+          wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
+                NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));  
+          return false;  
+        }
+        wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
         return true;
     }
 
+    private boolean isPatternValid(String pattern){
+        if (pattern.startsWith("*.")){
+            String p = pattern.substring(2);
+            if (p.indexOf('.') == -1 && p.indexOf('*') == -1 
+                    && p.indexOf('/') == -1 && !p.trim().equals(""))
+                return true;
+        }
+        if (pattern.endsWith("/*") && pattern.startsWith("/"))
+            return true;
+        return false;
+    }
+    
     void validate (WizardDescriptor d) throws WizardValidationException {
 //        projectLocationPanel.validate (d);
     }
