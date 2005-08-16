@@ -157,7 +157,7 @@ public class VersionsCache {
             return getRepositoryForDirectory(directory.getParentFile()) + "/" + directory.getName();
         }
         try {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), "");
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1);
         } catch (IOException e) {
             return null;
         }
