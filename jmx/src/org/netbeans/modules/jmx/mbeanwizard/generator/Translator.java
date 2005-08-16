@@ -13,6 +13,7 @@
 package org.netbeans.modules.jmx.mbeanwizard.generator;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.jmx.Introspector;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.MBeanDO;
 import org.netbeans.modules.jmx.MBeanNotification;
@@ -86,16 +87,16 @@ public class Translator {
             throw new IllegalArgumentException("MBeanFolder is null");// NOI18N
         DataFolder mbeanFolderDataObj = DataFolder.findFolder(mbeanFolder);
         mbean.setDataFolder(mbeanFolderDataObj);
-         
-        addAttributes(wiz,mbean);
-        addOperations(wiz,mbean);
-        addNotifications(wiz,mbean);
         
         JavaClass wrappedClass = (JavaClass) 
             wiz.getProperty(WizardConstants.PROP_MBEAN_EXISTING_CLASS);
         mbean.setWrapppedClass((wrappedClass != null));
         if (wrappedClass != null)
             mbean.setWrappedClassName(wrappedClass.getName());
+        
+        addAttributes(wiz,mbean,wrappedClass);
+        addOperations(wiz,mbean);
+        addNotifications(wiz,mbean);
         
         FileObject template = Templates.getTemplate( wiz );
         if (template == null)
@@ -260,7 +261,8 @@ public class Translator {
         mbean.setNotifs(notifs);
     }
     
-    private static void addAttributes(WizardDescriptor wiz, MBeanDO mbean) {
+    private static void addAttributes(WizardDescriptor wiz, MBeanDO mbean,
+            JavaClass wrappedClass) {
         String strNbAttr = (String)wiz.getProperty(
                 WizardConstants.PROP_ATTR_NB);
         int nbAttr = 0;
@@ -332,10 +334,13 @@ public class Translator {
             if (attrSelect == null)
                 throw new IllegalArgumentException("attribute selected invalid"); // NOI18N
             
-            if (attrSelect)
-                attributes.add(new MBeanAttribute(
+            if (attrSelect) {
+                MBeanAttribute attr =  new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
-                    attrAccess, attrDescr, true));
+                    attrAccess, attrDescr, true);
+                Introspector.discoverAttrMethods(wrappedClass,wrappedClass.getResource(),attr);
+                attributes.add(attr);
+            }
         }
         
         mbean.setAttributes(attributes);
