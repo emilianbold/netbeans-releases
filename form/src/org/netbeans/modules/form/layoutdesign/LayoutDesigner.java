@@ -1602,6 +1602,7 @@ public class LayoutDesigner implements LayoutConstants {
             if (interval.isGroup()) {
                 destroyGroupIfRedundant(interval, boundary);
             }
+            return;
         }
         
         // Sequential group can be dissolved in sequential parent
