@@ -327,6 +327,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/jstl11</project>
                 <project>../web/project</project>
                 <project>../web/servletapi24</project>
+                <project>../web/struts</project>
                 <project>../web/webapi</project>
                 <project>../websvc/clientapi</project>
                 <project>../websvc/core</project>
