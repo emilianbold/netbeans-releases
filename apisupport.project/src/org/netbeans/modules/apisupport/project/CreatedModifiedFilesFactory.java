@@ -22,6 +22,7 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -37,6 +38,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
@@ -81,35 +83,22 @@ final class CreatedModifiedFilesFactory {
         return new CreateFile(project, path, content, tokens);
     }
     
-    static CreatedModifiedFiles.Operation createLayerEntry(NbModuleProject project,
-            String layerPath, String contentResourcePath, URL content, String generatedPath,
+    static CreatedModifiedFiles.Operation layerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set/*<String>*/ externalFiles, CreatedModifiedFiles cmf) {
+        return new LayerModifications(project, op, externalFiles, cmf);
+    }
+    
+    static CreatedModifiedFiles.Operation createLayerEntry(CreatedModifiedFiles cmf, NbModuleProject project,
+            String layerPath, URL content,
             Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
-        return new CreateLayerEntry(project, layerPath, contentResourcePath, content,
-                generatedPath, substitutionTokens, localizedDisplayName, attrs);
+        return new CreateLayerEntry(cmf, project, layerPath, content,
+                substitutionTokens, localizedDisplayName, attrs);
     }
     
-    static CreatedModifiedFiles.Operation createLayerSubtree(NbModuleProject project,
-            String layerPath, String content, boolean includeRootElement) {
-        return new CreateLayerSubtree(project, layerPath, content, includeRootElement);
-    }
-    
-    static CreatedModifiedFiles.Operation orderLayerEntry(NbModuleProject project,
-            String layerPath, String precedingItemName, String followingItemName) {
-        return new OrderLayerEntry(project, layerPath, precedingItemName, followingItemName);
-    }
-    
-    static CreatedModifiedFiles.Operation createLayerAttribute(NbModuleProject project,
-            String parentPath, String attrName, String secondAttrName, String secondAttrValue) {
-        return new CreateLayerAttribute(project, parentPath, attrName, secondAttrName, secondAttrValue);
-    }
-    
-    private static abstract class OperationBase implements Operation {
+    private static abstract class OperationBase implements CreatedModifiedFiles.Operation {
         
         private NbModuleProject project;
         private SortedSet/*<String>*/ createdPaths;
         private SortedSet/*<String>*/ modifiedPaths;
-
-        private String layerFile;
         
         protected OperationBase(NbModuleProject project) {
             this.project = project;
@@ -130,6 +119,7 @@ final class CreatedModifiedFilesFactory {
         }
         
         protected void addCreatedOrModifiedPath(String relPath) {
+            // XXX this is probably wrong, since it might be created by an earlier op:
             if (getProject().getProjectDirectory().getFileObject(relPath) == null) {
                 getCreatedPathsSet().add(relPath);
             } else {
@@ -137,7 +127,7 @@ final class CreatedModifiedFilesFactory {
             }
         }
         
-        protected void addPaths(Operation o) {
+        protected void addPaths(CreatedModifiedFiles.Operation o) {
             getCreatedPathsSet().addAll(Arrays.asList(o.getCreatedPaths()));
             getModifiedPathsSet().addAll(Arrays.asList(o.getModifiedPaths()));
         }
@@ -162,15 +152,6 @@ final class CreatedModifiedFilesFactory {
         
         protected boolean addModifiedFileObject(FileObject fo) {
             return getModifiedPathsSet().add(getProjectPath(fo));
-        }
-        
-        protected String getLayerFile() {
-            if (layerFile == null) {
-                ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
-                String srcDir = getProject().getSourceDirectoryPath();
-                layerFile = srcDir + "/" + mm.getLayer(); // NOI18N
-            }
-            return layerFile;
         }
         
         /**
@@ -208,48 +189,48 @@ final class CreatedModifiedFilesFactory {
             FileLock lock = targetFO.lock();
             try {
                 if (tokens == null) {
-                    copyByteAfterByte(lock, targetFO);
+                    copyByteAfterByte(content, lock, targetFO);
                 } else {
-                    copyAndSubstituteTokens(lock, targetFO);
+                    copyAndSubstituteTokens(content, lock, targetFO, tokens);
                 }
             } finally {
                 lock.releaseLock();
             }
         }
-
-        private void copyByteAfterByte(final FileLock lock, final FileObject targetFO) throws IOException {
-            OutputStream os = targetFO.getOutputStream(lock);
-            InputStream is = content.openStream();
-            try {
-                FileUtil.copy(is, os);
-            } finally {
-                is.close();
-                os.close();
-            }
-        }
         
-        private void copyAndSubstituteTokens(final FileLock lock, final FileObject targetFO) throws IOException {
-            PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
-            BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
-            try {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    pw.println(tokens == null ? line : replaceTokens(line));
-                }
-            } finally {
-                br.close();
-                pw.close();
-            }
+    }
+    
+    private static void copyByteAfterByte(URL content, FileLock lock, FileObject targetFO) throws IOException {
+        OutputStream os = targetFO.getOutputStream(lock);
+        InputStream is = content.openStream();
+        try {
+            FileUtil.copy(is, os);
+        } finally {
+            is.close();
+            os.close();
         }
-        
-        private String replaceTokens(String line) {
-            for (Iterator it = tokens.entrySet().iterator(); it.hasNext(); ) {
-                Map.Entry entry = (Map.Entry) it.next();
-                line = line.replaceAll((String) entry.getKey(), (String) entry.getValue());
+    }
+    
+    private static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map/*<String,String>*/ tokens) throws IOException {
+        PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
+        BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
+        try {
+            String line;
+            while ((line = br.readLine()) != null) {
+                pw.println(tokens == null ? line : replaceTokens(tokens, line));
             }
-            return line;
+        } finally {
+            br.close();
+            pw.close();
         }
-        
+    }
+    
+    private static String replaceTokens(Map/*<String,String>*/ tokens, String line) {
+        for (Iterator it = tokens.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
+            line = line.replaceAll((String) entry.getKey(), (String) entry.getValue());
+        }
+        return line;
     }
     
     private static final class BundleKey extends OperationBase {
@@ -314,7 +295,7 @@ final class CreatedModifiedFilesFactory {
     }
     
     private static final class AddModuleDependency extends OperationBase {
-
+        
         private String codeNameBase;
         private int releaseVersion;
         private SpecificationVersion version;
@@ -411,31 +392,60 @@ final class CreatedModifiedFilesFactory {
     
     private static final class CreateLayerEntry extends OperationBase {
         
-        private String layerPath;
-        private String contentResourcePath;
-        private String generatedPath;
-        private Map/*<String,String>*/ tokens;
-        private Map/*<String, Object>*/ fileAttributes;
+        private CreatedModifiedFiles.Operation createBundleKey;
+        private CreatedModifiedFiles.Operation layerOp;
         
-        private Operation createBundleKey;
-        private Operation createContentResource;
-        
-        public CreateLayerEntry(NbModuleProject project, String layerPath,
-                String contentResourcePath, URL content, String generatedPath,
-                Map/*<String,String>*/ substitutionTokens, String localizedDisplayName, Map attrs) {
+        public CreateLayerEntry(CreatedModifiedFiles cmf, NbModuleProject project, final String layerPath,
+                final URL content,
+                final Map/*<String,String>*/ tokens, final String localizedDisplayName, final Map attrs) {
             
             super(project);
-            this.layerPath = layerPath;
-            this.contentResourcePath = contentResourcePath;
-            this.generatedPath = generatedPath;
-            this.tokens = substitutionTokens;
-            this.fileAttributes = attrs;
-            addCreatedOrModifiedPath(getLayerFile());
-            
+            CreatedModifiedFiles.LayerOperation op = new CreatedModifiedFiles.LayerOperation() {
+                public void run(FileSystem layer) throws IOException {
+                    FileObject targetFO = FileUtil.createData(layer.getRoot(), layerPath);
+                    if (content != null) {
+                        FileLock lock = targetFO.lock();
+                        try {
+                            if (tokens == null) {
+                                copyByteAfterByte(content, lock, targetFO);
+                            } else {
+                                copyAndSubstituteTokens(content, lock, targetFO, tokens);
+                            }
+                        } finally {
+                            lock.releaseLock();
+                        }
+                    }
+                    if (localizedDisplayName != null) {
+                        String bundlePath = ManifestManager.getInstance(getProject().getManifest(), false).getLocalizingBundle();
+                        String suffix = ".properties"; // NOI18N
+                        if (bundlePath.endsWith(suffix)) {
+                            String name = bundlePath.substring(0, bundlePath.length() - suffix.length()).replace('/', '.');
+                            targetFO.setAttribute("SystemFileSystem.localizingBundle", name); // NOI18N
+                        } else {
+                            // XXX what?
+                        }
+                    }
+                    if (attrs != null) {
+                        Iterator it = attrs.entrySet().iterator();
+                        while (it.hasNext()) {
+                            Map.Entry entry = (Map.Entry) it.next();
+                            targetFO.setAttribute((String) entry.getKey(), entry.getValue());
+                        }
+                    }
+                }
+            };
+            Set/*<String>*/ externalFiles;
             if (content != null) {
-                this.createContentResource = new CreateFile(getProject(), generatedPath, content, tokens);
-                addPaths(this.createContentResource);
+                FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
+                FileObject parent = xml != null ? xml.getParent() : null;
+                // XXX this is not fully accurate since if two ops would both create the same file,
+                // really the second one would automatically generate a uniquified name... but close enough!
+                externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, layerPath));
+            } else {
+                externalFiles = Collections.EMPTY_SET;
             }
+            layerOp = new LayerModifications(project, op, externalFiles, cmf);
+            addPaths(layerOp);
             if (localizedDisplayName != null) {
                 this.createBundleKey = new BundleKey(getProject(), layerPath, localizedDisplayName);
                 addPaths(this.createBundleKey);
@@ -443,101 +453,62 @@ final class CreatedModifiedFilesFactory {
         }
         
         public void run() throws IOException{
-            if (createContentResource != null) {
-                createContentResource.run();
-                if (contentResourcePath == null) {
-                    String layer = getLayerFile();
-                    String layerParent = layer.substring(0, layer.lastIndexOf("/"));
-                    if (generatedPath.startsWith(layerParent)) {
-                        contentResourcePath = generatedPath.substring(layerParent.length());
-                        if (contentResourcePath.startsWith("/")) {
-                            contentResourcePath = contentResourcePath.substring(1);
-                        }
-                    }
-                }
-            }
-            String lbDotted = null;
+            layerOp.run();
             if (createBundleKey != null) {
                 createBundleKey.run();
-                ManifestManager mm = ManifestManager.getInstance(getProject().getManifest(), false);
-                lbDotted = mm.getLocalizingBundle().replace('/', '.');
-                if (lbDotted.endsWith(".properties")) { // NOI18N
-                    lbDotted = lbDotted.substring(0, lbDotted.length() - 11);
-                }
             }
-            
-            LayerUtil.createFile(getProject().getProjectDirectory(), getLayerFile(),
-                    layerPath, contentResourcePath, lbDotted, fileAttributes);
         }
     }
     
-    private static final class CreateLayerSubtree extends OperationBase {
-        
-        private String layerPath;
-        private String subtreecontent;
-        private boolean includeRootElement;
-        
-        public CreateLayerSubtree(NbModuleProject project, String layerPath,
-                                  String subtreecontent, boolean includeRootElement) {
-            
-            super(project);
-            this.layerPath = layerPath;
-            this.subtreecontent = subtreecontent;
-            this.includeRootElement = includeRootElement;
-            addCreatedOrModifiedPath(getLayerFile());
-            
-        }
-        
-        public void run() throws IOException{
-            LayerUtil.createSubTree(getProject().getProjectDirectory(), getLayerFile(),
-                    layerPath, subtreecontent, includeRootElement);
-        }
-    }    
+    private static final class LayerModifications implements CreatedModifiedFiles.Operation {
 
-    private static final class OrderLayerEntry extends OperationBase {
+        private final NbModuleProject project;
+        private final CreatedModifiedFiles.LayerOperation op;
+        private final Set/*<String>*/ externalFiles;
+        private final CreatedModifiedFiles cmf;
         
-        private String layerPath;
-        private String precedingItemName;
-        private String followingItemName;
-        
-        public OrderLayerEntry(NbModuleProject project, String layerPath,
-                String precedingItemName, String followingItemName) {
-            
-            super(project);
-            this.layerPath = layerPath;
-            this.precedingItemName = precedingItemName;
-            this.followingItemName = followingItemName;
-            addCreatedOrModifiedPath(getLayerFile());
+        public LayerModifications(NbModuleProject project, CreatedModifiedFiles.LayerOperation op, Set/*<String>*/ externalFiles, CreatedModifiedFiles cmf) {
+            this.project = project;
+            this.op = op;
+            this.externalFiles = externalFiles;
+            this.cmf = cmf;
         }
         
-        public void run() throws IOException{
-            LayerUtil.orderEntry(getProject().getProjectDirectory(), getLayerFile(),
-                    layerPath, precedingItemName, followingItemName);
-        }
-    }
-    
-    private static final class CreateLayerAttribute extends OperationBase {
-        
-        private String parentPath;
-        private String attrName;
-        private String secondAttrName;
-        private String secondAttrValue;
-        
-        public CreateLayerAttribute(NbModuleProject project, String parentPath,
-                String attrName, String secondAttrName, String secondAttrValue) {
-            
-            super(project);
-            this.parentPath = parentPath;
-            this.attrName = attrName;
-            this.secondAttrName = secondAttrName;
-            this.secondAttrValue = secondAttrValue;
-            addCreatedOrModifiedPath(getLayerFile());
+        public void run() throws IOException {
+            op.run(cmf.getLayerHandle().layer());
         }
         
-        public void run() throws IOException{
-            LayerUtil.createAttribute(getProject().getProjectDirectory(), getLayerFile(),
-                    parentPath, attrName, secondAttrName, secondAttrValue);
+        private String layerPrefix() {
+            FileObject layer = cmf.getLayerHandle().getLayerFile();
+            if (layer == null) {
+                return null;
+            }
+            return FileUtil.getRelativePath(project.getProjectDirectory(), layer);
         }
+        
+        public String[] getModifiedPaths() {
+            String layerPath = layerPrefix();
+            if (layerPath == null) {
+                return new String[0];
+            }
+            return new String[] {layerPath};
+        }
+        
+        public String[] getCreatedPaths() {
+            String layerPath = layerPrefix();
+            if (layerPath == null) {
+                return new String[0];
+            }
+            int slash = layerPath.lastIndexOf('/');
+            String prefix = layerPath.substring(0, slash + 1);
+            SortedSet s = new TreeSet();
+            Iterator it = externalFiles.iterator();
+            while (it.hasNext()) {
+                s.add(prefix + (String) it.next());
+            }
+            return (String[]) s.toArray(new String[s.size()]);
+        }
+        
     }
     
 }

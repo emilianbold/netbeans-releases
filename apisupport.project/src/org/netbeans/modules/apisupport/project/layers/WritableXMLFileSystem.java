@@ -31,12 +31,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -67,6 +73,8 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Enumerations;
+import org.openide.util.TopologicalSortException;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 // XXX use doc.getRootEventManager().setFirePolicy(TreeEventManager.FIRE_{LATER,NOW})
@@ -84,7 +92,7 @@ import org.openide.util.WeakListeners;
  * does, more or less, to help test localized file names.
  * @author Jesse Glick
  */
-public class WritableXMLFileSystem extends AbstractFileSystem
+final class WritableXMLFileSystem extends AbstractFileSystem
         implements AbstractFileSystem.Attr,
         AbstractFileSystem.Change,
         AbstractFileSystem.Info,
@@ -101,7 +109,7 @@ public class WritableXMLFileSystem extends AbstractFileSystem
     private ClassPath classpath; // OK to be null
     private final BadgingSupport status;
     
-    public WritableXMLFileSystem(URL location, TreeEditorCookie cookie) {
+    public WritableXMLFileSystem(URL location, TreeEditorCookie cookie, boolean badging) {
         this.attr = this;
         this.change = this;
         this.info = this;
@@ -116,18 +124,22 @@ public class WritableXMLFileSystem extends AbstractFileSystem
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
         fileChangeListener = FileUtil.weakFileChangeListener(this, null);
-        status = new BadgingSupport(this);
-        status.addFileStatusListener(new FileStatusListener() {
-            public void annotationChanged(FileStatusEvent ev) {
-                fireFileStatusChanged(ev);
-            }
-        });
+        if (badging) {
+            status = new BadgingSupport(this);
+            status.addFileStatusListener(new FileStatusListener() {
+                public void annotationChanged(FileStatusEvent ev) {
+                    fireFileStatusChanged(ev);
+                }
+            });
+        } else {
+            status = null;
+        }
         cookie.addPropertyChangeListener(WeakListeners.propertyChange(this, cookie));
         setLocation(location);
     }
     
     public FileSystem.Status getStatus() {
-        return status;
+        return status != null ? status : super.getStatus();
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -140,18 +152,22 @@ public class WritableXMLFileSystem extends AbstractFileSystem
             throw new IllegalArgumentException(u);
         }
         this.location = location;
-        Matcher m = Pattern.compile("(.*/)?[^_/.]+(_[^/.]+)?(\\.[^/]+)?").matcher(u);
-        assert m.matches() : u;
-        suffix = m.group(2);
-        if (suffix == null) {
-            suffix = "";
+        if (status != null) {
+            Matcher m = Pattern.compile("(.*/)?[^_/.]+(_[^/.]+)?(\\.[^/]+)?").matcher(u);
+            assert m.matches() : u;
+            suffix = m.group(2);
+            if (suffix == null) {
+                suffix = "";
+            }
+            status.setSuffix(suffix);
         }
-        status.setSuffix(suffix);
     }
     
     public void setClasspath(ClassPath classpath) {
         this.classpath = classpath;
-        status.setClasspath(classpath);
+        if (status != null) {
+            status.setClasspath(classpath);
+        }
     }
     
     public String getDisplayName() {
@@ -189,7 +205,7 @@ public class WritableXMLFileSystem extends AbstractFileSystem
         return findElementIn(getRootElement(), name);
     }
     /** helper method only */
-    private TreeElement findElementIn(TreeElement el, String name) {
+    private static TreeElement findElementIn(TreeElement el, String name) {
         if (el == null) return null;
         if (name.equals("")) { // NOI18N
             return el;
@@ -368,7 +384,7 @@ public class WritableXMLFileSystem extends AbstractFileSystem
                 }
                  */
                 FileObject parent = findLayerParent();
-                String externalName = findNewExternalName(parent, name);
+                String externalName = LayerUtils.findGeneratedName(parent, name);
                 assert externalName.indexOf('/') == -1 : externalName;
                 FileObject externalFile = parent.createData(externalName);
                 FileLock lock = externalFile.lock();
@@ -402,33 +418,6 @@ public class WritableXMLFileSystem extends AbstractFileSystem
             throw new IOException(loc);
         }
         return parent;
-    }
-    /**
-     * Find a name for a new external file which will not conflict with existing files.
-     */
-    private String findNewExternalName(FileObject parent, String layerPath) throws IOException {
-        Matcher m = Pattern.compile("(.+/)?([^/.]+)(\\.[^/]+)?").matcher(layerPath); // NOI18N
-        assert m.matches() : layerPath;
-        String base = m.group(2);
-        String ext = m.group(3);
-        if (ext == null) {
-            ext = "";
-        } else if (ext.equals(".java")) { // NOI18N
-            ext = "_java"; // NOI18N
-        } else if (ext.equals(".settings")) { // NOI18N
-            ext = ".xml"; // NOI18N
-        }
-        String name = base + ext;
-        if (parent.getFileObject(name) == null) {
-            return name;
-        } else {
-            for (int i = 1; true; i++) {
-                name = base + '_' + i + ext;
-                if (parent.getFileObject(name) == null) {
-                    return name;
-                }
-            }
-        }
     }
     
     private void createFileOrFolder(String name, boolean folder) throws IOException {
@@ -1067,6 +1056,10 @@ public class WritableXMLFileSystem extends AbstractFileSystem
                 parent.appendChild(new TreeText("\n" + spaces(depth * INDENT_STEP)));
             }
             parent.normalize();
+            if (((TreeElement) child).getQName().equals("attr") && ((TreeElement) child).getAttribute("name").getValue().indexOf('/') != -1) { // NOI18N
+                // Check for ordering attributes, which we have to handle specially.
+                resort(parent);
+            }
         } catch (InvalidArgumentException e) {
             assert false : e;
         }
@@ -1076,8 +1069,7 @@ public class WritableXMLFileSystem extends AbstractFileSystem
      * Rules:
      * 1. <file> or <folder> must be added in alphabetical order w.r.t. existing ones.
      * 2. <attr> w/o '/' in name must be added to top of element in alpha order w.r.t. existing ones.
-     * 3. <attr> w/ '/' should be added if possible between <file>/<folder> of the specified names.
-     * 4. Other objects - TBD for now.
+     * 3. <attr> w/ '/' should be added wherever - will rearrange everything later...
      * Returns a position to insert before (null for end).
      */
     private static TreeChild insertBefore(TreeElement parent, TreeChild child) throws ReadOnlyException {
@@ -1114,26 +1106,174 @@ public class WritableXMLFileSystem extends AbstractFileSystem
                             return kid;
                         }
                     } else {
-                        throw new AssertionError("Weird child: " + childe.getQName());
+                        throw new AssertionError("Weird child: " + kid.getQName());
                     }
                 }
+                return null;
             } else {
-                // Ordering attribute.
+                // Ordering attribute. Will be ordered later, so skip it now.
+                return null;
+                /*
+                String former = name.substring(0, slash);
                 String latter = name.substring(slash + 1);
-                Iterator it = parent.getChildNodes(TreeElement.class).iterator();
-                while (it.hasNext()) {
-                    TreeElement kid = (TreeElement) it.next();
-                    if (kid.getQName().equals("file") || kid.getQName().equals("folder")) { // NOI18N
-                        String kidname = kid.getAttribute("name").getValue(); // NOI18N
-                        if (kidname.compareTo(latter) >= 0) {
-                            return kid;
+                TreeElement formerMatch = findElementIn(parent, former);
+                TreeElement latterMatch = findElementIn(parent, latter);
+                if (formerMatch == null) {
+                    if (latterMatch == null) {
+                        // OK, just stick it somewhere.
+                        return positionForRegularAttr(parent, name);
+                    } else {
+                        return latterMatch;
+                    }
+                } else { // formerMatch != null
+                    if (latterMatch == null) {
+                        return null; // XXX OK?
+                    } else {
+                        int formerIdx = parent.indexOf(formerMatch);
+                        int latterIdx = parent.indexOf(latterMatch);
+                        if (formerIdx > latterIdx) {
+                            // Out of order. Swap them.
+                            // XXX does this need to be smarter?
+                            parent.removeChild(formerMatch);
+                            parent.removeChild(latterMatch);
+                            parent.insertChildAt(formerMatch, latterIdx);
+                            parent.insertChildAt(latterMatch, formerIdx);
                         }
+                        return latterMatch;
                     }
                 }
+                 */
             }
-            return null;
         } else {
             throw new AssertionError("Weird child: " + childe.getQName());
+        }
+    }
+    /**
+     * Resort all files and folders and attributes in a folder context. The order is:
+     * 1. Files and folders are alpha-sorted if they have no relative attrs.
+     * 2. But existing relative attrs change that order. Unordered files/folders go at the end.
+     * 3. Most attributes are alpha-sorted at the top.
+     * 4. Relative attrs are sorted between files or folders they order, if possible.
+     * 5. Relative attrs with one missing referent are ordered right after the existing referent.
+     * 6. Relative attrs with both missing referents are ordered after other attrs.
+     */
+    private static void resort(TreeElement parent) throws ReadOnlyException {
+        class Item {
+            public TreeElement child;
+            public int originalIndex;
+            boolean isAttr() {
+                return child.getQName().equals("attr"); // NOI18N
+            }
+            String getName() {
+                return child.getAttribute("name").getValue(); // NOI18N
+            }
+            boolean isOrderingAttr() {
+                return isAttr() && getName().indexOf('/') != -1;
+            }
+            String getFormer() {
+                String n = getName();
+                return n.substring(0, n.indexOf('/'));
+            }
+            String getLatter() {
+                String n = getName();
+                return n.substring(n.indexOf('/') + 1);
+            }
+        }
+        Set/*<Item>*/ items = new LinkedHashSet();
+        SortedSet/*<Integer>*/ indices = new TreeSet();
+        for (int i = 0; i < parent.getChildrenNumber(); i++) {
+            TreeChild child = (TreeChild) parent.getChildNodes().get(i);
+            if (child instanceof TreeElement) {
+                Item item = new Item();
+                item.child = (TreeElement) child;
+                item.originalIndex = i;
+                items.add(item);
+                indices.add(new Integer(i));
+            }
+        }
+        Map/*<Item,Collection<Item>>*/ edges = new LinkedHashMap();
+        Map/*<String,Item>*/ filesAndFolders = new LinkedHashMap();
+        Map/*<String,Item>*/ attrs = new LinkedHashMap();
+        Set/*<String>*/ orderedFilesAndFolders = new LinkedHashSet();
+        Iterator it = items.iterator();
+        while (it.hasNext()) {
+            Item item = (Item) it.next();
+            String name = item.getName();
+            if (item.isAttr()) {
+                attrs.put(name, item);
+                if (item.isOrderingAttr()) {
+                    orderedFilesAndFolders.add(item.getFormer());
+                    orderedFilesAndFolders.add(item.getLatter());
+                }
+            } else {
+                filesAndFolders.put(name, item);
+            }
+        }
+        class NameComparator implements Comparator {
+            public int compare(Object o1, Object o2) {
+                Item i1 = (Item) o1;
+                Item i2 = (Item) o2;
+                return i1.getName().compareTo(i2.getName());
+            }
+        }
+        Set/*<Item>*/ sortedAttrs = new TreeSet(new NameComparator());
+        Set/*<Item>*/ sortedFilesAndFolders = new TreeSet(new NameComparator());
+        Set/*<Item>*/ orderableItems = new LinkedHashSet();
+        it = items.iterator();
+        while (it.hasNext()) {
+            Item item = (Item) it.next();
+            String name = item.getName();
+            if (item.isAttr()) {
+                if (item.isOrderingAttr()) {
+                    Item former = (Item) filesAndFolders.get(item.getFormer());
+                    if (former != null) {
+                        Set/*<Item>*/ formerConstraints = (Set) edges.get(former);
+                        if (formerConstraints == null) {
+                            formerConstraints = new LinkedHashSet();
+                            edges.put(former, formerConstraints);
+                        }
+                        formerConstraints.add(item);
+                    }
+                    Item latter = (Item) filesAndFolders.get(item.getLatter());
+                    if (latter != null) {
+                        Set/*<Item>*/ constraints = new LinkedHashSet();
+                        constraints.add(latter);
+                        edges.put(item, constraints);
+                    }
+                    orderableItems.add(item);
+                } else {
+                    sortedAttrs.add(item);
+                }
+            } else {
+                if (orderedFilesAndFolders.contains(name)) {
+                    orderableItems.add(item);
+                } else {
+                    sortedFilesAndFolders.add(item);
+                }
+            }
+        }
+        java.util.List/*<Item>*/ orderedItems;
+        try {
+            orderedItems = Utilities.topologicalSort(orderableItems, edges);
+        } catch (TopologicalSortException e) {
+            // OK, ignore.
+            return;
+        }
+        it = items.iterator();
+        while (it.hasNext()) {
+            Item item = (Item) it.next();
+            parent.removeChild(item.child);
+        }
+        java.util.List/*<Item>*/ allOrderedItems = new ArrayList(sortedAttrs);
+        allOrderedItems.addAll(orderedItems);
+        allOrderedItems.addAll(sortedFilesAndFolders);
+        assert new HashSet(allOrderedItems).equals(items);
+        it = allOrderedItems.iterator();
+        Iterator indexIt = indices.iterator();
+        while (it.hasNext()) {
+            Item item = (Item) it.next();
+            int index = ((Integer) indexIt.next()).intValue();
+            parent.insertChildAt(item.child, index);
         }
     }
     private static String spaces(int size) {

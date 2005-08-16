@@ -60,10 +60,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String origIconPath;
     private String packageName;
     
-    // XXX such constans should be probably on more proper place (or generated
-    // by mehtods in CreatedModifiedFiles automatically)
-    private static final String STRING_VALUE = "stringvalue"; // NOI18N
-    
     DataModel(WizardDescriptor wiz) {
         super(wiz);
     }
@@ -109,8 +105,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // add layer entry about the action
         String instanceFullPath = "Actions/" + category + "/" // NOI18N
                 + dashedFqClassName + ".instance"; // NOI18N
-        cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null, null, null));
-        cmf.add(cmf.createLayerAttribute(instanceFullPath, "instanceClass", STRING_VALUE, fqClassName)); // NOI18N
+        cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
+        cmf.add(cmf.createLayerAttribute(instanceFullPath, "instanceClass", fqClassName)); // NOI18N
         
         // add dependency on util to project.xml
         cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
@@ -127,7 +123,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
                 generateOrder(parentPath, gmiPosition.getBefore(), shadow);
             }
             generateShadow(parentPath + "/" + shadow, instanceFullPath); // NOI18N
-            generateOrder(parentPath, shadow, gmiPosition.getAfter());
             if (gmiSeparatorAfter) {
                 String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
                 DataModel.generateSeparator(cmf, parentPath, sepName);
@@ -177,8 +172,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
     private void generateShadow(final String itemPath, final String origInstance) {
-        cmf.add(cmf.createLayerEntry(itemPath, null, null, null, null, null, null));
-        cmf.add(cmf.createLayerAttribute(itemPath, "originalFile", STRING_VALUE, origInstance)); // NOI18N
+        cmf.add(cmf.createLayerEntry(itemPath, null, null, null, null));
+        cmf.add(cmf.createLayerAttribute(itemPath, "originalFile", origInstance)); // NOI18N
     }
     
     CreatedModifiedFiles getCreatedModifiedFiles() {
@@ -311,9 +306,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             final String parentPath, final String sepName) {
         String sepPath = parentPath + "/" + sepName; // NOI18N
         cmf.add(cmf.createLayerEntry(sepPath,
-                null, null, null, null, null, null));
+                null, null, null, null));
         cmf.add(cmf.createLayerAttribute(sepPath, "instanceClass", // NOI18N
-                STRING_VALUE, "javax.swing.JSeparator")); // NOI18N
+                "javax.swing.JSeparator")); // NOI18N
     }
     
 }

@@ -16,9 +16,13 @@ import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -33,7 +37,10 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
 
@@ -167,7 +174,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
 
         String namePrefix = model.getPrefix();
         String packageName = model.getPackageName();
-        String mime = model.getMimeType();
+        final String mime = model.getMimeType();
         HashMap replaceTokens = new HashMap();
         replaceTokens.put("@@PREFIX@@", namePrefix);//NOI18N
         replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
@@ -211,7 +218,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
         // 2. dataobject file
-        boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.+-])*)", //NOI18N
+        final boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.+-])*)", //NOI18N
                                                mime); 
         if (isEditable) {
             StringBuffer editorBuf = new StringBuffer();
@@ -237,12 +244,9 @@ public class NewLoaderIterator extends BasicWizardIterator {
         fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
         
         // 4. mimetyperesolver file
-        String resolverName = getRelativePath(model.getProject(), model.getPackageName(), 
-                                            namePrefix, "Resolver.xml"); //NOI18N
-        File resFile = new File(FileUtil.toFile(model.getProject().getProjectDirectory()), resolverName);
         template = NewLoaderIterator.class.getResource("templateresolver.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "resolver.xml", //NOI18N
-                                                     null, template, resolverName, 
+                                                     template,
                                                      replaceTokens, 
                                                      NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
                                                      null)); 
@@ -318,48 +322,47 @@ public class NewLoaderIterator extends BasicWizardIterator {
         
         fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore));
         
-        StringBuffer buf = new StringBuffer();
-        buf.append("<invisibleRoot>");//NOI18N
-        if (isEditable) {
-            buf.append("<file name=\"org-openide-actions-OpenAction.instance\"/>");//NOI18N
-            buf.append("<attr name=\"org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        }
-        buf.append("<file name=\"org-openide-actions-FileSystemAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-FileSystemAction.instance/sep-1.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"sep-1.instance\">");//NOI18N
-        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
-        buf.append("</file>");//NOI18N
-        buf.append("<attr name=\"sep-1.instance/org-openide-actions-CutAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-CutAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-CopyAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-CopyAction.instance/sep-2.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"sep-2.instance\">");//NOI18N
-        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
-        buf.append("</file>");//NOI18N
-        buf.append("<attr name=\"sep-2.instance/org-openide-actions-DeleteAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-DeleteAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-RenameAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-RenameAction.instance/sep-3.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"sep-3.instance\">");//NOI18N
-        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
-        buf.append("</file>");//NOI18N
-        buf.append("<attr name=\"sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-SaveAsTemplateAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"sep-4.instance\">");//NOI18N
-        buf.append("<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>");//NOI18N
-        buf.append("</file>");//NOI18N
-        buf.append("<attr name=\"sep-4.instance/org-openide-actions-ToolsAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-ToolsAction.instance\"/>");//NOI18N
-        buf.append("<attr name=\"org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance\" boolvalue=\"true\"/>");//NOI18N
-        buf.append("<file name=\"org-openide-actions-PropertiesAction.instance\"/>");//NOI18N
-        buf.append("</invisibleRoot>");
-        
         //8. create layerfile actions subsection
-        fileChanges.add(fileChanges.createLayerSubtree("Loaders/" + mime + "/Actions",//NOI18N
-                        buf.toString(), false));
+        
+        fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {
+            public void run(FileSystem layer) throws IOException {
+                List/*<String>*/ actions = new ArrayList();
+                if (isEditable) {
+                    actions.add("org.openide.actions.OpenAction"); // NOI18N
+                }
+                actions.addAll(Arrays.asList(new String[] {
+                    "org.openide.actions.FileSystemAction", // NOI18N
+                    null,
+                    "org.openide.actions.CutAction", // NOI18N
+                    "org.openide.actions.CopyAction", // NOI18N
+                    null,
+                    "org.openide.actions.DeleteAction", // NOI18N
+                    "org.openide.actions.RenameAction", // NOI18N
+                    null,
+                    "org.openide.actions.SaveAsTemplateAction", // NOI18N
+                    null,
+                    "org.openide.actions.ToolsAction", // NOI18N
+                    "org.openide.actions.PropertiesAction", // NOI18N
+                }));
+                FileObject folder = FileUtil.createFolder(layer.getRoot(), "Loaders/" + mime + "/Actions"); // NOI18N
+                List/*<DataObject>*/ kids = new ArrayList();
+                Iterator it = actions.iterator();
+                int i = 0;
+                while (it.hasNext()) {
+                    String name = (String) it.next();
+                    FileObject kid;
+                    if (name != null) {
+                        kid = folder.createData(name.replace('.', '-') + ".instance"); // NOI18N
+                    } else {
+                        kid = folder.createData("sep-" + (++i) + ".instance"); // NOI18N
+                        kid.setAttribute("instanceClass", "javax.swing.JSeparator"); // NOI18N
+                    }
+                    kids.add(DataObject.find(kid));
+                }
+                DataFolder.findFolder(folder).setOrder((DataObject[]) kids.toArray(new DataObject[kids.size()]));
+            }
+        }, Collections.EMPTY_SET));
+        
         //9. create sample template
         String suffix = null;
         if (model.isExtensionBased()) {
@@ -374,14 +377,10 @@ public class NewLoaderIterator extends BasicWizardIterator {
                 assert false: ex;
             }
         }
-        String templateName = getRelativePath(model.getProject(), model.getPackageName(), 
-                                            namePrefix, suffix); //NOI18N
-        File templateFile = new File(FileUtil.toFile(model.getProject().getProjectDirectory()), templateName);
-        buf = new StringBuffer();
         Map attrs = new HashMap();
         attrs.put("template", Boolean.TRUE);
-        fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + templateFile.getName(), //NOI18N
-                                                     null, template, templateName, 
+        fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
+                                                     template,
                                                      replaceTokens, 
                                                      NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix), 
                                                      attrs)); //NOI18N

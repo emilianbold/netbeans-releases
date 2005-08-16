@@ -58,46 +58,20 @@ final class CreatedModifiedFilesProvider  {
     }
     
     private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
-        String packagePath;
-        String libraryDescPath;
-        String libraryDescRelativePath;
         URL template;
         CreatedModifiedFiles.Operation libDescrOperation;
         Map tokens;
         
-        packagePath = getPackageRelativePath(data.getProject(), data.getPackageName());
-        libraryDescPath = getLibraryDescriptor(data.getLibraryName()) ;
         template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
         tokens = getTokens(fileSupport, data.getProject(), data);
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
         
-        
-        libraryDescRelativePath = getLibraryDescriptorRelativePath(packagePath,data.getLibraryName());
-        String layerPath = getLayerRelativePath(data.getProject());
-        File prjFile = FileUtil.toFile(data.getProject().getProjectDirectory());
-        File layerFolder = new File(prjFile,layerPath).getParentFile();
-        File libraryDescFile = new File(prjFile,libraryDescRelativePath);
-        
-        libraryDescPath = PropertyUtils.relativizeFile(layerFolder, libraryDescFile);
-
-        libDescrOperation = fileSupport.createLayerEntry(layerEntry,libraryDescPath,
-                template,libraryDescRelativePath ,tokens,null/*data.getLibraryDisplayName()*/, null);
+        libDescrOperation = fileSupport.createLayerEntry(layerEntry, template, tokens, null, null);
         
         
         fileSupport.add(libDescrOperation);
         libDescrOperation = fileSupport.bundleKeyDefaultBundle(data.getLibraryName(), data.getLibraryDisplayName());
         fileSupport.add(libDescrOperation);
-    }
-    
-    
-    
-    private static String getLayerRelativePath(NbModuleProject project) {
-        ManifestManager mm = ManifestManager.getInstance(project.getManifest(), false);
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(project.getSourceDirectoryPath()).append("/").append(mm.getLayer());//NOI18N
-        
-        return sb.toString(); // NOI18N;
     }
     
     
@@ -110,22 +84,6 @@ final class CreatedModifiedFilesProvider  {
         }
         
         return bundle;
-    }
-    
-    private static String getPackageRelativePath(NbModuleProject project, String fullyQualifiedPackageName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(project.getSourceDirectoryPath()).append("/").append(fullyQualifiedPackageName);//NOI18N
-        
-        return sb.toString().replace('.','/');//NOI18N
-    }
-    
-    private static String getLibraryDescriptor(String libraryName) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(libraryName).append(".xml");//NOI18N
-        
-        return sb.toString();//NOI18N
     }
     
     private static String getLibraryDescriptorRelativePath(String packageRelativePath, String libraryName) {

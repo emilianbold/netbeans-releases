@@ -341,7 +341,7 @@ public class NbModuleProjectGenerator {
         createLayer(projectDir, "src/" + layerPath); // NOI18N
     }
 
-    static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
+    public static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
         FileObject layerFO = createFileObject(projectDir, layerPath); // NOI18N
         FileLock lock = layerFO.lock();
         try {

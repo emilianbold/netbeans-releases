@@ -17,11 +17,17 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -47,7 +53,7 @@ public final class CreatedModifiedFiles {
      * instance or can just be used alone. See {@link CreatedModifiedFiles} for
      * more information.
      */
-    public static interface Operation {
+    public interface Operation {
         
         /** Perform this operation. */
         void run() throws IOException;
@@ -57,6 +63,7 @@ public final class CreatedModifiedFiles {
          * {@link CreatedModifiedFiles} instance is run. Paths are relative to
          * the project's base directory. It is available immediately after an
          * operation instance is created.
+         * XXX why is this sorted, and not a simple Set<String>?
          */
         String[] getModifiedPaths();
         
@@ -82,12 +89,22 @@ public final class CreatedModifiedFiles {
         
     }
     
-    private SortedSet/*<String>*/ createdPaths;
-    private SortedSet/*<String>*/ modifiedPaths;
+    private final SortedSet/*<String>*/ createdPaths = new TreeSet();
+    private final SortedSet/*<String>*/ modifiedPaths = new TreeSet();
     
     /** {@link NbModuleProject} this instance manage. */
-    private NbModuleProject project;
-    private List/*<CreatedModifiedFiles.Operation>*/ operations;
+    private final NbModuleProject project;
+    private final List/*<CreatedModifiedFiles.Operation>*/ operations = new ArrayList();
+    
+    // For use from CreatedModifiedFilesFactory.LayerModifications; XXX would be better to have an operation context or similar
+    // (so that multiple operations could group pre- and post-actions)
+    private LayerUtils.LayerHandle layerHandle;
+    LayerUtils.LayerHandle getLayerHandle() {
+        if (layerHandle == null) {
+             layerHandle = LayerUtils.layerForProject(project);
+        }
+        return layerHandle;
+    }
     
     /**
      * Create instance for managing given {@link NbModuleProject}'s files.
@@ -106,12 +123,6 @@ public final class CreatedModifiedFiles {
      * operation operation to be added
      */
     public void add(Operation operation) {
-        if (operations == null) {
-            // first operation
-            operations = new ArrayList();
-            createdPaths = new TreeSet();
-            modifiedPaths = new TreeSet();
-        }
         operations.add(operation);
         // XXX should always show isForEditing files at the top of the list, acc. to Jano
         createdPaths.addAll(Arrays.asList(operation.getCreatedPaths()));
@@ -123,11 +134,13 @@ public final class CreatedModifiedFiles {
      * instance in order in which operations have been added.
      */
     public void run() throws IOException {
-        if (operations != null) {
-            for (Iterator it = operations.iterator(); it.hasNext(); ) {
-                Operation op = (Operation) it.next();
-                op.run();
-            }
+        for (Iterator it = operations.iterator(); it.hasNext(); ) {
+            Operation op = (Operation) it.next();
+            op.run();
+        }
+        if (layerHandle != null) {
+            // XXX clumsy, see above
+            layerHandle.save();
         }
         // XXX should get EditCookie/OpenCookie for created/modified files for which isForEditing
         // XXX should return a Set<FileObject> of created/modified files for which isRelevant
@@ -141,7 +154,7 @@ public final class CreatedModifiedFiles {
             return (String[]) createdPaths.toArray(s);
         }
     }
-
+    
     public String[] getModifiedPaths() {
         if (modifiedPaths == null) {
             return new String[0];
@@ -262,13 +275,7 @@ public final class CreatedModifiedFiles {
      * @param layerPath path in a project's layer. Folders which don't exist
      *        yet will be created. (e.g.
      *        <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
-     * @param contentResourcePath represents an <em>url</em> attribute of entry
-     *        being created, if null, will try to guess the path by comparing
-     *        layer file location with the generatedPath
-     * @param content became content of a file represented by the
-     *        <code>generatedPath</code>
-     * @param generatedPath path relative to a project directory where a new
-     *        file with a given <em>content</em> will be generated
+     * @param content became content of a file, or null
      * @param substitutionTokens map of <em>token to be replaced</em> - <em>by
      *        what</em> pairs which will be applied on the stored
      *        <code>content</code> file. Both a key and a value have to be a
@@ -290,16 +297,12 @@ public final class CreatedModifiedFiles {
      */
     public Operation createLayerEntry(
             String layerPath,
-            String contentResourcePath,
             URL content,
-            String generatedPath,
             Map/*<String,String>*/ substitutionTokens,
             String localizedDisplayName,
             Map/*<String,Object>*/ fileAttributes) {
-        // XXX refactoring: analyze calls to this methods and provide more than
-        // one implementation. Seven paremeters seems to be too much ;)
-        return CreatedModifiedFilesFactory.createLayerEntry(project, layerPath,
-                contentResourcePath, content, generatedPath, substitutionTokens,
+        return CreatedModifiedFilesFactory.createLayerEntry(this, project, layerPath,
+                content, substitutionTokens,
                 localizedDisplayName, fileAttributes);
     }
     
@@ -310,36 +313,29 @@ public final class CreatedModifiedFiles {
      *        project's layer. It <strong>must</strong> exist.
      * @param attrName value of the name attribute of the <em>&lt;attr&gt;</em>
      *        element.
-     * @param secondAttrName name of the second attribute (e.g. stringvalue,
-     *        methodvalue, &hellip;)
-     * @param secondAttrValue value of the second attribute
+     * @param attrValue value of the attribute (may specially be a string prefixed with "newvalue:" or "methodvalue:")
      * @return see {@link Operation}
      */
-    public CreatedModifiedFiles.Operation createLayerAttribute(String parentPath,
-            String attrName, String secondAttrName, String secondAttrValue) {
-        return CreatedModifiedFilesFactory.createLayerAttribute(project,
-                parentPath, attrName, secondAttrName, secondAttrValue);
-    }
-    
-    /**
-     * Creates an element subtree in a layer file. Also may create and/or
-     * modify other files as it is needed.
-     *
-     * @param layerPath path in a project's layer. Folders which don't exist
-     *        yet will be created. (e.g.
-     *        <em>Loader/text/x-type/Actions</em>).
-     * @param subtreeContent content of the subtree to place in the layer file.
-     * @param includeSubtreeRootElement if true will place the root element in
-     *        the layer file, if not will ignore the root and place its
-     *        children only.
-     * @return see {@link Operation}
-     */
-    public Operation createLayerSubtree(
-            String layerPath,
-            String subtreeContent,
-            boolean includeSubtreeRootElement) {
-        return CreatedModifiedFilesFactory.createLayerSubtree(project, layerPath,
-                subtreeContent, includeSubtreeRootElement);
+    public CreatedModifiedFiles.Operation createLayerAttribute(final String parentPath,
+            final String attrName, final Object attrValue) {
+        return layerModifications(new LayerOperation() {
+            public void run(FileSystem layer) throws IOException {
+                FileObject f = layer.findResource(parentPath);
+                if (f == null) {
+                    // XXX sometimes this happens when it should not, during unit tests... why?
+                    /*
+                    try {
+                        // For debugging:
+                        getLayerHandle().save();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                     */
+                    throw new IOException(parentPath);
+                }
+                f.setAttribute(attrName, attrValue);
+            }
+        }, Collections.EMPTY_SET);
     }
     
     /**
@@ -351,11 +347,44 @@ public final class CreatedModifiedFiles {
      * @param precedingItemName item to be before <em>followingItemName</em>
      * @param followingItemName item to be after <em>precedingItemName</em>
      */
-    public Operation orderLayerEntry(String layerPath, String precedingItemName,
-            String followingItemName) {
-        return CreatedModifiedFilesFactory.orderLayerEntry(project, layerPath,
-                precedingItemName, followingItemName);
+    public Operation orderLayerEntry(final String layerPath, final String precedingItemName,
+            final String followingItemName) {
+        return layerModifications(new LayerOperation() {
+            public void run(FileSystem layer) throws IOException {
+                FileObject f = FileUtil.createFolder(layer.getRoot(), layerPath);
+                f.setAttribute(precedingItemName + '/' + followingItemName, Boolean.TRUE);
+            }
+        }, Collections.EMPTY_SET);
+    }
+    
+    /**
+     * Make structural modifications to the project's XML layer.
+     * The operations may be expressed as filesystem calls.
+     * @param op a callback for the actual changes to make
+     * @param externalFiles a list of <em>simple filenames</em> of new data files which
+     *                      are to be created in the layer and which will therefore appear
+     *                      on disk alongside the layer, usually with the same names (unless
+     *                      they conflict with existing files); you still need to create them
+     *                      yourself using e.g. {@link FileObject#createData} and {@link FileObject#getOutputStream}
+     * @return the operation handle
+     */
+    public Operation layerModifications(final LayerOperation op, final Set/*<String>*/ externalFiles) {
+        return CreatedModifiedFilesFactory.layerModifications(project, op, externalFiles, this);
+    }
+    
+    /**
+     * Callback for modifying the project's XML layer.
+     * @see #layerModifications
+     */
+    public interface LayerOperation {
+        
+        /**
+         * Actually change the layer.
+         * @param layer the layer to make changes to using Filesystems API calls
+         * @throws IOException if the changes fail somehow
+         */
+        void run(FileSystem layer) throws IOException;
+        
     }
     
 }
-

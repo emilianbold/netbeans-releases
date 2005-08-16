@@ -42,25 +42,17 @@ public final class LayerNode extends FilterNode {
     
     private final DataObject layerXML;
     
-    public LayerNode(DataObject layerXML) {
-        super(getRootNode(layerXML));
-        this.layerXML = layerXML;
+    public LayerNode(LayerUtils.LayerHandle handle) {
+        super(getRootNode(handle));
+        try {
+            layerXML = DataObject.find(handle.getLayerFile());
+        } catch (DataObjectNotFoundException e) {
+            throw new AssertionError(e);
+        }
     }
     
-    private static Node getRootNode(DataObject layerXML) {
-        TreeEditorCookie cookie = (TreeEditorCookie) layerXML.getCookie(TreeEditorCookie.class);
-        if (cookie == null) {
-            // Loaded by some other data loader?
-            Util.err.log(ErrorManager.WARNING, "No TreeEditorCookie in " + layerXML);
-            return Node.EMPTY;
-        }
-        FileSystem fs;
-        try {
-            fs = new WritableXMLFileSystem(layerXML.getPrimaryFile().getURL(), cookie);
-        } catch (FileStateInvalidException e) {
-            assert false : e;
-            return Node.EMPTY;
-        }
+    private static Node getRootNode(LayerUtils.LayerHandle handle) {
+        FileSystem fs = handle.layer();
         try {
             return DataObject.find(fs.getRoot()).getNodeDelegate();
         } catch (DataObjectNotFoundException e) {

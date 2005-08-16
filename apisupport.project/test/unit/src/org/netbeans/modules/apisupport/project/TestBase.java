@@ -14,6 +14,7 @@ package org.netbeans.modules.apisupport.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -164,6 +165,17 @@ public abstract class TestBase extends NbTestCase {
         }
     }
     
+    public static String slurp(FileObject fileObject) throws IOException {
+        InputStream is = fileObject.getInputStream();
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            FileUtil.copy(is, baos);
+            return baos.toString("UTF-8");
+        } finally {
+            is.close();
+        }
+    }
+    
     // XXX copied from TestBase in ant/freeform
     protected static final class TestPCL implements PropertyChangeListener {
         
@@ -197,7 +209,7 @@ public abstract class TestBase extends NbTestCase {
     
     /**
      * Returns {@link NbModuleProject} created in the {@link
-     * #getWorkDir()}/prjDir with code name base default to <em>org.exmaple +
+     * #getWorkDir()}/prjDir with code name base default to <em>org.example +
      * dotted prjDir</em> which is also used as the <em>default</em> package so
      * the layer and bundle are generated accordingly. Default module's display
      * name is set to <em>Testing Module</em>. So final set of generated files

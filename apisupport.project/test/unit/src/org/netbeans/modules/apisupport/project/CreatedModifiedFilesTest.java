@@ -33,15 +33,26 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.netbeans.modules.xml.core.XMLDataLoader;
+import org.netbeans.modules.xml.core.XMLDataObjectLook;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
+import org.openide.util.SharedClassObject;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Tests {@link CreatedModifiedFiles}.
@@ -49,6 +60,34 @@ import org.openide.modules.SpecificationVersion;
  */
 public class CreatedModifiedFilesTest extends TestBase {
 
+    static {
+        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
+        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
+    }
+    public static final class Lkp extends ProxyLookup {
+        private static Lkp DEFAULT;
+        public Lkp() {
+            Assert.assertNull(DEFAULT);
+            DEFAULT = this;
+            setLookup(new Object[0]);
+        }
+        public static void setLookup(Object[] instances) {
+            ClassLoader l = Lkp.class.getClassLoader();
+            DEFAULT.setLookups(new Lookup[] {
+                Lookups.fixed(instances),
+                        Lookups.metaInfServices(l),
+                        Lookups.singleton(l),
+            });
+        }
+    }
+    static {
+        LayerUtils.LayerHandle.PROVIDER = new LayerUtils.LayerHandle.XmlDataObjectProvider() {
+            public TreeEditorCookie cookieForDataObject(DataObject d) {
+                return new TreeEditorCookieImpl((XMLDataObjectLook) d);
+            }
+        };
+    }
+    
     private static final String[] HTML_CONTENT = new String[] {
         "<html>",
         "<em>i am some template</em>",
@@ -70,6 +109,13 @@ public class CreatedModifiedFilesTest extends TestBase {
     
     public CreatedModifiedFilesTest(String name) {
         super(name);
+    }
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        Lkp.setLookup(new Object[] {
+            SharedClassObject.findObject(XMLDataLoader.class, true),
+        });
     }
     
     public void testCreatedModifiedFiles() throws Exception {
@@ -271,19 +317,15 @@ public class CreatedModifiedFilesTest extends TestBase {
                 "Menu/Tools/org-example-module1-BeepAction.instance",
                 null,
                 null,
-                null,
-                null,
                 null, 
                 null);
         layerOp.run();
         
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Module1UI.settings",
-                "module1ui.settings",
                 null,
                 null,
                 null,
-                null, 
                 null);
         cmf.add(layerOp);
         assertRelativePath("src/org/example/module1/resources/layer.xml", layerOp.getModifiedPaths());
@@ -297,40 +339,29 @@ public class CreatedModifiedFilesTest extends TestBase {
                 "Menu/Tools/org-example-module1-BlareAction.instance",
                 null,
                 null,
-                null,
-                null,
                 null, 
                 null);
         cmf.add(layerOp);
         
-        String createMePath = "src/org/example/module1/resources/createMe.setting";
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Other.settings",
-                "createMe.settings",
                 createFile(HTML_CONTENT),
-                createMePath,
                 null,
                 null, 
                 null);
         cmf.add(layerOp);
 
-        String tokenMePath = "src/org/example/module1/resources/tokenMe.setting";
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-Tokenized.settings",
-                "tokenMe.settings",
                 createFile(HTML_CONTENT),
-                tokenMePath,
                 TOKENS_MAP,
                 null,
                 null);
         cmf.add(layerOp);
 
-        String localizeAndTokenMePath = "src/org/example/module1/resources/localizeAndTokenMe.setting";
         layerOp = cmf.createLayerEntry(
                 "Services/org-example-module1-LocalizedAndTokened.settings",
-                "localizeAndTokenMe.settings",
                 createFile(HTML_CONTENT),
-                localizeAndTokenMePath,
                 TOKENS_MAP,
                 "Some Settings",
                 null);
@@ -341,14 +372,14 @@ public class CreatedModifiedFilesTest extends TestBase {
                 cmf.getModifiedPaths());
         assertRelativePaths(
                 new String[] {
-                    "src/org/example/module1/resources/createMe.setting",
-                    "src/org/example/module1/resources/localizeAndTokenMe.setting",
-                    "src/org/example/module1/resources/tokenMe.setting"
+                    "src/org/example/module1/resources/org-example-module1-LocalizedAndTokened.xml",
+                    "src/org/example/module1/resources/org-example-module1-Other.xml",
+                    "src/org/example/module1/resources/org-example-module1-Tokenized.xml"
                 },
                 cmf.getCreatedPaths());
         cmf.run();
 
-        assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/" + tokenMePath));
+        assertFileContent(HTML_CONTENT_TOKENIZED, new File(getWorkDir(), "module1/src/org/example/module1/resources/org-example-module1-Tokenized.xml"));
 
         // check layer content
         String[] supposedContent = new String[] {
@@ -356,17 +387,17 @@ public class CreatedModifiedFilesTest extends TestBase {
                     "<folder name=\"Menu\">",
                     "<folder name=\"Tools\">",
                     "<file name=\"org-example-module1-BeepAction.instance\"/>",
-                    "<attr boolvalue=\"true\" name=\"org-example-module1-BeepAction.instance/org-example-module1-BlareAction.instance\"/>",
+                    "<attr name=\"org-example-module1-BeepAction.instance/org-example-module1-BlareAction.instance\" boolvalue=\"true\"/>",
                     "<file name=\"org-example-module1-BlareAction.instance\"/>",
                     "</folder>",
                     "</folder>",
                     "<folder name=\"Services\">",
-                    "<file name=\"org-example-module1-Module1UI.settings\" url=\"module1ui.settings\"/>",
-                    "<file name=\"org-example-module1-Other.settings\" url=\"createMe.settings\"/>",
-                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"tokenMe.settings\"/>",
-                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"localizeAndTokenMe.settings\">",
+                    "<file name=\"org-example-module1-LocalizedAndTokened.settings\" url=\"org-example-module1-LocalizedAndTokened.xml\">",
                     "<attr name=\"SystemFileSystem.localizingBundle\" stringvalue=\"org.example.module1.resources.Bundle\"/>",
                     "</file>",
+                    "<file name=\"org-example-module1-Module1UI.settings\"/>",
+                    "<file name=\"org-example-module1-Other.settings\" url=\"org-example-module1-Other.xml\"/>",
+                    "<file name=\"org-example-module1-Tokenized.settings\" url=\"org-example-module1-Tokenized.xml\"/>",
                     "</folder>",
                     "</filesystem>"
         };
@@ -388,11 +419,11 @@ public class CreatedModifiedFilesTest extends TestBase {
         String dashedFqClassName = fqClassName.replace('.', '-');
         String layerPath = "Actions/Tools/" + dashedFqClassName + ".instance";
         
-        Operation op = cmf.createLayerEntry(layerPath, null, null, null, null, null, null);
+        Operation op = cmf.createLayerEntry(layerPath, null, null, null, null);
         cmf.add(op);
         
         op = cmf.createLayerAttribute(
-                layerPath, "instanceClass", "stringvalue", fqClassName);
+                layerPath, "instanceClass", fqClassName);
         assertRelativePath("src/org/example/module1/resources/layer.xml", op.getModifiedPaths());
         
         cmf.add(op);
@@ -518,7 +549,7 @@ public class CreatedModifiedFilesTest extends TestBase {
             reader.close();
         }
         
-        assertEquals("content of layer", Arrays.asList(supposedContent), actualContent);
+        assertEquals("content of layer", Arrays.asList(supposedContent).toString(), actualContent.toString());
     }
     
 }
