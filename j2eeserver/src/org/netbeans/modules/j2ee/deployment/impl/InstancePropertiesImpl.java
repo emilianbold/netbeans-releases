@@ -128,7 +128,8 @@ public class InstancePropertiesImpl extends InstanceProperties implements Instan
     public void refreshServerInstance() {
         ServerRegistry registry = ServerRegistry.getInstance();
         ServerInstance inst = registry.getServerInstance(url);
-        inst.reset();
-        inst.isRunning();
+        if (inst != null) {
+            inst.refresh();
+        }
     }
 }
