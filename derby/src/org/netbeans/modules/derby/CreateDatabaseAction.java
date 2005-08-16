@@ -15,20 +15,13 @@
 package org.netbeans.modules.derby;
 
 import java.io.File;
-import javax.swing.Action;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-
-
-import java.lang.reflect.Method;
-import javax.sql.DataSource;
 
 /**
  *

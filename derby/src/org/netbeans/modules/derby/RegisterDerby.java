@@ -194,10 +194,10 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             Driver driver = getDerbyNetDriver();
             Properties props = new Properties();
-            String userName = "admin";
-            String password = "admin";
-            props.put("user", userName); // NOI18N
-            props.put("password", password); // NOI18N
+            //String userName = "admin";
+            //String password = "admin";
+            //props.put("user", userName); // NOI18N
+            //props.put("password", password); // NOI18N
             String url = "jdbc:derby://localhost:" + getPort() + "/" + location; // NOI18N
             String urlForCreation = url + ";create=true"; // NOI18N
             Connection connection = driver.connect(urlForCreation, props);
@@ -209,9 +209,9 @@ public class RegisterDerby implements DatabaseRuntime {
             cinfo.setDriverName(jdbcDriver.getName());
             cinfo.setDriver(jdbcDriver.getClassName());
             cinfo.setDatabase(url);
-            cinfo.setUser(userName);
+            //cinfo.setUser(userName);
             cinfo.setSchema(null);
-            cinfo.setPassword(password);
+            //cinfo.setPassword(password);
             cinfo.setRememberPassword( true );
 
             DatabaseRuntimeManager drtm = DatabaseRuntimeManager.getDefault();
