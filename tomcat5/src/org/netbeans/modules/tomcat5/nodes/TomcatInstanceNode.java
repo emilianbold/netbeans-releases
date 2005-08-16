@@ -17,6 +17,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.util.LinkedList;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.nodes.actions.AdminConsoleAction;
 import org.netbeans.modules.tomcat5.nodes.actions.TerminateAction;
 import org.openide.nodes.*;
 import org.openide.util.NbBundle;
@@ -82,6 +83,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (tm != null && tm.isTomcat50()) {
             actions.add(SystemAction.get(SharedContextLogAction.class));
         }
+        actions.add(SystemAction.get(AdminConsoleAction.class));
         actions.add(SystemAction.get(OpenServerOutputAction.class));
         return (SystemAction[])actions.toArray(new SystemAction[actions.size()]);
     }
