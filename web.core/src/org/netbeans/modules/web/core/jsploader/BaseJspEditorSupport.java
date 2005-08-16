@@ -44,11 +44,13 @@ import org.openide.filesystems.FileLock;
 import org.openide.loaders.MultiDataObject;
 import org.openide.cookies.*;
 import org.openide.text.CloneableEditor;
+import org.openide.util.Lookup;
 import org.openide.util.TaskListener;
 import org.openide.util.Task;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -466,7 +468,10 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             if (dataObject instanceof JspDataObject && mimeType.equals(JSP_MIME_TYPE) && !isXmlSyntax(dataObject)) {
                 try {
                     PaletteController pc = JSPPaletteFactory.getPalette();
-                    associateLookup(Lookups.fixed(new Object[] { pc }));
+                    Lookup pcl = Lookups.singleton(pc);
+                    Lookup anl = Lookups.fixed(getActivatedNodes());
+                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, pcl });
+                    associateLookup(l);
                 } 
                 catch (IOException ioe) {
                     //TODO exception handling
