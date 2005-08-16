@@ -44,7 +44,7 @@ public class DataModelTest extends TestBase {
         super(name);
     }
     
-    public void testNewActionIteratorForAlwaysEnabledActions() throws Exception {
+    public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
         NbModuleProject project = generateStandaloneModule("module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
@@ -59,8 +59,8 @@ public class DataModelTest extends TestBase {
         data.setGlobalMenuItemEnabled(true);
         data.setGMIParentMenu(new String[] {"Help", "Tutorials"});
         data.setGMIPosition(new Position("quick-start.url", "prj-import-guide.url"));
-        data.setGMISeparatorAfter(true);
         data.setGMISeparatorBefore(true);
+        data.setGMISeparatorAfter(true);
         // global toolbar button
         data.setToolbarEnabled(true);
         data.setToolbar("Edit");
@@ -132,4 +132,129 @@ public class DataModelTest extends TestBase {
                 new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
     }
     
+    public void testDataModelGenarationForAlwaysConditionallyActions() throws Exception {
+        NbModuleProject project = generateStandaloneModule("module1");
+        WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
+        wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
+        DataModel data = new DataModel(wd);
+        
+        // first panel data (Action Type)
+        data.setAlwaysEnabled(false);
+        
+        // second panel data (GUI Registration)
+        data.setCategory("Tools");
+        // global menu item
+        data.setGlobalMenuItemEnabled(true);
+        data.setGMIParentMenu(new String[] {"Help", "Tutorials"});
+        data.setGMIPosition(new Position("quick-start.url", "prj-import-guide.url"));
+        data.setGMISeparatorBefore(true);
+        data.setGMISeparatorAfter(true);
+        // global toolbar button
+        data.setToolbarEnabled(true);
+        data.setToolbar("Edit");
+        data.setToolbarPosition(new Position("org-openide-actions-FindAction.instance", null));
+        // file type context menu item
+        data.setFileTypeContextEnabled(true);
+        data.setFTContextType("text/x-java");
+        data.setFTContextPosition(new Position(null, "OpenAction.instance"));
+        data.setFTContextSeparatorBefore(false);
+        data.setFTContextSeparatorAfter(true);
+        // editor context menu item
+        data.setEditorContextEnabled(true);
+        data.setEdContextType("text/x-java");
+        data.setEdContextPosition(new Position(null, "generate-goto-popup"));
+        data.setEdContextSeparatorBefore(false);
+        data.setEdContextSeparatorAfter(true);
+        
+        // third panel data (Name, Icon, and Location)
+        data.setClassName("BeepAction");
+        data.setDisplayName("Beep");
+        data.setPackageName("org.example.module1");
+        
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        assertEquals(
+                Arrays.asList(new String[] {"src/org/example/module1/BeepAction.java"}),
+                Arrays.asList(cmf.getCreatedPaths()));
+        assertEquals(
+                Arrays.asList(new String[] {"nbproject/project.xml", "src/org/example/module1/resources/layer.xml"}),
+                Arrays.asList(cmf.getModifiedPaths()));
+
+        cmf.run();
+        
+        String[] supposedContent = new String[] {
+            "<filesystem>",
+                    "<folder name=\"Actions\">",
+                    "<folder name=\"Tools\">",
+                    "<file name=\"org-example-module1-BeepAction.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"org.example.module1.BeepAction\"/>",
+                    "</file>",
+                    "</folder>",
+                    "</folder>",
+                    "<folder name=\"Editors\">",
+                    "<folder name=\"text\">",
+                    "<folder name=\"x-java\">",
+                    "<folder name=\"Popup\">",
+                    "<file name=\"org-example-module1-BeepAction.shadow\">",
+                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-separatorAfter.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-separatorAfter.instance/generate-goto-popup\" boolvalue=\"true\"/>",
+                    "</folder>",
+                    "</folder>",
+                    "</folder>",
+                    "</folder>",
+                    "<folder name=\"Loaders\">",
+                    "<folder name=\"text\">",
+                    "<folder name=\"x-java\">",
+                    "<folder name=\"Actions\">",
+                    "<file name=\"org-example-module1-BeepAction.shadow\">",
+                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-separatorAfter.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-separatorAfter.instance/OpenAction.instance\" boolvalue=\"true\"/>",
+                    "</folder>",
+                    "</folder>",
+                    "</folder>",
+                    "</folder>",
+                    "<folder name=\"Menu\">",
+                    "<folder name=\"Help\">",
+                    "<folder name=\"Tutorials\">",
+                    "<attr name=\"quick-start.url/org-example-module1-separatorBefore.instance\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-separatorBefore.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-separatorBefore.instance/org-example-module1-BeepAction.shadow\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-BeepAction.shadow\">",
+                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-BeepAction.shadow/org-example-module1-separatorAfter.instance\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-separatorAfter.instance\">",
+                    "<attr name=\"instanceClass\" stringvalue=\"javax.swing.JSeparator\"/>",
+                    "</file>",
+                    "<attr name=\"org-example-module1-separatorAfter.instance/prj-import-guide.url\" boolvalue=\"true\"/>",
+                    "</folder>",
+                    "</folder>",
+                    "</folder>",
+                    "<folder name=\"Toolbars\">",
+                    "<folder name=\"Edit\">",
+                    "<attr name=\"org-openide-actions-FindAction.instance/org-example-module1-BeepAction.shadow\" boolvalue=\"true\"/>",
+                    "<file name=\"org-example-module1-BeepAction.shadow\">",
+                    "<attr name=\"originalFile\" stringvalue=\"Actions/Tools/org-example-module1-BeepAction.instance\"/>",
+                    "</file>",
+                    "</folder>",
+                    "</folder>",
+                    "</filesystem>"
+        };
+        
+        CreatedModifiedFilesTest.assertLayerContent(supposedContent,
+                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
+    }
+    
 }
+

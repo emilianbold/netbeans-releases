@@ -54,11 +54,26 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private boolean kbShortcutEnabled;
     private String keyStroke;
     
+    // file type context menu item
+    private boolean ftContextEnabled;
+    private String ftContextType;
+    private Position ftContextPosition;
+    private boolean ftContextSeparatorAfter;
+    private boolean ftContextSeparatorBefore;
+    
+    // editor context menu item
+    private boolean edContextEnabled;
+    private String edContextType;
+    private Position edContextPosition;
+    private boolean edContextSeparatorAfter;
+    private boolean edContextSeparatorBefore;
+    
     // third panel data (Name, Icon, and Location)
     private String className;
     private String displayName;
     private String origIconPath;
     private String packageName;
+
     
     DataModel(WizardDescriptor wiz) {
         super(wiz);
@@ -75,7 +90,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // Create CallableSystemAction from template
         String actionPath = getDefaultPackagePath(className + ".java"); // NOI18N
         // XXX use nbresloc URL protocol rather than NewActionIterator.class.getResource(...):
-        URL template = NewActionIterator.class.getResource("callableSystemAction.javx"); // NOI18N
+        URL template = NewActionIterator.class.getResource(alwaysEnabled
+                ? "callableSystemAction.javx" : "cookieAction.javx"); // NOI18N
         Map replaceTokens = new HashMap();
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
         replaceTokens.put("@@PACKAGE_NAME@@", packageName); // NOI18N
@@ -110,27 +126,17 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // add dependency on util to project.xml
         cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
+        if (!alwaysEnabled) {
+            cmf.add(cmf.addModuleDependency("org.openide.nodes", -1, null, true)); // NOI18N
+            
+        }
         
         // create layer entry for global menu item
         if (globalMenuItemEnabled) {
             String parentPath = getGMIParentMenuPath();
-            if (gmiSeparatorBefore) {
-                String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
-                DataModel.generateSeparator(cmf, parentPath, sepName);
-                generateOrder(parentPath, gmiPosition.getBefore(), sepName);
-                generateOrder(parentPath, sepName, shadow);
-            } else {
-                generateOrder(parentPath, gmiPosition.getBefore(), shadow);
-            }
-            generateShadow(parentPath + "/" + shadow, instanceFullPath); // NOI18N
-            if (gmiSeparatorAfter) {
-                String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
-                DataModel.generateSeparator(cmf, parentPath, sepName);
-                generateOrder(parentPath, shadow, sepName);
-                generateOrder(parentPath, sepName, gmiPosition.getAfter());
-            } else {
-                generateOrder(parentPath, shadow, gmiPosition.getAfter());
-            }
+            generateShadowWithOrderAndSeparator(parentPath, shadow,
+                    dashedPkgName, instanceFullPath, gmiSeparatorBefore,
+                    gmiSeparatorAfter, gmiPosition);
         }
         
         // create layer entry for toolbar button
@@ -145,6 +151,49 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         if (kbShortcutEnabled) {
             String parentPath = "Shortcuts"; // NOI18N
             generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N
+        }
+        
+        // create file type context menu item
+        if (ftContextEnabled) {
+            String parentPath = "Loaders/" + ftContextType + "/Actions"; // NOI18N
+            generateShadowWithOrderAndSeparator(parentPath, shadow,
+                    dashedPkgName, instanceFullPath, ftContextSeparatorBefore,
+                    ftContextSeparatorAfter, ftContextPosition);
+        }
+        
+        // create editor context menu item
+        if (edContextEnabled) {
+            String parentPath = "Editors/" + edContextType + "/Popup"; // NOI18N
+            generateShadowWithOrderAndSeparator(parentPath, shadow,
+                    dashedPkgName, instanceFullPath, edContextSeparatorBefore,
+                    edContextSeparatorAfter, edContextPosition);
+        }
+    }
+    
+    private void generateShadowWithOrderAndSeparator(
+            final String parentPath,
+            final String shadow,
+            final String dashedPkgName,
+            final String instanceFullPath,
+            final boolean separatorBefore,
+            final boolean separatorAfter,
+            final Position position) {
+        if (separatorBefore) {
+            String sepName = dashedPkgName + "-separatorBefore.instance"; // NOI18N
+            generateSeparator(parentPath, sepName);
+            generateOrder(parentPath, position.getBefore(), sepName);
+            generateOrder(parentPath, sepName, shadow);
+        } else {
+            generateOrder(parentPath, position.getBefore(), shadow);
+        }
+        generateShadow(parentPath + "/" + shadow, instanceFullPath); // NOI18N
+        if (separatorAfter) {
+            String sepName = dashedPkgName + "-separatorAfter.instance"; // NOI18N
+            generateSeparator(parentPath, sepName);
+            generateOrder(parentPath, shadow, sepName);
+            generateOrder(parentPath, sepName, position.getAfter());
+        } else {
+            generateOrder(parentPath, shadow, position.getAfter());
         }
     }
     
@@ -266,6 +315,46 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.keyStroke = keyStroke;
     }
     
+    void setFileTypeContextEnabled(boolean contextEnabled) {
+        this.ftContextEnabled = contextEnabled;
+    }
+    
+    void setFTContextType(String contextType) {
+        this.ftContextType = contextType;
+    }
+    
+    void setFTContextPosition(Position position) {
+        this.ftContextPosition = position;
+    }
+    
+    void setFTContextSeparatorAfter(boolean separator) {
+        this.ftContextSeparatorAfter = separator;
+    }
+    
+    void setFTContextSeparatorBefore(boolean separator) {
+        this.ftContextSeparatorBefore = separator;
+    }
+    
+    void setEditorContextEnabled(boolean contextEnabled) {
+        this.edContextEnabled = contextEnabled;
+    }
+    
+    void setEdContextType(String contextType) {
+        this.edContextType = contextType;
+    }
+    
+    void setEdContextPosition(Position position) {
+        this.edContextPosition = position;
+    }
+    
+    void setEdContextSeparatorAfter(boolean separator) {
+        this.edContextSeparatorAfter = separator;
+    }
+    
+    void setEdContextSeparatorBefore(boolean separator) {
+        this.edContextSeparatorBefore = separator;
+    }
+    
     static final class Position {
         
         private String before;
@@ -301,9 +390,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
     }
     
-    // XXX candidate for CreatedModifiedFiles?
-    private static void generateSeparator(final CreatedModifiedFiles cmf,
-            final String parentPath, final String sepName) {
+    private void generateSeparator(final String parentPath, final String sepName) {
         String sepPath = parentPath + "/" + sepName; // NOI18N
         cmf.add(cmf.createLayerEntry(sepPath,
                 null, null, null, null));
@@ -312,3 +399,4 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     }
     
 }
+

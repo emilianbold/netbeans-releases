@@ -1,0 +1,34 @@
+package @@PACKAGE_NAME@@;
+
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.CookieAction;
+
+public final class @@CLASS_NAME@@ extends CookieAction {
+
+    protected void performAction(Node[] activatedNodes) {
+    }
+
+    protected int mode() {
+        return CookieAction.MODE_ANY;
+    }
+
+    public String getName() {
+        return "@@DISPLAY_NAME@@";
+    }
+
+    public String iconResource() {
+        return @@ICON_RESOURCE@@;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    protected Class[] cookieClasses() {
+        return new Class[] {
+            // TODO
+        };
+    }
+
+}
