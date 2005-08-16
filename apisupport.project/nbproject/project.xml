@@ -130,6 +130,12 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.core</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.tax</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
