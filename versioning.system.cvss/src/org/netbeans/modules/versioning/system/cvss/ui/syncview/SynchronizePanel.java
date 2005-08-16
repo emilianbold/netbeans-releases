@@ -300,8 +300,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {
-        String title = NbBundle.getMessage(SynchronizePanel.class, "CTL_DiffDialog_Title", parentTopComponent.getContentTitle());
-        DiffExecutor exec = new DiffExecutor(rootFiles, title);
+        DiffExecutor exec = new DiffExecutor(rootFiles, parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             exec.showLocalDiff();
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {

@@ -19,7 +19,6 @@ import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
-import org.openide.util.NbBundle;
 
 import java.io.File;
 import java.awt.event.ActionEvent;
@@ -71,8 +70,7 @@ public class DiffAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         File [] files = getFilesToProcess();
-        String title = NbBundle.getMessage(DiffAction.class, "CTL_DiffDialogLocal_Title", getContextDisplayName());
-        DiffExecutor executor = new DiffExecutor(files, title);
+        DiffExecutor executor = new DiffExecutor(files, getContextDisplayName());
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];

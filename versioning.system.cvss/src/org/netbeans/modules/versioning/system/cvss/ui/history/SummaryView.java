@@ -132,7 +132,7 @@ class SummaryView implements MouseListener {
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
-            DiffExecutor de = new DiffExecutor(NbBundle.getMessage(SummaryView.class, "CTL_DiffToPrevious_Title", file.getName()));
+            DiffExecutor de = new DiffExecutor(file.getName());
             String revision = drev.getRevision().getNumber().trim();
             de.showDiff(file, Utils.previousRevision(revision), revision);
         }

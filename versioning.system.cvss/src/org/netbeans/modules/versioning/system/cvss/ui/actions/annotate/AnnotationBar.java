@@ -296,7 +296,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
                     if (prevRevision != null) {
                         File file = getCurrentFile();
                         if (file != null) {
-                            DiffExecutor diffExecutor = new DiffExecutor("Diff to Previous");
+                            DiffExecutor diffExecutor = new DiffExecutor(file.getName());
                             diffExecutor.showDiff(file, prevRevision, recentRevision);
                         }
                     }

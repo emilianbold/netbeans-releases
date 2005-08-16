@@ -35,15 +35,15 @@ import java.util.ArrayList;
 public class DiffExecutor {
 
     private final File []   baseFiles;
-    private final String    title;
+    private final String    contextName;
 
-    public DiffExecutor(File [] baseFiles, String title) {
+    public DiffExecutor(File [] baseFiles, String contextName) {
         this.baseFiles = baseFiles;
-        this.title = title;
+        this.contextName = contextName;
     }
 
-    public DiffExecutor(String title) {
-        this.title = title;
+    public DiffExecutor(String contextName) {
+        this.contextName = contextName;
         this.baseFiles = null;
     }
 
@@ -78,7 +78,7 @@ public class DiffExecutor {
 
     private void showDiff(int type) {
         VersionsCache.getInstance().purgeVolatileRevisions();
-        DiffMainPanel panel = new DiffMainPanel(baseFiles, type);
+        DiffMainPanel panel = new DiffMainPanel(baseFiles, type, contextName);
         openDiff(panel);        
     }
     
@@ -86,7 +86,7 @@ public class DiffExecutor {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 DiffTopComponent tc = new DiffTopComponent(c);
-                tc.setName(title);
+                tc.setName(NbBundle.getMessage(DiffExecutor.class, "CTL_DiffPanel_Title", contextName));
                 tc.open();
                 tc.requestActive();
             }
