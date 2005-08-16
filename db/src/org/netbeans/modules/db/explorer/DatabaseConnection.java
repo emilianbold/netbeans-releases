@@ -334,8 +334,10 @@ public class DatabaseConnection implements DBConnection {
             throw new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo"));
 
         Properties dbprops = new Properties();
-        dbprops.put("user", usr); //NOI18N
-        dbprops.put("password", pwd); //NOI18N
+        if ((usr != null) && (usr.length() > 0)) {
+            dbprops.put("user", usr); //NOI18N
+            dbprops.put("password", pwd); //NOI18N
+        }
 
         try {
             propertySupport.firePropertyChange("connecting", null, null);
@@ -411,8 +413,10 @@ public class DatabaseConnection implements DBConnection {
                     sendException(new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo")));
 
                 Properties dbprops = new Properties();
-                dbprops.put("user", usr); //NOI18N
-                dbprops.put("password", pwd); //NOI18N
+                if ((usr != null) && (usr.length() > 0)) {
+                    dbprops.put("user", usr); //NOI18N
+                    dbprops.put("password", pwd); //NOI18N
+                }
                 
                 try {
                     propertySupport.firePropertyChange("connecting", null, null);
