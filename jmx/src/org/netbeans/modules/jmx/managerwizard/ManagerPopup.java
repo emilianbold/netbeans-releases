@@ -23,32 +23,35 @@ import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.mbeanwizard.listener.TextFieldFocusListener;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  *
  * @author  an156382
  */
-public class ManagerPopup extends javax.swing.JDialog {
+public class ManagerPopup extends javax.swing.JPanel {
     
     private ResourceBundle bundle;
     private JTextField urlField;
+    private JButton okJButton;
     
     /**
      * Creates new form ManagerPopup 
      */
     public ManagerPopup(JPanel ancestorPanel, JTextField urlField) {
-        super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor()); 
+        //super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor()); 
         this.urlField = urlField;
         bundle = NbBundle.getBundle(ManagerPopup.class);
         initComponents();
         
+        okJButton = new JButton(bundle.getString("LBL_okButton.text")); // NOI18N
         rmiHostJTextField.setText(bundle.getString("TXT_host"));// NOI18N
         rmiPortJTextField.setText(bundle.getString("TXT_port"));// NOI18N
         
         Mnemonics.setLocalizedText(rmiHostJLabel,bundle.getString("LBL_host.text"));// NOI18N
         Mnemonics.setLocalizedText(rmiPortJLabel,bundle.getString("LBL_port.text"));// NOI18N
         Mnemonics.setLocalizedText(okJButton,bundle.getString("LBL_okButton.text"));// NOI18N
-        Mnemonics.setLocalizedText(cancelJButton,bundle.getString("LBL_Generic_Cancel"));// NOI18N
         
         // Accessibility
         rmiHostJTextField.getAccessibleContext().setAccessibleName(
@@ -63,25 +66,51 @@ public class ManagerPopup extends javax.swing.JDialog {
                 bundle.getString("ACCESS_OK")); // NOI18N
         okJButton.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
-        cancelJButton.getAccessibleContext().setAccessibleName(
-                bundle.getString("ACCESS_CANCEL")); // NOI18N
-        cancelJButton.getAccessibleContext().setAccessibleDescription(
-                bundle.getString("ACCESS_CANCEL_DESCRIPTION")); // NOI18N
         
         setName("ManagerPopup");// NOI18N
-        
         addListeners();
+        configure();
+        
         //setDimensions(NbBundle.getMessage(ManagerPopup.class,"LBL_RMIAgentURL_Popup"));// NOI18N
-        setDimensions(bundle.getString("LBL_RMIAgentURL_Popup"));// NOI18N
+        //setDimensions(bundle.getString("LBL_RMIAgentURL_Popup"));// NOI18N
     }
     
-    protected void setDimensions(String str) {
+    /*protected void setDimensions(String str) {
         setTitle(str);
         setModal(true);
         setResizable(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setBounds(400,400,350,150);
+        //setBounds(400,400,350,150);
         setVisible(true);
+    }*/
+    
+    /**
+     * Displays a configuration dialog and updates Register MBean options 
+     * according to the user's settings.
+     * @return <CODE>boolean</CODE> true only if user clicks on Ok button.
+     */
+    public boolean configure() {
+        
+        // create and display the dialog:
+        String title = bundle.getString("LBL_RMIAgentURL_Popup"); // NOI18N
+        //btnOK.setEnabled(isAcceptable());
+        
+        Object returned = DialogDisplayer.getDefault().notify(
+                new DialogDescriptor (
+                        this,
+                        title,
+                        true,                       //modal
+                        new Object[] {okJButton, DialogDescriptor.CANCEL_OPTION},
+                        okJButton,                      //initial value
+                        DialogDescriptor.DEFAULT_ALIGN,
+                        null,
+                        (ActionListener) null
+                ));
+        
+        if (returned == okJButton) {
+            return true;
+        }
+        return false;
     }
     
     public JTextField getHostField() {
@@ -118,7 +147,7 @@ public class ManagerPopup extends javax.swing.JDialog {
         urlField.setText(WizardConstants.EMPTYSTRING);
                 urlField.setText("service:jmx:rmi:///jndi/rmi://" + // NOI18N
                     getHostFieldText()+":"+getPortFieldText()+"/jmxrmi");// NOI18N
-        this.dispose();
+        //this.dispose();
     }
     
     /** This method is called from within the constructor to
@@ -135,11 +164,9 @@ public class ManagerPopup extends javax.swing.JDialog {
         rmiPortJLabel = new javax.swing.JLabel();
         rmiHostJTextField = new javax.swing.JTextField();
         rmiPortJTextField = new javax.swing.JTextField();
-        buttonPanel = new javax.swing.JPanel();
-        okJButton = new javax.swing.JButton();
-        cancelJButton = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setLayout(new java.awt.BorderLayout());
+
         rmiParameterPanel.setLayout(new java.awt.GridBagLayout());
 
         rmiHostJLabel.setLabelFor(rmiHostJTextField);
@@ -159,6 +186,7 @@ public class ManagerPopup extends javax.swing.JDialog {
         rmiParameterPanel.add(rmiPortJLabel, gridBagConstraints);
 
         rmiHostJTextField.setName("hostJTextField");
+        rmiHostJTextField.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -169,6 +197,7 @@ public class ManagerPopup extends javax.swing.JDialog {
         rmiParameterPanel.add(rmiHostJTextField, gridBagConstraints);
 
         rmiPortJTextField.setName("portJTextField");
+        rmiPortJTextField.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -179,41 +208,12 @@ public class ManagerPopup extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         rmiParameterPanel.add(rmiPortJTextField, gridBagConstraints);
 
-        getContentPane().add(rmiParameterPanel, java.awt.BorderLayout.NORTH);
+        add(rmiParameterPanel, java.awt.BorderLayout.NORTH);
 
-        buttonPanel.setLayout(new java.awt.GridBagLayout());
-
-        okJButton.setName("okButton");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 0);
-        buttonPanel.add(okJButton, gridBagConstraints);
-
-        cancelJButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelJButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(17, 5, 0, 11);
-        buttonPanel.add(cancelJButton, gridBagConstraints);
-
-        getContentPane().add(buttonPanel, java.awt.BorderLayout.EAST);
-
-        pack();
     }
     // </editor-fold>//GEN-END:initComponents
 
-    private void cancelJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelJButtonActionPerformed
-        dispose();
-    }//GEN-LAST:event_cancelJButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel buttonPanel;
-    protected javax.swing.JButton cancelJButton;
-    protected javax.swing.JButton okJButton;
     protected javax.swing.JLabel rmiHostJLabel;
     protected javax.swing.JTextField rmiHostJTextField;
     private javax.swing.JPanel rmiParameterPanel;
