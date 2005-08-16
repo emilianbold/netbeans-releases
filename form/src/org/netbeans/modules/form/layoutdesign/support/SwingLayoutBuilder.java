@@ -111,7 +111,7 @@ public class SwingLayoutBuilder {
 
     public void createLayout() {
         container.removeAll();
-        GroupLayout layout = new GroupLayout((JComponent) container);
+        GroupLayout layout = new GroupLayout(container);
         container.setLayout(layout);
         LayoutInterval horizontalInterval = containerLC.getLayoutRoot(LayoutConstants.HORIZONTAL);
         GroupLayout.Group horizontalGroup = composeGroup(layout, horizontalInterval, true, true);

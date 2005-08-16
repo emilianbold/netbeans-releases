@@ -98,8 +98,7 @@ public class SwingLayoutCodeGenerator {
      */
     private void generateInstantiation(Writer writer, String contExprStr) throws IOException {
         writer.write(LAYOUT_NAME + " " + layoutVarName + " "); // NOI18N
-        // PENDING casting to JComponent
-        writer.write("= new " + LAYOUT_NAME + "((javax.swing.JComponent)" + contExprStr + ");\n"); // NOI18N
+        writer.write("= new " + LAYOUT_NAME + "(" + contExprStr + ");\n"); // NOI18N
         writer.write(contExprStr + ".setLayout(" + layoutVarName + ");\n"); // NOI18N
     }
     
