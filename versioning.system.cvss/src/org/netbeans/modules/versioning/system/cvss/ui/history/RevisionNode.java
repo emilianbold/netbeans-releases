@@ -22,8 +22,12 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryA
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 import java.awt.event.ActionEvent;
+import java.awt.*;
 import java.io.File;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 
 /**
  * Visible in the Search History Diff view.
@@ -100,6 +104,14 @@ class RevisionNode extends AbstractNode {
                 return getValue().toString();
             } catch (Exception e) {
                 return "<error>";
+            }
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            try {
+                return new RevisionPropertyEditor((String) getValue());
+            } catch (Exception e) {
+                return super.getPropertyEditor();
             }
         }
     }
@@ -191,6 +203,30 @@ class RevisionNode extends AbstractNode {
             File file = revision.getLogInfoHeader().getFile();
             SearchHistoryAction.openSearch(NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), revision.getNumber()), 
                                            revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+        }
+    }
+
+    private static class RevisionPropertyEditor extends PropertyEditorSupport {
+
+        private static final JLabel renderer = new JLabel();
+
+        static {
+            renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        }
+
+        public RevisionPropertyEditor(String value) {
+            setValue(value);
+        }
+
+        public void paintValue(Graphics gfx, Rectangle box) {
+            renderer.setForeground(gfx.getColor());
+            renderer.setText((String) getValue());
+            renderer.setBounds(box);
+            renderer.paint(gfx);
+        }
+
+        public boolean isPaintable() {
+            return true;
         }
     }
 }
