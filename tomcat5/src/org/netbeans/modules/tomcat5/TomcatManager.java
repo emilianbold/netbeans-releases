@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Locale;
 import org.openide.filesystems.*;
-
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -31,24 +30,17 @@ import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.openide.ErrorManager;
 import org.openide.modules.InstalledFileLocator;
-
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-
 import org.w3c.dom.Document;
 import org.xml.sax.*;
-
 import java.io.*;
-
 import org.openide.xml.XMLUtil;
-
 import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
-
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.modules.tomcat5.progress.MultiProgressObjectWrapper;
-
 import org.netbeans.modules.tomcat5.util.*;
 
 
@@ -920,6 +912,14 @@ public class TomcatManager implements DeploymentManager {
      */
     public synchronized Process getTomcatProcess() {
         return process;
+    }
+    
+    /** Terminates the running Tomcat process. */
+    public void terminate() {
+        Process proc = getTomcatProcess();
+        if (proc != null) {
+            proc.destroy();
+        }
     }
     
     public synchronized TomcatPlatformImpl getTomcatPlatform() {
