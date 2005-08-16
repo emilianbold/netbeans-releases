@@ -380,8 +380,12 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 stdMBConstructorComboBox.setEnabled(false);
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
-        } else
-            stateLabel.setText(bundle.getString("LBL_ClassNotExist")); // NOI18N
+        } else {
+            if (className.equals("")) // NOI18N
+                stateLabel.setText(""); // NOI18N
+            else
+                stateLabel.setText(bundle.getString("LBL_ClassNotExist")); // NOI18N
+        }
         btnOK.setEnabled(isAcceptable());
     }
     
