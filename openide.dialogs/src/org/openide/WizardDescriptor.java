@@ -1000,13 +1000,13 @@ public class WizardDescriptor extends DialogDescriptor {
         contentBackColor = new Color(
                 getIntFromBundle("INT_WizardBackRed"), // NOI18N
                 getIntFromBundle("INT_WizardBackGreen"), // NOI18N
-                getIntFromBundle("INT_WizardBackBlue")
+                getIntFromBundle("INT_WizardBackBlue") // NOI18N
             ); // NOI18N
 
         contentForegroundColor = new Color(
                 getIntFromBundle("INT_WizardForegroundRed"), // NOI18N
                 getIntFromBundle("INT_WizardForegroundGreen"), // NOI18N
-                getIntFromBundle("INT_WizardForegroundBlue")
+                getIntFromBundle("INT_WizardForegroundBlue") // NOI18N
             ); // NOI18N
         imageAlignment = bundle.getString("STRING_WizardImageAlignment"); //NOI18N
     }
@@ -1054,13 +1054,6 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private int getIntFromBundle(String key) {
-        // #61965: NumberFormatException when wizard in run with -J-Dorg.openide.util.NbBundle.DEBUG=true
-        String debug = System.getProperty ("org.openide.util.NbBundle.DEBUG");
-        if (debug != null && Boolean.valueOf (debug).booleanValue ()) {
-            String val = bundle.getString(key);
-            val = val.substring (0, val.indexOf (' ') == -1 ? val.length () - 1 : val.indexOf (' ')).trim ();
-            return Integer.parseInt (val);
-        }
         return Integer.parseInt(bundle.getString(key));
     }
 
