@@ -80,6 +80,7 @@ public final class ActionsManager {
     private Vector                  listener = new Vector ();
     private HashMap                 listeners = new HashMap ();
     private HashMap                 actionProviders;
+    private Object                  actionProvidersLock = new Object();
     private MyActionListener        actionListener = new MyActionListener ();
     private Lookup                  lookup;
     private boolean                 doiingDo = false;
@@ -105,33 +106,18 @@ public final class ActionsManager {
      *    in this class with ACTION_ prefix)
      * @return true if action has been performed
      */
-//    public final void doAction (final Object action) {
-//        getRequestProcessor ().post (new Runnable() {
-//            public void run() {
-//                doiingDo = true;
-//                if (actionProviders == null) initActionImpls ();
-//                ArrayList l = (ArrayList) actionProviders.get (action);
-//                if (l != null) {
-//                    l = (ArrayList) l.clone ();
-//                    int i, k = l.size ();
-//                    for (i = 0; i < k; i++)
-//                    if (((ActionsProvider) l.get (i)).isEnabled (action))
-//                        ((ActionsProvider) l.get (i)).doAction (action);
-//                }
-//                fireActionDone (action);
-//                doiingDo = false;
-//                if (destroy) destroyIn (); 
-//            }
-//        });
-//    }
-
     public final void doAction (final Object action) {
         doiingDo = true;
-        if (actionProviders == null) initActionImpls ();
-        ArrayList l = (ArrayList) actionProviders.get (action);
+        ArrayList l;
+        synchronized (actionProvidersLock) {
+            if (actionProviders == null) initActionImpls ();
+            l = (ArrayList) actionProviders.get (action);
+            if (l != null) {
+                l = (ArrayList) l.clone ();
+            }
+        }
         boolean done = false;
         if (l != null) {
-            l = (ArrayList) l.clone ();
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 if (((ActionsProvider) l.get (i)).isEnabled (action)) {
@@ -155,10 +141,15 @@ public final class ActionsManager {
      * @return true if given action can be performed on this DebuggerEngine
      */
     public final boolean isEnabled (final Object action) {
-        if (actionProviders == null) initActionImpls ();
-        ArrayList l = (ArrayList) actionProviders.get (action);
+        ArrayList l;
+        synchronized (actionProvidersLock) {
+            if (actionProviders == null) initActionImpls ();
+            l = (ArrayList) actionProviders.get (action);
+            if (l != null) {
+                l = (ArrayList) l.clone ();
+            }
+        }
         if (l != null) {
-            l = (ArrayList) l.clone ();
             int i, k = l.size ();
             for (i = 0; i < k; i++)
                 if (((ActionsProvider) l.get (i)).isEnabled (action))
@@ -305,12 +296,14 @@ public final class ActionsManager {
     // private support .........................................................
     
     private void registerActionsProvider (Object action, ActionsProvider p) {
-        ArrayList l = (ArrayList) actionProviders.get (action);
-        if (l == null) {
-            l = new ArrayList ();
-            actionProviders.put (action, l);
+        synchronized (actionProvidersLock) {
+            ArrayList l = (ArrayList) actionProviders.get (action);
+            if (l == null) {
+                l = new ArrayList ();
+                actionProviders.put (action, l);
+            }
+            l.add (p);
         }
-        l.add (p);
         fireActionStateChanged (action);
         p.addActionsProviderListener (actionListener);
     }
