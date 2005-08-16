@@ -469,7 +469,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 try {
                     PaletteController pc = JSPPaletteFactory.getPalette();
                     Lookup pcl = Lookups.singleton(pc);
-                    Lookup anl = Lookups.fixed(getActivatedNodes());
+                    Lookup anl = getActivatedNodes()[0].getLookup();
                     ProxyLookup l = new ProxyLookup(new Lookup[] { anl, pcl });
                     associateLookup(l);
                 } 
