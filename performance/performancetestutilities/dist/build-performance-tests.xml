@@ -79,5 +79,10 @@ Microsystems, Inc. All Rights Reserved.
         <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestFoldersData.zip" dest="${xtest.tmpdir}/"/>
     </target>
     
+    <!-- Copy and unzip project JEdit from close source path, will be used for Performance tests -->
+    <target name="copy_unzip_nb_project">
+        <unzip src="${nbextra.dir}/qa/projectized/SystemProperties.zip" dest="${xtest.tmpdir}/"/>
+    </target>
+    
         
 </project>
