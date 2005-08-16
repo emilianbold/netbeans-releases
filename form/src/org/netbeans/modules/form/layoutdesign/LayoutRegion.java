@@ -52,6 +52,15 @@ class LayoutRegion implements LayoutConstants {
         set(reg);
     }
 
+    boolean isSet() {
+        return isSet(HORIZONTAL) && isSet(VERTICAL);
+    }
+
+    boolean isSet(int dimension) {
+        return positions[dimension][LEADING] != UNKNOWN
+               && positions[dimension][TRAILING] != UNKNOWN;
+    }
+
     int size(int dimension) {
         int trail = positions[dimension][TRAILING];
         int lead = positions[dimension][LEADING];

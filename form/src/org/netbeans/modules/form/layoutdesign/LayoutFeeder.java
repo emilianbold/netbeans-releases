@@ -66,6 +66,10 @@ class LayoutFeeder implements LayoutConstants {
         boolean fixedPosition; // whether distance from the neighbor is definitely fixed
         int distance = Integer.MAX_VALUE;
         int ortDistance = Integer.MAX_VALUE;
+
+        boolean snapped() {
+            return snappedNextTo != null || snappedParallel != null;
+        }
     }
 
     private static boolean sameInclusionGroup(IncludeDesc iDesc1, IncludeDesc iDesc2) {
@@ -94,10 +98,17 @@ class LayoutFeeder implements LayoutConstants {
                 }
                 else { // this dimension has not been resized
                     int alignment = DEFAULT;
-                    originalPositions1[dim] = findOutCurrentPosition(addingIntervals[dim], dim, alignment);
-                    alignment = originalPositions1[dim].alignment;
+                    IncludeDesc pos1 = findOutCurrentPosition(addingIntervals[dim], dim, alignment);
+                    originalPositions1[dim] = pos1;
+                    alignment = pos1.alignment;
                     if (alignment == LEADING || alignment == TRAILING) {
-                        originalPositions2[dim] = findOutCurrentPosition(addingIntervals[dim], dim, alignment^1);
+                        IncludeDesc pos2 = findOutCurrentPosition(addingIntervals[dim], dim, alignment^1);
+                        if (pos2.snapped()) {
+                            if (!pos1.snapped())
+                                originalPositions1[dim] = pos2;
+                            else
+                                originalPositions2[dim] = pos1;
+                        } // don't remember second position if not snapped, one is enough
                     }
                 }
                 originalLPositionsFixed[dim] = isFixedRelativePosition(addingIntervals[dim], LEADING);
@@ -156,75 +167,79 @@ class LayoutFeeder implements LayoutConstants {
             }
 
             // prepare task for searching the position
-            List inclusions = new LinkedList();
             IncludeDesc inclusion1 = null;
             IncludeDesc inclusion2 = null;
-            LayoutInterval root = dragger.getTargetContainer().getLayoutRoot(dim);
 
-            if (dragger.isResizing(dim^1)) { // need to renew the original position
-                aEdge = originalPos1.alignment;
-                aSnappedParallel = originalPos1.snappedParallel;
-                aSnappedNextTo = originalPos1.snappedNextTo;
-            }
-            else if (newPos != null) {
-                aEdge = newPos.alignment;
-                aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
-                aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
-            }
-            else {
-                aEdge = dragger.isResizing(dim) ? dragger.getResizingEdge(dim) : DEFAULT;
-                aSnappedParallel = aSnappedNextTo = null;
-            }
-            analyzeParallel(root, inclusions);
-
-            boolean preserveOriginal = dragger.isResizing(dim) && !dragger.isResizing(dim^1);
-            if (inclusions.size() > 1) {
-                mergeParallelInclusions(inclusions, originalPos1, preserveOriginal);
-                assert inclusions.size() == 1;
-            }
-            IncludeDesc found = (IncludeDesc) inclusions.get(0);
-            inclusions.clear();
-            if (preserveOriginal) { // resized in this dimension only
+            if (newPos == null && dragger.isResizing(dim) && !dragger.isResizing(dim^1)) {
+                // resizing in one dimension only without snapping
                 inclusion1 = originalPos1;
-                inclusion2 = found;
             }
             else {
-                inclusion1 = found;
-                if (dragger.isResizing(dim^1)
-                    && (originalPos1.alignment == LEADING || originalPos1.alignment == TRAILING))
-                {   // second search needed if resizing in the other dimension only or in both
-                    if (originalPos2 != null) {
-                        assert !dragger.isResizing(dim);
-                        aEdge = originalPos2.alignment;
-                        aSnappedParallel = originalPos2.snappedParallel;
-                        aSnappedNextTo = originalPos2.snappedNextTo;
-                    }
-                    else {
-                        assert dragger.isResizing(dim);
-                        if (newPos != null) {
+                List inclusions = new LinkedList();
+                boolean preserveOriginal = false;
+
+                if (dragger.isResizing(dim^1)) { // need to renew the original position
+                    aEdge = originalPos1.alignment;
+                    aSnappedParallel = originalPos1.snappedParallel;
+                    aSnappedNextTo = originalPos1.snappedNextTo;
+                }
+                else if (newPos != null) { // snapped position from dragger
+                    aEdge = newPos.alignment;
+                    aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
+                    aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
+                    // if resizing in this dimension only, preserve the original position
+                    preserveOriginal = dragger.isResizing(dim);
+                }
+                else { // plain moving without snap
+                    aEdge = DEFAULT;
+                    aSnappedParallel = aSnappedNextTo = null;
+                }
+
+                LayoutInterval root = dragger.getTargetContainer().getLayoutRoot(dim);
+                analyzeParallel(root, inclusions);
+
+                if (inclusions.size() > 1) {
+                    mergeParallelInclusions(inclusions, originalPos1, preserveOriginal);
+                    assert inclusions.size() == 1;
+                }
+                IncludeDesc found = (IncludeDesc) inclusions.get(0);
+                inclusions.clear();
+                if (preserveOriginal) { // resized in this dimension only
+                    inclusion1 = originalPos1;
+                    inclusion2 = found;
+                }
+                else {
+                    inclusion1 = found;
+                    // second search needed if resizing in the other dimension
+                    // and the second edge snapped in current dimension
+                    if (dragger.isResizing(dim^1) && (newPos != null || originalPos2 != null)) {
+                        if (newPos != null) { // find inclusion based on position from dragger
+                            assert dragger.isResizing(dim);
                             aEdge = newPos.alignment;
                             aSnappedParallel = !newPos.nextTo ? newPos.interval : null;
                             aSnappedNextTo = newPos.snapped && newPos.nextTo ? newPos.interval : null;
                         }
-                        else {
-                            aEdge = dragger.getResizingEdge(dim);
-                            aSnappedParallel = aSnappedNextTo = null;
+                        else { // need to renew the original position
+                            assert !dragger.isResizing(dim);
+                            aEdge = originalPos2.alignment;
+                            aSnappedParallel = originalPos2.snappedParallel;
+                            aSnappedNextTo = originalPos2.snappedNextTo;
                         }
-                    }
-                     // second round searching
-                    analyzeParallel(root, inclusions);
+                        // second round searching
+                        analyzeParallel(root, inclusions);
 
-                    if (inclusions.size() > 1) {
-                        mergeParallelInclusions(inclusions, originalPos2 != null ? originalPos2 : originalPos1, false);
-                        assert inclusions.size() == 1;
+                        if (inclusions.size() > 1) {
+                            mergeParallelInclusions(inclusions, originalPos2 != null ? originalPos2 : originalPos1, false);
+                            assert inclusions.size() == 1;
+                        }
+                        inclusion2 = (IncludeDesc) inclusions.get(0);
+                        inclusions.clear();
                     }
-                    inclusion2 = (IncludeDesc) inclusions.get(0);
-                    inclusions.clear();
                 }
-            }
 
-            if (!mergeSequentialInclusions(inclusion1, inclusion2))
-                inclusion2 = null;
+                if (!mergeSequentialInclusions(inclusion1, inclusion2))
+                    inclusion2 = null;
+            }
 
             addInterval(inclusion1, inclusion2);
 
@@ -733,6 +748,8 @@ class LayoutFeeder implements LayoutConstants {
             {   // starting/ending edge aligned in parallel - does not need a gap
                 continue;
             }
+            if (originalGap == null && startsWithGap(toAdd, i))
+                continue; // the group itself starts with a gap
 
             boolean aligned;
             if (iDesc1.alignment < 0) { // no specific alignment - decide based on distance
@@ -934,6 +951,25 @@ class LayoutFeeder implements LayoutConstants {
         group.getCurrentSpace().set(dimension, startPos, endPos);
 
         return group;
+    }
+
+    private static boolean startsWithGap(LayoutInterval interval, int alignment) {
+        if (interval.isComponent())
+            return false;
+        if (interval.isEmptySpace())
+            return true;
+        if (interval.isSequential()) {
+            LayoutInterval sub = interval.getSubInterval(
+                    alignment == TRAILING ? interval.getSubIntervalCount()-1 : 0);
+            return startsWithGap(sub, alignment);
+        }
+        assert interval.isParallel();
+        for (Iterator it=interval.getSubIntervals(); it.hasNext(); ) {
+            LayoutInterval sub = (LayoutInterval) it.next();
+            if (startsWithGap(sub, alignment))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -1289,7 +1325,6 @@ class LayoutFeeder implements LayoutConstants {
 
     private void analyzeParallel(LayoutInterval group, List inclusions) {
         int point = aEdge < 0 ? CENTER : aEdge;
-        int dropEdge = dragger.isResizing(dimension) ? dragger.getResizingEdge(dimension)^1 : point;
 
         boolean usable = canUseGroup(group);
 
@@ -1336,7 +1371,7 @@ class LayoutFeeder implements LayoutConstants {
                 IncludeDesc iDesc = addInclusion(group, false, distance, 0, inclusions);
                 if (iDesc != null) {
                     iDesc.neighbor = sub;
-                    iDesc.index = getAddDirection(addingSpace, subSpace, dimension, dropEdge) == LEADING ? 0 : 1;
+                    iDesc.index = getAddDirection(addingSpace, subSpace, dimension, point) == LEADING ? 0 : 1;
                 }
             }
         }
@@ -1354,8 +1389,6 @@ class LayoutFeeder implements LayoutConstants {
 
     private void analyzeSequential(LayoutInterval group, List inclusions) {
         int point = aEdge < 0 ? CENTER : aEdge;
-        int dropEdge = dragger.isResizing(dimension) ? dragger.getResizingEdge(dimension)^1 : point;
-
 
         boolean inSequence = false;
         boolean parallelWithSequence = false;
@@ -1420,7 +1453,7 @@ class LayoutFeeder implements LayoutConstants {
                             ortDistance = dstT;
                     }
                 }
-                if (getAddDirection(addingSpace, subSpace, dimension, dropEdge) == LEADING) {
+                if (getAddDirection(addingSpace, subSpace, dimension, point) == LEADING) {
                     index = i;
                     break; // this interval is already after the adding one, no need to continue
                 }
@@ -1597,6 +1630,8 @@ class LayoutFeeder implements LayoutConstants {
 
         // 3rd analyse inclusions requiring a subgroup (parallel with part of sequence)
         LayoutInterval subGroup = null;
+        LayoutInterval subGroupParent = null; // parent of addingInterval under subGroup
+        int subGroupIndex = -1;
         int subAlign = DEFAULT;
         boolean defaultPadding = false;
         List separatedLeading = new LinkedList();
@@ -1606,11 +1641,16 @@ class LayoutFeeder implements LayoutConstants {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isSequential() && iDesc.newSubGroup) {
                 addToGroup(iDesc, null);
-                LayoutInterval addedGroup = LayoutInterval.getFirstParent(addingInterval, PARALLEL);
-                if (subGroup == null) {
-                    subAlign = (addingInterval.getParent().isParallel() ?
-                                addingInterval : addingInterval.getParent()).getAlignment();
+                LayoutInterval parent = addingInterval.getParent();
+                LayoutInterval addedGroup = parent.isParallel() ? parent : parent.getParent();
+                if (subGroupParent == null) {
+                    subGroupParent = parent;
+                    if (parent.isSequential())
+                        subGroupIndex = parent.indexOf(addingInterval);
+                    else
+                        subAlign = addingInterval.getAlignment();
                 }
+                else layoutModel.removeInterval(parent);
                 operations.extract(addedGroup, DEFAULT, true, separatedLeading, separatedTrailing);
                 layoutModel.removeInterval(addingInterval);
                 layoutModel.removeInterval(addedGroup);
@@ -1631,15 +1671,12 @@ class LayoutFeeder implements LayoutConstants {
             if (separatedTrailing.isEmpty())
                 extractAlign = LEADING;
         }
-        LayoutInterval subsubGroup;
-        if (extractAlign != DEFAULT) { // intervals from one side will be grouped
-                // with the adding interval - instead of going into a side group
-            subsubGroup = new LayoutInterval(PARALLEL);
-            subsubGroup.setGroupAlignment(extractAlign);
-        }
-        else subsubGroup = null;
 
-        // 4th collect surroundings of adding component
+        // 4th collect surroundings of adding interval
+        // (the intervals will go into a side group in step 5, or into subgroup
+        //  of 'subGroup' next to the adding interval if in previous step some
+        //  content was separated into a parallel subgroup of a sequence)
+        LayoutInterval subsubGroup = null;
         for (Iterator it=inclusions.iterator(); it.hasNext(); ) {
             IncludeDesc iDesc = (IncludeDesc) it.next();
             if (iDesc.parent.isParallel() || !iDesc.newSubGroup) {
@@ -1650,12 +1687,36 @@ class LayoutFeeder implements LayoutConstants {
                 LayoutInterval parent = addingInterval.getParent();
                 layoutModel.removeInterval(addingInterval);
                 layoutModel.removeInterval(parent);
-                if (subsubGroup != null && LayoutInterval.getCount(parent, DEFAULT, true) >= 1) {
+                if (extractAlign != DEFAULT && LayoutInterval.getCount(parent, DEFAULT, true) >= 1) {
+                    if (subsubGroup == null) {
+                        subsubGroup = new LayoutInterval(PARALLEL);
+                        subsubGroup.setGroupAlignment(extractAlign);
+                    }
                     layoutModel.addInterval(parent, subsubGroup, -1);
                 }
             }
             if (iDesc != best)
                 it.remove();
+        }
+
+        // resolve subgroup
+        if (subGroup != null) {
+            if (subsubGroup != null && subsubGroup.getSubIntervalCount() > 0) {
+                LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
+                seq.setAlignment(subAlign);
+                layoutModel.addInterval(addingInterval, seq, 0);
+                operations.addContent(subsubGroup, seq, extractAlign == LEADING ? 1 : 0);
+                layoutModel.addInterval(seq, subGroupParent, subGroupIndex);
+                // [should run optimizeGaps on subsubGroup...]
+            }
+            else {
+                layoutModel.setIntervalAlignment(addingInterval, subAlign);
+                layoutModel.addInterval(addingInterval, subGroupParent, subGroupIndex);
+            }
+            toAdd = subGroup; // whole group to be added from now
+            // can't do optimizeGaps on the group here as addingInterval is not
+            // yet in its final position - possibly not aligned in parallel yet
+            // (addToGroup counts with that toAdd may start with a gap)
         }
 
         // 5th create groups of merged content around the adding component
@@ -1691,8 +1752,8 @@ class LayoutFeeder implements LayoutConstants {
             LayoutInterval sideGroup = operations.addGroupContent(
                     separatedLeading, commonSeq, index, dimension, LEADING); //, mainEffectiveAlign
             if (sideGroup != null) {
-                sideGroup.getCurrentSpace().set(
-                        dimension, borderPos[LEADING], addingSpace.positions[dimension][LEADING]);
+                sideGroup.getCurrentSpace().set(dimension, borderPos[LEADING],
+                        toAdd.getCurrentSpace().positions[dimension][LEADING]);
                 operations.optimizeGaps(sideGroup, dimension);
             }
             index += commonSeq.getSubIntervalCount() - checkCount;
@@ -1701,24 +1762,11 @@ class LayoutFeeder implements LayoutConstants {
             LayoutInterval sideGroup = operations.addGroupContent(
                     separatedTrailing, commonSeq, index, dimension, TRAILING); //, mainEffectiveAlign
             if (sideGroup != null) {
-                sideGroup.getCurrentSpace().set(
-                        dimension, addingSpace.positions[dimension][TRAILING], borderPos[TRAILING]);
+                sideGroup.getCurrentSpace().set(dimension,
+                        toAdd.getCurrentSpace().positions[dimension][TRAILING],
+                        borderPos[TRAILING]);
                 operations.optimizeGaps(sideGroup, dimension);
             }
-        }
-
-        // resolve subgroup
-        if (subGroup != null) {
-            if (subsubGroup != null && subGroup.getSubIntervalCount() > 0) {
-                LayoutInterval seq = new LayoutInterval(SEQUENTIAL);
-                layoutModel.addInterval(addingInterval, seq, 0);
-                operations.addContent(subsubGroup, seq, extractAlign == LEADING ? 1 : 0);
-                layoutModel.addInterval(seq, subGroup, -1);
-            }
-            else {
-                layoutModel.addInterval(addingInterval, subGroup, subAlign);
-            }
-            toAdd = subGroup;
         }
 
         // 6th merge the inclusions
@@ -1983,8 +2031,13 @@ class LayoutFeeder implements LayoutConstants {
      * recursivelly to sub-intervals (in case of parallel groups).
      */
     private static boolean contentOverlap(LayoutRegion space, LayoutInterval interval, int dimension) {
-        boolean overlap = LayoutRegion.overlap(space, interval.getCurrentSpace(), dimension, 0);
-        if (overlap && interval.isGroup()) {
+        LayoutRegion examinedSpace = interval.getCurrentSpace();
+        if (!interval.isGroup()) {
+            return LayoutRegion.overlap(space, examinedSpace, dimension, 0);
+        }
+        boolean overlap = !examinedSpace.isSet(dimension)
+                          || LayoutRegion.overlap(space, examinedSpace, dimension, 0);
+        if (overlap) {
             overlap = false;
             Iterator it = interval.getSubIntervals();
             while (it.hasNext()) {
