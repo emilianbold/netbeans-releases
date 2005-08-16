@@ -25,6 +25,7 @@ public class JellyConstants {
    public static final String JAVA_PACKAGE = "Java Package";
    public static final String PACKAGE_NAME = "com.foo.bar";
    public static final String CATEGORY = "JMX MBean";
+   public static final String TEST_ACTION = "Test Project";
    public static final String MGMT = "Management";
    public static final String SOURCE_PACKAGE = "Source Packages";
    public static final String TEST_PACKAGE = "Test Packages";
@@ -39,6 +40,7 @@ public class JellyConstants {
    public static final String LINE = "line"; 
    public static final String PIPE = "|";
    public static final String EMPTYSTRING = "";
+>>>>>>> 1.4
    
    //MBean type
    public static final String STDMBEAN = "StandardMBean";
