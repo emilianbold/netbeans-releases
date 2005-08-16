@@ -1256,7 +1256,15 @@ public class LayoutDesigner implements LayoutConstants {
                         space.setSize(groupCurrSize - currSize);
                         int alignment = intr.getAlignment();
                         int index = (alignment == LEADING) ? -1 : 0;
-                        if (!intr.isSequential()) {
+                        if (intr.isSequential()) {
+                            int spaceIndex = (alignment == LEADING) ? intr.getSubIntervalCount()-1 : 0;
+                            LayoutInterval adjacentSpace = intr.getSubInterval(spaceIndex);
+                            if (adjacentSpace.isEmptySpace()) {
+                                int spaceSize = LayoutInterval.getIntervalCurrentSize(adjacentSpace, dimension);
+                                layoutModel.removeInterval(adjacentSpace);
+                                space.setSize(groupCurrSize - currSize + spaceSize);
+                            }
+                        } else {
                             seqGroup = new LayoutInterval(SEQUENTIAL);
                             layoutModel.setIntervalAlignment(intr, DEFAULT);
                             seqGroup.setAlignment(alignment);
@@ -1357,7 +1365,7 @@ public class LayoutDesigner implements LayoutConstants {
                 if ((alignment == LEADING) && (trailingGap != null)) {
                     gap = trailingGap;
                     setIntervalResizing(trailingGap, !resizing);
-                    layoutModel.changeIntervalAttribute(leadingGap, LayoutInterval.ATTRIBUTE_FILL, true);
+                    layoutModel.changeIntervalAttribute(trailingGap, LayoutInterval.ATTRIBUTE_FILL, true);
                 }
                 if ((gap != null) && (delta != 0) && (gap.getPreferredSize() != NOT_EXPLICITLY_DEFINED)) {
                     layoutModel.setIntervalSize(gap, gap.getMinimumSize(), 
