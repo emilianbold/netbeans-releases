@@ -18,9 +18,11 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.JellyToolsHelper;
+import org.netbeans.modules.jmx.test.helpers.MBeanExecutionHelper;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import org.netbeans.modules.jmx.test.helpers.JellyConstants;
-
+import java.util.ArrayList;
+import java.util.Properties;
 
 
 /**
@@ -96,7 +98,7 @@ public class CreateEmptyMBean extends JellyTestCase {
                 mbean.getMBeanName(), mbean.getMBeanPackage());
         nfwo.next();
         
-        optionStep(nfwo, mbean);
+        ArrayList<String> fileNames = optionStep(nfwo, mbean);
         nfwo.next();
         
         attributeStep(nfwo);
@@ -109,7 +111,10 @@ public class CreateEmptyMBean extends JellyTestCase {
         nfwo.next();
         
         junitStep(nfwo);
+        
         nfwo.finish();
+        
+        assertTrue(JellyToolsHelper.diffOK(fileNames, null, mbean)); 
     }
     
     //========================= Class Name generation ===========================//
@@ -157,11 +162,9 @@ public class CreateEmptyMBean extends JellyTestCase {
     
     //========================= Panel discovery ==================================//
     
-    private void optionStep(NewFileWizardOperator nfwo, MBean mbean) {
-        // get the generated file name for campare with master files
-        String completeGeneratedFileName = getCompleteGeneratedFileName(nfwo);
-        String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
-        String itfName = getInterfaceName(completeGeneratedFileName);
+    private ArrayList<String> optionStep(NewFileWizardOperator nfwo, MBean mbean) {
+        
+        ArrayList<String> fileNames = new ArrayList<String>();
         
         assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.EXISTINGCLASS_CBX, nfwo));
         assertFalse(JellyToolsHelper.verifyTextFieldEnabled(JellyConstants.EXISTINGCLASS_TXT, nfwo));
@@ -177,6 +180,18 @@ public class CreateEmptyMBean extends JellyTestCase {
                 mbean.getMBeanComment());
         assertEquals(mbean.getMBeanComment(), JellyToolsHelper.getTextFieldContent(
                 JellyConstants.MBEANDESCR_TXT, nfwo));
+        
+        // get the generated file name for campare with master files
+        String completeGeneratedFileName = getCompleteGeneratedFileName(nfwo);
+        String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
+        String itfName = getInterfaceName(completeGeneratedFileName);
+        
+        fileNames.add(completeGeneratedFileName);
+        fileNames.add(className);
+        fileNames.add(itfName);
+        
+        
+        return fileNames;
     }
     
     private void attributeStep(NewFileWizardOperator nfwo) {
@@ -206,6 +221,8 @@ public class CreateEmptyMBean extends JellyTestCase {
     }
     
     private void junitStep(NewFileWizardOperator nfwo) {
+        
+        ArrayList<String> unitFileNames = new ArrayList<String>();
         
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JU_CBX, nfwo));
         assertFalse(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JU_CBX, nfwo));

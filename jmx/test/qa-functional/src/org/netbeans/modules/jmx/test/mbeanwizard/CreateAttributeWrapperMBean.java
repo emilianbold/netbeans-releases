@@ -31,7 +31,8 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.JellyToolsHelper;
 import org.netbeans.modules.jmx.test.helpers.JellyConstants;
 import org.netbeans.modules.jmx.test.helpers.MBean;
-
+import java.util.ArrayList;
+import java.util.Properties;
 
 
 
@@ -99,7 +100,7 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
                 mbean.getMBeanName(), mbean.getMBeanPackage());
         nfwo.next();
         
-        optionStep(nfwo, mbean);
+        ArrayList<String> fileNames = optionStep(nfwo, mbean);
         nfwo.next();
         
         attributeStep(nfwo, mbean);
@@ -108,8 +109,10 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         nfwo.next();
         nfwo.next();
       
-        junitStep(nfwo, mbean);
+        ArrayList<String> unitFileNames = junitStep(nfwo, mbean);
         nfwo.finish();
+        
+        assertTrue(JellyToolsHelper.diffOK(fileNames, unitFileNames, mbean)); 
     }
    
     //========================= Class Name generation ===========================//
@@ -261,11 +264,8 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     
     //========================= Panel discovery ==================================//
     
-    private void optionStep(NewFileWizardOperator nfwo, MBean mbean) {
-        // get the generated file name for campare with master files
-        String completeGeneratedFileName = getCompleteGeneratedFileName(nfwo);
-        String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
-        String itfName = getInterfaceName(completeGeneratedFileName);
+    private ArrayList<String> optionStep(NewFileWizardOperator nfwo, MBean mbean) {
+        ArrayList<String> fileNames = new ArrayList<String>();
         
         JellyToolsHelper.changeCheckBoxSelection(JellyConstants.EXISTINGCLASS_CBX, nfwo, true);
         assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.EXISTINGCLASS_CBX, nfwo));
@@ -285,6 +285,17 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
                 mbean.getMBeanComment());
         assertEquals(mbean.getMBeanComment(), JellyToolsHelper.getTextFieldContent(
                 JellyConstants.MBEANDESCR_TXT, nfwo));
+        
+        // get the generated file name for campare with master files
+        String completeGeneratedFileName = getCompleteGeneratedFileName(nfwo);
+        String className = getClassName(completeGeneratedFileName, mbean.getMBeanName());
+        String itfName = getInterfaceName(completeGeneratedFileName);
+        
+        fileNames.add(completeGeneratedFileName);
+        fileNames.add(className);
+        fileNames.add(itfName);
+        
+        return fileNames;
     }
     
     private void attributeStep(NewFileWizardOperator nfwo, MBean mbean) {
@@ -342,7 +353,10 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_SIX, JellyConstants.INCLUDE_COL));
     }
  
-    private void junitStep(NewFileWizardOperator nfwo, MBean mbean) {
+    private ArrayList<String> junitStep(NewFileWizardOperator nfwo, MBean mbean) {
+        
+        ArrayList<String> unitFileNames = new ArrayList<String>();
+        
         JellyToolsHelper.changeCheckBoxSelection(JellyConstants.JU_CBX, nfwo, true);
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JU_CBX, nfwo));
         assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JU_CBX, nfwo));
@@ -358,6 +372,21 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
         assertTrue(JellyToolsHelper.verifyCheckBoxEnabled(JellyConstants.JAVADOC_CBX, nfwo));
         assertTrue(JellyToolsHelper.verifyCheckBoxSelected(JellyConstants.JAVADOC_CBX, nfwo));
         
+        // this txt filed contains the full path of the junit test test file to be created
+        String completeGeneratedTestFileName = JellyToolsHelper.getTextFieldContent(
+                JellyConstants.GENUNITFILE_TXT,nfwo);
+        
+        // this string contains only the junit test file name with extension
+        String junitFileNameWithExtension = completeGeneratedTestFileName.substring(
+                completeGeneratedTestFileName.lastIndexOf(File.separatorChar)+1);
+        
+        // same as junitFileNameWithExtension but without extension .java
+        String junitFileName = junitFileNameWithExtension.substring(0, junitFileNameWithExtension.lastIndexOf('.'));
+        
+        unitFileNames.add(completeGeneratedTestFileName);
+        unitFileNames.add(junitFileName);
+      
+        return unitFileNames;
     }
     
     private boolean checkMBeanTypeButtons(NewFileWizardOperator nfwo, MBean mbean) {
