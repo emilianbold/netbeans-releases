@@ -92,3 +92,4 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-editor-hints" value="${javadoc.web.root}/org-netbeans-modules-editor-hints"/>
 <property name="javadoc.docs.org-netbeans-modules-editor-mimelookup" value="${javadoc.web.root}/org-netbeans-modules-editor-mimelookup"/>
 <property name="javadoc.docs.org-netbeans-modules-editor-util" value="${javadoc.web.root}/org-netbeans-modules-editor-util"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-lib" value="${javadoc.web.root}/org-netbeans-modules-editor-lib"/>

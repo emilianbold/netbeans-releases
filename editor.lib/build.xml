@@ -13,4 +13,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="editor/lib" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/> 
+    <property name="javadoc.src" location="${javadoc.base}/../../libsrc"/>
+
+
 </project>
