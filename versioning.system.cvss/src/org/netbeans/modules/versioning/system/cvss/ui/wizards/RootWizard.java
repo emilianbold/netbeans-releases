@@ -24,13 +24,10 @@ import javax.swing.*;
  */
 public final class RootWizard {
 
-    private final CheckoutWizard wizard;
+    private final RepositoryStep repositoryStep;
 
-    private final CheckoutWizard.RepositoryStep repositoryStep;
-
-    private RootWizard(CheckoutWizard.RepositoryStep step, CheckoutWizard wizard) {
+    private RootWizard(RepositoryStep step) {
         this.repositoryStep = step;
-        this.wizard = wizard;
     }
 
     /**
@@ -41,10 +38,10 @@ public final class RootWizard {
      * @return RootWizard
      */
     public static RootWizard configureRoot(String root) {
-        CheckoutWizard wizard = new CheckoutWizard(root, null);
-        CheckoutWizard.RepositoryStep step = wizard.new RepositoryStep();
+        RepositoryStep step = new RepositoryStep(root);
+        step.applyStandaloneLayout();
 
-        return new RootWizard(step, wizard);
+        return new RootWizard(step);
     }
 
     /**
@@ -52,10 +49,11 @@ public final class RootWizard {
      */
     public JPanel getPanel() {
         RepositoryPanel repositoryPanel = (RepositoryPanel) repositoryStep.getComponent();
-        repositoryPanel.headerLabel.setVisible(false);
-        repositoryPanel.rootsLabel.setVisible(false);
-        repositoryPanel.rootComboBox.setVisible(false);
-        repositoryPanel.descLabel.setVisible(false);
+        boolean chooserVisible = false;
+        repositoryPanel.headerLabel.setVisible(chooserVisible);
+        repositoryPanel.rootsLabel.setVisible(chooserVisible);
+        repositoryPanel.rootComboBox.setVisible(chooserVisible);
+        repositoryPanel.descLabel.setVisible(chooserVisible);
 
         return repositoryPanel;
     }
@@ -73,7 +71,7 @@ public final class RootWizard {
             repositoryStep.storeValidValues();
             return null;
         }
-        return wizard.getErrorMessage();
+        return repositoryStep.getErrorMessage();
     }
 
     /** Return result of light-weight validation.*/
