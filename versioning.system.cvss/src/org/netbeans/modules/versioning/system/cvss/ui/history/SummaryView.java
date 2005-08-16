@@ -116,14 +116,16 @@ class SummaryView implements MouseListener {
         } catch (Exception ex) {
             previousRevision = NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_Previous");
         }
-        menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) {
-            {
-                setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
-            }
-            public void actionPerformed(ActionEvent e) {
-                diffPrevious(selection[0]);
-            }
-        }));
+        if (previousRevision != null) {
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) {
+                {
+                    setEnabled(selection.length == 1 && dispResults.get(selection[0]) instanceof SearchHistoryPanel.DispRevision);
+                }
+                public void actionPerformed(ActionEvent e) {
+                    diffPrevious(selection[0]);
+                }
+            }));
+        }
         menu.show(e.getComponent(), e.getX(), e.getY());
     }
 
