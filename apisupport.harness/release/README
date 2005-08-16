@@ -550,7 +550,7 @@ in nbjunit.jar; your module; and anything your module compiled against
 (${module.classpath}).
 
     test.unit.cp.extra=\
-        ${netbeans.dest.dir}/ide5/modules/some-module-used-in-tests.jar:
+        ${netbeans.dest.dir}/ide6/modules/some-module-used-in-tests.jar:
         ${basedir}/lib/custom-junit-helpers.jar
 
 test.unit.run.cp.extra - any additional classpath you might need to *run* your
