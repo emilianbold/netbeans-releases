@@ -301,6 +301,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../refactoring</project>
                 <project>../schema2beans/rt</project>
                 <project>../serverplugins/jboss4</project>
+                <project>../serverplugins/weblogic9</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
                 <project>../serverplugins/sun/appsrvbridge</project>
