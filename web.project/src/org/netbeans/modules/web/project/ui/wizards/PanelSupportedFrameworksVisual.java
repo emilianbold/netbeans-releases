@@ -56,6 +56,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     private HashMap configPanels = new HashMap();
     private FrameworksTableModel model;
     private PanelSupportedFrameworks panel;
+    private WizardDescriptor wizardDescriptor;
     
     /** Creates new form PanelInitProject
      * @param project the web project; if it is null, all available web extensions will be shown
@@ -266,9 +267,11 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     }
     
     void read (WizardDescriptor settings) {
+        
 //        if ( bottomPanel != null ) {
 //            bottomPanel.readSettings( settings );
 //        }        
+        wizardDescriptor=settings;
     }
 
     void store(WizardDescriptor settings) {
@@ -334,7 +337,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             jPanelConfig.add(((FrameworkConfigurationPanel) configPanels.get(framework)).getComponent(), gridBagConstraints);
             
             ((FrameworkConfigurationPanel) configPanels.get(framework)).enableComponents(item.isSelected().booleanValue());
-            
+            ((FrameworkConfigurationPanel) configPanels.get(framework)).readSettings(wizardDescriptor);
             jPanelConfig.revalidate();
         } else {
             jLabelConfig.setText(""); //NOI18N
