@@ -1279,7 +1279,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             JComponent comp1 = (JComponent) getVisualComponent(comp1Id, true, true);
             JComponent comp2 = (JComponent) getVisualComponent(comp2Id, true, true);
             if (comp1 == null || comp2 == null) // not JComponents...
-                return 6; // default distance between components
+                return 10; // default distance between components (for non-JComponents)
 
             assert dimension == HORIZONTAL || dimension == VERTICAL;
             assert comp2Alignment == LEADING || comp2Alignment == TRAILING;
@@ -1311,20 +1311,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                                                int compAlignment)
         {
             JComponent comp = null;
-            JComponent parent = (JComponent)getVisualComponent(parentId, true, false);
+            Container parent = (Container)getVisualComponent(parentId, true, false);
             if (parent != null) {
                 RADVisualContainer metacont = (RADVisualContainer)
                                               getMetaComponent(parentId);
-                parent = (JComponent)metacont.getContainerDelegate(parent);
-                if (parent instanceof JComponent) {
-                    comp = (JComponent) getVisualComponent(compId, true, true);
-                }
-                else {
-                    parent = null;
-                }
+                parent = metacont.getContainerDelegate(parent);
+                comp = (JComponent) getVisualComponent(compId, true, true);
             }
-            if (parent == null || comp == null)
-                return 12; // default distance from parent border
+            if (comp == null)
+                return 10; // default distance from parent border (for non-JComponents)
 
             assert dimension == HORIZONTAL || dimension == VERTICAL;
             assert compAlignment == LEADING || compAlignment == TRAILING;
