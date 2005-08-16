@@ -43,6 +43,7 @@ public class ModuleLogicalViewTest extends TestBase {
         assertNotNull("found freeform-project-general.xsd", find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"));
         assertNotNull("found FreeformProjectTest.java", find(lvp, "ant/freeform/test/unit/src/org/netbeans/modules/ant/freeform/FreeformProjectTest.java"));
         assertNull("did not find test/cfg-unit.xml", find(lvp, "ant/freeform/test/cfg-unit.xml"));
+        // XXX test that layer.xml is found under Original Files, not Sources
     }
     
     private Node find(LogicalViewProvider lvp, String path) throws Exception {
