@@ -1,0 +1,15 @@
+
+
+package @@PACKAGENAME@@;
+
+/**
+ *
+ * 
+ */
+public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Iterator {
+    
+    /** Creates a new instance of templateWizardIterator */
+    public @@TEMPLATENAME@@WizardIterator() {
+    }
+    
+}

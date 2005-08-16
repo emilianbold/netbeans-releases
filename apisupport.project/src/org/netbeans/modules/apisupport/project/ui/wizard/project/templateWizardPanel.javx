@@ -1,0 +1,14 @@
+
+package @@PACKAGENAME@@;
+
+/**
+ *
+ * 
+ */
+public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel {
+    
+    /** Creates a new instance of templateWizardPanel */
+    public @@TEMPLATENAME@@WizardPanel() {
+    }
+    
+}

@@ -46,7 +46,7 @@ import org.openide.modules.SpecificationVersion;
  * See javadoc in {@link CreatedModifiedFiles} for what this class and its
  * methods is supposed to do.
  */
-final class CreatedModifiedFilesFactory {
+public final class CreatedModifiedFilesFactory {
     
     static CreatedModifiedFiles.Operation addLoaderSection(
             NbModuleProject project, String dataLoaderClass, String installBefore) {
@@ -94,7 +94,7 @@ final class CreatedModifiedFilesFactory {
                 substitutionTokens, localizedDisplayName, attrs);
     }
     
-    private static abstract class OperationBase implements CreatedModifiedFiles.Operation {
+    public static abstract class OperationBase implements CreatedModifiedFiles.Operation {
         
         private NbModuleProject project;
         private SortedSet/*<String>*/ createdPaths;

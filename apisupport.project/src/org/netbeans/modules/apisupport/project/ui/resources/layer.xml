@@ -78,7 +78,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>
+            </file>            
+            <!--file name="newProject">
+                <attr name="template" boolvalue="true"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.NewProjectIterator.createIterator"/>                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>                            
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.html"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
+            </file-->            
         </folder>
     </folder>
 
