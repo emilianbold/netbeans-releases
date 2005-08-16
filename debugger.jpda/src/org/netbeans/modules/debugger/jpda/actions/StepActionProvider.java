@@ -171,6 +171,28 @@ implements Executor {
             }
             
             // 4) stop execution here?
+            
+            // Synthetic method?
+            try {
+                if (ct.getThreadReference().frame(0).location().method().isSynthetic()) {
+                    //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
+                    
+                    removeStepRequests (ct.getThreadReference ());
+                    int step = ((StepRequest)ev.request()).depth();
+                    stepRequest = getDebuggerImpl ().getVirtualMachine ().
+                        eventRequestManager ().createStepRequest (
+                            ct.getThreadReference (),
+                            StepRequest.STEP_LINE,
+                            step
+                        );
+                    getDebuggerImpl ().getOperator ().register (stepRequest, this);
+                    stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
+                    stepRequest.enable ();
+                    return true;
+                }
+            } catch (Exception e) {e.printStackTrace();}
+            
+            // Not synthetic
             boolean fsh = getSmartSteppingFilterImpl ().stopHere (className);
             if (ssverbose)
                 System.out.println("SS  SmartSteppingFilter.stopHere (" + 
@@ -197,7 +219,7 @@ implements Executor {
             return true; // resume
         }
     }
-
+    
     private StepIntoActionProvider stepIntoActionProvider;
     
     private StepIntoActionProvider getStepIntoActionProvider () {

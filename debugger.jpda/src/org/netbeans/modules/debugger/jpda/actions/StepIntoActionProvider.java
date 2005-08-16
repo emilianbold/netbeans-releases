@@ -177,6 +177,15 @@ implements Executor, Runnable, PropertyChangeListener {
 
         ThreadReference tr = le.thread ();
         JPDAThread t = getDebuggerImpl ().getThread (tr);
+        
+        try {
+            if (tr.frame(0).location().method().isSynthetic()) {
+                //S ystem.out.println("In synthetic method -> STEP INTO again");
+                setStepRequest (StepRequest.STEP_INTO);
+                return true;
+            }
+        } catch (Exception e) {e.printStackTrace();}
+        
         boolean stop = getCompoundSmartSteppingListener ().stopHere 
                            (contextProvider, t, getSmartSteppingFilterImpl ());
         if (stop) {
