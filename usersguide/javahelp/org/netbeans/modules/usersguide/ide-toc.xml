@@ -270,6 +270,7 @@
     <tocitem text="Setting Breakpoints">
       <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
       <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>
+      <tocitem text="Setting a Conditional Breakpoint" target="breakpoint.conditional"/>
       <tocitem text="Organizing Breakpoints Into a Group" target="breakpoint.group"/>
     </tocitem>
     <tocitem text="Debugging Sessions">

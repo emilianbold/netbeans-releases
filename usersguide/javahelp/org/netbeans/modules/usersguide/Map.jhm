@@ -238,6 +238,7 @@ the Options window:-->
 <mapID target="breakpoint.about" url="debug/breakpoint_about.html" />
 <mapID target="breakpoint.group" url="debug/breakpoint_group.html" />
 <mapID target="breakpoint.setting" url="debug/breakpoint_setting.html" />
+<mapID target="breakpoint.conditional" url="debug/breakpoint_conditional.html" />
 <mapID target="debug.fix" url="debug/debug_fix.html" />
 <mapID target="debug.threads" url="debug/debug_threads.html" />
 <mapID target="debug.source" url="debug/debug_source.html" />
