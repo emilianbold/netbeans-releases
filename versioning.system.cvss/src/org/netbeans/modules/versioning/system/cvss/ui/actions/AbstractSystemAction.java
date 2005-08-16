@@ -68,9 +68,12 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
      * </ul>
      */
     public String getName() {
-        File [] nodes = Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
         String baseName = getBaseName();
+        if (!isEnabled()) {
+            return NbBundle.getBundle(this.getClass()).getString(baseName);
+        }
 
+        File [] nodes = Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
