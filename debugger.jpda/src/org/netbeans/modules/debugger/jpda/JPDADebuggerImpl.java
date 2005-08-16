@@ -461,8 +461,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
             
             CallStackFrameImpl csf = (CallStackFrameImpl) 
                 getCurrentCallStackFrame ();
-            if (csf != null)
-                return evaluateIn (expression, csf.getStackFrame ());
+            if (csf != null) {
+                try {
+                    return evaluateIn (expression, csf.getStackFrame ());
+                } catch (com.sun.jdi.VMDisconnectedException e) {
+                    // Causes kill action when something is being evaluated. 
+                    return null;
+                }
+            }
             //PATCH 48174
             if (altCSF != null) {
                 try {
