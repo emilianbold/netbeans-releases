@@ -184,8 +184,15 @@ public class NewLoaderIterator extends BasicWizardIterator {
 
         // 0. move icon file if necessary
         String icon = model.getIconPath();
+        File fil = null;
         if (icon != null) {
-            FileObject fo = FileUtil.toFileObject(new File(icon));
+            fil = new File(icon);
+            if (!fil.exists()) {
+                fil = null;
+            }
+        }
+        if (fil != null) {
+            FileObject fo = FileUtil.toFileObject(fil);
             String relativeIconPath = null;
             if (!FileUtil.isParentOf(model.getProject().getSourceDirectory(), fo)) {
                 String iconPath = getRelativePath(model.getProject(), packageName, 

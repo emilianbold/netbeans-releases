@@ -22,6 +22,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * the second panel in loaders wizard.
@@ -81,8 +82,23 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void checkValidity() {
-        //TODO:
-        setValid(Boolean.TRUE);
+        if (txtPrefix.getText().trim().length() == 0) {
+            setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
+            return;
+        }
+        if (!txtPrefix.getText().trim().matches("[A-Z]([A-Za-z0-9])*")) {
+            setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
+            return;
+        }
+        String path = txtIcon.getText().trim();
+        if (path.length() != 0) {
+            File fil = new File(path);
+            if (!fil.exists()) {
+                setErrorMessage(NbBundle.getMessage(getClass(), "ERR_Icon_Invalid"));
+                return;
+            }
+        }
+        setErrorMessage(null);
     }
     
     /** This method is called from within the constructor to
