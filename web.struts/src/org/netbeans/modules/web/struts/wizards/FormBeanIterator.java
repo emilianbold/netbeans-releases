@@ -40,6 +40,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.config.model.FormBean;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 
 
 /** A template wizard iterator for new struts action
@@ -117,6 +119,15 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
         DataObject dTemplate = DataObject.find( template );                
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard )  );
         
+        EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
+        if (editorCookie != null) {
+            javax.swing.text.Document doc = editorCookie.openDocument();
+            replaceInDocument(doc, "__SUPERCLASS__", (String) wizard.getProperty(WizardProperties.FORMBEAN_SUPERCLASS));
+            SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
+            if (save != null)
+                save.save();
+        }
+
         Project project = Templates.getProject( wizard );
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         dir = wm.getDocumentBase();
