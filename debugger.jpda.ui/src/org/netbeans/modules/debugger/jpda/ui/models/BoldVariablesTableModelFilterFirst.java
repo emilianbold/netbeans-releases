@@ -96,15 +96,16 @@ Constants {
     private String bold (Object variable, String value, Map map) {
         if (map.containsKey (variable)) {
             String oldValue = (String) map.get (variable);
-            if (oldValue == value) return value;
-            if ( (oldValue != null) && 
-                 oldValue.equals (value)
-            )   return value;
+            if (oldValue == value ||
+                oldValue != null && oldValue.equals (value)) {
+                
+                return toHTML (value, false, false, null);
+            }
             map.put (variable, value);
-            return toHTML (value, true, false, Color.red);
+            return toHTML (value, true, false, null);
         } else {
             map.put (variable, value);
-            return value;
+            return toHTML (value, false, false, null);
         }
     }
     

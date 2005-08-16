@@ -393,6 +393,9 @@ public class TreeModelNode extends AbstractNode {
             text = text.substring (0, i) + text.substring (j + 1);
             i = text.indexOf ("<font");
         }
+        text = text.replaceAll ("&lt;", "<");
+        text = text.replaceAll ("&gt;", ">");
+        text = text.replaceAll ("&amp;", "&");
         return text;
     }
     
@@ -714,8 +717,6 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public Object getValue (String attributeName) {
-            if (!canWrite ())
-                return super.getValue (attributeName);
             if (attributeName.equals ("htmlDisplayValue")) {
                 synchronized (evaluated) {
                     if (evaluated[0] != 1) {
