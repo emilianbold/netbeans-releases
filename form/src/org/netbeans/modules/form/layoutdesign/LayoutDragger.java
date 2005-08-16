@@ -1276,10 +1276,11 @@ class LayoutDragger implements LayoutConstants {
     /**
      * @return <= 0 if no indentation is recommended for given component pair
      */
-    static int findIndent(LayoutComponent mainComp, LayoutComponent indentedComp,
-                          int dimension, int alignemnt)
+    int findIndent(LayoutComponent mainComp, LayoutComponent indentedComp,
+                          int dimension, int alignment)
     {
-        return 17;
+        return visualMapper.getPreferredPadding(indentedComp.getId(), mainComp.getId(),
+            dimension, alignment, VisualMapper.INDENT);
     }
 
     // -----

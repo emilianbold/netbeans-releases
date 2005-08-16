@@ -1283,14 +1283,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             assert dimension == HORIZONTAL || dimension == VERTICAL;
             assert comp2Alignment == LEADING || comp2Alignment == TRAILING;
-            assert paddingType == PADDING_RELATED || paddingType == PADDING_UNRELATED;
+            assert paddingType == PADDING_RELATED || paddingType == PADDING_UNRELATED || paddingType == INDENT;
 
-            int type = paddingType == PADDING_RELATED ?
-                       LayoutStyle.RELATED : LayoutStyle.UNRELATED;
+            int type = paddingType == INDENT ? LayoutStyle.INDENT :
+                (paddingType == PADDING_RELATED ? LayoutStyle.RELATED : LayoutStyle.UNRELATED);
             int position = 0;
             if (dimension == HORIZONTAL) {
-                position = comp2Alignment == LEADING ?
-                           SwingConstants.EAST : SwingConstants.WEST;
+                if (paddingType == INDENT) {
+                    position = comp2Alignment == LEADING ?
+                               SwingConstants.WEST : SwingConstants.EAST;
+                } else {
+                    position = comp2Alignment == LEADING ?
+                               SwingConstants.EAST : SwingConstants.WEST;
+                }
             }
             else {
                 position = comp2Alignment == LEADING ?
@@ -1342,7 +1347,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     alignment = SwingConstants.SOUTH;
                 }
             }
-            return getLayoutStyle().getPreferredGap(parent, comp, LayoutStyle.CHILD, alignment, parent);
+            return getLayoutStyle().getContainerGap(comp, alignment, parent);
         }
 
         public boolean[] getComponentResizability(String compId, boolean[] resizability) {

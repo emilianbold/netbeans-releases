@@ -20,6 +20,7 @@ public interface VisualMapper {
 
     int PADDING_RELATED = 0;
     int PADDING_UNRELATED = 1;
+    int INDENT = 2;
 
 //    String getTopComponentId();
 
@@ -58,7 +59,7 @@ public interface VisualMapper {
      *        components are positioned
      * @param comp2Alignment the edge (LEADING or TRAILING) at which the second
      *        component is placed next to the first component
-     * @param paddingType padding type (PADDING_RELATED or PADDING_UNRELATED)
+     * @param paddingType padding type (PADDING_RELATED, PADDING_UNRELATED or INDENT)
      * @return preferred padding (amount of space) between the given components
      */
     int getPreferredPadding(String component1Id,
