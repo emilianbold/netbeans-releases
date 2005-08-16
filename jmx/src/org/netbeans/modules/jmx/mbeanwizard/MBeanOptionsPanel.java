@@ -16,6 +16,7 @@ import java.awt.Component;
 import javax.swing.event.*;
 import java.util.ResourceBundle;
 import org.openide.loaders.TemplateWizard;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -34,7 +35,9 @@ import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
+import org.netbeans.modules.jmx.ClassButton;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Project;
 
 /**
  *
@@ -45,6 +48,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 {
     private MBeanOptionsWizardPanel wiz;
     private ResourceBundle bundle;
+    private ClassButton classButton = null;
+    private Project project = null;
     
     private Integer orderNumber = 0;
     
@@ -149,6 +154,12 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
     }
     
+    public void setProject(Project project) {
+        if (classButton == null)
+            classButton = new ClassButton(browseButton,classSelectionJTextField,
+                WizardHelpers.getSourceGroups(project));
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -176,6 +187,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         classSelectionJPanel = new javax.swing.JPanel();
         classSelectionJLabel = new javax.swing.JLabel();
         classSelectionJTextField = new javax.swing.JTextField();
+        browseButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -357,12 +369,17 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
         classSelectionJPanel.add(classSelectionJTextField, gridBagConstraints);
+
+        browseButton.setText("jButton1");
+        browseButton.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        classSelectionJPanel.add(browseButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -398,7 +415,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         extendedMBeanJRadioButton.setSelected(mbeanFromExistingClass);
         classSelectionJLabel.setEnabled(mbeanFromExistingClass);
         classSelectionJTextField.setEnabled(mbeanFromExistingClass);
-        //browseJButton.setEnabled(mbeanFromExistingClass);
+        browseButton.setEnabled(mbeanFromExistingClass);
         
         wiz.storeSettings(wiz.templateWiz);
         wiz.readSettings(wiz.templateWiz);
@@ -424,6 +441,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
     }//GEN-LAST:event_standardMBeanJRadioButtonActionPerformed
   
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel classSelectionJLabel;
     private javax.swing.JPanel classSelectionJPanel;
     private javax.swing.JTextField classSelectionJTextField;
@@ -693,6 +711,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
             //initTargetComponentDef(mbeanTargetWiz.getComponent());
             bundle = NbBundle.getBundle(JMXMBeanIterator.class);
             
+            getPanel().setProject(Templates.getProject(templateWiz));
             
             String clzz =  bundle.getString("LBL_mbean_other_created_class");// NOI18N
             String itf = bundle.getString("LBL_mbean_other_created_interface");// NOI18N
