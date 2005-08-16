@@ -328,13 +328,18 @@ public class JBStartServer extends StartServer implements ProgressObject{
     private class JBStopRunnable implements Runnable {
         
         public void run() {
+            String configName = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty("server");
+            if ("minimal".equals(configName)) {
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_MINIMAL")));//NOI18N
+                return;
+            }
             try {
                 String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
                 String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
                 
                 File serverStopFile = new File(serverStopFileName);
                 if (!serverStopFile.exists()){
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_FNF")));//NOI18N
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.STOP, StateType.FAILED, NbBundle.getMessage(JBStartServer.class, "MSG_STOP_SERVER_FAILED_FNF")));//NOI18N
                     return;
                 }
                 
@@ -363,8 +368,8 @@ public class JBStartServer extends StartServer implements ProgressObject{
                     }
                     
                     try {
-                        elapsed += 5000;
-                        Thread.sleep(5000);
+                        elapsed += 500;
+                        Thread.sleep(500);
                     } catch (InterruptedException e) {
                         // do nothing
                     }
