@@ -64,8 +64,12 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Editor toolbar component.
@@ -393,7 +397,20 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                             addSeparator();
 
                         } else { // attempt to instantiate the cookie
+                            Lookup actionContext = null;
                             Object obj = ic.instanceCreate();
+                            
+                            if (obj instanceof ContextAwareAction) {
+                                if (actionContext == null) {
+                                    actionContext = createActionContext();
+                                }
+                                Action contextAware = ((ContextAwareAction)obj).createContextAwareInstance(actionContext);
+                                // use the context aware instance only if it implements Presenter.Toolbar or is a component
+                                // else fall back to the original object
+                                if (contextAware instanceof Presenter.Toolbar || contextAware instanceof Component) {
+                                    obj = contextAware;
+                                }
+                            }
                             if (obj instanceof Presenter.Toolbar) {
                                 Component tbp = ((Presenter.Toolbar)obj).getToolbarPresenter();
                                 add(tbp);
@@ -453,6 +470,12 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                 }
             }
         }
+    }
+    
+    private Lookup createActionContext() {
+        DataObject dobj = NbEditorUtilities.getDataObject(editorUI.getDocument());
+        Node node = dobj.getNodeDelegate();
+        return Lookups.singleton(node);
     }
 
     private void processButton(AbstractButton button) {
