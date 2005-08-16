@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,23 +15,54 @@ package org.openide.loaders;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.Image;
-import java.beans.*;
-import java.io.*;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
-import java.lang.reflect.*;
-import java.lang.ref.*;
 import java.net.URL;
-import java.util.*;
-
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.NbBundle;
-import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EventObject;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.openide.ErrorManager;
-import org.openide.util.datatransfer.ExTransferable;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.Node.PropertySet;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.ExTransferable;
 
 /** Default implementation of a shortcut to another data object.
 * Since 1.13 it extends MultiDataObject.
@@ -387,80 +418,93 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         }
     }
     
-    /** Loads proper dataShadow from the file fileObject.
-    *
-    * @param fileObject The file to deserialize shadow from.
-    * @return the original <code>DataObject</code> referenced by the shadow
-    * @exception IOException error during load
-    */
-    protected static DataObject deserialize (FileObject fileObject) throws java.io.IOException {
-        URL url = readURL(fileObject);
-        FileObject fo = URLMapper.findFileObject(url);
-        if (fo == null) {
-            throw new java.io.FileNotFoundException (url.toExternalForm());
+    /**
+     * Tries to load the original file from a shadow.
+     * Looks for file contents as well as the originalFile/originalFileSystem attributes.
+     * @param fileObject a data shadow
+     * @return the original <code>DataObject</code> referenced by the shadow
+     * @throws IOException error during load or broken link
+     */
+    protected static DataObject deserialize(FileObject fileObject) throws IOException {
+        String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
+        assert fileAndFileSystem[0] != null;
+        FileObject target;
+        URI u;
+        try {
+            u = new URI(fileAndFileSystem[0]);
+        } catch (URISyntaxException e) {
+            u = null;
         }
-        return DataObject.find (fo);
-    }
-    
-    static URL readURL(final FileObject f) throws IOException {
-        if ( f.getSize() == 0 ) {
-            Object fileName = f.getAttribute ("originalFile"); // NOI18N
-            if ( fileName instanceof String ) {
-                return recreateURL((String)fileName, (String)f.getAttribute("originalFileSystem"), f.getFileSystem());
-            } else if (fileName instanceof URL) {
-                return (URL)fileName;
+        if (u != null && u.isAbsolute()) {
+            target = URLMapper.findFileObject(u.toURL());
+        } else {
+            FileSystem fs;
+            if ("SystemFileSystem".equals(fileAndFileSystem[1])) { // NOI18N
+                fs = Repository.getDefault().getDefaultFileSystem();
             } else {
-                throw new java.io.FileNotFoundException (f.getPath());
+                // Even if it is specified, we no longer have mounts, so we can no longer find it.
+                fs = fileObject.getFileSystem();
+            }
+            target = fs.findResource(fileAndFileSystem[0]);
+        }
+        if (target != null) {
+            return DataObject.find(target);
+        } else {
+            throw new FileNotFoundException(fileAndFileSystem[0] + ':' + fileAndFileSystem[1]);
+        }
+    }
+    static URL readURL(FileObject fileObject) throws IOException {
+        String[] fileAndFileSystem = readOriginalFileAndFileSystem(fileObject);
+        assert fileAndFileSystem[0] != null;
+        URI u;
+        try {
+            u = new URI(fileAndFileSystem[0]);
+        } catch (URISyntaxException e) {
+            u = null;
+        }
+        if (u != null && u.isAbsolute()) {
+            return u.toURL();
+        } else {
+            FileSystem fs;
+            if ("SystemFileSystem".equals(fileAndFileSystem[1])) { // NOI18N
+                fs = Repository.getDefault().getDefaultFileSystem();
+            } else {
+                fs = fileObject.getFileSystem();
+            }
+            return new URL(fs.getRoot().getURL(), fileAndFileSystem[0]);
+        }
+    }
+    private static String[] readOriginalFileAndFileSystem(final FileObject f) throws IOException {
+        if ( f.getSize() == 0 ) {
+            Object fileName = f.getAttribute("originalFile"); // NOI18N
+            if ( fileName instanceof String ) {
+                return new String[] {(String) fileName, (String) f.getAttribute("originalFileSystem")}; // NOI18N
+            } else if (fileName instanceof URL) {
+                return new String[] {((URL) fileName).toExternalForm(), null};
+            } else {
+                throw new FileNotFoundException(f.getPath());
+            }
+        } else {
+            try {
+                return (String[]) MUTEX.readAccess(new Mutex.ExceptionAction() {
+                    public Object run() throws IOException {
+                        BufferedReader ois = new BufferedReader(new InputStreamReader(f.getInputStream(), "UTF-8")); // NOI18N
+                        try {
+                            String s = ois.readLine();
+                            String fs = ois.readLine();
+                            return new String[] {s, fs};
+                        } finally {
+                            ois.close();
+                        }
+                    }
+                });
+            } catch (MutexException e) {
+                throw (IOException) e.getException();
             }
         }
-        try {
-            return (URL) MUTEX.readAccess (new Mutex.ExceptionAction () {
-                public Object run () throws IOException {
-                    BufferedReader ois = new BufferedReader (new InputStreamReader (f.getInputStream (), "UTF-8"));
-
-                    try {
-                        String s = ois.readLine ();
-                        String fs = ois.readLine ();
-
-                        if (s == null) {
-                            // not found
-                            throw new java.io.FileNotFoundException (f.getPath());
-                        }
-                        if (fs == null) {
-                            return new URL(s);
-                        }
-                        return recreateURL(s, fs, f.getFileSystem());
-                    } finally {
-                        ois.close ();
-                    }
-                }
-            });
-        } catch (MutexException e) {
-            throw (IOException) e.getException ();
-        }
-    }
-
-    // BACKWARD COMPATIBILITY:
-    private static URL recreateURL(String fileName, String fileSystem, FileSystem fs) throws IOException {
-        if (fileSystem == null) {
-            return createURL(fs, fileName);
-        } else if (fileSystem.equals("SystemFileSystem")) {
-            return createURL(Repository.getDefault().getDefaultFileSystem(), fileName);
-        } else {
-            // Does not work. No FS is mounted anymore.
-            throw new java.io.FileNotFoundException (fileName+" "+fileSystem); //NOI18N
-        }
-    }
-    private static URL createURL(FileSystem fs, String fileName) throws IOException {
-        String root = fs.getRoot().getURL().toExternalForm();
-        if (!root.endsWith("/")) {
-            root += "/";
-        }
-        root += fileName.replace('\\', '/');
-        return new URL(root);
     }
     
-    private FileObject checkOriginal (DataObject orig) throws java.io.IOException {                
+    private FileObject checkOriginal (DataObject orig) throws IOException {
         if (orig == null)
             return null;
         return deserialize(getPrimaryFile()).getPrimaryFile();
@@ -490,7 +534,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @return true if the object can be deleted
     */
     public boolean isDeleteAllowed () {
-        return !getPrimaryFile ().isReadOnly ();
+        return getPrimaryFile().canWrite();
     }
 
     /* Getter for copy action.
@@ -504,14 +548,14 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     * @return true if the object can be moved
     */
     public boolean isMoveAllowed ()  {
-        return !getPrimaryFile ().isReadOnly ();
+        return getPrimaryFile().canWrite();
     }
 
     /* Getter for rename action.
     * @return true if the object can be renamed
     */
     public boolean isRenameAllowed () {
-        return !getPrimaryFile ().isReadOnly ();
+        return getPrimaryFile().canWrite();
     }
 
     /* Help context for this object.
@@ -616,7 +660,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
     private static void updateShadowOriginal(final DataShadow shadow) {
         final FileObject primary = shadow.original.getPrimaryFile ();
 
-        org.openide.util.RequestProcessor.postRequest (new Runnable () {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run () {
                 DataObject newOrig;
 
@@ -740,6 +784,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
             String n = format.format (createArguments ());
             try {
+                // XXX what is this for?! Does nothing! What should be displayed?
                 obj.getPrimaryFile().getFileSystem().getStatus().annotateName(n, obj.files());
             } catch (FileStateInvalidException fsie) {
                 // ignore

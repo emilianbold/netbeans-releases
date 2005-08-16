@@ -7,25 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.net.URI;
-import junit.framework.AssertionFailedError;
-import org.openide.filesystems.FileSystem;
 import java.io.File;
-
-import org.openide.nodes.Node;
+import java.lang.ref.WeakReference;
+import java.net.URI;
+import java.net.URL;
+import junit.framework.AssertionFailedError;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
-import org.netbeans.junit.*;
-import org.openide.filesystems.*;
-
 import org.openide.loaders.FolderInstanceTest.ErrManager;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /** Test things about shadows and broken shadows, etc.
@@ -347,6 +348,19 @@ implements java.net.URLStreamHandlerFactory {
         shade = (DataShadow)newObj;
         
         assertEquals ("Points to the new file", getName () + "/folder/orig.txt", shade.getOriginal ().getPrimaryFile ().getPath ());
+    }
+    
+    public void testFindOriginalFromAnonymousFilesystem() throws Exception {
+        // Helpful for XML layer editing.
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject orig = FileUtil.createData(fs.getRoot(), "path/to/orig");
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        shadow.setAttribute("originalFile", "path/to/orig");
+        assertEquals("found the right original file", DataObject.find(orig), DataShadow.deserialize(shadow));
+        orig = FileUtil.createData(fs.getRoot(), "path to orig");
+        shadow = FileUtil.createData(fs.getRoot(), "link2.shadow");
+        shadow.setAttribute("originalFile", "path to orig");
+        assertEquals("found the right original file", DataObject.find(orig), DataShadow.deserialize(shadow));
     }
     
     private static Node.Property findProperty (Node n, String name) {
