@@ -295,17 +295,13 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                                 jspConfig = (JspConfig)ddRoot.createBean("JspConfig");
                                 ddRoot.setJspConfig(jspConfig);
                             }
-                            Taglib taglib;
-                            taglib = createTaglib("/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld");
-                            if (taglib != null) jspConfig.addTaglib(taglib);
-                            taglib = createTaglib("/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld");
-                            if (taglib != null) jspConfig.addTaglib(taglib);
-                            taglib = createTaglib("/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld");
-                            if (taglib != null) jspConfig.addTaglib(taglib);
-                            taglib = createTaglib("/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld");
-                            if (taglib != null) jspConfig.addTaglib(taglib);
-                            taglib = createTaglib("/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld");
-                            if (taglib != null) jspConfig.addTaglib(taglib);
+                            
+                            addTaglib(jspConfig, "/WEB-INF/struts-bean.tld", "/WEB-INF/struts-bean.tld");
+                            addTaglib(jspConfig, "/WEB-INF/struts-html.tld", "/WEB-INF/struts-html.tld");
+                            addTaglib(jspConfig, "/WEB-INF/struts-logic.tld", "/WEB-INF/struts-logic.tld");
+                            addTaglib(jspConfig, "/WEB-INF/struts-nested.tld", "/WEB-INF/struts-nested.tld");
+                            addTaglib(jspConfig, "/WEB-INF/struts-tiles.tld", "/WEB-INF/struts-tiles.tld");
+                            
                         }
                         catch (VersionNotSupportedException e){
                             e.printStackTrace(System.out);
@@ -326,12 +322,11 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             config.write(FileUtil.toFile(strutsFO));
         }
         
-        private Taglib createTaglib(String location, String uri){
-            Taglib taglib;
-            taglib = new org.netbeans.modules.j2ee.dd.impl.web.model_2_4.Taglib();
+        private void addTaglib(JspConfig jspConfig, String location, String uri) throws ClassNotFoundException {
+            Taglib taglib = (Taglib)jspConfig.createBean("Taglib"); //NOI18N
             taglib.setTaglibLocation(location);
             taglib.setTaglibUri(uri);
-            return taglib;
+            jspConfig.addTaglib(taglib);
         }
     }
     
