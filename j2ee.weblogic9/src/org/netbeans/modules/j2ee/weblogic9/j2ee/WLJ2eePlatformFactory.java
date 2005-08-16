@@ -21,6 +21,7 @@ import javax.enterprise.deploy.spi.*;
 
 import org.openide.*;
 import org.openide.filesystems.*;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.*;
 import org.netbeans.spi.project.libraries.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
@@ -123,6 +124,12 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 
                 library.setContent(J2eeLibraryTypeProvider.
                         VOLUME_TYPE_CLASSPATH, list);
+               File j2eeDoc = InstalledFileLocator.getDefault().locate(J2EE_API_DOC, null, false);
+               if (j2eeDoc != null) {
+                   list = new ArrayList();
+                   list.add(fileToUrl(j2eeDoc));
+                   library.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, list);
+               }
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             }
