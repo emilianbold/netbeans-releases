@@ -13,6 +13,7 @@
 package org.netbeans.modules.j2ee.weblogic9.util;
 
 import java.io.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 
 import org.openide.*;
 import org.openide.windows.*;
@@ -48,29 +49,51 @@ public class WLTailer extends Thread {
     private InputOutput io;
     
     /**
-     * Creates a new instance of WSTailer
+     * Creates and starts a new instance of WSTailer
      * 
      * @param file the file for which to track changes
      * @param ioPanelName the I/O window where to output the changes
      */
-    public WLTailer(File file, String ioPanelName) {
+    public WLTailer(File file, String uri) {
         // save the parameters
         this.file = file;
-        this.io = IOProvider.getDefault().getIO(ioPanelName, false);
+        io = UISupport.getServerIO(uri);
+        if (io == null) {
+            return; // finish, it looks like this server instance has been unregistered
+        }
+
+        // clear the old output
+        try {
+            io.getOut().reset();
+        } catch (IOException ioe) {
+            // no op
+        }        
         io.select();
+        start();
     }
     
     /**
-     * Creates a new instance of WSTailer
+     * Creates and starts a new instance of WSTailer
      * 
      * @param file the input stream for which to track changes
      * @param ioPanelName the I/O window where to output the changes
      */
-    public WLTailer(InputStream inputStream, String ioPanelName) {
+    public WLTailer(InputStream inputStream, String uri) {
         // save the parameters
         this.inputStream = inputStream;
-        this.io = IOProvider.getDefault().getIO(ioPanelName, false);
+        io = UISupport.getServerIO(uri);
+        if (io == null) {
+            return; // finish, it looks like this server instance has been unregistered
+        }
+
+        // clear the old output
+        try {
+            io.getOut().reset();
+        } catch (IOException ioe) {
+            // no op
+        }        
         io.select();
+        start();
     }
     
     /**

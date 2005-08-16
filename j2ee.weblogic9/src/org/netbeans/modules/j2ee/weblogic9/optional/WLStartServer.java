@@ -334,9 +334,7 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WLTailer(serverProcess.getInputStream(), 
-                        NbBundle.getMessage(WLStartServer.class, 
-                        "TXT_ioWindowTitle")).start();                 // NOI18N
+                new WLTailer(serverProcess.getInputStream(), dm.getURI());
                 
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
@@ -456,7 +454,7 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WLTailer(serverProcess.getInputStream(), NbBundle.getMessage(WLStartServer.class, "TXT_ioWindowTitle")).start();
+                new WLTailer(serverProcess.getInputStream(), dm.getURI());
                 
                 // wait till the timeout happens, or if the server starts before 
                 // send the completed event to j2eeserver
@@ -562,7 +560,7 @@ public class WLStartServer extends StartServer {
                 
                 // create a tailer to the server's output stream so that a user
                 // can observe the progress
-                new WLTailer(serverProcess.getInputStream(), NbBundle.getMessage(WLStartServer.class, "TXT_ioWindowTitle")).start(); // NOI18N
+                new WLTailer(serverProcess.getInputStream(), dm.getURI());
                 
                 while (System.currentTimeMillis() - start < TIMEOUT) {
                     if (isRunning()) {
