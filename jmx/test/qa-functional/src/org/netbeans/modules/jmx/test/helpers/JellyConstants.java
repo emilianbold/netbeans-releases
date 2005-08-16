@@ -40,7 +40,6 @@ public class JellyConstants {
    public static final String LINE = "line"; 
    public static final String PIPE = "|";
    public static final String EMPTYSTRING = "";
->>>>>>> 1.4
    
    //MBean type
    public static final String STDMBEAN = "StandardMBean";
@@ -80,6 +79,14 @@ public class JellyConstants {
    public static final String MBEAN_FIFTEEN_COMMENT = "Wrapped ExtendedStandardMBean with all operations";
    public static final String MBEAN_SIXTEEN_COMMENT = "Wrapped ExtendedStandardMBean with no operations";
    
+   // Diff
+   public static final int COMPLETE_GENERATED_FILENAME = 0;
+   public static final int CLASSNAME = 1;
+   public static final int INTERFACENAME = 2;
+    
+   public static final int COMPLETE_GENERATED_TEST_FILENAME = 0;
+   public static final int JUNIT_FILENAME = 1;
+    
    //========= Component names ==============//
    
    //Option step
@@ -141,6 +148,7 @@ public class JellyConstants {
    public static final String TESTCLASS_TXT = "tfTestClass";
    public static final String DEFMETHBODY_CBX = "defaultMethodBodyJCheckBox";
    public static final String JAVADOC_CBX = "javaDocJCheckBox";
+   public static final String GENUNITFILE_TXT = "generatedTestFileJTextField";
    
    //============== Attribute ========================//
    public static final String ATTR1_NAME = "firstAttribute";
