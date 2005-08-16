@@ -119,6 +119,9 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
         return ret;
     }
 
+    public boolean supportsStartDebugging(Target target) {
+        return supportsStartDeploymentManager();
+    }
         
     /** Optional method. 
      *

@@ -80,6 +80,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="J2eeModule-UISupport">
+            <api name="j2eeserver"/>
+            <summary>ServerManager and UISupport classes added. Added method supportsStartDebugging() 
+            to the StartServer class.</summary>
+            <version major="1" minor="7"/>
+            <date day="9" month="8" year="2005"/>
+            <author login="sherold"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    The <code>ServerManager</code> class allows other modules to display the Server Manager dialog. 
+                    The <code>UISupport</code> class provides server plugins with an InputOutput instance with
+                    the server state management actions: start, debug, restart, stop and refresh.
+                    The <code>supportsStartDebugging()</code> method says whether the <code>startDebugging()</code>
+                    method is supported, it is analogous to the <code>supportsStartDeploymentManager()</code>
+                    and <code>startDeploymentManager()</code> methods.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="ServerManager"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="UISupport"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="StartServer"/>
+            <issue number="55640"/>
+        </change>
         <change id="J2eeModule-J2EE15-constant">
             <api name="j2eeserver"/>
             <summary>Added setServerInstanceID method into J2eeModuleProvider.</summary>

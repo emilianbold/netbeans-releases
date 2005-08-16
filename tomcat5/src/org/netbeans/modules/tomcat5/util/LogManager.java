@@ -62,6 +62,7 @@ public class LogManager {
                 return;
             }
             serverLog = new ServerLog(
+                manager.getUri(),
                 manager.getTomcatProperties().getDisplayName(),
                 new InputStreamReader(process.getInputStream()),
                 new InputStreamReader(process.getErrorStream()),

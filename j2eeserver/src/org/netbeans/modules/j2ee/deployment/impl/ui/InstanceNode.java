@@ -7,98 +7,51 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
-/*
- * ServerRegNode.java -- synopsis
- *
- */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.awt.Component;
+import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.openide.nodes.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.openide.windows.WindowManager;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+
+
+
 /**
+ * Instance node is a base for any manager node. The behaviour of this base instance 
+ * node can be customized/extended by the manager node provided by the plugin.
+ *
  * @author George FinKlang
  */
-
-public class InstanceNode extends AbstractNode implements ServerInstance.RefreshListener {
+public class InstanceNode extends AbstractNode implements ServerInstance.StateListener {
     
     private static int cursorChangeCounter = 0;
     
     protected ServerInstance instance;
     
-    public InstanceNode(ServerInstance instance) {
+    private boolean running;
+    
+    public InstanceNode(ServerInstance instance, boolean addStateListener) {
         super(new InstanceChildren(instance));
         this.instance = instance;
-        setDisplayName(instance.getDisplayName());
-        setName(instance.getUrl());
         setIconBase(instance.getServer().getIconBase());
         getCookieSet().add(instance);
-        getCookieSet().add(new Refresher());
-        instance.addRefreshListener(this);
-    }
-    
-    //static javax.swing.Action[] runningActions;
-    //static javax.swing.Action[] stoppedActions;
-    static javax.swing.Action[] unknownActions;
-    
-    /*private javax.swing.Action[] getRunningActions() {
-        if (runningActions == null) {
-            runningActions = new SystemAction[] {
-                SystemAction.get(StopServerAction.class),
-                SystemAction.get(RemoveInstanceAction.class)
-            };
+        if (addStateListener) {
+            instance.addStateListener(this);
         }
-        return runningActions;
-    }
-    private javax.swing.Action[] getStoppedActions() {
-        if (stoppedActions == null) {
-            stoppedActions = new SystemAction[] {
-                SystemAction.get(StartServerAction.class),
-                SystemAction.get(RemoveInstanceAction.class)
-            };
-        }
-        return stoppedActions;
-    }*/
-    private javax.swing.Action[] getUnknownActions() {
-        if (unknownActions == null) {
-            unknownActions = new SystemAction[] {
-                SystemAction.get(ServerStatusAction.class),
-                SystemAction.get(RefreshAction.class),
-                        null,
-                SystemAction.get(RemoveInstanceAction.class)
-            };
-        }
-        return unknownActions;
-    }
-
-    public javax.swing.Action[] getActions(boolean context) {
-        return  getUnknownActions();
-        /*Boolean isRunning = instance.checkRunning();
-        if (isRunning == null) {
-            return getUnknownActions();
-        } else if (isRunning.booleanValue()) {
-            return getRunningActions();
-        } else
-            return getStoppedActions();*/
-    }
-    
-    ServerInstance getServerInstance() {
-        return (ServerInstance) getCookieSet().getCookie(ServerInstance.class);
     }
     
     public HelpCtx getHelpCtx() {
@@ -112,49 +65,15 @@ public class InstanceNode extends AbstractNode implements ServerInstance.Refresh
         return super.getCookie(type);
     }
     
-    class Refresher implements RefreshAction.RefreshCookie {
-        public void refresh() {
-            // show busy cursor
-            if (cursorChangeCounter++ == 0) {
-                JFrame f = (JFrame)WindowManager.getDefault().getMainWindow();
-                Component c = f.getGlassPane();                    
-                c.setVisible(true);
-                c.setCursor(Utilities.createProgressCursor(f));
-            }
-            instance.refresh(ServerState.CHECKING);
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        instance.refresh(instance.isRunning() ? ServerState.RUNNING 
-                                                              : ServerState.STOPPED);
-                    } finally {
-                        // hide busy cursor
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                if (--cursorChangeCounter == 0) {
-                                    JFrame f = (JFrame)WindowManager.getDefault().getMainWindow();
-                                    Component c = f.getGlassPane();
-                                    c.setVisible(false);
-                                    c.setCursor(null);
-                                }
-                            }
-                        });
-                    }
-                }
-            });
+    // StateListener implementation -------------------------------------------
+    
+    public void stateChanged(int oldState, int newState) {
+        if (instance.getServerState() != ServerInstance.STATE_WAITING) {
+            setChildren(new InstanceChildren(instance));
+            InstanceChildren ch = (InstanceChildren) getChildren();
+            ch.updateKeys();
         }
     }
-
-    public void handleRefresh(ServerState serverState) {
-        if (serverState == ServerState.CHECKING) {
-            return;
-        }
-        if (serverState != ServerState.RUNNING) {
-            setChildren(new InstanceChildren(instance));
-        }
-        InstanceChildren ch = (InstanceChildren) getChildren();
-        ch.updateKeys();
-    }    
     
      public static class InstanceChildren extends Children.Keys {
         ServerInstance serverInstance;

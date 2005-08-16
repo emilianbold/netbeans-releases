@@ -24,7 +24,6 @@ import javax.enterprise.deploy.spi.exceptions.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
@@ -34,6 +33,7 @@ import org.openide.filesystems.FileObject;
 import java.util.*;
 import java.io.*;
 import javax.enterprise.deploy.model.DeployableObject;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 
 /**
  * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
@@ -73,7 +73,7 @@ public class TargetServer {
         this.instance = dtarget.getServer().getServerInstance();
     }
     
-    private void init(DeployProgressUI ui) {
+    private void init(ProgressUI ui) {
         if (targets == null) {
             instance.start(ui);
             targets = dtarget.getServer().toTargets();
@@ -131,7 +131,7 @@ public class TargetServer {
         return true;
     }
     
-    private AppChangeDescriptor distributeChanges(TargetModule targetModule, DeployProgressUI ui) throws IOException {
+    private AppChangeDescriptor distributeChanges(TargetModule targetModule, ProgressUI ui) throws IOException {
         ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
         ui.setProgressObject(sfd);
         ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
@@ -139,7 +139,7 @@ public class TargetServer {
         return acd;
     }
     
-    private File initialDistribute(Target target, DeployProgressUI ui) {
+    private File initialDistribute(Target target, ProgressUI ui) {
         InitialServerFileDistributor sfd = new InitialServerFileDistributor(dtarget, target);
         ui.setProgressObject(sfd);
         return sfd.distribute();
@@ -370,15 +370,15 @@ public class TargetServer {
         }
     }
     
-    public boolean startTargets(boolean debugMode, DeployProgressUI ui) {
+    public boolean startTargets(boolean debugMode, ProgressUI ui) {
         this.debugMode = debugMode;
         if (instance.getStartServer().isAlsoTargetServer(null)) {
             if (debugMode) {
-                if (! instance.startDebugTarget(null, ui)) {
+                if (!instance.startDebug(ui)) {
                     return false;
                 }
             } else {
-                if (! instance.start(ui)) {
+                if (!instance.start(ui)) {
                     return false;
                 }
             }
@@ -404,11 +404,11 @@ public class TargetServer {
     }
     
     private class DistributeEventHandler implements ProgressListener {
-        DeployProgressUI ui;
+        ProgressUI ui;
         ProgressObject po;
         boolean deaf = false;
         
-        public DistributeEventHandler(DeployProgressUI ui, ProgressObject po) {
+        public DistributeEventHandler(ProgressUI ui, ProgressObject po) {
             this.ui = ui;
             this.po = po;
             ui.setProgressObject(po);
@@ -440,10 +440,10 @@ public class TargetServer {
     
     private class IncrementalEventHandler implements ProgressListener {
         ProgressObject po;
-        DeployProgressUI ui;
+        ProgressUI ui;
         boolean deaf = false;
         
-        public IncrementalEventHandler(DeployProgressUI ui, ProgressObject po) {
+        public IncrementalEventHandler(ProgressUI ui, ProgressObject po) {
             this.po = po;
             this.ui = ui;
             ui.setProgressObject(po);
@@ -542,11 +542,11 @@ public class TargetServer {
         return (TargetModuleID[]) originals.toArray(new TargetModuleID[originals.size()]);
     }
     
-    public TargetModule[] deploy(DeployProgressUI ui) throws IOException {
+    public TargetModule[] deploy(ProgressUI ui) throws IOException {
         return deploy (ui, false);
     }
     
-    public TargetModule[] deploy(DeployProgressUI ui, boolean forceRedeploy) throws IOException {
+    public TargetModule[] deploy(ProgressUI ui, boolean forceRedeploy) throws IOException {
         ProgressObject po = null;
         boolean hasActivities = false;
         
@@ -587,7 +587,7 @@ public class TargetServer {
                     throw new RuntimeException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 }
                 
-                ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
+                ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
                 plan = dtarget.getConfigurationFile();
                 po = instance.getDeploymentManager().distribute(targetz, getApplication(), plan);
                 handleDeployProgress(ui, po);
@@ -600,7 +600,7 @@ public class TargetServer {
             if (incremental != null && canFileDeploy(redeployTargetModules, deployable)) {
                 AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], ui);
                 if (anyChanged(acd)) {
-                    ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
+                    ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
                     po = incremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
                     handleIncrementalProgress(ui, po);
                     
@@ -611,7 +611,7 @@ public class TargetServer {
                 if (getApplication() == null)
                     throw new IllegalArgumentException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 
-                ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Redeploying", application));
+                ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Redeploying", application));
                 TargetModuleID[] tmids = TargetModule.toTargetModuleID(redeployTargetModules);
                 if (plan == null) plan = dtarget.getConfigurationFile();
                 po = instance.getDeploymentManager().redeploy(tmids, getApplication(), plan);
@@ -645,24 +645,24 @@ public class TargetServer {
         || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
     
-    private void handleIncrementalProgress(DeployProgressUI ui, ProgressObject po) {
+    private void handleIncrementalProgress(ProgressUI ui, ProgressObject po) {
         handleDeployProgress(ui, po, true);
     }
-    private void handleDeployProgress(DeployProgressUI ui, ProgressObject po) {
+    private void handleDeployProgress(ProgressUI ui, ProgressObject po) {
         handleDeployProgress(ui, po, false);
     }
     
-    private void handleDeployProgress(DeployProgressUI ui, ProgressObject po, boolean isIncremental ){
+    private void handleDeployProgress(ProgressUI ui, ProgressObject po, boolean isIncremental ){
         ProgressListener handler = null;
         try {
             ui.setProgressObject(po);
             
             StateType state = po.getDeploymentStatus().getState();
             if (state == StateType.COMPLETED) {
-                ui.addMessage(po.getDeploymentStatus().getMessage());
+                ui.progress(po.getDeploymentStatus().getMessage());
                 handleCompletedDistribute(ui, po, isIncremental);
             } else if (state == StateType.FAILED) {
-                ui.addError(NbBundle.getMessage(TargetServer.class, "MSG_DeployFailedWithNoEvent", po.getDeploymentStatus().getMessage()));
+                ui.failed(NbBundle.getMessage(TargetServer.class, "MSG_DeployFailedWithNoEvent", po.getDeploymentStatus().getMessage()));
             } else {
                 if (isIncremental)
                     handler = new TargetServer.IncrementalEventHandler(ui, po);
@@ -682,7 +682,7 @@ public class TargetServer {
         }
     }
     
-    private void handleCompletedDistribute(DeployProgressUI ui, final ProgressObject po, boolean isIncremental) {
+    private void handleCompletedDistribute(ProgressUI ui, final ProgressObject po, boolean isIncremental) {
         TargetModuleID[] modules = po.getResultTargetModuleIDs();
         modules = saveRootTargetModules(modules);
         if (isIncremental) {
@@ -701,13 +701,13 @@ public class TargetServer {
         }
     }
     
-    private void handleAutoUndeploy(DeployProgressUI ui) throws IOException {
+    private void handleAutoUndeploy(ProgressUI ui) throws IOException {
         // auto-undeploy if any
         if (undeployTMIDs.size() < 1)
             return;
 
         TargetModuleID[] tmIDs = (TargetModuleID[]) undeployTMIDs.toArray(new TargetModuleID[undeployTMIDs.size()]);
-        ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
+        ui.progress(NbBundle.getMessage(TargetServer.class, "MSG_Undeploying"));
     
         ProgressObject po = /*instance.getDeploymentManager().stop(tmIDs);
         handleProgressIgnoreFail(ui, po);
@@ -716,7 +716,7 @@ public class TargetServer {
         handleProgressIgnoreFail(ui, po);
     }
 
-    private void handleProgressIgnoreFail(DeployProgressUI ui, ProgressObject po) {
+    private void handleProgressIgnoreFail(ProgressUI ui, ProgressObject po) {
         ProgressListener handler = null;
         try {
             ui.setProgressObject(po);

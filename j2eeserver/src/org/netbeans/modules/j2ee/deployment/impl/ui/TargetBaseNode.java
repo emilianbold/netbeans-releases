@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,9 +20,11 @@ import javax.swing.Action;
 
 
 /**
+ * Target base node is a base for any target node. The behaviour of this target 
+ * base node can be customized/extended by the target node provided by the plugin.
+ *
  * @author Nam Nguyen
  */
-
 public class TargetBaseNode extends AbstractNode {
     
     public TargetBaseNode(Children children, ServerTarget target) {

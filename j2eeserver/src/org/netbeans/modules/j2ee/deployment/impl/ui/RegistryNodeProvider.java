@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -38,24 +38,7 @@ public class RegistryNodeProvider {
     }
        
     public Node createInstanceNode(ServerInstance instance) {
-        return createInstanceNode(instance, false);
-    }
-    private Node createInstanceNode(ServerInstance instance, boolean removeRefreshListener) {
-        InstanceNode xnode = new InstanceNode(instance);
-        if (removeRefreshListener)
-            instance.removeRefreshListener(xnode);
-        
-        if (factory != null) {
-            Node original = factory.getManagerNode(createLookup(instance));
-            if (original != null) {
-                // if displayName was not explicitly set, use displayName from
-                // the original node
-                if (instance.getDisplayName() == null)
-                    instance.setDisplayName(original.getDisplayName());
-                return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
-            }
-        }
-        return xnode;
+        return new InstanceNodeDecorator(createInstanceNodeImpl(instance, true), instance);
     }
     
     public Node createTargetNode(ServerTarget target) {
@@ -70,8 +53,20 @@ public class RegistryNodeProvider {
     }
     
     public Node createInstanceTargetNode(ServerInstance instance) {
-        Node original = createInstanceNode(instance, true);
-        return new InstanceTargetXNode(original, instance);
+        Node original = createInstanceNodeImpl(instance, false);
+        return new InstanceNodeDecorator(new InstanceTargetXNode(original, instance), instance);
+    }
+    
+    private Node createInstanceNodeImpl(ServerInstance instance, boolean addStateListener) {
+        InstanceNode xnode = new InstanceNode(instance, addStateListener);
+        
+        if (factory != null) {
+            Node original = factory.getManagerNode(createLookup(instance));
+            if (original != null) {
+                return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
+            }
+        }
+        return xnode;
     }
     
     static Lookup createLookup(final Server server) {

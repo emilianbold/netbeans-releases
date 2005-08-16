@@ -12,19 +12,13 @@
  */
 
 package org.netbeans.modules.tomcat5.nodes;
-
-import java.util.ArrayList;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.Target;
+import java.awt.Image;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
-
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatModule;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesCookie;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -35,23 +29,29 @@ import org.openide.util.actions.SystemAction;
 
 public class TomcatTargetNode extends AbstractNode {
     
-    private Lookup lkp;
-    
     /** Creates a new instance of TomcatTargetNode */
     public TomcatTargetNode(Lookup lookup) {
         super(new Children.Array());
         getChildren().add(new Node[] {new WebModuleHolderNode(lookup)});
-        lkp = lookup;
-        
     }
  
     public class WebModuleHolderNode extends AbstractNode {
+        
+        private Node iconDelegate;
         
         public WebModuleHolderNode (Lookup lookup){
             super(new TomcatWebModuleChildren(lookup));
             setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebApps"));  // NOI18N
             getCookieSet().add(new RefreshWebModuleChildren ((TomcatWebModuleChildren)getChildren()));
-            setIconBaseWithExtension("org/netbeans/modules/tomcat5/resources/mfolder.gif"); // NOI18N
+            iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+        }
+        
+        public Image getIcon(int type) {
+            return iconDelegate.getIcon(type);
+        }        
+
+        public Image getOpenedIcon(int type) {
+            return iconDelegate.getOpenedIcon(type);
         }
         
         public javax.swing.Action[] getActions(boolean context) {

@@ -7,19 +7,14 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-/*
- * InstanceTargetNode.java
- *
- * Created on December 7, 2003, 9:11 PM
  */
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
+import java.awt.Image;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.ServerState;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.nodes.Node;
@@ -29,58 +24,38 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import org.openide.util.Utilities;
 
 
 /**
- * A node for an admin instance that is also a target server.
+ * A node for an admin instance that is also a target server. Manager and target
+ * nodes are merged into one.
  *
  * @author  nn136682
  */
-public class InstanceTargetXNode extends FilterXNode implements ServerInstance.RefreshListener, 
-        PropertyChangeListener {
+public class InstanceTargetXNode extends FilterXNode implements ServerInstance.StateListener {
     private ServerTarget instanceTarget;
     private ServerInstance instance;
     private InstanceProperties instanceProperties;
     
+    private boolean running;
+    
     public InstanceTargetXNode(Node instanceNode, ServerInstance instance) {
         this(instanceNode, Node.EMPTY, instance);
-        instance.addRefreshListener(this);
+        instance.addStateListener(this);
     }
     
     public InstanceTargetXNode(Node instanceNode, Node xnode, ServerInstance instance) {
         super(instanceNode, xnode, true, new InstanceTargetChildren(xnode, instance));
         this.instance = instance;
         instanceProperties = instance.getInstanceProperties();
-        instanceProperties.addPropertyChangeListener(this);
-    }
-    
-    // this should preven customizer action from being displayed in server instance
-    // context menu in the server registry - customizer should be accessible only 
-    // through the server manager
-    public boolean hasCustomizer() {
-        return false;
-    }
-    
-    public String getDisplayName() {
-        return instance.getDisplayNameWithState();
-    }
-    
-    public String getName() {
-        String name = instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
-        return name == null ? "" : name; // NOI18N
-    }
-    
-    public void setName(String name) {
-        instanceProperties.setProperty(InstanceProperties.DISPLAY_NAME_ATTR, name);
-    }
-    
-    public boolean canRename() { 
-        return true;
+        instance.addStateListener(this);
     }
     
     private ServerTarget getServerTarget() {
-        if (instanceTarget != null)
+        if (instanceTarget != null) {
             return instanceTarget;
+        }
         instanceTarget = instance.getCoTarget();
         return instanceTarget;
     }
@@ -96,21 +71,9 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
             xnode = tn;
         return xnode;
     }
+    
     private void resetDelegateTargetNode() {
         xnode = null;
-    }
-    
-    /**
-     * Handle InstanceProperties changes.
-     *
-     * @param evt A PropertyChangeEvent object describing the event source 
-     *   	and the property that has changed.
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (InstanceProperties.DISPLAY_NAME_ATTR.equals(evt.getPropertyName()) &&
-            (evt.getNewValue() != null && !evt.getNewValue().equals(evt.getOldValue()))) {
-            setDisplayName(getDisplayName());
-        }
     }
     
     public static class InstanceTargetChildren extends Children {
@@ -189,18 +152,14 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         return c;
     }
     
-    public void handleRefresh(ServerState serverState) {
-        if (serverState == ServerState.CHECKING) {
-            setDisplayName(instance.getDisplayNameWithState());
-            return;
-        }
-        //if (! running) {
+    // StateListener implementation -------------------------------------------
+    
+    public void stateChanged(int oldState, int newState) {
+        if (instance.getServerState() != ServerInstance.STATE_WAITING) {
             instanceTarget = null;
             resetDelegateTargetNode();
             setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
-        //}
-        this.setDisplayName(instance.getDisplayNameWithState());
-        ((InstanceTargetChildren)getChildren()).updateKeys();
+            ((InstanceTargetChildren)getChildren()).updateKeys();
+        }
     }
 }
-

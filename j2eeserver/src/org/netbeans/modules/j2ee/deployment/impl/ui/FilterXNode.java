@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
-
-import org.netbeans.modules.j2ee.deployment.impl.*;
+import java.awt.Image;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Sheet;
@@ -22,10 +21,10 @@ import javax.swing.Action;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /*
- * FilterXNode.java
- * 
  * A node to filter the original children and extending its action by
  * an extension node.
  *
@@ -34,11 +33,13 @@ import java.util.ArrayList;
  */
 public class FilterXNode extends FilterNode {
     protected Node xnode;
+    private Node original;
     private boolean extendsActions = true;
 
     public FilterXNode(Node original, Node xnode, boolean extendsActions) {
         super(original);
         this.xnode = xnode;
+        this.original = original;
         disableDelegation(DELEGATE_GET_ACTIONS);
         this.extendsActions = extendsActions;
     }
@@ -46,6 +47,7 @@ public class FilterXNode extends FilterNode {
     public FilterXNode(Node original, Node xnode, boolean extendsActions, Children xchildren) {
         super(original, xchildren);
         this.xnode = xnode;
+        this.original = original;
         disableDelegation(DELEGATE_GET_ACTIONS);
         this.extendsActions = extendsActions;
     }

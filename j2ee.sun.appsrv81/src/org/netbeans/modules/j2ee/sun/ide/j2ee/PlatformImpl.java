@@ -257,7 +257,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
      * @return platform's icon.
      */
     public Image getIcon() {
-        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.gif"); // NOI18N;
+        return Utilities.loadImage("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png"); // NOI18N;
     }
     
     /**

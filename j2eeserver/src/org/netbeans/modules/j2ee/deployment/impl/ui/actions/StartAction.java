@@ -12,27 +12,28 @@
  */
 
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
-
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.j2ee.deployment.config.Utils;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.openide.nodes.*;
-import org.openide.util.actions.*;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Resfresh action refreshes the server state.
+ * Start action starts the server in the normal mode.
  *
- * @author  nn136682
+ * @author sherold
  */
-public class RefreshAction extends NodeAction {
+public class StartAction extends NodeAction {
     
     public String getName() {
-        return NbBundle.getMessage(DebugAction.class, "LBL_Refresh");
+        return NbBundle.getMessage(StartAction.class, "LBL_Start");
     }
     
     protected void performAction(Node[] nodes) {
@@ -55,9 +56,21 @@ public class RefreshAction extends NodeAction {
     
     private static void performActionImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
+            final ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
+            si.setServerState(ServerInstance.STATE_WAITING);
             if (si != null) {
-                si.refresh();
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        String title = NbBundle.getMessage(StartAction.class, "LBL_Starting", si.getDisplayName());
+                        ProgressUI progressUI = new ProgressUI(title, false);
+                        try {
+                            progressUI.start();
+                            si.start(progressUI);
+                        } finally {
+                            progressUI.finish();
+                        }
+                    }
+                });
             }
         }
     }
@@ -65,7 +78,7 @@ public class RefreshAction extends NodeAction {
     private static boolean enableImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si == null || si.getServerState() == ServerInstance.STATE_WAITING) {
+            if (si == null || si.getServerState() != ServerInstance.STATE_STOPPED) {
                 return false;
             }
         }
@@ -74,16 +87,16 @@ public class RefreshAction extends NodeAction {
     
     /** This action will be displayed in the server output window */
     public static class OutputAction extends AbstractAction implements ServerInstance.StateListener {
-        
+    
         private static final String ICON = 
-                "org/netbeans/modules/j2ee/deployment/impl/ui/resources/refresh.png"; // NOI18N
+                "org/netbeans/modules/j2ee/deployment/impl/ui/resources/start.png"; // NOI18N
         private static final String PROP_ENABLED = "enabled"; // NOI18N
         private Node node;
         
         public OutputAction(Node node) {
-            super(NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutput"),
+            super(NbBundle.getMessage(StartAction.class, "LBL_StartOutput"),
                   new ImageIcon(Utilities.loadImage(ICON)));
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutputDesc"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(StartAction.class, "LBL_StartOutputDesc"));
             this.node = node;
             
             // start listening to changes

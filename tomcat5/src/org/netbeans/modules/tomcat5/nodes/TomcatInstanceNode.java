@@ -22,7 +22,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.*;
-
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.tomcat5.customizer.Customizer;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
@@ -43,34 +42,21 @@ import org.openide.ErrorManager;
 
 public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
-    private static String ICON_BASE = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N
-    
-    private Lookup lkp;
+    private TomcatManager tm;
     
     /** Creates a new instance of TomcatInstanceNode 
       @param lookup will contain DeploymentFactory, DeploymentManager, Management objects. 
      */
     public TomcatInstanceNode(Children children, Lookup lookup) {
         super(children);
-        //this.getChildren().add(new Node[]{new WebModuleNode(new Children.Map())});
-        lkp = lookup;
+        tm = (TomcatManager)lookup.lookup(TomcatManager.class);
+        setIconBaseWithExtension("org/netbeans/modules/tomcat5/resources/tomcat.png"); // NOI18N
+        setDisplayName(tm.getTomcatProperties().getDisplayName());
+        setShortDescription(NbBundle.getMessage(
+                TomcatInstanceNode.class, 
+                "LBL_TomcatInstanceNode", 
+                Integer.toString(tm.getCurrentServerPort())));
         getCookieSet().add(this);
-    }
-    
-    private int iPort = 0;
-    
-    public String getDisplayName(){
-        int port = getTomcatManager().getCurrentServerPort();        
-        return NbBundle.getMessage(TomcatInstanceNode.class, "LBL_TomcatInstanceNode", Integer.toString(port));
-    }
-    
-    
-    public Image getIcon(int type) {
-        return Utilities.loadImage(ICON_BASE);
-    }
-    
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
     }
     
     public boolean hasCustomizer() {
@@ -78,19 +64,15 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
     
     public Component getCustomizer() {
-        return new Customizer(getTomcatManager());
+        return new Customizer(tm);
     }
     
-    /** Returns the TomcatManager instance for this node. */
+    /** Return the TomcatManager instance this node represents. */
     public TomcatManager getTomcatManager() {
-        DeploymentManager dm = (DeploymentManager)lkp.lookup(DeploymentManager.class);
-        assert dm instanceof TomcatManager : 
-            "Illegal deployment manager instance: " + dm.getClass().getName(); // NOI18N
-        return (TomcatManager)dm;
+        return tm;
     }
 
     public javax.swing.Action[] getActions(boolean context) {
-        TomcatManager tm = getTomcatManager();
         java.util.List actions = new LinkedList();
         actions.add(null);
         actions.add(SystemAction.get(EditServerXmlAction.class));
@@ -102,7 +84,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     }
         
     private FileObject getTomcatConf() {
-        TomcatManager tm = getTomcatManager();
         tm.ensureCatalinaBaseReady(); // generated the catalina base folder if empty
         TomcatProperties tp = tm.getTomcatProperties();
         return FileUtil.toFileObject(tp.getServerXml());
@@ -135,7 +116,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
      * Open the server log (output).
      */
     public void openServerLog() {
-        getTomcatManager().logManager().openServerLog();
+        tm.logManager().openServerLog();
     }
     
     /**
@@ -145,6 +126,6 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
      *         otherwise.
      */
     public boolean hasServerLog() {
-        return getTomcatManager().logManager().hasServerLog();
+        return tm.logManager().hasServerLog();
     }
 }

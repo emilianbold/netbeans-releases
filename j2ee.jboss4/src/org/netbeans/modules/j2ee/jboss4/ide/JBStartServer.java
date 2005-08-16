@@ -20,14 +20,10 @@ import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.UnknownHostException;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -37,7 +33,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import java.util.Vector;
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -52,6 +47,7 @@ import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import org.openide.util.NbBundle;
 import javax.naming.*;
 import java.net.URLClassLoader;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 
 /**
@@ -85,6 +81,10 @@ public class JBStartServer extends StartServer implements ProgressObject{
             isDebugModeUri.remove(dm.getUrl());
             return false;
         }
+        return true;
+    }
+    
+    public boolean supportsStartDebugging(Target target) {
         return true;
     }
     
@@ -141,6 +141,11 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     private boolean isReallyRunning(){
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
+        if (ip == null) {
+            return false; // finish, it looks like this server instance has been unregistered
+        }
+        
         ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
         URLClassLoader loader = ((JBDeploymentFactory)JBDeploymentFactory.create()).getJBClassLoader();
         
@@ -148,12 +153,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
         java.util.Hashtable env = new java.util.Hashtable();
         
         env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jnp.interfaces.NamingContextFactory");
-        env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort( InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR)));
+        env.put(Context.PROVIDER_URL, "jnp://localhost:"+JBPluginUtils.getJnpPort(ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR)));
         env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
         env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
         env.put("jnp.disableDiscovery", Boolean.TRUE); // NOI18N
         
-        String checkingConfigName = InstanceProperties.getInstanceProperties(dm.getUrl()).getProperty("server");
+        String checkingConfigName = ip.getProperty("server");
         
         try{
             InitialContext ctx = new InitialContext(env);
@@ -184,25 +189,30 @@ public class JBStartServer extends StartServer implements ProgressObject{
     public boolean isRunning() {
         //     String host = dm.getHost();
         //   int port = dm.getPort();
-        String serverName = (String)InstanceProperties.getInstanceProperties((dm).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER) ;
-        
-        
         
         if (!isReallyRunning()){
             return false;
         }
         
+        String url = dm.getUrl();
         
         // Show log if server started and log not shown
         // create an output tab for the server output
-        InputOutput io = IOProvider.getDefault().getIO( getIOTabName(), false);
-        io.select();
+        InputOutput io = UISupport.getServerIO(url);
+        if (io != null) {
+            io.select();
+        }
         
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(url);
+        if (ip == null) {
+            return false; // finish, it looks like this server instance has been unregistered
+        }
         
-        String logFileName = (String)InstanceProperties.getInstanceProperties((dm).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) + File.separator+"log"+ File.separator+"server.log" ;//NOI18N
+        String logFileName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER_DIR) + File.separator+"log"+ File.separator+"server.log" ;//NOI18N
         File logFile = new File(logFileName);
         if (logFile.exists()){
             try{
+                String serverName = (String)ip.getProperty(JBInstantiatingIterator.PROPERTY_SERVER) ;
                 JBLogWriter logWriter = JBLogWriter.createInstance(io, new FileInputStream(logFile),serverName,true);
                 dm.setLogWriter(logWriter);
                 if (!logWriter.isRunning())
@@ -210,16 +220,12 @@ public class JBStartServer extends StartServer implements ProgressObject{
             }catch(Exception e){
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
-            
+
         }else{
             return false;
         }
         
         return true;
-    }
-    
-    private String getIOTabName(){
-        return (String)InstanceProperties.getInstanceProperties((dm).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME);
     }
     
     private class JBStartRunnable implements Runnable {
@@ -261,7 +267,17 @@ public class JBStartServer extends StartServer implements ProgressObject{
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.START, StateType.RUNNING, NbBundle.getMessage(JBStartServer.class, "MSG_START_SERVER_IN_PROGRESS")));//NOI18N
                 
                 // create an output tab for the server output
-                InputOutput io = IOProvider.getDefault().getIO(getIOTabName(), false);
+                InputOutput io = UISupport.getServerIO(dm.getUrl());                
+                if (io == null) {
+                    return; // finish, it looks like this server instance has been unregistered
+                }
+                
+                // clear the old output
+                try {
+                    io.getOut().reset();
+                } catch (IOException ioe) {
+                    // no op
+                }
                 io.select();
                 
                 // read the data from the server's output up

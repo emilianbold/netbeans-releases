@@ -24,26 +24,13 @@ import org.openide.util.NbBundle;
 import org.openide.DialogDisplayer;
 
 /**
+ * Remove instance action displays a confirmation dialog whether the server should
+ * be removed. The server is stopped before removal if it was started from within
+ * the IDE before.
+ *
  * @author  nn136682
  */
 public class RemoveInstanceAction extends CookieAction {
-    
-    /** Creates a new instance of RemoveIntanceAction */
-    public RemoveInstanceAction() {
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] { ServerInstance.class };
-    }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
-        //PENDING:
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    public String getName() {
-        return org.openide.util.NbBundle.getMessage(RemoveInstanceAction.class, "LBL_Remove");
-    }
     
     protected void performAction(org.openide.nodes.Node[] nodes) {
         for (int i=0; i<nodes.length; i++) {
@@ -60,20 +47,37 @@ public class RemoveInstanceAction extends CookieAction {
         }
     }
     
-    protected int mode() {
-        return MODE_ALL;
-    }
-    
-    protected boolean asynchronous() { return false; }
-    
     protected boolean enable (Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
             ServerInstance instance = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (instance == null || instance.isRemoveForbidden()) {
+            if (instance == null || instance.isRemoveForbidden() 
+                || instance.getServerState() == ServerInstance.STATE_WAITING) {
                 return false;
             }
         }
         return true;
     }
     
+    protected Class[] cookieClasses() {
+        return new Class[] {
+            ServerInstance.class 
+        };
+    }
+    
+    protected int mode() {
+        return MODE_ALL;
+    }
+    
+    public String getName() {
+        return NbBundle.getMessage(RemoveInstanceAction.class, "LBL_Remove");
+    }
+    
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    protected boolean asynchronous() {
+        return false; 
+    }
+
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -22,14 +22,23 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWiza
 import org.openide.util.NbBundle;
 
 /**
+ * Add server instance action launches the Add Server wizard.
  *
  * @author Andrei Badea
  */
 public class AddServerInstanceAction extends NodeAction {
+    
     public void performAction(Node[] nodes) {
         AddServerInstanceWizard wizard = new AddServerInstanceWizard();
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
-        dialog.setVisible(true);
+        Dialog dialog = null;
+        try {
+            dialog = DialogDisplayer.getDefault().createDialog(wizard);
+            dialog.setVisible(true);
+        } finally {
+            if (dialog != null) {
+                dialog.dispose();
+            }
+        }
     }
     
     public String getName() {

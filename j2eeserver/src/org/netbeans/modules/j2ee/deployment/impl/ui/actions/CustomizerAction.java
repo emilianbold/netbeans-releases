@@ -12,29 +12,33 @@
  */
 
 package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
+
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.util.actions.NodeAction;
 
 
 /**
- * ServerManagerAction displays server manager.
+ * Customizer action displayes the server customizer in the Server Manager.
  * 
- * @author  Stepan Herold
+ * @author  sherold
  */
-public class ServerManagerAction extends CallableSystemAction {
-
-    public ServerManagerAction () {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+public class CustomizerAction extends NodeAction {
+    
+    public void performAction(Node[] nodes) {
+        ServerInstance instance = (ServerInstance)nodes[0].getCookie(ServerInstance.class);        
+        ServerManager.showCustomizer(instance.getUrl());
     }
     
-    public void performAction() {
-        ServerManager.showCustomizer(null);
+    protected boolean enable(Node[] nodes) {
+        return true;
     }
     
     public String getName() {
-        return NbBundle.getMessage(ServerManagerAction.class,"CTL_ServerManager"); // NOI18N
+        return NbBundle.getMessage(CustomizerAction.class, "LBL_Properties");
     }
     
     public HelpCtx getHelpCtx() {

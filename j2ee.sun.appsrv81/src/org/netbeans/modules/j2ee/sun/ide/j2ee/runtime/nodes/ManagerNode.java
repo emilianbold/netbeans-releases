@@ -33,7 +33,6 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ViewLogAction;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ShowAdminToolAction;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.actions.ServerInstanceCustomizerAction;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Customizer;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
@@ -57,7 +56,7 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         this.manager = manager;
         setDisplayName(sdm.getHost()+":"+sdm.getPort());
         
-        setIconBase ("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon");//NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png");//NOI18N
         setShortDescription(NbBundle.getMessage(ManagerNode.class, "HINT_node")+" "+sdm.getHost()+":"+sdm.getPort());
         getCookieSet().add(this);
         getCookieSet().add(sdm);
@@ -99,7 +98,6 @@ public class ManagerNode extends AbstractNode implements Node.Cookie{
         newActions[a++]=(null);        
         newActions[a++]= (SystemAction.get(ShowAdminToolAction.class));
         newActions[a++]=(SystemAction.get(ViewLogAction.class));
-        newActions[a++]=(SystemAction.get(ServerInstanceCustomizerAction.class));
         
         for(int i = 0; i < nbextraoptions; i++) {
             try{

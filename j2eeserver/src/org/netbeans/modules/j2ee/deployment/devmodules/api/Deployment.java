@@ -36,14 +36,10 @@ import org.openide.util.NbBundle;
  * @author  Pavel Buzek
  */
 public final class Deployment {
-    
-    private static final int MAX_DEPLOY_PROGRESS = 5;
 
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
-
-    private Map progressMonitors = new WeakHashMap();
 
     public static synchronized Deployment getDefault () {
         if (instance == null) {
@@ -73,43 +69,24 @@ public final class Deployment {
         String err;
         TargetModule[] modules = null;
         final J2eeModule module = target.getModule();
-        DeployProgressMonitor progress = null;
-        
-        synchronized (progressMonitors) {
-            progress = (DeployProgressMonitor) progressMonitors.get(module);    
 
-            if (progress != null) {
-                progress.setLogger(logger);
-                if (progress.getUI() != null) {
-                    progress.getUI().toFront();
-                }
-            } else {
-                progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
-                progressMonitors.put(module, progress);
-                progress.startProgressUI(MAX_DEPLOY_PROGRESS);
-                progress.getUI().addWindowListener(new WindowAdapter() {
-                    public void windowClosed(WindowEvent evt) {
-                        progressMonitors.remove(module);
-                    }
-                });
-            }
-        }
+        String title = NbBundle.getMessage(Deployment.class, "LBL_Deploying", jmp.getDeploymentName());
+        ProgressUI progress = new ProgressUI(title, false, logger);
+        progress.start();
         
         try {
             ServerString server = target.getServer(); //will throw exception if bad server id
         
             if (module == null) {
                 err = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule"); //NOI18N
-                progress.addError(err);
+                progress.failed(err);
                 throw new DeploymentException (err);
             }
             if (server == null || server.getServerInstance() == null) {
                 err = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer"); //NOI18N
-                progress.addError(err);
+                progress.failed(err);
                 throw new DeploymentException (err);
             }
-            
-            progress.recordWork(1);
             
             boolean serverReady = false;
             TargetServer targetserver = new TargetServer(target);
@@ -121,20 +98,18 @@ public final class Deployment {
             }
             if (! serverReady) {
                 err = NbBundle.getMessage (Deployment.class, "MSG_StartServerFailed", target.getServer ().getServerInstance ().getDisplayName ()); //NOI18N
-                progress.addError(err);
+                progress.failed(err);
                 throw new DeploymentException (err);
             }
             
-            progress.recordWork(2);
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
             // really nothing needed to be deployed
             targetserver.notifyIncrementalDeployment(modules);
-            progress.recordWork(MAX_DEPLOY_PROGRESS-1);
             
         } catch (Exception ex) {            
             err = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
-            progress.addError(err);
+            progress.failed(err);
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             throw new DeploymentException (err, ex);
         } finally {
@@ -145,7 +120,7 @@ public final class Deployment {
         try {
             if (modules != null && modules.length > 0) {
                 target.setTargetModules(modules);
-                progress.recordWork(MAX_DEPLOY_PROGRESS);
+                progress.finish();
             } else {
                 err = NbBundle.getMessage (Deployment.class, "MSG_AnotherError");
                 throw new DeploymentException (err);

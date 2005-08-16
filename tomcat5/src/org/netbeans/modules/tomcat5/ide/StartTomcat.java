@@ -450,7 +450,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
         return null;
     }
     
-    public boolean supportsDebugging (Target target) {
+    public boolean supportsStartDebugging(Target target) {
         return true;
     }
 

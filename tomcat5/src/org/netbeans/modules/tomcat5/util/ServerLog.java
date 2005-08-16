@@ -22,12 +22,12 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.BufferedReader;
-
 import org.openide.ErrorManager;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.openide.windows.IOProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
 
 /**
  * Tomcat server log reads from the Tomcat standard and error output and 
@@ -56,7 +56,7 @@ class ServerLog extends Thread {
      * @param takeFocus should be the output window made visible after each
      *        changed?
      */
-    public ServerLog(String displayName, Reader in, Reader err, boolean autoFlush,
+    public ServerLog(String url, String displayName, Reader in, Reader err, boolean autoFlush,
             boolean takeFocus) {
         super("Tomcat ServerLog - Thread"); // NOI18N
         setDaemon(true);
@@ -65,15 +65,13 @@ class ServerLog extends Thread {
         this.autoFlush = autoFlush;
         this.takeFocus = takeFocus;
         this.displayName = displayName;
-        InputOutput io = IOProvider.getDefault().getIO(displayName, false);
+        io = UISupport.getServerIO(url);
         try {
             io.getOut().reset();
         } 
         catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
-        io = IOProvider.getDefault().getIO(displayName, false);
-        this.io = io;
         writer = io.getOut();
         errorWriter = io.getErr();
         io.select();

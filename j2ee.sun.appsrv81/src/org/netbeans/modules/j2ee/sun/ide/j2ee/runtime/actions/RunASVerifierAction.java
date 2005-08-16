@@ -82,7 +82,7 @@ public class RunASVerifierAction extends NodeAction {
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.gif";
+        return "org/netbeans/modules/j2ee/sun/ide/resources/ServerInstanceIcon.png";
     }
     
     public HelpCtx getHelpCtx() {

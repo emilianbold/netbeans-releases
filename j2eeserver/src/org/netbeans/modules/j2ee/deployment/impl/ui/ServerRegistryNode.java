@@ -51,11 +51,10 @@ implements ServerRegistry.PluginListener, InstanceListener {
     /** Creates a new instance of ServerRegistryNode2 */
     public ServerRegistryNode() {
         super(new ServerChildren());
-        setName("");//NOI18N
-        String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE");//NOI18N
-        setDisplayName(msg);
-        String shortDescription = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_SHORT_DESCRIPTION");//NOI18N
-        setShortDescription(shortDescription);
+        setName(""); //NOI18N
+        setDisplayName(NbBundle.getMessage(ServerRegistryNode.class, "SERVER_REGISTRY_NODE"));
+        setShortDescription(NbBundle.getMessage(ServerRegistryNode.class, "SERVER_REGISTRY_SHORT_DESCRIPTION"));
+        setIconBaseWithExtension(SERVERS_ICON);
     }
 
     public void serverAdded(Server server) {
@@ -97,14 +96,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
         if(helpCtx == null)
             helpCtx = new HelpCtx(NbBundle.getBundle(ServerRegistryNode.class).getString("nodes_server_registry_node_html"));//NOI18N
         return helpCtx;
-    }
-    
-    public Image getIcon(int type) {
-        return Utilities.loadImage(SERVERS_ICON);
-    }
-    
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
     }
         
     private static class ServerChildren extends Children.Keys {

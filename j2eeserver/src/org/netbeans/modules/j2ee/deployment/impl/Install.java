@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,8 +15,11 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
+import org.openide.util.RequestProcessor;
+
 
 /**
  *
@@ -34,18 +37,8 @@ public class Install extends org.openide.modules.ModuleInstall {
     public void close() {
         if (ServerRegistry.wasInitialized ()) {
             Collection instances = ServerRegistry.getInstance().getInstances();
-            String title = NbBundle.getMessage(Install.class, "LBL_ShutDownServers");
-
-            DeployProgressMonitor ui = new DeployProgressMonitor(title, true, false);
             for (Iterator i=instances.iterator(); i.hasNext();) {
-                ServerInstance inst = (ServerInstance) i.next();
-                if (inst.startedByIde()) {
-                    if (inst.canStopDontWait()) {
-                        inst.stopDontWait();
-                    } else {
-                        inst.stop(ui);
-                    }
-                }
+                ((ServerInstance)i.next()).stopIfStartedByIde();
             }
         }
     }

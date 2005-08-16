@@ -80,12 +80,6 @@ public final class J2eePlatform {
     private J2eePlatform(ServerInstance aServerInstance, J2eePlatformImpl aImpl) {
         impl = aImpl;
         serverInstance = aServerInstance;
-        serverInstance.getInstanceProperties().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(InstanceProperties.DISPLAY_NAME_ATTR))
-                    impl.firePropertyChange(PROP_DISPLAY_NAME, evt.getOldValue(), evt.getNewValue());
-            }
-        });
         // listens to libraries changes
         addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
