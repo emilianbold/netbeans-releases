@@ -163,7 +163,8 @@ public final class CheckoutAction extends SystemAction {
             Throwable t = executor.getFailure();
             executor.removeTaskListener(this);
             if (t != null) {
-                ErrorManager.getDefault().notify(ErrorManager.USER, t);
+                ErrorManager.getDefault().notify(ErrorManager.USER, t); // show dialog without stack trace
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);  // log to console, too
                 return;
             }
 
