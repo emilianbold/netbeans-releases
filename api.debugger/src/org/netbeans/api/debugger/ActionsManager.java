@@ -129,16 +129,20 @@ public final class ActionsManager {
         doiingDo = true;
         if (actionProviders == null) initActionImpls ();
         ArrayList l = (ArrayList) actionProviders.get (action);
+        boolean done = false;
         if (l != null) {
             l = (ArrayList) l.clone ();
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 if (((ActionsProvider) l.get (i)).isEnabled (action)) {
+                    done = true;
                     ((ActionsProvider) l.get (i)).doAction (action);
                 }
             }
         }
-        fireActionDone (action);
+        if (done) {
+            fireActionDone (action);
+        }
         doiingDo = false;
         if (destroy) destroyIn ();
     }    
