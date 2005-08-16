@@ -38,6 +38,7 @@ import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.Introspector;
 import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.ClassButton;
 import org.netbeans.modules.jmx.actions.RegisterMBeanAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -47,6 +48,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Project;
 
 /**
  * Panel which is used to ask which MBean to instantiate and register.
@@ -58,6 +61,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     /** class to add registration of MBean */
     private JavaClass currentClass;
     private JavaClass mbeanClass = null;
+    private Project project = null;
     
     private ResourceBundle bundle;
     
@@ -154,8 +158,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         DataObject dob = (DataObject)node.getCookie(DataObject.class);
         FileObject fo = null;
         if (dob != null) fo = dob.getPrimaryFile();
-        JavaClass[] mbeanClasses = WizardHelpers.getMBeanClasses(
-                WizardHelpers.getProject(fo));
+        project = WizardHelpers.getProject(fo);
+        JavaClass[] mbeanClasses = WizardHelpers.getMBeanClasses(project);
         
         for (int i = 0; i < mbeanClasses.length; i++) {
             mbeanClassComboBox.addItem(mbeanClasses[i].getName());
@@ -276,6 +280,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         //init state
         updateComponentsState();
         updateState((String) mbeanClassComboBox.getSelectedItem());
+        SourceGroup[] srcGroups = WizardHelpers.getSourceGroups(project);
+        ClassButton classBut = new ClassButton(browseButton,classNameTextField,srcGroups);
         
         Object returned = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor(
@@ -465,6 +471,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         constructorComboBox = new javax.swing.JComboBox();
         stdMBConstructorLabel = new javax.swing.JLabel();
         stdMBConstructorComboBox = new javax.swing.JComboBox();
+        browseButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -519,11 +526,10 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 5);
         northPanel.add(classNameTextField, gridBagConstraints);
 
         classNameLabel.setLabelFor(classNameTextField);
@@ -654,6 +660,15 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         northPanel.add(stdMBConstructorComboBox, gridBagConstraints);
 
+        browseButton.setText("jButton1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        northPanel.add(browseButton, gridBagConstraints);
+
         add(northPanel, java.awt.BorderLayout.NORTH);
 
     }
@@ -670,6 +685,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
             
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton browseButton;
     private javax.swing.JLabel classNameLabel;
     private javax.swing.JTextField classNameTextField;
     private javax.swing.JComboBox constructorComboBox;
