@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
@@ -34,6 +35,11 @@ import java.util.*;
  * @author Petr Kuzel
  */
 public final class UpdateWithDependenciesAction extends NodeAction {
+
+    public UpdateWithDependenciesAction() {
+        setIcon(null);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
 
     protected void performAction(Node[] nodes) {
         UpdateCommand cmd = new UpdateCommand();
@@ -62,7 +68,7 @@ public final class UpdateWithDependenciesAction extends NodeAction {
     }
 
     public String getName() {
-        return "Update with Dependencies";
+        return NbBundle.getMessage(UpdateWithDependenciesAction.class, "CTL_MenuItem_UpdateWithDependencies");
     }
 
     public HelpCtx getHelpCtx() {

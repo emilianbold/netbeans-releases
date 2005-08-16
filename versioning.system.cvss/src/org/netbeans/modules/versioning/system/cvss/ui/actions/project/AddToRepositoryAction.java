@@ -27,7 +27,6 @@ import org.openide.xml.XMLUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
@@ -52,6 +51,11 @@ import java.util.*;
  * @author Petr Kuzel
  */
 public final class AddToRepositoryAction extends NodeAction {
+
+    public AddToRepositoryAction() {
+        setIcon(null);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
 
     public String getName() {
         return NbBundle.getMessage(AddToRepositoryAction.class, "BK0006");
@@ -332,6 +336,7 @@ public final class AddToRepositoryAction extends NodeAction {
         if (nodes.length > 0) {
             for (int i = 0; i < nodes.length; i++) {
                 Node node = nodes[i];
+                if (node.getLookup().lookup(Project.class) == null) return false;
                 if (Utils.isVersionedProject(node)) {
                     return false;
                 }

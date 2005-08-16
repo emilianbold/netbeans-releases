@@ -35,6 +35,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutAction"/>
             </file>                                    
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction"/>
+            </file>                                    
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.project.UpdateWithDependenciesAction"/>
+            </file>                                    
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.status.StatusAction"/>
             </file>                                    
@@ -97,6 +103,12 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.instance"/>
             </file>
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.instance"/>
+            </file>                                    
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.instance"/>
+            </file>                                    
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.instance"/>
             </file>            
@@ -146,6 +158,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator5.instance">
         		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	        </file>
+            <file name="Separator6.instance">
+        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	        </file>
             
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.shadow" boolvalue="true" />
@@ -153,9 +168,13 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.shadow/Separator1.instance" boolvalue="true" />
             
             <attr name="Separator1.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.shadow" boolvalue="true" />
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.shadow/Separator2.instance" boolvalue="true" />
-
-            <attr name="Separator2.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow" boolvalue="true" />            
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-checkout-CheckoutAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-AddToRepositoryAction.shadow/Separator2.instance" boolvalue="true" />
+            
+            <attr name="Separator2.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow" boolvalue="true" />            
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-project-UpdateWithDependenciesAction.shadow/Separator6.instance" boolvalue="true" />
+            
+            <attr name="Separator6.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow" boolvalue="true" />            
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow" boolvalue="true" />            
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow" boolvalue="true" />            
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow" boolvalue="true" />

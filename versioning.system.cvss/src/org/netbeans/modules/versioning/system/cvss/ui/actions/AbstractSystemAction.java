@@ -95,12 +95,8 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         } else if (objectCount == 1) {
             if (projectsOnly) {
-                try {
-                    return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Project"),  // NOI18N
-                                                new Object [] { activatedNodes[0].getDisplayName() });
-                } catch (MissingResourceException ex) {
-                    // ignore use files alternative bellow
-                }
+                return NbBundle.getMessage(this.getClass(), baseName + "_Context",  // NOI18N
+                                                activatedNodes[0].getDisplayName());
             }
             String name;
             FileObject fo = (FileObject) activatedNodes[0].getLookup().lookup(FileObject.class);
