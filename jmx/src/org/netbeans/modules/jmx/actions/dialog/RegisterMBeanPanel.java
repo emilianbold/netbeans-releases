@@ -322,6 +322,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         // update state of StandardMBean use case
         classNameLabel.setEnabled(standardMBean);
         classNameTextField.setEnabled(standardMBean);
+        browseButton.setEnabled(standardMBean);
         stdMBObjectNameLabel.setEnabled(standardMBean);
         stdMBObjectNameTextField.setEnabled(standardMBean);
         interfaceLabel.setEnabled(standardMBean);
