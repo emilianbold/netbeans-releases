@@ -481,6 +481,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 } catch (InvalidStackFrameException isfex) {
                     // Will be thrown when the altCSF is invalid
                     altCSF = null; // throw it
+                } catch (com.sun.jdi.VMDisconnectedException e) {
+                    // Causes kill action when something is being evaluated. 
+                    return null;
                 }
             }
             throw new InvalidExpressionException
