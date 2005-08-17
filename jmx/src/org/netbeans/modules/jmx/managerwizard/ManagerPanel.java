@@ -37,8 +37,8 @@ public class ManagerPanel extends javax.swing.JPanel {
     private ResourceBundle bundle;
     private static WizardDescriptor wizDesc;
     private boolean mainMethodSelected = false;
-    private boolean mainClassSelected = false;
-    private boolean sampleCodeSelected = false;
+    private boolean mainClassSelected = true;
+    private boolean sampleCodeSelected = true;
     
     /**
      * Create the wizard panel component and set up some basic properties.
@@ -152,6 +152,17 @@ public class ManagerPanel extends javax.swing.JPanel {
         //mainClassJCheckBox.setEnabled(mainSelected && shouldEnableMainProjectClass());
         setAsMainClassJCheckBox.setEnabled(mainMethodSelected && shouldEnableMainProjectClass());
         generateSampleCodeJCheckBox.setEnabled(mainMethodSelected);
+        
+        if (!mainMethodSelected) {
+            mainClassSelected= setAsMainClassJCheckBox.isSelected();
+            sampleCodeSelected = generateSampleCodeJCheckBox.isSelected();
+            setAsMainClassJCheckBox.setSelected(false);
+            generateSampleCodeJCheckBox.setSelected(false);
+            
+        } else {
+            setAsMainClassJCheckBox.setSelected(mainClassSelected);
+            generateSampleCodeJCheckBox.setSelected(sampleCodeSelected);
+        }
     }//GEN-LAST:event_generateMainMethodJCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
