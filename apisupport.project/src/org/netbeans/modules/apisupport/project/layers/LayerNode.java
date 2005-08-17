@@ -34,6 +34,8 @@ import org.openide.util.actions.SystemAction;
 // so that layer-specific errors can be reported too?
 // (e.g. duplicated folders...)
 
+// XXX need to check for filesystem changes coming thru this interface and autosave?
+
 /**
  * Displays view of layer.
  * @author Jesse Glick

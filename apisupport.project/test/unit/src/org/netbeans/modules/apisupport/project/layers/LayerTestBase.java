@@ -17,13 +17,7 @@ import java.io.IOException;
 import junit.framework.Assert;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.xml.core.XMLDataLoader;
-import org.netbeans.modules.xml.core.XMLDataObjectLook;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.xml.sax.EntityResolver;
@@ -42,11 +36,6 @@ public abstract class LayerTestBase extends NbTestCase {
     static {
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-        LayerUtils.LayerHandle.PROVIDER = new LayerUtils.LayerHandle.XmlDataObjectProvider() {
-            public TreeEditorCookie cookieForDataObject(DataObject d) {
-                return new TreeEditorCookieImpl((XMLDataObjectLook) d);
-            }
-        };
     }
     
     public static final class Lkp extends ProxyLookup {
@@ -74,7 +63,6 @@ public abstract class LayerTestBase extends NbTestCase {
         super.setUp();
         clearWorkDir();
         Lkp.setLookup(new Object[] {
-            SharedClassObject.findObject(XMLDataLoader.class, true),
             new TestCatalog(),
         });
     }
@@ -92,7 +80,7 @@ public abstract class LayerTestBase extends NbTestCase {
         
         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             if ("-//NetBeans//DTD Filesystem 1.1//EN".equals(publicId)) {
-                return new InputSource("nbres:/org/openide/filesystems/filesystem1_1.dtd");
+                return new InputSource(LayerTestBase.class.getClassLoader().getResource("org/openide/filesystems/filesystem1_1.dtd").toExternalForm());
             } else {
                 return null;
             }

@@ -1373,7 +1373,10 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (cookie.getStatus() == TreeEditorCookie.STATUS_OK) {
+        if (!evt.getPropertyName().equals(TreeEditorCookie.PROP_DOCUMENT_ROOT)) {
+            return;
+        }
+        if (cookie.getStatus() == TreeEditorCookie.STATUS_OK || cookie.getStatus() == TreeEditorCookie.STATUS_NOT) {
             // Document was modified, and reparsed OK. See what changed.
             try {
                 doc = cookie.openDocumentRoot();

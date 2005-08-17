@@ -13,7 +13,11 @@
 
 package org.netbeans.modules.apisupport.project.layers;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,15 +35,23 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
+import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
+import org.netbeans.tax.TreeDocumentRoot;
+import org.netbeans.tax.TreeException;
+import org.netbeans.tax.TreeObject;
+import org.netbeans.tax.io.TreeStreamResult;
 import org.openide.ErrorManager;
-import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-
+import org.openide.util.Task;
+import org.xml.sax.InputSource;
 
 /**
  * Misc support for dealing with layers.
@@ -151,7 +163,7 @@ public class LayerUtils {
         }
         return handle;
     }
-
+    
     /**
      * Find the name of the external file that will be generated for a given
      * layer path if it is created with contents.
@@ -185,12 +197,145 @@ public class LayerUtils {
     }
     
     /**
+     * Representation of in-memory TAX tree which can be saved upon request.
+     */
+    interface SavableTreeEditorCookie extends TreeEditorCookie {
+        
+        /** property change fired when dirty flag changes */
+        String PROP_DIRTY = "dirty"; // NOI18N
+        
+        /** true if there are in-memory mods */
+        boolean isDirty();
+        
+        /** try to save any in-memory mods to disk */
+        void save() throws IOException;
+        
+    }
+    
+    private static final class CookieImpl implements SavableTreeEditorCookie, FileChangeListener {
+        private TreeDocumentRoot root;
+        private boolean dirty;
+        private Exception problem;
+        private final FileObject f;
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        public CookieImpl(FileObject f) {
+            this.f = f;
+            f.addFileChangeListener(FileUtil.weakFileChangeListener(this, f));
+        }
+        public TreeDocumentRoot getDocumentRoot() {
+            return root;
+        }
+        public int getStatus() {
+            if (problem != null) {
+                return TreeEditorCookie.STATUS_ERROR;
+            } else if (root != null) {
+                return TreeEditorCookie.STATUS_OK;
+            } else {
+                return TreeEditorCookie.STATUS_NOT;
+            }
+        }
+        public TreeDocumentRoot openDocumentRoot() throws IOException, TreeException {
+            if (root == null) {
+                try {
+                    boolean oldDirty = dirty;
+                    int oldStatus = getStatus();
+                    root = new XMLParsingSupport().parse(new InputSource(f.getURL().toExternalForm()));
+                    problem = null;
+                    dirty = false;
+                    pcs.firePropertyChange(PROP_DIRTY, oldDirty, false);
+                    pcs.firePropertyChange(PROP_STATUS, oldStatus, TreeEditorCookie.STATUS_OK);
+                    pcs.firePropertyChange(PROP_DOCUMENT_ROOT, null, root);
+                } catch (IOException e) {
+                    problem = e;
+                    throw e;
+                } catch (TreeException e) {
+                    problem = e;
+                    throw e;
+                }
+                ((TreeObject) root).addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        modified();
+                    }
+                });
+            }
+            return root;
+        }
+        public Task prepareDocumentRoot() {
+            throw new UnsupportedOperationException();
+        }
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+        private void modified() {
+            if (!dirty) {
+                dirty = true;
+                pcs.firePropertyChange(PROP_DIRTY, false, true);
+            }
+        }
+        public boolean isDirty() {
+            return dirty;
+        }
+        public void save() throws IOException {
+            if (root == null && !dirty) {
+                return;
+            }
+            FileLock lock = f.lock();
+            try {
+                OutputStream os = f.getOutputStream(lock);
+                try {
+                    new TreeStreamResult(os).getWriter(root).writeDocument();
+                } catch (TreeException e) {
+                    throw (IOException) new IOException(e.toString()).initCause(e);
+                } finally {
+                    os.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
+            dirty = false;
+            pcs.firePropertyChange(PROP_DIRTY, true, false);
+        }
+        public void fileChanged(FileEvent fe) {
+            changed();
+        }
+        public void fileDeleted(FileEvent fe) {
+            changed();
+        }
+        public void fileRenamed(FileRenameEvent fe) {
+            changed();
+        }
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            // ignore
+        }
+        public void fileFolderCreated(FileEvent fe) {
+            assert false;
+        }
+        public void fileDataCreated(FileEvent fe) {
+            assert false;
+        }
+        private void changed() {
+            problem = null;
+            dirty = false;
+            root = null;
+            pcs.firePropertyChange(PROP_DOCUMENT_ROOT, null, null);
+        }
+    }
+    
+    static SavableTreeEditorCookie cookieForFile(FileObject f) {
+        return new CookieImpl(f);
+    }
+    
+    /**
      * Manages one project's XML layer.
      */
     public static final class LayerHandle {
         
         private final NbModuleProject project;
         private FileSystem fs;
+        private SavableTreeEditorCookie cookie;
         
         LayerHandle(NbModuleProject project) {
             this.project = project;
@@ -222,20 +367,8 @@ public class LayerUtils {
                         return fs = FileUtil.createMemoryFileSystem();
                     }
                 }
-                DataObject d;
                 try {
-                    d = DataObject.find(xml);
-                } catch (DataObjectNotFoundException e) {
-                    throw new AssertionError(e);
-                }
-                TreeEditorCookie cookie = cookieForDataObject(d);
-                if (cookie == null) {
-                    // Loaded by some other data loader?
-                    Util.err.log(ErrorManager.WARNING, "No TreeEditorCookie for " + d);
-                    return FileUtil.createMemoryFileSystem();
-                }
-                try {
-                    fs = new WritableXMLFileSystem(xml.getURL(), cookie, true);
+                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), true);
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }
@@ -243,36 +376,15 @@ public class LayerUtils {
             return fs;
         }
         
-        // Permit unit tests to override this, since it does not work without a lot of setup:
-        public interface XmlDataObjectProvider {
-            TreeEditorCookie cookieForDataObject(DataObject d);
-        }
-        public static XmlDataObjectProvider PROVIDER = new XmlDataObjectProvider() {
-            public TreeEditorCookie cookieForDataObject(DataObject d) {
-                return (TreeEditorCookie) d.getCookie(TreeEditorCookie.class);
-            }
-        };
-        private static TreeEditorCookie cookieForDataObject(DataObject d) {
-            return PROVIDER.cookieForDataObject(d);
-        }
-        
         /**
          * Save the layer, if it was in fact modified.
          * Note that nonempty layer entries you created will already be on disk.
          */
         public void save() throws IOException {
-            FileObject xml = getLayerFile();
-            if (xml == null) {
+            if (cookie == null) {
                 throw new IOException("Cannot save a nonexistent layer"); // NOI18N
             }
-            DataObject d = DataObject.find(xml);
-            SaveCookie cookie = (SaveCookie) d.getCookie(SaveCookie.class);
-            if (d.isModified() && cookie == null) {
-                throw new IOException("Modified but no SaveCookie on " + d); // NOI18N
-            }
-            if (cookie != null) {
-                cookie.save();
-            }
+            cookie.save();
         }
         
         /**

@@ -13,15 +13,17 @@
 
 package org.netbeans.modules.apisupport.project.layers;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
 import java.util.Arrays;
@@ -32,8 +34,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.xml.core.XMLDataObjectLook;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
+import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
+import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
+import org.netbeans.tax.TreeDocumentRoot;
+import org.netbeans.tax.TreeException;
+import org.netbeans.tax.TreeObject;
+import org.netbeans.tax.io.TreeStreamResult;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -45,6 +51,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Task;
 import org.xml.sax.InputSource;
 
 /**
@@ -456,23 +463,21 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                         fcl.changes());
     }
 
-    /* Gets random failures; not sure why:
     public void testTextualModificationsFired() throws Exception {
         Layer l = new Layer("<folder name='f'><file name='x'/></folder><file name='y'/>");
         FileSystem fs = l.read();
         Listener fcl = new Listener();
         fs.addFileChangeListener(fcl);
         l.edit("<folder name='f'/><file name='y'/><file name='z'/>");
-        / * XXX does not work; fires too much... why?
+        /* XXX does not work; fires too much... why?
         assertEquals("expected things fired",
                 new HashSet(Arrays.asList(new String[] {"f/x", "z"})),
                         fcl.changes());
-         * /
+         */
         assertTrue("something fired", !fcl.changes().isEmpty());
         assertNull(fs.findResource("f/x"));
         assertNotNull(fs.findResource("z"));
     }
-    */
     
     public void testExternalFileChangesRefired() throws Exception {
         Layer l = new Layer("");
@@ -491,6 +496,22 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("expected things fired",
                 Collections.singleton("foo"),
                         fcl.changes());
+    }
+    
+    public void testHeapUsage() throws Exception {
+        Layer l = new Layer("");
+        FileSystem fs = l.read();
+        Object buffer = new byte[(int) (Runtime.getRuntime().freeMemory() * 2 / 3)];
+        int count = 1000;
+        int bytesPerFile = 4000; // found by trial and error, but seems tolerable
+        for (int i = 0; i < count; i++) {
+            try {
+                fs.getRoot().createData("file" + i);
+            } catch (OutOfMemoryError e) {
+                fail("Ran out of heap on file #" + i);
+            }
+        }
+        assertSize("Filesystem not too big", count * bytesPerFile, l);
     }
     
     private static String slurp(File file) throws IOException {
@@ -534,9 +555,8 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
      */
     private final class Layer {
         private final File folder;
-        private final DataObject d;
-        private final XMLDataObjectLook look;
-        private TreeEditorCookieImpl cookie;
+        private final FileObject f;
+        private LayerUtils.SavableTreeEditorCookie cookie;
         /**
          * Create a layer from a fixed bit of filesystem-DTD XML.
          * Omit the <filesystem>...</> tag and just give the contents.
@@ -545,8 +565,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         public Layer(String xml) throws Exception {
             folder = makeFolder();
-            d = makeLayer(xml);
-            look = (XMLDataObjectLook) d;
+            f = makeLayer(xml);
         }
         /**
          * Create a layer from XML plus external file contents.
@@ -575,30 +594,25 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
                 "<filesystem>\n";
         private final String FOOTER = "</filesystem>\n";
-        private DataObject makeLayer(String xml) throws Exception {
+        private FileObject makeLayer(String xml) throws Exception {
             File f = new File(folder, "layer.xml");
             dump(f, HEADER + xml + FOOTER);
-            return DataObject.find(FileUtil.toFileObject(f));
+            return FileUtil.toFileObject(f);
         }
         /**
          * Read the filesystem from the layer.
          */
         public WritableXMLFileSystem read() throws Exception {
-            // Does not have TEC as a cookie unless we have loaded layers, sigh...
-            cookie = new TreeEditorCookieImpl(look);
-            return new WritableXMLFileSystem(d.getPrimaryFile().getURL(), cookie, false);
+            cookie = LayerUtils.cookieForFile(f);
+            return new WritableXMLFileSystem(f.getURL(), cookie, false);
         }
         /**
          * Write the filesystem to the layer and retrieve the new contents.
          * The header and footer are removed for you, but not other whitespace.
          */
         public String write() throws Exception {
-            if (d.isModified()) {
-                SaveCookie save = (SaveCookie) d.getCookie(SaveCookie.class);
-                assertNotNull("have a SaveCookie on modified " + d, save);
-                save.save();
-            }
-            String raw = TestBase.slurp(d.getPrimaryFile());
+            cookie.save();
+            String raw = TestBase.slurp(f);
             assertTrue("unexpected header in '" + raw + "'", raw.startsWith(HEADER));
             assertTrue("unexpected footer in '" + raw + "'", raw.endsWith(FOOTER));
             return raw.substring(HEADER.length(), raw.length() - FOOTER.length());
@@ -607,18 +621,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          * Edit the text of the layer.
          */
         public void edit(String newText) throws Exception {
-            /* Does not work:
-            EditorCookie cookie = (EditorCookie) d.getCookie(EditorCookie.class);
-            assertNotNull(d.toString(), cookie);
-            Document doc = cookie.openDocument();
-            doc.remove(0, doc.getLength());
-            doc.insertString(0, newText, null);
-             */
-            /* Also does not work:
-            dump(d.getPrimaryFile(), newText);
-            cookie.updateTree(new InputSource(d.getPrimaryFile().getURL().toExternalForm()));
-             */
-            cookie.updateTree(new InputSource(new StringReader(HEADER + newText + FOOTER)));
+            dump(f, HEADER + newText + FOOTER);
         }
         /**
          * Edit a referenced external file.
