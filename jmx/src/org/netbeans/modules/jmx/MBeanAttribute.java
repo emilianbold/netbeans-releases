@@ -223,7 +223,10 @@ public class MBeanAttribute implements Comparable {
     }
     
     public int compareTo(Object o) {
-        return name.compareTo(((MBeanAttribute) o).getName());
+        String concat = name + typeName;
+        MBeanAttribute obj = (MBeanAttribute) o;
+        
+        return concat.compareTo(obj.getName() + obj.getTypeName());
     }
     
 }
