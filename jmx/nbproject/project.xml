@@ -14,9 +14,9 @@
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
             <code-name-base>org.netbeans.modules.jmx</code-name-base>
-            <!-- <path>jmx</path> -->
+            <path>jmx</path>
             <public-packages/>
             <module-dependencies> 
             <dependency>
@@ -171,7 +171,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <implementation-version/>
+                        <!-- <implementation-version/> -->
                     </run-dependency>
                 </dependency>
              </module-dependencies> 
