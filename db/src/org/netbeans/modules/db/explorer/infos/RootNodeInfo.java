@@ -14,19 +14,15 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.util.*;
-
-import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.modules.*;
-import org.openide.nodes.*;
 
 import org.netbeans.lib.ddl.*;
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
-import org.netbeans.modules.db.explorer.infos.*;
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.nodes.*;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOperations {
@@ -41,14 +37,11 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
     }
     public void initChildren(Vector children) throws DatabaseException {
         try {
-            Vector cons = RootNode.getOption().getConnections();
-            if (cons != null) {
-                Enumeration en = cons.elements();
-                while(en.hasMoreElements()) {
-                    DBConnection cinfo = (DBConnection)en.nextElement();
-                    ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
-                    children.add(ninfo);
-                }
+            DatabaseConnection[] cinfos = ConnectionList.getDefault().getConnections();
+            for (int i = 0; i < cinfos.length; i++) {
+                DatabaseConnection cinfo = cinfos[i];
+                ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
+                children.add(ninfo);
             }
 
             Repository r = Repository.getDefault();
@@ -67,13 +60,13 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         }
     }
 
-    private ConnectionNodeInfo createConnectionNodeInfo(DBConnection cinfo) throws DatabaseException {
+    private ConnectionNodeInfo createConnectionNodeInfo(DatabaseConnection dbconn) throws DatabaseException {
         ConnectionNodeInfo ninfo = (ConnectionNodeInfo)createNodeInfo(this, DatabaseNode.CONNECTION);
-        ninfo.setUser(cinfo.getUser());
-        ninfo.setDatabase(cinfo.getDatabase());
-        ninfo.setSchema(cinfo.getSchema());
-        ninfo.setName(cinfo.getName());
-        ninfo.setDatabaseConnection(cinfo);
+        ninfo.setUser(dbconn.getUser());
+        ninfo.setDatabase(dbconn.getDatabase());
+        ninfo.setSchema(dbconn.getSchema());
+        ninfo.setName(dbconn.getName());
+        ninfo.setDatabaseConnection(dbconn);
         return ninfo;
     }
 
@@ -81,87 +74,37 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         // refresh action is empty
     }
 
-    public void addDatabaseConnection(DatabaseConnection cinfo) {
-        try {
-            getChildren(); // force restore
-            Vector cons = RootNode.getOption().getConnections();
-            if (cons.contains(cinfo))
-                return;
-
-            DatabaseNode node = getNode();
-            DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
-            ConnectionNodeInfo ninfo = createConnectionNodeInfo(cinfo);
-            cons.add(cinfo);
-            children.createSubnode(ninfo, true);
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            //throw new DatabaseException(e.getMessage());
-        }
-    }
-    
-    public void addConnection(DBConnection cinfo) throws DatabaseException {
+    public void addConnectionNoConnect(DatabaseConnection dbconn) throws DatabaseException {
         getChildren(); // force restore
-        Vector cons = RootNode.getOption().getConnections();
-
-        if (cons.contains(cinfo))
-            throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
+        
+        if (ConnectionList.getDefault().contains(dbconn)) {
+            return;
+        }
 
         DatabaseNode node = getNode();
         DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
-        ConnectionNodeInfo ninfo = (ConnectionNodeInfo) createNodeInfo(this, DatabaseNode.CONNECTION);
-        ninfo.setName(cinfo.getName());
-        ninfo.setUser(cinfo.getUser());
-        ninfo.setDatabase(cinfo.getDatabase());
-        ninfo.setSchema(cinfo.getSchema());
-        ninfo.setDatabaseConnection(cinfo);
-        cons.add(cinfo);
+        ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
+        ConnectionList.getDefault().add(dbconn);
+        children.createSubnode(ninfo, true);
+    }
+    
+    public void addConnection(DBConnection cinfo) throws DatabaseException {
+        DatabaseConnection dbconn = (DatabaseConnection)cinfo;
+        getChildren(); // force restore
+
+        if (ConnectionList.getDefault().contains(dbconn)) {
+            throw new DatabaseException(bundle().getString("EXC_ConnectionAlreadyExists"));
+        }
+
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
+        ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
+        ConnectionList.getDefault().add(dbconn);
         DatabaseNode cnode = children.createSubnode(ninfo, true);
-        if (((DatabaseConnection) cinfo).getConnection() == null)
+        
+        if (((DatabaseConnection) dbconn).getConnection() == null)
             ((ConnectionNodeInfo) cnode.getInfo()).connect();
         else
-            ((ConnectionNodeInfo) cnode.getInfo()).connect(cinfo);
-    }
-
-    public void addOrConnectConnection(DBConnection conn) throws DatabaseException {
-        getChildren(); // force restore
-        Vector cons = RootNode.getOption().getConnections();
-
-        if (cons.contains(conn)) {
-            ConnectionNode connNode = (ConnectionNode) getNode().getChildren().findChild( conn.getName() );
-            if (connNode!=null)
-                if (connNode.getInfo().getConnection()==null) {
-                    connNode.getInfo().setDatabaseConnection(conn);
-                    ((ConnectionNodeInfo) connNode.getInfo()).connect();
-                }
-        } else
-            addConnection(conn);
-    }
-
-    public void addOrSetConnection(DBConnection conn) throws DatabaseException {
-        getChildren(); // force restore
-        Vector cons = RootNode.getOption().getConnections();
-
-        if (cons.contains(conn)) {
-            ConnectionNode connNode = (ConnectionNode) getNode().getChildren().findChild(conn.getName());
-            if (connNode != null)
-                if (connNode.getInfo().getConnection() == null) {
-                    connNode.getInfo().setDatabaseConnection(conn);
-
-                    // connection DON'T be connected!!! as designed
-                    //((ConnectionNodeInfo)connNode.getInfo()).connect();
-                }
-        } else {
-            DatabaseNode node = getNode();
-            DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
-            ConnectionNodeInfo ninfo = (ConnectionNodeInfo) createNodeInfo(this, DatabaseNode.CONNECTION);
-
-            // set the connection properties of ConnectionNodeInfo
-            ninfo.setDatabaseConnection(conn);
-            // set schema(schema is not required then is not set in setDatabaseConnection() method)
-            ninfo.setSchema(conn.getSchema());
-
-            cons.add(conn);
-            DatabaseNode cnode = children.createSubnode(ninfo, true);
-        }
+            ((ConnectionNodeInfo) cnode.getInfo()).connect(dbconn);
     }
 }

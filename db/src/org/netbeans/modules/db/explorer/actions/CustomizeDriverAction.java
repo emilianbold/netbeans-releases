@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -27,8 +28,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 
@@ -55,7 +56,7 @@ public class CustomizeDriverAction extends DatabaseAction {
 		final DriverNodeInfo info = (DriverNodeInfo) n[0].getCookie(DriverNodeInfo.class);
         if (info == null)
             return; //should not happen
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(info.getURL());
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(info.getURL());
         for (int i = 0; i < drvs.length; i++)
             if (activatedNodes[0].getName().equals(drvs[i].getName())) {
                 drvIndex = i;
@@ -95,8 +96,10 @@ public class CustomizeDriverAction extends DatabaseAction {
                     
                     try {
                         info.delete();
-                        JDBCDriverManager.getDefault().addDriver(new JDBCDriver(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
+                        JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
                     } catch (IOException exc) {
+                        //PENDING
+                    } catch (DatabaseException exc) {
                         //PENDING
                     }
                     

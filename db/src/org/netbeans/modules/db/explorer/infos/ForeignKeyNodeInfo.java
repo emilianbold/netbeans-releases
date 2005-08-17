@@ -19,7 +19,7 @@ import java.util.*;
 import org.openide.nodes.Node;
 
 import org.netbeans.lib.ddl.*;
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;

@@ -13,16 +13,15 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.util.*;
-
-import org.openide.*;
-import org.openide.nodes.*;
-
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.dataview.*;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
+import org.openide.nodes.Node;
 
 public class ExecuteCommandAction extends DatabaseAction {
+    
     protected boolean enable(Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length == 1)
@@ -38,19 +37,11 @@ public class ExecuteCommandAction extends DatabaseAction {
     }
 
     public void performAction (Node[] activatedNodes) {
-        Node node;
-
         if (activatedNodes != null && activatedNodes.length > 0) {
-            try {
-                node = activatedNodes[0];
-                DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-
-                DataViewWindow win = new DataViewWindow(info, ""); //NOI18N
-                win.open();
-                win.requestActive();
-            } catch(Exception e) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(bundle().getString("DataViewFetchErrorPrefix") + e.getMessage(), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
-            }
+            Node node = activatedNodes[0];
+            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
+            String name = ((DatabaseConnection)info.getDatabaseConnection()).getName();
+            SQLEditorSupport.openSQLEditor(ConnectionManager.getDefault().getConnection(name), "", false); // NOI18N
         }
     }
 }

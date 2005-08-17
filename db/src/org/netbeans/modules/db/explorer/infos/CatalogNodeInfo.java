@@ -13,12 +13,6 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.sql.*;
-import java.util.*;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
-
 public class CatalogNodeInfo extends DatabaseNodeInfo
 {
     static final long serialVersionUID =-2415636395795933849L;

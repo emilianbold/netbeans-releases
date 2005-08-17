@@ -14,37 +14,17 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
-
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverSupport;
 
 public class DriverNodeInfo extends DatabaseNodeInfo {
         
     static final long serialVersionUID =6994829681095273161L;
-
-    private Lookup.Result driversResult = Lookup.getDefault().lookup(new Lookup.Template(JDBCDriver.class));
-    private LookupListener lookupListener = new LookupListener() {
-        public void resultChanged(LookupEvent ev) {
-            try {
-                getParent().refreshChildren();
-            } catch (DatabaseException exc) {
-                //PENDING
-            }
-        }
-    };
-    
-    static int counter = 0;
+   
     public DriverNodeInfo() {
-        if (counter == 0) {
-            driversResult.addLookupListener(lookupListener);
-            counter ++;
-        }
     }    
 
     public DatabaseDriver getDatabaseDriver() {
@@ -60,7 +40,11 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
     }
 
     public void delete() throws IOException {
-        JDBCDriverManager.getDefault().removeDriver(getJDBCDriver());
+        try {
+            JDBCDriverManager.getDefault().removeDriver(getJDBCDriver());
+        } catch (DatabaseException e) {
+            // PENDING
+        }
     }
     
     public String getIconBase() {
@@ -75,16 +59,16 @@ public class DriverNodeInfo extends DatabaseNodeInfo {
     }
 
     private boolean checkDriverFiles() {
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(getURL());
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(getURL());
         for (int i = 0; i < drvs.length; i++)
             if (drvs[i].getName().equals(getName()))
-                return drvs[i].isAvailable();
+                return JDBCDriverSupport.isAvailable(drvs[i]);
         
         return false;
     }
     
     private JDBCDriver getJDBCDriver() {
-        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(getURL());
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(getURL());
         for (int i = 0; i < drvs.length; i++) {
             if (drvs[i].getName().equals(getName()))
                 return drvs[i];

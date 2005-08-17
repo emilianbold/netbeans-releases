@@ -54,16 +54,6 @@ public class DriverNode extends LeafNode implements PropertyChangeListener {
     public void destroy() throws IOException {
         final DriverListNodeInfo parent = (DriverListNodeInfo) getInfo().getParent();
         getInfo().delete();
-        
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    parent.refreshChildren();
-                } catch (Exception exc) {
-                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, exc);
-                }
-            }
-        });
     }
 
     /** Help context where to find more about the paste type action.

@@ -19,12 +19,13 @@ import java.beans.PropertyChangeSupport;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.explorer.sql.editor.SQLEditorSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
-
 import org.netbeans.modules.db.explorer.dataview.DataViewWindow;
 import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
@@ -33,6 +34,11 @@ import org.netbeans.modules.db.explorer.infos.ViewColumnNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
 
 public class ViewDataAction extends DatabaseAction {
+    
+    // TODO: simplify this class. there is no need for the property listeners, 
+    // the retrieval of the quote string and the opening of the SQL editor
+    // can run in a RequestProcessor.
+    
     static final long serialVersionUID =-894644054833609687L;
 
     private String quoteStr;
@@ -82,15 +88,6 @@ public class ViewDataAction extends DatabaseAction {
         if (activatedNodes != null && activatedNodes.length > 0) {
             nodes = activatedNodes;
             final DatabaseNodeInfo info = (DatabaseNodeInfo) activatedNodes[0].getCookie(DatabaseNodeInfo.class);
-            
-            //This code needs to run in AWT thread
-            try {
-                win = new DataViewWindow(info, null);
-                win.open();
-                win.requestActive();
-            } catch (SQLException exc) {
-                //PENDING
-            }
             
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run () {
@@ -150,15 +147,9 @@ public class ViewDataAction extends DatabaseAction {
 
                 expression = "select " + cols.toString() + " from " + onome; //NOI18N
             }
-
-            win.setCommand(expression);
-            final DataViewWindow w = win ;
             
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run () {
-                    w.executeCommand();
-                }
-            }, 0);
+            String name = ((DatabaseConnection)info.getDatabaseConnection()).getName();
+            SQLEditorSupport.openSQLEditor(ConnectionManager.getDefault().getConnection(name), expression, true);
         } catch(Exception exc) {
             String message = MessageFormat.format(bundle().getString("ShowDataError"), new String[] {exc.getMessage()}); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));

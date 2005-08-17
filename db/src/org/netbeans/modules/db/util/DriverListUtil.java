@@ -19,8 +19,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 public class DriverListUtil {
     

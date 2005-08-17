@@ -143,23 +143,6 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
     * class. This object knows about used database and can be used as
     * factory for db-manipulating commands. It connects to the database 
     * and reads database metadata. Throws DatabaseProductNotFoundException if database
-    * (obtained from database metadata) is not supported.
-    */
-    public DatabaseSpecification createSpecification(DBConnection dbcon) throws DatabaseProductNotFoundException, DDLException {
-        Connection con = dbcon.createJDBCConnection();
-        DatabaseSpecification spec = createSpecification(dbcon, con);
-        try {
-            con.close();
-        } catch (SQLException ex) {
-            throw new DDLException(ex.getMessage());
-        }
-        return spec;
-    }
-
-    /** Creates instance of DatabaseSpecification class; a database-specification
-    * class. This object knows about used database and can be used as
-    * factory for db-manipulating commands. It connects to the database 
-    * and reads database metadata. Throws DatabaseProductNotFoundException if database
     * (obtained from database metadata) is not supported. Uses given Connection
     */
     public DatabaseSpecification createSpecification(DBConnection dbcon, Connection jdbccon) throws DatabaseProductNotFoundException, DDLException {

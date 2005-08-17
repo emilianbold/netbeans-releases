@@ -25,7 +25,7 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.lib.ddl.DBConnection;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 import org.openide.util.NbBundle;
@@ -42,7 +42,11 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }
 
     public NewConnectionPanel(Vector templates, DatabaseConnection connection) {
-        this.templates = templates;
+        Vector wrapperTemplates = new Vector();
+        for (int i = 0; i < templates.size(); i++) {
+            wrapperTemplates.add(new DriverWrapper((JDBCDriver)templates.elementAt(i)));
+        }
+        this.templates = wrapperTemplates;
         this.connection = connection;
         initComponents();
         connectProgressBar.setBorderPainted(false);
@@ -257,7 +261,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     // </editor-fold>//GEN-END:initComponents
 
     private void templateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboBoxActionPerformed
-        JDBCDriver drv = (JDBCDriver) templateComboBox.getSelectedItem();
+        JDBCDriver drv = ((DriverWrapper) templateComboBox.getSelectedItem()).getDriver();
         List urls = null;
         String driver = null;
         if (drv != null) {
@@ -291,7 +295,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     // End of variables declaration//GEN-END:variables
 
     private String getSelectedDriver() {
-        return ((JDBCDriver) templateComboBox.getSelectedItem()).getClassName();
+        return ((DriverWrapper) templateComboBox.getSelectedItem()).getDriver().getClassName();
     }
 
     public void setConnectionInfo() {
@@ -383,5 +387,22 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         connectProgressBar.setBorderPainted(false);
         connectProgressBar.setValue(connectProgressBar.getMinimum());
         connectProgressBar.setString(""); //NOI18N
+    }
+    
+    private static final class DriverWrapper {
+        
+        private JDBCDriver driver;
+        
+        public DriverWrapper(JDBCDriver driver) {
+            this.driver = driver;
+        }
+        
+        public JDBCDriver getDriver() {
+            return driver;
+        }
+        
+        public String toString() {
+            return driver.getName();
+        }
     }
 }

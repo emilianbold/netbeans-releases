@@ -2,19 +2,20 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-
+    
+    <folder name="Databases">
+        <folder name="Connections"/>
+        <folder name="JDBCDrivers">
+            <file name="JDBCODBC.xml" url="JDBCODBC.xml"/>
+        </folder>
+        <folder name="Runtimes"/>
+    </folder>
 
     <folder name="Services">
         <file name="org-netbeans-modules-db-explorer-DatabaseOption.settings" url="DatabaseOption.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/optionIcon.gif"/>
         </file>
-
-        <folder name="JDBCDrivers">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/driverPrefered.gif"/>
-            <file name="JDBC-ODBC Bridge.xml" url="nbresloc:/org/netbeans/modules/db/resources/JDBCODBC.xml"/>
-        </folder>
 
         <folder name="JavaHelp"> 
             <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-db-helpset.xml" boolvalue="true"/> 
@@ -23,7 +24,6 @@
         </folder>
 
     </folder>
-
 
     <!-- UI -->
     <folder name="UI">
@@ -49,8 +49,11 @@
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans" >
-                <file name="DTD_JDBC_Driver_1_0" url="nbresloc:/org/netbeans/modules/db/explorer/driver/driver.dtd">
+                <file name="DTD_JDBC_Driver_1_0" url="jdbc-driver-1_0.dtd">
                     <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD JDBC Driver 1.0//EN"/>
+                </file>
+                <file name="DTD_Database_Connection_1_0" url="connection-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Database Connection 1.0//EN"/>
                 </file>
             </folder>
         </folder>
@@ -61,6 +64,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor"/>
                     <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.createProvider"/>
+                </file>
+                <file name="DTD_Database_Connection_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.createProvider"/>
                 </file>
             </folder>
         </folder>

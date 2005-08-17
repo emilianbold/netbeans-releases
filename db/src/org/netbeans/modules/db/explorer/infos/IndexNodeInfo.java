@@ -27,7 +27,7 @@ import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.DropIndex;
 import org.netbeans.lib.ddl.impl.Specification;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 

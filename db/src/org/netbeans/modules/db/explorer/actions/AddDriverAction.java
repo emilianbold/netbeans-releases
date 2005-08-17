@@ -16,10 +16,10 @@ package org.netbeans.modules.db.explorer.actions;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -27,66 +27,69 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 public class AddDriverAction extends DatabaseAction {
     static final long serialVersionUID =-109193000951395612L;
     
-    private Dialog dialog;
-    
     public void performAction(Node[] activatedNodes) {
-        final AddDriverDialog dlgPanel = new AddDriverDialog();
-        
-        final Node[] n = activatedNodes;
-        
-        ActionListener actionListener = new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                    String name = dlgPanel.getName();
-                    List drvLoc = dlgPanel.getDriverLocation();
-                    String drvClass = dlgPanel.getDriverClass();
-                    
-                    StringBuffer err = new StringBuffer();
-                    if (drvLoc.size() < 1)
-                        err.append(bundle().getString("AddDriverDialog_MissingFile")); //NOI18N
-                    if (drvClass == null || drvClass.equals("")) {
-                        if (err.length() > 0)
-                            err.append(", "); //NOI18N
-
-                        err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
-                    }
-                    if (err.length() > 0) {
-                        String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
-                        
-                        return;
-                    }
-                    
-                    closeDialog();
-                    
-                    //create driver instance and save it in the XML format
-                    if (name == null || name.equals(""))
-                        name = drvClass;
-                    
-                    try {
-                        JDBCDriverManager.getDefault().addDriver(new JDBCDriver(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
-                    } catch (IOException exc) {
-                        //PENDING
-                    }                    
-                }
-            }
-        };
-
-        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle().getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
-        Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
-        descriptor.setClosingOptions(closingOptions);
-        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.setVisible(true);
+        new AddDriverDialogDisplayer().showDialog();
     }
     
-    private void closeDialog() {
-        if (dialog != null)
-            dialog.dispose();
+    public static final class AddDriverDialogDisplayer {
+        
+        private Dialog dialog;
+        private JDBCDriver driver;
+        
+        public void showDialog() {
+            final AddDriverDialog dlgPanel = new AddDriverDialog();
+
+            ActionListener actionListener = new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                        String name = dlgPanel.getName();
+                        List drvLoc = dlgPanel.getDriverLocation();
+                        String drvClass = dlgPanel.getDriverClass();
+
+                        StringBuffer err = new StringBuffer();
+                        if (drvLoc.size() < 1)
+                            err.append(bundle().getString("AddDriverDialog_MissingFile")); //NOI18N
+                        if (drvClass == null || drvClass.equals("")) {
+                            if (err.length() > 0)
+                                err.append(", "); //NOI18N
+                            
+                            err.append(bundle().getString("AddDriverDialog_MissingClass")); //NOI18N
+                        }
+                        if (err.length() > 0) {
+                            String message = MessageFormat.format(bundle().getString("AddDriverDialog_ErrorMessage"), new String[] {err.toString()}); //NOI18N
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE));
+
+                            return;
+                        }
+
+                        if (dialog != null)
+                            dialog.dispose();
+
+                        //create driver instance and save it in the XML format
+                        if (name == null || name.equals("")) // NOI18N
+                            name = drvClass;
+
+                        try {
+                            driver = JDBCDriver.create(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()]));
+                            JDBCDriverManager.getDefault().addDriver(driver);
+                        } catch (DatabaseException exc) {
+                            //PENDING
+                        }                    
+                    }
+                }
+            };
+
+            DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, bundle().getString("AddDriverDialogTitle"), true, actionListener); //NOI18N
+            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
+            descriptor.setClosingOptions(closingOptions);
+            dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+            dialog.show();
+        }
     }
 }

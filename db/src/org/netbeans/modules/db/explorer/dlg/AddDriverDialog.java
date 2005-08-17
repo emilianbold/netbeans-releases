@@ -35,7 +35,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.explorer.DbURLClassLoader;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 public class AddDriverDialog extends javax.swing.JPanel {

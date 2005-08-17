@@ -14,13 +14,13 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
-import java.sql.*;
-import java.util.*;
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import java.sql.ResultSet;
+import java.util.Vector;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.impl.AbstractCommand;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class ViewNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =8370676447530973161L;

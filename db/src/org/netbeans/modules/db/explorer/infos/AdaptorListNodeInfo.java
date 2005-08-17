@@ -14,7 +14,7 @@
 package org.netbeans.modules.db.explorer.infos;
 
 import java.util.Vector;
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 public class AdaptorListNodeInfo extends DatabaseNodeInfo
 {

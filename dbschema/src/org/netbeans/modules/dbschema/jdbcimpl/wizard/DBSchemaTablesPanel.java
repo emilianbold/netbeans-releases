@@ -19,30 +19,16 @@ import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.ResourceBundle;
-import java.util.Vector;
 
 import javax.swing.*;
 import javax.swing.event.*;
-
-import org.openide.DialogDisplayer;
-import org.openide.DialogDescriptor;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.StatusDisplayer;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.util.NbBundle;
-
-import org.netbeans.lib.ddl.DBConnection;
-import org.netbeans.lib.ddl.DDLException;
-import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.dlg.ConnectPanel;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
-import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
@@ -57,7 +43,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
     private ConnectionProvider cp;
     private String schema;
 
-    private ConnectionNodeInfo cniOld;
+    private DatabaseConnection dbconnOld;
 
     private ConnectionDialog dlg = null;
 
@@ -118,7 +104,7 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
         boolean init = true;
 
         if (data.getConnectionProvider() != null) {
-            if (data.getConnectionNodeInfo() == cniOld)
+            if (data.getDatabaseConnection() == dbconnOld)
                 init = false;
 
             if (init) {
@@ -131,8 +117,8 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
             data.setConnected(false);
 
             if (data.isExistingConn()) {
-                final ConnectionNodeInfo cni = data.getConnectionNodeInfo();
-                conn = cni.getConnection();
+                final DatabaseConnection dbconn = data.getDatabaseConnection();
+                conn = dbconn.getJDBCConnection();
 
                 //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
                 if (conn != null)
@@ -143,110 +129,8 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
                     }
 
                 if (conn == null) {
-                    String username = cni.getUser();
-                    String password = cni.getPassword();
-                    Boolean rpwd = (Boolean) cni.get(DatabaseNodeInfo.REMEMBER_PWD);
-                    boolean remember = ((rpwd != null) ? rpwd.booleanValue() : false);
-                    if (username == null || password == null || !remember) {
-                        final ConnectPanel basePanel = new ConnectPanel((DatabaseConnection) cni.getDatabaseConnection());
-                        final SchemaPanel schemaPanel = new SchemaPanel((DatabaseConnection) cni.getDatabaseConnection());
-
-                        ActionListener actionListener = new ActionListener() {
-                            public void actionPerformed(ActionEvent event) {
-                                if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                                    dlg.setException(null);
-                                    cni.setUser(basePanel.getUser());
-                                    cni.setPassword(basePanel.getPassword());
-                                    if (basePanel.rememberPassword())
-                                        cni.put(DatabaseNodeInfo.REMEMBER_PWD, Boolean.TRUE);
-                                    try {
-                                        if(schemaPanel.getSchema()==null)
-                                            dlg.setSelectedComponent(schemaPanel);
-                                        if(dlg.isException())
-                                            return;
-                                        cni.setSchema(schemaPanel.getSchema());
-                                        cni.connect();
-                                        if(dlg != null)
-                                            dlg.close();
-                                    } catch (DatabaseException exc) {
-                                        String msg = exc.getMessage();
-                                        String message;
-
-                                        message = bundleDB.getString("EXC_PointbaseServerRejected"); // NOI18N
-                                        if (msg.substring(msg.length() - 30).equalsIgnoreCase(message.substring(message.length() - 30))) //hack for Pointbase Network Server
-                                            message = MessageFormat.format(bundleDB.getString("ERR_UnableToConnect"), new String[] {msg}); // NOI18N
-                                        else
-                                            if (msg == null)
-                                                message = bundleDB.getString("EXC_UnableToConnectNoReason"); //NOI18N
-                                            else
-                                                message = MessageFormat.format(bundleDB.getString("EXC_UnableToConnectReason"), new String[] {msg}); //NOI18N
-                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                                        StatusDisplayer.getDefault().setStatusText(""); //NOI18N
-                                    }
-                                }
-                              }
-                            };
-
-                        ChangeListener changeTabListener = new ChangeListener() {
-                            public void stateChanged (ChangeEvent e) {
-                                if(((JTabbedPane)e.getSource()).getSelectedComponent().equals(schemaPanel)) {
-                                    cni.setUser(basePanel.getUser());
-                                    cni.setPassword(basePanel.getPassword());
-                                    DBConnection con = cni.getDatabaseConnection();
-
-                                    try {
-                                        Connection connection = con.createJDBCConnection();
-                                        if (connection != null) {
-                                            ResultSet rs;
-                                            Vector items = new Vector();
-                                            try {
-                                                rs = connection.getMetaData().getSchemas();
-                                                while (rs.next())
-                                                    items.add(rs.getString(1).trim());
-                                                rs.close();
-                                                connection.close();
-                                            } catch (SQLException exc) {
-                                                //hack for databases which don't support schemas
-                                            }
-                                            schemaPanel.setSchemas(items, cni.getSchema());
-                                        }
-                                    } catch (DDLException exc) {
-                                        String message = MessageFormat.format(bundleDB.getString("ERR_UnableObtainSchemas"), new String[] {exc.getMessage()}); // NOI18N
-                                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                                        dlg.setSelectedComponent(basePanel);
-                                        dlg.setException(new DatabaseException("Unable to obtain schema. "+exc.getMessage())); // NOI18N
-                                    }
-                                } else
-                                    if(schemaPanel.getSchema()!=null)
-                                        cni.setSchema(schemaPanel.getSchema());
-                            }
-                        };
-
-                        dlg = new ConnectionDialog(basePanel, schemaPanel, basePanel.getTitle(), actionListener, changeTabListener );
-                        dlg.setVisible(true);
-                    } else {
-                        StatusDisplayer.getDefault().setStatusText(bundle.getString("ConnectingToDatabase")); //NOI18N
-                        try {
-                            cni.connect();
-                        } catch (DatabaseException exc) {
-                            String msg = exc.getMessage();
-                            String message;
-
-                            message = bundleDB.getString("EXC_PointbaseServerRejected"); // NOI18N
-                            if (msg.substring(msg.length() - 30).equalsIgnoreCase(message.substring(message.length() - 30))) //hack for Pointbase Network Server
-                                message = MessageFormat.format(bundleDB.getString("ERR_UnableToConnect"), new String[] {msg}); // NOI18N
-                            else
-                                if (msg == null)
-                                    message = bundleDB.getString("EXC_UnableToConnectNoReason"); //NOI18N
-                                else
-                                    message = MessageFormat.format(bundleDB.getString("EXC_UnableToConnectReason"), new String[] {msg}); //NOI18N
-                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                            StatusDisplayer.getDefault().setStatusText(""); //NOI18N
-
-                            return false;
-                        }
-                    }
-                    conn = cni.getConnection();
+                    ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                    conn = dbconn.getJDBCConnection();
 
                     //fix for bug #4746507 - if the connection was broken outside of the IDE, set the connection to null and try to reconnect
                     if (conn != null)
@@ -260,10 +144,10 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
                     data.setConnected(true);
                 }
-                schema = cni.getSchema();
-                driver = cni.getDriver();
+                schema = dbconn.getSchema();
+                driver = dbconn.getDriverClass();
 
-                cniOld = cni;
+                dbconnOld = dbconn;
             }
 
             try {
@@ -332,10 +216,10 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
             if (cp != null)
                 if (data.isConnected())
                     if (data.isExistingConn())
-                        cniOld.disconnect();
+                        ConnectionManager.getDefault().disconnect(dbconnOld);
                     else
-                        if (cniOld.getConnection() != null)
-                            cniOld.disconnect();
+                        if (dbconnOld.getJDBCConnection() != null)
+                            ConnectionManager.getDefault().disconnect(dbconnOld);
                         else
                             cp.closeConnection();
         } catch (Exception exc) {

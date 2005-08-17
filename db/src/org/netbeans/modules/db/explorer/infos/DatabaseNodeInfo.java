@@ -31,7 +31,7 @@ import org.netbeans.lib.ddl.DatabaseSpecificationFactory;
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.util.PListReader;
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
@@ -473,7 +473,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         return connected;
     }
 
-    public DBConnection getDatabaseConnection()
+    public DatabaseConnection getDatabaseConnection()
     {
         DatabaseConnection con = new DatabaseConnection(getDriver(), getDatabase(), getUser(), getPassword());
         if(get(REMEMBER_PWD)!=null)

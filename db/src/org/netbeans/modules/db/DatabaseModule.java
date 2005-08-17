@@ -13,43 +13,19 @@
 
 package org.netbeans.modules.db;
 
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.lib.ddl.DBConnection;
+import org.netbeans.modules.db.explorer.ConnectionList;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.openide.modules.ModuleInstall;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+
 
 public class DatabaseModule extends ModuleInstall {
         
     public void close () {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
-        final DataFolder df;
-        try {
-            df = (DataFolder) DataObject.find(fo);
-        } catch (DataObjectNotFoundException exc) {
-            return;
+        // disconnect all connected connections
+        DBConnection[] conns = ConnectionList.getDefault().getConnections();
+        for (int i = 0; i < conns.length; i++) {
+            ((DatabaseConnection)conns[i]).disconnect();
         }
-        //close all opened connection
-        Children.MUTEX.writeAccess (new Runnable () {
-            public void run () {
-                try {
-                    Node environment = df.getNodeDelegate();
-                    Node[] n = environment.getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
-                    ConnectionNodeInfo cni;
-                    for (int i = 0; i < n.length; i++) {
-                        cni = (ConnectionNodeInfo) n[i].getCookie(ConnectionNodeInfo.class);
-                        if (cni != null)
-                            cni.disconnect();
-                    }
-                } catch (Exception exc) {
-                    //connection not closed
-                }
-            }
-        });
     }
-
 }

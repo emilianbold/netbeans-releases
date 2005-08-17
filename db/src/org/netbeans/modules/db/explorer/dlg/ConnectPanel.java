@@ -28,13 +28,21 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
 
     private DatabaseConnection connection;
 
-    /** Creates new form ConnectPanel
+    /**
+     * Creates new form ConnectPanel
+     * 
+     * 
+     * 
      * @deprecated use ConnectPanel(DatabaseConnection connection)
      */
     public ConnectPanel(String loginname) {
     }
     
-    /** Creates new form ConnectPanel
+    /**
+     * Creates new form ConnectPanel
+     * 
+     * 
+     * 
      * @param connection instance of DatabaseConnection object
      */
     public ConnectPanel(DatabaseConnection connection) {

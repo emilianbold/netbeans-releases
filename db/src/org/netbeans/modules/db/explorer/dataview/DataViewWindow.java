@@ -64,13 +64,16 @@ import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.windows.TopComponent;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.ColumnNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DataViewWindow extends TopComponent {
+    
+    // TODO: remove this class, replace by the SQL editor
+    
     private JTextArea queryarea;
     private JTable jtable;
     private DataModel dbadaptor;
@@ -701,8 +704,10 @@ public class DataViewWindow extends TopComponent {
                 // Get all rows.
                 // In future implementations should be more careful
                 int rcounter = 0;
-                int limit = RootNode.getOption().getFetchLimit();
-                int step = RootNode.getOption().getFetchStep();
+//                int limit = RootNode.getOption().getFetchLimit();
+//                int step = RootNode.getOption().getFetchStep();
+                int limit = 100;
+                int step = 200;
                 
                 String cancel = bundle.getString("DataViewCancelButton"); //NOI18N
                 String nextset = bundle.getString("DataViewNextFetchButton"); //NOI18N

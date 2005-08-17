@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 /**
 * Interface of driver-related nodes.

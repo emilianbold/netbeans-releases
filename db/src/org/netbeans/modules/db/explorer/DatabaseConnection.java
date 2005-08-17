@@ -13,8 +13,11 @@
 
 package org.netbeans.modules.db.explorer;
 
+import java.awt.Component;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.io.ObjectStreamException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -27,6 +30,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.db.explorer.actions.ConnectAction;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -38,12 +43,24 @@ import org.openide.util.Task ;
 
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DDLException;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 
 import org.netbeans.modules.db.ExceptionListener;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
-import org.netbeans.modules.db.runtime.DatabaseRuntime;
+import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.nodes.RootNode;
+
 import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.spi.db.explorer.DatabaseRuntime;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
+import org.openide.windows.TopComponent;
+
 
 /**
  * Connection information
@@ -54,6 +71,9 @@ import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
  * open connection.
  */
 public class DatabaseConnection implements DBConnection {
+    
+    private static final ErrorManager LOGGER = ErrorManager.getDefault().getInstance(DatabaseConnection.class.getName());
+    private static final boolean LOG = LOGGER.isLoggable(ErrorManager.INFORMATIONAL);
 
     static final long serialVersionUID =4554639187416958735L;
 
@@ -83,6 +103,11 @@ public class DatabaseConnection implements DBConnection {
 
     /** Connection name */
     private String name;
+    
+    /**
+     * The API DatabaseConnection (delegates to this instance)
+     */
+    private transient org.netbeans.api.db.explorer.DatabaseConnection dbconn;
 
     private static final String SUPPORT = "_schema_support"; //NOI18N
     public static final String PROP_DRIVER = "driver"; //NOI18N
@@ -110,6 +135,7 @@ public class DatabaseConnection implements DBConnection {
 
     /** Default constructor */
     public DatabaseConnection() {
+        dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
         propertySupport = new PropertyChangeSupport(this);
     }
     
@@ -125,6 +151,17 @@ public class DatabaseConnection implements DBConnection {
         drv = driver;
         db = database;
         usr = user;
+        pwd = password;
+        name = null;
+        name = getName();
+    }
+    
+    public DatabaseConnection(String driver, String database, String theschema, String user, String password) {
+        this();
+        drv = driver;
+        db = database;
+        usr = user;
+        schema = theschema;
         pwd = password;
         name = null;
         name = getName();
@@ -163,12 +200,12 @@ public class DatabaseConnection implements DBConnection {
          return openConnection;
      }
      
-    /** Returns driver URL */
+    /** Returns driver class */
     public String getDriver() {
         return drv;
     }
 
-    /** Sets driver URL
+    /** Sets driver class
      * Fires propertychange event.
      * @param driver DNew driver URL
      */
@@ -330,6 +367,10 @@ public class DatabaseConnection implements DBConnection {
      * driver or database does not exist or is inaccessible.
      */
     public Connection createJDBCConnection() throws DDLException {
+        if (LOG) {
+            LOGGER.log(ErrorManager.INFORMATIONAL, "createJDBCConnection()");
+        }
+        
         if (drv == null || db == null || usr == null || pwd == null )
             throw new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo"));
 
@@ -342,13 +383,14 @@ public class DatabaseConnection implements DBConnection {
         try {
             propertySupport.firePropertyChange("connecting", null, null);
             Connection connection;
-            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
+            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
             
 
             // For Java Studio Enterprise.
             getOpenConnection().enable();
-            checkRuntime();
+            startRuntimes();
             
+            // TODO: maybe this should be really 1, not 0?
             if (drvs.length == 0) {
                 Class.forName(drv);
                 connection = DriverManager.getConnection(db, dbprops);
@@ -403,6 +445,10 @@ public class DatabaseConnection implements DBConnection {
     }
 
     public void connect() {
+        if (LOG) {
+            LOGGER.log(ErrorManager.INFORMATIONAL, "connect()");
+        }
+        
         createConnectTask() ;
     }
 
@@ -420,16 +466,16 @@ public class DatabaseConnection implements DBConnection {
                 
                 try {
                     propertySupport.firePropertyChange("connecting", null, null);
-
+                    
                     // For Java Studio Enterprise.
                     getOpenConnection().enable();
 
                     Connection connection;
-                    JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
+                    JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(drv);
 
                     // For Java Studio Enterprise.
                     getOpenConnection().enable();
-                    checkRuntime();
+                    startRuntimes();
 
                     if (drvs.length == 0) {
                         Class.forName(drv);
@@ -500,19 +546,18 @@ public class DatabaseConnection implements DBConnection {
         }
     }
 
-
-    private void checkRuntime() {
-        DatabaseRuntime runtime = DatabaseRuntimeManager.getDefault().getRuntime(drv);
+    private void startRuntimes() {
+        DatabaseRuntime[] runtimes = DatabaseRuntimeManager.getDefault().getRuntimes(drv);
         
-        // If DatabaseRuntimeManager does not have an entry for the runtime, do not check whether
-        // it is running or attempt to start it.
-        if (runtime == null)
-            return;
-        
-        if (runtime.isRunning())
-            return;
-        if (runtime.canStart() && runtime.acceptsConnectionUrl(db)) 
-            runtime.start();
+        for (int i = 0; i < runtimes.length; i++) {
+            DatabaseRuntime runtime = runtimes[i];
+            if (runtime.isRunning()) {
+                continue;
+            }
+            if (runtime.canStart() && runtime.acceptsConnectionUrl(db)) {
+                runtime.start();
+            }
+        }
     }
 
     public void addExceptionListener(ExceptionListener l) {
@@ -534,7 +579,7 @@ public class DatabaseConnection implements DBConnection {
         }
     }
 
-    private void setConnection(Connection c) {
+    public void setConnection(Connection c) {
         con = c;
     }
 
@@ -598,6 +643,8 @@ public class DatabaseConnection implements DBConnection {
         }
         name = null;
         name = getName();
+        
+        dbconn = DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(this);
     }
 
     /** Writes object to stream */
@@ -612,5 +659,155 @@ public class DatabaseConnection implements DBConnection {
 
     public String toString() {
         return "Driver:" + drv + "Database:" + db.toLowerCase() + "User:" + usr.toLowerCase() + "Schema:" + schema.toLowerCase();
+    }
+    
+    /**
+     * Gets the API DatabaseConnection which corresponds to this connection.
+     */
+    public org.netbeans.api.db.explorer.DatabaseConnection getDatabaseConnection() {
+        return dbconn;
+    }
+    
+    public void selectInExplorer() {
+        String nodeName = null;
+        try {
+            nodeName = findConnectionNodeInfo(getName()).getNode().getName();
+        } catch (DatabaseException e) {
+            ErrorManager.getDefault().notify(e);
+            return;
+        }
+        
+        // find the Runtime panel top component
+        // quite hacky, but it will be replaced by the Server Navigator
+        
+        TopComponent runtimePanel = null;
+        ExplorerManager runtimeExplorer = null;
+        Node runtimeNode = null;
+        
+        for (Iterator i = TopComponent.getRegistry().getOpened().iterator(); i.hasNext();) {
+            TopComponent component = (TopComponent)i.next();
+            Component[] children = component.getComponents();
+            if (children.length > 0) {
+                ExplorerManager explorer = ExplorerManager.find(children[0]);
+                if ("Runtime".equals(explorer.getRootContext().getName())) { // NOI18N
+                    runtimePanel = component;
+                    runtimeExplorer = explorer;
+                    runtimeNode = explorer.getRootContext();
+                }
+            }
+        }
+        
+        if (runtimePanel == null) {
+            return;
+        }
+            
+        Node node = null;
+        try {
+            node = NodeOp.findPath(runtimeNode, new String[] { "Databases", nodeName }); // NOI18N
+        } catch (NodeNotFoundException e) {
+            ErrorManager.getDefault().notify(e);
+            return;
+        }
+        
+        try {
+            runtimeExplorer.setSelectedNodes(new Node[] { node });
+        } catch (PropertyVetoException e) {
+            ErrorManager.getDefault().notify(e);
+            return;
+        }
+    
+        runtimePanel.requestActive();
+    }
+    
+    public void showConnectionDialog() {
+        try {
+            final ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+            if (cni != null && cni.getConnection() == null) {
+                if (!SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, true);
+                        }
+                    });
+                } else {
+                    new ConnectAction.ConnectionDialogDisplayer().showDialog(cni, true);
+                }
+            }
+        } catch (DatabaseException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    public Connection getJDBCConnection() {
+        try {
+            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+            if (cni != null && cni.getConnection() != null && !cni.getConnection().isClosed()) {
+                return cni.getConnection();
+            }
+        } catch (DatabaseException e) {
+            ErrorManager.getDefault().notify(e);
+        } catch (SQLException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return null;
+    }
+    
+    public void disconnect() {
+        try {
+            ConnectionNodeInfo cni = findConnectionNodeInfo(getName());
+            if (cni != null && cni.getConnection() != null) {
+                cni.disconnect();
+            }
+        } catch (DatabaseException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    private ConnectionNodeInfo findConnectionNodeInfo(String connection) throws DatabaseException {
+        assert connection != null;
+        
+        // Got to retrieve the conn nodes and wait for the "Please wait" node to dissapear.
+        // We can't use the info classes here since surprisingly 
+        // the CNIs found in RootNode.getInstance().getInfo are different than
+        // the ones the ConnectionNodes in the Databases tree listen to
+        
+        Node[] nodes;
+        String waitNode = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"); // NOI18N
+        
+        for (;;) {
+            nodes = RootNode.getInstance().getChildren().getNodes();
+            if (nodes.length == 1 && waitNode.equals(nodes[0].getName())) {
+                try {
+                    Thread.sleep(60);
+                } catch (InterruptedException e) { 
+                    // PENDING
+                }
+            } else {
+                break;
+            }
+        }
+                
+        for (int i = 0; i < nodes.length; i++) {
+            DatabaseNodeInfo info = (DatabaseNodeInfo)nodes[i].getCookie(DatabaseNodeInfo.class);
+            if (info == null) {
+                continue;
+            }
+            ConnectionNodeInfo nfo = (ConnectionNodeInfo)info.getParent(DatabaseNode.CONNECTION);
+            if (nfo == null) {
+                continue;
+            }
+            if (connection.equals(nfo.getDatabaseConnection().getName())) {
+                return nfo;
+            }
+        }
+        return null;
+    }
+    
+    private Object readResolve() throws ObjectStreamException {
+        // sometimes deserialized objects have a null propertySuppport, not sure why
+        if (propertySupport == null) {
+            propertySupport = new PropertyChangeSupport(this);
+        }
+        return this;
     }
 }

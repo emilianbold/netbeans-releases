@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.actions.*;
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 
 public class DatabaseNode extends AbstractNode implements Node.Cookie {

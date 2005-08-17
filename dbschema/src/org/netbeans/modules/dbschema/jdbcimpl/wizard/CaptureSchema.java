@@ -16,6 +16,8 @@ package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 import java.beans.*;
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -23,8 +25,6 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.jdbcimpl.*;
@@ -63,7 +63,7 @@ public class CaptureSchema {
             
             final boolean conned = data.isConnected();
             final boolean ec = data.isExistingConn();
-            final ConnectionNodeInfo cninfo = data.getConnectionNodeInfo();
+            final DatabaseConnection dbconn = data.getDatabaseConnection();
             final String target1 = target;
             
             //delete values from panels
@@ -160,7 +160,7 @@ public class CaptureSchema {
                         
                         if (conned)
                             if (ec)
-                                cninfo.disconnect();
+                                ConnectionManager.getDefault().disconnect(dbconn);
                             else
                                 c.closeConnection();
                     } catch (Exception exc) {
@@ -176,7 +176,7 @@ public class CaptureSchema {
                 if (cp != null)
                     if (data.isConnected())
                         if (data.isExistingConn())
-                            data.getConnectionNodeInfo().disconnect();
+                            ConnectionManager.getDefault().disconnect(data.getDatabaseConnection());
                         else
                             cp.closeConnection();
             } catch (Exception exc1) {

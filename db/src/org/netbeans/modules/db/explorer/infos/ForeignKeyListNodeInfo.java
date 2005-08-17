@@ -13,16 +13,14 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.sql.*;
-import java.util.*;
-
-import org.openide.nodes.*;
-
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.lib.ddl.adaptors.*;
-import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =5809643799834921044L;

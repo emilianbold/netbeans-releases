@@ -15,6 +15,7 @@ package org.netbeans.modules.db.explorer.infos;
 
 import org.netbeans.modules.db.*;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 /**
 * Interface of driver-related nodes.

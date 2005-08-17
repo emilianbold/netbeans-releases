@@ -13,14 +13,12 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.sql.*;
-import java.util.*;
-
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Vector;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class ProcedureListNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-7911927402768472443L;

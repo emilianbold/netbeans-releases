@@ -16,8 +16,8 @@ package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 import java.beans.*;
 import java.util.LinkedList;
 import java.util.Vector;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.openide.loaders.DataFolder;
 
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
@@ -27,7 +27,7 @@ public class DBSchemaWizardData {
     private DataFolder destinationPackage;
     private String name;
     private String driver;
-    private ConnectionNodeInfo cni;
+    private DatabaseConnection dbconn;
     private boolean existingConn;
     private ConnectionProvider cp;
     private LinkedList tables;
@@ -68,13 +68,13 @@ public class DBSchemaWizardData {
     public String getDriver() {
         return driver;
     }
-
-    public void setConnectionNodeInfo(ConnectionNodeInfo cni) {
-        this.cni = cni;
+    
+    public void setDatabaseConnection(DatabaseConnection dbconn) {
+        this.dbconn = dbconn;
     }
-
-    public ConnectionNodeInfo getConnectionNodeInfo() {
-        return cni;
+    
+    public DatabaseConnection getDatabaseConnection() {
+        return dbconn;
     }
 
     public void setExistingConn(boolean existingConn) {

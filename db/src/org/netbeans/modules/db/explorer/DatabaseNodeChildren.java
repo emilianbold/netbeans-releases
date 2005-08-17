@@ -30,7 +30,7 @@ import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;

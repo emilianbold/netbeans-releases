@@ -12,20 +12,18 @@
  */
 
 package org.netbeans.modules.db.explorer.infos;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Vector;
 import java.text.MessageFormat;
 
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.DatabaseOption;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverListener;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 import org.openide.ErrorManager;
@@ -33,28 +31,22 @@ import org.openide.ErrorManager;
 public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperations {
     static final long serialVersionUID =-7948529055260667590L;
     
-    private JDBCDriverManager dm = JDBCDriverManager.getDefault();
-    private final PropertyChangeListener driverListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent event) {
-            if (getNode() == null)
-                return;
-            if (event.getPropertyName().equals("add") || event.getPropertyName().equals("remove")) { //NOI18N
-                try {
-                    refreshChildren();
-                } catch(DatabaseException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
-            }       
-        }
-    };
-
     public DriverListNodeInfo() {
         super();
-        dm.addPropertyChangeListener(driverListener);
+        JDBCDriverListener listener = new JDBCDriverListener() {
+            public void driversChanged() {
+                try {
+                    refreshChildren();
+                } catch (DatabaseException ex) {
+                    // PENDING
+                }
+            }
+        };
+        JDBCDriverManager.getDefault().addDriverListener(listener);
     }
 
     protected void initChildren(Vector children) throws DatabaseException {
-        JDBCDriver[] drvs = dm.getDrivers();
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers();
         boolean win = Utilities.isWindows();
         String file;
         for (int i = 0; i < drvs.length; i++) {

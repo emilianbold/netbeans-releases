@@ -24,7 +24,6 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
-
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
@@ -36,63 +35,83 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.XMLDataObject;
-import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
-
 import org.openide.filesystems.Repository;
-
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Reads and writes the standard JDBC driver registration format.
+ *
+ * @author Radko Najman, Andrei Badea
  */
-public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor {
+public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie.Of {
     
-    private JDBCDriverConvertor() {}
+    /**
+     * The path where the drivers are registered in the SystemFileSystem.
+     */
+    public static final String DRIVERS_PATH = "Databases/JDBCDrivers"; // NOI18N
+    
+    /**
+     * The path where the drivers were registered in 4.1 and previous versions.
+     */
+    static final String OLD_DRIVERS_PATH = "Services/JDBCDrivers"; // NOI18N
 
-    public static JDBCDriverConvertor createProvider(FileObject reg) {
-        fo = reg;
-        return new JDBCDriverConvertor();
-    }
+    /**
+     * The delay by which the write of the changes is postponed.
+     */
+    private static final int DELAY = 2000;
+    
+    private XMLDataObject holder = null;
 
-    public Lookup getEnvironment(DataObject obj) {
-        return new JDBCDriverConvertor((XMLDataObject) obj).getLookup();
-    }
-
-    InstanceContent cookies = new InstanceContent();
-
-    XMLDataObject holder;
-    static FileObject fo;
-
-    Lookup lookup;
-
-    RequestProcessor.Task saveTask;
+    /**
+     * The lookup provided through Environment.Provider.
+     */
+    private Lookup lookup = null;
 
     Reference refDriver = new WeakReference(null);
 
-    LinkedList keepAlive = new LinkedList();
+    private static JDBCDriverConvertor createProvider() {
+        return new JDBCDriverConvertor();
+    }
+    
+    private JDBCDriverConvertor() {
+    }
 
     private JDBCDriverConvertor(XMLDataObject object) {
         this.holder = object;
-        cookies = new InstanceContent();
+        InstanceContent cookies = new InstanceContent();
         cookies.add(this);
         lookup = new AbstractLookup(cookies);
-        cookies.add(Node.class, this);
     }
-
-    Lookup getLookup() {
-        return lookup;
+    
+    // Environment.Provider methods
+    
+    public Lookup getEnvironment(DataObject obj) {
+        return new JDBCDriverConvertor((XMLDataObject)obj).getLookup();
     }
+    
+    // InstanceCookie.Of methods
 
+    public String instanceName() {
+        return holder.getName();
+    }
+    
     public Class instanceClass() {
         return JDBCDriver.class;
+    }
+    
+    public boolean instanceOf(Class type) {
+        return (type.isAssignableFrom(JDBCDriver.class));
     }
 
     public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
@@ -100,12 +119,10 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             Object o = refDriver.get();
             if (o != null)
                 return o;
-            H handler = new H();
+            Handler handler = new Handler();
             try {
                 XMLReader reader = XMLUtil.createXMLReader();
-                if (holder == null)
-                    holder = (XMLDataObject) DataObject.find(fo);
-                InputSource is = new org.xml.sax.InputSource(holder.getPrimaryFile().getInputStream());
+                InputSource is = new InputSource(holder.getPrimaryFile().getInputStream());
                 is.setSystemId(holder.getPrimaryFile().getURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
@@ -126,30 +143,32 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             return inst;
         }
     }
+    
+    // Other
 
-    JDBCDriver createDriver(H handler) {
+    private static JDBCDriver createDriver(Handler handler) {
         URL[] urls;
         LinkedList urlList = new LinkedList();
         for (int i = 0; i < handler.urls.size(); i++)
             try {
-                // Java Studio support. Covert relative url's to absolute
                 String initialURL = (String) handler.urls.get(i);
                 String finalURL;
                 finalURL = initialURL;
 
-                if(initialURL.startsWith("RELATIVE:")) {
+                // Java Studio support. Covert relative url's to absolute
+                if(initialURL.startsWith("RELATIVE:")) { // NOI18N
                     // Use a different URL prefix based on the operating system
-                    if( System.getProperty("os.name").toUpperCase().lastIndexOf("WINDOWS") == -1 ) {   // For solaris, two slashes at the beginning causes malformed URL exception 
-                        finalURL = "file:" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9);
-                    } else {  // For windows.
-                        finalURL = "file:/" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9);
+                    if( System.getProperty("os.name").toUpperCase().lastIndexOf("WINDOWS") == -1 ) { // NOI18N
+                        // For solaris, two slashes at the beginning causes malformed URL exception 
+                        finalURL = "file:" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9); // NOI18N
+                    } else {  
+                        // For windows
+                        finalURL = "file:/" + System.getProperty("netbeans.home") + java.io.File.separator + initialURL.substring(9); // NOI18N
                     }
                 }
+                // end: Java Studio support. Covert relative url's to absolute
                     
                 urlList.add(new URL(finalURL));
-                //urlList.add(new URL((String) handler.urls.get(i)));
-                // end:  Java Studio support. Covert relative url's to absolute
-
             } catch (MalformedURLException exc) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
@@ -157,111 +176,101 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         if (checkClassPathDrivers(handler.clazz, urls) == false) {
             return null;
         }
-        JDBCDriver d = new JDBCDriver(handler.name, handler.clazz, urls);
-
-        d.addPropertyChangeListener(this);
-        return d;
+        return JDBCDriver.create(handler.name, handler.clazz, urls);
     }
 
-    public String instanceName() {
-        return holder.getName();
-    }
-
-    public boolean instanceOf(Class type) {
-        return (type.isAssignableFrom(JDBCDriver.class));
-    }
-
-    public FileObject instanceOrigin() {
-        return holder.getPrimaryFile();
-    }
-
-    static int DELAY = 2000;
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        synchronized (this) {
-            if (saveTask == null)
-                saveTask = RequestProcessor.getDefault().create(this);
-        }
-        synchronized (this) {
-            keepAlive.add(evt);
-        }
-        saveTask.schedule(DELAY);
-    }
-
-    public void run() {
-        PropertyChangeEvent e;
-
-        synchronized (this) {
-            e = (PropertyChangeEvent)keepAlive.removeFirst();
-        }
-        JDBCDriver drv = (JDBCDriver) e.getSource();
-        try {
-            holder.getPrimaryFile().getFileSystem().runAtomicAction(new W(drv, holder));
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-    }
-
-    public Object convert(Object obj) {
-        if (obj == Node.class) {
-            Object drv;
-
-            try {
-                drv = instanceCreate();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return null;
-            } catch (ClassNotFoundException ex) {
-                return null;
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                return null;
-            }
-            //            return new LookNode(drv, null, Looks.defaultSelector());
-            return null;
-        } else
-            return null;
-    }
-
-    public String displayName(Object obj) {
-        return ((Class)obj).getName();
-    }
-
-    public String id(Object obj) {
-        return obj.toString();
-    }
-
-    public Class type(Object obj) {
-        return (Class)obj;
-    }
-
-    //    public static DataObject create(JDBCDriver drv, DataFolder f, String idName) throws IOException {
+    /**
+     * Creates the XML file describing the specified JDBC driver.
+     */
     public static DataObject create(JDBCDriver drv) throws IOException {
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/JDBCDrivers");
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(DRIVERS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
-        //        W w = new W(drv, df, drv.getName());
         String fileName = drv.getClassName().replace('.', '_'); //NOI18N
-        W w = new W(drv, df, fileName);
-        df.getPrimaryFile().getFileSystem().runAtomicAction(w);
-        return w.holder;
+        AtomicWriter writer = new AtomicWriter(drv, df, fileName);
+        df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
+        return writer.holder;
+    }
+    
+    /**
+     * Moves the existing drivers from the old location (Services/JDBCDrivers) 
+     * used in 4.1 and previous to the new one.
+     */
+    public static void importOldDrivers() {
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
+        FileObject oldRoot = sfs.findResource(JDBCDriverConvertor.OLD_DRIVERS_PATH);
+        if (oldRoot == null) {
+            return;
+        }
+        FileObject newRoot = sfs.findResource(JDBCDriverConvertor.DRIVERS_PATH);
+        FileObject[] children = oldRoot.getChildren();
+        for (int i = 0; i < children.length; i++) {
+            try {
+                FileUtil.moveFile(children[i], newRoot, children[i].getName());
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
+    
+    /**
+     * Removes the file describing the specified JDBC driver.
+     */
+    public static void remove(JDBCDriver drv) throws IOException {
+        String name = drv.getName();
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(DRIVERS_PATH); //NOI18N
+        DataFolder folder = DataFolder.findFolder(fo);
+        DataObject[] objects = folder.getChildren();
+        
+        for (int i = 0; i < objects.length; i++) {
+            InstanceCookie ic = (InstanceCookie)objects[i].getCookie(InstanceCookie.class);
+            if (ic != null) {
+                Object obj = null;
+                try {
+                    obj = ic.instanceCreate();
+                } catch (ClassNotFoundException e) {
+                    continue;
+                }
+                if (obj instanceof JDBCDriver) {
+                    JDBCDriver driver = (JDBCDriver)obj;
+                    if (driver.getName().equals(name)) {
+                        objects[i].delete();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    Lookup getLookup() {
+        return lookup;
     }
 
-    static class W implements FileSystem.AtomicAction {
+    /**
+     * Atomic writer for writing a changed/new JDBCDriver.
+     */
+    private static final class AtomicWriter implements FileSystem.AtomicAction {
+        
         JDBCDriver instance;
         MultiDataObject holder;
-        String name;
-        DataFolder f;
+        String fileName;
+        DataFolder parent;
 
-        W(JDBCDriver instance, MultiDataObject holder) {
+        /**
+         * Constructor for writing to an existing file.
+         */
+        AtomicWriter(JDBCDriver instance, MultiDataObject holder) {
             this.instance = instance;
             this.holder = holder;
         }
 
-        W(JDBCDriver instance, DataFolder f, String n) {
+        /**
+         * Constructor for creating a new file.
+         */
+        AtomicWriter(JDBCDriver instance, DataFolder parent, String fileName) {
             this.instance = instance;
-            this.name = n;
-            this.f = f;
+            this.fileName = fileName;
+            this.parent = parent;
         }
 
         public void run() throws java.io.IOException {
@@ -272,8 +281,8 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
                 data = holder.getPrimaryEntry().getFile();
                 lck = holder.getPrimaryEntry().takeLock();
             } else {
-                FileObject folder = f.getPrimaryFile();
-                String fn = FileUtil.findFreeFileName(folder, name, "xml"); //NOI18N
+                FileObject folder = parent.getPrimaryFile();
+                String fn = FileUtil.findFreeFileName(folder, fileName, "xml"); //NOI18N
                 data = folder.createData(fn, "xml"); //NOI18N
                 lck = data.lock();
             }
@@ -301,82 +310,62 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
             pw.println("  <class value='" + XMLUtil.toAttributeValue(instance.getClassName()) + "'/>"); //NOI18N
             pw.println("  <urls>"); //NOI18N
             URL[] urls = instance.getURLs();
-            for (int i = 0; i < urls.length; i++)
+            for (int i = 0; i < urls.length; i++) {
                 pw.println("    <url value='" + XMLUtil.toAttributeValue(urls[i].toString()) + "'/>"); //NOI18N
+            }
             pw.println("  </urls>"); //NOI18N
             pw.println("</driver>"); //NOI18N
         }
     }
 
-    static final String ELEMENT_NAME = "name"; // NOI18N
-    static final String ELEMENT_CLASS = "class"; // NOI18N
-    static final String ELEMENT_URL = "url"; // NOI18N
-    static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
-
-    static class H extends org.xml.sax.helpers.DefaultHandler {
+    /**
+     * SAX handler for reading the XML file.
+     */
+    private static final class Handler extends DefaultHandler {
+        
+        private static final String ELEMENT_NAME = "name"; // NOI18N
+        private static final String ELEMENT_CLASS = "class"; // NOI18N
+        private static final String ELEMENT_URL = "url"; // NOI18N
+        private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
+        
         String name;
         String clazz;
         LinkedList urls = new LinkedList();
 
-        public void startDocument() throws org.xml.sax.SAXException {
+        public void startDocument() throws SAXException {
         }
 
-        public void endDocument() throws org.xml.sax.SAXException {
+        public void endDocument() throws SAXException {
         }
 
-        public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes attrs) throws org.xml.sax.SAXException {
-            if (ELEMENT_NAME.equals(qName))
+        public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {
+            if (ELEMENT_NAME.equals(qName)) {
                 name = attrs.getValue(ATTR_PROPERTY_VALUE);
-            else if (ELEMENT_CLASS.equals(qName))
+            } else if (ELEMENT_CLASS.equals(qName)) {
                 clazz = attrs.getValue(ATTR_PROPERTY_VALUE);
-            else if (ELEMENT_URL.equals(qName))
+            } else if (ELEMENT_URL.equals(qName)) {
                 urls.add(attrs.getValue(ATTR_PROPERTY_VALUE));
-        }
-    }
-
-    public static void remove(JDBCDriver drv) throws IOException {
-        String name = drv.getName();
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Services/JDBCDrivers"); //NOI18N
-        FileObject[] drivers = fo.getChildren();
-        JDBCDriverConvertor conv;
-
-        for (int i = 0; i < drivers.length; i++) {
-            conv = JDBCDriverConvertor.createProvider(drivers[i]);
-            try {
-                JDBCDriver driver = (JDBCDriver) conv.instanceCreate();
-                if (driver.getName().equals(name)) {
-                    DataObject d = DataObject.find(drivers[i]);
-                    d.delete();
-                    break;
-                }
-            } catch (IOException exc) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
-            } catch (ClassNotFoundException exc) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
             }
         }
     }
 
     /**
-     * Checks, if given class is on classpath.
-     *
-     * @param   className  name of class to be loaded
-     * @param   urls       file urls, checking classes only for 'file:/' URL.
-     * @return  true, if driver is available on classpath, otherwise false
+     * Checks if given class is on classpath.
+     * 
+     * @param className  fileName of class to be loaded
+     * @param urls       file urls, checking classes only for 'file:/' URL.
+     * @return true if driver is available on classpath, otherwise false
      */
     private static boolean checkClassPathDrivers(String className, URL[] urls) {
         for (int i = 0; i < urls.length; i++) {
-            if ("file:/".equals(urls[i].toString())) {
+            if ("file:/".equals(urls[i].toString())) { // NOI18N
                 try {
                     Class.forName(className);
                 } catch (ClassNotFoundException e) {
-                    // do not create driver because its class is not
-                    // on classpath
                     return false;
                 }
             }
         }
         return true;
     }
-
 }

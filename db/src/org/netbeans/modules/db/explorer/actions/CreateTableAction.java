@@ -22,7 +22,7 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.lib.ddl.impl.Specification;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.dlg.CreateTableDialog;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableOwnerOperations;

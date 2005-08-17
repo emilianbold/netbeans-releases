@@ -107,7 +107,7 @@ public class RecreateTableAction extends DatabaseAction {
                                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(exc.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
                                         continue;
-                                    } catch (org.netbeans.modules.db.DatabaseException exc) {
+                                    } catch (org.netbeans.api.db.explorer.DatabaseException exc) {
                                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                                         continue;
                                     }

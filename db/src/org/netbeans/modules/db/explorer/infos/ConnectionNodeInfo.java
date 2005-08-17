@@ -24,9 +24,10 @@ import org.netbeans.lib.ddl.impl.DriverSpecification;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.SpecificationFactory;
 
-import org.netbeans.modules.db.DatabaseException;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseOption;
+import org.netbeans.modules.db.explorer.ConnectionList;
 
 //commented out for 3.6 release, need to solve for next Studio release
 //import org.netbeans.modules.db.explorer.PointbasePlus;
@@ -39,7 +40,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     
     static final long serialVersionUID =-8322295510950137669L;
 
-    public void connect(String dbsys) throws DatabaseException {
+    private void connect(String dbsys) throws DatabaseException {
         String drvurl = getDriver();
         String dburl = getDatabase();
         
@@ -70,15 +71,19 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         }
     }
 
+    /*
+     * Connects this connection node to the database.
+     */
     public void connect() throws DatabaseException {
-        connect((String) null);
+        connect((String)null);
     }
 
-    public void connectReadOnly() throws DatabaseException {
-        setReadOnly(true);
-        connect("GenericDatabaseSystem"); //NOI18N
-    }
-
+    /*
+     * Connect to this node a DBConnection which is already connected to the
+     * database. Used when adding a new connection: the newly added DBConnection is already
+     * connected to the database, so this methods helps avoiding connecting to the
+     * database once more.
+     */
     public void connect(DBConnection conn) throws DatabaseException {
         try {
             String dbsys = null;
@@ -170,12 +175,8 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
     public void delete() throws IOException {
         try {
-            Vector cons = RootNode.getOption().getConnections();
             DatabaseConnection cinfo = (DatabaseConnection) getDatabaseConnection();
-            if (cons.contains(cinfo)) {
-                cons.remove(cinfo);
-                RootNode.getOption().save(); //serialize connection
-            }
+            ConnectionList.getDefault().remove(cinfo);
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
@@ -190,12 +191,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     }
     
     private void updateConnection(String key, String newVal) {
-        DatabaseOption option = RootNode.getOption();
-        Vector cons = option.getConnections();
-        DBConnection infoConn = getDatabaseConnection();
-        int idx = cons.indexOf(infoConn);
-        if(idx>=0) {
-            DatabaseConnection connFromList = (DatabaseConnection)cons.elementAt(idx);
+        DatabaseConnection infoConn = getDatabaseConnection();
+        DatabaseConnection connFromList = ConnectionList.getDefault().getConnection(infoConn);
+        if (connFromList != null) {
             if (key.equals(SCHEMA))
                 connFromList.setSchema(newVal);
             else if (key.equals(USER))
@@ -207,8 +205,5 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             }
         }
         setName(infoConn.getName());
-        
-        RootNode.getOption().save();
     }
-    
 }

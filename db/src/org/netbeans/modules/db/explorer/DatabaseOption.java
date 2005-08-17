@@ -25,14 +25,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.jar.JarFile;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.util.DriverListUtil;
@@ -51,8 +53,6 @@ public class DatabaseOption extends SystemOption {
     private static boolean autoConn = true;
 
     public static final String PROP_DEBUG_MODE = "debugMode"; //NOI18N
-    public static final String PROP_FETCH_LIMIT = "fetchLimit"; //NOI18N
-    public static final String PROP_FETCH_STEP = "fetchStep"; //NOI18N
     public static final String PROP_AUTO_CONNECTION = "autoConn"; //NOI18N
 
     static final long serialVersionUID =-13629330831657810L;
@@ -96,45 +96,16 @@ public class DatabaseOption extends SystemOption {
         drivers = c;
     }
 
-    /** Returns vector of saved connections */
-    public Vector getConnections() {
+    /**
+     * Returns vector of saved connections. Do not use this method to work with
+     * the list of connections, use {@link org.netbeans.modules.db.explorer.ConnectionList}
+     * instead.
+     */
+    Vector getConnections() {
         if (connections == null)
             connections = new Vector();
 
         return connections;
-    }
-
-    /** Sets vector of open connections.
-    * @param c Vector with connections
-    */
-    public void setConnections(Vector c) {
-        connections = c;
-    }
-
-    public int getFetchLimit() {
-        return fetchlimit;
-    }
-
-    public void setFetchLimit(int limit) {
-        int old = fetchlimit;
-        if (old == limit)
-            return;
-        
-        fetchlimit = limit;
-        firePropertyChange(PROP_FETCH_LIMIT, new Integer(old), new Integer(limit));
-    }
-
-    public int getFetchStep() {
-        return fetchstep;
-    }
-
-    public void setFetchStep(int limit) {
-        int old = fetchstep;
-        if (old == limit)
-            return;
-        
-        fetchstep = limit;
-        firePropertyChange(PROP_FETCH_STEP, new Integer(old), new Integer(limit));
     }
 
     public boolean isAutoConn() {
@@ -172,7 +143,6 @@ public class DatabaseOption extends SystemOption {
         
         out.writeObject(null);
         out.writeObject(getConnections());
-        out.writeInt(fetchlimit);
     }
 
     /** Reads data
@@ -186,7 +156,6 @@ public class DatabaseOption extends SystemOption {
             lookForDrivers();
 
         connections = (Vector) in.readObject();
-        fetchlimit = in.readInt();
     }
         
     private Vector createDrivers(Map drvMap) {
@@ -245,8 +214,12 @@ public class DatabaseOption extends SystemOption {
                 while (it.hasNext()) {
                     drv = (String) it.next();
                     if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
-                        JDBCDriver driver = new JDBCDriver(DriverListUtil.findFreeName(DriverListUtil.getName(drv)), drv, new URL[] {files[i].toURL()});
-                        JDBCDriverManager.getDefault().addDriver(driver);
+                        JDBCDriver driver = JDBCDriver.create(DriverListUtil.findFreeName(DriverListUtil.getName(drv)), drv, new URL[] {files[i].toURL()});
+                        try {
+                            JDBCDriverManager.getDefault().addDriver(driver);
+                        } catch (DatabaseException e) {
+                            ErrorManager.getDefault().notify(e);
+                        }
                     }
                 }
                 jf.close();

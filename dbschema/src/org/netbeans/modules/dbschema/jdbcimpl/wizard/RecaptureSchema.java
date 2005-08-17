@@ -17,18 +17,15 @@ import java.beans.*;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.*;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-
-import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.jdbcimpl.*;
@@ -82,10 +79,10 @@ public class RecaptureSchema {
         
         final boolean conned = data.isConnected();
         final boolean ec = data.isExistingConn();
-        final ConnectionNodeInfo cninfo = data.getConnectionNodeInfo();
+        final DatabaseConnection dbconn = data.getDatabaseConnection();
 //            final String target1 = target;
         final String dbIdentName = elem.getUrl();
-            //cninfo.getName();
+            //dbconn.getName();
         if (debug) {
             System.out.println("[dbschema] conned='" + conned+ "'");
             System.out.println("[dbschema] ec='" + ec + "'");
@@ -200,7 +197,7 @@ public class RecaptureSchema {
                         //c.closeConnection();
                         if (conned)
                             if (ec)
-                                cninfo.disconnect();
+                                ConnectionManager.getDefault().disconnect(dbconn);
                             else
                                 c.closeConnection();
                     } catch (Exception exc) {
@@ -220,7 +217,7 @@ public class RecaptureSchema {
                     cp.closeConnection();
                     if (data.isConnected())
                         if (data.isExistingConn())
-                            data.getConnectionNodeInfo().disconnect();
+                            ConnectionManager.getDefault().disconnect(data.getDatabaseConnection());
                         else
                             cp.closeConnection();
             } catch (Exception exc1) {
@@ -254,26 +251,26 @@ public class RecaptureSchema {
     
     public ConnectionProvider createConnectionProvider(DBSchemaWizardData data, String url) throws SQLException {
         
-        ConnectionNodeInfo cni = findConnectionNodeInfo(url);
-        if (cni == null) {
+        DatabaseConnection dbconn = findDatabaseConnection(url);
+        if (dbconn == null) {
             if (debug) {
-                System.out.println("[dbschema-ccp] not found cni='" + cni+ "'");
+                System.out.println("[dbschema-ccp] not found dbconn='" + dbconn + "'");
             }
             return null;
         }
         if (debug) {
-            System.out.println("[dbschema-ccp] found cni='" + cni.getDatabase() + "'");
+            System.out.println("[dbschema-ccp] found dbconn='" + dbconn.getConnectionUrl() + "'");
         }
-        data.setConnectionNodeInfo(cni);
+        data.setDatabaseConnection(dbconn);
         ConnectionHandler ch = new ConnectionHandler(data);
         if (ch.ensureConnection()) {
-            cni = data.getConnectionNodeInfo();
+            dbconn = data.getDatabaseConnection();
             if (debug) {
-                System.out.println("[dbschema-ccp] connection ensured ='" + cni.getDatabase() + "'"); 
+                System.out.println("[dbschema-ccp] connection ensured ='" + dbconn.getConnectionUrl() + "'"); 
             }
             ConnectionProvider connectionProvider = 
-                new ConnectionProvider(cni.getConnection(), cni.getDriver());
-            connectionProvider.setSchema(cni.getSchema());
+                new ConnectionProvider(dbconn.getJDBCConnection(), dbconn.getDriverClass());
+            connectionProvider.setSchema(dbconn.getSchema());
             //String schemaName = cni.getName();
             //schemaElementImpl.setName(DBIdentifier.create(schemaName));
             return connectionProvider;
@@ -284,58 +281,15 @@ public class RecaptureSchema {
         return null;
     }
     
-    private ConnectionNodeInfo findConnectionNodeInfo(String url) {
-        Node[] n = getConnectionNodes();
-        if (n != null) {
-            if (debug) {
-                System.out.println("[dbschema-fcni] found connection nodes, count='" + n.length + "'"); 
-                System.out.println("[dbschema-fcni] looking for url='" + url + "'"); 
-            }
-            for (int i = 0; i < n.length; i++) {
-                ConnectionNodeInfo cni = (ConnectionNodeInfo)n[i].getCookie(ConnectionNodeInfo.class);
-                if (debug) {
-                    if (cni == null) {
-                        System.out.println("[dbschema-fcni] not found cni on node " + i); 
-                    }
-                    else {
-                        System.out.println("[dbschema-fcni] found cni on node " + i + ", cni url='" + cni.getURL() + "'"); 
-                        System.out.println("[dbschema-fcni] found cni on node " + i + ", cni db='" + cni.getDatabase() + "'"); 
-                    }
-                }
-                if (cni != null) {
-                    if (url.equals(cni.getDatabase())) {
-                        return cni;
-                    }
-                }
+    private DatabaseConnection findDatabaseConnection(String url) {
+        DatabaseConnection dbconns[] = ConnectionManager.getDefault().getConnections();
+        for (int i = 0; i < dbconns.length; i++) {
+            if (url.equals(dbconns[i].getConnectionUrl())) {
+                return dbconns[i];
             }
         }
         return null;
     }
-
-    private Node[] getConnectionNodes() {
-        String waitNode = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"); //NOI18N
-        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("UI/Runtime"); //NOI18N
-        DataFolder df;
-        try {
-            df = (DataFolder) DataObject.find(fo);
-        } catch (DataObjectNotFoundException exc) {
-            return null;
-        }
-        Node dbNode = df.getNodeDelegate().getChildren().findChild("Databases"); //NOI18N
-        Node[] n;
-        n = dbNode.getChildren().getNodes();
-        while (n.length == 1 && waitNode.equals(n[0].getName())) {
-            try {
-                Thread.sleep(60);
-            } catch (InterruptedException e) {
-                //PENDING
-            }
-            n = dbNode.getChildren().getNodes();
-        }
-        
-        return n;
-    }
-
     
     private static class ConnectionHandler extends DBSchemaTablesPanel {
         public ConnectionHandler(DBSchemaWizardData data) {

@@ -13,15 +13,13 @@
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.sql.*;
-import java.util.*;
-
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.adaptors.*;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.DatabaseException;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.nodes.*;
+import java.sql.ResultSet;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Vector;
+import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.impl.DriverSpecification;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOperations {
     static final long serialVersionUID =-6156362126513404875L;

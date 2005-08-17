@@ -20,7 +20,10 @@ import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Permissions;
 
-/** This class loader is used to load JDBC drivers from their locations.
+/**
+ * This class loader is used to load JDBC drivers from their locations.
+ * Needed since JDBC drivers can reside in arbitrary locations, which the
+ * system class loader does not know about.
  */
 public class DbURLClassLoader extends URLClassLoader {
     
