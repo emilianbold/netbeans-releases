@@ -370,8 +370,12 @@ public final class NbModuleProject implements Project {
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
         buildDefaults.put("junit.jar", findJunitJar(baseEval)); // NOI18N
         buildDefaults.put("nbjunit.jar", findNbJunitJar(baseEval)); // NOI18N
+        String insaneLibJar = findInsaneLibJar(baseEval);
+        if (insaneLibJar != null) {
+            buildDefaults.put("insanelib.jar", insaneLibJar); // NOI18N
+        }
         buildDefaults.put("test.unit.cp.extra", ""); // NOI18N
-        buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:${junit.jar}:${nbjunit.jar}:${test.unit.cp.extra}"); // NOI18N
+        buildDefaults.put("test.unit.cp", "${cp}:${cluster}/${module.jar}:${junit.jar}:${nbjunit.jar}:${insanelib.jar}:${test.unit.cp.extra}"); // NOI18N
         buildDefaults.put("test.unit.run.cp.extra", ""); // NOI18N
         buildDefaults.put("test.unit.run.cp", "${test.unit.cp}:${build.test.unit.classes.dir}:${test.unit.run.cp.extra}"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(buildDefaults));
@@ -410,6 +414,19 @@ public final class NbModuleProject implements Project {
         } else {
             // External module with no ref to nb.org sources.
             return "${netbeans.dest.dir}/" + path; // NOI18N
+        }
+    }
+    
+    /**
+     * Get an Ant location for the root of insanelib.jar.
+     * Currently will only work for netbeans.org modules.
+     */
+    private String findInsaneLibJar(PropertyEvaluator eval) {
+        File f = getNbrootFile("performance/insanelib/dist/insanelib.jar", eval); // NOI18N
+        if (f != null) {
+            return f.getAbsolutePath();
+        } else {
+            return null;
         }
     }
     

@@ -264,6 +264,7 @@ public class ClassPathProviderImplTest extends TestBase {
         // module JAR:
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-modules-autoupdate.jar"));
         expectedRoots.add(urlForJar("xtest/lib/junit.jar")); // note: in running IDE this is different! modules/ext/junit-3.8.1.jar
+        expectedRoots.add(urlForJar("performance/insanelib/dist/insanelib.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
@@ -286,6 +287,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar(EEP + "/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"));
         expectedRoots.add(urlForJar("xtest/lib/junit.jar")); // see note in testUnitTestClasspaths
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
+        expectedRoots.add(urlForJar("performance/insanelib/dist/insanelib.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
         // Now test in suite3, where there is no source...
         src = extexamples.getFileObject("suite3/dummy-project/test/unit/src");
@@ -448,6 +450,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(Util.urlForJar(file(copyOfSuite2, "build/cluster/modules/org-netbeans-examples-modules-misc.jar")).toExternalForm());
         expectedRoots.add(urlForJar("xtest/lib/junit.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar"));
+        expectedRoots.add(urlForJar("performance/insanelib/dist/insanelib.jar"));
         assertEquals("right initial COMPILE classpath", expectedRoots, urlsOfCp(cp));
         TestBase.TestPCL l = new TestBase.TestPCL();
         cp.addPropertyChangeListener(l);
