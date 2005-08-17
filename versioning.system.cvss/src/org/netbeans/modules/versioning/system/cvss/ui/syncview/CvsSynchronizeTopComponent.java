@@ -18,6 +18,7 @@ import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 
 import java.awt.BorderLayout;
 import java.io.*;
@@ -30,8 +31,10 @@ import java.util.*;
  */
 public class CvsSynchronizeTopComponent extends TopComponent implements Externalizable {
    
+    private static final long serialVersionUID = 1L;    
+    
     private SynchronizePanel        syncPanel;
-    private File []                 roots;
+    private Context                 context;
     private String                  contentTitle;
     private String                  branchTitle;
     private long                    lastUpdateTimestamp;
@@ -55,29 +58,15 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
 
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        if (roots == null) {
-            out.writeInt(-1);
-        } else {
-            out.writeInt(roots.length);
-            for (int i = 0; i < roots.length; i++) {
-                out.writeObject(roots[i]);
-            }
-        }
-        out.writeUTF(contentTitle == null ? "" : contentTitle);
+        out.writeObject(context);
+        out.writeObject(contentTitle);
         out.writeLong(lastUpdateTimestamp);
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
-        int n = in.readInt();
-        if (n != -1) {
-            roots = new File[n];
-            for (int i = 0; i < n; i++) {
-                roots[i] = (File) in.readObject();
-            }
-        }
-        contentTitle = in.readUTF();
-        if (contentTitle.length() == 0) contentTitle = null;
+        context = (Context) in.readObject();
+        contentTitle = (String) in.readObject();
         lastUpdateTimestamp = in.readLong();
         syncPanel.deserialize();
     }
@@ -94,7 +83,7 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private void refreshContent() {
         if (syncPanel == null) return;  // the component is not showing => nothing to refresh
         updateTitle();
-        syncPanel.setRoots(roots);        
+        syncPanel.setContext(context);        
     }
 
     /**
@@ -193,15 +182,15 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     /**
      * Sets files/folders the user wants to synchronize. They are typically activated (selected) nodes.
      * 
-     * @param roots array of files/folders to synchronize
+     * @param ctx new context of the Versioning view
      */
-    public void setRoots(File [] roots) {
-        this.roots = removeDuplicates(roots);
+    public void setContext(Context ctx) {
+        context = removeDuplicates(ctx);
         setBranchTitle(null);
         refreshContent();
     }
 
-    private File[] removeDuplicates(File[] roots) {
+    private List removeDuplicates(File [] roots) {
         List newFiles = new ArrayList();
         outter: for (int i = 0; i < roots.length; i++) {
             File file = roots[i];
@@ -214,12 +203,16 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
             }
             newFiles.add(file);
         }
-        return (File[]) newFiles.toArray(new File[newFiles.size()]);
+        return newFiles;
     }
 
+    private Context removeDuplicates(Context ctx) {
+        return new Context(removeDuplicates(ctx.getFiles()), removeDuplicates((File[]) ctx.getRoots().toArray(new File[0])), ctx.getExclusions());
+    }
+    
     /** Tests whether it shows some content. */
-    public boolean hasRoots() {
-        return roots != null && roots.length > 0;
+    public boolean hasContext() {
+        return context != null && context.getFiles().length > 0;
     }
 
     protected String preferredID() {

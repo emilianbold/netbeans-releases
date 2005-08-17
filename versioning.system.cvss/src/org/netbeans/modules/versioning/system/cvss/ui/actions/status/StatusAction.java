@@ -15,14 +15,11 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.status;
 
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
-import org.openide.util.NbBundle;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.*;
 
 /**
  * Opens the Versioning window.
@@ -42,10 +39,10 @@ public class StatusAction extends AbstractSystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        File [] roots = Utils.getActivatedFiles();
+        Context ctx = Utils.getCurrentContext();
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
         stc.setContentTitle(getContextDisplayName());
-        stc.setRoots(roots);
+        stc.setContext(ctx);
         stc.open(); 
         stc.requestActive();
         stc.performRefreshAction();

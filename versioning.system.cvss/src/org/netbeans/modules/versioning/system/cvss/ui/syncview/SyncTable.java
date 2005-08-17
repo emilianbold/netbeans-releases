@@ -293,7 +293,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Action revertAction;
         boolean allLocallyNew = true;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getActivatedFiles();
+        File [] files = Utils.getCurrentContext().getFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);

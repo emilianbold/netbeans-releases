@@ -17,6 +17,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.modules.versioning.system.cvss.ui.history.SearchHistoryTopComponent;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.util.NbBundle;
@@ -67,7 +68,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
      * @param date date of the change in question
      */ 
     public static void openSearch(String title, String commitMessage, String username, Date date) {
-        openSearch(getDefaultContext(), title, commitMessage, username, date);
+        openSearch(getDefaultContext().getFiles(), title, commitMessage, username, date);
     }
     
     private static void openSearch(File [] context, String title, String commitMessage, String username, Date date) {
@@ -85,9 +86,8 @@ public class SearchHistoryAction extends AbstractSystemAction  {
         tc.search();
     }
 
-    private static File[] getDefaultContext() {
+    private static Context getDefaultContext() {
         Project [] projects = OpenProjects.getDefault().getOpenProjects();
-        List list = Utils.getProjectsSources(projects);
-        return (File[]) list.toArray(new File[list.size()]);
+        return Utils.getProjectsContext(projects);
     }
 }

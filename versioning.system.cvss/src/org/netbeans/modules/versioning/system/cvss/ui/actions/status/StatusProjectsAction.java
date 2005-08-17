@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.status;
 
 import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.*;
 import org.openide.util.NbBundle;
@@ -23,7 +24,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileUtil;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 
 /**
  * Open the Versioning status view for all projects
@@ -53,7 +53,7 @@ public class StatusProjectsAction extends SystemAction {
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
         Project [] projects = OpenProjects.getDefault().getOpenProjects();
 
-        File [] roots = (File[]) Utils.getProjectsSources(projects).toArray(new File[0]);
+        Context ctx = Utils.getProjectsContext(projects);
         String title;
         if (projects.length == 1) {
             Project project = projects[0];
@@ -67,7 +67,7 @@ public class StatusProjectsAction extends SystemAction {
             title = NbBundle.getMessage(StatusProjectsAction.class, "CTL_StatusProjects_WindowTitle", Integer.toString(projects.length));
         }
         stc.setContentTitle(title);
-        stc.setRoots(roots);
+        stc.setContext(ctx);
         stc.open(); 
         stc.requestActive();
         if (shouldPostRefresh()) {

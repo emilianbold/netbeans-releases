@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.NoContentPanel;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
@@ -58,7 +59,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     private ExplorerManager             explorerManager;
     private final CvsSynchronizeTopComponent parentTopComponent;
     private final CvsVersioningSystem   cvs;
-    private File []                     rootFiles;
+    private Context                     context;
     private int                         displayStatuses;
     private boolean                     pendingRefresh;
     
@@ -113,17 +114,13 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         return cvs;
     }
 
-    File[] getRootFiles() {
-        return rootFiles;
-    }
-
     /**
      * Sets roots (directories) to display in the view.
      * 
-     * @param folders
+     * @param ctx new context if the Versioning panel
      */ 
-    void setRoots(File [] folders) {
-        this.rootFiles = folders;
+    void setContext(Context ctx) {
+        context = ctx;
         lastEventTimestamp = System.currentTimeMillis();
         reScheduleRefresh(0);
     }
@@ -193,7 +190,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      */
     private void setupModels() {
         if (lastEventTimestamp < flatModelTimestamp) return;
-        if (rootFiles == null) {
+        if (context == null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
@@ -203,7 +200,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         }
         final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(SynchronizePanel.class, "MSG_Refreshing_Versioning_View"));
         ph.start();
-        final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(rootFiles, displayStatuses));  // takes long
+        final SyncFileNode [] nodes = getNodes(cvs.getFileTableModel(context.getFiles(), displayStatuses));  // takes long
         if (nodes == null || Thread.interrupted()) {
             ph.finish();
             return;
@@ -264,7 +261,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * Performs the "cvs commit" command on all diplayed roots plus "cvs add" for files that are not yet added.
      */ 
     private void onCommitAction() {
-        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), rootFiles);
+        CommitAction.invokeCommit(parentTopComponent.getContentTitle(), context.getFiles());
     }
     
     /**
@@ -300,7 +297,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
      * In Local mode, the diff shows CURRENT <-> BASE differences. In Remote mode, it shows BASE<->HEAD differences. 
      */ 
     private void onDiffAction() {
-        DiffExecutor exec = new DiffExecutor(rootFiles, parentTopComponent.getContentTitle());
+        DiffExecutor exec = new DiffExecutor(context.getFiles(), parentTopComponent.getContentTitle());
         if (displayStatuses == FileInformation.STATUS_LOCAL_CHANGE) {
             exec.showLocalDiff();
         } else if (displayStatuses == FileInformation.STATUS_REMOTE_CHANGE) {
@@ -311,14 +308,14 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
     }
     
     private void executeUpdateCommand(boolean doNoChanges) {
-        if (rootFiles == null || rootFiles.length == 0) return;
+        if (context == null || context.getRoots().size() == 0) return;
         UpdateCommand cmd = new UpdateCommand();
         if (doNoChanges) {
             cmd.setDisplayName(NbBundle.getMessage(SynchronizePanel.class, "BK0001"));
         } else {
             cmd.setDisplayName(NbBundle.getMessage(SynchronizePanel.class, "BK0002"));
         }
-        cmd.setFiles(rootFiles);
+        cmd.setFiles(context.getFiles());
         cmd.setBuildDirectories(true);
         cmd.setPruneDirectories(true);
         GlobalOptions options = new GlobalOptions();

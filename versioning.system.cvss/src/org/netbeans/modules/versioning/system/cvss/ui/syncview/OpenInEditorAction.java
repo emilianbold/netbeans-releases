@@ -42,12 +42,12 @@ public class OpenInEditorAction extends AbstractAction {
     }
 
     private boolean isActionEnabled() {
-        File [] files = Utils.getActivatedFiles();
+        File [] files = Utils.getCurrentContext().getFiles();
         return files.length == 1 && files[0].canRead();
     }
 
     public void actionPerformed(ActionEvent e) {
-        File file = Utils.getActivatedFiles()[0];
+        File file = Utils.getCurrentContext().getFiles()[0];
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) return;
         try {

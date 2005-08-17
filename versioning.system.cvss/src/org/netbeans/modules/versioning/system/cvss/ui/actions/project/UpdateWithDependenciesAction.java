@@ -106,7 +106,8 @@ public final class UpdateWithDependenciesAction extends NodeAction {
     }
 
     private static void addProjectFiles(Collection files, Project project) {
-        Utils.addProjectFiles(files, project);
+        // TODO: use Context instead of list of files, especialy here in Update command
+        Utils.addProjectFiles(files, new ArrayList(), new ArrayList(), project);
         SubprojectProvider deps = (SubprojectProvider) project.getLookup().lookup(SubprojectProvider.class);
         Iterator it = deps.getSubprojects().iterator();
         while (it.hasNext()) {

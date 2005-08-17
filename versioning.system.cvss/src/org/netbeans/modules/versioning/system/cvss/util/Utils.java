@@ -47,8 +47,8 @@ import java.beans.PropertyChangeEvent;
 public class Utils {
 
     private static int      activatedNodesSerial;
-    private static int      activatedFilesSerial = -1;
-    private static File []  activatedFilesCached;
+    private static int      currentContextSerial = -1;
+    private static Context  contextCached;
     private static ActivatedNodesListener anl = new ActivatedNodesListener();
 
     static {
@@ -63,30 +63,36 @@ public class Utils {
      *   
      * @return File [] array of activated files 
      */ 
-    public static File [] getActivatedFiles() {
+    public static Context getCurrentContext() {
         int nodesSerial = activatedNodesSerial;
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
-        if (activatedFilesSerial == nodesSerial) return activatedFilesCached;
+        if (currentContextSerial == nodesSerial) return contextCached;
         List files = new ArrayList(nodes.length);
+        List rootFiles = new ArrayList(nodes.length);
+        List rootFileExclusions = new ArrayList(5);
+        rootFileExclusions.add(new File("F:\\nbprojects\\cvstests\\src\\cvstests\\piwe")); // TODO: for testing
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             CvsFileNode cvsNode = (CvsFileNode) node.getLookup().lookup(CvsFileNode.class);
             if (cvsNode != null) {
                 files.add(cvsNode.getFile());
+                rootFiles.add(cvsNode.getFile());
                 continue;
             }
             Project project =  (Project) node.getLookup().lookup(Project.class);
             if (project != null) {
-                addProjectFiles(files, project);
+                addProjectFiles(files, rootFiles, rootFileExclusions, project);
                 continue;
             }
-            addFileObjects(node, files);
+            addFileObjects(node, files, rootFiles);
         }
-        activatedFilesCached = (File[]) files.toArray(new File[files.size()]);
-        activatedFilesSerial = nodesSerial;
-        return activatedFilesCached;
+        
+        contextCached = new Context(files, rootFiles, rootFileExclusions);
+        currentContextSerial = nodesSerial;
+        return contextCached;
     }
 
+    
     /**
      * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
      * method returns File objects instead od Nodes. Every node is examined for Files it represents. File and Folder
@@ -97,19 +103,20 @@ public class Utils {
      * @param includingFolderStatus if any activated folder does not have this CVS status, an empty array is returned   
      * @return File [] array of activated files, or an empty array if any of examined files/folders does not have given status
      */ 
-    public static File [] getActivatedFiles(int includingFileStatus, int includingFolderStatus) {
-        File [] files = getActivatedFiles();
+    public static Context getCurrentContext(int includingFileStatus, int includingFolderStatus) {
+        Context context = getCurrentContext();
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        File [] files = context.getFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation fi = cache.getStatus(file);
             if (file.isDirectory()) {
-                if ((fi.getStatus() & includingFolderStatus) == 0) return new File[0];
+                if ((fi.getStatus() & includingFolderStatus) == 0) return Context.Empty;
             } else {
-                if ((fi.getStatus() & includingFileStatus) == 0) return new File[0];
+                if ((fi.getStatus() & includingFileStatus) == 0) return Context.Empty;
             }
         }
-        return files;
+        return context;
     }
 
     /**
@@ -141,7 +148,7 @@ public class Utils {
         return false;
     }
 
-    private static void addFileObjects(Node node, List files) {
+    private static void addFileObjects(Node node, List files, List rootFiles) {
         Collection folders = node.getLookup().lookup(new Lookup.Template(NonRecursiveFolder.class)).allInstances();
         List nodeFiles = new ArrayList();
         if (folders.size() > 0) {
@@ -165,15 +172,16 @@ public class Utils {
             }
         }
         files.addAll(nodeFiles);
+        rootFiles.addAll(nodeFiles);
     }
 
     /**
      * Determines all files and folders that belong to a given project and adds them to the supplied Collection.
      *
-     * @param files destination collection of Files
+     * @param filteredFiles destination collection of Files
      * @param project project to examine
      */
-    public static void addProjectFiles(Collection files, Project project) {
+    public static void addProjectFiles(Collection filteredFiles, Collection rootFiles, Collection rootFilesExclusions, Project project) {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
@@ -187,35 +195,40 @@ public class Utils {
                 // the folder is not under a versioned root
                 continue;
             }
+            rootFiles.add(rootFile);
             boolean containsSubprojects = false;
             FileObject [] rootChildren = srcRootFo.getChildren();
             Set projectFiles = new HashSet(rootChildren.length);
             for (int i = 0; i < rootChildren.length; i++) {
                 FileObject rootChildFo = rootChildren[i];
                 if (CvsVersioningSystem.FILENAME_CVS.equals(rootChildFo.getNameExt())) continue;
+                File child = FileUtil.toFile(rootChildFo);
                 if (sourceGroup.contains(rootChildFo)) {
-                    projectFiles.add(FileUtil.toFile(rootChildFo));
+                    projectFiles.add(child);
                 } else {
-                    int status = cache.getStatus(FileUtil.toFile(rootChildFo)).getStatus();
+                    int status = cache.getStatus(child).getStatus();
                     if (status != FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                        rootFilesExclusions.add(child);
                         containsSubprojects = true;
                     }
                 }
             }
             if (containsSubprojects) {
-                files.addAll(projectFiles);
+                filteredFiles.addAll(projectFiles);
             } else {
-                files.add(rootFile);
+                filteredFiles.add(rootFile);
             }
         }
     }
 
-    public static List getProjectsSources(Project [] projects) {
+    public static Context getProjectsContext(Project [] projects) {
+        List filtered = new ArrayList(); 
         List roots = new ArrayList();
+        List exclusions = new ArrayList(); 
         for (int i = 0; i < projects.length; i++) {
-            addProjectFiles(roots, projects[i]);
+            addProjectFiles(filtered, roots, exclusions, projects[i]);
         }
-        return roots;
+        return new Context(filtered, roots, exclusions);
     }
 
     private static Collection toFileCollection(Collection fileObjects) {

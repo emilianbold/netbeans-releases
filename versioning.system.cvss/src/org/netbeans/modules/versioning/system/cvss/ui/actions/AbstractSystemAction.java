@@ -73,7 +73,7 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
             return NbBundle.getBundle(this.getClass()).getString(baseName);
         }
 
-        File [] nodes = Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
+        File [] nodes = Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -134,7 +134,7 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
      */ 
     public String getContextDisplayName() {
         // TODO: reuse this code in getName() 
-        File [] nodes = Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
+        File [] nodes = Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
         int objectCount = nodes.length;
         // if all nodes represent project node the use plain name
         // It avoids "Show changes 2 files" on project node
@@ -195,7 +195,7 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
      * @return files to act on or empty array if this action should be disabled.
      */
     protected File [] getFilesToProcess() {
-        return Utils.getActivatedFiles(getFileEnabledStatus(), getDirectoryEnabledStatus());
+        return Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
     }
 
     public boolean isEnabled() {

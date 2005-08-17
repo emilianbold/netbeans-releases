@@ -49,7 +49,7 @@ public class IgnoreAction extends AbstractSystemAction {
     public int getActionStatus() {
         int actionStatus = -1;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        File [] files = Utils.getActivatedFiles();
+        File [] files = Utils.getCurrentContext().getFiles();
         for (int i = 0; i < files.length; i++) {
             if (files[i].getName().equals(".cvsignore")) {
                 actionStatus = UNDEFINED;
@@ -79,9 +79,9 @@ public class IgnoreAction extends AbstractSystemAction {
     public void actionPerformed(ActionEvent ev) {
         int actionStatus = getActionStatus();
         if (actionStatus == IGNORING) {
-            CvsVersioningSystem.getInstance().setIgnored(Utils.getActivatedFiles());
+            CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext().getFiles());
         } else if (actionStatus == UNIGNORING) {
-            CvsVersioningSystem.getInstance().setNotignored(Utils.getActivatedFiles());
+            CvsVersioningSystem.getInstance().setNotignored(Utils.getCurrentContext().getFiles());
         } else {
             throw new RuntimeException("Invalid action status: " + actionStatus);
         }

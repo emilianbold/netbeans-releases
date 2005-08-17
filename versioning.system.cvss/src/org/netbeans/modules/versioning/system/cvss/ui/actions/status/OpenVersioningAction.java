@@ -18,7 +18,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
 import java.awt.event.ActionEvent;
-import java.util.*;
 
 /**
  * Open the Versioning view. It focuses recently opened
@@ -45,7 +44,7 @@ public class OpenVersioningAction extends StatusProjectsAction {
 
     public void actionPerformed(ActionEvent e) {
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
-        if (stc.hasRoots() == false) {
+        if (stc.hasContext() == false) {
             super.actionPerformed(e);
         } else {
             stc.open();

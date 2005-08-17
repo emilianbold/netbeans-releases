@@ -284,7 +284,7 @@ public class Annotator {
      * will act on currently activated nodes.
      */ 
     public static Action [] getActions() {
-        File [] files = Utils.getActivatedFiles();
+        File [] files = Utils.getCurrentContext().getFiles();
         ResourceBundle loc = NbBundle.getBundle(Annotator.class);
         if (onlyFolders(files)) {
             return new Action [] {
