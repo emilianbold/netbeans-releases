@@ -195,7 +195,9 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/ui</project>
                 <project>../core/windows</project>
                 <project>../db</project>
+                <project>../db/core</project>
                 <project>../db/model</project>
+                <project>../db/sqleditor</project>
                 <project>../debuggercore</project>
                 <project>../debuggercore/api</project>
                 <project>../debuggercore/viewmodel</project>
@@ -301,12 +303,12 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../refactoring</project>
                 <project>../schema2beans/rt</project>
                 <project>../serverplugins/jboss4</project>
-                <project>../serverplugins/weblogic9</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
                 <project>../serverplugins/sun/appsrvbridge</project>
                 <project>../serverplugins/sun/sunddapi</project>
                 <project>../serverplugins/sun/sunddui</project>
+                <project>../serverplugins/weblogic9</project>
                 <project>../tasklist/api</project>
                 <project>../tasklist/core</project>
                 <project>../tasklist/docscan</project>
@@ -342,6 +344,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../xml/css</project>
                 <project>../xml/multiview</project>
                 <project>../xml/schema</project>
+                <project>../xml/tageditorsupport</project>
                 <project>../xml/tax</project>
                 <project>../xml/text-edit</project>
                 <project>../xml/tools</project>
