@@ -386,17 +386,6 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
     }
     
-    /** Initialize the editor. This method is called after the editor component
-     * is deserialized and also when the component is created. It allows
-     * the subclasses to annotate the component with icon, selected nodes, etc.
-     *
-     * @param editor the editor that has been created and should be annotated
-     */
-    protected void initializeCloneableEditor(CloneableEditor editor) {
-        if (editor instanceof BaseJspEditor)
-            ((BaseJspEditor) editor).associatePalette(this);
-    }
-
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link BaseJspEditor} for this support
      */
@@ -470,7 +459,8 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                     PaletteController pc = JSPPaletteFactory.getPalette();
                     Lookup pcl = Lookups.singleton(pc);
                     Lookup anl = getActivatedNodes()[0].getLookup();
-                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, pcl });
+                    Lookup actionMap = Lookups.singleton(getActionMap());
+                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, actionMap, pcl });
                     associateLookup(l);
                 } 
                 catch (IOException ioe) {
@@ -510,7 +500,9 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 }
             };
 //            getActionMap().put("org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction", new ToggleBreakpointAction()); // NOI18N  
+            associatePalette((BaseJspEditorSupport)cloneableEditorSupport());
         }
+        
         
         /**
          * Locally bound action to toggle breakpoint on the current line.
