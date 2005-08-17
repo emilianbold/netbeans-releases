@@ -22,6 +22,8 @@ import com.installshield.wizard.WizardBeanEvent;
 import com.installshield.wizard.WizardBuilderSupport;
 import com.installshield.wizard.service.ServiceException;
 
+import org.netbeans.installer.Util;
+
 /** This class is used to initialize some system properties at beginning
  * of installation.
  */

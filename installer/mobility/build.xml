@@ -132,7 +132,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="${ismp.project}-unix-ml.uip"/>
   </target>
   
-  <target name="compile" depends="init" description="compile custom beans and panels">
+  <target name="compile" depends="init, build-library" description="compile custom beans and panels">
     <mkdir dir="build/classes"/>
     
     <javac destdir="build/classes" srcdir="src" source="1.4" target="1.4" debug="true" deprecation="true">
@@ -145,6 +145,16 @@ Microsystems, Inc. All Rights Reserved.
             <include name="**/*.properties"/>
         </fileset>
     </copy>
+  </target>
+
+  <!-- Build library -->
+  <target name="build-library" description="compile shared library">
+    <ant dir="../lib" target="jar" inheritAll="false"/>
+  </target>
+
+  <!-- Clean library -->
+  <target name="clean-library" description="clean shared library">
+    <ant dir="../lib" target="clean" inheritAll="false"/>
   </target>
 
   <target name="run" depends="init" description="run the installer">
