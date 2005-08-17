@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NewLibraryDescriptor.createIterator" name="instantiatingIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/libraries.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/emptyLibraryDescriptor.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.NewLoaderIterator.createIterator" name="instantiatingIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.loader.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/objectTypes.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>            
