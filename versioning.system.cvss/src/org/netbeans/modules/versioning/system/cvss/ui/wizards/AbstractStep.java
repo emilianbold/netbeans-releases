@@ -35,7 +35,7 @@ import java.awt.*;
  *
  * @author Petr Kuzel
  */
-abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
+public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
 
     private List listeners = new LinkedList();
     private boolean valid;
@@ -66,7 +66,10 @@ abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
                     template.setRows(25);
                     panel.setPreferredSize(template.getPreferredSize());
                 }
+            } catch (RuntimeException ex) {
+                ex.printStackTrace();
             } finally {
+                assert panel != null;
                 underConstruction = false;
                 fireChange();
             }
@@ -74,6 +77,9 @@ abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         return panel;
     }
 
+    /**
+     * @return must not return null
+     */
     protected abstract JComponent createComponent();
 
     public HelpCtx getHelp() {

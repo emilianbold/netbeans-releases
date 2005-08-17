@@ -28,7 +28,7 @@ import java.io.IOException;
  *
  * @author Petr Kuzel
  */
-final class Kit implements Client.Factory {
+public final class Kit implements Client.Factory {
 
     private CVSRoot factory_cvsRoot;
     private ProxyDescriptor factory_proxy;

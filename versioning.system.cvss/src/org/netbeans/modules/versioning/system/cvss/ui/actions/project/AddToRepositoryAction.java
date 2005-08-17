@@ -19,38 +19,46 @@ import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.ErrorManager;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.*;
 import org.openide.xml.XMLUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
-import org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep;
+import org.netbeans.modules.versioning.system.cvss.ui.wizards.AbstractStep;
+import org.netbeans.modules.versioning.system.cvss.ui.selectors.Kit;
 import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
-import org.netbeans.lib.cvsclient.CVSRoot;
-import org.netbeans.lib.cvsclient.connection.PasswordsFile;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import java.io.*;
-import java.awt.*;
 import java.util.*;
+import java.text.MessageFormat;
 
 /**
  * Imports project into CVS repository.
  *
  * @author Petr Kuzel
  */
-public final class AddToRepositoryAction extends NodeAction {
+public final class AddToRepositoryAction extends NodeAction implements ChangeListener {
+
+
+    private WizardDescriptor wizard;
+
+    private WizardDescriptor.Iterator wizardIterator;
+
+    private String errorMessage;
+
+    private RepositoryStep repositoryStep;
+    private ImportStep importStep;
 
     public AddToRepositoryAction() {
         setIcon(null);
@@ -77,7 +85,7 @@ public final class AddToRepositoryAction extends NodeAction {
                         File importDirectory = FileUtil.toFile(root);
                         if (importDirectory != null) {
 
-                            // try to detect some resonable defaults for cvs root and repository
+                            // try to detect some resonable defaults for cvs root and repositoryStep
 
                             File parent = importDirectory.getParentFile();
                             File parent_cvsRoot = new File(parent, "CVS/Root");  // NOI18N
@@ -119,89 +127,54 @@ public final class AddToRepositoryAction extends NodeAction {
                                 }
                             }
 
-                            final ImportPanel importPanel = new ImportPanel();
-                            if (cvsRepository != null) {
-                                importPanel.moduleTextField.setText(cvsRepository + "/" + root.getName());
-                            } else {
-                                importPanel.moduleTextField.setText(root.getName());
-                            }
-
-                            Set roots = new LinkedHashSet(HistorySettings.getRecent(HistorySettings.PROP_CVS_ROOTS));
-                            roots.addAll(CvsRootSettings.listCvsRoots());
-                            roots.addAll(PasswordsFile.listRoots(":pserver:"));  // NOI18N
-                            // templates for supported connection methods
-                            String user = System.getProperty("user.name", ""); // NOI18N
-                            if (user.length() > 0) user += "@"; // NOI18N
-                            roots.add(":pserver:" + user);  // NOI18N
-                            roots.add(":ext:" + user); // NOI18N
-                            roots.add(":fork:"); // NOI18N
-                            roots.add(":local:"); // NOI18N
-                            Vector vector = new Vector();
+                            String prefRoot;
                             if (cvsRoot != null) {
-                                vector.add(cvsRoot);
+                                prefRoot = cvsRoot;
                             } else {
-                                String txt = NbBundle.getMessage(AddToRepositoryAction.class, "BK0008");
-                                vector.add(txt);
+                                prefRoot = NbBundle.getMessage(AddToRepositoryAction.class, "BK0008");
                             }
-                            vector.addAll(roots);
-                            DefaultComboBoxModel model = new DefaultComboBoxModel(vector);
-                            importPanel.rootComboBox.setModel(model);
-                            importPanel.rootComboBox.getEditor().selectAll();
 
-                            importPanel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
+                            String prefModule;
+                            if (cvsRepository != null) {
+                                prefModule = cvsRepository + "/" + root.getName();
+                            } else {
+                                prefModule = root.getName();
+                            }
 
+                            wizardIterator = panelIterator(prefRoot, prefModule, importDirectory.getAbsolutePath());
+                            wizard = new WizardDescriptor(wizardIterator);
+                            wizard.putProperty("WizardPanel_contentData",  // NOI18N
+                                    new String[] {
+                                        "CVS Root",
+                                        "Folder to Import"
+                                    }
+                            );
+                            wizard.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);  // NOI18N
+                            wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOi18N
+                            wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOi18N
+                            wizard.setTitleFormat(new MessageFormat("{0}"));
                             String title = NbBundle.getMessage(AddToRepositoryAction.class, "BK0007");
-                            final DialogDescriptor descriptor = new DialogDescriptor(importPanel, title);
-                            descriptor.setModal(true);
+                            wizard.setTitle(title);
 
-                            FileObject checkoutFolder = project.getProjectDirectory();
-                            String parentPath = FileUtil.toFile(checkoutFolder.getParent()).getAbsolutePath();
-                            String freeName = FileUtil.findFreeFolderName(checkoutFolder.getParent(), "versioned_" + checkoutFolder.getName());
-                            importPanel.workdirTextField.setText(parentPath + File.separator + freeName);
+                            Object result = DialogDisplayer.getDefault().notify(wizard);
+                            if (result == DialogDescriptor.OK_OPTION) {
 
-                            // user input validation
-                            DocumentListener validation = new DocumentListener() {
-                                public void changedUpdate(DocumentEvent e) {
-                                }
-                                public void insertUpdate(DocumentEvent e) {
-                                    checkInput(importPanel, descriptor);
-                                }
-                                public void removeUpdate(DocumentEvent e) {
-                                    checkInput(importPanel, descriptor);
-                                }
-                            };
-                            importPanel.moduleTextField.getDocument().addDocumentListener(validation);
-                            importPanel.commentTextArea.getDocument().addDocumentListener(validation);
-                            importPanel.workdirTextField.getDocument().addDocumentListener(validation);
-                            Component editor = importPanel.rootComboBox.getEditor().getEditorComponent();
-                            JTextComponent textEditor = (JTextComponent) editor;
-                            textEditor.getDocument().addDocumentListener(validation);
-                            checkInput(importPanel, descriptor);
-
-                            Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-                            dialog.show();
-                            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-
-                                boolean checkout = importPanel.checkoutCheckBox.isSelected();
-                                String workDir = importPanel.workdirTextField.getText();
-                                String logMessage = importPanel.commentTextArea.getText();
-                                String module = importPanel.moduleTextField.getText();
+                                boolean checkout = importStep.getCheckout();
+                                String logMessage = importStep.getMessage();
+                                String module = importStep.getModule();
                                 String vendorTag = "default_vendor";
                                 String releaseTag = "default_release";
-                                String selectedRoot = (String) importPanel.rootComboBox.getSelectedItem();
+                                String selectedRoot = repositoryStep.getCvsRoot();
+                                String folder = importStep.getFolder();
+                                File dir = new File(folder);
 
                                 HistorySettings.addRecent(HistorySettings.PROP_CVS_ROOTS, selectedRoot);
 
-                                if (checkout) {
-                                    Project[] closeCurrent = new Project[] {project};
-                                    OpenProjects.getDefault().close(closeCurrent);
-                                }
-
                                 try {
-                                    ignorePrivateMetadata(project);
+                                    prepareIgnore(dir);
                                 } catch (IOException e) {
                                     ErrorManager err = ErrorManager.getDefault();
-                                    err.annotate(e, "Can not setup .cvsignore for project's private metadata!");
+                                    err.annotate(e, "Can not generate .cvsignore for unshareable files!");
                                     err.notify(e);
                                 }
 
@@ -213,7 +186,8 @@ public final class AddToRepositoryAction extends NodeAction {
                                 importCommand.setVendorTag(vendorTag);
                                 importCommand.setReleaseTag(releaseTag);
                                 importCommand.setImportDirectory(importDirectory.getPath());
-                                ImportExecutor executor = new ImportExecutor(importCommand, gtx, checkout, workDir);
+
+                                ImportExecutor executor = new ImportExecutor(importCommand, gtx, checkout, folder);
                                 executor.execute();
                             }
 
@@ -241,33 +215,131 @@ public final class AddToRepositoryAction extends NodeAction {
         }
     }
 
-    private static void checkInput(ImportPanel importPanel, DialogDescriptor descriptor) {
-        String module = importPanel.moduleTextField.getText().trim();
-        boolean valid = module.length() > 0;
-        valid &= module.indexOf(" ") == -1;  // NOI18N
-        valid &= importPanel.commentTextArea.getText().trim().length() > 0;
-        String root = (String) importPanel.rootComboBox.getEditor().getItem();
-        boolean supportedMethod = root.startsWith(":pserver:"); // NOI18N
-        supportedMethod |= root.startsWith(":local:"); // NOI18N
-        supportedMethod |= root.startsWith(":fork:"); // NOI18N
-        supportedMethod |= root.startsWith(":ext:"); // NOI18N
-        valid &= supportedMethod;
+    private WizardDescriptor.Iterator panelIterator(String root, String module, String folder) {
+        repositoryStep = new RepositoryStep();
+        repositoryStep.initPreferedCvsRoot(root);
+        repositoryStep.addChangeListener(this);
+        importStep = new ImportStep(module, folder);
+        importStep.addChangeListener(this);
 
-        try {
-            CVSRoot cvsRoot = CVSRoot.parse(root);
-            if (cvsRoot.isLocal()) {
-                // XXX :fork: usually works on UNIXes only
-                valid &= cvsRoot.getRepository().length() > 1 && cvsRoot.getRepository().startsWith("/"); // NOI18N
+        final WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
+        panels[0] = repositoryStep;
+        panels[1] = importStep;
+
+        WizardDescriptor.ArrayIterator ret = new WizardDescriptor.ArrayIterator(panels) {
+            public WizardDescriptor.Panel current() {
+                WizardDescriptor.Panel ret = super.current();
+                for (int i = 0; i<panels.length; i++) {
+                    if (panels[i] == ret) {
+                        wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(i));  // NOI18N
+                    }
+                }
+                return ret;
             }
-        } catch (IllegalArgumentException ex) {
-            valid = false;
+        };
+        return ret;
+    }
+
+    private void setErrorMessage(String msg) {
+        errorMessage = msg;
+        if (wizard != null) {
+            wizard.putProperty("WizardPanel_errorMessage", msg); // NOI18N
+        }
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        AbstractStep step = (AbstractStep) wizardIterator.current();
+        setErrorMessage(step.getErrorMessage());
+    }
+
+    class ImportStep extends AbstractStep {
+        private final String module;
+        private final String folder;
+        private ImportPanel importPanel;
+
+        public ImportStep(String module, String folder) {
+            this.module = module;
+            this.folder = folder;
         }
 
-        if (importPanel.checkoutCheckBox.isSelected()) {
-            File file = new File(importPanel.workdirTextField.getText());
-            valid &= file.exists() == false;
+        protected JComponent createComponent() {
+            importPanel = new ImportPanel();
+            importPanel.moduleTextField.setText(module);
+            importPanel.folderTextField.setText(folder);
+
+            // user input validation
+            DocumentListener validation = new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    String s = checkInput(importPanel);
+                    if (s == null) {
+                        valid();
+                    } else {
+                        invalid(s);
+                    }
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    String s = checkInput(importPanel);
+                    if (s == null) {
+                        valid();
+                    } else {
+                        invalid(s);
+                    }
+                }
+            };
+            importPanel.moduleTextField.getDocument().addDocumentListener(validation);
+            importPanel.commentTextArea.getDocument().addDocumentListener(validation);
+            importPanel.folderTextField.getDocument().addDocumentListener(validation);
+
+            String s = checkInput(importPanel);
+            if (s == null) {
+                valid();
+            } else {
+                invalid(s);
+            }
+
+            return importPanel;
         }
-        descriptor.setValid(valid);
+
+        protected void validateBeforeNext() {
+        }
+
+        public boolean getCheckout() {
+            return importPanel.checkoutCheckBox.isSelected();
+        }
+
+        public String getMessage() {
+            return importPanel.commentTextArea.getText();
+        }
+
+        public String getModule() {
+            return importPanel.moduleTextField.getText();
+        }
+
+        public String getFolder() {
+            return importPanel.folderTextField.getText();
+        }
+
+    }
+
+    private static String checkInput(ImportPanel importPanel) {
+        boolean valid = true;
+
+        File file = new File(importPanel.folderTextField.getText());
+        valid &= file.isDirectory();
+        if (!valid) return "Folder must exist";
+
+        valid &= importPanel.commentTextArea.getText().trim().length() > 0;
+        if (!valid) return "Message required";
+
+        String module = importPanel.moduleTextField.getText().trim();
+        valid &= module.length() > 0;
+        if (!valid) return "Specify module";
+        valid &= module.indexOf(" ") == -1;  // NOI18N
+        if (!valid) return "Invalid module name";
+
+        return null;
     }
 
     private static String escape(String path) {
@@ -279,12 +351,6 @@ public final class AddToRepositoryAction extends NodeAction {
             err.notify(e);
         }
         return NbBundle.getMessage(AddToRepositoryAction.class, "BK0005");
-    }
-
-    private void ignorePrivateMetadata(Project project) throws IOException {
-        FileObject projectFolder = project.getProjectDirectory();
-        File projectDir = FileUtil.toFile(projectFolder);
-        prepareIgnore(projectDir);
     }
 
     private void prepareIgnore(File dir) throws IOException {

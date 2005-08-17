@@ -40,6 +40,8 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.Vector;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.InetSocketAddress;
@@ -53,7 +55,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * @author Petr Kuzel
  */
-class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, ActionListener, DocumentListener {
+public final class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, ActionListener, DocumentListener {
 
     private RequestProcessor.Task updatePasswordTask;
     private volatile boolean passwordExpected;
@@ -68,9 +70,27 @@ class RepositoryStep extends AbstractStep implements WizardDescriptor.Asynchrono
     private ProxyDescriptor proxyDescriptor;
     private String scrambledPassword;
     private final String initialCvsRoot;
+    private String preferedCvsRoot;
 
+    /**
+     * Creates multiple roots customizer. 
+     */
+    public RepositoryStep() {
+        initialCvsRoot = null;
+    }
+
+    /**
+     * Creates single root customizer
+     */
     public RepositoryStep(String root) {
         initialCvsRoot = root;
+    }
+
+    /**
+     * Preselected cvs root (first in list).
+     */
+    public void initPreferedCvsRoot(String root) {
+        preferedCvsRoot = root;
     }
 
     protected JComponent createComponent() {
@@ -97,7 +117,11 @@ class RepositoryStep extends AbstractStep implements WizardDescriptor.Asynchrono
 
         // roots combo setup, keeping history
 
-        Vector recentRoots = new Vector(HistorySettings.getRecent(HistorySettings.PROP_CVS_ROOTS));
+        Set recentRoots = new LinkedHashSet();
+        if (preferedCvsRoot != null) {
+            recentRoots.add(preferedCvsRoot);
+        }
+        recentRoots.addAll(HistorySettings.getRecent(HistorySettings.PROP_CVS_ROOTS));
         if (initialCvsRoot != null) {
             // it's first => initially selected
             recentRoots.add(initialCvsRoot);
@@ -117,7 +141,7 @@ class RepositoryStep extends AbstractStep implements WizardDescriptor.Asynchrono
         recentRoots.add(":fork:"); // NOI18N
         recentRoots.add(":local:"); // NOI18N
 
-        ComboBoxModel rootsModel = new DefaultComboBoxModel(recentRoots);
+        ComboBoxModel rootsModel = new DefaultComboBoxModel(new Vector(recentRoots));
         repositoryPanel.rootComboBox.setModel(rootsModel);
         repositoryPanel.rootComboBox.addActionListener(this);
         Component editor = repositoryPanel.rootComboBox.getEditor().getEditorComponent();
@@ -146,6 +170,14 @@ class RepositoryStep extends AbstractStep implements WizardDescriptor.Asynchrono
 
         valid();
         onCvsRootChange();
+
+        if (initialCvsRoot != null) {
+            boolean chooserVisible = false;
+            repositoryPanel.headerLabel.setVisible(chooserVisible);
+            repositoryPanel.rootsLabel.setVisible(chooserVisible);
+            repositoryPanel.rootComboBox.setVisible(chooserVisible);
+            repositoryPanel.descLabel.setVisible(chooserVisible);
+        }
 
         return repositoryPanel;
     }

@@ -82,20 +82,22 @@ public final class CheckoutAction extends SystemAction {
         String modules = wizard.getModules();
         String workDir = wizard.getWorkingDir();
         String cvsRoot = wizard.getCvsRoot();
-        checkout(cvsRoot, modules, tag, workDir, false);
+        checkout(cvsRoot, modules, tag, workDir, true);
     }
 
 
     /**
-     * Perform checkout action with preconfigured values.
+     * Perform asynchronous checkout action with preconfigured values.
      * On succesfull finish shows open project dialog.
      *
      * @param modules comma separated list of modules
      * @param tag branch name of <code>null</code> for trunk
      * @param workingDir target directory
-     * @param openProject if true scan folder for projects and show UI
+     * @param scanProject if true scan folder for projects and show UI (subject of global setting)
+     *
+     * @return async executor
      */
-    public void checkout(String cvsRoot, String modules, String tag, String workingDir, boolean openProject) {
+    public CheckoutExecutor checkout(String cvsRoot, String modules, String tag, String workingDir, boolean scanProject) {
         CheckoutCommand cmd = new CheckoutCommand();
 
         String moduleString = modules;
@@ -135,9 +137,11 @@ public final class CheckoutAction extends SystemAction {
         CheckoutExecutor executor = new CheckoutExecutor(cvs, cmd, gtx);
 
         executor.execute();
-        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 || openProject) {
-            executor.addTaskListener(new CheckoutCompletedController(executor, workingFolder, openProject));
+        if (HistorySettings.getFlag(HistorySettings.PROP_SHOW_CHECKOUT_COMPLETED, -1) != 0 && scanProject) {
+            executor.addTaskListener(new CheckoutCompletedController(executor, workingFolder, scanProject));
         }
+
+        return executor;
     }
 
     /** On task finish shows next steps UI.*/

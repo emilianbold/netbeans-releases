@@ -296,6 +296,7 @@ public abstract class ExecutorSupport implements CVSListener  {
         descriptor.setClosingOptions(null);
 
 
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cause);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         boolean retry = false;

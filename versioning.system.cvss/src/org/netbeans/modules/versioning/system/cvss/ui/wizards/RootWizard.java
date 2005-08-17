@@ -49,12 +49,6 @@ public final class RootWizard {
      */
     public JPanel getPanel() {
         RepositoryPanel repositoryPanel = (RepositoryPanel) repositoryStep.getComponent();
-        boolean chooserVisible = false;
-        repositoryPanel.headerLabel.setVisible(chooserVisible);
-        repositoryPanel.rootsLabel.setVisible(chooserVisible);
-        repositoryPanel.rootComboBox.setVisible(chooserVisible);
-        repositoryPanel.descLabel.setVisible(chooserVisible);
-
         return repositoryPanel;
     }
 
