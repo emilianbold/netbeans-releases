@@ -237,7 +237,7 @@ public class JellyConstants {
    //================ Index for tables ==================//
    
    //Wrapper Attribute and Operations table columns
-   public static final int INCLUDE_COL = 0;
+   public static final int EXPOSE_COL = 0;
    public static final int ACCESS_COL = 3;
    public static final int PARAM_COL = 3;
    public static final int EXCEP_COL = 4;
