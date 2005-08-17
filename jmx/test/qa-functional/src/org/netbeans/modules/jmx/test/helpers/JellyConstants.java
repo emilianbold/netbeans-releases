@@ -209,8 +209,12 @@ public class JellyConstants {
             
    //============== Types ============================//
    public static final String INT_TYPE = "int";
+   public static final String INT_TYPE_FULL = "java.lang.Integer";
    public static final String DATE_TYPE = "Date";
+   public static final String DATE_TYPE_FULL = "java.util.Date";
    public static final String STR_TYPE = "String";
+   public static final String STR_TYPE_FULL = "java.lang.String";
+   public static final String STR_ARRAY_TYPE_FULL = "java.lang.String[]";
    public static final String BOOL_TYPE = "boolean";
    public static final String BYTE_TYPE = "byte";
    public static final String CHAR_TYPE = "char";
@@ -218,7 +222,9 @@ public class JellyConstants {
    public static final String OBJNAME_TYPE = "ObjectName";
    public static final String FLOAT_TYPE = "float";
    public static final String DOUBLE_TYPE = "double";
+   public static final String DOUBLE_TYPE_FULL = "java.lang.Double";
    public static final String VOID_TYPE = "void";
+   public static final String LIST_TYPE_FULL = "java.util.List";
    
    //============== Access ============================//
    public static final String RO = "ReadOnly";
@@ -229,15 +235,6 @@ public class JellyConstants {
    public static final String OPCLASS_TO_WRAP = "WrappedOperation";
    
    //================ Index for tables ==================//
-   
-   //Lines
-   public static final int LINE_ZERO = 0;
-   public static final int LINE_ONE = 1;
-   public static final int LINE_TWO = 2;
-   public static final int LINE_THREE = 3;
-   public static final int LINE_FOUR = 4;
-   public static final int LINE_FIVE = 5;
-   public static final int LINE_SIX = 6;
    
    //Wrapper Attribute and Operations table columns
    public static final int INCLUDE_COL = 0;
