@@ -15,6 +15,7 @@
 package org.netbeans.modules.html;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
 import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.SequenceInputStream;
@@ -37,11 +38,14 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 
 
@@ -262,17 +266,6 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     } // End of nested Environment class.
 
     
-    /** Initialize the editor. This method is called after the editor component
-     * is deserialized and also when the component is created. It allows
-     * the subclasses to annotate the component with icon, selected nodes, etc.
-     *
-     * @param editor the editor that has been created and should be annotated
-     */
-    protected void initializeCloneableEditor(CloneableEditor editor) {
-        if (editor instanceof HtmlEditor)
-            ((HtmlEditor) editor).associatePalette(this);
-    }
-
     /** A method to create a new component. Overridden in subclasses.
      * @return the {@link HtmlEditor} for this support
      */
@@ -291,7 +284,12 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             if (dataObject instanceof HtmlDataObject) {
                 try {
                     PaletteController pc = HTMLPaletteFactory.getPalette();
-                    associateLookup(Lookups.fixed(new Object[] { pc }));
+//                    associateLookup(Lookups.fixed(new Object[] { pc }));
+                    Lookup pcl = Lookups.singleton(pc);
+                    Lookup anl = getActivatedNodes()[0].getLookup();
+                    Lookup actionMap = Lookups.singleton(getActionMap());
+                    ProxyLookup l = new ProxyLookup(new Lookup[] { anl, actionMap, pcl });
+                    associateLookup(l);
                 }
                 catch (IOException ioe) {
                     //TODO exception handling
@@ -303,8 +301,20 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         /** Creates new editor */
         public HtmlEditor(HtmlEditorSupport s) {
             super(s);
+            initialize();
         }
 
+        private void initialize() {
+            Node nodes[] = {((DataEditorSupport)cloneableEditorSupport()).getDataObject().getNodeDelegate()};
+            setActivatedNodes(nodes);
+            associatePalette((HtmlEditorSupport)cloneableEditorSupport());
+        }
+        
+        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+            super.readExternal(in);
+            initialize();
+        }
+        
     }
     
 }
