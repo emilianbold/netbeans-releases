@@ -33,61 +33,23 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
-import org.netbeans.modules.xml.core.XMLDataLoader;
-import org.netbeans.modules.xml.core.XMLDataObjectLook;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Tests {@link CreatedModifiedFiles}.
  * @author Martin Krauskopf
  */
-public class CreatedModifiedFilesTest extends TestBase {
+public class CreatedModifiedFilesTest extends LayerTestBase {
 
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-    }
-    public static final class Lkp extends ProxyLookup {
-        private static Lkp DEFAULT;
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-            setLookup(new Object[0]);
-        }
-        public static void setLookup(Object[] instances) {
-            ClassLoader l = Lkp.class.getClassLoader();
-            DEFAULT.setLookups(new Lookup[] {
-                Lookups.fixed(instances),
-                        Lookups.metaInfServices(l),
-                        Lookups.singleton(l),
-            });
-        }
-    }
-    static {
-        LayerUtils.LayerHandle.PROVIDER = new LayerUtils.LayerHandle.XmlDataObjectProvider() {
-            public TreeEditorCookie cookieForDataObject(DataObject d) {
-                return new TreeEditorCookieImpl((XMLDataObjectLook) d);
-            }
-        };
-    }
-    
     private static final String[] HTML_CONTENT = new String[] {
         "<html>",
         "<em>i am some template</em>",
@@ -113,13 +75,11 @@ public class CreatedModifiedFilesTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        Lkp.setLookup(new Object[] {
-            SharedClassObject.findObject(XMLDataLoader.class, true),
-        });
+        TestBase.initializeBuildProperties(getWorkDir());
     }
     
     public void testCreatedModifiedFiles() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         cmf.add(cmf.bundleKeyDefaultBundle(LocalizedBundleInfo.NAME, "Much Better Name"));
         cmf.add(cmf.bundleKey("src/custom.properties", "some.property", "some value"));
@@ -140,7 +100,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testBundleKeyDefaultBundle() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
         assertEquals("display name before from bundle", "Testing Module", pi.getDisplayName());
         assertEquals("display name before from project", "Testing Module", project.getBundleInfo().getDisplayName());
@@ -157,7 +117,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testBundleKey() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation op = cmf.bundleKey("src/custom.properties", "some.property", "some value");
@@ -167,12 +127,12 @@ public class CreatedModifiedFilesTest extends TestBase {
         cmf.add(op);
         cmf.run();
         
-        EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(file(getWorkDir(), "module1/src/custom.properties")));
+        EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(TestBase.file(getWorkDir(), "module1/src/custom.properties")));
         assertEquals("property created", "some value", ep.getProperty("some.property"));
     }
     
     public void testAddLoaderSection() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation op = cmf.addLoaderSection("org/example/module1/MyExtLoader", null);
@@ -181,12 +141,12 @@ public class CreatedModifiedFilesTest extends TestBase {
         
         op.run();
         
-        EditableManifest em = Util.loadManifest(FileUtil.toFileObject(file(getWorkDir(), "module1/manifest.mf")));
+        EditableManifest em = Util.loadManifest(FileUtil.toFileObject(TestBase.file(getWorkDir(), "module1/manifest.mf")));
         assertEquals("loader section was added", "Loader", em.getAttribute("OpenIDE-Module-Class", "org/example/module1/MyExtLoader.class"));
     }
     
     public void testAddLookupRegistration() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation op = cmf.addLookupRegistration(
@@ -200,7 +160,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testCreateFile() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
@@ -216,7 +176,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testCreateBinaryFile() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
@@ -235,7 +195,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testCreateFileWithSubstitutions() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
@@ -251,7 +211,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testAddModuleDependency() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
@@ -275,7 +235,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testTheSameModuleDependencyTwice() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
@@ -296,7 +256,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     
     public void testOrderLayerEntry() throws Exception {
         // also tested in testCreateLayerEntry where is also tested generated content
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         
@@ -310,7 +270,7 @@ public class CreatedModifiedFilesTest extends TestBase {
     }
     
     public void testCreateLayerEntry() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         Operation layerOp = cmf.createLayerEntry(
@@ -406,14 +366,14 @@ public class CreatedModifiedFilesTest extends TestBase {
         
         // check bundle content
         EditableProperties ep = Util.loadProperties(FileUtil.toFileObject(
-                file(getWorkDir(), "module1/src/org/example/module1/resources/Bundle.properties")));
+                TestBase.file(getWorkDir(), "module1/src/org/example/module1/resources/Bundle.properties")));
         assertEquals("localized name property", "Some Settings",
                 ep.getProperty("Services/org-example-module1-LocalizedAndTokened.settings"));
         assertEquals("module name", "Testing Module", ep.getProperty("OpenIDE-Module-Name"));
     }
     
     public void testCreateLayerAttribute() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         CreatedModifiedFiles cmf = new CreatedModifiedFiles(project);
         String fqClassName = "org.example.module1.BeepAction";
         String dashedFqClassName = fqClassName.replace('.', '-');

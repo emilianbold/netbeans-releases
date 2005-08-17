@@ -188,7 +188,7 @@ public class SingleModulePropertiesTest extends TestBase {
     }
     
     public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws IOException {
-        NbModuleProject p = generateStandaloneModule("module1");
+        NbModuleProject p = generateStandaloneModule(getWorkDir(), "module1");
         FileObject propsFO = FileUtil.toFileObject(new File(getWorkDir(),
                 "module1/src/org/example/module1/resources/Bundle.properties"));
         propsFO.delete();

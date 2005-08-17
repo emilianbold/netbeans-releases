@@ -66,24 +66,9 @@ public abstract class TestBase extends NbTestCase {
         assertNotNull("have a file object for extexamples", extexamples);
         // Need to set up private locations in extexamples, as if they were opened in the IDE.
         clearWorkDir();
-        // For PropertyUtils.userBuildProperties():
-        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-        File userPropertiesFile = new File(getWorkDir(), "build.properties");
-        Properties p = new Properties();
-        p.setProperty("nbplatform.default.netbeans.dest.dir", file("nbbuild/netbeans").getAbsolutePath());
-        p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
-        p.setProperty("nbplatform.custom.netbeans.dest.dir", file(extexamplesF, "suite3/nbplatform").getAbsolutePath());
         // Nonexistent path, just for JavadocForBuiltModuleTest:
         apisZip = new File(getWorkDir(), "apis.zip");
-        p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
-        // Make source association work to find misc-project from its binary:
-        p.setProperty("nbplatform.default.sources", nbrootF.getAbsolutePath() + ":" + file(extexamplesF, "suite2").getAbsolutePath());
-        OutputStream os = new FileOutputStream(userPropertiesFile);
-        try {
-            p.store(os, null);
-        } finally {
-            os.close();
-        }
+        File userPropertiesFile = initializeBuildProperties(getWorkDir(), apisZip);
         String[] suites = {
             // Suite projects:
             "suite1",
@@ -93,10 +78,10 @@ public abstract class TestBase extends NbTestCase {
         };
         for (int i = 0; i < suites.length; i++) {
             File platformPrivate = file(extexamplesF, suites[i] + "/nbproject/private/platform-private.properties");
-            p = new Properties();
+            Properties p = new Properties();
             p.setProperty("user.properties.file", userPropertiesFile.getAbsolutePath());
             platformPrivate.getParentFile().mkdirs();
-            os = new FileOutputStream(platformPrivate);
+            OutputStream os = new FileOutputStream(platformPrivate);
             try {
                 p.store(os, null);
             } finally {
@@ -107,9 +92,42 @@ public abstract class TestBase extends NbTestCase {
     }
     
     /**
+     * Sets up global build.properties for the default platform.
+     * For {@link PropertyUtils#userBuildProperties()}.
+     * Called automatically by {@link #setUp}.
+     * @param workDir use getWorkDir()
+     */
+    public static File initializeBuildProperties(File workDir) throws Exception {
+        return initializeBuildProperties(workDir, null);
+    }
+    private static File initializeBuildProperties(File workDir, File apisZip) throws Exception {
+        File nbrootF = new File(System.getProperty("test.nbroot"));
+        assertTrue("there is a dir " + nbrootF, nbrootF.isDirectory());
+        assertTrue("nbbuild exists", new File(nbrootF, "nbbuild").isDirectory());
+        System.setProperty("netbeans.user", workDir.getAbsolutePath());
+        File userPropertiesFile = new File(workDir, "build.properties");
+        Properties p = new Properties();
+        p.setProperty("nbplatform.default.netbeans.dest.dir", file(nbrootF, "nbbuild/netbeans").getAbsolutePath());
+        p.setProperty("nbplatform.default.harness.dir", "${nbplatform.default.netbeans.dest.dir}/harness");
+        p.setProperty("nbplatform.custom.netbeans.dest.dir", file(nbrootF, EEP + "/suite3/nbplatform").getAbsolutePath());
+        if (apisZip != null) {
+            p.setProperty("nbplatform.default.javadoc", apisZip.getAbsolutePath());
+        }
+        // Make source association work to find misc-project from its binary:
+        p.setProperty("nbplatform.default.sources", nbrootF.getAbsolutePath() + ":" + file(nbrootF, EEP + "/suite2").getAbsolutePath());
+        OutputStream os = new FileOutputStream(userPropertiesFile);
+        try {
+            p.store(os, null);
+        } finally {
+            os.close();
+        }
+        return userPropertiesFile;
+    }
+    
+    /**
      * Just calls <code>File(root, path.replace('/', File.separatorChar));</code>
      */
-    protected File file(File root, String path) {
+    protected static File file(File root, String path) {
         return new File(root, path.replace('/', File.separatorChar));
     }
     
@@ -222,10 +240,11 @@ public abstract class TestBase extends NbTestCase {
      *   <li>module1/src/org/example/module1/resources/Bundle.properties
      *   <li>module1/src/org/example/module1/resources/layer.xml
      * </ul>
+     * Do not forget to first call {@link #initializeBuildProperties} if you are not a TestBase subclass!
      */
-    public NbModuleProject generateStandaloneModule(String prjDir) throws IOException {
+    public static NbModuleProject generateStandaloneModule(File workDir, String prjDir) throws IOException {
         String prjDirDotted = prjDir.replace('/', '.');
-        File prjDirF = file(getWorkDir(), prjDir);
+        File prjDirF = file(workDir, prjDir);
         NbModuleProjectGenerator.createStandAloneModule(
                 prjDirF,
                 "org.example." + prjDirDotted, // cnb

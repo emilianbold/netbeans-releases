@@ -31,11 +31,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import junit.framework.Assert;
-import org.netbeans.api.xml.services.UserCatalog;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.xml.core.XMLDataLoader;
 import org.netbeans.modules.xml.core.XMLDataObjectLook;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
 import org.openide.cookies.SaveCookie;
@@ -49,53 +45,16 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Test functionality of {@link WritableXMLFileSystem}.
  * @author Jesse Glick
  */
-public class WritableXMLFileSystemTest extends NbTestCase {
-    
-    // Copied from org.netbeans.api.project.TestUtil:
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-    }
-    public static final class Lkp extends ProxyLookup {
-        private static Lkp DEFAULT;
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-            setLookup(new Object[0]);
-        }
-        public static void setLookup(Object[] instances) {
-            ClassLoader l = Lkp.class.getClassLoader();
-            DEFAULT.setLookups(new Lookup[] {
-                Lookups.fixed(instances),
-                        Lookups.metaInfServices(l),
-                        Lookups.singleton(l),
-            });
-        }
-    }
+public class WritableXMLFileSystemTest extends LayerTestBase {
     
     public WritableXMLFileSystemTest(String name) {
         super(name);
-    }
-    
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-        Lkp.setLookup(new Object[] {
-            SharedClassObject.findObject(XMLDataLoader.class, true),
-                    new TestCatalog(),
-        });
     }
     
     public void testBasicStructureReads() throws Exception {
@@ -135,12 +94,12 @@ public class WritableXMLFileSystemTest extends NbTestCase {
     }
     
     public void testSimpleAttributeReads() throws Exception {
-        FileSystem fs = new Layer("<file name='x'><attr name='a' stringvalue='v'/> <attr name='b' urlvalue='http://nowhere.net/'/></file> " +
+        FileSystem fs = new Layer("<file name='x'><attr name='a' stringvalue='v'/> <attr name='b' urlvalue='file:/nothing'/></file> " +
                 "<folder name='y'> <file name='ignore'/><attr name='a' boolvalue='true'/><!--ignore--></folder>").read();
         FileObject x = fs.findResource("x");
         assertEquals(new HashSet(Arrays.asList(new String[] {"a", "b"})), new HashSet(Collections.list(x.getAttributes())));
         assertEquals("v", x.getAttribute("a"));
-        assertEquals(new URL("http://nowhere.net/"), x.getAttribute("b"));
+        assertEquals(new URL("file:/nothing"), x.getAttribute("b"));
         assertEquals(null, x.getAttribute("dummy"));
         FileObject y = fs.findResource("y");
         assertEquals(Collections.singletonList("a"), Collections.list(y.getAttributes()));
@@ -295,7 +254,7 @@ public class WritableXMLFileSystemTest extends NbTestCase {
         FileObject a = f.createData("a");
         f.createData("c");
         a.setAttribute("x", "v1");
-        a.setAttribute("y", new URL("http://nowhere.net/v2"));
+        a.setAttribute("y", new URL("file:/v2"));
         f.setAttribute("a/b", Boolean.TRUE);
         f.setAttribute("b/c", Boolean.TRUE);
         f.setAttribute("misc", "whatever");
@@ -304,7 +263,7 @@ public class WritableXMLFileSystemTest extends NbTestCase {
                 "        <attr name=\"misc\" stringvalue=\"whatever\"/>\n" +
                 "        <file name=\"a\">\n" +
                 "            <attr name=\"x\" stringvalue=\"v1\"/>\n" +
-                "            <attr name=\"y\" urlvalue=\"http://nowhere.net/v2\"/>\n" +
+                "            <attr name=\"y\" urlvalue=\"file:/v2\"/>\n" +
                 "        </file>\n" +
                 "        <attr name=\"a/b\" boolvalue=\"true\"/>\n" +
                 "        <file name=\"b\"/>\n" +
@@ -704,27 +663,6 @@ public class WritableXMLFileSystemTest extends NbTestCase {
         public String toString() {
             return "Layer[" + folder + "]";
         }
-    }
-    
-    /**
-     * In the actual IDE, the default NetBeans Catalog will already be "mounted", so just for testing:
-     */
-    private static final class TestCatalog extends UserCatalog implements EntityResolver {
-        
-        public TestCatalog() {}
-        
-        public EntityResolver getEntityResolver() {
-            return this;
-        }
-        
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            if ("-//NetBeans//DTD Filesystem 1.1//EN".equals(publicId)) {
-                return new InputSource("nbres:/org/openide/filesystems/filesystem1_1.dtd");
-            } else {
-                return null;
-            }
-        }
-        
     }
     
     private static final class Listener implements FileChangeListener {

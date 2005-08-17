@@ -13,54 +13,16 @@
 
 package org.netbeans.modules.apisupport.project.layers;
 
-import junit.framework.Assert;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.xml.core.XMLDataLoader;
-import org.netbeans.modules.xml.core.XMLDataObjectLook;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Test writing changes to layers.
  * @author Jesse Glick
  */
-public class LayerUtilsTest extends TestBase {
-    
-    static {
-        System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
-        Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
-    }
-    public static final class Lkp extends ProxyLookup {
-        private static Lkp DEFAULT;
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-            setLookup(new Object[0]);
-        }
-        public static void setLookup(Object[] instances) {
-            ClassLoader l = Lkp.class.getClassLoader();
-            DEFAULT.setLookups(new Lookup[] {
-                Lookups.fixed(instances),
-                        Lookups.metaInfServices(l),
-                        Lookups.singleton(l),
-            });
-        }
-    }
-    static {
-        LayerUtils.LayerHandle.PROVIDER = new LayerUtils.LayerHandle.XmlDataObjectProvider() {
-            public TreeEditorCookie cookieForDataObject(DataObject d) {
-                return new TreeEditorCookieImpl((XMLDataObjectLook) d);
-            }
-        };
-    }
+public class LayerUtilsTest extends LayerTestBase {
     
     public LayerUtilsTest(String name) {
         super(name);
@@ -68,13 +30,11 @@ public class LayerUtilsTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        Lkp.setLookup(new Object[] {
-            SharedClassObject.findObject(XMLDataLoader.class, true),
-        });
+        TestBase.initializeBuildProperties(getWorkDir());
     }
     
     public void testLayerHandle() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
         FileObject expectedLayerXML = project.getProjectDirectory().getFileObject("src/org/example/module/resources/layer.xml");
         assertNotNull(expectedLayerXML);
@@ -98,7 +58,7 @@ public class LayerUtilsTest extends TestBase {
                 "    <file name=\"bar\"/>\n" +
                 "    <file name=\"foo\"/>\n" +
                 "</filesystem>\n";
-        assertEquals("right contents too", xml, slurp(layerXML));
+        assertEquals("right contents too", xml, TestBase.slurp(layerXML));
     }
     
     // XXX testInitiallyInvalidLayer

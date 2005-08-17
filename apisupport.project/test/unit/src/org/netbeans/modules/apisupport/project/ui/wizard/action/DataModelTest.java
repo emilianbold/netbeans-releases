@@ -19,33 +19,30 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesTest;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.netbeans.modules.xml.core.XMLDataLoader;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.util.SharedClassObject;
 
 /**
  * Tests {@link DataModel}.
  *
  * @author Martin Krauskopf
  */
-public class DataModelTest extends TestBase {
-    
-    static {
-        CreatedModifiedFilesTest.Lkp.setLookup(new Object[0]);
-        CreatedModifiedFilesTest.Lkp.setLookup(new Object[] {
-            SharedClassObject.findObject(XMLDataLoader.class, true),
-        });
-    }
+public class DataModelTest extends LayerTestBase {
     
     public DataModelTest(String name) {
         super(name);
     }
     
+    protected void setUp() throws Exception {
+        super.setUp();
+        TestBase.initializeBuildProperties(getWorkDir());
+    }
+    
     public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         DataModel data = new DataModel(wd);
@@ -133,7 +130,7 @@ public class DataModelTest extends TestBase {
     }
     
     public void testDataModelGenarationForConditionallyEnabledActions() throws Exception {
-        NbModuleProject project = generateStandaloneModule("module1");
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
         DataModel data = new DataModel(wd);
