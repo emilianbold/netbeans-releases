@@ -1477,8 +1477,8 @@ creation.
 <p>It is possible to run
 modules making use of JNI native implementations inside
 NetBeans. You may create a directory
-<samp>modules/lib/</samp> (in either the installation or user
-directories) and place native libraries (DLL or shared-object) there;
+<samp>modules/lib/</samp> (i.e. a subdirectory <samp>lib/</samp> beneath the directory where the module JAR resides)
+and place native libraries (DLL or shared-object) there;
 it will be added to the search path for calls to
 <code>System.loadLibrary</code> made from module code. This avoids the
 need to explicitly add some directory to the binary load path. The
@@ -1486,6 +1486,13 @@ module is entirely responsible for distinguishing between various
 platforms and operating systems and requesting a library name
 appropriate to the current one, however. Use of JNI is of course not
 recommended and should be restricted to cases where it is unavoidable.</p>
+
+<p>Example of usage: if on Linux a module located in <samp>/home/app/cluster/modules/something.jar</samp> calls
+<samp>System.loadLibrary("stuff-linux-i386")</samp>, the library should be in
+<samp>/home/app/cluster/modules/lib/libstuff-linux-i386.so</samp>. On Windows, if
+<samp>C:\app\cluster\modules\something.jar</samp> calls <samp>System.loadLibrary("stuff")</samp>, the library
+should be in <samp>C:\app\cluster\modules\lib\stuff.dll</samp>. (Remember that Java has platform-specific
+prefixes and suffixes it adds to plain library names before trying to find it on disk.)</p>
 
 <p>If a native library refers to <em>other</em> native libraries, they
 are likely to be found using the normal search path for the platform.
