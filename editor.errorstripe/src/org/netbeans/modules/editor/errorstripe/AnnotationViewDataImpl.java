@@ -63,7 +63,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     private BaseDocument document;
     
     private List/*<MarkProvider>*/ providers;
-    private List/*<UpToDateStatusProvider>*/ upToDateStatusProviders;
+    private List/*<UpToDateStatusProvider>*/ upToDateStatusProviders = new ArrayList();
     
     private List/*<Mark>*/ currentMarks = null;
     private SortedMap/*<Mark>*/ marksMap = null;
