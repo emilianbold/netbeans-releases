@@ -32,6 +32,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -60,6 +61,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
     protected MBeanAttributeTableModel attributeModel;
     
     JButton attrRemoveJButton;
+    protected JPanel labelPanel;
     protected JLabel tableLabel;
     
     protected TableColumnModel attrColumnModel;
@@ -192,12 +194,19 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         firstInternalAttributePanel.add(attributeJPanel, BorderLayout.SOUTH);
       
         // init labels
+        // the first label will be acting as mnemonic for the table
         tableLabel = new JLabel();
         Mnemonics.setLocalizedText(tableLabel,
                      bundle.getString("LBL_AttrTable"));//NOI18N
         tableLabel.setLabelFor(attributeTable);
         
-        add(tableLabel, BorderLayout.NORTH);
+        // in order to be able to get a label on multiple lines for the wrapper
+        // attribute panel, this panel defines a panel. Here, only oner label is
+        // added to the panel, but there will be another one in the subclass
+        labelPanel = new JPanel(new BorderLayout());
+        labelPanel.add(tableLabel, BorderLayout.NORTH);
+        
+        add(labelPanel, BorderLayout.NORTH);
         add(firstInternalAttributePanel, BorderLayout.CENTER);
         
         //attrAddJButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MBeanAttributePanel.class,"ACCESS_ADD_ATTRIBUTE"));// NOI18N

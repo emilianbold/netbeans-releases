@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.jmx.mbeanwizard;
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,6 +27,8 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import org.openide.util.NbBundle;
@@ -92,9 +95,15 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
     
     protected void affectAttributeTableComponents(TableColumnModel columnModel) {
         super.affectAttributeTableComponents(columnModel);
+        //changing label text for the table label
         Mnemonics.setLocalizedText(tableLabel,
                      bundle.getString("LBL_AttrTable_FromExistingClass"));//NOI18N 
         tableLabel.setLabelFor(attributeTable);
+        
+        // second label definition to get a label text on multiple lines; a new
+        // label is added to the labelPanel
+        JLabel complementaryLabel = new JLabel(bundle.getString("LBL_AttrTable_FromExistingClass_suite"));//NOI18N
+        labelPanel.add(complementaryLabel, java.awt.BorderLayout.SOUTH);
         
         attrRemoveJButton.setName("wrapperAttributeRemoveButton");//NOI18N 
         
@@ -130,6 +139,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                 wiz.event();
             }
         });
+        
+        //add(panel, BorderLayout.NORTH);
     }
     
       private boolean AttributeNameAlreadyChecked() {

@@ -58,6 +58,8 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
     protected MBeanOperationTableModel operationModel;
     protected TableColumnModel opColumnModel;
     protected JButton opRemoveJButton;
+    
+    protected JPanel labelPanel;
     protected JLabel tableLabel;
     
     /**
@@ -177,7 +179,13 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
                      bundle.getString("LBL_OpTable"));//NOI18N
         tableLabel.setLabelFor(operationTable);
         
-        add(tableLabel, BorderLayout.NORTH);
+        // in order to be able to get a label on multiple lines for the wrapper
+        // attribute panel, this panel defines a panel. Here, only oner label is
+        // added to the panel, but there will be another one in the subclass
+        labelPanel = new JPanel(new BorderLayout());
+        labelPanel.add(tableLabel, BorderLayout.NORTH);
+        
+        add(labelPanel, BorderLayout.NORTH);
         add(firstInternalMethodPanel, BorderLayout.CENTER);
         
         //Accessibility

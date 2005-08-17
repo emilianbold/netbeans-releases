@@ -26,11 +26,11 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.modules.jmx.MBeanOperationException;
 import org.netbeans.modules.jmx.MBeanOperationParameter;
-import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -102,6 +102,11 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
         Mnemonics.setLocalizedText(tableLabel,
                      bundle.getString("LBL_OpTable_FromExistingClass"));//NOI18N 
         tableLabel.setLabelFor(operationTable);
+        
+        // second label definition to get a label text on multiple lines; a new
+        // label is added to the labelPanel
+        JLabel complementaryLabel = new JLabel(bundle.getString("LBL_OpTable_FromExistingClass_suite"));//NOI18N
+        labelPanel.add(complementaryLabel, java.awt.BorderLayout.SOUTH);
         
         opRemoveJButton.setName("wrapperOpRemoveJButton");
         
