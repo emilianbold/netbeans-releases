@@ -495,8 +495,8 @@ modules).
 netbeans.home - location of "platform*" cluster of the NetBeans IDE installation
 you are running. *Only defined* when you run an Ant script *inside* the IDE.
 
-release.dir - "${basedir}/release"; location of a directory full of files to copy unmodified to the output
-cluster.
+release.dir - "${basedir}/release"; location of a directory full of files to
+copy unmodified to the output cluster.
 
 run.app.exe - "bin\nb.exe"; name of Windows launcher to start (inside
 ${netbeans.dest.dir}) if trying to run the application for interactive testing.
