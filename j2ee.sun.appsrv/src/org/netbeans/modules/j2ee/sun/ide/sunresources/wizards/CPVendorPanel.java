@@ -30,13 +30,12 @@ import javax.swing.ButtonGroup;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
-
-import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
@@ -50,7 +49,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
     
     static final long serialVersionUID = 93474632245456421L;
     
-    private ArrayList connInfos;
+    private ArrayList dbconns;
     private ResourceConfigHelper helper;
     private FieldGroup generalGroup, propGroup, vendorGroup;
     private boolean useExistingConnection = true;
@@ -65,7 +64,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
         this.propGroup = FieldGroupHelper.getFieldGroup(wiardInfo, __Properties); 
         this.vendorGroup = FieldGroupHelper.getFieldGroup(wiardInfo, __PropertiesURL); 
         ButtonGroup bg = new ButtonGroup();
-        connInfos = new ArrayList();
+        dbconns = new ArrayList();
         
         setName(bundle.getString("TITLE_ConnPoolWizardPanel_dbConn")); //NOI18N
 
@@ -88,13 +87,10 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
         bg.add(newCofigRadioButton);
         bg.getSelection().addChangeListener(this);
         try{
-            Vector cons = RootNode.getOption().getConnections();
-            if(cons != null){
-                for(int i=0; i<cons.size(); i++){
-                    DatabaseConnection conn = (DatabaseConnection)cons.get(i);
-                    existingConnComboBox.addItem(conn.getName());
-                    connInfos.add(conn);
-                }
+            DatabaseConnection[] cons = ConnectionManager.getDefault().getConnections();
+            for(int i=0; i < cons.length; i++){
+                existingConnComboBox.addItem(cons[i].getName());
+                dbconns.add(cons[i]);
             }
         }catch(Exception ex){
             // Connection could not be found
@@ -439,10 +435,10 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
                 useExistingConnection = true;  
             }
             this.helper.getData().setString(__IsCPExisting, "true"); //NOI18N
-            DatabaseConnection info = (DatabaseConnection)connInfos.get(existingConnComboBox.getSelectedIndex() - 1);
-            String url = info.getDatabase();
-            String user = info.getUser();
-            String password = info.getPassword();
+            DatabaseConnection dbconn = (DatabaseConnection)dbconns.get(existingConnComboBox.getSelectedIndex() - 1);
+            String url = dbconn.getConnectionUrl();
+            String user = dbconn.getUser();
+            String password = dbconn.getPassword();
             String tmpStr = url;
             
             Field urlField = FieldHelper.getField(this.vendorGroup, "vendorUrls"); //NOI18N
@@ -453,7 +449,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
             data.setString(__DatabaseVendor, vendorName);
             
             if (vendorName.equals("pointbase")) {  //NOI18N
-                data.addProperty(__DatabaseName, info.getDatabase());
+                data.addProperty(__DatabaseName, dbconn.getConnectionUrl());
             }
             else
                 data.addProperty(__Url, url);

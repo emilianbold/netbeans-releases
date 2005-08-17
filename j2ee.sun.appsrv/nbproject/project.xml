@@ -119,7 +119,8 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <release-version>0</release-version>
+                        <implementation-version>1.0</implementation-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

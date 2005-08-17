@@ -17,7 +17,7 @@ OpenIDE-Module-Module-Dependencies:
  org.netbeans.modules.j2eeserver/3 > 1.5,
  org.netbeans.modules.j2eeapis/1, 
  org.netbeans.modules.schema2beans/1,
- org.netbeans.modules.db/1 = 2, 
+ org.netbeans.modules.db/0 > 1.0, 
  org.netbeans.modules.projectuiapi/1, 
  org.netbeans.modules.projectapi/1
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv/1

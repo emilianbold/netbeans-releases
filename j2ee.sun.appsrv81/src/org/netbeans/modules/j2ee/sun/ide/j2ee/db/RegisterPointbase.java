@@ -27,20 +27,16 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager ;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseOption;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager ;
+import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.db.runtime.DatabaseRuntime;
-import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.PluginProperties;
-
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util;
+
 /**
  *
  * @author  ludo
@@ -166,10 +162,7 @@ public class RegisterPointbase implements DatabaseRuntime {
             return ;  
 	}      
         
-        DatabaseRuntimeManager.getDefault(). register(DRIVER,this);
-        
-        JDBCDriverManager dm= JDBCDriverManager.getDefault();
-        JDBCDriver[] drvs = dm.getDriver(DRIVER);
+        JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDrivers(DRIVER);
         
         if (drvs.length>0)
             return; //already there
@@ -194,38 +187,25 @@ public class RegisterPointbase implements DatabaseRuntime {
             URL[] urls = new URL[1];
             urls[0]= f.toURI().toURL(); //NOI18N
             
-            JDBCDriver newDriver = new JDBCDriver(DRIVER_NAME, DRIVER,urls);
-            dm.addDriver(newDriver);
+            JDBCDriver newDriver = JDBCDriver.create(DRIVER_NAME, DRIVER,urls);
+            JDBCDriverManager.getDefault().addDriver(newDriver);
             
-            DatabaseConnection cinfo = new DatabaseConnection();
-            cinfo.setDriverName( DRIVER_NAME );
-            cinfo.setDriver( DRIVER );
-            cinfo.setDatabase( DATABASE_URL );
-            cinfo.setUser( USER_NAME );
-            cinfo.setSchema( SCHEMA_NAME );
-            cinfo.setPassword( PASSWORD );
-            cinfo.setRememberPassword( true );
-            
-            
-            DatabaseConnection cinfo2 = new DatabaseConnection();
-            cinfo2.setDriverName( DRIVER_NAME );
-            cinfo2.setDriver( DRIVER );
-            cinfo2.setDatabase( DATABASE_URL2 );
-            cinfo2.setUser( USER_NAME );
-            cinfo2.setSchema( SCHEMA_NAME );
-            cinfo2.setPassword( PASSWORD );
-            cinfo2.setRememberPassword( true );
-            DatabaseOption option = RootNode.getOption();
-            
-            DatabaseRuntimeManager drtm = DatabaseRuntimeManager.getDefault();
-            RootNodeInfo rni = drtm.getRootNodeInfo();
-            rni.addDatabaseConnection(cinfo);
-            rni.addDatabaseConnection(cinfo2);
-            
+            DatabaseConnection dbconn = DatabaseConnection.create(newDriver, 
+                    DATABASE_URL, USER_NAME, SCHEMA_NAME, PASSWORD, true);
+            ConnectionManager.getDefault().addConnection(dbconn);
+
+            DatabaseConnection dbconn2 = DatabaseConnection.create(newDriver, 
+                    DATABASE_URL2, USER_NAME, SCHEMA_NAME, PASSWORD, true);
+            ConnectionManager.getDefault().addConnection(dbconn2);
         } catch (Exception e){
             System.out.println(e);
         }
     }
+    
+    public String getJDBCDriverClass() {
+        return DRIVER;
+    }
+    
     /**
      * Whether this runtime accepts this connection string.
      */
@@ -258,8 +238,9 @@ public class RegisterPointbase implements DatabaseRuntime {
      */
     public boolean canStart(){
         //System.out.println("can start!!!");
-        return true;
         
+        // only can start if already installed
+        return System.getProperty("com.sun.aas.installRoot") != null;
     }
     
     /**
