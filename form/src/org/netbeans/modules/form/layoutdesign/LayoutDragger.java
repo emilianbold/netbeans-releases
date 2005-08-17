@@ -1279,7 +1279,7 @@ class LayoutDragger implements LayoutConstants {
     int findIndent(LayoutComponent mainComp, LayoutComponent indentedComp,
                           int dimension, int alignment)
     {
-        return visualMapper.getPreferredPadding(indentedComp.getId(), mainComp.getId(),
+        return visualMapper.getPreferredPadding(mainComp.getId(), indentedComp.getId(),
             dimension, alignment, VisualMapper.INDENT);
     }
 
