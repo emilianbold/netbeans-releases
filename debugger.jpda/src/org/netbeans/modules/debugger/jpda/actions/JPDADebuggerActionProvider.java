@@ -139,12 +139,16 @@ implements PropertyChangeListener {
         }
         actionsRequestProcessor.post(new Runnable() {
             public void run() {
-                run.run();
-                for (Iterator it = disabledActions.iterator(); it.hasNext(); ) {
-                    JPDADebuggerActionProvider ap = (JPDADebuggerActionProvider) it.next();
-                    Set actions = ap.getActions();
-                    ap.disabled = false;
-                    ap.checkEnabled (debugger.getState ());
+                try {
+                    run.run();
+                    for (Iterator it = disabledActions.iterator(); it.hasNext(); ) {
+                        JPDADebuggerActionProvider ap = (JPDADebuggerActionProvider) it.next();
+                        Set actions = ap.getActions();
+                        ap.disabled = false;
+                        ap.checkEnabled (debugger.getState ());
+                    }
+                } catch (com.sun.jdi.VMDisconnectedException e) {
+                    // Causes kill action when something is being evaluated
                 }
             }
         });

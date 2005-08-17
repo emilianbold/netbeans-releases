@@ -36,7 +36,11 @@ PropertyChangeListener {
     }
     
     public void propertyChange (PropertyChangeEvent evt) {
-        checkEnabled (debugger.getState ());
+        try {
+            checkEnabled (debugger.getState ());
+        } catch (com.sun.jdi.VMDisconnectedException e) {
+            // Causes kill action when something is being evaluated
+        }
     }
     
     protected abstract void checkEnabled (int debuggerState);
