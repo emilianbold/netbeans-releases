@@ -196,6 +196,7 @@ then
     scramblerflag=-Dscrambler2=$unscramble
 fi
 
+CVSLOG="/tmp/cvs-update.log.$$"
 origdisplay=$DISPLAY
 if [ $spawndisplay = yes ]
 then
@@ -214,7 +215,7 @@ then
         xpid=$!
     elif [ $spawndisplaytype = vnc ]
     then
-        Xvnc -localhost $vncdisplayargs -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display &
+        Xvnc -localhost $vncdisplayargs -desktop 'NetBeans test display' -geometry 1024x768 -depth 16 $display -log '*:stderr:15' &
         xpid=$!
     else
         echo "strange \$spawndisplaytype: $spawndisplaytype" >&2
@@ -239,7 +240,7 @@ then
         vncviewerpid=$!
         trapcmd_vnc="kill $vncviewerpid > /dev/null 2>&1;"
     fi
-    trap "$trapcmd_vnc $trapcmd" EXIT
+    trap "$trapcmd_vnc $trapcmd; rm -f $CVSLOG" EXIT
     xmessage -timeout 3 "$message"
     status=$?
     if [ $status != 0 ]
@@ -247,6 +248,8 @@ then
         echo "Sample X client failed with status $status! Try 'xhost +local:' if you disallow remote logins" 1>&2
         exit 2
     fi
+else
+    trap "rm -f $CVSLOG" EXIT
 fi
 
 antcmd="nice $ant -emacs $scramblerflag"
@@ -259,8 +262,6 @@ fi
 
 if [ $update = yes ]
 then
-    CVSLOG="/tmp/cvs-update.log.$$"
-    trap "rm -f $CVSLOG ; exit" 0 1 2 3 15
     echo "----------UPDATING SOURCES----------" 1>&2
     (cd $sources; cvs -q update |tee $CVSLOG)
 
