@@ -29,7 +29,7 @@
         <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@20m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@60m&quot;)</property>
         <property array="True" length="0" name="additionalClassPaths" type="string"/>
         <property array="True" length="1" name="systemProperties" type="string">
-            <arrayItem>sun.java2d.noddraw=true</arrayItem>
+            <arrayItem>sun.java2d.d3d=false</arrayItem>
         </property>
         <property name="beanId">bean148</property>
         <extendedProperty name="win32ppk" type="com.installshield.wizard.platform.win32.Win32LauncherExtra">
@@ -871,7 +871,7 @@
                     <property name="javaArguments">%IF_EXISTS%(&quot;INIT_JAVA_HEAP&quot;, &quot;@INIT_JAVA_HEAP@64m&quot;) %IF_EXISTS%(&quot;MAX_JAVA_HEAP&quot;, &quot;@MAX_JAVA_HEAP@96m&quot;)</property>
                     <property name="wizardArguments"/>
                     <property array="True" length="1" name="systemProperties" type="string">
-                        <arrayItem>sun.java2d.noddraw=true</arrayItem>
+                        <arrayItem>sun.java2d.d3d=false</arrayItem>
                     </property>
                     <property name="showConsole">False</property>
                     <property name="JVMNotFoundMessage">No Java Runtime Environment(JRE) was found on this system.</property>
