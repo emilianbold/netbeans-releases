@@ -82,22 +82,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         else {
             if (layoutSupport != null) { // clean the layout delegate and related code structre objects
                 try {
-                    if (layoutSupport.getLayoutDelegate() != null) {
-                        RADVisualComponent[] components = getSubComponents();
-                        java.util.Map idToComponent = new java.util.HashMap();
-                        FormModel formModel = getFormModel();
-                        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
-                        for (int i=0; i<components.length; i++) {
-                            idToComponent.put(components[i].getId(), formDesigner.getComponent(components[i]));
-                        }
-                        LayoutModel layoutModel = formModel.getLayoutModel();
-                        Object layoutUndoMark = layoutModel.getChangeMark();
-                        javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                        layoutModel.createModel(getId(), (Container)formDesigner.getComponent(this), idToComponent);
-                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                            formModel.addUndoableEdit(ue);
-                        }
-                    }
                     layoutSupport.setLayoutDelegate(null, null, false);
                 } catch (Exception ex) {
                     ex.printStackTrace();

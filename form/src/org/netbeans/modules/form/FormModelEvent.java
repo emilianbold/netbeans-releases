@@ -487,7 +487,7 @@ public class FormModelEvent extends EventObject
                             null);
                 }
                 else {
-                    getFormModel().setNaturalContainerLayout(
+                    getFormModel().setNaturalContainerLayoutImpl(
                         (RADVisualContainer)getContainer());
                 }
             }
@@ -506,7 +506,7 @@ public class FormModelEvent extends EventObject
                             null);
                 }
                 else {
-                    getFormModel().setNaturalContainerLayout(
+                    getFormModel().setNaturalContainerLayoutImpl(
                             (RADVisualContainer)getContainer());
                 }
             }

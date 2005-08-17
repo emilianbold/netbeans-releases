@@ -334,22 +334,25 @@ public class FormModel
 
         fireContainerLayoutExchanged(metacont, currentDel, layoutDelegate);
     }
+    
+    void setNaturalContainerLayoutImpl(RADVisualContainer metacont) {
+        LayoutSupportManager currentLS = metacont.getLayoutSupport();
+        LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
+        metacont.setOldLayoutSupport(false);
+        fireContainerLayoutExchanged(metacont, currentDel, null);
+    }
 
     public void setNaturalContainerLayout(RADVisualContainer metacont) {
         LayoutSupportManager currentLS = metacont.getLayoutSupport();
         if (currentLS == null)
             return; // already set (no old layout support)
-
-        LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
+        
+        setNaturalContainerLayoutImpl(metacont);
 
         if (!layoutModel.changeComponentToContainer(metacont.getId())) {
             layoutModel.addRootComponent(
                     new LayoutComponent(metacont.getId(), true));
         }
-
-        metacont.setOldLayoutSupport(false);
-
-        fireContainerLayoutExchanged(metacont, currentDel, null);
     }
 
     public void removeComponent(RADComponent metacomp, boolean fromModel) {
