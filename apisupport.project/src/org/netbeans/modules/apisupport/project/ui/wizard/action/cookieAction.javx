@@ -27,8 +27,9 @@ public final class @@CLASS_NAME@@ extends CookieAction {
 
     protected Class[] cookieClasses() {
         return new Class[] {
-            // TODO
+@@COOKIE_CLASSES_BLOCK@@
         };
     }
 
 }
+

@@ -34,6 +34,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // first panel data (Action Type)
     private boolean alwaysEnabled;
+    private String[] cookieClasses;
     
     // second panel data (GUI Registration)
     private String category;
@@ -96,6 +97,18 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
         replaceTokens.put("@@PACKAGE_NAME@@", packageName); // NOI18N
         replaceTokens.put("@@DISPLAY_NAME@@", displayName); // NOI18N
+        if (!alwaysEnabled) {
+            String indent = "            "; // NOI18N
+            String newLine = System.getProperty("line.separator"); // NOI18N
+            StringBuffer cookieSB = new StringBuffer();
+            for (int i = 0; i < cookieClasses.length; i++) {
+                cookieSB.append(indent + cookieClasses[i] + ".class"); // NOI18N
+                if (i != cookieClasses.length - 1) {
+                    cookieSB.append(',' + newLine);
+                }
+            }
+            replaceTokens.put("@@COOKIE_CLASSES_BLOCK@@", cookieSB.toString()); // NOI18N
+        }
         
         if (origIconPath != null) {
             FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
@@ -128,7 +141,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
         if (!alwaysEnabled) {
             cmf.add(cmf.addModuleDependency("org.openide.nodes", -1, null, true)); // NOI18N
-            
         }
         
         // create layer entry for global menu item
@@ -242,6 +254,10 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     boolean isAlwaysEnabled() {
         return alwaysEnabled;
+    }
+    
+    void setCookieClasses(String[] cookieClasses) {
+        this.cookieClasses = cookieClasses;
     }
     
     void setCategory(String category) {
