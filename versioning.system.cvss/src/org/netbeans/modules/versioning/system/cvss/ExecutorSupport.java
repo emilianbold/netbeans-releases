@@ -247,7 +247,8 @@ public abstract class ExecutorSupport implements CVSListener  {
      * It shows dialog allowing to rewise proxy settings.
      */
     private boolean retryConnection(Throwable cause) {
-        
+
+        Throwable initialCause = cause;
         String cvsRoot = getCvsRoot();
         if (cvsRoot == null) return false;
         
@@ -296,7 +297,7 @@ public abstract class ExecutorSupport implements CVSListener  {
         descriptor.setClosingOptions(null);
 
 
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cause);
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, initialCause);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         boolean retry = false;
