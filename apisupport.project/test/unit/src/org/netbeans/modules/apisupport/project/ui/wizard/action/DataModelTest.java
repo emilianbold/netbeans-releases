@@ -132,7 +132,7 @@ public class DataModelTest extends TestBase {
                 new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
     }
     
-    public void testDataModelGenarationForAlwaysConditionallyActions() throws Exception {
+    public void testDataModelGenarationForConditionallyEnabledActions() throws Exception {
         NbModuleProject project = generateStandaloneModule("module1");
         WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
         wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
