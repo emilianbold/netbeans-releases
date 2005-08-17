@@ -350,13 +350,13 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     
     private void uncheckAttribute(JTableMouseDriver mouseDriver, JTableOperator jto, String name) {
         int index = jto.findCellRow(name);
-        mouseDriver.selectCell(jto, index, JellyConstants.INCLUDE_COL); 
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+        mouseDriver.selectCell(jto, index, JellyConstants.EXPOSE_COL); 
+        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
     }
     
     private void verifyAttributeChecked(JTableOperator jto, String name) {
         int index = jto.findCellRow(name);
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
     }
     
     private ArrayList<String> junitStep(NewFileWizardOperator nfwo, MBean mbean) {

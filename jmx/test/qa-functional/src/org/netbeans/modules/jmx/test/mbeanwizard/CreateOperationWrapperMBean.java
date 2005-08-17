@@ -305,13 +305,13 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
     
     private void uncheckOperation(JTableMouseDriver mouseDriver, JTableOperator jto, String name) {
         int index = jto.findCellRow(name);
-        mouseDriver.selectCell(jto, index, JellyConstants.INCLUDE_COL); 
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+        mouseDriver.selectCell(jto, index, JellyConstants.EXPOSE_COL); 
+        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
     }
     
     private int verifyOperationChecked(JTableOperator jto, String name) {
         int index = jto.findCellRow(name);
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.EXPOSE_COL));
         
         return index;
     }
