@@ -116,7 +116,8 @@ public class ACustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setText("Target:");
+        jLabel4.setLabelFor(jComboBox2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ACustomizer.class, "LBL_A_Target"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -125,6 +126,8 @@ public class ACustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel4, gridBagConstraints);
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSN_A_Target"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSD_A_Target"));
 
         jTextField1.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -136,7 +139,7 @@ public class ACustomizer extends javax.swing.JPanel {
         add(jTextField1, gridBagConstraints);
 
         jButton1.setFont(new java.awt.Font("Dialog", 0, 12));
-        jButton1.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(ACustomizer.class, "LBL_A_Browse"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -149,8 +152,11 @@ public class ACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSN_A_Browse"));
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSD_A_Browse"));
 
-        jLabel1.setText("Protocol:");
+        jLabel1.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ACustomizer.class, "LBL_A_Protocol"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -158,8 +164,11 @@ public class ACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSN_A_Protocol"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSD_A_Protocol"));
 
-        jLabel2.setText("URL:");
+        jLabel2.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ACustomizer.class, "LBL_A_URL"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -167,8 +176,11 @@ public class ACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSN_A_URL"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSD_A_URL"));
 
-        jLabel3.setText("Text:");
+        jLabel3.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ACustomizer.class, "LBL_A_Text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -176,6 +188,8 @@ public class ACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSN_A_Text"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ACustomizer.class, "ACSD_A_Text"));
 
         jTextField2.setColumns(35);
         gridBagConstraints = new java.awt.GridBagConstraints();

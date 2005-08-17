@@ -117,7 +117,8 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jTextField1, gridBagConstraints);
 
-        jLabel1.setText("Label:");
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -125,8 +126,10 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_Label"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Label"));
 
-        jLabel2.setText("Type:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_Type"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -134,8 +137,10 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_Type"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Type"));
 
-        jLabel3.setText("Initial State:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_InitState"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -143,10 +148,12 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_InitState"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_InitState"));
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText("submit");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, "&submit");
         jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -156,9 +163,11 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jRadioButton1, gridBagConstraints);
+        jRadioButton1.getAccessibleContext().setAccessibleName("submit");
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Submit"));
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("reset");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, "&reset");
         jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -168,9 +177,11 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton2, gridBagConstraints);
+        jRadioButton2.getAccessibleContext().setAccessibleName("reset");
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Reset"));
 
         buttonGroup1.add(jRadioButton3);
-        jRadioButton3.setText("standard");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, "s&tandard");
         jRadioButton3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -180,8 +191,10 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton3, gridBagConstraints);
+        jRadioButton3.getAccessibleContext().setAccessibleName("standard");
+        jRadioButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Standard"));
 
-        jCheckBox1.setText("disabled");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_disabled"));
         jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -191,6 +204,8 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jCheckBox1, gridBagConstraints);
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_disabled"));
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_disabled"));
 
         jTextField2.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -202,7 +217,8 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jTextField2, gridBagConstraints);
 
-        jLabel4.setText("Name:");
+        jLabel4.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -210,6 +226,8 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel4, gridBagConstraints);
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_Name"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Name"));
 
     }
     // </editor-fold>//GEN-END:initComponents
