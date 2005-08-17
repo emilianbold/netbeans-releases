@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 
@@ -29,6 +30,14 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
+        // XXX temporary hardcoded few ones - where to get all these values?
+        coockieClass.setModel(new DefaultComboBoxModel(new String[] {
+            "DataObject",
+            "EditCookie",
+            "EditorCookie",
+            "OpenCookie",
+            "Project"
+        }));
     }
     
     protected String getPanelName() {
@@ -37,9 +46,11 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     protected void storeToDataModel() {
         data.setAlwaysEnabled(alwaysEnabled.isSelected());
+        data.setCookieClasses(new String[] { (String) coockieClass.getSelectedItem() });
     }
     
     protected void readFromDataModel() {
+        condionallyEnabledActionPerformed(null);
         setValid(Boolean.TRUE);
     }
     
@@ -55,8 +66,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         whenEnabledGroup = new javax.swing.ButtonGroup();
         alwaysEnabled = new javax.swing.JRadioButton();
         condionallyEnabled = new javax.swing.JRadioButton();
-        coockieClass = new javax.swing.JLabel();
-        coockieClassValue = new javax.swing.JComboBox();
+        coockieClassTxt = new javax.swing.JLabel();
+        coockieClass = new javax.swing.JComboBox();
         multiSelection = new javax.swing.JCheckBox();
         filler = new javax.swing.JLabel();
 
@@ -67,6 +78,12 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         org.openide.awt.Mnemonics.setLocalizedText(alwaysEnabled, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_AlwaysEnabled"));
         alwaysEnabled.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         alwaysEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        alwaysEnabled.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                condionallyEnabledActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -78,8 +95,13 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         whenEnabledGroup.add(condionallyEnabled);
         org.openide.awt.Mnemonics.setLocalizedText(condionallyEnabled, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_ConditionallyEnabled"));
         condionallyEnabled.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        condionallyEnabled.setEnabled(false);
         condionallyEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        condionallyEnabled.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                condionallyEnabledActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -88,17 +110,15 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(condionallyEnabled, gridBagConstraints);
 
-        coockieClass.setLabelFor(coockieClassValue);
-        org.openide.awt.Mnemonics.setLocalizedText(coockieClass, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "LBL_CookieClass"));
-        coockieClass.setEnabled(false);
+        coockieClassTxt.setLabelFor(coockieClass);
+        org.openide.awt.Mnemonics.setLocalizedText(coockieClassTxt, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "LBL_CookieClass"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 6, 0);
-        add(coockieClass, gridBagConstraints);
+        add(coockieClassTxt, gridBagConstraints);
 
-        coockieClassValue.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -106,11 +126,10 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
-        add(coockieClassValue, gridBagConstraints);
+        add(coockieClass, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(multiSelection, org.openide.util.NbBundle.getMessage(ActionTypePanel.class, "CTL_AllowMultipleSelections"));
         multiSelection.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        multiSelection.setEnabled(false);
         multiSelection.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -132,11 +151,18 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     }
     // </editor-fold>//GEN-END:initComponents
     
+    private void condionallyEnabledActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_condionallyEnabledActionPerformed
+        boolean enabled = condionallyEnabled.isSelected();
+        coockieClass.setEnabled(enabled);
+        coockieClassTxt.setEnabled(enabled);
+        multiSelection.setEnabled(enabled);
+    }//GEN-LAST:event_condionallyEnabledActionPerformed
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton alwaysEnabled;
     private javax.swing.JRadioButton condionallyEnabled;
-    private javax.swing.JLabel coockieClass;
-    private javax.swing.JComboBox coockieClassValue;
+    private javax.swing.JComboBox coockieClass;
+    private javax.swing.JLabel coockieClassTxt;
     private javax.swing.JLabel filler;
     private javax.swing.JCheckBox multiSelection;
     private javax.swing.ButtonGroup whenEnabledGroup;
