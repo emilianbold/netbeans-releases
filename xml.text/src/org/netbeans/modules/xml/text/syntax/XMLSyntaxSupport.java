@@ -179,15 +179,20 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             };
         }
         
-        if( id == TEXT || id == CDATA_SECTION) {
+        if( id == TEXT) {
             
-            while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
+            while( id == TEXT || id == CHARACTER ) {
                 first = item;
                 item = item.getPrevious();
                 if (item == null)  break;
                 id = item.getTokenID();
             }
             return createElement( first ); // from start of continuous text
+        }
+        
+        if( id == CDATA_SECTION) {
+            //the entire CDATA section is a one big fat token :-)
+            return createElement( item );
         }
         
         //
@@ -311,7 +316,6 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 
             case TEXT_ID:
             case CHARACTER_ID:
-            case CDATA_SECTION_ID:
                 
                 while( id == TEXT || id == CHARACTER || id == CDATA_SECTION) {
                     lastOffset = getTokenEnd( item );
@@ -320,6 +324,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     id = item.getTokenID();
                 }
                 return new TextImpl( this, first, lastOffset );
+            
+            case CDATA_SECTION_ID:
+                return new CDATASectionImpl( this, first, first.getOffset() + first.getImage().length() );
                 
             case XMLDefaultTokenContext.TAG_ID:
                 

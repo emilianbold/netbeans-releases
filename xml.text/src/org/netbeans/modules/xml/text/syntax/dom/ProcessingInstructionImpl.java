@@ -89,11 +89,5 @@ public final class ProcessingInstructionImpl extends SyntaxNode {
     public void setData(String data) throws DOMException {
         throw new ROException();
     }
-    
-    /**
-     * String value for debug purposes.
-     */
-    public String toString() {
-        return "PI(" + getTarget() + " " + getData() + ")";
-    }
+
 }

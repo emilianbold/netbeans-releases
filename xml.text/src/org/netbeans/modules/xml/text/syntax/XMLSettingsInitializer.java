@@ -87,6 +87,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         /** Add editor actions to XML Kit. */
         if (kitClass == XMLKit.class) {
 
+            settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, Boolean.TRUE);
+            
             // layer based default does not work!
             settingsMap.put (SettingsNames.ABBREV_MAP, getXMLAbbrevMap());
 

@@ -125,7 +125,11 @@ public abstract class SyntaxElement {
      * Print element content for debug purposes.
      */
     public String toString() {
-        return "Node[" + offset + "," + (offset+length-1) + "]";
+        String content = "?";
+        try {
+            content = support.getDocument().getText(offset, length); 
+        }catch(BadLocationException e) {}
+        return "SyntaxElement [offset=" + offset + "; length=" + length + " ;type = " + this.getClass().getName() + "; content:" + content +"]";
     }
     
     /**
