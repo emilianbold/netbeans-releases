@@ -31,6 +31,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.DebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -73,6 +75,7 @@ public class Evaluator extends javax.swing.JPanel {
             new RequestProcessor("Debugger Evaluator", 1).  // NOI18N
             create(new EvaluateTask());
     private boolean ignoreEvents = false;
+    private SessionListener sessionListener;
     
     /** Creates new form Evaluator */
     public Evaluator(JPDADebugger debugger) {
@@ -80,6 +83,9 @@ public class Evaluator extends javax.swing.JPanel {
         initComponents();
         initCombo();
         initResult();
+        sessionListener = new SessionListener();
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
     }
     
     /** This method is called from within the constructor to
@@ -268,29 +274,58 @@ public class Evaluator extends javax.swing.JPanel {
                         } else if (watchStr.equals(option)) {
                             DebuggerManager.getDebuggerManager ().createWatch (evaluatorPanel.getExpression ());
                         } else if (closeStr.equals(option)) {
-                            //currentEvaluator = null;
-                            evalDialog.setVisible(false);
-                            try {
-                                currentEvaluator.ignoreEvents = true;
-                                // Clean the input line
-                                currentEvaluator.expressionComboBox.setSelectedItem(""); // NOI18N
-                            } finally {
-                                currentEvaluator.ignoreEvents = false;
-                            }
-                            // Clean the model
-                            currentEvaluator.result = null;
-                            currentEvaluator.viewModelListener.updateModel();
-                            /*
-                            evaluatorPanel.destroy();
-                            evalDialog.dispose();
-                            evalDialog = null;
-                             */
+                            close();
                         }
                     }
                 });
         evalDialog = DialogDisplayer.getDefault().createDialog(dd);
         currentEvaluator = evaluatorPanel;
         evalDialog.setVisible(true);
+    }
+    
+    private static void close() {
+        //currentEvaluator = null;
+        evalDialog.setVisible(false);
+        try {
+            currentEvaluator.ignoreEvents = true;
+            // Clean the input line
+            currentEvaluator.expressionComboBox.setSelectedItem(""); // NOI18N
+        } finally {
+            currentEvaluator.ignoreEvents = false;
+        }
+        // Clean the model
+        currentEvaluator.result = null;
+        currentEvaluator.viewModelListener.updateModel();
+        /*
+        evaluatorPanel.destroy();
+        evalDialog.dispose();
+        evalDialog = null;
+         */
+    }
+    
+    private class SessionListener extends DebuggerManagerAdapter {
+        
+        private boolean autoClosed = false;
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            Session currentSession = DebuggerManager.getDebuggerManager().getCurrentSession();
+            if (currentSession != null && currentSession.getCurrentLanguage().equals("Java")) {
+                if (autoClosed) {
+                    DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                    if (de == null) return ;
+                    JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
+                    if (debugger == null) return ;
+                    open(debugger);
+                    autoClosed = false;
+                }
+            } else {
+                if (evalDialog.isVisible()) {
+                    autoClosed = true;
+                    close();
+                }
+            }
+        }
+        
     }
     
     private class EvaluateTask implements Runnable {
