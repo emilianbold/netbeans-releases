@@ -316,43 +316,49 @@ public class CreateAttributeWrapperMBean extends JellyTestCase {
     private void wrapper13Attributes(NewFileWizardOperator nfwo,
             JTableMouseDriver mouseDriver, JTableOperator jto) {
         //setting attribute 2 to read only
-        mouseDriver.selectCell(jto, JellyConstants.LINE_TWO, JellyConstants.ACCESS_COL); 
+        int index = jto.findCellRow(JellyConstants.LIST_TYPE_FULL);
+        mouseDriver.selectCell(jto, index, JellyConstants.ACCESS_COL); 
         JellyToolsHelper.changeTableComboBoxItem(JellyConstants.W_ATTR_ACCESS_CB, 
                 jto, JellyConstants.RO);
-        mouseDriver.selectCell(jto, JellyConstants.LINE_TWO, JellyConstants.ACCESS_COL); 
+        mouseDriver.selectCell(jto, index, JellyConstants.ACCESS_COL); 
         assertEquals(JellyConstants.RO,JellyToolsHelper.getTableComboBoxItem(
                 JellyConstants.W_ATTR_ACCESS_CB, 
                 jto));
         // deselecting attribute 5
-        mouseDriver.selectCell(jto, JellyConstants.LINE_FIVE, JellyConstants.INCLUDE_COL); 
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_FIVE, JellyConstants.INCLUDE_COL));  
-    
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ONE, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_THREE, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_FOUR, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_SIX, JellyConstants.INCLUDE_COL));
+        uncheckAttribute(mouseDriver, jto, JellyConstants.DATE_TYPE_FULL);
+        
+        verifyAttributeChecked(jto, JellyConstants.STR_TYPE_FULL);
+        verifyAttributeChecked(jto, JellyConstants.BOOL_TYPE);
+        verifyAttributeChecked(jto, JellyConstants.LIST_TYPE_FULL);
+        verifyAttributeChecked(jto, JellyConstants.STR_ARRAY_TYPE_FULL);
+        verifyAttributeChecked(jto, JellyConstants.DOUBLE_TYPE_FULL);
+        verifyAttributeChecked(jto, JellyConstants.FLOAT_TYPE);
     }
     
     private void wrapper14Attributes(NewFileWizardOperator nfwo,
             JTableMouseDriver mouseDriver, JTableOperator jto) {
-        // deselecting attribute 0,2,4 and 5
-        mouseDriver.selectCell(jto, JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL); 
-        mouseDriver.selectCell(jto, JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL); 
-        mouseDriver.selectCell(jto, JellyConstants.LINE_FOUR, JellyConstants.INCLUDE_COL); 
-        mouseDriver.selectCell(jto, JellyConstants.LINE_SIX, JellyConstants.INCLUDE_COL); 
+        // deselecting attribute 0,2,4 and 6
+        uncheckAttribute(mouseDriver, jto, JellyConstants.STR_TYPE_FULL); 
+        uncheckAttribute(mouseDriver, jto, JellyConstants.LIST_TYPE_FULL); 
+        uncheckAttribute(mouseDriver, jto, JellyConstants.DOUBLE_TYPE_FULL); 
+        uncheckAttribute(mouseDriver, jto, JellyConstants.FLOAT_TYPE); 
         
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL));
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL));
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_FOUR, JellyConstants.INCLUDE_COL));
-        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_SIX, JellyConstants.INCLUDE_COL));
-    
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ONE, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_THREE, JellyConstants.INCLUDE_COL));
-        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_FIVE, JellyConstants.INCLUDE_COL));
+        verifyAttributeChecked(jto, JellyConstants.BOOL_TYPE);
+        verifyAttributeChecked(jto, JellyConstants.STR_ARRAY_TYPE_FULL);
+        verifyAttributeChecked(jto, JellyConstants.DATE_TYPE_FULL);
     }
- 
+    
+    private void uncheckAttribute(JTableMouseDriver mouseDriver, JTableOperator jto, String name) {
+        int index = jto.findCellRow(name);
+        mouseDriver.selectCell(jto, index, JellyConstants.INCLUDE_COL); 
+        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+    }
+    
+    private void verifyAttributeChecked(JTableOperator jto, String name) {
+        int index = jto.findCellRow(name);
+        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+    }
+    
     private ArrayList<String> junitStep(NewFileWizardOperator nfwo, MBean mbean) {
         
         ArrayList<String> unitFileNames = new ArrayList<String>();

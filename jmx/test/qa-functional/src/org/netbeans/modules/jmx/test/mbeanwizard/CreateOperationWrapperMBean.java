@@ -280,30 +280,40 @@ public class CreateOperationWrapperMBean extends JellyTestCase {
         if (mbean.getMBeanName().equals(JellyConstants.MBEAN_SIXTEEN)) {
            // check/uncheck attributes to keep
             JTableMouseDriver mouseDriver = new JTableMouseDriver(); 
-            mouseDriver.selectCell(jto,JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL);
-            mouseDriver.selectCell(jto,JellyConstants.LINE_ONE,JellyConstants.INCLUDE_COL);
-            mouseDriver.selectCell(jto,JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL);
+            uncheckOperation(mouseDriver, jto, JellyConstants.VOID_TYPE);
+            uncheckOperation(mouseDriver, jto, JellyConstants.BOOL_TYPE);
+            uncheckOperation(mouseDriver, jto, JellyConstants.INT_TYPE_FULL);
             
-            assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL));
-            assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ONE, JellyConstants.INCLUDE_COL));
-            assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL));
         } else {
-            assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ZERO, JellyConstants.INCLUDE_COL));
-            assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_ONE, JellyConstants.INCLUDE_COL));
-            assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, JellyConstants.LINE_TWO, JellyConstants.INCLUDE_COL));
+            int op0Line = verifyOperationChecked(jto, JellyConstants.VOID_TYPE);
+            int op1Line = verifyOperationChecked(jto, JellyConstants.BOOL_TYPE);
+            int op2Line = verifyOperationChecked(jto, JellyConstants.INT_TYPE_FULL);
             
             // comments on parameter table popups
-            jto.editCellAt(JellyConstants.LINE_ONE, JellyConstants.PARAM_COL);
+            jto.editCellAt(op1Line, JellyConstants.PARAM_COL);
             JellyToolsHelper.fillWrappedParameterComment(jto, opTable, 0, JellyConstants.W_PA_COMMENT1);
-            jto.editCellAt(JellyConstants.LINE_TWO, JellyConstants.PARAM_COL);
+            jto.editCellAt(op2Line, JellyConstants.PARAM_COL);
             JellyToolsHelper.fillWrappedParameterComment(jto, opTable, 0,JellyConstants.W_PA_COMMENT2);
-            jto.editCellAt(JellyConstants.LINE_TWO, JellyConstants.PARAM_COL);
+            jto.editCellAt(op2Line, JellyConstants.PARAM_COL);
             JellyToolsHelper.fillWrappedParameterComment(jto, opTable, 1,JellyConstants.W_PA_COMMENT3);
             
             // comments on exception table popups
-            jto.editCellAt(JellyConstants.LINE_ZERO, JellyConstants.EXCEP_COL);
+            jto.editCellAt(op0Line, JellyConstants.EXCEP_COL);
             JellyToolsHelper.fillWrappedExceptionComment(jto, opTable, 0, JellyConstants.W_EX_COMMENT1);
         }
+    }
+    
+    private void uncheckOperation(JTableMouseDriver mouseDriver, JTableOperator jto, String name) {
+        int index = jto.findCellRow(name);
+        mouseDriver.selectCell(jto, index, JellyConstants.INCLUDE_COL); 
+        assertFalse(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+    }
+    
+    private int verifyOperationChecked(JTableOperator jto, String name) {
+        int index = jto.findCellRow(name);
+        assertTrue(JellyToolsHelper.getTableCheckBoxValue(jto, index, JellyConstants.INCLUDE_COL));
+        
+        return index;
     }
     
     private ArrayList<String> junitStep(NewFileWizardOperator nfwo, MBean mbean) {
