@@ -7,9 +7,10 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.tax.io;
 
 import java.io.*;
@@ -31,7 +32,6 @@ import org.netbeans.tax.*;
 import org.netbeans.tax.io.*;
 import org.netbeans.tax.decl.*;
 import java.util.List;
-
 
 /**
  * Xerces Native Interface ("XNI") based implementation. It sets
@@ -306,9 +306,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void parse (InputSource in) throws IOException, SAXException {
             Reader reader = in.getCharacterStream ();
-            if (reader == null) {
-                doAssert (false);  //we must manage that Reader is passed so we can do remembeing
-            } else {
+            if (reader != null) {
                 rememberingReader = new RememberingReader (reader);
                 in.setCharacterStream (rememberingReader);
                 rememberingReader.startRemembering ();  //remember internal DTD see startElement for end
@@ -534,6 +532,9 @@ public final class XNIBuilder implements TreeBuilder {
             
             // recall remenbered internal DTD  //!!!
             
+            if (rememberingReader == null) {
+                return;
+            }
             StringBuffer mem = rememberingReader.stopRemembering ();
             if (mem == null) return;
             
