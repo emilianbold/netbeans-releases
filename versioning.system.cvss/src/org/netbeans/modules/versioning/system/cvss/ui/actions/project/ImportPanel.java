@@ -35,18 +35,31 @@ public class ImportPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setName(org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0014"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1012"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 0);
+        add(jLabel4, gridBagConstraints);
+
         jLabel3.setLabelFor(folderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1104"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 3, 3);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
         add(jLabel3, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 0);
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(folderTextField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(folderButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1016"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
+        add(folderButton, gridBagConstraints);
 
         jLabel1.setLabelFor(commentScrollPane);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0001"));
@@ -67,20 +80,32 @@ public class ImportPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
         add(commentScrollPane, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0013"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
+        add(jLabel5, gridBagConstraints);
+
         jLabel2.setLabelFor(moduleTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportPanel.class, "Bk0002"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
         add(jLabel2, gridBagConstraints);
 
         moduleTextField.setColumns(40);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(moduleTextField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(moduleButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK1016"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
+        add(moduleButton, gridBagConstraints);
 
         checkoutCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkoutCheckBox, org.openide.util.NbBundle.getMessage(ImportPanel.class, "BK0011"));
@@ -100,10 +125,14 @@ public class ImportPanel extends javax.swing.JPanel {
     final javax.swing.JCheckBox checkoutCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JScrollPane commentScrollPane = new javax.swing.JScrollPane();
     final javax.swing.JTextArea commentTextArea = new javax.swing.JTextArea();
+    final javax.swing.JButton folderButton = new javax.swing.JButton();
     final javax.swing.JTextField folderTextField = new javax.swing.JTextField();
     final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
     final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
     final javax.swing.JLabel jLabel3 = new javax.swing.JLabel();
+    final javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
+    final javax.swing.JLabel jLabel5 = new javax.swing.JLabel();
+    final javax.swing.JButton moduleButton = new javax.swing.JButton();
     final javax.swing.JTextField moduleTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
     

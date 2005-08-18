@@ -33,15 +33,20 @@ import org.netbeans.modules.versioning.system.cvss.ui.wizards.AbstractStep;
 import org.netbeans.modules.versioning.system.cvss.ui.selectors.Kit;
 import org.netbeans.lib.cvsclient.command.importcmd.ImportCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import javax.swing.*;
+import javax.swing.filechooser.*;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import java.io.*;
+import java.io.FileFilter;
 import java.util.*;
 import java.text.MessageFormat;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * Imports project into CVS repository.
@@ -145,8 +150,8 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                             wizard = new WizardDescriptor(wizardIterator);
                             wizard.putProperty("WizardPanel_contentData",  // NOI18N
                                     new String[] {
-                                        "CVS Root",
-                                        "Folder to Import"
+                                        NbBundle.getMessage(AddToRepositoryAction.class, "BK0015"),
+                                        NbBundle.getMessage(AddToRepositoryAction.class, "BK0014")
                                     }
                             );
                             wizard.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);  // NOI18N
@@ -252,7 +257,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         setErrorMessage(step.getErrorMessage());
     }
 
-    class ImportStep extends AbstractStep {
+    class ImportStep extends AbstractStep implements ActionListener {
         private final String module;
         private final String folder;
         private ImportPanel importPanel;
@@ -291,6 +296,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
             importPanel.moduleTextField.getDocument().addDocumentListener(validation);
             importPanel.commentTextArea.getDocument().addDocumentListener(validation);
             importPanel.folderTextField.getDocument().addDocumentListener(validation);
+            importPanel.folderButton.addActionListener(this);
 
             String s = checkInput(importPanel);
             if (s == null) {
@@ -321,6 +327,73 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
             return importPanel.folderTextField.getText();
         }
 
+        /**
+         * Returns file to be initaly used.
+         * <ul>
+         * <li>first is takes text in workTextField
+         * <li>then recent project folder
+         * <li>finally <tt>user.home</tt>
+         * <ul>
+         */
+        private File defaultWorkingDirectory() {
+            File defaultDir = null;
+            String current = importPanel.folderTextField.getText();
+            if (current != null && !(current.trim().equals(""))) {  // NOI18N
+                File currentFile = new File(current);
+                while (currentFile != null && currentFile.exists() == false) {
+                    currentFile = currentFile.getParentFile();
+                }
+                if (currentFile != null) {
+                    if (currentFile.isFile()) {
+                        defaultDir = currentFile.getParentFile();
+                    } else {
+                        defaultDir = currentFile;
+                    }
+                }
+            }
+
+            if (defaultDir == null) {
+                File projectFolder = ProjectChooser.getProjectsFolder();
+                if (projectFolder.exists() && projectFolder.isDirectory()) {
+                    defaultDir = projectFolder;
+                }
+            }
+
+            if (defaultDir == null) {
+                defaultDir = new File(System.getProperty("user.home"));  // NOI18N
+            }
+
+            return defaultDir;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == importPanel.folderButton) {
+                File defaultDir = defaultWorkingDirectory();
+                JFileChooser fileChooser = new JFileChooser(defaultDir);
+                fileChooser.setDialogTitle(NbBundle.getMessage(AddToRepositoryAction.class, "BK1017"));
+                fileChooser.setMultiSelectionEnabled(false);
+                javax.swing.filechooser.FileFilter[] old = fileChooser.getChoosableFileFilters();
+                for (int i = 0; i < old.length; i++) {
+                    javax.swing.filechooser.FileFilter fileFilter = old[i];
+                    fileChooser.removeChoosableFileFilter(fileFilter);
+
+                }
+                fileChooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
+                    public boolean accept(File f) {
+                        return f.isDirectory();
+                    }
+                    public String getDescription() {
+                        return NbBundle.getMessage(AddToRepositoryAction.class, "BK1018");
+                    }
+                });
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.showDialog(importPanel, NbBundle.getMessage(AddToRepositoryAction.class, "BK1019"));
+                File f = fileChooser.getSelectedFile();
+                if (f != null) {
+                    importPanel.folderTextField.setText(f.getAbsolutePath());
+                }
+            }
+        }
     }
 
     private static String checkInput(ImportPanel importPanel) {
