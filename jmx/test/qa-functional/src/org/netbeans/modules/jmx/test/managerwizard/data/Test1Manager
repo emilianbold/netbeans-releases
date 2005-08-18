@@ -1,5 +1,5 @@
 /*
- * ConstructTest1Manager.java
+ * Test1Manager.java
  *
  * Created on <current Date and Time>
  */
@@ -20,7 +20,7 @@ import javax.management.remote.JMXServiceURL;
  * JMX manager class
  * @author <author>
  */
-public class ConstructTest1Manager {
+public class Test1Manager {
     
     /**
      * @param args the command line arguments
@@ -29,7 +29,7 @@ public class ConstructTest1Manager {
 
         
         //manager instantiation and connection to the remote agent
-        ConstructTest1Manager manager = ConstructTest1Manager.getDefault();
+        Test1Manager manager = Test1Manager.getDefault();
         
         /* *** SAMPLE MBEAN NAME DISCOVERY *** */ 
         /* 
@@ -74,9 +74,9 @@ public class ConstructTest1Manager {
     /**
      * Returns a manager singleton.
      */
-    public synchronized static ConstructTest1Manager getDefault() throws Exception {
+    public synchronized static Test1Manager getDefault() throws Exception {
         if(singleton == null) {
-            singleton = new ConstructTest1Manager();
+            singleton = new Test1Manager();
             singleton.connect();
         }
         return singleton;
@@ -99,6 +99,6 @@ public class ConstructTest1Manager {
     private JMXConnector connector;
     
     //Singleton instance
-    private static ConstructTest1Manager singleton;
+    private static Test1Manager singleton;
     
 }
