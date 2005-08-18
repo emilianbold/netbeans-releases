@@ -6,7 +6,7 @@
             <file name="DerbyDriver.xml" url="DerbyDriver.xml"/>
         </folder>
         <folder name="Runtimes">
-            <file name="DerbyRuntime.instance"  url="DerbyDriver.xml">
+            <file name="DerbyRuntime.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
                 <attr name="instanceOf" methodvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
             </file>
