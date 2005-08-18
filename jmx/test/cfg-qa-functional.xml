@@ -23,15 +23,21 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/agentwizard/CreateAgentProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/ConstructAgent.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/CompileAgentProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateMBeanProject.class"/>
-                <include name="org/netbeans/modules/jmx/test/mbeanwizard/EmptyMBean.class"/>
-                <include name="org/netbeans/modules/jmx/test/mbeanwizard/OneFeatureMBean.class"/>
-                <include name="org/netbeans/modules/jmx/test/mbeanwizard/TwoFeatureMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateEmptyMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateOneFeatureMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateTwoFeatureMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateAttributeWrapperMBean.class"/>
+                <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateOperationWrapperMBean.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/UITests.class"/>
-                <include name="org/netbeans/modules/jmx/test/configwizard/ConfigWizardValidation.class"/>
+                <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/RunUnitMBeanTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/configwizard/ConfigWizardValidation.class"/>
+                <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/managerwizard/CreateManagerProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/managerwizard/ConstructManager.class"/>
+                <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/CreateActionsProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/MBeanRegistTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/AddMBeanAttributesTests.class"/>
@@ -39,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/actions/ImplNotifEmitterTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/CreateJUnitTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/RegisterMBeansTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
             </patternset>
         </testset>
     </testbag>
