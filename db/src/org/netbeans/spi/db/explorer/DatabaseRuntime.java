@@ -65,12 +65,12 @@ public interface DatabaseRuntime {
     public boolean canStart();
 
     /**
-     * Start the database server instance represented by this runtime.
+     * Starts the database server instance represented by this runtime.
      */
     void start();
     
     /**
-     * Start the database server instance represented by this runtime.
+     * Stops the database server instance represented by this runtime.
      */
     void stop();
 }
