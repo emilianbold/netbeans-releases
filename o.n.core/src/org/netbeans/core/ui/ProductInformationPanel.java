@@ -459,6 +459,9 @@ public class ProductInformationPanel extends JPanel {
         String prefix = "";
         while (all.hasMoreElements ()) {
             String s = (String)all.nextElement ();
+            if (s == null) {
+                continue;
+            }
             File f = FileUtil.normalizeFile(new File(s));
             if (files.add (f)) {
                 // new file
