@@ -1605,7 +1605,7 @@ public class LayoutDesigner implements LayoutConstants {
             int index = parent.indexOf(group);
             layoutModel.removeInterval(interval);
             layoutModel.removeInterval(group);
-            layoutModel.setIntervalAlignment(interval, parent.getAlignment());
+            layoutModel.setIntervalAlignment(interval, group.getAlignment());
             layoutModel.addInterval(interval, parent, index);
             if (interval.isGroup()) {
                 destroyGroupIfRedundant(interval, boundary);
