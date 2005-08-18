@@ -1,0 +1,104 @@
+/*
+ * ConstructTest1Manager.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package managerfunctionaltest;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+
+/**
+ * JMX manager class
+ * @author <author>
+ */
+public class ConstructTest1Manager {
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws Exception  {
+
+        
+        //manager instantiation and connection to the remote agent
+        ConstructTest1Manager manager = ConstructTest1Manager.getDefault();
+        
+        /* *** SAMPLE MBEAN NAME DISCOVERY *** */ 
+        /* 
+         Set resultSet = 
+            manager.getMBeanServerConnection().queryNames(null, null);
+         for(Iterator i = resultSet.iterator(); i.hasNext();) {
+             System.out.println("MBean name: " + i.next());
+         }
+        */
+        
+        //close connection
+        manager.close();
+        
+        System.out.println("Connection closed.");
+    }
+    
+    /**
+     * JMX Agent connection
+     * This method is called automatically when <CODE>getDefault()</CODE>
+     * is called
+     */
+    public void connect() throws Exception  {
+
+        /* *** SAMPLE CREDENTIALS *** */ 
+        /* Replace userName and userPassword with your parameters.  
+         * Provide env parameter when calling JMXConnectorFactory.connect(url, env) 
+        //RMI Authentication 
+        Map env = new HashMap(); 
+        env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"});
+        */ 
+        
+        //Create JMX Agent URL 
+        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi");
+        
+        //Connect the JMXConnector 
+        connector = JMXConnectorFactory.connect(url, null);
+        
+        //Get the MBeanServerConnection
+        mbsc = connector.getMBeanServerConnection();
+    }
+    
+    /**
+     * Returns a manager singleton.
+     */
+    public synchronized static ConstructTest1Manager getDefault() throws Exception {
+        if(singleton == null) {
+            singleton = new ConstructTest1Manager();
+            singleton.connect();
+        }
+        return singleton;
+    }
+    
+    public MBeanServerConnection getMBeanServerConnection() {
+        return mbsc;
+    }
+    
+    public void close() throws Exception {
+        
+        //Close the connection
+        connector.close();
+    }
+    
+    //MBeanServerConnection definition
+    private MBeanServerConnection mbsc;
+    
+    //The JMX Connector definition
+    private JMXConnector connector;
+    
+    //Singleton instance
+    private static ConstructTest1Manager singleton;
+    
+}
