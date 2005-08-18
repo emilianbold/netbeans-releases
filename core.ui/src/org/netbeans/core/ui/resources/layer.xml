@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-FileSystemAction.instance"/>
             <file name="org-openide-actions-GarbageCollectAction.instance"/>
             <file name="org-netbeans-core-actions-OptionsAction.instance"/>
+            <file name="org-netbeans-core-ui-templates-TemplatesAction.instance"/>
             <file name="org-openide-actions-InstantiateAction.instance"/>
             <file name="org-openide-actions-MoveDownAction.instance"/>
             <file name="org-openide-actions-MoveUpAction.instance"/>
@@ -181,6 +182,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator2.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
+            <file name="org-netbeans-core-ui-templates-TemplatesAction.instance"/>
+            <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-core-ui-templates-TemplatesAction.instance" boolvalue="true" />
+            <attr name="LibrariesCustomizerAction.instance/org-netbeans-core-ui-templates-TemplatesAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-ui-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true" />
             <attr name="Separator2.instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
             <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
