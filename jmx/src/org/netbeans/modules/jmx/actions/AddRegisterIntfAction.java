@@ -41,6 +41,7 @@ public class AddRegisterIntfAction extends CookieAction {
      */
     public AddRegisterIntfAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        
     }
     
     protected Class[] cookieClasses() {
@@ -53,7 +54,7 @@ public class AddRegisterIntfAction extends CookieAction {
     }
     
     public boolean asynchronous() {
-        return true; // yes, this action should run asynchronously
+        return false; // yes, this action should run asynchronously
         // would be better to rewrite it to synchronous (running in AWT thread),
         // just replanning test generation to RequestProcessor
     }  

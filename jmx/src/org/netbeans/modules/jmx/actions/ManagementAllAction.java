@@ -22,8 +22,8 @@ import org.openide.src.ClassElement;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
+import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
-
 
 /** 
  * Action which just groups update actions.
@@ -31,11 +31,17 @@ import org.openide.util.actions.SystemAction;
  * @author  tleveque
  * @version 1.0
  */
-public class ManagementAllAction extends SystemAction implements Presenter.Menu, Presenter.Popup {
+public class ManagementAllAction extends CookieAction implements Presenter.Menu, Presenter.Popup {
 
-    
+    /*
     public void actionPerformed (ActionEvent ev) {
         // do nothing; should not be called
+    }
+     */
+    
+    protected int mode() {
+        // allow multiple selected nodes (classes, packages)
+        return MODE_EXACTLY_ONE;    
     }
     
     protected Class[] cookieClasses() {
