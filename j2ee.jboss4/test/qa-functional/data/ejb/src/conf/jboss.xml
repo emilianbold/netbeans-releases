@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<jboss>
+     <enterprise-beans>
+       <entity>
+	 <ejb-name>CabinEJB</ejb-name>
+	 <jndi-name>CabinHomeRemote</jndi-name>
+       </entity>
+     </enterprise-beans>
+</jboss>
