@@ -477,7 +477,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
     protected boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
             File dir = lookupImportDirectory(nodes[0]);
-            if (dir.isDirectory()) {
+            if (dir != null && dir.isDirectory()) {
                 return new File(dir, "CVS").exists() == false;  // NOI18N
             }
         }
