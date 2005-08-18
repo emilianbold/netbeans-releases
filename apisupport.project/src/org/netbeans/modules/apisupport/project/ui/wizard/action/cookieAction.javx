@@ -10,7 +10,7 @@ public final class @@CLASS_NAME@@ extends CookieAction {
     }
 
     protected int mode() {
-        return CookieAction.MODE_ANY;
+        return CookieAction.@@MODE@@;
     }
 
     public String getName() {

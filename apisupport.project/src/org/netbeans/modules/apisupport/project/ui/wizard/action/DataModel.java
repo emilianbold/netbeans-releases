@@ -35,6 +35,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     // first panel data (Action Type)
     private boolean alwaysEnabled;
     private String[] cookieClasses;
+    private boolean multiSelection;
     
     // second panel data (GUI Registration)
     private String category;
@@ -97,6 +98,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
         replaceTokens.put("@@PACKAGE_NAME@@", packageName); // NOI18N
         replaceTokens.put("@@DISPLAY_NAME@@", displayName); // NOI18N
+        replaceTokens.put("@@MODE@@", getSelectionMode()); // NOI18N
         if (!alwaysEnabled) {
             String indent = "            "; // NOI18N
             String newLine = System.getProperty("line.separator"); // NOI18N
@@ -258,6 +260,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     void setCookieClasses(String[] cookieClasses) {
         this.cookieClasses = cookieClasses;
+    }
+    
+    void setMultiSelection(boolean multiSelection) {
+        this.multiSelection = multiSelection;
+    }
+    
+    private String getSelectionMode() {
+        return multiSelection ? "MODE_ANY" : "MODE_EXACTLY_ONE"; // NOI18N
     }
     
     void setCategory(String category) {

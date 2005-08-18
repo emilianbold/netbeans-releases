@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
@@ -46,7 +49,20 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     protected void storeToDataModel() {
         data.setAlwaysEnabled(alwaysEnabled.isSelected());
-        data.setCookieClasses(new String[] { (String) coockieClass.getSelectedItem() });
+        data.setCookieClasses(getCookieClasses());
+        data.setMultiSelection(multiSelection.isSelected());
+    }
+    
+    private String[] getCookieClasses() {
+        StringTokenizer classesST  = new StringTokenizer(
+                coockieClass.getEditor().getItem().toString(), ","); // NOI18N
+        Collection classes = new ArrayList();
+        while (classesST.hasMoreTokens()) {
+            String clazz = (String) classesST.nextToken();
+            classes.add(clazz.trim());
+        }
+        String[] s = new String[classes.size()];
+        return (String[]) classes.toArray(s);
     }
     
     protected void readFromDataModel() {
@@ -119,6 +135,7 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 6, 0);
         add(coockieClassTxt, gridBagConstraints);
 
+        coockieClass.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
