@@ -37,6 +37,7 @@ public class SetSystemPropertiesAction extends WizardAction {
     }
     
     public void execute(WizardBeanEvent evt) {
+        Util.logSystemInfo(this);
         resolveProductBeanProperties();
         setDesktopIconName();
         Util.setStringPropertyValue(Names.INSTALLER_TYPE,Names.INSTALLER_NB);

@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -447,6 +448,22 @@ public class Util {
         String trace = getStackTrace(t);
         log.logEvent(log, Log.DBG, trace);
         log.logEvent(log, Log.ERROR, trace);
+    }
+    
+    /** Logs OS and JVM info */
+    public static void logSystemInfo (Log log) {
+        log.logEvent(log, Log.DBG, "OS Info: " 
+        + System.getProperty("os.name","Unknown")
+        + " version " + System.getProperty("os.version","unknown")
+        + " running on " + System.getProperty("os.arch","unknown"));
+        log.logEvent(log, Log.DBG, "JVM Info: " 
+        + System.getProperty("java.version","Unknown")
+        + "; " + System.getProperty("java.vm.name","unknown")
+        + " "  + System.getProperty("java.vm.version","unknown")
+        + "; " + System.getProperty("java.vendor","unknown"));
+        log.logEvent(log, Log.DBG, "Java Home: " 
+        + System.getProperty("java.home","Unknown"));
+        log.logEvent(log, Log.DBG, "System Locale: " + Locale.getDefault().toString());
     }
     
     /** A simple method to copy files. */

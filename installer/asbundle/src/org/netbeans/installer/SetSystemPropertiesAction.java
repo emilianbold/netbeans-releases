@@ -39,9 +39,7 @@ public class SetSystemPropertiesAction extends WizardAction {
     }
     
     public void execute(WizardBeanEvent evt) {
-        //RunnableWizardBeanState state = getState();
-        //String msg = resolveString("$L(com.sun.installer.InstallerResources,INIT_PROPS_MSG)");
-        //state.setStatusDescription(msg);
+        Util.logSystemInfo(this);
         resolveProductBeanProperties();
         setDesktopIconName();
         setAdminProperties();

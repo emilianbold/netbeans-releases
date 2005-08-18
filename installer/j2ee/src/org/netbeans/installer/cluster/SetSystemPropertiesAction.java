@@ -39,6 +39,7 @@ public class SetSystemPropertiesAction extends WizardAction {
     }
     
     public void execute(WizardBeanEvent evt) {
+        Util.logSystemInfo(this);
         resolveProductBeanProperties();
     }
     
