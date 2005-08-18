@@ -40,7 +40,6 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
      */
     
     protected int mode() {
-        // allow multiple selected nodes (classes, packages)
         return MODE_EXACTLY_ONE;    
     }
     
