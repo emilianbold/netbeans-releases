@@ -12,8 +12,8 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
@@ -193,8 +193,10 @@ public class NewProjectIterator extends BasicWizardIterator {
                 Iterator it = set.iterator();
                 boolean filesystems = false;
                 boolean loaders = false;
-//                boolean nodes = false;
-//                boolean util = false;
+                boolean dialogs = false;
+                boolean util = false;
+                boolean projectui = false;
+                boolean projectapi = false;
                 while (it.hasNext()) {
                     ModuleDependency dep = (ModuleDependency)it.next();
                     if ("org.openide.filesystems".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
@@ -203,13 +205,18 @@ public class NewProjectIterator extends BasicWizardIterator {
                     if ("org.openide.loaders".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
                         loaders = true;
                     }
-/*                    if ("org.openide.nodes".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-                        nodes = true;
+                    if ("org.openide.dialogs".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        dialogs = true;
                     }
                     if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
                         util = true;
                     }
- */
+                    if ("org.netbeans.modules.projectuiapi".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        projectui = true;
+                    }
+                    if ("org.netbeans.modules.projectapi".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        projectapi = true;
+                    }
                 }
                 if (!filesystems) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", -1, null, true)); //NOI18N
@@ -217,13 +224,18 @@ public class NewProjectIterator extends BasicWizardIterator {
                 if (!loaders) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders", -1, null, true)); //NOI18N
                 }
-/*                if (!nodes) {
-                    fileChanges.add(fileChanges.addModuleDependency("org.openide.nodes", -1, null, true)); //NOI18N
+                if (!dialogs) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.dialogs", -1, null, true)); //NOI18N
                 }
                 if (!util) {
                     fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
                 }
- */
+                if (!projectui) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.projectuiapi", -1, null, true)); //NOI18N
+                }
+                if (!projectapi) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.projectapi", -1, null, true)); //NOI18N
+                }
             }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
@@ -233,18 +245,24 @@ public class NewProjectIterator extends BasicWizardIterator {
         // 3. create sample template
         fileChanges.add(fileChanges.layerModifications(new CreatedModifiedFiles.LayerOperation() {
             public void run(FileSystem layer) throws IOException {
-                FileObject folder = layer.getRoot().getFileObject("Templates/Other");// NOI18N
+                FileObject folder = layer.getRoot().getFileObject("Templates/Project/Other");// NOI18N
                 if (folder == null) {
-                    folder = FileUtil.createFolder(layer.getRoot(), "Templates/Other"); // NOI18N
+                    folder = FileUtil.createFolder(layer.getRoot(), "Templates/Project/Other"); // NOI18N
                 }
-                FileObject file = folder.createData(name, ".zip"); // NOI18N
+                FileObject file = folder.createData(name + "Project", "zip"); // NOI18N
                 file.setAttribute("template", Boolean.TRUE); // NOI18N
                 file.setAttribute("SystemFileSystem.localizingBundle", packageName + ".Bundle");
-                file.setAttribute("instantiatingWizardURL", "nbresloc:" + descName);
-                file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + ".New" + name + "Iterator.createIterator");
+                URL descURL = new URL("nbresloc:/" + packageName.replace('.', '/') + "/" + name + "Description.html");
+                file.setAttribute("instantiatingWizardURL", descURL);
+                URL locUrl = new URL("nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif");
+                file.setAttribute("SystemFileSystem.icon",  locUrl);
+                
+                file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + "." + name + "WizardIterator.createIterator");
             }
         }, Collections.EMPTY_SET));
+        fileChanges.add(fileChanges.bundleKeyDefaultBundle("Templates/Project/Other/" + name +  "Project.zip", displayName));
         
+        // x. generate java classes
         final String iteratorName = getRelativePath(project, packageName, 
                                             name, "WizardIterator.java"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
@@ -255,6 +273,12 @@ public class NewProjectIterator extends BasicWizardIterator {
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewProjectIterator.class.getResource("templateWizardPanel.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(panelName, template, replaceTokens));
+        
+        final String panelVisName = getRelativePath(project, packageName, 
+                                            name, "PanelVisual.java"); //NOI18N
+        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        template = NewProjectIterator.class.getResource("templatePanelVisual.javx");//NOI18N
+        fileChanges.add(fileChanges.createFileWithSubstitutions(panelVisName, template, replaceTokens));
         
         
         model.setCreatedModifiedFiles(fileChanges);
@@ -307,15 +331,20 @@ public class NewProjectIterator extends BasicWizardIterator {
             while (it.hasNext()) {
                 FileObject fo = (FileObject)it.next();
                 ZipEntry entry = new ZipEntry(FileUtil.getRelativePath(root, fo));
+                InputStream in = null;
+                try {
+                    in = fo.getInputStream();
+                    FileUtil.copy(in, str);
+                } finally {
+                  if (in != null) {
+                      in.close();
+                  }  
+                }
                 str.putNextEntry(entry);
             }
         } finally {
             if (str != null) {
-                try {
-                    str.close();
-                } catch (IOException exc) {
-                    
-                }
+                str.close();
             }
         }
     }
