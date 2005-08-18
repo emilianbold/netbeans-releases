@@ -224,9 +224,11 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
                 }
             }
 
-            File f = FileUtil.toFile(fo);
-            if (f.isDirectory()) {
-                importDirectory = f;
+            if (fo != null) {
+                File f = FileUtil.toFile(fo);
+                if (f.isDirectory()) {
+                    importDirectory = f;
+                }
             }
         }
         return importDirectory;
