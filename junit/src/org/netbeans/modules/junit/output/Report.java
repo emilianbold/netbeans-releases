@@ -55,20 +55,19 @@ final class Report {
     /**
      */
     void reportTestcase(Testcase testcase) {
-        final String className = testcase.className;
-        final String mapKey = (className != null)
-                              ? className
-                              : Report.TestcaseGroup.NO_NAME;
-        //assert testcase.className != null;
+        final String className = (testcase.className != null)
+                                 ? testcase.className
+                                 : Report.TestcaseGroup.NO_NAME;
         
         TestcaseGroup group = null;
         try {
-            group = (TestcaseGroup) testcaseGroupMap.get(mapKey);
+            group = (TestcaseGroup) testcaseGroupMap.get(className);
         } catch (Exception ex) {
             return;
         }
         if (group == null) {
-            testcaseGroupMap.put(mapKey, group = new TestcaseGroup(className));
+            testcaseGroupMap.put(className,
+                                 group = new TestcaseGroup(className));
         }
         group.addTestcase(testcase);
     }
