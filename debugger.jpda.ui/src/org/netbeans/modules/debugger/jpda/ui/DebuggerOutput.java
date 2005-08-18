@@ -58,7 +58,7 @@ PropertyChangeListener {
     private static Set          managers = new HashSet ();
     
     private JPDADebugger        debugger;
-    private DebuggerEngine      engine;
+    //private DebuggerEngine      engine;
     private SourcePath          engineContext;
     private IOManager           ioManager;
     private ContextProvider     contextProvider;
@@ -68,8 +68,8 @@ PropertyChangeListener {
         this.contextProvider = contextProvider;
         this.debugger = (JPDADebugger) contextProvider.lookupFirst 
             (null, JPDADebugger.class);
-        this.engine = (DebuggerEngine) contextProvider.lookupFirst 
-            (null, DebuggerEngine.class);
+        //this.engine = (DebuggerEngine) contextProvider.lookupFirst 
+        //    (null, DebuggerEngine.class);
         engineContext = (SourcePath) contextProvider.lookupFirst 
             (null, SourcePath.class);
         
@@ -95,13 +95,13 @@ PropertyChangeListener {
         );
     }
 
-    protected void destroy () {
+    protected synchronized void destroy () {
         debugger.removePropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
         );
         debugger = null;
-        engine = null;
+        //engine = null;
         engineContext = null;
         ioManager = null;
     }
@@ -111,8 +111,16 @@ PropertyChangeListener {
     }
 
     public void propertyChange (java.beans.PropertyChangeEvent evt) {
-        JPDAThread t = debugger.getCurrentThread ();
-        if (debugger.getState () == JPDADebugger.STATE_STARTING) {
+        JPDAThread t;
+        int debuggerState;
+        IOManager ioManager;
+        synchronized (this) {
+            if (debugger == null) return ;
+            t = debugger.getCurrentThread ();
+            debuggerState = debugger.getState();
+            ioManager = this.ioManager;
+        }
+        if (debuggerState == JPDADebugger.STATE_STARTING) {
             AbstractDICookie cookie = (AbstractDICookie) contextProvider.
                 lookupFirst (null, AbstractDICookie.class);
             if (cookie instanceof AttachingDICookie) {
@@ -170,7 +178,7 @@ PropertyChangeListener {
                     );
             }
         } else
-        if (debugger.getState () == JPDADebugger.STATE_RUNNING) {
+        if (debuggerState == JPDADebugger.STATE_RUNNING) {
             print (
                 "CTL_Debugger_running",
 //                where,
@@ -179,10 +187,14 @@ PropertyChangeListener {
                 null
             );
         } else
-        if (debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
+        if (debuggerState == JPDADebugger.STATE_DISCONNECTED) {
             Throwable e = null;
             try {
-                debugger.waitRunning ();
+                synchronized (this) {
+                    if (debugger != null) {
+                        debugger.waitRunning ();
+                    }
+                }
             } catch (DebuggerStartException ex) {
                 e = ex.getTargetException ();
             }
@@ -210,7 +222,7 @@ PropertyChangeListener {
             }
             ioManager.closeStream ();
         } else
-        if (debugger.getState () == JPDADebugger.STATE_STOPPED) {
+        if (debuggerState == JPDADebugger.STATE_STOPPED) {
             //DebuggerEngine engine = debugger.getEngine ();
             //S ystem.out.println("State Stopped " + debugger.getLastAction ());
             if (t == null) {
@@ -227,9 +239,12 @@ PropertyChangeListener {
                 String sourceName = t.getSourceName (language);
                 String relativePath = EditorContextBridge.getRelativePath 
                     (t, language);
-                String url = (relativePath != null) ?
-                    engineContext.getURL (relativePath, true) :
-                    null;
+                String url = null;
+                synchronized (this) {
+                    if (relativePath != null && engineContext != null) {
+                        url = engineContext.getURL(relativePath, true);
+                    }
+                }
                 IOManager.Line line = null;
                 if (lineNumber > 0 && url != null)
                     line = new IOManager.Line (
@@ -333,6 +348,11 @@ PropertyChangeListener {
                 message
             )).format (args);
 
+        IOManager ioManager;
+        synchronized (this) {
+            ioManager = this.ioManager;
+            if (ioManager == null) return ;
+        }
         ioManager.println (
             text,
 //            where,
