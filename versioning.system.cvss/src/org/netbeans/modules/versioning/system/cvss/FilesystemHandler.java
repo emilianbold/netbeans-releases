@@ -98,7 +98,6 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             if (file.isDirectory()) {
                 if (CvsVersioningSystem.FILENAME_CVS.equals(file.getName())) {
                     saveMetadata(root);
-                    System.out.println("saved metadata: " + root.getAbsolutePath());
                 } else {
                     saveRecursively(file);
                 }
@@ -119,7 +118,6 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             }
             refreshRecursively(deleted);
         }
-        System.out.println("deleted file: " + deleted.getAbsolutePath());
         fileDeletedImpl(deleted);
     }
 

@@ -292,6 +292,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
         Action revertAction;
         boolean allLocallyNew = true;
+        boolean allLocallyDeleted = true;
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
         File [] files = Utils.getCurrentContext().getFiles();
         for (int i = 0; i < files.length; i++) {
@@ -299,12 +300,16 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
             FileInformation info = cache.getStatus(file);
             if (info.getStatus() != FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 allLocallyNew = false;
-                break;
+            }
+            if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
+                allLocallyDeleted = false;
             }
         }
         if (allLocallyNew) {
             SystemAction systemAction = SystemAction.get(DeleteLocalAction.class);
             revertAction = new SystemActionBridge(systemAction, actionsLoc.getString("CTL_PopupMenuItem_Delete"));
+        } else if (allLocallyDeleted) {
+            revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionsLoc.getString("CTL_PopupMenuItem_RevertDelete"));
         } else {
             revertAction = new SystemActionBridge(SystemAction.get(GetCleanAction.class), actionsLoc.getString("CTL_PopupMenuItem_GetClean"));
         }
