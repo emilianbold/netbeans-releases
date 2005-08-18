@@ -17,10 +17,13 @@
  */
 
 package org.netbeans.modules.j2ee.sun.dd.api.serverresources;
+
+import org.netbeans.modules.schema2beans.Schema2BeansRuntimeException;
+
 /**
  * @author Nitya Doraisamy
  */
-public interface Resources {
+public interface Resources extends org.netbeans.modules.j2ee.sun.dd.api.RootInterface {
     
         public static final String CUSTOM_RESOURCE = "CustomResource";	// NOI18N
 	public static final String EXTERNAL_JNDI_RESOURCE = "ExternalJndiResource";	// NOI18N
@@ -133,4 +136,5 @@ public interface Resources {
 	public int removeJmsResource(JmsResource value);
 	public JmsResource newJmsResource();
         
+        public void write(java.io.File f) throws java.io.IOException, Schema2BeansRuntimeException;
 }

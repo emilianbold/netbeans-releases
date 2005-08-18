@@ -30,6 +30,9 @@ import org.netbeans.modules.j2ee.sun.dd.impl.web.SunWebAppProxy;
 import org.netbeans.modules.j2ee.sun.dd.api.app.SunApplication;
 import org.netbeans.modules.j2ee.sun.dd.impl.app.SunApplicationProxy;
 
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.ResourcesProxy;
+        
 import org.netbeans.modules.j2ee.sun.dd.impl.DTDRegistry;
 
 /**
@@ -281,6 +284,29 @@ public final class DDProvider {
           
           return jar;
     }
+    
+    /**
+     * Returns the root of Resources bean graph for java.io.File object.
+     *
+     * @param doc XML document representing the .sun-resource file    
+     */
+    public Resources getResourcesGraph() {
+        Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph();
+        ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
+        return proxy;
+    }
+    
+    /**
+     * Returns the root of Resources bean graph for java.io.File object.
+     *
+     * @param doc XML document representing the .sun-resource file    
+     */
+    public Resources getResourcesGraph(InputStream in) {
+        Resources resourcesRoot = org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources.createGraph(in);
+        ResourcesProxy proxy = new ResourcesProxy(resourcesRoot);
+        return proxy;
+    }
+    
     
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;

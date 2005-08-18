@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <metaDD>
+        <extends>org.netbeans.modules.j2ee.sun.dd.impl.common.SunBaseBean</extends>
 	<meta-element>
 		<dtd-name>resources</dtd-name>
 		<bean-name>Resources</bean-name>
