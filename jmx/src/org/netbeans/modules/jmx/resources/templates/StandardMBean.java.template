@@ -14,7 +14,6 @@ import javax.management.*;
  */
 public class __NAME__ implements __NAME__MBean {
 
-    /* Creates a new instance of __NAME__ */
     public __NAME__() throws NotCompliantMBeanException {
         super(__NAME__MBean.class);
     }
