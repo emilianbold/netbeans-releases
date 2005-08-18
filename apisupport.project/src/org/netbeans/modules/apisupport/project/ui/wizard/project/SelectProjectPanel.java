@@ -14,13 +14,22 @@ package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.IOException;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,11 +111,29 @@ public class SelectProjectPanel extends BasicWizardIterator.Panel {
     // </editor-fold>//GEN-END:initComponents
 
     private void btnProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProjectActionPerformed
-// TODO add your handling code here:
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        int res = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this));
+        if (res == JFileChooser.APPROVE_OPTION) {
+            File fil = chooser.getSelectedFile();
+            FileObject fo = FileUtil.toFileObject(fil);
+            if (fo != null) {
+                try {
+                    Project p = ProjectManager.getDefault().findProject(fo);
+                    DefaultComboBoxModel model = (DefaultComboBoxModel)comProject.getModel();
+                    ComboWrapper wrapper = new ComboWrapper(p);
+                    model.addElement(wrapper);
+                    model.setSelectedItem(wrapper);
+                    if (EMPTY == model.getElementAt(0)) {
+                        model.removeElement(EMPTY);
+                    }
+                } catch (IOException exc) {
+                    ErrorManager.getDefault().notify(exc);
+                }
+            }
+        }
     }//GEN-LAST:event_btnProjectActionPerformed
     protected void storeToDataModel() {
         ComboWrapper wrapper = (ComboWrapper)comProject.getSelectedItem();
-        System.out.println("data");
         data.setTemplate(wrapper.getProject());
     }
     
@@ -119,9 +146,13 @@ public class SelectProjectPanel extends BasicWizardIterator.Panel {
         Project[] prjs = OpenProjects.getDefault().getOpenProjects();
         if (prjs.length > 0) {
             for (int i = 0; i < prjs.length; i++) {
-                model.addElement(new ComboWrapper(prjs[i]));
+                if (prjs[i] != data.getProject()) {
+                    // ignore the currently active project..
+                    model.addElement(new ComboWrapper(prjs[i]));
+                }
             }
-        } else {
+        }
+        if (model.getSize() == 0) {
             model.addElement(EMPTY);
         }
         comProject.setModel(model);

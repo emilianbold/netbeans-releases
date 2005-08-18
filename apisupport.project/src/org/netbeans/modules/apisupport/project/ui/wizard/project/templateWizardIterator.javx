@@ -5,16 +5,23 @@ package @@PACKAGENAME@@;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -56,14 +63,15 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     public Set/*<FileObject>*/ instantiate () throws IOException {
         Set resultSet = new HashSet ();
         File dirF = (File)wiz.getProperty("projdir");        //NOI18N
-        if (dirF != null) {
-            dirF = FileUtil.normalizeFile(dirF);
-        }
+        dirF = FileUtil.normalizeFile(dirF);
+        dirF.mkdirs();
         String name = (String)wiz.getProperty("name");        //NOI18N
         
-//TODO unzip project here 
-    
+        FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
+        dir = dir.createFolder(name);
+        unZipFile(template.getInputStream(), dir);
+        
         Project p = ProjectManager.getDefault().findProject(dir);
 
         resultSet.add (dir);
@@ -105,7 +113,6 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir",null);           //NOI18N
         this.wiz.putProperty("name",null);          //NOI18N
-        this.wiz.putProperty("mainClass",null);         //NOI18N
         this.wiz = null;
         panels = null;
     }
@@ -138,5 +145,61 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
+    // unzipping utilities..
+
+    private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
+        ZipInputStream str = null;
+        try {
+            str = new ZipInputStream(source);
+            ZipEntry entry = str.getNextEntry();
+            while (entry != null) {
+                String relPath = entry.getName();
+                FileObject fo = createFileObject(projectRoot, relPath);
+                
+                OutputStream out = null;
+                FileLock lock = null;
+                try {
+                    lock = fo.lock();
+                    out = fo.getOutputStream(lock);
+                    FileUtil.copy(str, out);
+                } finally {
+                    if (out != null) {
+                        out.close();
+                    }
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
+                }
+                entry = str.getNextEntry();
+            }
+        } finally {
+            if (str != null) {
+                str.close();
+            }
+        }
+    } 
+    
+    private static FileObject createFileObject(FileObject root, String relPath) throws IOException {
+        FileObject currParent = root;
+        StringTokenizer tokens = new StringTokenizer(relPath, "/");
+        int fileIndex = tokens.countTokens() - 1;
+        int currIndex = 0;
+        while (tokens.hasMoreTokens()) {
+            String elem = tokens.nextToken();
+            FileObject curr = currParent.getFileObject(elem);
+            if (curr != null) {
+                currParent = curr;
+                currIndex = currIndex + 1;
+                continue;
+            }
+            if (currIndex == fileIndex) {
+                currParent = currParent.createData(elem);
+            } else {
+                currParent = currParent.createFolder(elem);
+            }
+            currIndex = currIndex + 1;
+        }
+        return currParent;
+    }
     
 }

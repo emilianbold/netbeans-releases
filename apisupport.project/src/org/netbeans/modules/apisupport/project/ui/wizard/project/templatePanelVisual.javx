@@ -200,7 +200,8 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
                                      "Project Folder already exists and is not empty.");
 //            NbBundle.getMessage(@@TEMPLATENAME@@PanelVisual.class,"MSG_ProjectFolderExists"));
             return false;
-        }                
+        }
+        wizardDescriptor.putProperty( "WizardPanel_errorMessage", "");                
         return true;
     }
     
