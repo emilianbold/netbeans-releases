@@ -44,6 +44,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ToolBarUI;
 import javax.swing.text.EditorKit;
+import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeyBinding;
@@ -404,7 +405,8 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                 if (actionContext == null) {
                                     actionContext = createActionContext();
                                 }
-                                Action contextAware = ((ContextAwareAction)obj).createContextAwareInstance(actionContext);
+                                Action contextAware = (actionContext == null) ? null : 
+                                    ((ContextAwareAction)obj).createContextAwareInstance(actionContext);
                                 // use the context aware instance only if it implements Presenter.Toolbar or is a component
                                 // else fall back to the original object
                                 if (contextAware instanceof Presenter.Toolbar || contextAware instanceof Component) {
@@ -474,8 +476,23 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     
     private Lookup createActionContext() {
         DataObject dobj = NbEditorUtilities.getDataObject(editorUI.getDocument());
-        Node node = dobj.getNodeDelegate();
-        return Lookups.singleton(node);
+
+        if (dobj != null){
+            Node node = dobj.getNodeDelegate();
+            return Lookups.singleton(node);
+        }
+        
+        Lookup lookup = null;
+        JTextComponent component = editorUI.getComponent();
+        for (java.awt.Component c = component; c != null; c = c.getParent()) {
+            if (c instanceof Lookup.Provider) {
+                lookup = ((Lookup.Provider)c).getLookup ();
+                if (lookup != null) {
+                    break;
+                }
+            }
+        }
+        return lookup;
     }
 
     private void processButton(AbstractButton button) {
