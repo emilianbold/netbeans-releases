@@ -1,0 +1,91 @@
+/*
+ * Test2Manager.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package managerfunctionaltest;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+
+/**
+ * JMX manager class
+ * @author <author>
+ */
+public class Test2Manager {
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws Exception  {
+
+        
+        //manager instantiation and connection to the remote agent
+        Test2Manager manager = Test2Manager.getDefault();
+        
+        //close connection
+        manager.close();
+        
+        System.out.println("Connection closed.");
+    }
+    
+    /**
+     * JMX Agent connection
+     * This method is called automatically when <CODE>getDefault()</CODE>
+     * is called
+     */
+    public void connect() throws Exception  {
+
+        //RMI Authentication 
+        Map env = new HashMap(); 
+        env.put(JMXConnector.CREDENTIALS, new String[]{"name", "password"});
+        
+        //Create JMX Agent URL 
+        JMXServiceURL url = new JMXServiceURL("service:jmx:jmxmp://localhost:2004");
+        
+        //Connect the JMXConnector 
+        connector = JMXConnectorFactory.connect(url, env);
+        
+        //Get the MBeanServerConnection
+        mbsc = connector.getMBeanServerConnection();
+    }
+    
+    /**
+     * Returns a manager singleton.
+     */
+    public synchronized static Test2Manager getDefault() throws Exception {
+        if(singleton == null) {
+            singleton = new Test2Manager();
+            singleton.connect();
+        }
+        return singleton;
+    }
+    
+    public MBeanServerConnection getMBeanServerConnection() {
+        return mbsc;
+    }
+    
+    public void close() throws Exception {
+        
+        //Close the connection
+        connector.close();
+    }
+    
+    //MBeanServerConnection definition
+    private MBeanServerConnection mbsc;
+    
+    //The JMX Connector definition
+    private JMXConnector connector;
+    
+    //Singleton instance
+    private static Test2Manager singleton;
+    
+}

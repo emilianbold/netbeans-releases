@@ -1,0 +1,80 @@
+/*
+ * Test3Manager.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package managerfunctionaltest;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Set;
+import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+
+/**
+ * JMX manager class
+ * @author <author>
+ */
+public class Test3Manager {
+    
+    /**
+     * JMX Agent connection
+     * This method is called automatically when <CODE>getDefault()</CODE>
+     * is called
+     */
+    public void connect() throws Exception  {
+
+        /* *** SAMPLE CREDENTIALS *** */ 
+        /* Replace userName and userPassword with your parameters.  
+         * Provide env parameter when calling JMXConnectorFactory.connect(url, env) 
+        //RMI Authentication 
+        Map env = new HashMap(); 
+        env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"});
+        */ 
+        
+        //Create JMX Agent URL 
+        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://kernighan.imag.com:8080/jmxrmi");
+        
+        //Connect the JMXConnector 
+        connector = JMXConnectorFactory.connect(url, null);
+        
+        //Get the MBeanServerConnection
+        mbsc = connector.getMBeanServerConnection();
+    }
+    
+    /**
+     * Returns a manager singleton.
+     */
+    public synchronized static Test3Manager getDefault() throws Exception {
+        if(singleton == null) {
+            singleton = new Test3Manager();
+            singleton.connect();
+        }
+        return singleton;
+    }
+    
+    public MBeanServerConnection getMBeanServerConnection() {
+        return mbsc;
+    }
+    
+    public void close() throws Exception {
+        
+        //Close the connection
+        connector.close();
+    }
+    
+    //MBeanServerConnection definition
+    private MBeanServerConnection mbsc;
+    
+    //The JMX Connector definition
+    private JMXConnector connector;
+    
+    //Singleton instance
+    private static Test3Manager singleton;
+    
+}
