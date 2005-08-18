@@ -84,7 +84,29 @@ class CvsLiteAdminHandler implements AdminHandler {
     }    
 
     public void setEntry(File file, Entry entry) throws IOException {
+        // create missing directories beforehand
+        File adminDir = new File(file.getParentFile(), CvsVersioningSystem.FILENAME_CVS);
+        createAdminDirs(adminDir);
         stdHandler.setEntry(file, entry);
+    }
+
+    /**
+     * Restores all administration files in the given directory and all parent directories recursively.
+     *
+     * @param adminDir directory to restore
+     * @throws IOException
+     */
+    private void createAdminDirs(File adminDir) throws IOException {
+        if (!adminDir.exists()) {
+            if (adminDir.getParentFile() != null && adminDir.getParentFile().getParentFile() != null) {
+                createAdminDirs(new File(adminDir.getParentFile().getParentFile(), CvsVersioningSystem.FILENAME_CVS));
+            }
+            CvsMetadata data = MetadataAttic.getMetadata(adminDir.getParentFile());
+            if (data != null) {
+                data.save(adminDir);
+                MetadataAttic.setMetadata(adminDir.getParentFile(), null);
+            }
+        }
     }
 
     public String getRepositoryForDirectory(String directory, String repository)

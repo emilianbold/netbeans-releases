@@ -14,12 +14,14 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.openide.filesystems.*;
 import org.openide.util.RequestProcessor;
+import org.openide.ErrorManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +37,8 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     private static final RequestProcessor  eventProcessor = new RequestProcessor("CVS-Event", 1);
 
     private final FileStatusCache   cache;
-    
+    private final Map savedMetadata = new HashMap();
+
     public FilesystemHandler(CvsVersioningSystem cvs) {
         cache = cvs.getStatusCache();
     }
@@ -55,6 +58,7 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     }
 
     public void fileDeleted(FileEvent fe) {
+        // needed for external deletes; othewise, beforeDelete is quicker
         eventProcessor.post(new FileDeletedTask(FileUtil.toFile(fe.getFile())));
     }
 
@@ -75,18 +79,81 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      * @param fo FileObject, we are only interested in files inside CVS directory
      */ 
     public void beforeDelete(FileObject fo) {
-        if (fo.isFolder()) return;
-        if (!(fo = fo.getParent()).getName().equals(CvsVersioningSystem.FILENAME_CVS)) return;
-        File file = FileUtil.toFile(fo.getParent());
-        saveMetadata(file);
+        if (fo.isFolder()) {
+            saveRecursively(FileUtil.toFile(fo));
+        } else {
+            FileObject parent = fo.getParent();
+            if (CvsVersioningSystem.FILENAME_CVS.equals(parent.getName())) {
+                if ((parent = parent.getParent()) == null) return;
+                File matadataOwner = FileUtil.toFile(parent);
+                saveMetadata(matadataOwner);
+            }
+        }
+    }
+
+    private void saveRecursively(File root) {
+        File [] files = root.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            if (file.isDirectory()) {
+                if (CvsVersioningSystem.FILENAME_CVS.equals(file.getName())) {
+                    saveMetadata(root);
+                    System.out.println("saved metadata: " + root.getAbsolutePath());
+                } else {
+                    saveRecursively(file);
+                }
+            }
+        }
     }
 
     public void deleteSuccess(FileObject fo) {
+        File deleted = FileUtil.toFile(fo);
+        if (fo.isFolder()) {
+            for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
+                File dir = (File) i.next();
+                if (Utils.isParentOrEqual(deleted, dir)) {
+                    CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
+                    MetadataAttic.setMetadata(dir, metadata);
+                    i.remove();
+                }
+            }
+            refreshRecursively(deleted);
+        }
+        System.out.println("deleted file: " + deleted.getAbsolutePath());
+        fileDeletedImpl(deleted);
+    }
+
+    private void refreshRecursively(File file) {
+        CvsMetadata data = MetadataAttic.getMetadata(file);
+        if (data == null) return;
+        Entry [] entries = data.getEntryObjects();
+        for (int i = 0; i < entries.length; i++) {
+            Entry entry = entries[i];
+            if (entry.getName() == null) continue;
+            if (entry.isDirectory()) {
+                refreshRecursively(new File(file, entry.getName()));
+            } else {
+                cache.refreshCached(new File(file, entry.getName()), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
+        }
         // not interested
     }
 
     public void deleteFailure(FileObject fo) {
-        // not interested
+        if (fo.isFolder()) {
+            File notDeleted = FileUtil.toFile(fo);
+            for (Iterator i = savedMetadata.keySet().iterator(); i.hasNext();) {
+                File dir = (File) i.next();
+                if (Utils.isParentOrEqual(notDeleted, dir)) {
+                    if (!dir.exists()) {
+                        CvsMetadata metadata = (CvsMetadata) savedMetadata.get(dir);
+                        MetadataAttic.setMetadata(dir, metadata);
+                    }
+                    i.remove();
+                }
+            }
+            refreshRecursively(notDeleted);
+        }
     }
 
     // package private contract ---------------------------
@@ -134,6 +201,19 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
     private void fileCreatedImpl(File file) {
         if (file == null) return;
         int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
+
+        if (file.isDirectory()) {
+            CvsMetadata data = MetadataAttic.getMetadata(file);
+            if (data != null) {
+                try {
+                    data.save(new File(file, CvsVersioningSystem.FILENAME_CVS));
+                    MetadataAttic.setMetadata(file, null);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+
         if ((status & FileInformation.STATUS_MANAGED) == 0) return;
 
         if (status == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
@@ -209,10 +289,11 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
      */ 
     private void saveMetadata(File dir) {
         dir = FileUtil.normalizeFile(dir);
-        if (MetadataAttic.getMetadata(dir) != null) return;
+        MetadataAttic.setMetadata(dir, null);
+        if (savedMetadata.get(dir) != null) return;
         try {
             CvsMetadata data = CvsMetadata.readAndRemove(dir);
-            MetadataAttic.setMetadata(dir, data);
+            savedMetadata.put(dir, data);
         } catch (IOException e) {
             // cannot read folder metadata, the folder is most probably not versioned
             return;
@@ -254,15 +335,15 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
 
     /**
      * Handles the File Deleted event.
-     */ 
+     */
     private final class FileDeletedTask implements Runnable {
-        
+
         private final File file;
 
         FileDeletedTask(File file) {
             this.file = file;
         }
-        
+
         public void run() {
             fileDeletedImpl(file);
         }
@@ -291,6 +372,5 @@ class FilesystemHandler implements FileChangeListener, InterceptionListener {
             fileDeletedImpl(removed);
             fileCreatedImpl(FileUtil.toFile(newFile));
         }
-
     }
 }
