@@ -98,7 +98,13 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                 public void run() {
                     //get document structure model
                     try {
-                        model = DocumentModel.getDocumentModel((BaseDocument)getDocument());
+                        Document document = getDocument();
+                        if(!(document instanceof BaseDocument)) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new ClassCastException("<FoldHierarchyOperation>.getHierarchy().getComponent().getDocument() returned FilterDocument instead of AbstractDocument. This is likely caused by not yet resolved issue #49497")); //NOI18N
+                            return ;
+                        }
+                        
+                        model = DocumentModel.getDocumentModel((BaseDocument)document);
                         //add changes listener which listenes to model changes
                         model.addDocumentModelListener(XmlFoldManager.this);
                         
@@ -171,12 +177,17 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         };
     }
     
-    /** Applies changes in the document model to the fold hierarchy
-     */
-    
-    //XXX WE NEED A DOCUMENT MODEL LOCKING HERE !!!!!!!!!!!!!!!!!!!!!!!
     private void updateFolds() {
-        ((AbstractDocument)getDocument()).readLock();
+        //check for 49497 :-(
+        //very rarely the getOperation().getHierarchy().getComponent().getDocument()
+        //returns FilterDocument - nobody understands why???
+        Document document = getDocument();
+        if(!(document instanceof AbstractDocument)) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new ClassCastException("<FoldHierarchyOperation>.getHierarchy().getComponent().getDocument() returned FilterDocument instead of AbstractDocument. This is likely caused by not yet resolved issue #49497")); //NOI18N
+            return ;
+        }
+        
+        ((AbstractDocument)document).readLock();
         try {
             FoldHierarchy fh = getOperation().getHierarchy();
             fh.lock();
@@ -190,7 +201,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                         if(chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_ADDED && !de.isLeaf()) {
                             getOperation().addToHierarchy(XmlFoldTypes.TAG, de.getName(), false,
                                     Math.max(0, de.getStartOffset() +1 ) ,
-                                    Math.min(getDocument().getLength(), de.getEndOffset()),
+                                    Math.min(document.getLength(), de.getEndOffset()),
                                     0, 0, null, fhTran);
                         } else if (chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_REMOVED) {
                             //find appropriate fold for the document element
@@ -219,7 +230,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                 fh.unlock();
             }
         } finally {
-            ((AbstractDocument)getDocument()).readUnlock();
+            ((AbstractDocument)document).readUnlock();
         }
         changes.clear();
     }
