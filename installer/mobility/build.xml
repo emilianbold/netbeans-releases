@@ -172,7 +172,7 @@ Microsystems, Inc. All Rights Reserved.
     </java>
   </target>
   
-  <target name="clean" depends="init" description="Clean all build products and temp/backup files.">
+  <target name="clean" depends="init, clean-library" description="Clean all build products and temp/backup files.">
     <delete>
       <fileset dir=".">
         <include name="**/*~"/>
