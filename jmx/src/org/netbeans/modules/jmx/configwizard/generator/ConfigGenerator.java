@@ -216,7 +216,6 @@ public class ConfigGenerator
 
     // returns the password file template
     private String getPasswordTemplate(TemplateWizard wiz) throws Exception {
-        ResourceBundle bundle = NbBundle.getBundle(JMXConfigWizardIterator.class);   
         FileObject mgtTemplate = Templates.getTemplate( wiz );
         InputStream is = ((java.net.URL)mgtTemplate.
                 getAttribute("passwordTemplate")).openStream();   // NOI18N
@@ -235,8 +234,7 @@ public class ConfigGenerator
                 }
             }
             ManagementDialogs.getDefault().notify(
-                    //new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));// NOI18N
-                    new NotifyDescriptor.Message(bundle.getString("MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE));// NOI18N
+                    new NotifyDescriptor.Message(NbBundle.getMessage(ConfigGenerator.class, "MSG_RestrictAccess"), NotifyDescriptor.INFORMATION_MESSAGE)); // NOI18N
             
         }
         
