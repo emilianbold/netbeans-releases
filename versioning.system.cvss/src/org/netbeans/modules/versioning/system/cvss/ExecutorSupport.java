@@ -266,7 +266,13 @@ public abstract class ExecutorSupport implements CVSListener  {
         StringBuffer reason = new StringBuffer("<ul>");  // NOI18N
         while (cause != null) {
             try {
-                reason.append("<li>" + XMLUtil.toElementContent(cause.getLocalizedMessage()) + "</li>"); // NOI18N
+                String msg = cause.getLocalizedMessage();
+                if (msg == null) {
+                    msg = cause.getClass().getName();
+                } else {
+                    msg = XMLUtil.toElementContent(msg);
+                }
+                reason.append("<li>" + msg + "</li>"); // NOI18N
             } catch (IOException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
