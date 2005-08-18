@@ -28,8 +28,10 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -61,10 +63,17 @@ public class AddDriverDialog extends javax.swing.JPanel {
         customizer = true;
         
         String fileName;
-        for (int i = 0; i < drv.getURLs().length; i++) {
-            fileName = (new File(drv.getURLs()[i].getPath())).toString();
+        URL[] urls = drv.getURLs();
+        for (int i = 0; i < urls.length; i++) {
+            FileObject fo = URLMapper.findFileObject(urls[i]);
+            if (fo == null) {
+                fileName = (new File(urls[i].getPath())).toString();
+            }
+            else {
+                fileName = FileUtil.toFile(fo).getAbsolutePath();
+            }
             dlm.addElement(fileName);
-            drvs.add(drv.getURLs()[i]);
+            drvs.add(urls[i]);
         }
         drvClassComboBox.addItem(drv.getClassName());
         drvClassComboBox.setSelectedItem(drv.getClassName());

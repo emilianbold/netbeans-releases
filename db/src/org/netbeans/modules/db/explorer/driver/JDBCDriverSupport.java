@@ -16,6 +16,9 @@ package org.netbeans.modules.db.explorer.driver;
 import java.io.File;
 import java.net.URL;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  * A helper class for working with JDBC Drivers.
@@ -34,7 +37,11 @@ public final class JDBCDriverSupport {
     public static boolean isAvailable(JDBCDriver driver) {
         URL[] urls = driver.getURLs();
         for (int i = 0; i < urls.length; i++) {
-            File f = new File(urls[i].getFile());
+            FileObject fo = URLMapper.findFileObject(urls[i]);
+            if (fo == null) {
+                return false;
+            }
+            File f = FileUtil.toFile(fo);
             if (!f.exists())
                 return false;
         }
