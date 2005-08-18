@@ -369,8 +369,6 @@ public class LayoutDesigner implements LayoutConstants {
 
     public void endMoving(boolean committed) {
         if (committed) {
-            modelListener.deactivate(); // from now do not react on model changes
-
             LayoutComponent[] components = dragger.getMovingComponents();
             LayoutComponent targetContainer = dragger.getTargetContainer();
 
@@ -398,9 +396,9 @@ public class LayoutDesigner implements LayoutConstants {
                         addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
                     } else {
                         addingInts[dim] = components[0].getLayoutInterval(dim);
-                        if ((components[0].getParent() == null) && (addingInts[dim].getParent() != null)) {
-                            layoutModel.removeInterval(addingInts[dim]);
-                        }
+//                        if ((components[0].getParent() == null) && (addingInts[dim].getParent() != null)) {
+//                            layoutModel.removeInterval(addingInts[dim]);
+//                        }
                     }
                 }
 
@@ -413,18 +411,15 @@ public class LayoutDesigner implements LayoutConstants {
                         layoutModel.removeComponent(comp);
                         if (components.length == 1) { // remove also the intervals
                             for (int dim=0; dim < DIM_COUNT; dim++) {
-                                LayoutInterval interval = comp.getLayoutInterval(dim);
-                                LayoutInterval parent = interval.getParent();
-                                int index = layoutModel.removeInterval(interval);
-                                intervalRemoved(parent, index, true,
-                                                LayoutInterval.wantResize(interval),
-                                                dim);
+                                layoutModel.removeInterval(comp.getLayoutInterval(dim));
                             }
                         } // Don't remove layout intervals of components from
                           // their parents if moving multiple components - the
                           // intervals are placed in the adding group already
                     }
                 }
+
+                modelListener.deactivate(); // from now do not react on model changes
 
                 // Add components to the target container
                 for (int i=0; i<components.length; i++) {
@@ -445,6 +440,9 @@ public class LayoutDesigner implements LayoutConstants {
             }
             else { // resizing root container
                 assert dragger.isResizing();
+
+                modelListener.deactivate(); // do not react on model changes
+
                 LayoutRegion space = dragger.getMovingBounds()[0];
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     components[0].getLayoutInterval(dim).setCurrentSpace(space);
