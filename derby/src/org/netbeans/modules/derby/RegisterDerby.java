@@ -29,15 +29,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.driver.JDBCDriver;
-import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
-import org.netbeans.modules.db.runtime.DatabaseRuntimeManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -48,12 +48,10 @@ import org.openide.util.Utilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.db.runtime.DatabaseRuntime;
-
 
 /**
  *
- * @author  ludo
+ * @author  Ludo, Petr Jiricka
  */
 public class RegisterDerby implements DatabaseRuntime {
     
@@ -105,6 +103,10 @@ public class RegisterDerby implements DatabaseRuntime {
         
     }
     
+    public String getJDBCDriverClass() {
+        return NET_DRIVER_CLASS_NAME;
+    }
+    
     /**
      * Can the database be started from inside the IDE?
      */
@@ -148,23 +150,17 @@ public class RegisterDerby implements DatabaseRuntime {
         return (Driver)c.newInstance();
     }
     
-    /* Registers the driver and the DatabaseRuntime class with the JDBC explorer. 
-     * Returns the registered driver.
+    /* Returns the registered Derby driver.
      */
-    public JDBCDriver register() throws IOException {
-        DatabaseRuntimeManager.getDefault(). register(NET_DRIVER_CLASS_NAME, this);
-
+    public JDBCDriver getRegisteredDerbyDriver() throws IOException {
+      
         JDBCDriverManager dm = JDBCDriverManager.getDefault();
-        JDBCDriver[] drvs = dm.getDriver(NET_DRIVER_CLASS_NAME);
+        JDBCDriver[] drvs = dm.getDrivers(NET_DRIVER_CLASS_NAME);
         
-        if (drvs.length>0)
-            return drvs[0]; //already there
-        
-        URL[] urls = getDerbyNetDriverURLs();
-        JDBCDriver newDriver = new JDBCDriver(NbBundle.getMessage(RegisterDerby.class, "LBL_DriverName"), 
-                NET_DRIVER_CLASS_NAME,urls);
-        dm.addDriver(newDriver);
-        return newDriver;
+        if (drvs.length > 0) {
+            return drvs[0];
+        }
+        return null;
     }
     
     private String getPort() {
@@ -194,44 +190,24 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             Driver driver = getDerbyNetDriver();
             Properties props = new Properties();
-            //String userName = "admin";
-            //String password = "admin";
-            //props.put("user", userName); // NOI18N
-            //props.put("password", password); // NOI18N
             String url = "jdbc:derby://localhost:" + getPort() + "/" + location; // NOI18N
             String urlForCreation = url + ";create=true"; // NOI18N
             Connection connection = driver.connect(urlForCreation, props);
             connection.close();
 
-            JDBCDriver jdbcDriver = register();
+            JDBCDriver jdbcDriver = getRegisteredDerbyDriver();
 
-            DatabaseConnection cinfo = new DatabaseConnection();
-            cinfo.setDriverName(jdbcDriver.getName());
-            cinfo.setDriver(jdbcDriver.getClassName());
-            cinfo.setDatabase(url);
-            //cinfo.setUser(userName);
-            cinfo.setSchema(null);
-            //cinfo.setPassword(password);
-            cinfo.setRememberPassword( true );
+            DatabaseConnection cinfo = DatabaseConnection.create(jdbcDriver, url, null, 
+                    null, null, false);
 
-            DatabaseRuntimeManager drtm = DatabaseRuntimeManager.getDefault();
-            RootNodeInfo rni = drtm.getRootNodeInfo();
-            rni.addDatabaseConnection(cinfo);
+            ConnectionManager cm = ConnectionManager.getDefault();
+            cm.addConnection(cinfo);
         }
         finally {
             ph.finish();
         }
     }
             
-    
-    /* can return null
-     * of the location of the derby scripts to be used
-     *
-     **/
-/*    private File getScriptsLocation() {
-        return getDerbyFile("frameworks/NetworkServer/bin");
-    }*/
-    
     private String[] getEnvironment() {
         File installLoc = getInstallLocation();
         if (installLoc == null)
@@ -252,7 +228,6 @@ public class RegisterDerby implements DatabaseRuntime {
             stop();
         }
         try {
-            register(); // PENDING - remove when rewriting to Andrei's branch
             ExecSupport ee= new ExecSupport();
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)

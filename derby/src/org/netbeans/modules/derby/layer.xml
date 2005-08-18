@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-  <folder name="Menu">
+    <folder name="Databases">
+        <folder name="JDBCDrivers">
+            <file name="DerbyDriver.xml" url="DerbyDriver.xml"/>
+        </folder>
+        <folder name="Runtimes">
+            <file name="DerbyRuntime.instance"  url="DerbyDriver.xml">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
+                <attr name="instanceOf" methodvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
+            </file>
+        </folder>
+    </folder>
+
+    <folder name="Menu">
         <folder name="Tools">
             <folder name="DerbyMenu">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.derby.Bundle" />
@@ -19,6 +31,6 @@
                 </file>
             </folder>
         </folder>
-  </folder>
+    </folder>
 </filesystem>
 
