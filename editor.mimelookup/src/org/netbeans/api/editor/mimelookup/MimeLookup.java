@@ -46,7 +46,39 @@ import org.openide.util.lookup.ProxyLookup;
  * <p>
  * For obtaining mime-type specific embeded lookup
  * {@link #childLookup(String) childLookup(String mimeType)} method can be used.
+ * <p>
+ * Clients can listen on the lookup result for lookup changes. Because lookup results
+ * are held weakly, client is responsible for reference holding during 
+ * life-time frame. Listeners added to lookup result should be weak. As a pattern
+ * for that requirements, following code snippet can be used:
+ * <pre>
  *
+ *      public class MyClass {
+ *          private Lookup.Result result;
+ *          private LookupListener weakLookupListener;
+ *          private LookupListener lookupListener
+ *
+ *          public MyClass(){
+ *              MimeLookup lookup = MimeLookup.getMimeLookup("text/x-java"); //use your content type here
+ *              result = lookup.lookup(new Lookup.Template(YourObjectHere.class));
+ *              result.allInstances(); // allInstances should be called, otherwise event will
+ *                                     // not be fired - optimalization in ProxyLookup
+ *              lookupListener = new LookupListener(){
+ *                 public void resultChanged(LookupEvent ev) {
+ *                     // handle your code
+ *                 }
+ *              };
+ *
+ *              weakLookupListener = (LookupListener) WeakListeners.create(
+ *                      LookupListener.class, lookupListener, result);
+ *
+ *              result.addLookupListener(weakLookupListener);
+ *          }
+ *
+ *      }
+ *
+  * </pre>
+ * 
  *  @author Miloslav Metelka, Martin Roskanin
  */
 final public class MimeLookup extends Lookup {
