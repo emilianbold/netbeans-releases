@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.editor.settings.storage/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/settings/storage/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Layer: org/netbeans/modules/editor/settings/storage/resources/mf-layer.xml

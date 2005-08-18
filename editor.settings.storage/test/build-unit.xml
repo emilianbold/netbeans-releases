@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="editor/settings/storage/test/unit" basedir="." default="all">
+    
+    <target name="init">
+        <path id="compiletest.classpath">
+            <pathelement location="${editor/settings/storage.dir}/modules/org-netbeans-modules-editor-settings-storage.jar"/>
+            <pathelement location="${editor/settings.dir}/modules/org-netbeans-modules-editor-settings.jar"/>            
+            <pathelement location="${editor/mimelookup.dir}/modules/org-netbeans-modules-editor-mimelookup.jar"/>            
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>            
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>            
+            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
+            <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
+        </path>
+    
+        <path id="codetest.classpath">
+            <pathelement location="${editor/settings/storage.dir}/modules/org-netbeans-modules-editor-settings-storage.jar"/>
+            <pathelement location="${editor/settings.dir}/modules/org-netbeans-modules-editor-settings.jar"/>                        
+            <pathelement location="${editor/mimelookup.dir}/modules/org-netbeans-modules-editor-mimelookup.jar"/>            
+            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>            
+            <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>            
+            <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar" />
+            <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
+            
+            <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
+            <pathelement location="${openide/actions.dir}/modules/org-openide-actions.jar"/>
+            <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
+            <pathelement location="${openide/windows.dir}/modules/org-openide-windows.jar"/>
+            <pathelement location="${openide/explorer.dir}/modules/org-openide-explorer.jar"/>
+            <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar"/>
+            <pathelement location="../../../../openide/util/build/test/unit/classes" />                        
+        </path>
+    
+    </target>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="unit-compiler" depends="init">
+        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
+            <classpath refid="compiletest.classpath"/>
+        </buildTests>
+    </target>
+
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runidetest" depends="init">
+        <executeTests  pluginName="ide">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
+    </target>
+    
+    <!-- This target is executed from test-executor in newly created Project -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes standalone tests -->
+    <target name="runcodetest" depends="init">
+        <executeTests  pluginName="jvm">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
+    </target>
+
+    
+</project>
