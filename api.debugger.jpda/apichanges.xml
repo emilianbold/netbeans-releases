@@ -333,6 +333,21 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Added interrupt method to JPDAThread class</summary>
+        <version major="2" minor="1"/>
+        <date day="18" month="8" year="2005"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                A possibility to interrupt a debuggee thread is added.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAThread" />
+        <issue number="59072"/>
+    </change>
 
 </changes>
 

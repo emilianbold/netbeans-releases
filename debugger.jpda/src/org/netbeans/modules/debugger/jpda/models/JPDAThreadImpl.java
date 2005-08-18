@@ -278,6 +278,15 @@ public class JPDAThreadImpl implements JPDAThread {
         
     }
     
+    public void interrupt() {
+        try {
+            if (isSuspended ()) return;
+            threadReference.interrupt();
+        } catch (ObjectCollectedException ex) {
+        } catch (VMDisconnectedException ex) {
+        }
+    }
+    
     /**
      * Sets this thread current.
      *

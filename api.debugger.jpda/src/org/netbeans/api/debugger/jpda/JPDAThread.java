@@ -118,6 +118,12 @@ public interface JPDAThread {
     public abstract void resume ();
     
     /**
+     * Interrupts this thread unless the thread has been suspended.
+     * @since 2.1
+     */
+    public abstract void interrupt();
+    
+    /**
      * Returns file name this frame is stopped in or null.
      *
      * @return file name this frame is stopped in
