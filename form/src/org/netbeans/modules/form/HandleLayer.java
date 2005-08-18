@@ -1734,6 +1734,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             RADVisualContainer metacont = HandleLayer.this.getMetaContainerAt(
                     getMoveDirectionSensitivePoint(p, modifiers),
                     ((modifiers & InputEvent.ALT_MASK) != 0) ? COMP_SELECTED : COMP_DEEPEST);
+            if (movingComponents != null) {
+                java.util.List comps = Arrays.asList(movingComponents);
+                while (comps.contains(metacont)) {
+                    metacont = metacont.getParentContainer();
+                }
+            }
             if (substituteForContainer(metacont)) {
                 metacont = metacont.getParentContainer();
             }
