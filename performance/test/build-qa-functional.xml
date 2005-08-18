@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="copy_unzip_jedit_project,copy_unzip_test_folder_project">
+    <target name="runidesetup" depends="copy_unzip_jedit_project,copy_unzip_test_folder_project,copy_unzip_nb_project">
         <antcall target="copy_released_ide_cfg_file"/>
 
         <executeTests pluginName="ide">
@@ -140,33 +140,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
 
-    <target name="runidetest_java" depends="ide_command_line_suffix">
-        <delete dir="${xtest.workdir}/sys/ide"/>
-        <copy todir="${xtest.workdir}/sys/ide">
-            <fileset dir="${xtest.workdir}/sys/ide_backup"/>
-        </copy>
-        <antcall target="copy_released_ide_cfg_file"/>
-       
-        <executeTests pluginName="ide">
-            <classpath>
-                <path refid="jemmy.and.jelly.path"/>
-                <path refid="performance.testutilities.path"/>
-            </classpath>
-            
-            <property name="xtest.enable.assertions" value="false" /> 
-            <property name="xtest.ide.reuse.userdir" value="true" />
-            <property name="xtest.timeout" value="5400000" />
-            
-            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
-            
-<!--            <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=5 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.mdr.persistence.btreeimpl.btreestorage.MDRCache.threshhold=1000 -J-Dorg.netbeans.javacore.ASTCache.size=16"/>
--->
-        </executeTests>
-        
-        <antcall target="copy_original_ide_cfg_file"/>
-    </target>
-
-    
     <!-- ================ -->
     <!-- Run in IDE's JVM -->
     <!-- ================ -->
@@ -217,13 +190,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
-<!-- 4.0 
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-        <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar"/>
-            
-        <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
-        <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
--->                
     </path>
     
     <target name="qa-functional-compiler-40">

@@ -43,7 +43,6 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
     public JavaCompletionInEditor(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN = 1;
     }
     
     /** Creates a new instance of JavaCompletionInEditor */
@@ -118,6 +117,7 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
         // invoke the completion dialog
         editorOperator.pushKey('.');
         // wait for the completion window
+//        return new ComponentOperator(MainWindowOperator.getDefault(), new CodeCompletionSubchooser());
         return new CompletionJListOperator();
     }
     
@@ -136,5 +136,9 @@ public class JavaCompletionInEditor extends org.netbeans.performance.test.utilit
             return c.getClass().getName().equals("org.netbeans.modules.editor.completion.ScrollCompletionPane") || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
         }
     };
+
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(new JavaCompletionInEditor("measureTime"));
+    }
     
 }

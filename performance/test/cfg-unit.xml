@@ -25,6 +25,14 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="2" executor="prepare_ide_nb_project" name="Prepare IDE for measure startup time with opened files from NB project">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="prepare/PrepareIDEForPluginComplexMeasurements.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
     <testbag testattribs="measure_ide or measure_startup" prio="10" executor="measure_startup" name="Measure IDE startup time">
 	<testset dir="unit/src">
 	    <patternset>
@@ -37,6 +45,14 @@ Microsystems, Inc. All Rights Reserved.
 	<testset dir="unit/src">
 	    <patternset>
 		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFiles"/>
+	    </patternset>
+	</testset>
+    </testbag>
+
+    <testbag testattribs="measure_ide or measure_startup or measure_complex_startup or measure_complex_startup_nb_project" prio="12" executor="measure_startup_opened_files_nb_project" name="Measure IDE startup time with opened NB project">
+	<testset dir="unit/src">
+	    <patternset>
+		<include name="startup/MeasureIDEStartupTime.class/testStartIDEWithOpenedFilesNBproject"/>
 	    </patternset>
 	</testset>
     </testbag>
@@ -77,6 +93,9 @@ Microsystems, Inc. All Rights Reserved.
     
     <executor name="measure_ide_memory_consumption" antfile="build-unit.xml" target="runidetest_measure_memory"/>
     <executor name="measure_ide_memory_consumption_with_opened_project" antfile="build-unit.xml" target="runidetest_measure_memory_with_opened_project"/>
+    
+    <executor name="prepare_ide_nb_project" antfile="build-unit.xml" target="prepare_ide_for_complex_measurements_nb_project"/>
+    <executor name="measure_startup_opened_files_nb_project" antfile="build-unit.xml" target="runcodetest_measure_complex_startup_nb_project"/>
     
     <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
     

@@ -40,70 +40,75 @@ public class ProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "Project node popup in Projects View"));
+        
         suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenuProjects", "Source Packages node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testTestPackagesPopupMenuProjects", "Test Packages node popup in Projects View"));
+        
         suite.addTest(new ProjectsViewPopupMenu("testPackagePopupMenuProjects", "Package node popup in Projects View"));
+        
         suite.addTest(new ProjectsViewPopupMenu("testJavaFilePopupMenuProjects", "Java file node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testTxtFilePopupMenuProjects", "Txt file node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testPropertiesFilePopupMenuProjects", "Properties file node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testXmlFilePopupMenuProjects", "Xml file node popup in Projects View"));
         suite.addTest(new ProjectsViewPopupMenu("testJspFilePopupMenuProjects", "Jsp file node popup in Projects View"));
+        
+        suite.addTest(new ProjectsViewPopupMenu("testNBProjectNodePopupMenuProjects", "NB Project node popup in Projects View"));
+
         return suite;
     }
     
     public void testProjectNodePopupMenuProjects() {
-        testNode(getProjectNode());
+        testNode(getProjectNode("PerformanceTestData"));
     }
     
     public void testSourcePackagesPopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES));
     }
     
     public void testTestPackagesPopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.TEST_PACKAGES));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.TEST_PACKAGES));
     }
     
     public void testPackagePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance"));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance"));
     }
     
     public void testJavaFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
     }
     
     public void testTxtFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|textfile.txt"));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|textfile.txt"));
     }
     
     public void testPropertiesFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Bundle.properties"));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Bundle.properties"));
     }
     
     public void testXmlFilePopupMenuProjects(){
-        testNode(new Node(getProjectNode(), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|xmlfile.xml"));
+        testNode(new Node(getProjectNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|xmlfile.xml"));
     }
     
     public void testJspFilePopupMenuProjects(){
-        testNode(new Node(getWebProjectNode(), org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase") + "|Test.jsp"));
+        testNode(new Node(getProjectNode("PerformanceTestWebApplication"), org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_Node_DocBase") + "|Test.jsp"));
     }
+    
+    public void testNBProjectNodePopupMenuProjects() {
+        testNode(getProjectNode("SystemProperties"));
+    }
+    
     
     public void testNode(Node node){
         dataObjectNode = node;
         doMeasurement();
     }
     
-    private Node getProjectNode() {
+    private Node getProjectNode(String projectName) {
         if(projectsTab==null)
             projectsTab = new ProjectsTabOperator();
         
-        return projectsTab.getProjectRootNode("PerformanceTestData");
+        return projectsTab.getProjectRootNode(projectName);
     }
 
-    private Node getWebProjectNode() {
-        if(projectsTab==null)
-            projectsTab = new ProjectsTabOperator();
-        
-        return projectsTab.getProjectRootNode("PerformanceTestWebApplication");
-    }
     
 }

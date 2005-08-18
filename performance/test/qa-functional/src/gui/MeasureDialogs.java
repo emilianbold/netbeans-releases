@@ -71,7 +71,8 @@ public class MeasureDialogs  {
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
         
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
-        suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
+        suite.addTest(new ProjectPropertiesWindow_JSEproject("measureTime", "JSE Project Properties window open"));
+        suite.addTest(new ProjectPropertiesWindow_NBproject("measureTime", "NB Project Properties window open"));
  
         suite.addTest(new DeleteFileDialog("measureTime", "Delete Object dialog open"));
         

@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core qa-performance test config">
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup or measure_memory_usage or memory_dialog or memory_action or memory_menu or measure_java or temp or memory_temp" prio="1"
+    <testbag testattribs="measure_ui or measure_menus or measure_dialogs or measure_actions or measure_setup or measure_memory_usage or memory_dialog or memory_action or memory_menu or measure_java or measure_apisupport or temp or memory_temp" prio="1"
              executor="ide_perf_setup" name="Setup IDE for UI responsiveness">
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -375,7 +375,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Custom / Module test bags -->    
     <testbag testattribs="measure_java" prio="100"
-             executor="ide_performance_java" name="Measure UI responsiveness of actions,dialogs or menus related to java, editor, mdr" >
+             executor="ide_performance" name="Measure UI responsiveness of actions,dialogs or menus related to java, editor, mdr" >
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/MeasureJava.class"/>
@@ -383,6 +383,14 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
+    <testbag testattribs="measure_apisupport" prio="110"
+             executor="ide_performance" name="Measure UI responsiveness of actions,dialogs or menus related to apisupport" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/MeasureAPIsupport.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
         
     <!-- Temp -->    
     <testbag testattribs="temp" prio="100"
@@ -408,7 +416,6 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
     <executor name="ide_performance" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <executor name="ide_performance_memory_usage" antfile="build-qa-functional.xml" target="runidetest_memory_usage"/>
-    <executor name="ide_performance_java" antfile="build-qa-functional.xml" target="runidetest_java"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     
     <compiler name="qa-performance-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>

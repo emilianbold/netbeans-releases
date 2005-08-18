@@ -43,6 +43,11 @@ public class IDESetupTest extends org.netbeans.jellytools.JellyTestCase {
         ProjectSupport.waitScanFinished();
     }
     
+    public void openNBProject() {
+        ProjectSupport.openProject(System.getProperty("xtest.tmpdir")+"/SystemProperties");
+        ProjectSupport.waitScanFinished();
+    }
+
     /** 
      * Close Welcome. 
      */

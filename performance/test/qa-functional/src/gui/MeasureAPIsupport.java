@@ -11,34 +11,35 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+package gui;
 
-package gui.memory_usage;
 
 import org.netbeans.junit.NbTestSuite;
+import gui.action.*;
 import gui.menu.*;
 import gui.window.*;
-import gui.action.*;
 
 /**
  * Measure UI-RESPONSIVENES and WINDOW_OPENING.
  *
  * @author  mmirilovic@netbeans.org
  */
-public class MeasureMemoryUsage_dialog_4 {
+public class MeasureAPIsupport  {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
+
+        //actions
+        //suite.addTest(new CreateProject("testCreateJavaApplicationProject", "Create Java Application project"));
         
-        suite.addTest(new EmptyTestCase("measureMemoryUsage", "Empty test case"));
+        //dialogs
+        suite.addTest(new NetBeansPlatformManager("measureTime", "NetBeans Platform Manager open"));
+        suite.addTest(new ProjectPropertiesWindow_NBproject("measureTime", "NB Project Properties window open"));
+
+        //menus
+        suite.addTest(new ProjectsViewPopupMenu("testNBProjectNodePopupMenuProjects", "NB Project node popup in Projects View"));
         
-        suite.addTest(new NewProjectDialog("doMeasurement", "New Project dialog open"));
-        suite.addTest(new NewFileDialog("doMeasurement", "New File dialog open"));
-        suite.addTest(new OpenProjectDialog("doMeasurement", "Open Project dialog open"));
-        suite.addTest(new OpenFileDialog("doMeasurement", "Open File dialog open"));
         
-        suite.addTest(new FindInProjects("doMeasurement", "Find in Projects dialog open"));
-        suite.addTest(new ProjectPropertiesWindow_JSEproject("doMeasurement", "Project Properties window open"));
- 
         return suite;
     }
     

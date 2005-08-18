@@ -41,6 +41,7 @@ public class MeasuringSetup extends NbTestSuite {
         suite.addTest(new IDESetupTest("openFoldersProject"));
         suite.addTest(new IDESetupTest("openDataProject"));
         suite.addTest(new IDESetupTest("openWebProject"));
+        suite.addTest(new IDESetupTest("openNBProject"));
 
         return suite;
     }
