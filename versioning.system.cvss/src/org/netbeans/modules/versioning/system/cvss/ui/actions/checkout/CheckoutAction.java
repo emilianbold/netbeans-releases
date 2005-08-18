@@ -42,10 +42,8 @@ import java.awt.event.ActionListener;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.StringTokenizer;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Collections;
 
 /**
  * Shows checkout wizard, performs the checkout,
@@ -172,14 +170,27 @@ public final class CheckoutAction extends SystemAction {
                 return;
             }
 
-            List checkedOutProjects = Collections.EMPTY_LIST;
+            List checkedOutProjects = new LinkedList();
             FileObject fo = FileUtil.toFileObject(workingFolder);
             if (fo != null) {
                 String name = NbBundle.getMessage(CheckoutAction.class, "BK1007");
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle(name);
                 try {
                     progressHandle.start();
-                    checkedOutProjects = ProjectUtilities.scanForProjects(fo);
+                    Iterator it = executor.getExpandedModules().iterator();
+                    while (it.hasNext()) {
+                        String module = (String) it.next();
+                        if (".".equals(module)) {
+                            checkedOutProjects = ProjectUtilities.scanForProjects(fo);
+                            break;
+                        } else {
+                            FileObject subfolder = fo.getFileObject(module);
+                            if (subfolder != null) {
+                                progressHandle.progress("Scanning " + module);
+                                checkedOutProjects.addAll(ProjectUtilities.scanForProjects(subfolder));
+                            }
+                        }
+                    }
                 } finally {
                     progressHandle.finish();
                 }
@@ -283,7 +294,7 @@ public final class CheckoutAction extends SystemAction {
 
         private void openProject(Project p) {
             Project[] projects = new Project[] {p};
-            OpenProjects.getDefault().open(projects, true);
+            OpenProjects.getDefault().open(projects, false);
 
             // set as main project and expand
             ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();

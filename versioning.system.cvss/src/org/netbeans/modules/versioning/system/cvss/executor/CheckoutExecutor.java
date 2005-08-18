@@ -18,6 +18,7 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.DefaultFileInfoContainer;
 import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.command.commit.CommitInformation;
+import org.netbeans.lib.cvsclient.event.ModuleExpansionEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -32,13 +33,27 @@ import java.io.File;
 public class CheckoutExecutor extends ExecutorSupport {
     
     private Set refreshedFiles;
-    
+    private Set expandedModules = new HashSet();
+
     public CheckoutExecutor(CvsVersioningSystem cvs, CheckoutCommand cmd) {
         this(cvs, cmd, null);
     }
     
     public CheckoutExecutor(CvsVersioningSystem cvs, CheckoutCommand cmd, GlobalOptions options) {
         super(cvs, cmd, options);
+    }
+
+    /**
+     * Return expanded module names (String)s, If it contains "."
+     * it means "unknown but all".  
+     */
+    public Set getExpandedModules() {
+        return expandedModules;
+    }
+
+    public final void moduleExpanded(ModuleExpansionEvent e) {
+        String module = e.getModule();
+        expandedModules.add(module);
     }
 
     /**
