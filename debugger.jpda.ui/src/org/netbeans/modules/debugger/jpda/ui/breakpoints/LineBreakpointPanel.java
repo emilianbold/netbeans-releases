@@ -36,7 +36,12 @@ import org.openide.util.NbBundle;
  *
  * @author  Maros Sandor
  */
-public class LineBreakpointPanel extends JPanel implements Controller {
+// <RAVE>
+// Implement HelpCtx.Provider interface to provide help ids for help system
+// public class LineBreakpointPanel extends JPanel implements Controller {
+//
+public class LineBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
+// </RAVE>
     
     private ActionsPanel                actionsPanel; 
     private LineBreakpoint              breakpoint;
@@ -101,6 +106,14 @@ public class LineBreakpointPanel extends JPanel implements Controller {
         }
         tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
     }
+    
+    // <RAVE>
+    // Implement getHelpCtx() with the correct helpID
+    //
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointLineJPDA"); // NOI18N
+    }
+    // </RAVE>
     
     /** This method is called from within the constructor to
      * initialize the form.

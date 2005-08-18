@@ -21,7 +21,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
-public class SourcesView extends TopComponent {
+// <RAVE>
+// Implement HelpCtx.Provider interface to provide help ids for help system
+// public class SourcesView extends TopComponent {
+// ====
+public class SourcesView extends TopComponent implements org.openide.util.HelpCtx.Provider {
+// </RAVE>    
     
     private transient JComponent tree;
     private transient ViewModelListener viewModelListener;
@@ -58,6 +63,13 @@ public class SourcesView extends TopComponent {
         viewModelListener.destroy ();
         viewModelListener = null;
     }
+    
+    // <RAVE>
+    // Implement getHelpCtx() with the correct helpID
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("NetbeansDebuggerSourcesNode"); // NOI18N
+    }
+    // </RAVE>
     
     public int getPersistenceType () {
         return PERSISTENCE_ALWAYS;

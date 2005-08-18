@@ -25,7 +25,12 @@ import org.openide.util.NbBundle;
 /**
  * @author  Jan Jancura
  */
-public class FieldBreakpointPanel extends JPanel implements Controller {
+// <RAVE>
+// Implement HelpCtx.Provider interface to provide help ids for help system
+// public class FieldBreakpointPanel extends JPanel implements Controller {
+// ====
+public class FieldBreakpointPanel extends JPanel implements Controller, org.openide.util.HelpCtx.Provider {
+// </RAVE>
     
     private ActionsPanel                actionsPanel; 
     private FieldBreakpoint            breakpoint;
@@ -82,6 +87,13 @@ public class FieldBreakpointPanel extends JPanel implements Controller {
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
     }
+    
+    // <RAVE>
+    // Implement getHelpCtx() with the correct helpID
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointFieldJPDA"); // NOI18N
+    }
+    // </RAVE>
     
     /** This method is called from within the constructor to
      * initialize the form.
