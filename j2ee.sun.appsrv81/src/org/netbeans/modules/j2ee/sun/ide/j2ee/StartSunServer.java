@@ -368,9 +368,16 @@ public class StartSunServer extends StartServer implements ProgressObject, SunSe
                     }
                     return exitValue;
                 }
-                pes.fireHandleProgressEvent(null,
+                if (i==0){
+                    pes.fireHandleProgressEvent(null,
                     new Status(ActionType.EXECUTE,
-                    ct, cmdName,StateType.RUNNING));                
+                    ct, cmdName,StateType.RUNNING));
+                }
+                else{//emit the message only cmdName once
+                    pes.fireHandleProgressEvent(null,
+                    new Status(ActionType.EXECUTE,
+                    ct, "",StateType.RUNNING));                    
+                }
 
 
                 try {
