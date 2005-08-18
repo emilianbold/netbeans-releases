@@ -217,7 +217,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/mimelookup</project>
                 <project>../editor/plain</project>
                 <project>../editor/plain/lib</project>
-		<project>../editor/settings</project>
+                <project>../editor/settings</project>
                 <project>../editor/settings/storage</project>
                 <project>../editor/util</project>
                 <project>../extbrowser</project>
@@ -326,6 +326,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../web/ddapi</project>
                 <project>../web/examples</project>
                 <project>../web/freeform</project>
+                <project>../web/jsf</project>
                 <project>../web/jspdebug</project>
                 <project>../web/jspparser</project>
                 <project>../web/jspsyntax</project>
