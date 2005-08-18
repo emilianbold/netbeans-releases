@@ -16,9 +16,7 @@ package org.netbeans.modules.jmx.test.helpers;
  */
 public class JellyConstants {
     
-   //Package
-   public static final String MANAGER_PROJ = "ManagerFunctionalTest";
-    
+   //Package 
    public static final String PROJECT_NAME = "MBeanFunctionalTest";
    public static final String PROJECT_CAT = "General";
    public static final String PROJECT_APP = "Java Application";
@@ -258,4 +256,53 @@ public class JellyConstants {
    public static final String AUTHOR = "<author>";
    public static final String EXP_LINE = "expected line :";
    
+   //*********************** Manager wizard ***********************************/
+   
+   // URL
+   public static final String JMXMP_URL = "service:jmx:jmxmp://localhost:2004";
+   public static final String SNMP_URL = "service:jmx:snmp://kernighan.imag.com:2004";
+   public static final String SAMPLE_URL = "service:jmx:<your protocol>:<agent address>";
+   public static final String RMI_URL = "service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi";
+   public static final String RMI_URL_K = "service:jmx:rmi:///jndi/rmi://kernighan.imag.com:8080/jmxrmi";
+   public static final String K_HOST = "kernighan.imag.com";
+   
+   public static final String PORT_8080 = "8080";
+   public static final String PORT_1099 = "1099";
+   
+   public static final String LOCALHOST = "localhost";
+   
+   // Project and package
+   public static final String MANAGER_PROJ = "ManagerFunctionalTest";
+   public static final String MANAGER_CATEGORY = "JMX Manager";
+   public static final String MANAGER_PACKAGE = "managertestpackage";
+   
+   // Created file names
+   public static final String MANAGER_T1 = "Test1Manager";
+   public static final String MANAGER_T2 = "Test2Manager";
+   public static final String MANAGER_T3 = "Test3Manager";
+   public static final String MANAGER_T4 = "Test4Manager";
+   public static final String MANAGER_T5 = "Test5Manager";
+   public static final String MANAGER_T6 = "Test6Manager";
+   
+   /**** Component names ****/
+   // manager panel
+   public static final String GEN_MAIN_CBX = "managerGenerateMainMethodCheckBox";
+   public static final String MAIN_CLASS_CBX = "managerSetAsMainClassCheckBox";
+   public static final String SAMPLE_CBX = "generateSampleCodeCheckBox";
+           
+   // URL panel
+   public static final String CUSTOMURL_TXT = "customURLJTextField";
+   public static final String EDIT_BTN = "RMIURLButton";
+   public static final String SECURITY_CBX = "securityCbx";
+   public static final String SAMPLE_RBTN = "sampleRbtn";
+   public static final String CUSTOMCREDENTIAL_RBTN = "customCredentialRbtn";
+   public static final String USERNAME_TXT = "userNameJTextField";
+   public static final String USERPASS_TXT = "userPasswordJTextField";
+   public static final String NAME = "name";
+   public static final String PASS = "password";
+           
+   // Popup
+   public static final String POPUP_TITLE = "RMI JMX Agent URL";
+   public static final String HOST_TXT = "hostJTextField";
+   public static final String PORT_TXT = "portJTextField";
 }
