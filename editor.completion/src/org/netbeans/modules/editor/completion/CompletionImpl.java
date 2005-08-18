@@ -179,30 +179,32 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         return CompletionResultSet.PRIORITY_SORT_TYPE; // [TODO] additional types
     }
     
-    public synchronized void insertUpdate(javax.swing.event.DocumentEvent e) {
+    public void insertUpdate(javax.swing.event.DocumentEvent e) {
         // Ignore insertions done outside of the AWT (various content generation)
         if (!SwingUtilities.isEventDispatchThread()) {
             return;
         }
 
-        if (activeProviders != null) {
-            try {
-                if (activeComponent.getCaretPosition() != e.getOffset() + e.getLength())
-                    return;
-                String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
-                for (int i = 0; i < activeProviders.length; i++) {
-                    int type = activeProviders[i].getAutoQueryTypes(activeComponent, typedText);
-                    if (completionResults == null && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
-                            CompletionSettings.INSTANCE.completionAutoPopup()) {
-                        restartCompletionAutoPopupTimer();
+        synchronized (this) {
+            if (activeProviders != null) {
+                try {
+                    if (activeComponent.getCaretPosition() != e.getOffset() + e.getLength())
+                        return;
+                    String typedText = e.getDocument().getText(e.getOffset(), e.getLength());
+                    for (int i = 0; i < activeProviders.length; i++) {
+                        int type = activeProviders[i].getAutoQueryTypes(activeComponent, typedText);
+                        if (completionResults == null && (type & CompletionProvider.COMPLETION_QUERY_TYPE) != 0 &&
+                                CompletionSettings.INSTANCE.completionAutoPopup()) {
+                            restartCompletionAutoPopupTimer();
+                        }
+                        if (toolTipResults == null && (type & CompletionProvider.TOOLTIP_QUERY_TYPE) != 0) {
+                            toolTipQuery();
+                        }
                     }
-                    if (toolTipResults == null && (type & CompletionProvider.TOOLTIP_QUERY_TYPE) != 0) {
-                        toolTipQuery();
-                    }
-                }
-            } catch (BadLocationException ex) {}
-            if (completionAutoPopupTimer.isRunning())
-                restartCompletionAutoPopupTimer();
+                } catch (BadLocationException ex) {}
+                if (completionAutoPopupTimer.isRunning())
+                    restartCompletionAutoPopupTimer();
+            }
         }
     }
     
