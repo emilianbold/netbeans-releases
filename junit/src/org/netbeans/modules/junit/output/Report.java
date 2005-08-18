@@ -31,6 +31,13 @@ import org.openide.util.NbBundle;
  * @author  Marian Petras
  */
 final class Report {
+    
+    /** constant meaning "information about passed tests not displayed" */
+    static final int ALL_PASSED_ABSENT = 0;
+    /** constant meaning "information about some passed tests not displayed" */
+    static final int SOME_PASSED_ABSENT = 1;
+    /** constant meaning "information about all passed tests displayed */
+    static final int ALL_PASSED_DISPLAYED = 2;
 
     File antScript;
     String suiteClassName;
@@ -40,6 +47,10 @@ final class Report {
     int failures;
     int errors;
     int elapsedTimeMillis;
+    /**
+     * number of recognized (by the parser) passed test reports
+     */
+    int detectedPassedTests;
     private final Map/*<String, TestcaseGroup>*/ testcaseGroupMap;
     final Collection testcaseGroups;
     
@@ -70,6 +81,10 @@ final class Report {
                                  group = new TestcaseGroup(className));
         }
         group.addTestcase(testcase);
+        
+        if (testcase.trouble == null) {
+            detectedPassedTests++;
+        }
     }
     
     /**
@@ -80,11 +95,30 @@ final class Report {
         totalTests = appendCount(totalTests, report.totalTests);
         failures = appendCount(failures, report.failures);
         errors = appendCount(errors, report.errors);
+        detectedPassedTests += report.detectedPassedTests;
         elapsedTimeMillis = appendCount(elapsedTimeMillis,
                                         report.elapsedTimeMillis);
         outputStd = appendOutput(outputStd, report.outputStd);
         outputErr = appendOutput(outputErr, report.outputErr);
         mergeTestcases(testcaseGroupMap, report.testcaseGroupMap);
+    }
+    
+    /**
+     * Returns information whether information about passed tests is displayed.
+     *
+     * @return  one of constants <code>ALL_PASSED_DISPLAYED</code>,
+     *                           <code>SOME_PASSED_ABSENT</code>,
+     *                           <code>ALL_PASSED_ABSENT</code>
+     */
+    int getSuccessDisplayedLevel() {
+        int reportedPassedTestsCount = totalTests - failures - errors;
+        if (detectedPassedTests >= reportedPassedTestsCount) {
+            return ALL_PASSED_DISPLAYED;
+        } else if (detectedPassedTests == 0) {
+            return ALL_PASSED_ABSENT;
+        } else {
+            return SOME_PASSED_ABSENT;
+        }
     }
     
     /**
