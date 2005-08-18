@@ -18,6 +18,7 @@ import org.netbeans.lib.cvsclient.event.*;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
+import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RootWizard;
@@ -178,7 +179,10 @@ public abstract class ExecutorSupport implements CVSListener  {
                         failure = result.getError();
                         return;
                     }
-                    if (retryConnection(error)) {
+                    if (error instanceof CommandException) {
+                        reportError(Arrays.asList(new Object [] { error.getMessage() }));
+                    }
+                    else if (retryConnection(error)) {
                         terminated = false;
                         String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), cmd.getDisplayName());
                         executeImpl(msg + "\n"); // NOI18N
@@ -193,20 +197,8 @@ public abstract class ExecutorSupport implements CVSListener  {
                     clientRuntime.log(msg + "\n"); // NOI18N
                     commandFinished((ClientRuntime.Result) e.getSource());
                     clientRuntime.focusLog();
-                    StringBuffer errorReport = new StringBuffer();
-                    errorReport.append(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"));
-                    errorReport.append("\n\n");
-                    for (Iterator i = errorMessages.iterator(); i.hasNext();) {
-                        errorReport.append(i.next());
-                        errorReport.append('\n');
-                    }
                     if (cmd.hasFailed()) {
-                        JOptionPane.showMessageDialog(
-                                null,
-                                errorReport.toString(),
-                                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
-                                JOptionPane.ERROR_MESSAGE
-                                );
+                        reportError(errorMessages);
                     }
                 }
             }
@@ -227,6 +219,22 @@ public abstract class ExecutorSupport implements CVSListener  {
                 }
             }
         }
+    }
+
+    private void reportError(List messages) {
+        StringBuffer errorReport = new StringBuffer();
+        errorReport.append(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"));
+        errorReport.append("\n\n");
+        for (Iterator i = messages.iterator(); i.hasNext();) {
+            errorReport.append(i.next());
+            errorReport.append('\n');
+        }
+        JOptionPane.showMessageDialog(
+                null,
+                errorReport.toString(),
+                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
+                JOptionPane.ERROR_MESSAGE
+                );
     }
 
     /** Retry aware task events source*/
