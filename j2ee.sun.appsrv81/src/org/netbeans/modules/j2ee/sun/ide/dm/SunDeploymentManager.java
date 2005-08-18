@@ -686,7 +686,6 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         try {
 
            Target[] t= getTargets();
-           System.out.println("t= "+t);
             if (t != null) {
                 if (t.length==0)
                     runningState = false;
@@ -695,17 +694,13 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
                     runningState = true;
             }            
         } catch (Throwable /*IllegalStateException*/ e) {
-            System.out.println("sdfdsfdsfdsfdfd errorororor in is running");
-            e.printStackTrace();
             runningState  =false;
         }
-        System.out.println("isRunning=" + runningState);
         if ((runningState)&&(nonAdminPortNumber == null)){
             try{
                 nonAdminPortNumber =  (String)getManagement().getAttribute(new javax.management.ObjectName("com.sun.appserv:type=http-listener,id=http-listener-1,config=server-config,category=config") ,"port");
             } catch (Throwable /*IllegalStateException*/ ee) {
             ee.printStackTrace();
-                System.out.println("QQQQQQQQQQQQQQQQQQQQQQQ"+ee);
            }            
         }
         return runningState;
