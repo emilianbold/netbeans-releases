@@ -3,34 +3,6 @@ OpenIDE-Module-Specification-Version: 2.2
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/sun/ide/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.properties
-OpenIDE-Module-Module-Dependencies: 
- org.openide.actions > 6.2,
- org.openide.awt > 6.2,
- org.openide.dialogs > 6.2,
- org.openide.execution > 1.6,
- org.openide.explorer > 6.2,
- org.openide.filesystems > 6.2,
- org.openide.io > 1.6,
- org.openide.loaders > 5.3,
- org.openide.modules > 6.2,
- org.openide.nodes > 6.2,
- org.openide.options > 6.2,
- org.openide.util > 6.2,
- org.openide.windows > 6.2, 
- org.netbeans.modules.j2eeserver/3 > 1.5,
- org.netbeans.modules.j2eeapis/1, 
- org.netbeans.api.debugger/1, 
- org.netbeans.api.debugger.jpda/2, 
- org.netbeans.modules.j2ee.dd/1 > 1.3, 
- org.netbeans.modules.schema2beans/1,
- org.netbeans.modules.db/0 > 1.0, 
- org.netbeans.modules.xml.catalog/2 > 0.9 , 
- org.netbeans.api.xml/1 , 
- org.netbeans.modules.xml.core/2 = 4, 
- org.netbeans.modules.project.libraries/1,
- org.netbeans.modules.j2ee.sun.appsrv/1 = 1,
- org.netbeans.modules.j2ee.sun.dd/1 = 1,
- org.netbeans.modules.j2ee.sun.ddui/1 = 1
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv81/1
 OpenIDE-Module-Implementation-Version: 1
 Class-Path:  docs/org-netbeans-modules-j2ee-sun-appsrv81.jar 

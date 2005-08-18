@@ -33,13 +33,20 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                
             </module-dependencies>
-            
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv90</friend>
+                <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
+                <package>org.netbeans.modules.j2ee.sun.dd.api</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.web</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.app</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.ejb</package>
                 <package>org.netbeans.modules.j2ee.sun.dd.api.common</package>
-            </public-packages>
+                <package>org.netbeans.modules.j2ee.sun.dd.api.serverresources</package>
+                <package>org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

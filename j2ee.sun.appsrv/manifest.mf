@@ -1,28 +1,9 @@
 Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: 1.0
-OpenIDE-Module-Friends: org.netbeans.modules.j2ee.sun.appsrv81, 
- org.netbeans.modules.j2ee.sun.ddui
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/appsrvapi/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/appsrvapi/Bundle.properties
-OpenIDE-Module-Module-Dependencies: 
- org.openide.actions > 6.2,
- org.openide.awt > 6.2,
- org.openide.dialogs > 6.2,
- org.openide.explorer > 6.2,
- org.openide.filesystems > 6.2,
- org.openide.loaders > 5.3,
- org.openide.nodes > 6.2,
- org.openide.options > 6.2,
- org.openide.util > 6.2,
- org.netbeans.modules.j2eeserver/3 > 1.5,
- org.netbeans.modules.j2eeapis/1, 
- org.netbeans.modules.schema2beans/1,
- org.netbeans.modules.db/0 > 1.0, 
- org.netbeans.modules.projectuiapi/1, 
- org.netbeans.modules.projectapi/1
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv/1
 OpenIDE-Module-Implementation-Version: 1
-Class-Path:   ext/jmxri.jar
 
 Name: org/netbeans/modules/j2ee/sun/ide/sunresources/resourcesloader/SunResourceDataLoader.class
 OpenIDE-Module-Class: Loader

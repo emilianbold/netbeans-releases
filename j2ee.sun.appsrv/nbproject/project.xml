@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-               <dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -97,15 +97,15 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>3</release-version>
                         <specification-version>1.5</specification-version>
                     </run-dependency>
-               </dependency>
-               <dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2eeapis</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                     </run-dependency>
-               </dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.schema2beans</code-name-base>
                     <build-prerequisite/>
@@ -120,7 +120,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <implementation-version>1.0</implementation-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -131,7 +131,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                 <dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -140,14 +140,20 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
- 
-
-            <public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/jmxri.jar</runtime-relative-path>
+                <binary-origin>../../external/jmxri.jar</binary-origin>
+            </class-path-extension>
+            <friend-packages>
+                <!-- contributes to Linkageerror issues for javax.management -->
+                <!-- <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend> -->
+                <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
+                <package>org.netbeans.modules.j2ee.sun.ide.editors</package>
                 <package>org.netbeans.modules.j2ee.sun.api</package>
-                <package>org.netbeans.modules.j2ee.sun.ide</package>
-            </public-packages>
-
-        
+                <package>org.netbeans.modules.j2ee.sun.sunresources.beans</package> 
+                <package>org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping</package>
+                <package>org.netbeans.modules.j2ee.sun.appsrvapi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
