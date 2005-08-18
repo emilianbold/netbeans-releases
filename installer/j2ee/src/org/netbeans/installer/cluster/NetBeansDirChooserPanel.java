@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,6 +25,8 @@ import com.installshield.wizard.service.file.FileService;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.netbeans.installer.Util;
 
 public class NetBeansDirChooserPanel extends WizardPanel {
     private String nbdir = "";
