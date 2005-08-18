@@ -24,12 +24,14 @@ import org.netbeans.modules.versioning.spi.VersioningListener;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.settings.MetadataAttic;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
+import org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent;
 import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.*;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -487,5 +489,10 @@ public class CvsVersioningSystem {
     void shutdown() {
         filesystemHandler.shutdown();
         FileStatusProvider.getInstance().shutdown();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                CvsSynchronizeTopComponent.getInstance().close();
+            }
+        });
     }
 }
