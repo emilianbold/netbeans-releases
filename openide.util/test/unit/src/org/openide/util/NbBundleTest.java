@@ -38,6 +38,12 @@ public class NbBundleTest extends TestCase {
         assertNotNull("Value from bundle not null", val_secure);
         assertNotNull("Value from bundle not null", val_insecure);
         
+        if (debug) {
+            assertTrue ("Values were read in debug mode.", val_insecure.indexOf (':') > 0);
+        } else {
+            assertFalse ("Values were read in normal mode.", val_insecure.indexOf (':') > 0);
+        }
+        
         try {
             assertEquals("Parsed as int", 123, Integer.parseInt(val_insecure));
         } catch (NumberFormatException nfe) {
