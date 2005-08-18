@@ -216,6 +216,10 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_CLASSNAME")); // NOI18N
         classNameTextField.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_CLASSNAME_DESCRIPTION")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleName(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_BROWSE_CLASSNAME")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_REGISTER_STDMBEAN_BROWSE_CLASSNAME_DESCRIPTION")); // NOI18N
         stdMBObjectNameTextField.getAccessibleContext().setAccessibleName(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_OBJECTNAME")); // NOI18N
         stdMBObjectNameTextField.getAccessibleContext().setAccessibleDescription(

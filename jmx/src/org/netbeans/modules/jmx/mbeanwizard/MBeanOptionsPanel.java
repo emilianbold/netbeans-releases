@@ -142,6 +142,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         fromExistingClassJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_DESCRIPTION"));// NOI18N
         classSelectionJTextField.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE"));// NOI18N
         classSelectionJTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_VALUE_DESCRIPTION"));// NOI18N
+        browseButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_FROM_JAVA_CLASS_BROWSE_VALUE"));// NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_FROM_JAVA_CLASS_BROWSE_VALUE_DESCRIPTION"));// NOI18N
         standardMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_STANDARD_MBEAN"));// NOI18N
         standardMBeanJRadioButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_STANDARD_MBEAN_DESCRIPTION"));// NOI18N
         extendedMBeanJRadioButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_EXTENDED_MBEAN"));// NOI18N
