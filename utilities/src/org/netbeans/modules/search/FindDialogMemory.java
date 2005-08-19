@@ -18,8 +18,9 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import org.netbeans.modules.search.types.FullTextType;
 import org.openidex.search.SearchHistory;
+import org.openidex.search.SearchType;
 
-/**
+/** 
  * Registry for everything related to the Find dialog.
  * It is <em>not</em> designed to be persistent across invocations
  * of the IDE.
@@ -37,6 +38,10 @@ public final class FindDialogMemory implements PropertyChangeListener {
      */
     private final HashMap searchTypesUsage = new HashMap(4);
     
+    /**
+     * stores the last used <code>SearchType</code>
+     */
+    private SearchType lastSearchType = null;
     
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() { }
@@ -89,6 +94,18 @@ public final class FindDialogMemory implements PropertyChangeListener {
         if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())) {
             searchTypesUsage.put(FullTextType.class.getName(), Boolean.TRUE);
         }
+    }
+    
+    /**
+     */
+    public void setLastUsedSearchType(SearchType searchType){
+        lastSearchType = searchType;
+    }
+    
+    /**
+     */    
+    public SearchType getLastSearchType(){
+        return lastSearchType;
     }
 
 }

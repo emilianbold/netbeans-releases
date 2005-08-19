@@ -98,7 +98,7 @@ public final class SearchPanel extends JPanel
     public SearchPanel(List searchTypeList) {
         this(searchTypeList, false);
     }
-    
+
     /**
      * Creates a new <code>SearchPanel</code>.
      *
@@ -107,9 +107,8 @@ public final class SearchPanel extends JPanel
      *                       one from <code>SearchType</code>s already set and
      *                       search - okButton should be enabled
      */
-    public SearchPanel(List searchTypeList, boolean isCustomized) {
+    public SearchPanel(List searchTypeList, boolean activateWithPreviousValues) {            
         this.orderedSearchTypePanels = new ArrayList(searchTypeList.size());
-        this.customized = isCustomized;
 
         // Default values of criteria.
         Iterator it;
@@ -131,17 +130,16 @@ public final class SearchPanel extends JPanel
             processedClassNames.add(className);
 
             /*
-             * isCustomized is <true> if and only if the constructor call
-             * was initiated by the Modify Search action. We will leverage this
-             * fact for decision whether to pre-fill the search pattern
+             * we will use activateWithPreviousValues for the decision 
+             * whether to pre-fill the search pattern
              * (with the last entry in the history) or not.
              */
-            final boolean initFromHistory =
-                   !isCustomized
+            final boolean initPanelFromHistory =
+                   !activateWithPreviousValues
                    && FindDialogMemory.getDefault()
                       .wasSearchTypeUsed(searchType.getClass().getName());
             SearchTypePanel newPanel = new SearchTypePanel(searchType,
-                                                           initFromHistory);
+                                                           initPanelFromHistory);
             Collection savedCriteria = (sortedCriteria == null)
                     ? null
                     : (Collection) sortedCriteria.get(className);
@@ -167,9 +165,22 @@ public final class SearchPanel extends JPanel
         for (it = orderedSearchTypePanels.iterator(); it.hasNext(); ) {
             tabbedPane.add((Component) it.next());
         }
-        
-        //prevents bug #43843 ("AIOOBE after push button Modify Search")
-        tabbedPane.setSelectedIndex(0);
+              
+        // initial selection
+        int index = 0;              //prevents bug #43843 ("AIOOBE after push button Modify Search")       
+        /*
+         * we will use activateWithPreviousValues for the decision 
+         * whether to pre-select the last selected tab 
+         * (with the last used SearchType) or not.
+         */        
+        if(activateWithPreviousValues){
+            index = getIndexOfSearchType(FindDialogMemory.getDefault().getLastSearchType());
+            if(index<0){
+                //prevents bug #43843 ("AIOOBE after push button Modify Search")                            
+                index=0;
+            }            
+        }        
+        tabbedPane.setSelectedIndex(index);                            
 
         setName(NbBundle.getBundle(SearchPanel.class)
                 .getString("TEXT_TITLE_CUSTOMIZE"));                    //NOI18N
@@ -197,7 +208,7 @@ public final class SearchPanel extends JPanel
             null,                                   //<null> HelpCtx - no help
             this);
     }
-    
+        
     /**
      * This method is called when the Search or Close button is pressed.
      * It closes the Find dialog, cleans up the individual panels
@@ -314,8 +325,13 @@ public final class SearchPanel extends JPanel
         int selectedIndex = tabbedPane.getSelectedIndex();
         if (selectedIndex >= 0) {
             SearchTypePanel panel = getSearchTypePanel(selectedIndex);
-            if (returnStatus == RET_OK) panel.onOk();
-            else panel.onCancel();
+            if (returnStatus == RET_OK){
+                FindDialogMemory.getDefault().setLastUsedSearchType(panel.getSearchType());
+                panel.onOk();                
+            }
+            else {
+                panel.onCancel();
+            }
         }
                           
         this.returnStatus = returnStatus;
@@ -415,6 +431,34 @@ public final class SearchPanel extends JPanel
         }
         
         return searchTypePanel;
+    }
+    
+    /**
+     * Gets the index for the the given <code>SearchType</code>
+     *
+     * @param searchTypeToFind <code>SearchType</code> to get the index for.        
+     * @return index of the given <code>SearchType</code>
+     */
+    private int getIndexOfSearchType(SearchType searchTypeToFind) {                        
+        
+        if(searchTypeToFind==null){
+            return -1;
+        }
+        
+        SearchTypePanel searchTypePanel = null;         
+        Iterator it = getOrderedSearchTypePanels().iterator();
+        
+        int index = -1;
+        while(it.hasNext()) {
+            index++;
+            searchTypePanel = (SearchTypePanel) it.next();
+            
+            if(searchTypePanel.getSearchType().getClass() == searchTypeToFind.getClass()){
+                return index;
+            }            
+        }
+        
+        return -1;
     }
     
 }
