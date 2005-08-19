@@ -16,7 +16,6 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
@@ -29,7 +28,6 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
@@ -69,19 +67,13 @@ public class AddDriverDialog extends javax.swing.JPanel {
         for (int i = 0; i < urls.length; i++) {
             FileObject fo = URLMapper.findFileObject(urls[i]);
             if (fo == null) {
-                try {
-                    fileName = new File(urls[i].toURI()).getAbsolutePath();
-                } catch (URISyntaxException e) {
-                    ErrorManager.getDefault().notify(e);
-                    fileName = null;
-                }
-            } else {
+                fileName = (new File(urls[i].getPath())).toString();
+            }
+            else {
                 fileName = FileUtil.toFile(fo).getAbsolutePath();
             }
-            if (fileName != null) {
-                dlm.addElement(fileName);
-                drvs.add(urls[i]);
-            }
+            dlm.addElement(fileName);
+            drvs.add(urls[i]);
         }
         drvClassComboBox.addItem(drv.getClassName());
         drvClassComboBox.setSelectedItem(drv.getClassName());
@@ -352,7 +344,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 if (files[i] != null && files[i].isFile()) {
                     dlm.addElement(files[i].toString());
                     try {
-                        drvs.add(files[i].toURI().toURL());
+                        drvs.add(files[i].toURL());
                     } catch (MalformedURLException exc) {
                         //PENDING
                     }
@@ -399,14 +391,12 @@ public class AddDriverDialog extends javax.swing.JPanel {
         drvClassComboBox.removeAllItems();
         for (int i = 0; i < drvs.size(); i++) {
             try {
-                jf = new JarFile(new File(((URL)drvs.get(i)).toURI()));
+                jf = new JarFile(new File(((URL) drvs.get(i)).getFile()));
                 for (int j = 0; j < drivers.length; j++)
                     if (jf.getEntry(drivers[j].replace('.', '/') + ".class") != null) //NOI18N
                         addDriverClass(drivers[j]);
                 jf.close();
             } catch (IOException exc) {
-                //PENDING
-            } catch (URISyntaxException e) {
                 //PENDING
             }
         }
