@@ -799,24 +799,25 @@
     DatabaseProductVersion = 10;
     TriggerEventListDelimiter = ", ";
     TypeMap = {
-      java.sql.Types.BIGINT = LONGINT;
-      java.sql.Types.BINARY = BIT;
-      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.BIGINT = BIGINT;
       java.sql.Types.CHAR = CHAR;
+      java.sql.Types.BINARY = "CHAR FOR BIT DATA";
+      java.sql.Types.CLOB = CLOB;
       java.sql.Types.DATE = DATE;
       java.sql.Types.DECIMAL = DECIMAL;
-      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
-      java.sql.Types.REAL = FLOAT;
+      java.sql.Types.DOUBLE = DOUBLE;
+//      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+//      java.sql.Types.DOUBLE = FLOAT;
       java.sql.Types.INTEGER = INTEGER;
-      java.sql.Types.LONGVARBINARY = "LONG VARBINARY";
       java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+//      java.sql.Types.VARBINARY = "LONG VARCHAR FOR BIT DATA";
       java.sql.Types.NUMERIC = NUMERIC;
       java.sql.Types.REAL = REAL;
       java.sql.Types.SMALLINT = SMALLINT;
       java.sql.Types.TIME = TIME;
       java.sql.Types.TIMESTAMP = TIMESTAMP;
-      java.sql.Types.TINYINT = TINYINT;
       java.sql.Types.VARCHAR = VARCHAR;
+      java.sql.Types.VARBINARY = "VARCHAR FOR BIT DATA";
     };
 //    ProcedureArgumentMap = {
 //      IN = IN;
@@ -828,8 +829,8 @@
 //      UPDATE = UPDATE;
 //      DELETE = DELETE;
 //    };
-    SizelessTypes = (BOOLEAN,DATE,INT,"LONG VARCHAR","LONG VARBINARY",LONGINT,SMALLINT,TIME,TIMESTAMP,TINYINT);
-    DecimalTypes = (DECIMAL,FLOAT,NUMERIC);
+    SizelessTypes = (BIGINT,"CHAR FOR BIT DATA",CLOB,DATE,INTEGER,"LONG VARCHAR",SMALLINT,TIME,TIMESTAMP,"VARCHAR FOR BIT DATA");
+    DecimalTypes = (DECIMAL,DOUBLE,NUMERIC,REAL);
     CharacterTypes = (CHAR,VARCHAR);
 
   };
