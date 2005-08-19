@@ -62,7 +62,7 @@ public class Test1Manager {
         */ 
         
         //Create JMX Agent URL 
-        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi");
+        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://localhost:1099/jndi/rmi://localhost:1099/jmxrmi");
         
         //Connect the JMXConnector 
         connector = JMXConnectorFactory.connect(url, null);
