@@ -148,7 +148,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
     }
 
     private static void readUpdateTracking(String tokens, final HashMap files) throws SAXException, IOException, ParserConfigurationException {
-        StringTokenizer tok = new StringTokenizer(tokens, ", \n");
+        StringTokenizer tok = new StringTokenizer(tokens, File.pathSeparator);
         
         javax.xml.parsers.SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance();
         factory.setValidating(false);
@@ -179,7 +179,11 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                     }
                     module = module.replace('-', '.');
 
-                    parser.parse(where, this);
+                    try {
+                        parser.parse(where, this);
+                    } catch (SAXException ex) {
+                        throw new BuildException("Wrong file " + where, ex);
+                    }
                 }
             }
         }

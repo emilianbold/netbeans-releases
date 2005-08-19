@@ -31,6 +31,32 @@ Microsystems, Inc. All Rights Reserved.
         <subant target="netbeans" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
     </target>
     
+    <target name="build-zip" depends="build" description="Builds zip distribution of the suite and selected modules from the platform" >
+        <property name="disabled.modules" value="" />
+        <property name="disabled.clusters" value="" />
+        <property name="application.name" value="netbeans-based-app" />
+        
+        <pathconvert property="zip.platform.update.tracking" >
+            <path >
+                <fileset dir="${netbeans.dest.dir}" >
+                    <include name="**/update_tracking/*.xml" />
+                </fileset>
+            </path>
+        </pathconvert>
+        
+        <zip destfile="dist/${application.name}.zip" >
+            <fileset dir="${netbeans.dest.dir}" >
+                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
+                    <param name="excludeModules" value="${disabled.modules}" />
+                    <param name="excludeClusters" value="${disabled.clusters}" />
+                    <param name="updateTrackingFiles" value="${zip.platform.update.tracking}" />
+                </custom>
+            </fileset>
+            
+            <zipfileset dir="${cluster}" prefix="${application.name}/" />
+        </zip>
+    </target>
+    
     <target name="clean" depends="-init" description="Clean all modules in the suite.">
         <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
         <delete dir="build" failonerror="false"/>

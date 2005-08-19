@@ -94,6 +94,15 @@ public class ModuleSelectorTest extends NbTestCase {
     }
 
     public void testParsingOfUpdateTrackingFiles() throws Exception {
+        doParsingOfUpdateTrackingFiles(1);
+    }
+    
+    public void testParsingOfUpdateTrackingFilesOnMoreDirs() throws Exception {
+        doParsingOfUpdateTrackingFiles(2);
+    }
+    
+    
+    private void doParsingOfUpdateTrackingFiles(int parents) throws Exception {
         File updateTracking = new File(getWorkDir(), "update-tracking");
         updateTracking.mkdirs();
         assertTrue("Created", updateTracking.isDirectory());
@@ -102,7 +111,7 @@ public class ModuleSelectorTest extends NbTestCase {
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         
-        File trackingFile = new File("org-my-module.xml");
+        File trackingFile = new File(getWorkDir(), "org-my-module.xml");
         FileWriter w = new FileWriter(trackingFile);
         w.write(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -119,9 +128,28 @@ public class ModuleSelectorTest extends NbTestCase {
         );
         w.close();
 
+        StringBuffer sb = new StringBuffer();
+        sb.append(trackingFile.getPath());
+        
+        while (--parents > 0) {
+            File x = new File(getWorkDir(), parents + ".xml");
+            FileWriter xw = new FileWriter(x);
+            xw.write(
+    "<?xml version='1.0' encoding='UTF-8'?>\n" +
+    "<module codename='" + x + "/3'>\n" +
+        "<module_version specification_version='3.22' origin='installer' last='true' install_time='1124194231878'>\n" +
+    "    </module_version>\n" +
+    "</module>\n"
+            );
+            xw.close();
+            
+            sb.insert(0, File.pathSeparator);
+            sb.insert(0, x.getPath());
+        }
+        
         Parameter p = new Parameter();
         p.setName("updateTrackingFiles");
-        p.setValue(trackingFile.getPath());
+        p.setValue(sb.toString());
         selector.setParameters(new Parameter[] { p });
         
         assertTrue("module accepted", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
