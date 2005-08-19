@@ -35,8 +35,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Jaroslav Tulach
  */
 public final class ModuleSelector extends org.apache.tools.ant.types.selectors.BaseExtendSelector {
-    private HashSet excludeModules = new HashSet();
-    private HashSet excludeClusters = new HashSet();
+    private HashSet excludeModules;
+    private HashSet excludeClusters;
     private HashMap/*<String,String*/ fileToOwningModule;
     
     /** Creates a new instance of ModuleSelector */
@@ -105,6 +105,13 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
     }
 
     public void verifySettings() {
+        if (excludeClusters != null) {
+            return;
+        }
+        
+        excludeClusters = new HashSet();
+        excludeModules = new HashSet();
+        
         Parameter[] arr = getParameters();
         if (arr == null) {
             return;
@@ -147,7 +154,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         }
     }
 
-    private static void readUpdateTracking(String tokens, final HashMap files) throws SAXException, IOException, ParserConfigurationException {
+    private void readUpdateTracking(String tokens, final HashMap files) throws SAXException, IOException, ParserConfigurationException {
         StringTokenizer tok = new StringTokenizer(tokens, File.pathSeparator);
         
         javax.xml.parsers.SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance();
@@ -180,6 +187,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                     module = module.replace('-', '.');
 
                     try {
+                        log("Parsing " + where, Project.MSG_VERBOSE);
                         parser.parse(where, this);
                     } catch (SAXException ex) {
                         throw new BuildException("Wrong file " + where, ex);

@@ -44,14 +44,23 @@ Microsystems, Inc. All Rights Reserved.
             </path>
         </pathconvert>
         
+        <mkdir dir="dist" />
         <zip destfile="dist/${application.name}.zip" >
-            <fileset dir="${netbeans.dest.dir}" >
-                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
-                    <param name="excludeModules" value="${disabled.modules}" />
-                    <param name="excludeClusters" value="${disabled.clusters}" />
-                    <param name="updateTrackingFiles" value="${zip.platform.update.tracking}" />
-                </custom>
-            </fileset>
+            <zipfileset dir="${netbeans.dest.dir}" filemode="755" >
+                <include name="**/lib/nbexec*" />
+            </zipfileset>
+            <zipfileset dir="${netbeans.dest.dir}" >
+                <and>
+                    <not>
+                        <filename name="**/lib/nbexec*" />
+                    </not>
+                    <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
+                        <param name="excludeModules" value="${disabled.modules}" />
+                        <param name="excludeClusters" value="${disabled.clusters}" />
+                        <param name="updateTrackingFiles" value="${zip.platform.update.tracking}" />
+                    </custom>
+                </and>
+            </zipfileset>
             
             <zipfileset dir="${cluster}" prefix="${application.name}/" />
         </zip>
