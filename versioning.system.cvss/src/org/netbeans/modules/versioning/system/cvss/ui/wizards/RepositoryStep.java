@@ -178,6 +178,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             repositoryPanel.rootsLabel.setVisible(chooserVisible);
             repositoryPanel.rootComboBox.setVisible(chooserVisible);
             repositoryPanel.descLabel.setVisible(chooserVisible);
+            repositoryPanel.editButton.setVisible(chooserVisible);
         }
 
         // gridbaglayout ignores bottom fill panel if password field hidden 

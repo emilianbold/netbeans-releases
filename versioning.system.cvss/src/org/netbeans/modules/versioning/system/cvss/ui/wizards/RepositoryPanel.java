@@ -163,13 +163,11 @@ final class RepositoryPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(extCommandLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1013"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 18, 3, 3);
         add(extCommandLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
