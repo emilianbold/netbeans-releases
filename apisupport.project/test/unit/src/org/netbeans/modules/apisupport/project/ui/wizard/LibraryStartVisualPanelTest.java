@@ -36,7 +36,7 @@ public class LibraryStartVisualPanelTest extends NbTestCase {
     
     public void testPopulateProjectData() {
         NewModuleProjectData data = new NewModuleProjectData();
-        LibraryStartVisualPanel.populateProjectData(data, libraryPath.getAbsolutePath());
+        LibraryStartVisualPanel.populateProjectData(data, libraryPath.getAbsolutePath(), true);
         assertEquals("test-library", data.getProjectName());
         assertEquals("org.apache.commons.logging", data.getCodeNameBase());
     }
