@@ -381,7 +381,7 @@ final class TestStringWizardPanel extends JPanel {
         }
 
         /** Overrides superclass method. */
-        public String getColumnName(int column) {
+        public String getColumnName(int column) {          
             if(column == COLUMN_INDEX_HARDSTRING)
                 return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_HardString");
             else if(column == COLUMN_INDEX_KEY)
@@ -389,7 +389,7 @@ final class TestStringWizardPanel extends JPanel {
             else if(column == COLUMN_INDEX_VALUE)
                 return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Value");
             else 
-                return ""; // NOI18N
+                return " "; // NOI18N
         }
     } // End of ResourceTableModel nested class.
 
