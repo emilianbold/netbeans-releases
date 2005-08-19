@@ -26,12 +26,12 @@ public class OL implements ActiveEditorDrop {
     
     public static final int ITEM_COUNT_DEFAULT = 2;
     
-    public static final String DEFAULT = "default";
-    public static final String ARABIC_NUMBERS = "1";
-    public static final String LOWER_ALPHA = "a";
-    public static final String UPPER_ALPHA = "A";
-    public static final String LOWER_ROMAN = "i";
-    public static final String UPPER_ROMAN = "I";
+    public static final String DEFAULT = "default"; // NOI18N
+    public static final String ARABIC_NUMBERS = "1"; // NOI18N
+    public static final String LOWER_ALPHA = "a"; // NOI18N
+    public static final String UPPER_ALPHA = "A"; // NOI18N
+    public static final String LOWER_ROMAN = "i"; // NOI18N
+    public static final String UPPER_ROMAN = "I"; // NOI18N
     
     private String type = DEFAULT;
     private int count = ITEM_COUNT_DEFAULT;
@@ -59,13 +59,13 @@ public class OL implements ActiveEditorDrop {
         
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < count; i++)
-            sb.append("<li></li>\n");
+            sb.append("<li></li>\n"); // NOI18N
     
         String strType = "";
         if (!type.equals(DEFAULT))
-            strType = " type=\"" + type + "\"";
+            strType = " type=\"" + type + "\""; // NOI18N
         
-        String oList = "<ol" + strType + ">\n" + sb.toString() + "</ol>\n";
+        String oList = "<ol" + strType + ">\n" + sb.toString() + "</ol>\n"; // NOI18N
         
         return oList;
     }

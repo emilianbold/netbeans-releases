@@ -58,19 +58,19 @@ public class RADIO implements ActiveEditorDrop {
     
     private String createBody() {
         
-        String strName = " name=\"\"";
+        String strName = " name=\"\""; // NOI18N
         if (groupIndex == -1)
-            strName = " name=\"" + group + "\"";
+            strName = " name=\"" + group + "\""; // NOI18N
         else 
-            strName = " name=\"" + groups[groupIndex] + "\"";
+            strName = " name=\"" + groups[groupIndex] + "\""; // NOI18N
 
-        String strValue = " value=\"" + value + "\"";
+        String strValue = " value=\"" + value + "\""; // NOI18N
 
-        String strSelected = (selected ? " checked" : "");
+        String strSelected = (selected ? " checked" : ""); // NOI18N
 
-        String strDisabled = (disabled ? " disabled" : "");
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
 
-        String radioBody = "<input type=\"radio\"" + strName + strValue + strSelected + strDisabled + " />";
+        String radioBody = "<input type=\"radio\"" + strName + strValue + strSelected + strDisabled + " />"; // NOI18N
         
         return radioBody;
     }

@@ -62,26 +62,26 @@ public class TABLE implements ActiveEditorDrop {
         String tHead = generateTHead();
         String tBody = generateTBody();
         
-        String strBorder = " border=\"" + border + "\"";
+        String strBorder = " border=\"" + border + "\""; // NOI18N
         
         String strWidth = "";
         if (!width.equals(WIDTH_DEFAULT))
-            strWidth = " width=\"" + width + "\"";
+            strWidth = " width=\"" + width + "\""; // NOI18N
 
         String strCspac = "";
         if (cspac != CSPAC_DEFAULT)
-            strCspac = " cellspacing=\"" + cspac + "\"";
+            strCspac = " cellspacing=\"" + cspac + "\""; // NOI18N
         
         String strCpadd = "";
         if (cpadd != CPADD_DEFAULT)
-            strCpadd = " cellpadding=\"" + cpadd + "\"";
+            strCpadd = " cellpadding=\"" + cpadd + "\""; // NOI18N
         
         
         String body = 
-                "<table" + strBorder + strWidth + strCspac + strCpadd + ">\n" +
-                "<thead>\n" + tHead + "</thead>\n" +
-                "<tbody>\n" + tBody + "</tbody>\n" +
-                "</table>\n";
+                "<table" + strBorder + strWidth + strCspac + strCpadd + ">\n" + // NOI18N
+                "<thead>\n" + tHead + "</thead>\n" + // NOI18N
+                "<tbody>\n" + tBody + "</tbody>\n" + // NOI18N
+                "</table>\n"; // NOI18N
         
         return body;
     }
@@ -90,9 +90,9 @@ public class TABLE implements ActiveEditorDrop {
 
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < cols; i++)
-            sb.append("<th></th>\n");
+            sb.append("<th></th>\n"); // NOI18N
     
-        String thead = "<tr>\n" + sb.toString() + "</tr>\n";
+        String thead = "<tr>\n" + sb.toString() + "</tr>\n"; // NOI18N
         
         return thead;
     }
@@ -101,10 +101,10 @@ public class TABLE implements ActiveEditorDrop {
         
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < rows; i++) {
-            sb.append("<tr>\n");
+            sb.append("<tr>\n"); // NOI18N
             for (int j = 0; j < cols; j++)
-                sb.append("<td></td>\n");
-            sb.append("</tr>\n");
+                sb.append("<td></td>\n"); // NOI18N
+            sb.append("</tr>\n"); // NOI18N
         }
                 
         String tBody = sb.toString();

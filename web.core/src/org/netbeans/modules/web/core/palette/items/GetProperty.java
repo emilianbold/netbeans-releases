@@ -73,13 +73,13 @@ public class GetProperty implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strBean = " name=\"\"";
+        String strBean = " name=\"\""; // NOI18N
         if (beanIndex == -1)
-            strBean = " name=\"" + bean + "\"";
+            strBean = " name=\"" + bean + "\""; // NOI18N
         else 
-            strBean = " name=\"" + implicitBeans[beanIndex] + "\"";
+            strBean = " name=\"" + implicitBeans[beanIndex] + "\""; // NOI18N
         
-        String strProperty = " property=\"" + property + "\"";
+        String strProperty = " property=\"" + property + "\""; // NOI18N
         
         String gp = "<jsp:getProperty" + strBean + strProperty + " />"; // NOI18N
         

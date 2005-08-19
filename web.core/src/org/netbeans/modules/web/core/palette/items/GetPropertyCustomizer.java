@@ -12,6 +12,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -56,8 +57,14 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-GetProperty"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert JSP Get Property", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -117,7 +124,8 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jTextField1, gridBagConstraints);
 
-        jLabel1.setText("Bean Name:");
+        jLabel1.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "LBL_GetProperty_Bean"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -125,8 +133,11 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "ACSN_GetProperty_Bean"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "ACSD_GetProperty_Bean"));
 
-        jLabel2.setText("Class Name:");
+        jLabel2.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "LBL_GetProperty_Class"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -134,6 +145,8 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "ACSN_GetProperty_Class"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "ACSD_GetProperty_Class"));
 
         jComboBox1.setEditable(true);
         jComboBox1.setFont(new java.awt.Font("Dialog", 0, 12));
@@ -150,7 +163,8 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jComboBox1, gridBagConstraints);
 
-        jLabel3.setText("Property Name:");
+        jLabel3.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "LBL_GetProperty_Property"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -158,6 +172,8 @@ public class GetPropertyCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "ACSN_GetProperty_Property"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GetPropertyCustomizer.class, "ACSD_GetProperty_Property"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

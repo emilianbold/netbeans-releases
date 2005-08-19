@@ -24,9 +24,9 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class BUTTON implements ActiveEditorDrop {
 
-    public static final String TYPE_SUBMIT = "submit";
-    public static final String TYPE_RESET = "reset";
-    public static final String TYPE_BUTTON = "button";
+    public static final String TYPE_SUBMIT = "submit"; // NOI18N
+    public static final String TYPE_RESET = "reset"; // NOI18N
+    public static final String TYPE_BUTTON = "button"; // NOI18N
     
     private String value = "";
     private String type = TYPE_SUBMIT;
@@ -54,17 +54,17 @@ public class BUTTON implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strType = " type=\"" + type + "\"";
+        String strType = " type=\"" + type + "\""; // NOI18N
 
-        String strValue = " value=\"" + value + "\"";
+        String strValue = " value=\"" + value + "\""; // NOI18N
 
         String strName = "";
         if (name.length() > 0)
-            strName = " name=\"" + name + "\"";
+            strName = " name=\"" + name + "\""; // NOI18N
 
-        String strDisabled = (disabled ? " disabled" : "");
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
 
-        String inputBody = "<input" + strType + strValue + strName + strDisabled + " />";
+        String inputBody = "<input" + strType + strValue + strName + strDisabled + " />"; // NOI18N
         
         return inputBody;
     }

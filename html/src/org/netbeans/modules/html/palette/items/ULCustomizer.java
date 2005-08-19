@@ -12,6 +12,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -40,8 +41,14 @@ public class ULCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-UL"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Unordered List", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -99,7 +106,7 @@ public class ULCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Numbering Style:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ULCustomizer.class, "LBL_UL_Style"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -107,10 +114,12 @@ public class ULCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_Style"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_Style"));
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText("default");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(ULCustomizer.class, "LBL_UL_default"));
         jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -120,9 +129,11 @@ public class ULCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 18);
         add(jRadioButton1, gridBagConstraints);
+        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_default"));
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_default"));
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("disc");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, "disc");
         jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -132,9 +143,11 @@ public class ULCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 24);
         add(jRadioButton2, gridBagConstraints);
+        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_disc"));
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_disc"));
 
         buttonGroup1.add(jRadioButton3);
-        jRadioButton3.setText("circle");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, "circle");
         jRadioButton3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -144,9 +157,11 @@ public class ULCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 24);
         add(jRadioButton3, gridBagConstraints);
+        jRadioButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_circle"));
+        jRadioButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_circle"));
 
         buttonGroup1.add(jRadioButton4);
-        jRadioButton4.setText("square");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton4, "square");
         jRadioButton4.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton4.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -158,12 +173,17 @@ public class ULCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 24);
         add(jRadioButton4, gridBagConstraints);
+        jRadioButton4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_square"));
+        jRadioButton4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_square"));
 
-        jLabel2.setText("Number of Items:");
+        jLabel2.setLabelFor(jSpinner1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ULCustomizer.class, "LBL_UL_Items"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSN_UL_Items"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ULCustomizer.class, "ACSD_UL_Items"));
 
         jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(new SpinnerNumberModel(ul.getCount(), 0, Integer.MAX_VALUE, 1));

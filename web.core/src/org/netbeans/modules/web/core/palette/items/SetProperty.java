@@ -74,15 +74,15 @@ public class SetProperty implements ActiveEditorDrop {
     
     private String createBody() {
         
-        String strBean = " name=\"\"";
+        String strBean = " name=\"\""; // NOI18N
         if (beanIndex == -1)
-            strBean = " name=\"" + bean + "\"";
+            strBean = " name=\"" + bean + "\""; // NOI18N
         else 
-            strBean = " name=\"" + implicitBeans[beanIndex] + "\"";
+            strBean = " name=\"" + implicitBeans[beanIndex] + "\""; // NOI18N
         
-        String strProperty = " property=\"" + property + "\"";
+        String strProperty = " property=\"" + property + "\""; // NOI18N
         
-        String strValue = " value=\"" + value + "\"";
+        String strValue = " value=\"" + value + "\""; // NOI18N
         
         String sp = "<jsp:setProperty" + strBean + strProperty + strValue + " />"; // NOI18N
         

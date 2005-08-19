@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -48,8 +49,14 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-RADIO"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Radio button", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -105,7 +112,8 @@ public class RADIOCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Group:");
+        jLabel1.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "LBL_RADIO_Group"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -113,8 +121,10 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSN_RADIO_Group"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSD_RADIO_Group"));
 
-        jCheckBox1.setText("selected");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "LBL_RADIO_selected"));
         jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -124,8 +134,10 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jCheckBox1, gridBagConstraints);
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSN_RADIO_selected"));
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSD_RADIO_selected"));
 
-        jCheckBox2.setText("disabled");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "LBL_RADIO_disabled"));
         jCheckBox2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -136,8 +148,10 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 12);
         add(jCheckBox2, gridBagConstraints);
+        jCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSN_RADIO_disabled"));
+        jCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSD_RADIO_disabled"));
 
-        jLabel5.setText("Initial State:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "LBL_RADIO_"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -145,6 +159,8 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel5, gridBagConstraints);
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSN_RADIO_State"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSD_RADIO_State"));
 
         jTextField2.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -155,7 +171,8 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jTextField2, gridBagConstraints);
 
-        jLabel2.setText("Value:");
+        jLabel2.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "LBL_RADIO_Value"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -163,6 +180,8 @@ public class RADIOCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSN_RADIO_Value"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RADIOCustomizer.class, "ACSD_RADIO_Value"));
 
         jComboBox1.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();

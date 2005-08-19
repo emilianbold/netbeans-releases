@@ -24,11 +24,11 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class INPUT implements ActiveEditorDrop {
 
-    public static final String TYPE_TEXT = "text";
-    public static final String TYPE_PASS = "password";
-    public static final String TYPE_HIDDEN = "hidden";
-    public static final String STATE_DISABLED = "disabled";
-    public static final String STATE_READONLY = "readonly";
+    public static final String TYPE_TEXT = "text"; // NOI18N
+    public static final String TYPE_PASS = "password"; // NOI18N
+    public static final String TYPE_HIDDEN = "hidden"; // NOI18N
+    public static final String STATE_DISABLED = "disabled"; // NOI18N
+    public static final String STATE_READONLY = "readonly"; // NOI18N
     
     private String name = "";
     private String value = "";
@@ -59,20 +59,20 @@ public class INPUT implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strType = " type=\"" + type + "\"";
+        String strType = " type=\"" + type + "\""; // NOI18N
 
-        String strName = " name=\"" + name + "\"";
+        String strName = " name=\"" + name + "\""; // NOI18N
 
-        String strValue = " value=\"" + value + "\"";
+        String strValue = " value=\"" + value + "\""; // NOI18N
 
-        String strReadOnly = (readonly ? " readonly" : "");
-        String strDisabled = (disabled ? " disabled" : "");
+        String strReadOnly = (readonly ? " readonly" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
 
         String strWidth = "";
         if (width.length() > 0)
-            strWidth = " width=\"" + width + "\"";
+            strWidth = " width=\"" + width + "\""; // NOI18N
         
-        String inputBody = "<input" + strType + strName + strValue + strWidth + strReadOnly + strDisabled + " />";
+        String inputBody = "<input" + strType + strName + strValue + strWidth + strReadOnly + strDisabled + " />"; // NOI18N
         
         return inputBody;
     }

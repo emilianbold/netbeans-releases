@@ -49,15 +49,15 @@ public class FILESEL implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strName = " name=\"" + name + "\"";
+        String strName = " name=\"" + name + "\""; // NOI18N
 
         String strWidth = "";
         if (width.length() > 0)
-            strWidth = " width=\"" + width + "\"";
+            strWidth = " width=\"" + width + "\""; // NOI18N
         
-        String strDisabled = (disabled ? " disabled" : "");
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
 
-        String fileselBody = "<input type=\"file\"" + strName + " value=\"\"" + strWidth + strDisabled + " />";
+        String fileselBody = "<input type=\"file\"" + strName + " value=\"\"" + strWidth + strDisabled + " />"; // NOI18N
         
         return fileselBody;
     }

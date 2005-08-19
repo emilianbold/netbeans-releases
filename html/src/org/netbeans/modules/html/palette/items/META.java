@@ -24,8 +24,8 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class META implements ActiveEditorDrop {
     
-    public static final String TYPE_HEADERS = "HEADERS";
-    public static final String TYPE_ENGINES = "ENGINES";
+    public static final String TYPE_HEADERS = "HEADERS"; // NOI18N
+    public static final String TYPE_ENGINES = "ENGINES"; // NOI18N
     
     public static final String[] headers = new String[] { "Content-Type", "Content-Language", "Refresh", "Cache-Control", "Expires" }; // NOI18N
     public static final int HEADER_DEFAULT = 0;
@@ -67,16 +67,16 @@ public class META implements ActiveEditorDrop {
         
         String strType = "";
         if (getType().equals(TYPE_HEADERS))
-            strType = " http-equiv=\"" + getName() + "\"";
+            strType = " http-equiv=\"" + getName() + "\""; // NOI18N
         else
-            strType = " name=\"" + getName() + "\"";
+            strType = " name=\"" + getName() + "\""; // NOI18N
         
-        String strContent = " content=\"\"";
+        String strContent = " content=\"\""; // NOI18N
         if (getContent().length() > 0)
-            strContent = " content=\"" + getContent() + "\"";        
+            strContent = " content=\"" + getContent() + "\""; // NOI18N  
         
         
-        String meta = "<meta" + strType + strContent + " />";
+        String meta = "<meta" + strType + strContent + " />"; // NOI18N
         
         return meta;
     }

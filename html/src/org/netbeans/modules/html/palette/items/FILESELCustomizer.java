@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -43,8 +44,14 @@ public class FILESELCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-FILESEL"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert File Select", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {

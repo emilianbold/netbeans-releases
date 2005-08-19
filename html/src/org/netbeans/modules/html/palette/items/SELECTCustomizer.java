@@ -12,6 +12,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -41,8 +42,14 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-SELECT"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Drop-down List", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -111,7 +118,8 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jTextField1, gridBagConstraints);
 
-        jLabel1.setText("Name:");
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -119,8 +127,11 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_Name"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Name"));
 
-        jLabel3.setText("Visible Options:");
+        jLabel3.setLabelFor(jSpinner2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_VisOptions"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -128,8 +139,11 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_VisOptions"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_VisOptions"));
 
-        jLabel2.setText("Options:");
+        jLabel2.setLabelFor(jSpinner1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_Options"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -137,8 +151,10 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_Options"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Options"));
 
-        jLabel4.setText("Multiple Selections:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_Multi"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -146,8 +162,10 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel4, gridBagConstraints);
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_Multi"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_Multi"));
 
-        jCheckBox1.setText("allowed");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_allowed"));
         jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -157,8 +175,10 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jCheckBox1, gridBagConstraints);
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_allowed"));
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_allowed"));
 
-        jCheckBox2.setText("disabled");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_disabled"));
         jCheckBox2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -169,6 +189,8 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jCheckBox2, gridBagConstraints);
+        jCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_disabled"));
+        jCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_disabled"));
 
         jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(new SpinnerNumberModel(select.getOptions(), 0, Integer.MAX_VALUE, 1));
@@ -181,7 +203,7 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jSpinner1, gridBagConstraints);
 
-        jLabel5.setText("Initial State:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "LBL_SELECT_State"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -189,6 +211,8 @@ public class SELECTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel5, gridBagConstraints);
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSN_SELECT_State"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SELECTCustomizer.class, "ACSD_SELECT_State"));
 
         jSpinner2.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner2.setModel(new SpinnerNumberModel(select.getOptionsVisible(), 1, Integer.MAX_VALUE, 1));

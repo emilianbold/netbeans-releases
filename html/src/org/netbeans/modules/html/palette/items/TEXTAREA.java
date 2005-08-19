@@ -24,8 +24,8 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class TEXTAREA implements ActiveEditorDrop {
 
-    public static final String STATE_DISABLED = "disabled";
-    public static final String STATE_READONLY = "readonly";
+    public static final String STATE_DISABLED = "disabled"; // NOI18N
+    public static final String STATE_READONLY = "readonly"; // NOI18N
     
     public static final int ROWS_DEFAULT = 4;
     public static final int COLS_DEFAULT = 20;
@@ -58,21 +58,21 @@ public class TEXTAREA implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strName = " name=\"" + name + "\"";
+        String strName = " name=\"" + name + "\""; // NOI18N
 
         String strValue = value;
         if (value.length() > 0)
             strValue += "\n";
 
-        String strReadOnly = (readonly ? " readonly" : "");
-        String strDisabled = (disabled ? " disabled" : "");
+        String strReadOnly = (readonly ? " readonly" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
 
-        String strRows = " rows=\"" + rows + "\"";
-        String strCols = " cols=\"" + cols + "\"";
+        String strRows = " rows=\"" + rows + "\""; // NOI18N
+        String strCols = " cols=\"" + cols + "\""; // NOI18N
         
-        String taBody = "<textarea" + strName + strRows + strCols + strReadOnly + strDisabled + ">\n" +
+        String taBody = "<textarea" + strName + strRows + strCols + strReadOnly + strDisabled + ">\n" + // NOI18N
                         strValue +
-                        "</textarea>";
+                        "</textarea>"; // NOI18N
         
         return taBody;
     }

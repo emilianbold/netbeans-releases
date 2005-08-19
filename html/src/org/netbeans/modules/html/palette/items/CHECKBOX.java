@@ -24,7 +24,7 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class CHECKBOX implements ActiveEditorDrop {
 
-    public static final String VALUE_DEFAULT = "ON";
+    public static final String VALUE_DEFAULT = "ON"; // NOI18N
     
     private String name = "";
     private String value = VALUE_DEFAULT;
@@ -52,15 +52,15 @@ public class CHECKBOX implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strName = " name=\"" + name + "\"";
+        String strName = " name=\"" + name + "\""; // NOI18N
 
-        String strValue = " value=\"" + value + "\"";
+        String strValue = " value=\"" + value + "\""; // NOI18N
 
-        String strSelected = (selected ? " checked" : "");
+        String strSelected = (selected ? " checked" : ""); // NOI18N
 
-        String strDisabled = (disabled ? " disabled" : "");
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
         
-        String inputBody = "<input type=\"checkbox\"" + strName + strValue + strSelected + strDisabled + " />";
+        String inputBody = "<input type=\"checkbox\"" + strName + strValue + strSelected + strDisabled + " />"; // NOI18N
         
         return inputBody;
     }

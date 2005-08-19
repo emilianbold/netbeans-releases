@@ -23,6 +23,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.html.palette.BrowseFolders;
+import org.openide.util.NbBundle;
 
 
 
@@ -50,10 +51,11 @@ public class IMGCustomizer extends javax.swing.JPanel {
         jFileChooser1.addChoosableFileFilter(
             new FileFilter() {
                 public boolean accept(File pathname) {
-                    return pathname.isDirectory() || FileUtil.toFileObject(pathname).getMIMEType().startsWith("image/");
+                    return pathname.isDirectory() || FileUtil.toFileObject(pathname).getMIMEType().startsWith("image/"); // NOI18N
                 }
                 public String getDescription() {
-                    return "Image Files";
+                    String desc = NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_FileChooserDesc");
+                    return desc;
                 }
             }
         );
@@ -64,8 +66,14 @@ public class IMGCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-IMG"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Image", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -125,7 +133,8 @@ public class IMGCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setText("Alternate Text:");
+        jLabel4.setLabelFor(jTextField4);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_Alt"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -134,6 +143,8 @@ public class IMGCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel4, gridBagConstraints);
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSN_IMG_Alt"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSD_IMG_Alt"));
 
         jTextField1.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -146,7 +157,7 @@ public class IMGCustomizer extends javax.swing.JPanel {
         add(jTextField1, gridBagConstraints);
 
         jButton1.setFont(new java.awt.Font("Dialog", 0, 12));
-        jButton1.setText("Browse...");
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_Browse"));
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -159,6 +170,8 @@ public class IMGCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSN_IMG_Browse"));
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSD_IMG_Browse"));
 
         jTextField2.setColumns(10);
         jTextField2.setMinimumSize(new java.awt.Dimension(100, 19));
@@ -180,7 +193,8 @@ public class IMGCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jTextField3, gridBagConstraints);
 
-        jLabel1.setText("Location:");
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_Location"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -188,8 +202,11 @@ public class IMGCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSN_IMG_Location"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSD_IMG_Location"));
 
-        jLabel2.setText("Width:");
+        jLabel2.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_Width"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -197,8 +214,11 @@ public class IMGCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSN_IMG_Width"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSD_IMG_Width"));
 
-        jLabel3.setText("Height:");
+        jLabel3.setLabelFor(jTextField3);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "LBL_IMG_Height"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -206,6 +226,8 @@ public class IMGCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSN_IMG_Height"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IMGCustomizer.class, "ACSD_IMG_Height"));
 
         jTextField4.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();

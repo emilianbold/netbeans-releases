@@ -15,6 +15,7 @@ import java.util.GregorianCalendar;
 import javax.swing.DefaultComboBoxModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -49,8 +50,14 @@ public class METACustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-META"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Meta data", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -87,19 +94,19 @@ public class METACustomizer extends javax.swing.JPanel {
         if (jRadioButton1.isSelected()) {
             HEADER_SELECTED = nameIndex;
             switch (nameIndex) {
-                case 0: jTextField1.setText("text/html; charset=UTF-8"); break;
-                case 1: jTextField1.setText("en-US"); break;
-                case 2: jTextField1.setText("3;URL=http://"); break;
-                case 3: jTextField1.setText("no-cache"); break;
-                case 4: jTextField1.setText(createRFC1123Date());
+                case 0: jTextField1.setText("text/html; charset=UTF-8"); break; // NOI18N
+                case 1: jTextField1.setText("en-US"); break; // NOI18N
+                case 2: jTextField1.setText("3;URL=http://"); break; // NOI18N
+                case 3: jTextField1.setText("no-cache"); break; // NOI18N
+                case 4: jTextField1.setText(createRFC1123Date()); // NOI18N
             }
         }
         else if (jRadioButton2.isSelected()) {
             ENGINE_SELECTED = nameIndex;
             switch (nameIndex) {
-                case 0: jTextField1.setText("ALL"); break;
-                case 1: jTextField1.setText(""); break;
-                case 2: jTextField1.setText("keyword [, keyword]*");
+                case 0: jTextField1.setText("ALL"); break; // NOI18N
+                case 1: jTextField1.setText(""); break; // NOI18N
+                case 2: jTextField1.setText("keyword [, keyword]*"); // NOI18N
             }
         }
     }
@@ -109,7 +116,7 @@ public class METACustomizer extends javax.swing.JPanel {
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.YEAR, cal.get(Calendar.YEAR) + 1);
         Date currentDatetimePlusOneYear = cal.getTime();
-        SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy k:mm:ss z");
+        SimpleDateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy k:mm:ss z"); // NOI18N
         String dateString = formatter.format(currentDatetimePlusOneYear);
         
         return dateString;
@@ -152,7 +159,7 @@ public class METACustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Type:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(METACustomizer.class, "LBL_META_Type"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -160,9 +167,11 @@ public class METACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSN_META_Type"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSD_META_Type"));
 
         buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setText("HTTP Header");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(METACustomizer.class, "LBL_META_header"));
         jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButton1.addItemListener(new java.awt.event.ItemListener() {
@@ -178,9 +187,11 @@ public class METACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jRadioButton1, gridBagConstraints);
+        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSN_META_header"));
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSD_META_header"));
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("Search Engines");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(METACustomizer.class, "LBL_META_engines"));
         jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRadioButton2.addItemListener(new java.awt.event.ItemListener() {
@@ -196,14 +207,19 @@ public class METACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton2, gridBagConstraints);
+        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSN_META_engines"));
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSD_META_engines"));
 
-        jLabel2.setText("Name:");
+        jLabel2.setLabelFor(jComboBox1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(METACustomizer.class, "LBL_META_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSN_META_Name"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSD_META_Name"));
 
         jTextField1.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -215,7 +231,8 @@ public class METACustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jTextField1, gridBagConstraints);
 
-        jLabel3.setText("Content:");
+        jLabel3.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(METACustomizer.class, "LBL_META_Content"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -223,6 +240,8 @@ public class METACustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSN_META_Content"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(METACustomizer.class, "ACSD_META_Content"));
 
         jComboBox1.setEditable(true);
         jComboBox1.addActionListener(new java.awt.event.ActionListener() {

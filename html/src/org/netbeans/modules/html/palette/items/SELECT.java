@@ -57,18 +57,18 @@ public class SELECT implements ActiveEditorDrop {
         
         String sBody = generateSBody();
         
-        String strName = " name=\"" + name + "\"";
+        String strName = " name=\"" + name + "\""; // NOI18N
 
         String strVisibleOptions = "";
         if (optionsVisible != OPTIONS_VISIBLE_DEFAULT)
-            strVisibleOptions = " size=\"" + optionsVisible + "\"";
+            strVisibleOptions = " size=\"" + optionsVisible + "\""; // NOI18N
         
-        String strMulti = (multiple ? " multiple" : "");
-        String strDisabled = (disabled ? " disabled" : "");
+        String strMulti = (multiple ? " multiple" : ""); // NOI18N
+        String strDisabled = (disabled ? " disabled" : ""); // NOI18N
 
-        String selBody = "<select" + strName + strVisibleOptions + strMulti + strDisabled + ">\n" +
+        String selBody = "<select" + strName + strVisibleOptions + strMulti + strDisabled + ">\n" + // NOI18N
                         sBody +
-                        "</select>";
+                        "</select>"; // NOI18N
         
         return selBody;
     }
@@ -77,7 +77,7 @@ public class SELECT implements ActiveEditorDrop {
         
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < options; i++)
-            sb.append("<option></option>\n");
+            sb.append("<option></option>\n"); // NOI18N
                 
         String sBody = sb.toString();
         

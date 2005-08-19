@@ -26,10 +26,10 @@ public class UL implements ActiveEditorDrop {
     
     public static final int ITEM_COUNT_DEFAULT = 2;
     
-    public static final String DEFAULT = "default";
-    public static final String DISC = "disc";
-    public static final String CIRCLE = "circle";
-    public static final String SQUARE = "square";
+    public static final String DEFAULT = "default"; // NOI18N
+    public static final String DISC = "disc"; // NOI18N
+    public static final String CIRCLE = "circle"; // NOI18N
+    public static final String SQUARE = "square"; // NOI18N
     
     private String type = DEFAULT;
     private int count = ITEM_COUNT_DEFAULT;
@@ -57,13 +57,13 @@ public class UL implements ActiveEditorDrop {
         
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < count; i++)
-            sb.append("<li></li>\n");
+            sb.append("<li></li>\n"); // NOI18N
     
         String strType = "";
         if (!type.equals(DEFAULT))
-            strType = " type=\"" + type + "\"";
+            strType = " type=\"" + type + "\""; // NOI18N
         
-        String oList = "<ul" + strType + ">\n" + sb.toString() + "</ul>\n";
+        String oList = "<ul" + strType + ">\n" + sb.toString() + "</ul>\n"; // NOI18N
         
         return oList;
     }

@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -44,8 +45,14 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-BUTTON"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Button", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -153,7 +160,7 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, "&submit");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_submit"));
         jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -163,11 +170,11 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jRadioButton1, gridBagConstraints);
-        jRadioButton1.getAccessibleContext().setAccessibleName("submit");
+        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_submit"));
         jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Submit"));
 
         buttonGroup1.add(jRadioButton2);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, "&reset");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_reset"));
         jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -177,11 +184,11 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton2, gridBagConstraints);
-        jRadioButton2.getAccessibleContext().setAccessibleName("reset");
+        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_reset"));
         jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Reset"));
 
         buttonGroup1.add(jRadioButton3);
-        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, "s&tandard");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_standard"));
         jRadioButton3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -191,7 +198,7 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton3, gridBagConstraints);
-        jRadioButton3.getAccessibleContext().setAccessibleName("standard");
+        jRadioButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSN_BUTTON_standard"));
         jRadioButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "ACSD_BUTTON_Standard"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(BUTTONCustomizer.class, "LBL_BUTTON_disabled"));

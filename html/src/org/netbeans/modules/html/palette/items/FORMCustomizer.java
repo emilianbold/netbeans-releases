@@ -26,6 +26,7 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.html.palette.BrowseFolders;
+import org.openide.util.NbBundle;
 
 
 
@@ -54,8 +55,14 @@ public class FORMCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-FORM"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Form", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -239,7 +246,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jRadioButton1, gridBagConstraints);
-        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSN_FORM_GET"));
+        jRadioButton1.getAccessibleContext().setAccessibleName("GET");
         jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSD_FORM_GET"));
 
         buttonGroup1.add(jRadioButton2);
@@ -259,7 +266,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jRadioButton2, gridBagConstraints);
-        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSN_FORM_POST"));
+        jRadioButton2.getAccessibleContext().setAccessibleName("POST");
         jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSD_FORM_POST"));
 
         buttonGroup2.add(jRadioButton3);
@@ -275,7 +282,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jRadioButton3, gridBagConstraints);
-        jRadioButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSN_FORM_urlenc"));
+        jRadioButton3.getAccessibleContext().setAccessibleName("application/x-www-form-urlencoded");
         jRadioButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSD_FORM_urlenc"));
 
         buttonGroup2.add(jRadioButton4);
@@ -290,7 +297,7 @@ public class FORMCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jRadioButton4, gridBagConstraints);
-        jRadioButton4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSN_FORM_multi"));
+        jRadioButton4.getAccessibleContext().setAccessibleName("multipart/form-data");
         jRadioButton4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FORMCustomizer.class, "ACSD_FORM_multi"));
 
     }

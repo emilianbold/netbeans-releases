@@ -50,23 +50,23 @@ public class IMG implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strLoc = " src=\"\"";
+        String strLoc = " src=\"\""; // NOI18N
         if (location.length() > 0)
-            strLoc = " src=\"" + location + "\"";
+            strLoc = " src=\"" + location + "\""; // NOI18N
         
         String strWidth = "";
         if (width.length() > 0)
-            strWidth = " width=\"" + width + "\"";
+            strWidth = " width=\"" + width + "\""; // NOI18N
 
         String strHeight = "";
         if (height.length() > 0)
-            strHeight = " height=\"" + height + "\"";
+            strHeight = " height=\"" + height + "\""; // NOI18N
 
         String strAlt = "";
         if (alttext.length() > 0)
-            strAlt = " alt=\"" + alttext + "\"";
+            strAlt = " alt=\"" + alttext + "\""; // NOI18N
 
-        String imgBody = "<img" + strLoc + strWidth + strHeight + strAlt + "/>\n";
+        String imgBody = "<img" + strLoc + strWidth + strHeight + strAlt + "/>\n"; // NOI18N
         
         return imgBody;
     }

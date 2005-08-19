@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -43,8 +44,14 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         
         dialogOK = false;
         
+        String displayName = "";
+        try {
+            displayName = NbBundle.getBundle("org.netbeans.modules.html.palette.items.resources.Bundle").getString("NAME_html-INPUT"); // NOI18N
+        }
+        catch (Exception e) {}
+        
         descriptor = new DialogDescriptor
-                (this, "Insert Text Input", true,
+                (this, "Insert " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -112,7 +119,8 @@ public class INPUTCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setText("Width:");
+        jLabel4.setLabelFor(jTextField4);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_Width"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -121,6 +129,8 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         add(jLabel4, gridBagConstraints);
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_Width"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_Width"));
 
         jTextField1.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -133,7 +143,8 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jTextField1, gridBagConstraints);
 
-        jLabel1.setText("Name:");
+        jLabel1.setLabelFor(jTextField1);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -141,8 +152,10 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_Name"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_Name"));
 
-        jLabel2.setText("Type:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_Type"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -150,8 +163,10 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_Type"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_Type"));
 
-        jLabel3.setText("Initial State:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_State"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -159,6 +174,8 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_State"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_state"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -171,7 +188,7 @@ public class INPUTCustomizer extends javax.swing.JPanel {
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText("text");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_text"));
         jRadioButton1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -181,9 +198,11 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jRadioButton1, gridBagConstraints);
+        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_text"));
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_text"));
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("password");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_password"));
         jRadioButton2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -193,9 +212,11 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton2, gridBagConstraints);
+        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_password"));
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_password"));
 
         buttonGroup1.add(jRadioButton3);
-        jRadioButton3.setText("hidden");
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton3, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_hidden"));
         jRadioButton3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -205,8 +226,10 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jRadioButton3, gridBagConstraints);
+        jRadioButton3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_hidden"));
+        jRadioButton3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_hidden"));
 
-        jCheckBox1.setText("disabled");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_disabled"));
         jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -216,8 +239,10 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(jCheckBox1, gridBagConstraints);
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_disabled"));
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_disabled"));
 
-        jCheckBox2.setText("read-only");
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_readonly"));
         jCheckBox2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
         jCheckBox2.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -227,8 +252,11 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
         add(jCheckBox2, gridBagConstraints);
+        jCheckBox2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_readonly"));
+        jCheckBox2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_readonly"));
 
-        jLabel5.setText("Initial Value:");
+        jLabel5.setLabelFor(jTextField2);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "LBL_INPUT_Value"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -236,6 +264,8 @@ public class INPUTCustomizer extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jLabel5, gridBagConstraints);
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSN_INPUT_Value"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(INPUTCustomizer.class, "ACSD_INPUT_Value"));
 
         jTextField2.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();

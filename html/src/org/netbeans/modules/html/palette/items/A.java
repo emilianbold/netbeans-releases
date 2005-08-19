@@ -16,6 +16,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -26,7 +27,12 @@ public class A implements ActiveEditorDrop {
     
     public static final String[] protocols = new String[] { "file", "http", "https", "ftp", "mailto" }; // NOI18N
     public static final int PROTOCOL_DEFAULT = 0;
-    public static final String[] targets = new String[] { "Same Frame", "New Window", "Parent Frame", "Full Window" }; // NOI18N
+    public static final String[] targets = new String[] { 
+        NbBundle.getMessage(A.class, "LBL_SameFrame"),
+        NbBundle.getMessage(A.class, "LBL_NewWindow"),
+        NbBundle.getMessage(A.class, "LBL_ParentFrame"),
+        NbBundle.getMessage(A.class, "LBL_FullWindow")
+    };
     public static final int TARGET_DEFAULT = 0;
     
     private int protocolIndex = PROTOCOL_DEFAULT;

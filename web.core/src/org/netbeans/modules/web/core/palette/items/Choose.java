@@ -52,9 +52,9 @@ boolean accept = true;
         
         String cBody = generateChooseBody();
         String body = 
-                "<c:choose>\n" +
+                "<c:choose>\n" + // NOI18N
                 cBody +
-                "</c:choose>\n";
+                "</c:choose>\n"; // NOI18N
         
         return body;
     }
@@ -63,10 +63,10 @@ boolean accept = true;
         
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < whens; i++)
-            sb.append("<c:when test=\"\">\n</c:when>\n");
+            sb.append("<c:when test=\"\">\n</c:when>\n"); // NOI18N
         
         if (otherwise)
-            sb.append("<c:otherwise>\n</c:otherwise>\n");
+            sb.append("<c:otherwise>\n</c:otherwise>\n"); // NOI18N
                 
         String cBody = sb.toString();
         

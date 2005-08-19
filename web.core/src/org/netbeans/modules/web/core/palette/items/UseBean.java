@@ -60,15 +60,15 @@ public class UseBean implements ActiveEditorDrop {
 
     private String createBody() {
         
-        String strBean = " id=\"\"";
+        String strBean = " id=\"\""; // NOI18N
         if (beanIndex == -1)
-            strBean = " id=\"" + bean + "\"";
+            strBean = " id=\"" + bean + "\""; // NOI18N
         else 
-            strBean = " id=\"" + beans[beanIndex] + "\"";
+            strBean = " id=\"" + beans[beanIndex] + "\""; // NOI18N
         
-        String strClass = " class=\"" + clazz + "\"";
+        String strClass = " class=\"" + clazz + "\""; // NOI18N
         
-        String strScope = " scope=\"" + scopes[scopeIndex] + "\"";
+        String strScope = " scope=\"" + scopes[scopeIndex] + "\""; // NOI18N
 
         String ub = "<jsp:useBean" + strBean + strScope + strClass + " />"; // NOI18N
         

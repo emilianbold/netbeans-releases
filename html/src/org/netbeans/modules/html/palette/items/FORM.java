@@ -24,11 +24,11 @@ import org.openide.text.ActiveEditorDrop;
  */
 public class FORM implements ActiveEditorDrop {
 
-    public static final String METHOD_GET = "GET";
-    public static final String METHOD_POST = "POST";
+    public static final String METHOD_GET = "GET"; // NOI18N
+    public static final String METHOD_POST = "POST"; // NOI18N
     
-    public static final String ENC_URLENC = "application/x-www-form-urlencoded";
-    public static final String ENC_MULTI = "multipart/form-data";
+    public static final String ENC_URLENC = "application/x-www-form-urlencoded"; // NOI18N
+    public static final String ENC_MULTI = "multipart/form-data"; // NOI18N
     
     private static final String METHOD_DEFAULT = METHOD_GET;
     private static final String ENC_DEFAULT = ENC_URLENC;
@@ -61,21 +61,21 @@ public class FORM implements ActiveEditorDrop {
         
         String strAction = "";
         if (action.length() > 0)
-            strAction = " action=\"" + action + "\"";
+            strAction = " action=\"" + action + "\""; // NOI18N
         
         String strMethod = "";
         if (!method.equals(METHOD_DEFAULT))
-            strMethod = " method=\"" + method + "\"";
+            strMethod = " method=\"" + method + "\""; // NOI18N
 
         String strEnc = "";
         if (!enc.equals(ENC_DEFAULT))
-            strEnc = " enctype=\"" + enc + "\"";
+            strEnc = " enctype=\"" + enc + "\""; // NOI18N
 
         String strName = "";
         if (name.length() > 0)
-            strName = " name=\"" + name + "\"";
+            strName = " name=\"" + name + "\""; // NOI18N
 
-        String formBody = "<form" + strName + strAction + strMethod + strEnc + ">\n</form>";
+        String formBody = "<form" + strName + strAction + strMethod + strEnc + ">\n</form>"; // NOI18N
         
         return formBody;
     }
