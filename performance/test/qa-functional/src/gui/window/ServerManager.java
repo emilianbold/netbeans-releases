@@ -52,7 +52,7 @@ public class ServerManager extends org.netbeans.performance.test.utilities.Perfo
 
         MainWindowOperator.getDefault().menuBar().pushMenu(menu);
         
-        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","TXT_ServerManager"));
+        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.devmodules.api.Bundle","TXT_ServerManager"));
     }
     
     
@@ -62,4 +62,5 @@ public class ServerManager extends org.netbeans.performance.test.utilities.Perfo
     public static void main(String[] args) {
         junit.textui.TestRunner.run(new ServerManager("measureTime"));
     }
+    
 }

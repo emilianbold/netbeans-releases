@@ -63,7 +63,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
-        suite.addTest(new MainMenu("testVersioningMenu", "Versioning main menu"));
+        suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
         return suite;
@@ -95,7 +95,7 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     }
     
     public void testVersioningMenu(){
-        testMenu("org.netbeans.modules.vcscore.actions.Bundle","Menu/Versioning");
+        testMenu("org.netbeans.modules.versioning.system.cvss.Bundle","Menu/CVS");
     }
     
     public void testWindowMenu(){
@@ -135,4 +135,12 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         menuBar = MainWindowOperator.getDefault().menuBar();
         testedMenu = new JMenuOperator(MainWindowOperator.getDefault());
     }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new MainMenu("testVersioningMenu"));
+    }
+    
 }

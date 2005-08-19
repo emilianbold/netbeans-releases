@@ -47,14 +47,11 @@ public class MeasureDialogs  {
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
         //remove from test run for NB4.1        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
-        suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
-        suite.addTest(new AddVersionedDirectoryDialog("measureTime", "Add Versioned Directory open"));
-        
         suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         //remove from test run for NB4.1        suite.addTest(new FilesWindow("measureTime", "Files window open"));
         //remove from test run for NB4.1        suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
         //remove from test run for NB4.1        suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
-        //remove from test run for NB4.1        suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
+// TEMPORARY until Jellytools fixed suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
         
 //TODO       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));

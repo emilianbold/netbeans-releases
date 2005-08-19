@@ -33,7 +33,7 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
-        suite.addTest(new MainMenu("testVersioningMenu", "Versioning main menu"));
+        suite.addTest(new MainMenu("testVersioningMenu", "CVS main menu"));
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
         
@@ -45,12 +45,12 @@ public class MeasureMenus  {
         suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
         suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run Other main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
-        suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
-        suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
+        //suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
+        //suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
         suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debug main menu"));
-        suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
+        //suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
         suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
         
         suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "JSE Project node popup in Projects View"));

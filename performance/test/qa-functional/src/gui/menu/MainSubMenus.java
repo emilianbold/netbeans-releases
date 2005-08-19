@@ -13,6 +13,8 @@
 
 package gui.menu;
 
+import gui.Utilities;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
 import javax.swing.JMenuItem;
@@ -37,6 +39,8 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     protected static String mainMenuPath;
     protected static JMenuOperator testedMainMenu;
     protected static String subMenuPath;
+    
+    private EditorOperator editor;
     
     /** Creates a new instance of MainSubMenus */
     public MainSubMenus(String testName) {
@@ -71,8 +75,9 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.core.multiview.Bundle", "CTL_EditorsAction");
     }
     
-    //TODO open java file
     public void testViewCodeFoldsMenu(){
+        editor = Utilities.openJavaFile();
+        waitNoEvent(5000);
         testSubMenu("org.netbeans.core.Bundle","View", "org.netbeans.modules.editor.Bundle", "Menu/View/CodeFolds");
     }
     
@@ -92,15 +97,6 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.modules.project.ui.Bundle", "RunProject", "org.netbeans.modules.project.ui.Bundle", "Menu/RunProject/RunOther");
     }
     
-    public void testVersioningCVSMenu(){
-        WAIT_AFTER_OPEN = 1000; // this is known to be very slow
-        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "org.netbeans.modules.vcs.profiles.cvsprofiles.config.Bundle", "CVS");
-    }
-    
-    public void testVersioningPVCSMenu(){
-        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "org.netbeans.modules.vcs.profiles.pvcs.config.Bundle", "PVCS");
-    }
-    
     public void testToolsI18nMenu(){
         testSubMenu("org.netbeans.core.Bundle","Tools", "org.netbeans.modules.i18n.Bundle", "LBL_I18nGroupActionName");
     }
@@ -113,13 +109,10 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
         testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
     }
     
-    public void testWinVersioningMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.modules.vcscore.Bundle", "Menu/Window/Versioning");
-    }
-    
-    //TODO open java file
     public void testWinSelectDocumentNodeInMenu(){
-        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.core.actions.Bundle", "Menu/Window/SelectDocumentNode");
+        editor = Utilities.openJavaFile();
+        waitNoEvent(5000);
+        testSubMenu("org.netbeans.core.Bundle","Window", "org.netbeans.core.ui.resources.Bundle", "Menu/Window/SelectDocumentNode");
     }
     
     private void testSubMenu(String mainMenu, String subMenu){
@@ -165,5 +158,16 @@ public class MainSubMenus extends org.netbeans.performance.test.utilities.Perfor
     public void close() {
         testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
         testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
+        
+        if(editor != null)
+            editor.close();
     }
+    
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new MainSubMenus("testWinSelectDocumentNodeInMenu"));
+    }
+    
 }

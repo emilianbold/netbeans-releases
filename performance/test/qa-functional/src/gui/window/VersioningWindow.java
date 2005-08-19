@@ -41,7 +41,7 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     }
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.vcscore.Bundle","Menu/Window/Versioning") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.vcscore.actions.Bundle","LBL_OpenVersioning");
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.versioning.system.cvss.ui.actions.status.Bundle","BK0001");
     }    
     
     public void prepare() {
@@ -57,6 +57,13 @@ public class VersioningWindow extends org.netbeans.performance.test.utilities.Pe
     public void close() {
         if(testedComponentOperator!=null && testedComponentOperator.isShowing())
             ((VersioningOperator)testedComponentOperator).close();
+    }
+
+    /** Test could be executed internaly in IDE without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(new VersioningWindow("measureTime"));
     }
     
 }
