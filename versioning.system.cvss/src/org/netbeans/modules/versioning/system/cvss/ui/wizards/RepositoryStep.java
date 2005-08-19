@@ -181,11 +181,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             repositoryPanel.editButton.setVisible(chooserVisible);
         }
 
-        // gridbaglayout ignores bottom fill panel if password field hidden 
-        JPanel workaround = new JPanel();
-        workaround.setLayout(new BorderLayout());
-        workaround.add(repositoryPanel, BorderLayout.NORTH);
-        return workaround;
+        return repositoryPanel;
     }
 
     /**
@@ -583,12 +579,14 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (backgroundValidationThread != null) {
+                    // FIXME socks sockets are interruptible, direct sockets are not
                     backgroundValidationThread.interrupt();
+                    invalid("Verification stopped by user!");
                 }
             }
         });
         progressComponent = new JPanel();
-        progressComponent.setLayout(new BorderLayout());
+        progressComponent.setLayout(new BorderLayout(6, 0));
         progressComponent.add(bar, BorderLayout.CENTER);
         progressComponent.add(stopButton, BorderLayout.LINE_END);
         progress.start(/*2, 5*/);
