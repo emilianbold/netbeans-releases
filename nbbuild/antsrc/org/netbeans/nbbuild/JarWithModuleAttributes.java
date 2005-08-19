@@ -141,6 +141,10 @@ public class JarWithModuleAttributes extends Jar {
                             String cnb = m.group(1);
                             String version = m.group(3);
                             try {
+                                if (version.length() > 1 && version.charAt(0) == '0') {
+                                    // Could be interpreted as an integer, but not here - e.g. "050123" is a date.
+                                    throw new NumberFormatException(version);
+                                }
                                 Integer versionI = new Integer(version);
                                 additions.put(cnb, versionI);
                             } catch (NumberFormatException e) {
