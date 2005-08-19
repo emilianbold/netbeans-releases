@@ -693,7 +693,10 @@ class LayoutFeeder implements LayoutConstants {
                 operations.moveInsideSequential(parent, dimension);
             }
         }
-        else operations.optimizeGaps(parent, dimension); // also removes supporting gap in container
+        else {
+            operations.optimizeGaps(parent, dimension); // also removes supporting gap in container
+            operations.mergeParallelGroups(parent);
+        }
     }
 
     private void addToGroup(IncludeDesc iDesc1, IncludeDesc iDesc2) {
@@ -707,7 +710,7 @@ class LayoutFeeder implements LayoutConstants {
         if (parent.isSequential()) {
             if (iDesc1.newSubGroup) {
                 seq = new LayoutInterval(SEQUENTIAL);
-                LayoutRegion space = addingInterval.getCurrentSpace();
+                LayoutRegion space = toAdd.getCurrentSpace();
                 if (dimension == VERTICAL) { // count in a margin in vertical direction
                     // [because analyzeAdding uses it - maybe we should get rid of it completely]
                     space = new LayoutRegion(space);
@@ -779,14 +782,24 @@ class LayoutFeeder implements LayoutConstants {
 
         // compute leading and trailing gaps
         for (int i = LEADING; i <= TRAILING; i++) {
+            LayoutInterval outerNeighbor = neighbors[i] == null ?
+                    LayoutInterval.getNeighbor(parent, i, false, true, false) : null;
             IncludeDesc iiDesc = iDesc1.alignment < 0 || iDesc1.alignment == i ? iDesc1 : iDesc2;
-            if (neighbors[i] == null && iiDesc != null && iiDesc.snappedParallel != null
-                && (iiDesc.snappedParallel.getParent() != seq || originalGap == null))
-            {   // starting/ending edge aligned in parallel - does not need a gap
-                continue;
+
+            if (neighbors[i] == null && iiDesc != null) { // at the start/end of the sequence
+                if (iiDesc.snappedNextTo != null
+                    && outerNeighbor != null && LayoutInterval.isDefaultPadding(outerNeighbor))
+                {   // the padding is outside of the parent already
+                    continue;
+                }
+                if (iiDesc.snappedParallel != null
+                    && (iiDesc.snappedParallel.getParent() != seq || originalGap == null))
+                {   // starting/ending edge aligned in parallel - does not need a gap
+                    continue;
+                }
             }
             if (originalGap == null && startsWithGap(toAdd, i))
-                continue; // the group itself starts with a gap
+                continue; // the adding interval is a group starting with a gap
 
             boolean aligned;
             if (iDesc1.alignment < 0) { // no specific alignment - decide based on distance
@@ -807,15 +820,18 @@ class LayoutFeeder implements LayoutConstants {
 
             boolean minorGap = false;
             if (!aligned && neighbors[i] == null && originalGap == null) {
-                LayoutInterval outerNeighbor = LayoutInterval.getNeighbor(parent, i, false, true, false);
-                if (outerNeighbor != null && outerNeighbor.isEmptySpace())
-                    continue; // unaligned ending gap not needed
-                else { // minor gap if the other edge is going to align in parallel
+                if (outerNeighbor != null && outerNeighbor.isEmptySpace()) {
+                    continue; // unaligned ending gap not needed - there's a gap outside the parent
+                }
+                else { // minor gap if it does not need to define the parent size
                     IncludeDesc otherDesc = iDesc1.alignment == (i^1) ? iDesc1 : iDesc2;
                     LayoutInterval parallel = otherDesc != null ? otherDesc.snappedParallel : null;
                     minorGap = (parallel != null && parallel.getParent() != null)
-                               || LayoutInterval.getCount(parent, i^1, true) > 0;
-//                    minorGap = iiDesc == null && iDesc1.snappedParallel != null && parent.isParentOf(iDesc1.snappedParallel);
+                               || (parent.getParent() != null && LayoutInterval.getCount(parent, i^1, true) > 0);
+                    // make sure new sequence has appropriate explicit alignment
+                    if (parallel == null && seq.getSubIntervalCount() == 0 && seq.getAlignment() != (i^1)) {
+                        layoutModel.setIntervalAlignment(seq, i^1);
+                    }
                 }
             }
 
@@ -823,7 +839,7 @@ class LayoutFeeder implements LayoutConstants {
 
             if (!fixedGap
                 && (minorGap
-                    || LayoutInterval.wantResize(addingInterval)
+                    || LayoutInterval.wantResize(toAdd)
                     || (originalGap != null && !LayoutInterval.canResize(originalGap))
                     || (originalGap == null
                         && (LayoutInterval.wantResize(seq)
@@ -842,7 +858,7 @@ class LayoutFeeder implements LayoutConstants {
                     distance *= -1;
 
                 if (distance > 0) {
-                    int pad = determineExpectingPadding(addingInterval, neighbors[i], seq, i);
+                    int pad = determineExpectingPadding(toAdd, neighbors[i], seq, i);
                     if (distance > pad || (fixedGap && distance != pad)) {
                         gap.setPreferredSize(distance);
                         if (fixedGap) {
@@ -855,13 +871,14 @@ class LayoutFeeder implements LayoutConstants {
             if (!fixedGap) {
                 gap.setMaximumSize(Short.MAX_VALUE);
             }
+
             gaps[i] = gap;
         }
 
         if (seq.getParent() == null) { // newly created sequence
             assert seq.getSubIntervalCount() == 0;
             if (gaps[LEADING] == null && gaps[TRAILING] == null) { // after all, the sequence is not needed
-                layoutModel.setIntervalAlignment(addingInterval, seq.getAlignment());
+                layoutModel.setIntervalAlignment(toAdd, seq.getAlignment());
                 layoutModel.addInterval(toAdd, parent, -1);
                 return;
             }
@@ -889,7 +906,7 @@ class LayoutFeeder implements LayoutConstants {
         if (gaps[LEADING] != null) {
             layoutModel.addInterval(gaps[LEADING], seq, index++);
         }
-        layoutModel.setIntervalAlignment(addingInterval, DEFAULT);
+        layoutModel.setIntervalAlignment(toAdd, DEFAULT);
         layoutModel.addInterval(toAdd, seq, index++);
         if (gaps[TRAILING] != null) {
             layoutModel.addInterval(gaps[TRAILING], seq, index);
@@ -1310,6 +1327,7 @@ class LayoutFeeder implements LayoutConstants {
                                                 alignment == LEADING ? pos1 : pos2,
                                                 alignment == LEADING ? pos2 : pos1);
                 operations.optimizeGaps(sideGroup, dimension);
+                operations.mergeParallelGroups(sideGroup);
             }
         }
     }
@@ -1751,6 +1769,7 @@ class LayoutFeeder implements LayoutConstants {
                 layoutModel.addInterval(addingInterval, subGroupParent, subGroupIndex);
             }
             toAdd = subGroup; // whole group to be added from now
+            addingSpace = toAdd.getCurrentSpace();
             // can't do optimizeGaps on the group here as addingInterval is not
             // yet in its final position - possibly not aligned in parallel yet
             // (addToGroup counts with that toAdd may start with a gap)

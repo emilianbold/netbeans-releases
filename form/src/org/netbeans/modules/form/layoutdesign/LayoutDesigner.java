@@ -2635,7 +2635,7 @@ public class LayoutDesigner implements LayoutConstants {
             else { // somewhere in the middle - can be just one
                 for (int i=n-2; i > 0; i--) {
                     LayoutInterval li = seq.getSubInterval(i);
-                    if (canBeContainerResizingGap(li)) {
+                    if (canBeContainerResizingGap(li) && LayoutInterval.canResize(li)) {
                         return group.getSubIntervalCount() == 1 ? li : null;
                     }
                 }

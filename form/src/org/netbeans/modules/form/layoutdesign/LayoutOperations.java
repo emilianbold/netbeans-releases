@@ -745,8 +745,6 @@ class LayoutOperations implements LayoutConstants {
         int groupInnerPosTrailing = LayoutUtils.getOutermostComponent(group, dimension, TRAILING)
                                         .getCurrentSpace().positions[dimension][TRAILING];
 
-        boolean paddingLeading = false; // if true, there is a default padding at leading side
-        boolean paddingTrailing = false; // if true, there is a default padding at traling side
         boolean defaultPaddingLeading = false; // if true, the leading padding has default preferred size
         boolean defaultPaddingTrailing = false; // if true, the trailing padding has default preferred size
         boolean resizingGapLeading = false;
@@ -759,13 +757,10 @@ class LayoutOperations implements LayoutConstants {
                 if (anyGapLeading && (!anyAlignedLeading || sameMinGapLeading)) {
                     LayoutInterval gap = li.getSubInterval(0);
                     if (gap.isEmptySpace()) {
-                        if (LayoutInterval.isDefaultPadding(gap)) {
-                            paddingLeading = true;
-                            if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                                && isEndingDefaultGapEffective(li, dimension, LEADING))
-                            {   // default padding to be used as common gap
-                                defaultPaddingLeading = true;
-                            }
+                        if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                            && isEndingDefaultGapEffective(li, dimension, LEADING))
+                        {   // default padding to be used as common gap
+                            defaultPaddingLeading = true;
                         }
                         if (gap.getMaximumSize() >= Short.MAX_VALUE) {
                             if (li.getAlignment() == LEADING) // need to change alignment as we removed resizing gap
@@ -780,13 +775,10 @@ class LayoutOperations implements LayoutConstants {
                 if (anyGapTrailing && (!anyAlignedTrailing || sameMinGapTrailing)) {
                     LayoutInterval gap = li.getSubInterval(li.getSubIntervalCount() - 1);
                     if (gap.isEmptySpace()) {
-                        if (LayoutInterval.isDefaultPadding(gap)) {
-                            paddingTrailing = true;
-                            if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
-                                && isEndingDefaultGapEffective(li, dimension, TRAILING))
-                            {   // default padding to be used as common gap
-                                defaultPaddingTrailing = true;
-                            }
+                        if (gap.getPreferredSize() == NOT_EXPLICITLY_DEFINED
+                            && isEndingDefaultGapEffective(li, dimension, TRAILING))
+                        {   // default padding to be used as common gap
+                            defaultPaddingTrailing = true;
                         }
                         if (gap.getMaximumSize() >= Short.MAX_VALUE) {
                             if (li.getAlignment() == TRAILING) // need to change alignment as we removed resizing gap
@@ -817,11 +809,10 @@ class LayoutOperations implements LayoutConstants {
                 int size = groupInnerPosLeading - groupOuterPos[LEADING];
                 if (size > 0 || defaultPaddingLeading) {
                     leadingGap = new LayoutInterval(SINGLE);
-                    if (!paddingLeading) {
-                        leadingGap.setMinimumSize(USE_PREFERRED_SIZE);
-                    }
                     if (!defaultPaddingLeading) {
                         leadingGap.setPreferredSize(size);
+                        if (!resizingGapLeading)
+                            leadingGap.setMinimumSize(USE_PREFERRED_SIZE);
                     }
                     if (resizingGapLeading) {
                         leadingGap.setMaximumSize(Short.MAX_VALUE);
@@ -841,11 +832,10 @@ class LayoutOperations implements LayoutConstants {
                 int size = groupOuterPos[TRAILING] - groupInnerPosTrailing;
                 if (size > 0 || defaultPaddingTrailing) {
                     trailingGap = new LayoutInterval(SINGLE);
-                    if (!paddingTrailing) {
-                        trailingGap.setMinimumSize(USE_PREFERRED_SIZE);
-                    }
                     if (!defaultPaddingTrailing) {
                         trailingGap.setPreferredSize(size);
+                        if (!resizingGapTrailing)
+                            trailingGap.setMinimumSize(USE_PREFERRED_SIZE);
                     }
                     if (resizingGapTrailing) {
                         trailingGap.setMaximumSize(Short.MAX_VALUE);
