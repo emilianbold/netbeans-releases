@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -242,6 +242,10 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         return lookup;
     }
     
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
+
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
 
@@ -281,7 +285,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
                 new RecommendedTemplatesImpl(),
                 refHelper,
-                classpathExtender
+                classpathExtender,
+                new EjbJarProjectOperations(this)
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
     }

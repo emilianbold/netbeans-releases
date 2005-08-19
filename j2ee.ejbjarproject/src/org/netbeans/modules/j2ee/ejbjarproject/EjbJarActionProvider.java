@@ -7,24 +7,22 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -38,16 +36,14 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.*;
-import org.openide.util.Mutex;
 import org.netbeans.api.project.ProjectInformation;
 
 import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.javacore.JMManager;
 
 
 /** Action provider of the Web project. This is the place where to do
@@ -77,6 +73,7 @@ class EjbJarActionProvider implements ActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_VERIFY,
+        COMMAND_DELETE,
     };
     
     // Project
@@ -89,6 +86,9 @@ class EjbJarActionProvider implements ActionProvider {
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
+    /**Set of commands which are affected by background scanning*/
+    final Set bkgScanSensitiveActions;
+
     public EjbJarActionProvider(EjbJarProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
@@ -107,6 +107,14 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
 
+        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
+            COMMAND_RUN, 
+            COMMAND_RUN_SINGLE, 
+            COMMAND_DEBUG, 
+            COMMAND_DEBUG_SINGLE,
+            COMMAND_DEBUG_STEP_INTO
+        }));
+
         this.antProjectHelper = antProjectHelper;
         this.project = project;
         this.refHelper = refHelper;
@@ -120,9 +128,50 @@ class EjbJarActionProvider implements ActionProvider {
         return supportedActions;
     }
     
-    public void invokeAction( String command, Lookup context ) throws IllegalArgumentException {
-        Properties p;
+    public void invokeAction(final String command, final Lookup context ) throws IllegalArgumentException {
+        if (COMMAND_DELETE.equals(command)) {
+            project.getAntProjectHelper().performDefaultDeleteOperation();
+            return ;
+        }
+        
+        Runnable action = new Runnable () {
+            public void run () {
+                Properties p = new Properties();
+                String[] targetNames;
+        
+                targetNames = getTargetNames(command, context, p);
+                if (targetNames == null) {
+                    return;
+                }
+                if (targetNames.length == 0) {
+                    targetNames = null;
+                }
+                if (p.keySet().size() == 0) {
+                    p = null;
+                }
+                try {
+                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                } 
+                catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }            
+        };
+        
+        if (this.bkgScanSensitiveActions.contains(command)) {        
+            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (EjbJarActionProvider.class,"ACTION_"+command)); //NOI18N
+        }
+        else {
+            action.run();
+        }
+    }
+    
+    /**
+     * @return array of targets or null to stop execution; can return empty array
+     */
+    /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         String[] targetNames = (String[])commands.get(command);
+        
         //EXECUTION PART
         if (command.equals(COMMAND_RUN_SINGLE)) {
             // run Java
@@ -130,7 +179,6 @@ class EjbJarActionProvider implements ActionProvider {
             if ((javaFiles != null) && (javaFiles.length>0)) {
                 FileObject file = javaFiles[0];
                 String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-                p = new Properties();
                 p.setProperty("javac.includes", clazz); // NOI18N
                 // Convert foo/FooTest.java -> foo.FooTest
                 if (clazz.endsWith(".java")) { // NOI18N
@@ -145,14 +193,14 @@ class EjbJarActionProvider implements ActionProvider {
                 } else {
                     NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(EjbJarActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
-                    return;
+                    return null;
                 }
             } else {
-                return;
+                return null;
             }
         } else if (command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer ()) {
-                return;
+                return null;
             }
             if (isDebugged()) {
                 NotifyDescriptor nd;
@@ -165,10 +213,9 @@ class EjbJarActionProvider implements ActionProvider {
                 if (o.equals(NotifyDescriptor.OK_OPTION)) {            
                     DebuggerManager.getDebuggerManager().getCurrentSession().kill();
                 } else {
-                    return;
+                    return null;
                 }
             }
-            p = new Properties();
             if (command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
             } else {
@@ -177,7 +224,7 @@ class EjbJarActionProvider implements ActionProvider {
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
             if (!isSelectedServer ()) {
-                return;
+                return null;
             }
             if (isDebugged()) {
                 NotifyDescriptor nd;
@@ -188,16 +235,14 @@ class EjbJarActionProvider implements ActionProvider {
                 if (o.equals(NotifyDescriptor.OK_OPTION)) {            
                     DebuggerManager.getDebuggerManager().getCurrentSession().kill();
                 } else {
-                    return;
+                    return null;
                 }
             }
-            p = new Properties();
         //COMPILATION PART
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findSourcesAndPackages( context, sourceRoots);
             boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
-            p = new Properties();
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
             } else {
@@ -205,26 +250,18 @@ class EjbJarActionProvider implements ActionProvider {
         // TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
-            p = new Properties();
             targetNames = setupTestSingle(p, files);
         } 
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
-            p = new Properties();
             targetNames = setupDebugTestSingle(p, files);
         } else {
-            p = null;
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         }
-
-        try {
-            ActionUtils.runTarget(findBuildXml(), targetNames, p);
-        } 
-        catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+        
+        return targetNames;
     }
     
     private String[] setupTestSingle(Properties p, FileObject[] files) {
