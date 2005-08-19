@@ -1043,7 +1043,7 @@ public class NbBundle extends Object {
                 int id = getID(name);
 
                 //System.err.println ("\tthis=" + this + " parent=" + getParent ());
-                boolean loc = (name.indexOf("/Bundle.") != -1) || (name.indexOf("/Bundle_") != -1); // NOI18N
+                boolean loc = name.indexOf("Bundle") != -1; // NOI18N
 
                 return new DebugInputStream(base, id, loc);
             } else {
