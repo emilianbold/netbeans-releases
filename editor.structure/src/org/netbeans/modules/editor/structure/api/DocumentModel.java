@@ -255,7 +255,11 @@ public final class DocumentModel {
                     break;
                 }
             }
+            
+            if(getDocument().getLength() == 0)  leaf = getRootElement();
+            
             assert leaf != null : "at least 'root' document element should always be found!";
+            
             return leaf;
             
         } finally {
@@ -548,7 +552,6 @@ public final class DocumentModel {
                 if(!isEmpty(el) && isDescendantOf(el,de)) return el;
             }
             
-            assert false : "There is no parent for " + de + "! There should always be at least the root element!";
             return null;
         }finally{
             readUnlock();
@@ -664,13 +667,13 @@ public final class DocumentModel {
             System.out.println(i.next());
         }
         //...and how our lovely elements looks sorted:
-        System.out.println("\nSORTED:");
-        ArrayList list = new ArrayList(elements);
-        Collections.sort(list, ELEMENTS_COMPARATOR);
-        i = list.iterator();
-        while(i.hasNext()) {
-            System.out.println(i.next());
-        }
+//        System.out.println("\nSORTED:");
+//        ArrayList list = new ArrayList(elements);
+//        Collections.sort(list, ELEMENTS_COMPARATOR);
+//        i = list.iterator();
+//        while(i.hasNext()) {
+//            System.out.println(i.next());
+//        }
         System.out.println("*****\n");
     }
     
@@ -705,10 +708,10 @@ public final class DocumentModel {
             //test if the transaction has been cancelled and if co throw TransactionCancelledException
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
             
-            if(startOffset == endOffset) {
-                if(debug) System.out.println("Warning: Adding an empty element into transaction!");
-                return null;
-            }
+//            if(startOffset == endOffset) {
+//                System.out.println("Warning: Adding an empty element into transaction!");
+//                return null;
+//            }
             
             //create a new DocumentElement instance
             DocumentElement de = createDocumentElement(name, type, attributes, startOffset, endOffset);
@@ -821,10 +824,6 @@ public final class DocumentModel {
             //this is ensured by using a set and proper DocumentElement.equals() implementation
             
             if(elements.add(de)) {
-                
-                //the element was added
-                if(debug) debugElements();
-                
                 /* events firing:
                  * If the added element has a children, we have to fire remove event
                  * to their previous parents (it is the added element's parent)
@@ -844,7 +843,7 @@ public final class DocumentModel {
                 }
                 fireDocumentModelEvent(de, ELEMENT_ADDED);
                 
-                if(debug) System.out.println(de + " added");
+                if(debug) System.out.println(de + " added into " + parent);
             }
         }
         
@@ -861,18 +860,23 @@ public final class DocumentModel {
                 
                 //remove the element itself
                 elements.remove(de);
+                if(debug) System.out.println("[DMT] removed element " + de);
                 
                 /* events firing:
                  * If the removed element had a children, we have to fire add event
                  * to the parent of the removed element for each child.
                  */
-                if(parent != null) {//root element doesn't have any parent
-                    //fire events for all affected children
-                    while(childrenIterator.hasNext()) {
-                        DocumentElement child = (DocumentElement)childrenIterator.next();
-                        de.childRemoved(child);
-                        parent.childAdded(child);
-                    }
+                if(parent == null) {
+                    if(debug) System.out.println("[DTM] WARNING: element has no parent (no events are fired to it!!!) " + de);
+                    if(debug) System.out.println("[DTM] Trying to recover by returning root element...");
+                    parent = getRootElement();
+                }
+                
+                //fire events for all affected children
+                while(childrenIterator.hasNext()) {
+                    DocumentElement child = (DocumentElement)childrenIterator.next();
+                    de.childRemoved(child);
+                    parent.childAdded(child);
                 }
                 
                 
@@ -977,11 +981,18 @@ public final class DocumentModel {
             //XXX hack - resort elements
             resortElements();
             
-            //TODO: here we have to decide whether the document change affects
-            //the model and how.
-            int change_offset = documentEvent.getOffset();
-            int change_length = documentEvent.getLength();
             try {
+                //test whether a new text was inserted before or after the root element boundaries (positions)
+                if(getRootElement().getStartOffset() > 0 || getRootElement().getEndOffset() < getDocument().getLength()) {
+                    getRootElement().setStartPosition(0);
+                    getRootElement().setEndPosition(getDocument().getLength());
+                }
+                
+                //TODO: here we have to decide whether the document change affects
+                //the model and how.
+                int change_offset = documentEvent.getOffset();
+                int change_length = documentEvent.getLength();
+                
                 int type = documentEvent.getType().equals(EventType.REMOVE) ? DocumentChange.REMOVE : DocumentChange.INSERT;
                 DocumentChange dchi = new DocumentChange(getDocument().createPosition(change_offset), change_length, type);
                 documentChanges.add(dchi);

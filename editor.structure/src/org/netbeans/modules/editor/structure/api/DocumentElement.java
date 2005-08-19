@@ -74,8 +74,8 @@ public final class DocumentElement {
         this.attributes = new Attributes(this, attrsMap);
         
         //create positions for start and end offsets
-        startPos = model.getDocument().createPosition(startOffset);
-        endPos = model.getDocument().createPosition(endOffset);
+        setStartPosition(startOffset);
+        setEndPosition(endOffset);
     }
     
     /**
@@ -242,6 +242,14 @@ public final class DocumentElement {
     }
     
     /* <<< EOF public methods */
+    
+    void setStartPosition(int offset) throws BadLocationException {
+        startPos = model.getDocument().createPosition(offset);
+    }
+    
+    void setEndPosition(int offset) throws BadLocationException {
+        endPos = model.getDocument().createPosition(offset);
+    }
     
     String getContent() throws BadLocationException {
         return model.getDocument().getText(getStartOffset(), getEndOffset() - getStartOffset());
