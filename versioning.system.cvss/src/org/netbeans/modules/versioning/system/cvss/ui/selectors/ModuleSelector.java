@@ -37,21 +37,14 @@ import java.util.List;
  */
 public final class ModuleSelector {
 
-    private CVSRoot root;
-
-    private DialogDescriptor descriptor;
-    
-    private ProxyDescriptor proxyDescriptor;
-
     /**
      * Asks user to select which module to checkout. Popups a modal UI,
-     * @param root
+     * @param root identifies repository
+     * @param proxy defines which proxy to use or null
+     *        to use one from CVsRootSettings.
      * @return Set of String, possibly empty
      */
     public Set selectModules(CVSRoot root, ProxyDescriptor proxy) {
-        this.root = root;
-        this.proxyDescriptor = proxy;
-
 
         // create top level node that categorizes to aliases and raw browser
 
@@ -88,9 +81,43 @@ public final class ModuleSelector {
         }
     }
 
+    /*
+     * Pupup modal UI and let user select repositpry path.
+     *
+     * @param root identifies repository
+     * @param proxy defines which proxy to use or null
+     *        to use one from CVsRootSettings.
+     * @return '/' separated path or null on cancel.
+     */
+    public String selectRepositoryPath(CVSRoot root, ProxyDescriptor proxy) {
+
+        Client.Factory clientFactory = Kit.createClientFactory(root, proxy);
+        Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");
+
+        try {
+            Node[] selected = NodeOperation.getDefault().select("Repository Browser", "Select Path", pathsNode, new NodeAcceptor() {
+                public boolean acceptNodes(Node[] nodes) {
+                    if (nodes.length == 1) {
+                        String path = (String) nodes[0].getLookup().lookup(String.class);
+                        return path != null;
+                    }
+                    return false;
+                }
+            });
+
+            String path = null;
+            if (selected.length == 1) {
+                path = (String) selected[0].getLookup().lookup(String.class);
+            }
+            return path;
+        } catch (UserCancelException e) {
+            return null;
+        }
+    }
+
     private static final String MAGIC_START = ": New directory `"; // NOI18N
     private static final String MAGIC_END = "' -- ignored"; // NOI18N
-
+    
     /**
      * Lists subfolders in given repository folder.
      *
