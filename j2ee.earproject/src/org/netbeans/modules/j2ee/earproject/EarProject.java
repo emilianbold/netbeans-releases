@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -131,6 +131,10 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         return lookup;
     }
 
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
+
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
@@ -164,6 +168,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
                     "${"+EarProjectProperties.DIST_DIR+"}"}
                 ),
             this,
+            new EarProjectOperations(this)
         });
     }
 
