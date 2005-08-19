@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.*;
 
 /**
@@ -44,13 +43,13 @@ public class SearchHistoryAction extends AbstractSystemAction  {
 
     public void actionPerformed(ActionEvent ev) {
         String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName());
-        openHistory(getFilesToProcess(), title);
+        openHistory(getContext(), title);
     }
 
-    private void openHistory(final File [] roots, final String title) {
+    private void openHistory(final Context context, final String title) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(roots);
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
                 tc.setName(title);
                 tc.open();
                 tc.requestActive();
@@ -68,16 +67,19 @@ public class SearchHistoryAction extends AbstractSystemAction  {
      * @param date date of the change in question
      */ 
     public static void openSearch(String title, String commitMessage, String username, Date date) {
-        openSearch(getDefaultContext().getFiles(), title, commitMessage, username, date);
+        openSearch(getDefaultContext(), title, commitMessage, username, date);
     }
-    
-    private static void openSearch(File [] context, String title, String commitMessage, String username, Date date) {
+
+    public static void openSearch(Context context, String title, String commitMessage, String username, Date date) {
         Date from = date;
         Calendar c = Calendar.getInstance();
         c.setTime(date);
         c.add(Calendar.DATE, 1);
         Date to = c.getTime();
         
+        if (commitMessage != null && commitMessage.indexOf('\n') != -1) {
+            commitMessage = commitMessage.substring(0, commitMessage.indexOf('\n'));
+        }
         SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context, commitMessage, username, from, to);
         String tcTitle = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", title);
         tc.setName(tcTitle);

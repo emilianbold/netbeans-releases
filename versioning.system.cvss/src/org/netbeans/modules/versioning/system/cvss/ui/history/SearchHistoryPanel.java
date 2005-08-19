@@ -193,6 +193,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         
         private List revisions = new ArrayList(2);
         private String name;
+        private String path;
 
         public ResultsContainer(LogInformation.Revision newestRevision) {
             revisions.add(newestRevision);
@@ -203,6 +204,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 name = newestRevision.getLogInfoHeader().getRepositoryFilename();
                 if (name.endsWith(",v")) name = name.substring(0, name.lastIndexOf(",v"));
             }
+            path = name.substring(0, name.lastIndexOf('/'));
+            name = name.substring(path.length() + 1); 
         }
 
         public void add(LogInformation.Revision revision) {
@@ -220,6 +223,14 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         public String getEldestRevision() {
             LogInformation.Revision rev = (LogInformation.Revision) revisions.get(revisions.size() - 1);
             return Utils.previousRevision(rev.getNumber());
+        }
+
+        public String getNewestRevision() {
+            return ((LogInformation.Revision) revisions.get(0)).getNumber();
+        }
+        
+        public String getPath() {
+            return path;
         }
     }
 

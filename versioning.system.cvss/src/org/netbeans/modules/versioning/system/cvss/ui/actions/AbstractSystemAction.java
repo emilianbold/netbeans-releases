@@ -24,6 +24,7 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Actions;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.api.project.Project;
 
 import javax.swing.*;
@@ -191,13 +192,18 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
      * Determines action working files and its enablement logic
      * (most subclasses just define {@link #getFileEnabledStatus)
      * and {@link #getDirectoryEnabledStatus}.
-     * .
+     * 
+     * @deprecated Use {@link #getContext()} instead
      * @return files to act on or empty array if this action should be disabled.
      */
     protected File [] getFilesToProcess() {
-        return Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus()).getFiles();
+        return getContext().getFiles();
     }
 
+    protected Context getContext() {
+        return Utils.getCurrentContext(getFileEnabledStatus(), getDirectoryEnabledStatus());
+    }
+    
     public boolean isEnabled() {
         return getFilesToProcess().length > 0;
     }
