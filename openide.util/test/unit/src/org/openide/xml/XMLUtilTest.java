@@ -275,7 +275,7 @@ public class XMLUtilTest extends NbTestCase {
         doc.getDocumentElement().appendChild(doc.createElement("child"));
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XMLUtil.write(doc, baos, "UTF-8");
-        String data = baos.toString();
+        String data = baos.toString()/*#62680*/.replaceAll("\r\n", "\n");
         assertTrue("had reasonable indentation in\n" + data, data.indexOf("<root>\n    <child/>\n</root>\n") != -1);
     }
     
