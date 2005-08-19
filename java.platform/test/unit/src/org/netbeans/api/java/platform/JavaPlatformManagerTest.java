@@ -32,7 +32,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author tom
+ * @author Tomas Zezula
  */
 public class JavaPlatformManagerTest extends NbTestCase {
     

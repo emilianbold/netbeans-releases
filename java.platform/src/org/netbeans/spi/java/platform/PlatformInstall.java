@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,7 @@ import org.openide.filesystems.*;
  *
  * @author Svata Dedic, Tomas Zezula
  */
-public abstract class PlatformInstall {
+public abstract class PlatformInstall extends GeneralPlatformInstall {
     /**
      * Determines whether the Recognizer recognizes a Java Platform in 
      * the passed folder. The check done by this method should be quick
@@ -41,12 +41,6 @@ public abstract class PlatformInstall {
      * @param baseFolder folder where the SDK is installed
      * @return true if the PlatformInstall recognizes the folder
      */
-    public abstract boolean accept(FileObject baseFolder);
-
-    /**
-     * Returns the diaply name of the platform.
-     * @return String, the diaplay name
-     */
-    public abstract String getDisplayName ();
+    public abstract boolean accept(FileObject baseFolder);    
 
 }

@@ -76,6 +76,28 @@ is the proper place.
 
     <changes>
 
+        <change id="CustomPlatformInstall">
+            <api name="general"/>
+            <summary>Added new CustomPlatformInstall implemented by the platform installers which does not use the file chooser to select new platform</summary>
+            <version major="1" minor="5"/>
+            <date day="27" month="7" year="2005"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                There are some platform installers which does not use the local disk as source of the java platform,
+                for example they download the java platform from the web. Such installers cannot use the current
+                PlatformInstall which is file oriented. The CustomPlatformInstall allows to platform install
+                provider to implement its own way of installing the new platform. The PlatformInstall is still supported.
+                If the module provides the PlatformInstall in the global lookup, the java platform module does the
+                java platform chooser for it, the behavior is not changed. If the module provides the CustomPlatformInstall
+                in the global lookup, it has to do the platform selection by itself.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.platform" name="CustomPlatformInstall"/>
+            <class package="org.netbeans.spi.java.platform" name="GeneralPlatformInstall"/>
+            <issue number="61475"/>
+        </change>
         <change id="rel-vers-1">
             <api name="general"/>
             <summary>Switched to major release version 1</summary>

@@ -17,6 +17,10 @@ import java.io.IOException;
 import java.util.*;
 import javax.swing.JComponent;
 import javax.swing.event.*;
+import org.netbeans.modules.java.platform.InstallerRegistry;
+import org.netbeans.spi.java.platform.CustomPlatformInstall;
+import org.netbeans.spi.java.platform.GeneralPlatformInstall;
+import org.netbeans.spi.java.platform.PlatformInstall;
 
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
@@ -29,25 +33,43 @@ import org.openide.WizardDescriptor;
 public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     
     WizardDescriptor.InstantiatingIterator typeIterator;
-    boolean                 firstPanel;
+    int                     panelIndex; // -1 - not set, 0 - the first panel, 1 - files chooser, 2 - custom panel from PlatformInstall, 3 - custom panel from CustomPlatformInstall
+    boolean                 hasSelectorPanel;
     WizardDescriptor          wizard;
-    int                     panelNumber = 0;
+    int                     panelNumber = -1;
 
     ResourceBundle          bundle = NbBundle.getBundle(PlatformInstallIterator.class);
     LocationChooser.Panel   locationPanel = new LocationChooser.Panel();
+    SelectorPanel.Panel     selectorPanel = new SelectorPanel.Panel ();
     Collection              listeners = new ArrayList();
     
     PlatformInstallIterator() {
-        locationPanel.addChangeListener(this);
+        selectorPanel.addChangeListener(this);
+        locationPanel.addChangeListener(this);        
     }
     
     public static PlatformInstallIterator create() {
         return new PlatformInstallIterator();
     }
     
+    
+    /**
+     * Used by unit tests
+     * Returns the current state of the wizard iterator
+     */  
+    int getPanelIndex () {
+        return this.panelIndex;
+    }
+    
     void updatePanelsList (JComponent[] where) {
         Collection c = new LinkedList();
-        c.add(bundle.getString("TXT_PlatformFolderTitle")); // NOI18N
+        if (this.hasSelectorPanel) {
+            c.add (bundle.getString("TXT_SelectPlatformTypeTitle"));
+        }
+        if (this.panelIndex == 1 || this.panelIndex == 2 || 
+            (this.panelIndex == 0 && this.selectorPanel.getInstallerIterator()==null)) {
+            c.add(bundle.getString("TXT_PlatformFolderTitle")); // NOI18N
+        }
         if (typeIterator != null) {
             // try to suck stuff out of the iterator's first panel :-(
             WizardDescriptor.Panel p = typeIterator.current();
@@ -71,7 +93,10 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public WizardDescriptor.Panel current() {
-        if (firstPanel) {
+        if (panelIndex == 0) {
+            return selectorPanel;
+        }
+        else if (panelIndex == 1) {
             return locationPanel;
         } else {
             return typeIterator.current();
@@ -84,31 +109,60 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
      * selected && that iterator has at least one panel
      * - the current iterator reports it has the next panel
      */
-    public boolean hasNext() {
-        WizardDescriptor.InstantiatingIterator typeIt = locationPanel.getInstaller();
-        if (firstPanel) {
+    public boolean hasNext() {        
+        if (panelIndex == 0) {
+            WizardDescriptor.InstantiatingIterator typeIt = this.selectorPanel.getInstallerIterator();
             // need to decide
+            if (typeIt == null) {
+                return true;
+            }
+            else {
+                return typeIt.current() != null;
+            }
+        }
+        else if (panelIndex == 1) {
+            WizardDescriptor.InstantiatingIterator typeIt = locationPanel.getInstallerIterator();
             if (typeIt == null) {
                 return false;
             } else {
                 WizardDescriptor.Panel p = typeIt.current();
                 return p != null;
-            }
+            }            
         } else {
-            return typeIt.hasNext();
+            return this.typeIterator.hasNext();
         }
     }
     
     public boolean hasPrevious() {
-        return !firstPanel;
+        return this.panelIndex != 0 && 
+             !(this.panelIndex == 1 && !hasSelectorPanel) && 
+             !(this.panelIndex == 3 && !hasSelectorPanel && this.typeIterator != null && !this.typeIterator.hasPrevious());
     }
     
     public void initialize(WizardDescriptor wiz) {
         this.wizard = wiz;
-        firstPanel = true;
-        String[] steps = (String[])wizard.getProperty("WizardPanel_contentData");
+        List installers = InstallerRegistry.getDefault().getAllInstallers();
+        if (installers.size()>1) {
+            panelIndex = 0;
+            hasSelectorPanel = true;
+        }
+        else {
+            if (installers.get(0) instanceof CustomPlatformInstall) {
+                panelIndex = 3;
+                hasSelectorPanel = false;
+                this.typeIterator = ((CustomPlatformInstall) installers.get(0)).createIterator();
+            }
+            else {
+                panelIndex = 1;
+                hasSelectorPanel = false;
+                this.locationPanel.setPlatformInstall((PlatformInstall) installers.get(0));
+            }
+        }            
         updatePanelsList(new JComponent[]{((JComponent)current().getComponent())});
         this.wizard.setTitle(NbBundle.getMessage(PlatformInstallIterator.class,"TXT_AddPlatformTitle"));
+        panelNumber = 0;
+        wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
+            new Integer(panelNumber));
     }
     
     public java.util.Set instantiate() throws IOException {
@@ -116,7 +170,10 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public String name() {
-        if (firstPanel) {
+        if (panelIndex == 0) {
+            return bundle.getString("TXT_PlatformSelectorTitle");
+        }
+        else if (panelIndex == 1) {
             return bundle.getString("TXT_PlatformFolderTitle");
         } else {
             return typeIterator.name();
@@ -124,10 +181,15 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public void nextPanel() {
-        if (!firstPanel) {
-            typeIterator.nextPanel();
-        } else {
-            firstPanel = false;
+        if (this.panelIndex == 0) {
+            if (this.selectorPanel.getInstallerIterator()  == null) {
+                panelIndex = 1;
+            }
+            else {
+                panelIndex = 3;
+            }
+        } else if (panelIndex == 1) {
+            panelIndex = 2;
         }
         panelNumber++;
         wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
@@ -135,12 +197,21 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public void previousPanel() {
-        if (!firstPanel) {
+        if (panelIndex == 1) {
+            panelIndex = 0;
+        }
+        else if (panelIndex == 2) {
             if (typeIterator.hasPrevious()) {
                 typeIterator.previousPanel();
             } else {
-                firstPanel = true;
+                panelIndex = 1;
             }
+        } else if (panelIndex == 3) {
+            if (typeIterator.hasPrevious()) {
+                typeIterator.previousPanel();
+            } else {
+                panelIndex = 0;
+            }                
         } 
         panelNumber--;
         wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
@@ -157,7 +228,24 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
     }
     
     public void stateChanged(ChangeEvent e) {
-        WizardDescriptor.InstantiatingIterator it = locationPanel.getInstaller();
+        WizardDescriptor.InstantiatingIterator it;
+        if (e.getSource() == this.locationPanel) {
+            it = locationPanel.getInstallerIterator();
+        }
+        else if (e.getSource() == this.selectorPanel) {
+            GeneralPlatformInstall installer = this.selectorPanel.getInstaller();
+            if (installer instanceof CustomPlatformInstall) {
+                it = ((CustomPlatformInstall)installer).createIterator();
+            }
+            else {
+                it = null;
+                this.locationPanel.setPlatformInstall ((PlatformInstall)installer);
+            }
+        }
+        else {
+            assert false : "Unknown event source";  //NOI18N
+            return;
+        }        
         if (it != typeIterator) {
             if (this.typeIterator != null) {
                 this.typeIterator.uninitialize (this.wizard);
@@ -166,16 +254,18 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             if (this.typeIterator != null) {
                 typeIterator.initialize (this.wizard);
                 updatePanelsList(new JComponent[]{
+                    (JComponent)selectorPanel.getComponent(),
                     (JComponent)locationPanel.getComponent(),
                     (JComponent)typeIterator.current().getComponent(),
                 });
             }
             else {
                 updatePanelsList(new JComponent[]{
-                    (JComponent)locationPanel.getComponent()});
+                    (JComponent)selectorPanel.getComponent(),
+                    (JComponent)locationPanel.getComponent()
+                });
             }
             wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber)); // NOI18N
-
         }
     }
 }

@@ -34,7 +34,6 @@ import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.java.platform.InstallerRegistry;
 import org.netbeans.modules.java.platform.PlatformSettings;
 import org.netbeans.spi.java.platform.PlatformInstall;
 import org.openide.util.Utilities;
@@ -50,8 +49,9 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
     
     private WizardDescriptor.InstantiatingIterator iterator;
     private LocationChooser.Panel firer;
-    private InstallerRegistry regs;
-    private PlatformAccessory accessory;    
+    private PlatformFileView platformFileView;
+    private PlatformAccessory accessory;
+    
 
     public LocationChooser (LocationChooser.Panel firer) {
         super ();
@@ -64,8 +64,8 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         this.setFileFilter (new PlatformFileFilter());
         this.setAccessory (this.accessory);
         this.firer = firer;
-        this.regs = InstallerRegistry.getDefault();
-        this.setFileView( new PlatformFileView( this.getFileSystemView(), this.regs));                
+        this.platformFileView = new PlatformFileView( this.getFileSystemView());
+        this.setFileView(this.platformFileView);
         this.addPropertyChangeListener (this);
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LocationChooser.class,"AD_LocationChooser"));
 
@@ -99,14 +99,11 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             File file = this.getSelectedFile();
             if (file != null) {
                 FileObject fo = FileUtil.toFileObject (FileUtil.normalizeFile(file));
-                if (fo != null) {
-                    for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
-                        PlatformInstall install = (PlatformInstall) it.next ();
-                        if (install.accept(fo)) {
-                            this.accessory.setType (install.getDisplayName());
-                            this.iterator = install.createIterator(fo);
-                            break;
-                        }
+                if (fo != null) {                    
+                    PlatformInstall install = this.platformFileView.getPlatformInstall();                    
+                    if (install != null && install.accept(fo)) {
+                        this.accessory.setType (install.getDisplayName());
+                        this.iterator = install.createIterator(fo);
                     }
                 }
             }
@@ -138,6 +135,14 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
 
     private WizardDescriptor.InstantiatingIterator getInstaller () {
         return this.iterator;
+    }
+    
+    private void setPlatformInstall (PlatformInstall platformInstall) {
+        this.platformFileView.setPlatformInstall(platformInstall);
+    }
+    
+    private PlatformInstall getPlatformInstall () {
+        return this.platformFileView.getPlatformInstall ();
     }
     
     private static class PlatformFileFilter extends FileFilter {
@@ -250,8 +255,16 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         /**
          * Returns the currently selected installer.
          */
-        WizardDescriptor.InstantiatingIterator getInstaller() {
+        WizardDescriptor.InstantiatingIterator getInstallerIterator() {
             return ((LocationChooser)this.getComponent()).getInstaller ();
+        }
+        
+        void setPlatformInstall (PlatformInstall platformInstall) {
+            ((LocationChooser)this.getComponent ()).setPlatformInstall (platformInstall);
+        }
+        
+        PlatformInstall getPlatformInstall () {
+            return ((LocationChooser)this.getComponent ()).getPlatformInstall ();
         }
         
         void fireStateChanged() {
@@ -315,11 +328,10 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         private FileSystemView fsv;
         private Icon lastOriginal;
         private Icon lastMerged;
-        private InstallerRegistry regs;
+        private PlatformInstall platformInstall;
         
-        public PlatformFileView( FileSystemView fsv, InstallerRegistry regs ) {
+        public PlatformFileView( FileSystemView fsv) {
             this.fsv = fsv;            
-            this.regs = regs;
         }
                 
         public Icon getIcon(File _f) {
@@ -342,6 +354,14 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             }
         }
         
+        public void setPlatformInstall (PlatformInstall platformInstall) {
+            this.platformInstall = platformInstall;
+        }
+        
+        public PlatformInstall getPlatformInstall () {
+            return this.platformInstall;
+        }
+        
         
         private boolean isPlatformDir ( File f ) {
             FileObject fo = (f != null) ? convertToValidDir(f) : null;
@@ -355,11 +375,8 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
                 } catch (FileStateInvalidException e) {
                     return false;
                 }
-                for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
-                    PlatformInstall install = (PlatformInstall) it.next();                
-                    if (install.accept(fo)) {
-                        return true;
-                    }
+                if (this.platformInstall.accept(fo)) {
+                    return true;
                 }
             }
             return false;
