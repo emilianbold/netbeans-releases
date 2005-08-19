@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,6 +55,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     public static final ErrorManager err = ErrorManager.getDefault().getInstance(
             "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
     
+    static final String LAST_SELECTED_PANEL = "lastSelectedPanel"; // NOI18N
+    
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -69,6 +72,8 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     /** Keeps reference to a dialog for this customizer. */
     private Dialog dialog;
     
+    private Component lastSelectedPanel;
+
     public CustomizerProviderImpl(Project project, AntProjectHelper helper,
             PropertyEvaluator evaluator, LocalizedBundleInfo bundleInfo) {
         this.project = project;
@@ -103,12 +108,15 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
             }
             moduleProps.refresh(nmtp.getModuleType(), sp);
             OptionListener listener = new OptionListener();
+            if (preselectedCategory == null) {
+                preselectedCategory = findLastSelectedCategory();
+            }
             dialog = ProjectCustomizer.createCustomizerDialog(categories,
-                  panelProvider, preselectedCategory, listener,
+                    panelProvider, preselectedCategory, listener,
                     new HelpCtx(CustomizerProviderImpl.class));
             dialog.addWindowListener(listener);
             dialog.setTitle(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle",
-                                                ProjectUtils.getInformation(project).getDisplayName()));
+                    ProjectUtils.getInformation(project).getDisplayName()));
             dialog.setVisible(true);
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
@@ -123,6 +131,19 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
                 }
             }
         }
+    }
+    
+    private String findLastSelectedCategory() {
+        String preselectedCategory = null;
+        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry entry = (Map.Entry) it.next();
+            Component panel = (Component) entry.getValue();
+            if (panel == lastSelectedPanel) {
+                preselectedCategory = ((ProjectCustomizer.Category) entry.getKey()).getName();
+                break;
+            }
+        }
+        return preselectedCategory;
     }
     
     static interface SubCategoryProvider {
@@ -181,7 +202,6 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
         
         // versioning customizer
         CustomizerVersioning versioningPanel = new CustomizerVersioning(moduleProps);
-        versioningPanel.addPropertyChangeListener(this);
         versioning.setValid(versioningPanel.isCustomizerValid());
         panels.put(versioning, versioningPanel);
         
@@ -200,8 +220,12 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
                 return panel == null ? new JPanel() : panel;
             }
         };
+        
+        for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
+            ((Component) it.next()).addPropertyChangeListener(this);
+        }
     }
-
+    
     /** Creates a category without subcategories. */
     private ProjectCustomizer.Category createCategory(
             String progName, String displayName) {
@@ -211,10 +235,13 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     
     /** Listens to the actions on the Customizer's option buttons */
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName() == NbPropertyPanel.VALID_PROPERTY) {
+        String propertyName = evt.getPropertyName();
+        if (propertyName == NbPropertyPanel.VALID_PROPERTY) {
             findCategory(evt.getSource()).setValid(((Boolean) evt.getNewValue()).booleanValue());
-        } else if (evt.getPropertyName() == NbPropertyPanel.ERROR_MESSAGE_PROPERTY) {
+        } else if (propertyName == NbPropertyPanel.ERROR_MESSAGE_PROPERTY) {
             findCategory(evt.getSource()).setErrorMessage((String) evt.getNewValue());
+        } else if (propertyName == CustomizerProviderImpl.LAST_SELECTED_PANEL) {
+            lastSelectedPanel = (Component) evt.getSource();
         }
     }
     
