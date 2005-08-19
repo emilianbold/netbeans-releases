@@ -140,24 +140,23 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     public void testDisableModule() throws Exception {
         Node n = customizer.getExplorerManager().getRootContext();
         Node[] clusters = n.getChildren().getNodes();
-        if (clusters.length <= 0) {
-            fail ("Wrong, there should be some clusters. " + clusters.length);
+        if (clusters.length == 0) {
+            fail("Should be at least one cluster");
         }
-        Node[] modules = clusters[1].getChildren().getNodes();
+        Node[] modules = clusters[0].getChildren().getNodes();
         if (modules.length == 0) {
-            fail("Expected more modules for cluster: " + clusters[1]);
+            fail("Expected at least one module in cluster: " + clusters[0]);
         }
 
-        
-        setNodeEnabled(modules[3], false);
-        assertNodeEnabled(modules[3], false);
+        setNodeEnabled(modules[0], false);
+        assertNodeEnabled(modules[0], false);
         
         customizer.store();
         suite1Props.storeProperties();
                 
         String[] xyz = suite1Props.getDisabledModules();
         assertEquals("One module is disabled", 1, xyz.length);
-        assertEquals("It's name is name of the node", modules[3].getName(), xyz[0]);
+        assertEquals("It's name is name of the node", modules[0].getName(), xyz[0]);
     }
     
     private static void assertNodeEnabled(Node n, boolean value) throws Exception {
