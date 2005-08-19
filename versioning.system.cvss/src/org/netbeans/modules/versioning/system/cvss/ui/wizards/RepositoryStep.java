@@ -167,6 +167,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         String hostName = System.getProperty("socksProxyHost");  // NOI18N
         repositoryPanel.proxyConfigurationButton.setEnabled(hostName == null);
         repositoryPanel.proxyConfigurationButton.addActionListener(this);
+        repositoryPanel.editButton.addActionListener(this);
 
         valid();
         onCvsRootChange();
@@ -179,7 +180,11 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             repositoryPanel.descLabel.setVisible(chooserVisible);
         }
 
-        return repositoryPanel;
+        // gridbaglayout ignores bottom fill panel if password field hidden 
+        JPanel workaround = new JPanel();
+        workaround.setLayout(new BorderLayout());
+        workaround.add(repositoryPanel, BorderLayout.NORTH);
+        return workaround;
     }
 
     /**
@@ -517,6 +522,16 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             valid();
         }
     }
+    
+    private void editRoot() {
+        String root = selectedCvsRoot();
+        root = RootWizard.editCvsRoot(root);
+        if (root != null) {
+            Component editor = repositoryPanel.rootComboBox.getEditor().getEditorComponent();
+            JTextComponent textEditor = (JTextComponent) editor;
+            textEditor.setText(root);
+        }
+    }
 
     // hooks
 
@@ -525,6 +540,8 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             onProxyConfiguration();
         } else if (repositoryPanel.rootComboBox == e.getSource()) {
             onCvsRootChange();
+        } else if (repositoryPanel.editButton == e.getSource()) {
+            editRoot();
         } else {
             assert false : "Unexpected event source: " + e.getSource();
         }

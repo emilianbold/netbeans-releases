@@ -13,23 +13,39 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
+import java.awt.Dialog;
+import java.awt.event.ActionListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.*;
+import javax.swing.event.DocumentListener;
+import org.netbeans.lib.cvsclient.CVSRoot;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 
 /**
  * UI that allows to configure selected root
  * and manage preconfigured roots pool.
  *
+ * <p>It also allows to edit CVS root field by field.
+ *
  * @author Petr Kuzel
  */
-public final class RootWizard {
+public final class RootWizard implements ActionListener, DocumentListener {
 
     private final RepositoryStep repositoryStep;
-
+    private final CvsRootPanel rootPanel;
+    private DialogDescriptor dd;
+    
     private RootWizard(RepositoryStep step) {
         this.repositoryStep = step;
+        rootPanel = null;
     }
 
+    private RootWizard(CvsRootPanel rootPanel) {
+        repositoryStep = null;
+        this.rootPanel = rootPanel;
+    }
+    
     /**
      * Creates root configuration wizard with UI
      * that allows to set password, proxy, external
@@ -44,6 +60,127 @@ public final class RootWizard {
         return new RootWizard(step);
     }
 
+    /**
+     * Shows field by filed CVS root customizer.
+     *
+     * @return customized value or null on cancel.
+     */
+    public static String editCvsRoot(String root) {
+        CvsRootPanel rootPanel = new CvsRootPanel();
+        RootWizard wizard = new RootWizard(rootPanel);
+        return wizard.customizeRoot(root);        
+    }
+
+    private String customizeRoot(String root) {
+        String access = "pserver"; // NOI18N
+        String host = ""; // NOI18N
+        String port = ""; // NOI18N
+        String user = System.getProperty("user.name"); // NOI18N
+        String repository = "";  // NOI18N
+        try {
+            CVSRoot cvsRoot = CVSRoot.parse(root);
+            access = cvsRoot.getMethod();
+            host = cvsRoot.getHostName();
+            int portG = cvsRoot.getPort();
+            if (portG > 0) {
+                port = "" + portG;
+            }            
+            user = cvsRoot.getUserName();
+            repository = cvsRoot.getRepository();
+        } catch (IllegalArgumentException ex) {
+            // use defaults
+        }
+        rootPanel.accessComboBox.setSelectedItem(access);
+        rootPanel.hostTextField.setText(host);
+        rootPanel.portTextField.setText(port);
+        rootPanel.userTextField.setText(user);
+        rootPanel.repositoryTextField.setText(repository);
+        
+        rootPanel.accessComboBox.addActionListener(this);
+        rootPanel.userTextField.getDocument().addDocumentListener(this);
+        rootPanel.hostTextField.getDocument().addDocumentListener(this);
+        rootPanel.userTextField.getDocument().addDocumentListener(this);
+        rootPanel.portTextField.getDocument().addDocumentListener(this);
+        rootPanel.repositoryTextField.getDocument().addDocumentListener(this);
+                
+        // workaround DD bug, 
+        rootPanel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
+        dd = new DialogDescriptor(rootPanel, "Edit CVS Root");
+        dd.setModal(true); 
+        // all components visible
+        rootPanel.setPreferredSize(rootPanel.getPreferredSize());
+        updateVisibility();        
+        checkInput();
+
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.setVisible(true);
+        
+        if (DialogDescriptor.OK_OPTION.equals(dd.getValue())) {
+            try {            
+                String ret = collectRoot();
+                CVSRoot cvsRoot = CVSRoot.parse(ret);
+                return ret;
+            } catch (IllegalArgumentException ex) {
+                // use defaults
+            }
+        }
+
+        return null;
+    }
+    
+    private void updateVisibility() {
+        String access = (String) rootPanel.accessComboBox.getSelectedItem();
+        boolean hostVisible = ("pserver".equals(access) || "ext".equals(access));  // NOI18N
+        rootPanel.userLabel.setVisible(hostVisible);
+        rootPanel.userTextField.setVisible(hostVisible);
+        rootPanel.hostLabel.setVisible(hostVisible);
+        rootPanel.hostTextField.setVisible(hostVisible);
+        rootPanel.portLabel.setVisible(hostVisible);
+        rootPanel.portTextField.setVisible(hostVisible);
+    }
+    
+    private String collectRoot() throws IllegalArgumentException {
+        String method = (String) rootPanel.accessComboBox.getSelectedItem();
+        boolean hasHost = ("pserver".equals(method) || "ext".equals(method)); // NOI18N
+
+        StringBuffer sb = new StringBuffer(":"); // NOI18N
+        sb.append(method);
+        sb.append(":"); // NOI18N
+        if (hasHost) {
+            String s = rootPanel.userTextField.getText();
+            if ("".equals(s.trim())) throw new IllegalArgumentException(); // NOI18N
+            sb.append(s);
+            sb.append("@"); // NOI18N
+            s = rootPanel.hostTextField.getText();
+            if ("".equals(s.trim())) throw new IllegalArgumentException(); // NOI18N
+            sb.append(s);            
+            sb.append(":"); // NOI18N
+            String portS = rootPanel.portTextField.getText();
+            if ("".equals(portS.trim()) == false) {
+                int portp = Integer.parseInt(portS);  // raise NFE
+                if (portp > 0) {
+                    sb.append(portS);
+                }
+            }
+        }
+        String s = rootPanel.repositoryTextField.getText();
+        if ("".equals(s.trim())) throw new IllegalArgumentException(); // NOI18N
+        sb.append(s);            
+
+        return sb.toString();
+    }
+    
+    private void checkInput() {
+        try {            
+            String ret = collectRoot();
+            CVSRoot cvsRoot = CVSRoot.parse(ret);
+            dd.setValid(true);
+        } catch (IllegalArgumentException ex) {
+            dd.setValid(false);
+        }
+        
+    }
+    
     /**
      * Gets UI panel representing RootWizard.
      */
@@ -80,5 +217,21 @@ public final class RootWizard {
 
     public void removeChangeListener(ChangeListener l) {
         repositoryStep.removeChangeListener(l);
+    }
+
+    public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
+        updateVisibility();
+        checkInput();
+    }
+
+    public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
+    }
+
+    public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
+        checkInput();
+    }
+
+    public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
+        checkInput();
     }
 }
