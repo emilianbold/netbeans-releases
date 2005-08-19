@@ -22,6 +22,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.JTable;
 
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /** 
@@ -43,7 +44,6 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Listens to changes on the bundle structure. */
     private PropertyBundleListener bundleListener;
-
     
     /** Create a data node for a given data object.
      * The provided children object will be used to hold all child nodes.
@@ -55,9 +55,12 @@ public class PropertiesTableModel extends AbstractTableModel {
 
         // listener for the BundleStructure
         bundleListener = new TablePropertyBundleListener();
-        structure.addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
-    }
-    
+        
+        structure.addPropertyBundleListener(
+            (PropertyBundleListener) WeakListeners.create(PropertyBundleListener.class, bundleListener, structure)                
+        );
+        
+    }     
 
     /** Gets the class for a model. Overrides column class. */
     public Class getColumnClass(int columnIndex) {

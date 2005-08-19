@@ -296,7 +296,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
      */
     public boolean isDeleteAllowed() {
         // PENDING - better implementation : don't allow deleting Bunlde_en when Bundle_en_US exists
-        return (!getFile ().isReadOnly ()) && (!basicName.equals(getFile().getName()));
+        return (getFile ().canWrite ()) && (!basicName.equals(getFile().getName()));
     }
 
     /** Whether the object may be copied. Implements superclass abstract method.
@@ -311,14 +311,14 @@ public class PropertiesFileEntry extends PresentableFileEntry
     /** Indicates whether the object can be moved. Implements superclass abstract method.
      * @return <code>true</code> if the object can be moved */
     public boolean isMoveAllowed() {
-        return (!getFile().isReadOnly()) && (getDataObject().getPrimaryEntry() != this);
+        return (getFile().canWrite()) && (getDataObject().getPrimaryEntry() != this);
     }
 
     /** Getter for rename action. Implements superclass abstract method.
      * @return true if the object can be renamed
      */
     public boolean isRenameAllowed () {
-        return !getFile ().isReadOnly ();
+        return getFile ().canWrite ();
     }
 
     /** Help context for this object. Implements superclass abstract method.

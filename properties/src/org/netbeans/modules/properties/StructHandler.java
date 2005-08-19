@@ -139,7 +139,7 @@ public class StructHandler {
         } else {
             // Create a new task, and schedule it immediatelly.
             parsingTaskWRef = new WeakReference(
-                RequestProcessor.postRequest(
+                RequestProcessor.getDefault().post(
                     new Runnable() {
                         public void run() {
                             reparseNowBlocking();

@@ -658,7 +658,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 entry.getCookieSet().remove(this);
             }
             
-            RequestProcessor.postRequest(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ((PropertiesDataObject)entry.getDataObject()).updateModificationStatus();
                 }

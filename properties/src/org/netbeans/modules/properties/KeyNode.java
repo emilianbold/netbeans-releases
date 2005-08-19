@@ -85,7 +85,7 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
             }
         );
         
-        setIconBase("org/netbeans/modules/properties/propertiesKey"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/properties/propertiesKey.gif"); // NOI18N
 
         // Sets short description.
         updateShortDescription();

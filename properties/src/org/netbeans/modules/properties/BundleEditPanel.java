@@ -502,7 +502,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                         // due to reason that properties structure has just after
                         // adding new item inconsistence gap until it's reparsed anew.
                         // This should be removed when the parsing will be redsigned.
-                        RequestProcessor.postRequest(new Runnable() {
+                        RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
                                 // Find indexes.
                                 int rowIndex = obj.getBundleStructure().getKeyIndexByName(key);

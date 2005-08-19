@@ -65,7 +65,7 @@ public class PropertiesDataNode extends DataNode {
      */
     public PropertiesDataNode(DataObject dataObject, Children children) {
         super(dataObject, children);
-        setIconBase("org/netbeans/modules/properties/propertiesObject"); // NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/properties/propertiesObject.gif"); // NOI18N
     }
 
     /** Gets new types that can be created in this node.

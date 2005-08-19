@@ -378,7 +378,7 @@ public class FindPerformer extends javax.swing.AbstractAction
     private synchronized void performSearch() {
         prepareSearch();
         // perform search not in AWT-thread
-        RequestProcessor.postRequest(
+        RequestProcessor.getDefault().post(
             new Runnable() {
                 public void run() {
                     // Do wrap search?

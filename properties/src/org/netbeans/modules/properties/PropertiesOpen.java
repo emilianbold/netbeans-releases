@@ -584,7 +584,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         }
         
         public boolean requestFocusInWindow() {
-            super.requestFocusInWindow();
+            super.requestActive();
             return getComponent(0).requestFocusInWindow();
         }
         

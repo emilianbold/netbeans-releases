@@ -51,22 +51,21 @@ public final class PropertiesLocaleNode extends FileEntryNode
                                                    Node.Cookie {
 
     /** Icon base for the <code>PropertiesDataNode</code> node. */
-    private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N
+    private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale.gif"; // NOI18N
 
     
     /** Creates a new PropertiesLocaleNode for the given locale-specific file */
     public PropertiesLocaleNode (PropertiesFileEntry fe) {
         super(fe, fe.getChildren());
         setDisplayName(Util.getLocaleLabel(fe));
-        setIconBase(LOCALE_ICON_BASE);
-        setDefaultAction (SystemAction.get(OpenAction.class));
+        
+        setIconBaseWithExtension(LOCALE_ICON_BASE);        
         setShortDescription(messageToolTip());
 
         getCookieSet().add(PropertiesOpen.class, this);
         getCookieSet().add(fe.getDataObject());
     }
-
-    
+            
     /** Implements <code>CookieSet.Factory</code> interface method. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(PropertiesOpen.class))
