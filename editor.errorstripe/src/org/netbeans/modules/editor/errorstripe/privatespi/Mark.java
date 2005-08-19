@@ -26,6 +26,8 @@ public interface Mark {
      */
     public static final int TYPE_ERROR_LIKE = 1;
     
+    public static final int TYPE_CARET = 2;
+    
     /**Default priority.
      */
     public static final int PRIORITY_DEFAULT = 1000;

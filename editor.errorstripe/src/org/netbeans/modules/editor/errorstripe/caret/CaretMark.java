@@ -15,8 +15,10 @@ package org.netbeans.modules.editor.errorstripe.caret;
 import java.awt.Color;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.errorstripe.AnnotationView;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -25,7 +27,7 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Status;
  */
 public class CaretMark implements Mark {
     
-    private static final Color COLOR = new Color(212, 212, 0);
+    private static final Color COLOR = new Color(0xC0B883);
     
     private int line;
     
@@ -34,7 +36,7 @@ public class CaretMark implements Mark {
     }
     
     public String getShortDescription() {
-        return "Caret";
+        return NbBundle.getMessage(AnnotationView.class, "TP_Current_Line");
     }
     
     public int[] getAssignedLines() {
@@ -54,7 +56,7 @@ public class CaretMark implements Mark {
     }
     
     public int getType() {
-        return TYPE_ERROR_LIKE;
+        return TYPE_CARET;
     }
     
 }

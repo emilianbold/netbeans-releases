@@ -62,7 +62,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     private JTextComponent pane;
     private BaseDocument document;
     
-    private List/*<MarkProvider>*/ providers;
+    private List/*<MarkProvider>*/ providers = new ArrayList();
     private List/*<UpToDateStatusProvider>*/ upToDateStatusProviders = new ArrayList();
     
     private List/*<Mark>*/ currentMarks = null;
@@ -419,6 +419,9 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
     
     public UpToDateStatus computeTotalStatusType() {
+        if (upToDateStatusProviders.isEmpty())
+            return UpToDateStatus.UP_TO_DATE_DIRTY;
+        
         UpToDateStatus statusType = UpToDateStatus.UP_TO_DATE_OK;
         
         for (Iterator p = upToDateStatusProviders.iterator(); p.hasNext(); ) {

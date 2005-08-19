@@ -51,7 +51,7 @@ public final class Status implements Comparable {
     
     private static final Status[] VALUES = new Status[] {STATUS_OK, STATUS_WARNING, STATUS_ERROR};
     
-    private static final Color[] DEFAULT_STATUS_COLORS = new Color[] {Color.GREEN, Color.YELLOW, Color.RED};
+    private static final Color[] DEFAULT_STATUS_COLORS = new Color[] {Color.GREEN, new Color(0xDB9B00), new Color(0xF6746C)};
     
     private int status;
     

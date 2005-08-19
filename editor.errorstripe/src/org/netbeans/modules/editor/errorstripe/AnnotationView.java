@@ -24,15 +24,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -42,34 +36,23 @@ import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
-import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
-import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.openide.ErrorManager;
 import org.netbeans.modules.editor.errorstripe.privatespi.Status;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.FolderLookup;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.Lookup.Template;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ProxyLookup;
+
 
 /**
  *
@@ -83,8 +66,8 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     
     private static final int STATUS_BOX_SIZE = 7;
     private static final int THICKNESS = STATUS_BOX_SIZE + 6;
-    /*package private*/ static final int PIXELS_FOR_LINE = 2/*height / lines*/;
-    /*package private*/ static final int LINE_SEPARATOR_SIZE = 0/*2*/;
+    /*package private*/ static final int PIXELS_FOR_LINE = 3/*height / lines*/;
+    /*package private*/ static final int LINE_SEPARATOR_SIZE = 1/*2*/;
     /*package private*/ static final int HEIGHT_OFFSET = 20;
     /*package private*/ static final int HEIGHT_LOWER_OFFSET = 10;
     
@@ -95,7 +78,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     private JTextComponent  pane;
     
     private static final Color STATUS_UP_PART_COLOR = Color.WHITE;
-    private static final Color STATUS_DOWN_PART_COLOR = new Color(180, 180, 180);
+    private static final Color STATUS_DOWN_PART_COLOR = new Color(0xCDCABB);
     
     private static final int QUIET_TIME = 100;
     
@@ -103,6 +86,12 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     private final RepaintTask           repaintTaskRunnable;
     
     private AnnotationViewData data;
+    
+    private static Icon busyIcon;
+    
+    static {
+        busyIcon = new ImageIcon(AnnotationView.class.getResource("resources/hodiny.gif"));
+    }
     
 //    public AnnotationView(JTextComponent pane) {
 //        this(pane, null);
@@ -188,14 +177,35 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
     
     private void drawInProgressGlobalStatus(Graphics g, Color color) {
-        drawOneColorGlobalStatus(g, color);
-        
-        g.setColor(Color.BLACK);
-        
         int x = (THICKNESS - STATUS_BOX_SIZE) / 2;
         int y = (HEIGHT_OFFSET - STATUS_BOX_SIZE) / 2;
+	
+        busyIcon.paintIcon(this, g, x, y); // NOI18N
+	
+        g.setColor(STATUS_DOWN_PART_COLOR);
         
-        g.drawString("*", x + 1, y + STATUS_BOX_SIZE * 3 / 2 - 1); // NOI18N
+        g.drawLine(x - 1, y - 1, x + STATUS_BOX_SIZE, y - 1              );
+        g.drawLine(x - 1, y - 1, x - 1,               y + STATUS_BOX_SIZE);
+        
+        g.setColor(STATUS_UP_PART_COLOR);
+        
+        g.drawLine(x - 1,               y + STATUS_BOX_SIZE, x + STATUS_BOX_SIZE, y + STATUS_BOX_SIZE);
+        g.drawLine(x + STATUS_BOX_SIZE, y - 1,               x + STATUS_BOX_SIZE, y + STATUS_BOX_SIZE);
+	
+    }
+    
+    private static final Color GLOBAL_RED = new Color(0xFB4C48);
+    private static final Color GLOBAL_YELLOW = Color.YELLOW;
+    private static final Color GLOBAL_GREEN = new Color(0x65B56B);
+    
+    private Color getColorForGlobalStatus(Status status) {
+        if (Status.STATUS_ERROR == status)
+            return GLOBAL_RED;
+        
+        if (Status.STATUS_WARNING == status)
+            return GLOBAL_YELLOW;
+        
+        return GLOBAL_GREEN;
     }
     
     private void drawGlobalStatus(Graphics g) {
@@ -203,23 +213,34 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         Color resultingColor;
         
         if (type == UpToDateStatus.UP_TO_DATE_DIRTY) {
-                drawOneColorGlobalStatus(g, Color.GRAY);
+                drawOneColorGlobalStatus(g, UIManager.getColor("Panel.background"));
         } else {
             if (type == UpToDateStatus.UP_TO_DATE_PROCESSING) {
-                drawOneColorGlobalStatus(g, Color.GRAY);
 //                Status totalStatus = data.computeTotalStatus();
 //                
-//                drawInProgressGlobalStatus(g, Status.getDefaultColor(totalStatus));
+                drawInProgressGlobalStatus(g, null/*Status.getDefaultColor(totalStatus)*/);
             } else {
                 if (type == UpToDateStatus.UP_TO_DATE_OK) {
                     Status totalStatus = data.computeTotalStatus();
                     
-                    drawOneColorGlobalStatus(g, Status.getDefaultColor(totalStatus));
+                    drawOneColorGlobalStatus(g, getColorForGlobalStatus(totalStatus));
                 } else {
                     throw new IllegalStateException("Unknown up-to-date type: " + type);
                 }
             }
         }
+    }
+    
+    private int getCurrentLine() {
+        int offset = pane.getCaretPosition(); //TODO: AWT?
+        Document doc = pane.getDocument();
+        int line = -1;
+        
+        if (doc instanceof StyledDocument) {
+            line = NbDocument.findLineNumber((StyledDocument) doc, offset);
+        }
+        
+        return line;
     }
     
     public void paintComponent(Graphics g) {
@@ -234,7 +255,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
         g.fillRect(0, 0, getWidth(), getHeight());
         
 //        SortedMap marks = getMarkMap();
-        
+        int currentline = getCurrentLine();
         int annotatedLine = data.findNextUsedLine(-1);
         
         while (annotatedLine != Integer.MAX_VALUE) {
@@ -259,7 +280,12 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
                     assert color != null;
                     
                     g.setColor(color);
-                    g.fillRect(0, (int) start, THICKNESS - 1, PIXELS_FOR_LINE);
+                    
+                    if (startLine <= currentline && currentline <= endLine && m.getType() != Mark.TYPE_CARET) {
+                        g.fillRect(0, (int) start, THICKNESS - 1, PIXELS_FOR_LINE);
+                    } else {
+                        g.drawRect(0, (int) start, THICKNESS - 2, PIXELS_FOR_LINE - 1);
+                    }
                 }
             }
             

@@ -26,7 +26,7 @@ public class CaretMarkProviderCreator implements MarkProviderCreator {
     /**For test only!*/
     public static boolean switchOff = false;
     
-    private static final boolean ENABLE = Boolean.getBoolean("org.netbeans.modules.editor.errorstripe.caret");
+    private static final boolean ENABLE = true;//Boolean.getBoolean("org.netbeans.modules.editor.errorstripe.caret");
     
     /** Creates a new instance of AnnotationMarkProviderCreator */
     public CaretMarkProviderCreator() {
