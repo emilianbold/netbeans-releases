@@ -97,9 +97,11 @@ Microsystems, Inc. All Rights Reserved.
         <ant dir="${nb_all}/nbbuild" target="bootstrap"/>
     </target>
 
-    <!-- Checks nbantext.jar exists -->
+    <!-- Checks nbantext.jar is up to date -->
     <target name="check-bootstrap">
-        <available file="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready" />
+        <uptodate targetfile="${nb_all}/nbbuild/nbantext.jar" property="bootstrap-ready">
+            <srcfiles dir= "${nb_all}/nbbuild/antsrc"/>
+        </uptodate>
     </target>
     
     <target name="show-results-nb" if="netbeans.home">
