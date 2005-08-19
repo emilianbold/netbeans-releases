@@ -571,6 +571,35 @@ test.unit.src.dir - "test/unit/src"; avoid overriding.
 test-unit-sys-prop.<NAME> - will set a system property <NAME> when running your
 unit tests.
 
+To support builds of JNLP based applications (described at 
+http://installer.netbeans.org/docs/jnlpInstaller.html) additional may be used 
+or redefined in jnlp related targets:
+
+jnlp.servlet.jar - must point to jnlp-servlet.jar as provided by JDK 1.5 in
+  the directory sample/jnlp/servlet/jnlp-servlet.jar if one wants to build 
+  a packaged war file of JNLP version of your suite
+
+jnlp.dest.dir - the location where to generate the JNLP files and signed 
+  jars. By default it is your ${suite.dir}/build/jnlp
+
+jnlp.master.dir - (category='private') is the location of the directory where
+  to generate pieces of master jnlp file that get's then included in its resources
+  section
+
+jnlp.sign.alias -
+jnlp.sign.keystore - 
+jnlp.sign.password - allow you to sign your app with your own private key, if
+  unspecified then a default keystore is generated. Nice for trying things for
+  the first time, but not for production, then you very likely want to generate
+  your key and set these properties
+jnlp.sign.vendor - you can override this to be the default dname for the keystore
+
+jnlp.platform.codebase - can point to a shared repository which can be generated
+  by ant -f nbbuild/build.xml build-jnlp Then your war file will contain only 
+  modules of your suite and platform modules will be referenced by value of this
+  property
+
+
 TARGETS AVAILABLE FOR OVERRIDING IN YOUR build.xml
 --------------------------------------------------
 
@@ -613,6 +642,10 @@ jar - build the module JAR.
 jar-prep - prepare to build the module JAR; define ${buildnumber}.
 
 javadoc - build module Javadoc.
+
+jnlp - generetes the JNLP component file for this module and all necessary
+  resources for it into ${jnlp.dest.dir} directory and also a fragment of
+  the master JNLP into ${jnlp.master.dir}
 
 javadoc-nb - same, and open it in a web browser (only from the IDE). Available
 as Build -> Generate Javadoc.
@@ -688,6 +721,12 @@ run - start application for testing.
 
 debug - like run, but run in the JPDA debugger. (Only available from inside the
 IDE.)
+
+build-jnlp - builds the JNLP war file with your application
+
+run-jnlp - executes your JNLP application (currently from local files)
+
+debug-jnlp - starts debuging of your JNLP application (works only from NetBeans IDE)
 
 CONTENTS OF YOUR manifest.mf
 ----------------------------
