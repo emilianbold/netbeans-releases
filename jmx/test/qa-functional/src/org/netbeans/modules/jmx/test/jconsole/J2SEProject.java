@@ -60,6 +60,7 @@ public class J2SEProject extends JellyTestCase {
         suite.addTest(new J2SEProject("debugWithJConsole"));
         suite.addTest(new J2SEProject("runWithRemoteManagement"));
         suite.addTest(new J2SEProject("debugWithRemoteManagement"));
+       
         return suite;
     }
 
@@ -136,7 +137,11 @@ public class J2SEProject extends JellyTestCase {
        //Sync on Project node
        ProjectsTabOperator pto = new ProjectsTabOperator();
        JTreeOperator tree = pto.tree();
-       ProjectRootNode prn = pto.getProjectRootNode(PROJECT_NAME);  
+       ProjectRootNode prn = pto.getProjectRootNode(PROJECT_NAME);
+       System.out.println("FOUND NODE, WAITING 5 sec");
+       try {
+           Thread.sleep(5000);
+       }catch(Exception e){}
     }
     
     private static JButton findOkButton(Component root) {
@@ -186,7 +191,7 @@ public class J2SEProject extends JellyTestCase {
        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
       // push "Open" toolbar button in "System" toolbar
       mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), action).push();
-      
+      System.out.println("Pushed Action");
     }
     
     private void trackAndKillJConsole(String target) {
