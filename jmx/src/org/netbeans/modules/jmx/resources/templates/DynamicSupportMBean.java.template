@@ -71,9 +71,9 @@ public abstract class __NAME__ implements javax.management.DynamicMBean
             try {
                 Object value = getAttribute((String) attributeNames[i]);
                 resultList.add(new Attribute(attributeNames[i],value));
-            } catch (Exception e) {
+            } catch (Exception e) {//GEN-END:generatedCode
                 //e.printStackTrace();
-            }
+            }//GEN-BEGIN:generatedCode1
         }
         return resultList;
    }
@@ -94,11 +94,11 @@ public abstract class __NAME__ implements javax.management.DynamicMBean
                 String name = attr.getName();
                 Object value = getAttribute(name);
                 resultList.add(new Attribute(name,value));
-            } catch (Exception e) {
+            } catch (Exception e) {//GEN-END:generatedCode1
                 //e.printStackTrace();
-            }
+            }//GEN-BEGIN:generatedCode2
         }
         return resultList;
    }
 }
-//GEN-END:generatedCode
+//GEN-END:generatedCode2
