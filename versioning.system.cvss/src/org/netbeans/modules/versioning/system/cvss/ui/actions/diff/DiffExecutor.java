@@ -17,6 +17,7 @@ import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 
 import javax.swing.*;
 import java.awt.Component;
@@ -34,17 +35,17 @@ import java.util.ArrayList;
  */
 public class DiffExecutor {
 
-    private final File []   baseFiles;
+    private final Context   context;
     private final String    contextName;
 
-    public DiffExecutor(File [] baseFiles, String contextName) {
-        this.baseFiles = baseFiles;
+    public DiffExecutor(Context context, String contextName) {
+        this.context = context;
         this.contextName = contextName;
     }
 
     public DiffExecutor(String contextName) {
         this.contextName = contextName;
-        this.baseFiles = null;
+        this.context = null;
     }
 
     /**
@@ -78,7 +79,7 @@ public class DiffExecutor {
 
     private void showDiff(int type) {
         VersionsCache.getInstance().purgeVolatileRevisions();
-        DiffMainPanel panel = new DiffMainPanel(baseFiles, type, contextName);
+        DiffMainPanel panel = new DiffMainPanel(context, type, contextName);
         openDiff(panel);        
     }
     
@@ -97,12 +98,12 @@ public class DiffExecutor {
      * Utility method that returns all non-excluded modified files that are
      * under given roots (folders) and have one of specified statuses.
      *
-     * @param rootFiles folders to search
+     * @param context context to search
      * @param includeStatus bit mask of file statuses to include in result
      * @return File [] array of Files having specified status
      */
-    public static File [] getModifiedFiles(File [] rootFiles, int includeStatus) {
-        CvsFileTableModel model = CvsVersioningSystem.getInstance().getFileTableModel(rootFiles, includeStatus);
+    public static File [] getModifiedFiles(Context context, int includeStatus) {
+        CvsFileTableModel model = CvsVersioningSystem.getInstance().getFileTableModel(context.getFiles(), includeStatus);
         CvsFileNode [] nodes = model.getNodes();
         List files = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {

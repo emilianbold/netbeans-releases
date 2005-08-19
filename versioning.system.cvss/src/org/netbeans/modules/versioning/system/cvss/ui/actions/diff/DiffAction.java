@@ -17,6 +17,7 @@ import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.modules.versioning.system.cvss.CvsFileNode;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 
@@ -69,9 +70,10 @@ public class DiffAction extends AbstractSystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        File [] files = getFilesToProcess();
-        DiffExecutor executor = new DiffExecutor(files, getContextDisplayName());
+        Context context = getContext();
+        DiffExecutor executor = new DiffExecutor(context, getContextDisplayName());
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        File [] files = context.getFiles();
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_REMOTE_CHANGE) == 0) {
