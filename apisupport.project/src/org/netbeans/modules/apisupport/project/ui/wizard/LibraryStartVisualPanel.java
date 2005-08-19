@@ -25,6 +25,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * first panel of the librarywrapper module wizard
@@ -77,6 +78,12 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     setErrorMessage(getMessage("MSG_Invalid_Library_Path"));
                     return;
                 }
+                String badOnes = populateProjectData(data, text, false);
+                if (badOnes != null) {
+                    setErrorMessage(NbBundle.getMessage(getClass(), "MSG_ClassInDefaultPackage", badOnes), true);
+                    setValid(Boolean.TRUE);
+                    return;
+                }
             }
         } else  {
             setErrorMessage(getMessage("MSG_Library_Path_Not_Defined"));
@@ -113,7 +120,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         String jars = txtLibrary.getText().trim();
         getSettings().putProperty(PROP_LIBRARY_PATH, jars);
         getSettings().putProperty(PROP_LICENSE_PATH, txtLicense.getText().trim());
-        populateProjectData(data, jars);
+        populateProjectData(data, jars, true);
 //        // change will be fired -> update data
 //        data.setCodeNameBase(getCodeNameBaseValue());
 //        data.setProjectDisplayName(displayNameValue.getText());
@@ -123,17 +130,23 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
 //        }
     }
     
-    static void populateProjectData(NewModuleProjectData data, String paths) {
-        if (data.getProjectName() != null && data.getCodeNameBase() != null) {
-            return;
+    static String populateProjectData(NewModuleProjectData data, String paths, boolean assignValues) {
+        if (data.getProjectName() != null && data.getCodeNameBase() != null && assignValues) {
+            return null;
         }
+        String wrongOnes = null;
         StringTokenizer tokens = new StringTokenizer(paths, File.pathSeparator);
+        boolean cutShortestPath = false;
+        boolean fileAlreadyMarked = false;
         if (tokens.hasMoreTokens()) {
+            fileAlreadyMarked = false;
             File fil = new File(tokens.nextToken());
             String name = fil.getName();
             name = name.substring(0, name.lastIndexOf('.'));
             name = name.replaceAll("[0-9._-]+$", "");
-            data.setProjectName(name);
+            if (assignValues) {
+                data.setProjectName(name);
+            }
             JarFile jf = null;
             String shortestPath = null;
             try {
@@ -143,13 +156,27 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     JarEntry entry = (JarEntry)en.nextElement();
                     if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
                         String nm = entry.getName();
-                        String path = nm.substring(0, nm.lastIndexOf('/'));
-                        if (shortestPath == null || path.length() < shortestPath.length()) {
-                            shortestPath = path;
+                        int index = nm.lastIndexOf('/');
+                        if (index > -1) {
+                            String path = nm.substring(0, index);
+                            if (shortestPath != null && path.length() == shortestPath.length()) {
+                                cutShortestPath = true;
+                            }
+                            if (shortestPath == null || path.length() < shortestPath.length()) {
+                                shortestPath = path;
+                                cutShortestPath = false;
+                            }
+                        } else {
+                            // a bad, bad jar having class files in default package.
+                            if (!fileAlreadyMarked) {
+                                wrongOnes = wrongOnes == null ? fil.getName() : wrongOnes + "," + fil.getName();
+                                fileAlreadyMarked = true;
+                            }
                         }
                     }
                 }
             } catch (IOException e) {
+                e.printStackTrace();
             } finally {
                 if (jf != null) {
                     try {
@@ -158,10 +185,18 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                     }
                 }
             }
-            if (shortestPath != null) {
-                data.setCodeNameBase(shortestPath.replace('/', '.'));
+            if (shortestPath != null && assignValues) {
+                shortestPath = shortestPath.replace('/', '.');
+                if (cutShortestPath && shortestPath.indexOf('.') != shortestPath.lastIndexOf('.')) {
+                    // if there's more than one dot (meanign we don't want to cut too much to present just
+                    // org or com. org.apache is probably already good enough
+                    int ind = shortestPath.lastIndexOf('.');
+                    shortestPath = shortestPath.substring(0, ind);
+                }
+                data.setCodeNameBase(shortestPath);
             }
         }
+        return wrongOnes;
     }
     
     
