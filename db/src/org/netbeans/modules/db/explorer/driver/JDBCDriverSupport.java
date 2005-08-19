@@ -37,13 +37,9 @@ public final class JDBCDriverSupport {
     public static boolean isAvailable(JDBCDriver driver) {
         URL[] urls = driver.getURLs();
         for (int i = 0; i < urls.length; i++) {
-            FileObject fo = URLMapper.findFileObject(urls[i]);
-            if (fo == null) {
+            if (URLMapper.findFileObject(urls[i]) == null) {
                 return false;
             }
-            File f = FileUtil.toFile(fo);
-            if (!f.exists())
-                return false;
         }
         return true;
     }
