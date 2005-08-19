@@ -34,7 +34,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  *
- * @author an156382
+ * @author jfdenise
  */
 public class J2SEProject extends JellyTestCase {
     private static String PROJECT_NAME="SampleProjectToTestJ2SEProjectIntegration";
@@ -43,7 +43,8 @@ public class J2SEProject extends JellyTestCase {
     static {
         //We need it to help tools.jar API to findout the local connector
         //This is an horrible hack! But no way to make it work without /var/tmp/ tmp file
-        ORIGINAL_TMP_FILE = System.getProperty("java.io.tmpdir.default") + File.separator;
+        String tmpFile = System.getProperty("java.io.tmpdir.default");
+        ORIGINAL_TMP_FILE =  tmpFile == null ? null :  tmpFile + File.separator;
     }
     
     /** Creates a new instance of BundleKeys */
@@ -59,7 +60,6 @@ public class J2SEProject extends JellyTestCase {
         suite.addTest(new J2SEProject("debugWithJConsole"));
         suite.addTest(new J2SEProject("runWithRemoteManagement"));
         suite.addTest(new J2SEProject("debugWithRemoteManagement"));
-
         return suite;
     }
 
@@ -88,17 +88,15 @@ public class J2SEProject extends JellyTestCase {
     }
     
     public void runWithJConsole() {
-        String current = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", ORIGINAL_TMP_FILE);
+        String ctxt = preLocalConnection();
         doItLocal("Run Main Project With Local Management", "run-management");
-        System.setProperty("java.io.tmpdir", current);
+        postLocalConnection(ctxt);
     }
     
     public void debugWithJConsole() {
-        String current = System.getProperty("java.io.tmpdir");
-        System.setProperty("java.io.tmpdir", ORIGINAL_TMP_FILE);
+        String ctxt = preLocalConnection();
         doItLocal("Debug Main Project With Local Management", "debug-management");
-        System.setProperty("java.io.tmpdir", current);
+        postLocalConnection(ctxt);
     }
     
     public void runWithRemoteManagement() {
@@ -108,7 +106,20 @@ public class J2SEProject extends JellyTestCase {
     public void debugWithRemoteManagement() {
        doItRemote("Debug Main Project with Remote Management...", "debug-management");      
     }
-   
+    
+    private String preLocalConnection() {
+        //Just in case we are not testing using XTest harness
+        if(ORIGINAL_TMP_FILE == null) return null;
+        String current = System.getProperty("java.io.tmpdir");
+        System.setProperty("java.io.tmpdir", ORIGINAL_TMP_FILE);
+        return current;
+    }
+    
+    private void postLocalConnection(String ctxt) {
+        if(ctxt == null) return;
+        System.setProperty("java.io.tmpdir", ctxt);
+    }
+    
     private void doItLocal(String action, String target) {
        syncOnProject();
        activateLocalAction(action);
