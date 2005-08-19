@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.refactoring;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +33,8 @@ import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.javacore.internalapi.ExternalChange;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
@@ -39,6 +42,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -114,18 +118,23 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
     }
     
     
-    public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement {
+    public final class ManifestSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
         
         private JavaClass clazz;
         private String attrName;
         private String sectionName = null;
         private String oldName;
+        private String oldContent;
+        
         public ManifestSafeDeleteRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName) {
             this.name = attributeValue;
             this.clazz = clazz;
             this.parentFile = parentFile;
             attrName = attributeName;
             oldName = clazz.getName();
+            // read old content here. in the unprobable case when 2 classes are to be removed
+            // and both are placed in same services file, we need the true original content
+            oldContent = Utility.readFileIntoString(parentFile);
         }
         public ManifestSafeDeleteRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName, String secName) {
             this(clazz, parentFile, attributeValue, attributeName);
@@ -143,6 +152,10 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
+            JavaMetamodel.getManager().registerExtChange(this);
+        }
+        
+        public void performExternalChange() {
             FileLock lock = null;
             OutputStream stream = null;
             InputStream instream = null;
@@ -186,20 +199,31 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 }
             }
         }
+        
+        public void undoExternalChange() {
+            if (oldContent != null) {
+                Utility.writeFileFromString(parentFile, oldContent);
+            }
+        }
+        
     }
     
-    public final class ServicesSafeDeleteRefactoringElement extends AbstractRefactoringElement {
+    public final class ServicesSafeDeleteRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
         
-        private JavaClass clazz;
         private String oldName;
+        private String oldContent;
+        private File parent;
         /**
          * Creates a new instance of ServicesRenameRefactoringElement
          */
         public ServicesSafeDeleteRefactoringElement(JavaClass clazz, FileObject file) {
             this.name = clazz.getSimpleName();
             parentFile = file;
-            this.clazz = clazz;
             oldName = clazz.getName();
+            // read old content here. in the unprobable case when 2 classes are to be removed
+            // and both are placed in same services file, we need the true original content
+            oldContent = Utility.readFileIntoString(parentFile);
+            parent = FileUtil.toFile(parentFile);
         }
         
         /** Returns text describing the refactoring formatted for display (using HTML tags).
@@ -210,6 +234,10 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
+            JavaMetamodel.getManager().registerExtChange(this);
+        }
+        
+        public void performExternalChange() {
             String content = Utility.readFileIntoString(parentFile);
             if (content != null) {
                 String longName = oldName;
@@ -236,5 +264,22 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 }
             }
         }
+        
+        public void undoExternalChange() {
+            try {
+                if (oldContent != null) {
+                    if (!parent.exists()) {
+                        FileObject fo = FileUtil.toFileObject(parent.getParentFile());
+                        if (fo != null) {
+                            parentFile = fo.createData(parent.getName());
+                        }
+                    }
+                    Utility.writeFileFromString(parentFile, oldContent);
+                }
+            } catch (IOException exc) {
+                err.notify(exc);
+            }
+        }
+        
     }
 }

@@ -34,6 +34,8 @@ import org.netbeans.jmi.javamodel.JavaPackage;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.modules.javacore.internalapi.ExternalChange;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveClassRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -101,9 +103,12 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 JavaPackage pack = (JavaPackage)refObject;
                 Resource res = pack.getResource();
                 FileObject fo = JavaModel.getFileObject(res);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null && project instanceof NbModuleProject) {
-                    checkMetaInfServices(project, pack, refactoringElements);
+                if (fo != null) {
+                    //#62636 for some reason in refactoring tests, fileobject is null.                    
+                    Project project = FileOwnerQuery.getOwner(fo);
+                    if (project != null && project instanceof NbModuleProject) {
+                        checkMetaInfServices(project, pack, refactoringElements);
+                    }
                 }
             }
             
@@ -150,12 +155,14 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
     
     
     
-    public final class ManifestRenameRefactoringElement extends AbstractRefactoringElement {
+    public final class ManifestRenameRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
         
         private JavaClass clazz;
         private String attrName;
         private String sectionName = null;
         private String oldName;
+        private String oldContent;
+        private String newName;
         public ManifestRenameRefactoringElement(JavaClass clazz, FileObject parentFile, String attributeValue, String attributeName) {
             this.name = attributeValue;
             this.clazz = clazz;
@@ -180,23 +187,38 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
+            JavaMetamodel.getManager().registerExtChange(this);
+        }
+        
+        public void performExternalChange() {
             String content = Utility.readFileIntoString(parentFile);
+            oldContent = content;
             if (content != null) {
                 String longName = oldName;
-                String newName = clazz.getName();
+                if (newName == null) {
+                    newName = clazz.getName();
+                    newName = newName.replace('.', '/') + ".class"; //NOI18N
+                    clazz = null;
+                }
                 longName = longName.replace('.', '/') + ".class"; //NOI18N
-                newName = newName.replace('.', '/') + ".class"; //NOI18N
                 content = content.replaceAll(longName, newName);
                 Utility.writeFileFromString(parentFile, content);
             }
-            
+        }
+        
+        public void undoExternalChange() {
+            if (oldContent != null) {
+                Utility.writeFileFromString(parentFile, oldContent);
+            }
         }
     }
     
-    public final class ServicesRenameRefactoringElement extends AbstractRefactoringElement {
+    public final class ServicesRenameRefactoringElement extends AbstractRefactoringElement implements ExternalChange {
         
         private JavaClass clazz;
         private String oldName;
+        private String oldContent;
+        private String newName;
         /**
          * Creates a new instance of ServicesRenameRefactoringElement
          */
@@ -215,13 +237,27 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         
         public void performChange() {
+            JavaMetamodel.getManager().registerExtChange(this);
+        }
+        
+        public void performExternalChange() {
             String content = Utility.readFileIntoString(parentFile);
+            oldContent = content;
             if (content != null) {
                 String longName = oldName;
-                String newName = clazz.getName();
+                if (newName == null) {
+                    newName = clazz.getName();
+                    clazz = null;
+                }
                 longName = longName.replaceAll("[.]", "\\.");
                 content = content.replaceAll("^" + longName + "[ \\\n]?", newName + "\n");
                 Utility.writeFileFromString(parentFile, content);
+            }
+        }
+        
+        public void undoExternalChange() {
+            if (oldContent != null) {
+                Utility.writeFileFromString(parentFile, oldContent);
             }
         }
     }
