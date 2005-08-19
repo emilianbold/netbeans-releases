@@ -75,6 +75,10 @@ Microsystems, Inc. All Rights Reserved.
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
         <copy file="../external/struts-1.2.7-lib/struts.jar"
               todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
+              
+        <mkdir dir="${cluster}/docs"/>
+        <copy file="../external/struts-javadoc.zip"
+              todir="${cluster}/docs"/>
     </target>   
 
 </project>
