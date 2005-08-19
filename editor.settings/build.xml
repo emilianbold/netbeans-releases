@@ -8,32 +8,9 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="editor/settings" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/> 
-
-  <!-- Original javadoc target -->
-  <target name="javadoc" depends="init" description="Build editor settings module API documentation.">
-        <selector id="editorsettings_javadoc_files" >
-            <or>
-                <filename name="src/org/netbeans/api/**/*.java" />
-                <filename name="src/org/netbeans/spi/**/*.java" />
-            </or>
-        </selector>
-
-    <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true">
-        <property name="javadoc.base" location="${basedir}"/>
-        <property name="javadoc.name" value="EditorSettingsModuleAPI"/>
-        <property name="javadoc.title" value="Editor Settings Module API"/>
-	<property name="javadoc.packages" value="org.netbeans.api.editor.settings,org.netbeans.spi.editor.settings"/>
-        <property name="javadoc.classpath" refid="cp"/>
-        <property name="javadoc.src" value="../../editor/settings"/>
-        <property name="javadoc.files" value="editorsettings_javadoc_files" />
-        <!--<property name="javadoc.arch" location="arch/arch-editor.xml"/>-->
-    </ant>
-  </target>
-  
 </project>
