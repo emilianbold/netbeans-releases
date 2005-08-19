@@ -14,17 +14,18 @@
 package org.netbeans.spi.java.platform;
 
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
 
 /**
  * Defines an API for registering custom Java platform installer. The Installer
  * is responsible for recognizing the platform, through its {@link #accept} method,
- * and for instantiation itself, through the provided TemplateWizard.Iterator.
+ * and for instantiation itself, through the provided wizard iterator.
  *
  * @author Svata Dedic, Tomas Zezula
  */
 public abstract class PlatformInstall extends GeneralPlatformInstall {
     /**
+     * XXX Javadoc for this method is completely inadequate. What does it do?
      * Determines whether the Recognizer recognizes a Java Platform in 
      * the passed folder. The check done by this method should be quick
      * and should not involve launching the virtual machine. The framework will
@@ -35,11 +36,10 @@ public abstract class PlatformInstall extends GeneralPlatformInstall {
      */
     public abstract WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder);
 
-
     /**
-     * Checks whether the folder actually contains the supported SDK type.
-     * @param baseFolder folder where the SDK is installed
-     * @return true if the PlatformInstall recognizes the folder
+     * Checks whether a given folder contains a platform of the supported type.
+     * @param baseFolder folder which may be an installation root of a platform
+     * @return true if the folder is recognized
      */
     public abstract boolean accept(FileObject baseFolder);    
 

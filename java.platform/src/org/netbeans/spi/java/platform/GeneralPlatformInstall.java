@@ -20,15 +20,14 @@ package org.netbeans.spi.java.platform;
  * @since 1.5
  */
 public abstract class GeneralPlatformInstall {
-    
-    
         
     GeneralPlatformInstall() {
     }
     
     /**
-     * Returns the diaply name of the platform installer
-     * @return String, the diaplay name
+     * Gets the display name of the platform.
+     * XXX does this mean "the display name of the platform type"?
+     * @return the display name
      */
     public abstract String getDisplayName ();
     
