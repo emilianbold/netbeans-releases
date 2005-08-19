@@ -23,9 +23,11 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="j2ee">
         <folder name="webtier">
+            <!-- XXX breaks commit validation; no such class in the trunk:
             <folder name="library">
                 <file name="org-netbeans-modules-web-jsf-JSFLibraryInfoProvider.instance"/>
             </folder>
+            -->
             <folder name="framework">
                 <file name="org-netbeans-modules-web-jsf-JSFFrameworkProvider.instance"/> 
             </folder>
