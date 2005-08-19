@@ -84,6 +84,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private List selectedLayoutComponents = new ArrayList();
     private VisualReplicator replicator;
     private LayoutDesigner layoutDesigner;
+    private List designerActions;
 
     private int designerMode;
     static final int MODE_SELECT = 0;
@@ -593,10 +594,32 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     void selectionChanged() {
         updateAlignmentPalette();
+        updateDesignerActions();
     }
 
     void repaintSelection() {
         handleLayer.repaint();
+    }
+
+    private void updateDesignerActions() {
+        if (!FormEditor.isNaturalLayoutEnabled()) return;
+        Collection selectedIds = selectedLayoutComponentIds();
+        boolean enabled = false;
+        if (selectedIds.size() >= 2) {
+            RADComponent parent = commonParent(selectedIds);
+            if (parent != null) {
+                LayoutModel layoutModel = formModel.getLayoutModel();
+                LayoutComponent parentLC = layoutModel.getLayoutComponent(parent.getId());
+                if ((parentLC != null) && (parentLC.isLayoutContainer())) {
+                    enabled = true;
+                }
+            }
+        }
+        Iterator iter = getDesignerActions().iterator();
+        while (iter.hasNext()) {
+            Action action = (Action)iter.next();
+            action.setEnabled(enabled);
+        }
     }
 
     private void updateAlignmentPalette() {
@@ -743,22 +766,24 @@ public class FormDesigner extends TopComponent implements MultiViewElement
      * @param alignment requested alignment.
      */
     void align(boolean closed, int dimension, int alignment) {
+        // Check that the action is enabled
+        Action action = null;
+        Iterator iter = getDesignerActions().iterator();
+        while (iter.hasNext()) {
+            Action candidate = (Action)iter.next();
+            if (candidate instanceof AlignAction) {
+                AlignAction alignCandidate = (AlignAction)candidate;
+                if ((alignCandidate.getAlignment() == alignment) && (alignCandidate.getDimension() == dimension)) {
+                    action = alignCandidate;
+                    break;
+                }
+            }
+        }
+        if ((action == null) || (!action.isEnabled())) {
+            return;
+        }
         Collection selectedIds = selectedLayoutComponentIds();
-        if (selectedIds.size() < 2) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    FormUtils.getBundleString("MSG_AlignComponentCount"), // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
         RADComponent parent = commonParent(selectedIds);
-        if (parent == null) {
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(
-                    FormUtils.getBundleString("MSG_AlignCommonParent"), // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
         LayoutModel layoutModel = formModel.getLayoutModel();
         Object layoutUndoMark = layoutModel.getChangeMark();
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
@@ -775,14 +800,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
      * @return <code>Collection</code> of <code>Action</code> objects.
      */
     Collection getDesignerActions() {
-        List actions = new LinkedList();
-        actions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING));
-        //actions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.CENTER));
-        actions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING));
-        actions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING));
-        //actions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.CENTER));
-        actions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING));
-        return actions;
+        if (designerActions == null) {
+            designerActions = new LinkedList();
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING));
+            //designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.CENTER));
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING));
+            //designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.CENTER));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING));
+        }
+        return designerActions;
     }
     
     /**
@@ -1585,6 +1612,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             String iconResource = ICON_BASE + code + ".gif"; // NOI18N
             putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(iconResource)));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_AlignAction_" + code)); // NOI18N
+            setEnabled(false);
         }
         
         /**
@@ -1595,6 +1623,14 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         public void actionPerformed(ActionEvent e) {
             boolean closed = ((e.getModifiers() & ActionEvent.ALT_MASK) != 0);
             align(closed, dimension, alignment);
+        }
+        
+        public int getDimension() {
+            return dimension;
+        }
+        
+        public int getAlignment() {
+            return alignment;
         }
         
     }
