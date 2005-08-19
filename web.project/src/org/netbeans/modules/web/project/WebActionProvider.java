@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -33,9 +32,7 @@ import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -47,19 +44,14 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import org.netbeans.modules.web.project.ui.ServletUriPanel;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.web.project.parser.ParserWebModule;
 import org.netbeans.modules.web.project.parser.JspNameUtil;
 
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -67,16 +59,22 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 import org.netbeans.jmi.javamodel.*;
-import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.javacore.JMManager;
+import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
+import org.netbeans.modules.web.project.ui.ServletUriPanel;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDescriptor;
+
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -106,6 +104,7 @@ class WebActionProvider implements ActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_VERIFY,
+        COMMAND_DELETE
     };
     
     // Project
@@ -114,13 +113,12 @@ class WebActionProvider implements ActionProvider {
     // Ant project helper of the project
     private UpdateHelper updateHelper;
 
-    // Ant project helper of the project
-//    private AntProjectHelper antProjectHelper;
-//    private ReferenceHelper refHelper;
-        
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
+    /**Set of commands which are affected by background scanning*/
+    final Set bkgScanSensitiveActions;
+
     public WebActionProvider(WebProject project, UpdateHelper updateHelper) {
         
         commands = new HashMap();
@@ -144,6 +142,13 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
             commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         
+        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
+            COMMAND_RUN, 
+            COMMAND_RUN_SINGLE, 
+            COMMAND_DEBUG, 
+            COMMAND_DEBUG_SINGLE
+        }));
+
         this.updateHelper = updateHelper;
         this.project = project;
     }
@@ -156,19 +161,58 @@ class WebActionProvider implements ActionProvider {
         return supportedActions;
     }
     
-    public void invokeAction( String command, Lookup context ) throws IllegalArgumentException {
-        Properties p;
+    public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
+        if (COMMAND_DELETE.equals(command)) {
+            project.getAntProjectHelper().performDefaultDeleteOperation();
+            return ;
+        }
+        
+        Runnable action = new Runnable () {
+            public void run () {
+                Properties p = new Properties();
+                String[] targetNames;
+        
+                targetNames = getTargetNames(command, context, p);
+                if (targetNames == null) {
+                    return;
+                }
+                if (targetNames.length == 0) {
+                    targetNames = null;
+                }
+                if (p.keySet().size() == 0) {
+                    p = null;
+                }
+                try {
+                    ActionUtils.runTarget(findBuildXml(), targetNames, p);
+                } 
+                catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }            
+        };
+        
+        if (this.bkgScanSensitiveActions.contains(command)) {        
+            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (WebActionProvider.class,"ACTION_"+command)); //NOI18N
+        }
+        else {
+            action.run();
+        }
+    }
+
+    /**
+     * @return array of targets or null to stop execution; can return empty array
+     */
+    String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         String[] targetNames = (String[])commands.get(command);
         
         // RUN-SINGLE
         if (command.equals(COMMAND_RUN_SINGLE)) {
-            p = new Properties();
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupTestSingle(p, files);
             } else {
                 if (!isSelectedServer ()) {
-                    return;
+                    return null;
                 }
                 if (isDebugged()) {
                     NotifyDescriptor nd;
@@ -187,7 +231,7 @@ class WebActionProvider implements ActionProvider {
                     if (o.equals(NotifyDescriptor.OK_OPTION)) {            
                         DebuggerManager.getDebuggerManager().getCurrentSession().kill();
                     } else {
-                        return;
+                        return null;
                     }
                 }
                 // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
@@ -195,7 +239,7 @@ class WebActionProvider implements ActionProvider {
                     NotifyDescriptor nd;                
                     nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
                     Object o = DialogDisplayer.getDefault().notify(nd);
-                    return;
+                    return null;
                 }
                 if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
                     p.setProperty("forceRedeploy", "true"); //NOI18N
@@ -216,7 +260,7 @@ class WebActionProvider implements ActionProvider {
                     if (requestParams != null) {
                         p.setProperty("client.urlPart", requestParams); //NOI18N
                     } else {
-                        return;
+                        return null;
                     }
                 } else {
                     // run HTML file
@@ -227,7 +271,7 @@ class WebActionProvider implements ActionProvider {
                             url = org.openide.util.Utilities.replaceString(url, " ", "%20");
                             p.setProperty("client.urlPart", url); //NOI18N
                         } else {
-                            return;
+                            return null;
                         }
                     } else {
                         // run Java
@@ -238,7 +282,6 @@ class WebActionProvider implements ActionProvider {
                             if (hasMainMethod(javaFile)) {
                                 // run Java with Main method
                                 String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),javaFile), javaFile);
-                                p = new Properties();
                                 p.setProperty("javac.includes", clazz); // NOI18N
                                 // Convert foo/FooTest.java -> foo.FooTest
                                 if (clazz.endsWith(".java")) { // NOI18N
@@ -268,14 +311,14 @@ class WebActionProvider implements ActionProvider {
                                             try {
                                                 javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
                                             } catch (IOException ex){}
-                                        } else return;
+                                        } else return null;
                                     } else {
                                         String mes = java.text.MessageFormat.format (
                                                 NbBundle.getMessage (WebActionProvider.class, "TXT_noExecutableClass"),
                                                 new Object [] {javaFile.getName()});
                                         NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
                                         DialogDisplayer.getDefault().notify(desc);
-                                        return;
+                                        return null;
                                     }
                                 }
                             }
@@ -286,13 +329,12 @@ class WebActionProvider implements ActionProvider {
             
         // RUN, REDEPLOY
         } else if (command.equals(COMMAND_RUN) || command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
-            p = new Properties();
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupTestSingle(p, files);
             } else {
                 if (!isSelectedServer ()) {
-                    return;
+                    return null;
                 }
                 if (isDebugged()) {
                     NotifyDescriptor nd;
@@ -311,7 +353,7 @@ class WebActionProvider implements ActionProvider {
                     if (o.equals(NotifyDescriptor.OK_OPTION)) {            
                         DebuggerManager.getDebuggerManager().getCurrentSession().kill();
                     } else {
-                        return;
+                        return null;
                     }
                 }
                 // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
@@ -319,7 +361,7 @@ class WebActionProvider implements ActionProvider {
                     NotifyDescriptor nd;                
                     nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
                     Object o = DialogDisplayer.getDefault().notify(nd);
-                    return;
+                    return null;
                 }
                 if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
                     p.setProperty("forceRedeploy", "true"); //NOI18N
@@ -330,13 +372,12 @@ class WebActionProvider implements ActionProvider {
 
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            p = new Properties();
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
                 targetNames = setupDebugTestSingle(p, files);
             } else {
                 if (!isSelectedServer ()) {
-                    return;
+                    return null;
                 }
                 if (isDebugged()) {
                     NotifyDescriptor nd;
@@ -347,7 +388,7 @@ class WebActionProvider implements ActionProvider {
                     if (o.equals(NotifyDescriptor.OK_OPTION)) {            
                         DebuggerManager.getDebuggerManager().getCurrentSession().kill();
                     } else {
-                        return;
+                        return null;
                     }
                 }
                 // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
@@ -355,9 +396,8 @@ class WebActionProvider implements ActionProvider {
                     NotifyDescriptor nd;                
                     nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
                     Object o = DialogDisplayer.getDefault().notify(nd);
-                    return;
+                    return null;
                 }
-                p = new Properties();
 
                 files = findJsps( context );
                 if ((files != null) && (files.length>0)) {
@@ -373,7 +413,7 @@ class WebActionProvider implements ActionProvider {
                     if (requestParams != null) {
                         p.setProperty("client.urlPart", requestParams); //NOI18N
                     } else {
-                        return;
+                        return null;
                     }
                 } else {
                     // debug HTML file
@@ -384,7 +424,7 @@ class WebActionProvider implements ActionProvider {
                             url = org.openide.util.Utilities.replaceString(url, " ", "%20");
                             p.setProperty("client.urlPart", url); //NOI18N
                         } else {
-                            return;
+                            return null;
                         }
                     } else {
                         // debug Java
@@ -396,7 +436,6 @@ class WebActionProvider implements ActionProvider {
                             if (hasMainMethod(javaFile)) {
                                 // debug Java with Main method
                                 String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),javaFile), javaFile);
-                                p = new Properties();
                                 p.setProperty("javac.includes", clazz); // NOI18N
                                 // Convert foo/FooTest.java -> foo.FooTest
                                 if (clazz.endsWith(".java")) { // NOI18N
@@ -426,14 +465,14 @@ class WebActionProvider implements ActionProvider {
                                             try {
                                                 javaFile.setAttribute(SetExecutionUriAction.ATTR_EXECUTION_URI,uriPanel.getServletUri());
                                             } catch (IOException ex){}
-                                        } else return;
+                                        } else return null;
                                     } else {
                                         String mes = java.text.MessageFormat.format (
                                                 NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
                                                 new Object [] {javaFile.getName()});
                                         NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
                                         DialogDisplayer.getDefault().notify(desc);
-                                        return;
+                                        return null;
                                     }
                                 }
                             }
@@ -445,7 +484,7 @@ class WebActionProvider implements ActionProvider {
         //DEBUG
         } else if (command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
-                return;
+                return null;
             }
             if (isDebugged()) {
                 NotifyDescriptor nd;
@@ -456,7 +495,7 @@ class WebActionProvider implements ActionProvider {
                 if (o.equals(NotifyDescriptor.OK_OPTION)) {            
                     DebuggerManager.getDebuggerManager().getCurrentSession().kill();
                 } else {
-                    return;
+                    return null;
                 }
             }
             // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
@@ -464,9 +503,8 @@ class WebActionProvider implements ActionProvider {
                 NotifyDescriptor nd;                
                 nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
                 Object o = DialogDisplayer.getDefault().notify(nd);
-                return;
+                return null;
             }
-            p = new Properties();
             
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
@@ -546,12 +584,11 @@ class WebActionProvider implements ActionProvider {
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findJavaSources(context);
             String path = null;
-            p = new Properties();
             if (files != null) {
                 path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
             } else {
-                return;
+                return null;
             }
             // Convert foo/FooTest.java -> foo/FooTest
             if (path.endsWith(".java")) { // NOI18N
@@ -564,7 +601,6 @@ class WebActionProvider implements ActionProvider {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findJavaSourcesAndPackages( context, sourceRoots);
             boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
-            p = new Properties();
             if (files != null) {
                 p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots, files[0]), recursive)); // NOI18N
             } else {
@@ -585,7 +621,7 @@ class WebActionProvider implements ActionProvider {
                         setAllPropertiesForSingleJSPCompilation(p, files);
                         targetNames = new String [] {"compile-single-jsp"};
                     } else {
-                        return;
+                        return null;
                     }
                 }
             }
@@ -593,25 +629,17 @@ class WebActionProvider implements ActionProvider {
         //TEST PART
         } else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
-            p = new Properties();
             targetNames = setupTestSingle(p, files);
         } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
-            p = new Properties();
             targetNames = setupDebugTestSingle(p, files);
         } else {
-            p = null;
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
         }
-
-        try {
-            ActionUtils.runTarget(findBuildXml(), targetNames, p);
-        } 
-        catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+        
+        return targetNames;
     }
 
     private String[] setupTestSingle(Properties p, FileObject[] files) {

@@ -288,6 +288,10 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         return lookup;
     }
 
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
+
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         return Lookups.fixed(new Object[] {
@@ -315,6 +319,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             new RecommendedTemplatesImpl(this.updateHelper),
             new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             classPathExtender,
+            new WebProjectOperations(this)
         });
     }
 
