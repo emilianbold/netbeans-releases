@@ -62,7 +62,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     private JTextComponent pane;
     private BaseDocument document;
     
-    private List/*<MarkProvider>*/ providers = new ArrayList();
+    private List/*<MarkProvider>*/ providers;// = new ArrayList();
     private List/*<UpToDateStatusProvider>*/ upToDateStatusProviders = new ArrayList();
     
     private List/*<Mark>*/ currentMarks = null;
