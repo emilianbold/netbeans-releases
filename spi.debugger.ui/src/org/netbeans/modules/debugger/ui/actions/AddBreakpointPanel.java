@@ -34,7 +34,12 @@ import org.netbeans.spi.debugger.ui.Controller;
 *
 * @author  Jan Jacura
 */
-public class AddBreakpointPanel extends javax.swing.JPanel {
+// <RAVE>
+// Make the class implement HelpCtx.Provider to be able to get Help for it
+// public class AddBreakpointPanel extends javax.swing.JPanel {
+// ====
+public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+// </RAVE>
 
     public static final String PROP_TYPE = "type";
     
@@ -225,7 +230,12 @@ public class AddBreakpointPanel extends javax.swing.JPanel {
      * Returns <CODE>HelpCtx</CODE> of the selected breakpoint type's customizer.
      * It is used in {@link AddBreakpointAction.AddBreakpointDialogManager}.
      */
-    HelpCtx getHelpCtx() {
+    // <RAVE>
+    // Make getHelpCtx() method public to correctly implement HelpCtx.Provider
+    // HelpCtx getHelpCtx() {
+    // ====
+    public HelpCtx getHelpCtx() {
+    // </RAVE>
         return helpCtx;
     }
 
@@ -240,7 +250,19 @@ public class AddBreakpointPanel extends javax.swing.JPanel {
         //Set HelpCtx. This method must be called _before_ the customizer
         //is added to some container, otherwise HelpCtx.findHelp(...) would
         //query also the customizer's parents.
-        helpCtx = HelpCtx.findHelp (customizer);
+        // <RAVE>
+        // The help IDs for the customizer panels have to be different from the
+        // values returned by getHelpCtx() because they provide different help
+        // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
+        // helpCtx = HelpCtx.findHelp (customizer);
+        // ====
+        String hid = (String) customizer.getClientProperty("HelpID_AddBreakpointPanel"); // NOI18N
+        if (hid != null) {
+            helpCtx = new HelpCtx(hid);
+        } else {
+            helpCtx = HelpCtx.findHelp (customizer);
+        }
+        // </RAVE>
 
         pEvent.add (customizer, "Center"); // NOI18N
         pEvent.getAccessibleContext ().setAccessibleDescription (

@@ -82,10 +82,24 @@ public class AddWatchAction extends CallableSystemAction {
         WatchPanel wp = new WatchPanel (watchHistory);
         JComponent panel = wp.getPanel ();
 
+        // <RAVE>
+        // Add help ID for 'Add Watch' dialog
+        // org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
+        //      panel,
+        //      bundle.getString ("CTL_WatchDialog_Title") // NOI18N
+        // );
+        // ====
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor (
             panel, 
-            bundle.getString ("CTL_WatchDialog_Title") // NOI18N
+            bundle.getString ("CTL_WatchDialog_Title"), // NOI18N
+            true,
+            org.openide.DialogDescriptor.OK_CANCEL_OPTION,
+            null,
+            org.openide.DialogDescriptor.DEFAULT_ALIGN,
+            new org.openide.util.HelpCtx("debug.add.watch"),
+            null
         );
+        // </RAVE>
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
         dialog.setVisible (true);
         dialog.dispose ();

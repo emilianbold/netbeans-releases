@@ -74,6 +74,12 @@ public class ThreadBreakpointPanel extends JPanel implements Controller, org.ope
         
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
+        // <RAVE>
+        // The help IDs for the AddBreakpointPanel panels have to be different from the
+        // values returned by getHelpCtx() because they provide different help
+        // in the 'Add Breakpoint' dialog and when invoked in the 'Breakpoints' view
+        putClientProperty("HelpID_AddBreakpointPanel", "debug.add.breakpoint.java.thread"); // NOI18N
+        // </RAVE>
     }
     
     // <RAVE>
