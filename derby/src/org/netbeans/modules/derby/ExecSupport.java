@@ -18,6 +18,8 @@
 
 package org.netbeans.modules.derby;
 import java.io.*;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
 import org.openide.windows.*;
 /**
@@ -26,9 +28,24 @@ import org.openide.windows.*;
  */
 public class ExecSupport {
     
+    private String lookFor;
+    private OutputCopier[] copyMakers;
+    
     /** Creates a new instance of ExecSupport */
     public ExecSupport() {
-    }   
+    }
+    
+    public void setStringToLookFor(String lookFor) {
+        this.lookFor = lookFor;
+    }
+    
+    public boolean isStringFound() {
+        if (copyMakers == null)
+            return false;
+        return (copyMakers[0].stringFound() ||
+                copyMakers[1].stringFound() ||
+                copyMakers[2].stringFound());
+    }
     
     /**
      * Redirect the standard output and error streams of the child
@@ -49,9 +66,9 @@ public class ExecSupport {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         io.select();
-        final Thread[] copyMakers = new Thread[3];
-        (copyMakers[01] = new OutputCopier(new InputStreamReader(child.getInputStream()), io.getOut(), true)).start();
-        (copyMakers[1] = new OutputCopier(new InputStreamReader(child.getErrorStream()), io.getErr(), true)).start();
+        copyMakers = new OutputCopier[3];
+        (copyMakers[0] = new OutputCopier(new InputStreamReader(child.getInputStream()), io.getOut(), true, lookFor)).start();
+        (copyMakers[1] = new OutputCopier(new InputStreamReader(child.getErrorStream()), io.getErr(), true, lookFor)).start();
         (copyMakers[2] = new OutputCopier(io.getIn(), new OutputStreamWriter(child.getOutputStream()), true)).start();
         new Thread() {
             public void run() {
@@ -83,19 +100,41 @@ public class ExecSupport {
          */
         final boolean autoflush;
         private boolean done = false;
+        private String stringToLookFor;
+        private boolean stringFound = false;
         
-        public OutputCopier(Reader is, Writer os, boolean b) {
+        
+        private static final int FOUND = SearchUtil.FOUND;
+        
+        public OutputCopier(Reader is, Writer os, boolean b, String lookFor) {
             this.os = os;
             this.is = is;
             autoflush = b;
+            this.stringToLookFor = lookFor;
+        }
+        
+        public OutputCopier(Reader is, Writer os, boolean b) {
+            this(is, os, b, null);
+        }
+        
+        public boolean stringFound() {
+            return stringFound;
         }
         
         /* Makes copy. */
         public void run() {
             int read;
+            int stringFoundChars = 0;
             char[] buff = new char [256];
             try {
                 while ((read = read(is, buff, 0, 256)) > 0x0) {
+                    if (stringToLookFor != null) {
+                        stringFoundChars = SearchUtil.checkForString(stringToLookFor, stringFoundChars, buff, read);
+                        if (stringFoundChars == FOUND) {
+                            stringToLookFor = null;
+                            stringFound = true;
+                        }
+                    }
                     if (os!=null){
                         os.write(buff,0,read);
                         if (autoflush) os.flush();
@@ -117,7 +156,73 @@ public class ExecSupport {
             
             return is.read(buff, start, count);
         }
+
     }
+
+    /** Waits for startup of a server, waits until the message set through the setStringToLookFor() method. 
+     *  @param progressMessage message to be displayed in the progress bar. If null, no progress bar is shown.
+     *  @param timeout timeout
+     *  @return true if the connection was successfully established, false if timed out
+     */ 
+    public boolean waitForMessage(String progressMessage, int timeout) {
+        int retryTime = 10;
+        ProgressHandle ph = null;
+        if (progressMessage != null) {
+            ph = ProgressHandleFactory.createHandle(progressMessage);
+            ph.start();
+        }
+        try {
+            Connect connect = new Connect(retryTime); 
+            Thread t = new Thread(connect);
+            t.start();
+            try {
+                t.join(timeout);
+            } catch(InterruptedException ie) {
+            }
+            if (t.isAlive()) {
+                connect.finishLoop();
+                t.interrupt();//for thread deadlock
+            }
+            return connect.getStatus();
+        }
+        finally {
+            if (ph != null)
+                ph.finish();
+        }
+    }
+    
+    private class Connect implements Runnable  {
+
+        int retryTime;
+        boolean status = false;
+        boolean loop = true;
+
+        public Connect(int retryTime) {
+            this.retryTime = retryTime; 
+        } 
+
+        public void finishLoop() {
+            loop = false;
+        }
+
+        public void run() {
+            while (loop) {
+                if (isStringFound()) {
+                    status = true;
+                    break;
+                }
+                try {
+                    Thread.currentThread().sleep(retryTime);
+                } catch(InterruptedException ie) {
+                }
+            }
+        }
+
+        boolean getStatus() {
+            return status;
+        }
+    }
+    
     
     
 }

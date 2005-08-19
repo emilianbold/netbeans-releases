@@ -38,10 +38,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
     
     public void performAction() {
         if (!RegisterDerby.getDefault().isRunning()) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getMessage(CreateDatabaseAction.class, "ERR_DerbyNotRunningWhenCreatingDB"),
-                NotifyDescriptor.INFORMATION_MESSAGE));
-            return;
+            RegisterDerby.getDefault().start(5000);
         }
         NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine(
             NbBundle.getMessage(CreateDatabaseAction.class, "CTL_SelectName"),
@@ -69,7 +66,7 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }
 
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
 
 

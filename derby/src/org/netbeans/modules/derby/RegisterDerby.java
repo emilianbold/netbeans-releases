@@ -163,8 +163,8 @@ public class RegisterDerby implements DatabaseRuntime {
         return null;
     }
     
-    private String getPort() {
-        return "1527";
+    private int getPort() {
+        return 1527;
     }
     
     /** Posts the creation of the new database to request processor.
@@ -229,6 +229,7 @@ public class RegisterDerby implements DatabaseRuntime {
         }
         try {
             ExecSupport ee= new ExecSupport();
+            ee.setStringToLookFor("" + getPort());
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
@@ -249,8 +250,10 @@ public class RegisterDerby implements DatabaseRuntime {
             );
 
             ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
-            if (waitTime>0){
-                Thread.sleep(waitTime);// to make sure the server is up and running
+            if (waitTime > 0){
+                ee.waitForMessage(NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby"),
+                    waitTime); // to make sure the server is up and running
+                //Thread.currentThread().sleep(waitTime); // to make sure the server is up and running
             }
             
         } catch (Exception e) {

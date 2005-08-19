@@ -8,7 +8,7 @@
         <folder name="Runtimes">
             <file name="DerbyRuntime.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.derby.RegisterDerby.getDefault"/>
-                <attr name="instanceOf" methodvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.db.explorer.DatabaseRuntime"/>
             </file>
         </folder>
     </folder>

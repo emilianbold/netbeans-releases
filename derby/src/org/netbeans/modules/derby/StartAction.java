@@ -48,7 +48,7 @@ public class StartAction extends CallableSystemAction {
     }
     
     public void performAction()  {
-        RegisterDerby.getDefault().start(0);// do not wait for the server to start.
+        RegisterDerby.getDefault().start();
         
     }
     protected boolean asynchronous() {
