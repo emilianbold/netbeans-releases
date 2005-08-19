@@ -370,7 +370,10 @@ public class ClassPathProviderImplTest extends TestBase {
         assertNotNull("No project found",prj);
         assertTrue("Invalid project type", prj instanceof NbModuleProject);
         FileObject testBuildClasses = nbroot.getFileObject ("ant/project/build/test/unit/classes/");
-        if (testBuildClasses != null) { // else cannot test this part, oh well
+        if (testBuildClasses == null) {
+            // Have to have it, so we can call CP.gCP on it:
+            testBuildClasses = FileUtil.createFolder(nbroot, "ant/project/build/test/unit/classes");
+        }
         assertNull ("ClassPath.SOURCE for build/test must be null",ClassPath.getClassPath(testBuildClasses, ClassPath.SOURCE));
         assertNull ("ClassPath.COMPILE for build/test must be null",ClassPath.getClassPath(testBuildClasses, ClassPath.COMPILE));
         cp = ClassPath.getClassPath(testBuildClasses, ClassPath.EXECUTE);
@@ -400,7 +403,6 @@ public class ClassPathProviderImplTest extends TestBase {
                 ClassPathSupport.createClassPath(trExtra),
         });
         assertClassPathsHaveTheSameResources(cp, expectedCp);
-        }
 
         File jarFile = ((NbModuleProject) prj).getModuleJarLocation();
         FileObject jarFO = FileUtil.toFileObject(jarFile);
