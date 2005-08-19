@@ -162,12 +162,12 @@ public class SelectProjectPanel extends BasicWizardIterator.Panel {
     private void checkValidity() {
         ComboWrapper sel = (ComboWrapper)comProject.getModel().getSelectedItem();
         if (sel == EMPTY) {
-            setErrorMessage("A project needs to be selected.");
+            setErrorMessage(getMessage("MSG_NoProjectSelected"));
             return;
         }
         Sources srcs = (Sources)sel.getProject().getLookup().lookup(Sources.class);
         if (srcs.getSourceGroups(Sources.TYPE_GENERIC).length > 1) {
-            setErrorMessage("Projects with external roots are not supported");
+            setErrorMessage(getMessage("MSG_NoExternalRoots")); 
             return;
         }
         setErrorMessage(null);
