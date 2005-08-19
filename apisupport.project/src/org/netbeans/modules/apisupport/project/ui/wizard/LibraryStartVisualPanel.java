@@ -35,8 +35,6 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     static final String PROP_LIBRARY_PATH = "LIBRARY_PATH_VALUE"; //NOI18N
     static final String PROP_LICENSE_PATH = "LICENSE_PATH_VALUE"; //NOI18N        
     
-    private static final String PATH_SEPARATOR = ";";
-    
     private NewModuleProjectData data;
     
     private boolean listenersAttached;
@@ -65,7 +63,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     private void checkLibraryAndLicense() {
         String text = txtLibrary.getText().trim();
         if (text.length() > 0) {
-            StringTokenizer tokens = new StringTokenizer(text, PATH_SEPARATOR);
+            StringTokenizer tokens = new StringTokenizer(text, File.pathSeparator);
             while (tokens.hasMoreTokens()) {
                 String one = tokens.nextToken();
                 File fil = new File(one);
@@ -129,7 +127,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
         if (data.getProjectName() != null && data.getCodeNameBase() != null) {
             return;
         }
-        StringTokenizer tokens = new StringTokenizer(paths, PATH_SEPARATOR);
+        StringTokenizer tokens = new StringTokenizer(paths, File.pathSeparator);
         if (tokens.hasMoreTokens()) {
             File fil = new File(tokens.nextToken());
             String name = fil.getName();
@@ -321,7 +319,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
             File[] files =  chooser.getSelectedFiles();
             String path = "";
             for (int i = 0; i < files.length; i++) {
-                path = path + files[i] + ( i == files.length - 1 ? "" : ";");
+                path = path + files[i] + ( i == files.length - 1 ? "" : File.pathSeparator);
             }
             txtLibrary.setText(path);
         }
@@ -330,7 +328,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
 
     
     static File[] convertStringToFiles(String path) {
-        StringTokenizer tok = new StringTokenizer(path, ";");
+        StringTokenizer tok = new StringTokenizer(path, File.pathSeparator);
         File[] olds = new File[tok.countTokens()]; 
         for (int i = 0; i < olds.length; i++) {
             olds[i] = new File(tok.nextToken());
