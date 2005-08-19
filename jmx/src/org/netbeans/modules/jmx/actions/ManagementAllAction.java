@@ -24,6 +24,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.modules.jmx.WizardHelpers;
+import org.netbeans.modules.jmx.Introspector;
 
 /** 
  * Action which just groups update actions.
@@ -87,6 +94,21 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
             }
         }
         return menu;
+    }
+    
+    protected boolean enable (Node[] nodes) {
+        if (!super.enable(nodes)) return false;
+        if (nodes.length == 0) return false;
+        
+        DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
+        FileObject fo = null;
+        if (dob != null) fo = dob.getPrimaryFile();
+        JavaClass foClass = 
+                WizardHelpers.getJavaClass(JavaModel.getResource(fo),fo.getName());
+        
+        boolean isAgent = Introspector.isGeneratedAgent(foClass);
+        boolean isMBean = Introspector.testCompliance(foClass);
+        return isAgent || isMBean;
     }
 
     /**
