@@ -31,15 +31,15 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
         initComponents();
         
         jTextFieldAppResource.getDocument().addDocumentListener(this);
-        
+        jCheckBoxWAR.setVisible(false);
         if (customizer) {
             jCheckBoxTLD.setVisible(false);
-            jCheckBoxWAR.setVisible(false);
+            //jCheckBoxWAR.setVisible(false);
             enableComponents(false);
         }        
         else {
             jCheckBoxTLD.setVisible(true);
-            jCheckBoxWAR.setVisible(true);
+            //jCheckBoxWAR.setVisible(true);
             enableComponents(true);
         }
         
@@ -180,7 +180,8 @@ public class StrutsConfigurationPanelVisual extends javax.swing.JPanel implement
                 NbBundle.getMessage(StrutsConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));  
           return false;  
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
+        if (wizardDescriptor != null)
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
         return true;
     }
 
