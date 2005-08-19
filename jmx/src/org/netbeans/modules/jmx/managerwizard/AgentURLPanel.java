@@ -303,6 +303,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         urlPanel.setLayout(new java.awt.GridBagLayout());
 
         urlPanel.setName("urlPanel");
+        jmxURLJTextField.setEditable(false);
         jmxURLJTextField.setDragEnabled(true);
         jmxURLJTextField.setMinimumSize(new java.awt.Dimension(250, 20));
         jmxURLJTextField.setName("customURLJTextField");
