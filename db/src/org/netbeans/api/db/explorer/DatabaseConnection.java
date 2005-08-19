@@ -99,7 +99,7 @@ public final class DatabaseConnection {
         conn.setUser(user);
         conn.setSchema(schema);
         conn.setPassword(password);
-        conn.setRememberPassword(true);
+        conn.setRememberPassword(rememberPassword);
         
         return new DatabaseConnection(conn);
     }
