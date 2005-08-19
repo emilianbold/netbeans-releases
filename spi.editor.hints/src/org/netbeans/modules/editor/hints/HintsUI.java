@@ -186,7 +186,7 @@ public class HintsUI implements MouseListener, KeyListener {
         String iconBase;
         if (hints.size() > 1) {
             iconBase =
-                "org/netbeans/modules/editor/hints/resources/multisuggestion.gif"; //NOI18N
+                "org/netbeans/modules/editor/hints/resources/error.png"; //NOI18N
         } else {
             int type = Hint.SUGGESTION;
             if (hints.size() > 0) { //should be
@@ -194,8 +194,8 @@ public class HintsUI implements MouseListener, KeyListener {
                 type = hint.getType();
             }
             iconBase = type == Hint.SUGGESTION ?
-                "org/netbeans/modules/editor/hints/resources/suggestion.gif" : //NOI18N
-                "org/netbeans/modules/editor/hints/resources/error-sg.gif"; //NOI18N
+                "org/netbeans/modules/editor/hints/resources/suggestion.png" : //NOI18N
+                "org/netbeans/modules/editor/hints/resources/error.png"; //NOI18N
         }
         hintIcon.setIcon (new ImageIcon (org.openide.util.Utilities.loadImage(iconBase)));
         return hintIcon;
