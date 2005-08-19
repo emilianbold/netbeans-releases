@@ -24,6 +24,7 @@ import org.openide.*;
 import org.openide.src.*;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -1254,11 +1255,13 @@ public class MetaComponentCreator {
                 || (tm instanceof javax.swing.table.DefaultTableModel
                     && tm.getRowCount() == 0 && tm.getColumnCount() == 0))
             {
+                String prefix = NbBundle.getMessage(MetaComponentCreator.class, "FMT_CreatorTableTitle"); // NOI18N
+                prefix += ' ';
                 propValue =
                     new org.netbeans.modules.form.editors2.TableModelEditor.NbTableModel(
                         new javax.swing.table.DefaultTableModel(
                             new String[] {
-                                "Title 1", "Title 2", "Title 3", "Title 4" }, // NOI18N
+                                prefix + 1, prefix + 2, prefix + 3, prefix + 4 },
                             4));
                 propName = "model"; // NOI18N
                 changes.put(propName, propValue);
@@ -1306,8 +1309,10 @@ public class MetaComponentCreator {
         } else if (comp instanceof JComboBox) {
             ComboBoxModel model = ((JComboBox)comp).getModel();
             if ((model == null) || (model.getSize() == 0)) {
+                String prefix = NbBundle.getMessage(MetaComponentCreator.class, "FMT_CreatorComboBoxItem"); // NOI18N
+                prefix += ' ';
                 propValue = new DefaultComboBoxModel(new String[] {
-                    "Item 1", "Item 2", "Item 3", "Item 4" // NOI18N
+                    prefix + 1, prefix + 2, prefix + 3, prefix + 4
                 });
                 propName = "model"; // NOI18N
                 changes.put(propName, propValue);
@@ -1316,9 +1321,11 @@ public class MetaComponentCreator {
         } else if (comp instanceof JList) {
             ListModel model = ((JList)comp).getModel();
             if ((model == null) || (model.getSize() == 0)) {
+                String prefix = NbBundle.getMessage(MetaComponentCreator.class, "FMT_CreatorListItem"); // NOI18N
+                prefix += ' ';
                 DefaultListModel defaultModel = new DefaultListModel();
                 for (int i=1; i<6; i++) {
-                    defaultModel.addElement("Item " + i); // NOI18N
+                    defaultModel.addElement(prefix + i); // NOI18N
                 }
                 propValue = defaultModel;
                 propName = "model"; // NOI18N
