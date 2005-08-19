@@ -187,7 +187,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     for (int i = wfl.sizeWelcomeFile()-1;  i > 0; i-- ){
                         wfl.setWelcomeFile(i, wfl.getWelcomeFile(i-1));
                     }
-                    wfl.setWelcomeFile(0, "jsf/welcomeJSF.jsp");
+                    wfl.setWelcomeFile(0, "faces/welcomeJSF.jsp");
                     ddRoot.write(dd);
                 }
                 catch (ClassNotFoundException cnfe){

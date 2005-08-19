@@ -14,7 +14,84 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+    <folder name="Services">
+        <!-- Recognize text/x-jsf+xml: -->
+        <folder name="MIMEResolver">
+            <file name="org-netbeans-modules-web-jsf-resources-mime-resolver.xml" url="mime-resolver.xml"/>           
+        </folder>
+    </folder>
     
+    <folder name="j2ee">
+        <folder name="webtier">
+            <folder name="library">
+                <file name="org-netbeans-modules-web-jsf-JSFLibraryInfoProvider.instance"/>
+            </folder>
+            <folder name="framework">
+                <file name="org-netbeans-modules-web-jsf-JSFFrameworkProvider.instance"/> 
+            </folder>
+        </folder>
+    </folder>
+   
+    <folder name="Plugins">
+        <!-- Register XML module catalog plugin -->
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-web-jsf-JSFCatalog.instance">
+                    <attr name="instanceCreate" 
+                    newvalue="org.netbeans.modules.web.jsf.JSFCatalog"/>
+                    <attr name="instanceOf" 
+                    stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="xml">
+                <folder name="HyperlinkProviders">
+                    <file name="JSFConfigHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.jsf.editor.JSFConfigHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-jsf+xml">
+                <folder name="Popup"> 
+                    <file name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance" />
+                    <attr name="org-netbeans-modules-web-jsf-editor-JSFPopupAction.instance/Separator0.instance" boolvalue="true"/>
+                    <file name="Separator0.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+  
+    <folder name="Templates">
+        <folder name="JSP_Servlet">
+            <folder name="JSF">
+                <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.Bundle"/>
+                    <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
+                    <attr name="templateCategory" stringvalue="servlet-types"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
+                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ManagedBeanIterator"  />          
+                </file>
+            </folder>
+        </folder>
+    </folder>
 
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="jsf.xml" url="jsf.xml"/>
+        </folder>
+    </folder>
+
+    <folder name="org-netbeans-modules-web-jsf">
+        <file name="faces-config.xml" url="faces-config.xml"/>
+        <file name="welcomeJSF.jsp" url="welcomeJSF.jsp"/>
+    </folder>
 
 </filesystem>

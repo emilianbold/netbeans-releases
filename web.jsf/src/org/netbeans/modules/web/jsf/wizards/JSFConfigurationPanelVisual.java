@@ -1,7 +1,14 @@
 /*
- * JSFConfigurationPanelVisual.java
- *
- * Created on August 10, 2005, 6:59 PM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.jsf.wizards;
@@ -24,9 +31,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         initComponents();
         this.panel = panel;
         tURLPattern.getDocument().addDocumentListener(this);
+        cbPackageJars.setVisible(false);
         if (customizer){
-            cbPackageJars.setVisible(false);
-            cbPackageJars.setVisible(false);
             tURLPattern.setEnabled(false);
             cbValidate.setEnabled(false);
             cbVerify.setEnabled(false);
@@ -156,7 +162,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
           return false;
         }
-        wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
+        if(wizardDescriptor!=null)
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
         return true;
     }
     

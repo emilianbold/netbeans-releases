@@ -7,15 +7,10 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * StrutsCatalog.java
- *
- * Created on April 24, 2002, 10:38 PM
- */
 
 package org.netbeans.modules.web.jsf;
 
