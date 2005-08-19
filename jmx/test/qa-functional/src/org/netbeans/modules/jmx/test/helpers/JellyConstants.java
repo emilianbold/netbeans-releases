@@ -262,8 +262,8 @@ public class JellyConstants {
    public static final String JMXMP_URL = "service:jmx:jmxmp://localhost:2004";
    public static final String SNMP_URL = "service:jmx:snmp://kernighan.imag.com:2004";
    public static final String SAMPLE_URL = "service:jmx:<your protocol>:<agent address>";
-   public static final String RMI_URL = "service:jmx:rmi:///jndi/rmi://localhost:1099/jmxrmi";
-   public static final String RMI_URL_K = "service:jmx:rmi:///jndi/rmi://kernighan.imag.com:8080/jmxrmi";
+   public static final String RMI_URL = "service:jmx:rmi://localhost:1099/jndi/rmi://localhost:1099/jmxrmi";
+   public static final String RMI_URL_K = "service:jmx:rmi://kernighan.imag.com:8080/jndi/rmi://kernighan.imag.com:8080/jmxrmi";
    public static final String K_HOST = "kernighan.imag.com";
    
    public static final String PORT_8080 = "8080";
