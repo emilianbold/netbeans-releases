@@ -33,17 +33,16 @@ public class Choose implements ActiveEditorDrop {
 
     public boolean handleTransfer(JTextComponent targetComponent) {
 
-boolean accept = true;        
-//        ChooseCustomizer c = new ChooseCustomizer(this, targetComponent);
-//        boolean accept = c.showDialog();
-//        if (accept) {
+        ChooseCustomizer c = new ChooseCustomizer(this, targetComponent);
+        boolean accept = c.showDialog();
+        if (accept) {
             String body = createBody();
             try {
                 JSPPaletteUtilities.insert(body, targetComponent);
             } catch (BadLocationException ble) {
                 accept = false;
             }
-//        }
+        }
         
         return accept;
     }
@@ -71,6 +70,22 @@ boolean accept = true;
         String cBody = sb.toString();
         
         return cBody;
+    }
+
+    public int getWhens() {
+        return whens;
+    }
+
+    public void setWhens(int whens) {
+        this.whens = whens;
+    }
+
+    public boolean isOtherwise() {
+        return otherwise;
+    }
+
+    public void setOtherwise(boolean otherwise) {
+        this.otherwise = otherwise;
     }
     
 }
