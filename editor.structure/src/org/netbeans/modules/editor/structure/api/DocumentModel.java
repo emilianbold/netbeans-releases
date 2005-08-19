@@ -851,39 +851,39 @@ public final class DocumentModel {
         private void removeDE(DocumentElement de) {
             DocumentElement parent = null;
             //remove the element itself. Do not do so if the element is root element
-            if(de != getRootElement()) {
-                //I need to get the parent before removing from the list!
-                parent = getParent(de);
-                
-                //get children of the element to be removed
-                Iterator/*<DocumentElement>*/ childrenIterator = de.getChildren().iterator();
-                
-                //remove the element itself
-                elements.remove(de);
-                if(debug) System.out.println("[DMT] removed element " + de);
-                
+            if(de == getRootElement()) return ;
+            
+            //I need to get the parent before removing from the list!
+            parent = getParent(de);
+            
+            //get children of the element to be removed
+            Iterator/*<DocumentElement>*/ childrenIterator = de.getChildren().iterator();
+            
+            //remove the element itself
+//                elements.remove(de);
+            if(debug) System.out.println("[DMT] removed element " + de);
+            
                 /* events firing:
                  * If the removed element had a children, we have to fire add event
                  * to the parent of the removed element for each child.
                  */
-                if(parent == null) {
-                    if(debug) System.out.println("[DTM] WARNING: element has no parent (no events are fired to it!!!) " + de);
-                    if(debug) System.out.println("[DTM] Trying to recover by returning root element...");
-                    parent = getRootElement();
-                }
-                
-                //fire events for all affected children
-                while(childrenIterator.hasNext()) {
-                    DocumentElement child = (DocumentElement)childrenIterator.next();
-                    de.childRemoved(child);
-                    parent.childAdded(child);
-                }
-                
-                
+            if(parent == null) {
+                if(debug) System.out.println("[DTM] WARNING: element has no parent (no events are fired to it!!!) " + de);
+                if(debug) System.out.println("[DTM] Trying to recover by returning root element...");
+                parent = getRootElement();
+            }
+            
+            //fire events for all affected children
+            while(childrenIterator.hasNext()) {
+                DocumentElement child = (DocumentElement)childrenIterator.next();
+                de.childRemoved(child);
+                parent.childAdded(child);
             }
             
             //notify the parent element that one of its children has been removed
             if(parent != null) parent.childRemoved(de);
+            
+            elements.remove(de);
             
             fireDocumentModelEvent(de, ELEMENT_REMOVED);
         }
@@ -927,7 +927,7 @@ public final class DocumentModel {
         return de.getStartOffset() == de.getEndOffset();
     }
     
-    //compares elements according to their start offsets
+//compares elements according to their start offsets
     private static final Comparator ELEMENTS_COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
             DocumentElement de1 = (DocumentElement)o1;
@@ -1056,7 +1056,7 @@ public final class DocumentModel {
         }
     }
     
-    //root document element - always present in the model - even in an empty one
+//root document element - always present in the model - even in an empty one
     private static final String DOCUMENT_ROOT_ELEMENT_TYPE = "ROOT_ELEMENT";
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.editor.model.debug");
