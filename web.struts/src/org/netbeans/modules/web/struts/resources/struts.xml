@@ -29,4 +29,8 @@ Microsystems, Inc. All Rights Reserved.
         <resource>jar:nbinst:///modules/ext/struts/jakarta-oro.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/struts/struts.jar!/</resource>
     </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/struts-javadoc.zip!/</resource>
+    </volume>
 </library>
