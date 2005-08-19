@@ -132,19 +132,6 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     }
     
     /**
-     * Returns an explorer node for the specified <code>FileObject</code>.
-     *
-     * @param  fileObject  <code>FileObject</code> to return a node for
-     * @param  dataObject  <code>DataObject</code> representing
-     *                     the <code>FileObject</code>
-     * @return  node representing the specified <code>FileObject</code>
-     */
-    private final Node getNodeFor(FileObject fileObject,
-                                         DataObject dataObject) {
-        return dataObject.getNodeDelegate();
-    }
-    
-    /**
      * Opens an editor using <code>EditorCookie</code>.
      * If non-negative line number is passed, it also places cursor at the given
      * line.
@@ -396,59 +383,15 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
      */
     private final boolean openDataObjectByCookie(DataObject dataObject,
                                        int line) {
+        
+        Class cookieClass;        
         Node.Cookie cookie;
-        Class cookieClass;
-        if ((line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
-                            || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null))
-                || (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
-                || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
+        if( (    cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
+             || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
+             || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {
             return openByCookie(cookie, cookieClass, line);
         }
         return false;
-    }
-    
-    /**
-     * Tries to open the specified file using the default action
-     * of a node representing the file.
-     *
-     * @param  fileObject  <code>FileObject</code> representing the file to open
-     * @param  dataObject  <code>DataObject</code> representing the file
-     */
-    private final void openByNode(FileObject fileObject,
-                                  DataObject dataObject) {
-        Node node = getNodeFor(fileObject, dataObject);
-
-        // PENDING Opening in new explorer window was submitted as bug (#8809).
-        // Here we check if the data object is default data one, 
-        // and try to change it to text one. 
-        // 1) We get default data loader,
-        // 2) Compare if oyr data object is of deafult data object type,
-        // 3) Get its default action
-        // 4) If the default action is not FileSystemAction we assume text module
-        // is avilable and the default action is Convert to text.
-        // 5) Perform the action, find changed data object and open it.
-        boolean opened = false;
-        DataLoader defaultLoader;
-        if ((defaultLoader = getDefaultLoader()) != null
-                && dataObject.getClass().getName().equals(
-                        defaultLoader.getRepresentationClassName())) {
-            // Is default data object.
-            Action defaultAction = node.getPreferredAction();
-            if (defaultAction != null
-                    && !(defaultAction instanceof FileSystemAction)) {
-                // Now we suppose Convert To Text Action is available.
-                defaultAction.actionPerformed(new ActionEvent(node, 0, null)); 
-                fileObject.refresh();
-                try {
-                    DataObject newDataObject = DataObject.find(fileObject);
-                    opened = openDataObjectByCookie(newDataObject, 0);
-                } catch (DataObjectNotFoundException dnfe) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                                                     dnfe);
-                }
-            }
-        }
     }
     
     /**
@@ -484,6 +427,23 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             ErrorManager.getDefault().notify(ex);
             return false;
         }
+
+        Class cookieClass;        
+        Node.Cookie cookie;
+        
+        if ( (line != -1 && ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
+             || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null)) ){
+            return openByCookie(cookie,cookieClass, line);      
+        }
+                            
+        /* try to open the object using the default action */
+        Node dataNode = dataObject.getNodeDelegate();        
+        Action action = dataNode.getPreferredAction();
+        if (action != null && !(action instanceof FileSystemAction)) {            
+            action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
+            clearStatusLine();            
+            return true;            
+        }             
         
         /* Try to grab an editor/open/edit/view cookie and open the object: */
         setStatusLineOpening(fileName, waiter != null);
@@ -495,7 +455,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
         
         if (ZIP_EXT.equalsIgnoreCase(fileObject.getExt()) || JAR_EXT.equalsIgnoreCase(fileObject.getExt())) {
             // select it in explorer:
-            Node node = getNodeFor(fileObject, dataObject);
+            Node node = dataObject.getNodeDelegate();
             if (node != null) {
                 NodeOperation.getDefault().explore(node);
                 return true;
@@ -503,15 +463,8 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
                 return false;
             }
         }
-
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                // This needs to run in EQ generally.
-                openByNode(fileObject, dataObject);
-            }
-        });
-        // XXX if waiter != null, call waiter.done() when the document is closed
-        return true;
+        
+        return false;
     }
     
     public synchronized FileObject findFileObject(File f) {
