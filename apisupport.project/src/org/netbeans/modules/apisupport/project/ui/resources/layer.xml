@@ -108,6 +108,25 @@ Microsystems, Inc. All Rights Reserved.
          <!-- Merge before 3rd party help: -->
 	 <attr name="org-netbeans-modules-apisupport-project-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
       </folder>
+      
+      <folder name="Hidden">
+          <!-- No use for this, since we are registering an instance (below), and it is a singleton: -->
+          <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogProvider.instance_hidden"/>
+          <!-- Otherwise retain original ordering: -->
+          <attr name="org-netbeans-modules-xml-catalog-impl-sun-SunCatalogProvider.instance/org-netbeans-modules-xml-catalog-impl-XCatalogProvider.instance" boolvalue="true"/>
+      </folder>
+      
+    </folder>
+    
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <!-- #62363: need to make sure at least Filesystems DTD is mounted; easiest to mount whole system catalog, why not: -->
+                <file name="org-netbeans-modules-xml-catalog-impl-SystemCatalogReader.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
     </folder>
     
 </filesystem>
