@@ -19,6 +19,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.Action;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
@@ -114,16 +115,33 @@ public class FileEntryNode extends AbstractNode {
     }
 
     /** Gets default action.
+     * @deprecated
      * @return no action if the underlying entry is a template. Otherwise the abstract node's default action is returned, possibly <code>null</code>.
      */
     public SystemAction getDefaultAction () {
         if (entry.isTemplate ()) {
             return null;
         } else {
-            return super.getDefaultAction ();
+            Action a = getPreferredAction();
+            if(a instanceof SystemAction){
+                return (SystemAction) a;
+            } else {
+                return null;
+            }            
         }
     }
-
+ 
+    /** Gets default action.
+     * @return no action if the underlying entry is a template. Otherwise the abstract node's default action is returned, possibly <code>null</code>.
+     */ 
+    public Action getPreferredAction() {
+        if (entry.isTemplate ()) {
+            return null;
+        } else {
+            return super.getPreferredAction();
+        }
+    }
+    
     /** Get a cookie.
      * First of all {@link PresentableFileEntry#getCookie} is
      * called. If it produces non-<code>null</code> result, that is returned.
