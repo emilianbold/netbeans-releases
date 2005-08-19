@@ -258,6 +258,9 @@ public class JellyConstants {
    
    //*********************** Manager wizard ***********************************/
    
+   //Protocol
+   public static final String RMI = "rmi";
+   
    // URL
    public static final String JMXMP_URL = "service:jmx:jmxmp://localhost:2004";
    public static final String SNMP_URL = "service:jmx:snmp://kernighan.imag.com:2004";
@@ -266,6 +269,7 @@ public class JellyConstants {
    public static final String RMI_URL_K = "service:jmx:rmi://kernighan.imag.com:8080/jndi/rmi://kernighan.imag.com:8080/jmxrmi";
    public static final String K_HOST = "kernighan.imag.com";
    public static final String JNDI_SUFFIX = "jndi/rmi://localhost:1099/jmxrmi";
+   public static final String JNDI = "jndi";
    
    public static final String PORT_8080 = "8080";
    public static final String PORT_1099 = "1099";
@@ -304,6 +308,9 @@ public class JellyConstants {
            
    // Popup
    public static final String POPUP_TITLE = "RMI JMX Agent URL";
+   public static final String PROTOCOL_DEF = "RMI JVM Agent";
+   public static final String PROTOCOL_CBX = "protocolComboBox";
    public static final String HOST_TXT = "hostJTextField";
    public static final String PORT_TXT = "portJTextField";
+   public static final String URLSUFFIX_TXT = "urlTextField";
 }
