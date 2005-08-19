@@ -57,6 +57,10 @@ public final class SuiteActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Run", null));
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
         actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction("build-jnlp", "Build JNLP Application", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction("run-jnlp", "Run JNLP Application", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction("debug-jnlp", "Debug JNLP Application", null));
+        actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
@@ -110,6 +114,9 @@ public final class SuiteActions implements ActionProvider {
             ActionProvider.COMMAND_REBUILD,
             ActionProvider.COMMAND_RUN,
             ActionProvider.COMMAND_DEBUG,
+            "build-jnlp", // NOI18N
+            "run-jnlp", // NOI18N
+            "debug-jnlp", // NOI18N
         };
     }
     
@@ -133,6 +140,12 @@ public final class SuiteActions implements ActionProvider {
             targetNames = new String[] {"run"}; // NOI18N
         } else if (command.equals(ActionProvider.COMMAND_DEBUG)) {
             targetNames = new String[] {"debug"}; // NOI18N
+        } else if (command.equals("build-jnlp")) { // NOI18N
+            targetNames = new String[] {"build-jnlp"}; // NOI18N
+        } else if (command.equals("run-jnlp")) { // NOI18N
+            targetNames = new String[] {"run-jnlp"}; // NOI18N
+        } else if (command.equals("debug-jnlp")) { // NOI18N
+            targetNames = new String[] {"debug-jnlp"}; // NOI18N
         } else {
             throw new IllegalArgumentException(command);
         }

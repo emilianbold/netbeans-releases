@@ -125,6 +125,7 @@ public final class SuiteCustomizer implements CustomizerProvider {
     // Programmatic names of categories
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
+    private static final String MODULE_LIST = "ModuleList"; // NOI18N
 
     private void init() {
         ResourceBundle bundle = NbBundle.getBundle(SuiteCustomizer.class);
@@ -133,15 +134,20 @@ public final class SuiteCustomizer implements CustomizerProvider {
                 bundle.getString("LBL_ConfigSources")); // NOI18N
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES,
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
+        ProjectCustomizer.Category moduleList = createCategory(MODULE_LIST,
+                bundle.getString("LBL_ConfigModuleList")); // NOI18N
         
         categories = new ProjectCustomizer.Category[] {
-            sources, libraries
+            sources, libraries, moduleList
         };
         
         panels.put(sources, new SuiteCustomizerSources(suiteProps));
         
         // libraries customizer
         panels.put(libraries, new SuiteCustomizerLibraries(suiteProps));
+
+        // libraries customizer
+        panels.put(moduleList, new SuiteCustomizerModuleList(suiteProps));
         
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {

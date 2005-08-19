@@ -16,8 +16,22 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.apisupport.harness</code-name-base>
-            <module-dependencies/>
+            
+            <module-dependencies>
+                <dependency>
+                    <!-- needed by the extra-compilation-unit -->
+                    <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+            </module-dependencies>
             <public-packages/>
+            <extra-compilation-unit>
+                <package-root>src-jnlp</package-root>
+                <classpath>${module.classpath}</classpath>
+                <built-to>build/jnlp-classes</built-to>
+                <built-to>${cluster}/jnlp/jnlplauncher.jar</built-to>
+            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

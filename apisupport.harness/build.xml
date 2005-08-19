@@ -27,6 +27,27 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="common.xml,nbantext"/>
+    <target name="netbeans-extra" depends="common.xml,nbantext,jar-jnlp-launcher"/>
+   
+ 
+    <target name="compile-jnlp-launcher" depends="init,compile">
+        <mkdir dir="build/jnlp-launcher-classes"/>
+        <javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
+            <classpath>
+                <path path="${module.classpath}"/>
+            </classpath>
+        </javac>
+        <copy todir="build/jnlp-launcher-classes">
+            <fileset dir="jnlp-src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
+   
+    <target name="jar-jnlp-launcher" depends="compile-jnlp-launcher">
+        <mkdir dir="${cluster}/jnlp/"/>
+        <jar jarfile="${cluster}/jnlp/jnlp-launcher.jar" compress="false" manifest="jnlp-manifest.mf" >
+            <fileset dir="build/jnlp-launcher-classes"/>
+        </jar>
+    </target>
+  
 
 </project>

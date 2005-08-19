@@ -894,7 +894,7 @@ public class ModuleDependenciesTest extends NbTestCase {
     }
 
     
-    private static String readFile (File f) throws IOException {
+    static String readFile (File f) throws IOException {
         java.io.BufferedReader r = new java.io.BufferedReader (new FileReader (f));
         StringBuffer sb = new StringBuffer ();
         String prev = "";
@@ -911,7 +911,7 @@ public class ModuleDependenciesTest extends NbTestCase {
         }
     }
     
-    private static Manifest createManifest () {
+    static Manifest createManifest () {
         Manifest m = new Manifest ();
         m.getMainAttributes ().putValue (java.util.jar.Attributes.Name.MANIFEST_VERSION.toString (), "1.0");
         return m;

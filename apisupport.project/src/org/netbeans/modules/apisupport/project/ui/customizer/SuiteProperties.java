@@ -14,9 +14,11 @@
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -44,6 +46,13 @@ final class SuiteProperties extends ModuleProperties {
     // models
     private SuiteSubModulesListModel moduleListModel;
     
+    /** disabled modules */
+    private String[] disabledModules;
+    /** disabled clusters */
+    private String[] disabledClusters;
+    /** boolean variable to remember whether there were some changes */
+    private boolean changedDisabledModules, changedDisabledClusters;
+    
     /**
      * Creates a new instance of SuiteProperties
      */
@@ -55,6 +64,8 @@ final class SuiteProperties extends ModuleProperties {
         this.subModules = subModules;
         platform = NbPlatform.getPlatformByID(
                 evaluator.getProperty("nbplatform.active")); // NOI18N
+        this.disabledModules = getArrayProperty(evaluator, "disabled.modules"); // NOI18N
+        this.disabledClusters = getArrayProperty(evaluator, "disabled.clusters"); // NOI18N
     }
 
     Project getProject() {
@@ -73,6 +84,41 @@ final class SuiteProperties extends ModuleProperties {
         this.platform = newPlaf;
     }
     
+    String[] getDisabledModules() {
+        return disabledModules;
+    }
+    String[] getDisabledClusters() {
+        return disabledClusters;
+    }
+    
+    void setDisabledClusters(String[] value) {
+        if (Arrays.asList(disabledClusters).equals(Arrays.asList(value))) {
+            return;
+        }
+        this.disabledClusters = value;
+        this.changedDisabledClusters = true;
+    }
+    void setDisabledModules(String[] value) {
+        if (Arrays.asList(disabledModules).equals(Arrays.asList(value))) {
+            return;
+        }
+        this.disabledModules = value;
+        this.changedDisabledModules = true;
+    }
+    
+    private String[] getArrayProperty(PropertyEvaluator evaluator, String p) {
+        String s = evaluator.getProperty(p);
+        if (s == null) {
+            return new String[0];
+        }
+        StringTokenizer tok = new StringTokenizer(s, ",");
+        String[] arr = new String[tok.countTokens()];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = tok.nextToken();
+        }
+        return arr;
+    }
+    
     /**
      * Stores cached properties. This is called when the user press <em>OK</em>
      * button in the properties customizer. If <em>Cancel</em> button is
@@ -81,10 +127,34 @@ final class SuiteProperties extends ModuleProperties {
     void storeProperties() throws IOException {
         ModuleProperties.storePlatform(getHelper(), platform);
         
+        boolean changed = false;
         // store submodules if they've changed
         SuiteSubModulesListModel model = getModulesListModel();
         if (model.isChanged()) {
             SuiteUtils.replaceSubModules(this);
+            changed = true;
+        }
+
+        if (changedDisabledModules) {
+            String[] separated = (String[])disabledModules.clone();
+            for (int i = 0; i < disabledModules.length - 1; i++) {
+                separated[i] = disabledModules[i] + ",";
+            }
+            getProjectProperties().setProperty("disabled.modules", separated);
+            changed = true;
+        }
+        
+        if (changedDisabledClusters) {
+            String[] separated = (String[])disabledClusters.clone();
+            for (int i = 0; i < disabledClusters.length - 1; i++) {
+                separated[i] = disabledClusters[i] + ",";
+            }
+            getProjectProperties().setProperty("disabled.clusters", separated);
+            
+        }
+
+        if (changed) {
+            // this saves the private&project properties
             super.storeProperties();
         }
     }

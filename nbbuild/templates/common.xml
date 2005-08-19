@@ -194,6 +194,57 @@ Microsystems, Inc. All Rights Reserved.
         </genlist>
     </target>
     
+    
+    <property name="jnlp.signjar.alias" value="jnlp" />
+    <property name="jnlp.signjar.keystore" location="${jnlp.dest.dir}/default.keystore" />
+    <property name="jnlp.signjar.password" value="netbeans" />
+    <property name="jnlp.codebase" value="file:${jnlp.dest.dir}" />
+    
+    <target name="jnlp" depends="init,netbeans,jnlp-master" description="Builds JNLP descriptor and signs JAR files" >
+        <fail unless="jnlp.dest.dir" >
+            You have to provide value to jnlp.dest.dir property!
+        </fail>
+        <fail unless="jnlp.signjar.keystore" >
+            You have to provide value to jnlp.signjar.keystore property!
+        </fail>
+        <fail unless="jnlp.signjar.alias" >
+            You have to provide value to jnlp.signjar.alias property!
+        </fail>
+        <fail unless="jnlp.signjar.password" >
+            You have to provide value to jnlp.signjar.password property!
+        </fail>
+        
+        <mkdir dir="${jnlp.dest.dir}" />
+        
+        <property name="jnlp.codebase" value="$$$$codebase" /> 
+        
+        <makejnlp 
+            dir="${jnlp.dest.dir}" 
+            alias="${jnlp.signjar.alias}"
+            storepass="${jnlp.signjar.password}"
+            keystore="${jnlp.signjar.keystore}"
+            codebase="${jnlp.codebase}"
+        >
+            <modules dir="${cluster}" >
+                <include name="${module.jar}" />
+            </modules>
+        </makejnlp>
+    </target>
+    
+    <target name="jnlp-master" depends="init,netbeans" if="jnlp.master.dir" >
+        <property name="jnlp.master.codebase" value="" />
+        <makemasterjnlp 
+            dir="${jnlp.master.dir}"
+            codebase="${jnlp.master.codebase}" 
+        >
+            <modules dir="${cluster}" >
+                <include name="${module.jar}" />
+            </modules>
+        </makemasterjnlp>
+    </target>
+    
+    
+    
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
         <makenbm file="build/${nbm}"

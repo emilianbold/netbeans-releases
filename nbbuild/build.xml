@@ -226,6 +226,30 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="nbm"/><!-- dummy target -->
   
+  <property name="jnlp.signjar.keystore" location="build/default.keystore" />
+  <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}" />
+  <target name="jnlp-generate-keystore" depends="init" unless="jnlp.signjar.keystore.exists" >
+    <property name="jnlp.signjar.alias" value="jnlp" />
+    <property name="jnlp.signjar.password" value="netbeans" />
+    <property name="jnlp.signjar.vendor" value="CN=NetBeans, OU=NetBeans, O=netbeans.org, C=US" />
+    
+    <mkdir dir="${jnlp.signjar.keystore}/../" />
+    <echo message="Going to create default keystore in ${jnlp.signjar.keystore}" />
+    <genkey 
+        alias="${jnlp.signjar.alias}"
+        keystore="${jnlp.signjar.keystore}"
+        storepass="${jnlp.signjar.password}"
+        dname="${jnlp.signjar.vendor}"
+    />
+  </target>
+
+  <target name="build-jnlp" depends="init,jnlp-generate-keystore">
+      <fail message="Property jnlp.codebase must be set to final location of your JNLP files!" unless="jnlp.codebase" />
+      <property name="jnlp.dest.dir" location="build/jnlp" />
+      <mkdir dir="${jnlp.dest.dir}" />
+      <for-each startdir=".." target="jnlp" locations="${nb.cluster.platform}"/>
+  </target>
+  
   <target name="set-config-to-javadoc" >
       <property name="moduleconfig" value="javadoc" />
   </target>

@@ -21,6 +21,12 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm"
          classname="org.netbeans.nbbuild.MakeNBM"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="makejnlp"
+         classname="org.netbeans.nbbuild.MakeJNLP"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <taskdef name="makemasterjnlp"
+         classname="org.netbeans.nbbuild.MakeMasterJNLP"
+         classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="genlist"
          classname="org.netbeans.nbbuild.MakeListOfNBM"
          classpath="${nb_all}/nbbuild/nbantext.jar"/>

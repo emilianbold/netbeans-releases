@@ -41,13 +41,25 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}"/>
         <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
     </target>
-    
-    <target name="run" depends="build">
+
+    <target name="run" depends="build" >
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
-    
-    <target name="debug" depends="build">
+        
+    <target name="debug" depends="build" >
         <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>
-
+    
+    <target name="build-jnlp" depends="build" description="Packages this suite as JNLP application" >
+        <ant antfile="${harness.dir}/jnlp.xml" target="build"/>
+    </target>
+    
+    <target name="run-jnlp" depends="build" description="Executes this suite as JNLP application" >
+        <ant antfile="${harness.dir}/jnlp.xml" target="run"/>
+    </target>
+    
+    <target name="debug-jnlp" depends="build" description="Executes this suite as JNLP application under debugger" >
+        <ant antfile="${harness.dir}/jnlp.xml" target="debug"/>
+    </target>
+    
 </project>
