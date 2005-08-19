@@ -43,6 +43,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.awt.Mnemonics;
@@ -863,10 +864,21 @@ public class JavaKit extends NbEditorKit {
                 int caretPosition = -1;
                 TryWrapper wrapper;
                 TryStatement t;
+                int selectionStart = target.getSelectionStart();
+                int selectionEnd = target.getSelectionEnd();
+                if (selectionStart == selectionEnd) {
+                    //no selection - select current row
+                    try {
+                        selectionStart = Utilities.getRowFirstNonWhite(doc, selectionStart);
+                        selectionEnd = Utilities.getRowLastNonWhite(doc,selectionEnd)+1;
+                    } catch (BadLocationException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
                 JavaModel.getJavaRepository().beginTrans(true);
                 try {
                     //create a wrapper and wrap selected text
-                    wrapper = new TryWrapper(NbEditorUtilities.getDataObject(doc).getPrimaryFile(), target.getSelectionStart(), target.getSelectionEnd());
+                    wrapper = new TryWrapper(NbEditorUtilities.getDataObject(doc).getPrimaryFile(), selectionStart, selectionEnd);
                     t = wrapper.wrap(); 
                 } catch (JmiException e) {
                     //if error - write it on status line
