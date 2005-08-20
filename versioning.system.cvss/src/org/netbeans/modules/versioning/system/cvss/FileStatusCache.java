@@ -277,26 +277,18 @@ public class FileStatusCache {
         return cacheProvider.getAllModifiedValues();
     }
 
+    /**
+     * Refreshes given directory and all subdirectories.
+     *
+     * @param dir directory to refresh
+     */
     void directoryContentChanged(File dir) {
-        Map originalFiles = null;
-        Map files;
-        originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
-        files = scanFolder(dir);
-        turbo.writeEntry(dir, FILE_STATUS_MAP, files);
+        Map originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (originalFiles != null) {
             for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
-                FileInformation oldInfo = (FileInformation) originalFiles.get(file);
-                FileInformation info = (FileInformation) files.get(file);
-                if (!oldInfo.equals(info)) {
-                    if (info == null || (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) == 0) fireFileStatusChanged(file);
-                }
+                refresh(file, REPOSITORY_STATUS_UNKNOWN);
             }
-        }
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) fireFileStatusChanged(file);
         }
     }
     
