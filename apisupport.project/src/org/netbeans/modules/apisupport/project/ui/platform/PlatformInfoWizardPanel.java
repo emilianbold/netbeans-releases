@@ -46,6 +46,7 @@ final class PlatformInfoWizardPanel extends BasicWizardPanel {
         if (visualPanel == null) {
             visualPanel = new PlatformInfoVisualPanel(getSettings());
             visualPanel.addPropertyChangeListener(this);
+            visualPanel.setName(NbPlatformCustomizer.INFO_STEP);
         }
         return visualPanel;
     }

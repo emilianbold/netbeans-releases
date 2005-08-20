@@ -43,6 +43,7 @@ final class PlatformChooserWizardPanel extends BasicWizardPanel implements Wizar
         if (visualPanel == null) {
             visualPanel = new PlatformChooserVisualPanel(getSettings());
             visualPanel.addPropertyChangeListener(this);
+            visualPanel.setName(NbPlatformCustomizer.CHOOSER_STEP);
         }
         return visualPanel;
     }
@@ -50,7 +51,7 @@ final class PlatformChooserWizardPanel extends BasicWizardPanel implements Wizar
     public HelpCtx getHelp() {
         return new HelpCtx(PlatformChooserWizardPanel.class);
     }
-
+    
     public boolean isFinishPanel() {
         return NbPlatform.isLabelValid((String) getSettings().getProperty(NbPlatformCustomizer.PLAF_LABEL_PROPERTY));
     }

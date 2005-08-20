@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui.platform;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.text.MessageFormat;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -74,7 +75,6 @@ public final class NbPlatformCustomizer extends JPanel {
         initComponents();
         if (platformsList.getModel().getSize() > 0) {
             platformsList.setSelectedIndex(0);
-            NbPlatform plaf = (NbPlatform) platformsList.getSelectedValue();
             sourcesTab = new NbPlatformCustomizerSources();
             modulesTab = new NbPlatformCustomizerModules();
             javadocTab = new NbPlatformCustomizerJavadoc();
@@ -262,29 +262,20 @@ public final class NbPlatformCustomizer extends JPanel {
         }
     }//GEN-LAST:event_removePlatform
     
-    // XXX I hope there is a better way how to control Wizard Panel's headers
-    // then this terrible hack (when you want to use array of panels - not
-    // iterator)
-    private static class PointlessIterator extends WizardDescriptor.ArrayIterator {
-        PointlessIterator(WizardDescriptor.Panel[] panels) { super(panels); }
-        public String name() { return this.current().getComponent().getName(); }
-    }
-    
     private void addPlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPlatform
         PlatformChooserWizardPanel chooser = new PlatformChooserWizardPanel(null);
         PlatformInfoWizardPanel info = new PlatformInfoWizardPanel(null);
-        final WizardDescriptor wd = new WizardDescriptor(
-                new PointlessIterator(new WizardDescriptor.Panel[] { chooser, info }));
+        WizardDescriptor wd = new WizardDescriptor(new WizardDescriptor.Panel[] { chooser, info });
         initPanel(chooser, wd, 0);
         initPanel(info, wd, 1);
-        wd.setTitleFormat(new java.text.MessageFormat("{1}")); // NOI18N
+        wd.setTitleFormat(new MessageFormat("{0}")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
         dialog.setTitle(getMessage("CTL_AddNetbeansPlatformTitle")); // NOI18N
         dialog.setVisible(true);
         dialog.toFront();
         if (wd.getValue() == WizardDescriptor.FINISH_OPTION) {
-            String plafDir = (String) wd.getProperty(PLAF_DIR_PROPERTY); // NOI18N
-            String plafLabel = (String) wd.getProperty(PLAF_LABEL_PROPERTY); // NOI18N
+            String plafDir = (String) wd.getProperty(PLAF_DIR_PROPERTY);
+            String plafLabel = (String) wd.getProperty(PLAF_LABEL_PROPERTY);
             String id = plafLabel.replace(' ', '_');
             NbPlatform plaf = getPlafListModel().addPlatform(id, plafDir, plafLabel);
             if (plaf != null) {
