@@ -259,14 +259,14 @@ public class RecaptureSchema {
             return null;
         }
         if (debug) {
-            System.out.println("[dbschema-ccp] found dbconn='" + dbconn.getConnectionUrl() + "'");
+            System.out.println("[dbschema-ccp] found dbconn='" + dbconn.getDatabaseURL() + "'");
         }
         data.setDatabaseConnection(dbconn);
         ConnectionHandler ch = new ConnectionHandler(data);
         if (ch.ensureConnection()) {
             dbconn = data.getDatabaseConnection();
             if (debug) {
-                System.out.println("[dbschema-ccp] connection ensured ='" + dbconn.getConnectionUrl() + "'"); 
+                System.out.println("[dbschema-ccp] connection ensured ='" + dbconn.getDatabaseURL() + "'"); 
             }
             ConnectionProvider connectionProvider = 
                 new ConnectionProvider(dbconn.getJDBCConnection(), dbconn.getDriverClass());
@@ -284,7 +284,7 @@ public class RecaptureSchema {
     private DatabaseConnection findDatabaseConnection(String url) {
         DatabaseConnection dbconns[] = ConnectionManager.getDefault().getConnections();
         for (int i = 0; i < dbconns.length; i++) {
-            if (url.equals(dbconns[i].getConnectionUrl())) {
+            if (url.equals(dbconns[i].getDatabaseURL())) {
                 return dbconns[i];
             }
         }

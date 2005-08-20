@@ -22,7 +22,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
  * represents a connection to a database in the Database Explorer.
  * 
  * <p>This class provides access to the properties of a database connection,
- * such as the connection name, URL, user or default schema. New connections
+ * such as the connection name, database URL, user or default schema. New connections
  * can be created using the {@link #create} method (these connection can be
  * added to the Database Explorer using the 
  * {@link ConnectionManager#addConnection} method.</p>
@@ -114,11 +114,11 @@ public final class DatabaseConnection {
     }
 
     /**
-     * Returns this connection's URL.
+     * Returns this connection's database URL.
      *
-     * @return the connection's URL
+     * @return the connection's database URL
      */
-    public String getConnectionUrl() {
+    public String getDatabaseURL() {
         return delegate.getDatabase();
     }
     

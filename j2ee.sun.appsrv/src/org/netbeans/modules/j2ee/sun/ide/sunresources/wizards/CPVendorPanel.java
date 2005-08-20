@@ -436,7 +436,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
             }
             this.helper.getData().setString(__IsCPExisting, "true"); //NOI18N
             DatabaseConnection dbconn = (DatabaseConnection)dbconns.get(existingConnComboBox.getSelectedIndex() - 1);
-            String url = dbconn.getConnectionUrl();
+            String url = dbconn.getDatabaseURL();
             String user = dbconn.getUser();
             String password = dbconn.getPassword();
             String tmpStr = url;
@@ -449,7 +449,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements WizardConstant
             data.setString(__DatabaseVendor, vendorName);
             
             if (vendorName.equals("pointbase")) {  //NOI18N
-                data.addProperty(__DatabaseName, dbconn.getConnectionUrl());
+                data.addProperty(__DatabaseName, dbconn.getDatabaseURL());
             }
             else
                 data.addProperty(__Url, url);

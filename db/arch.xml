@@ -187,7 +187,7 @@ Microsystems, Inc. All Rights Reserved.
    <p>
     Sometimes a client needs to retrieve the connection properties, such as the driver class.
     An example could be a module for a J2EE server creating a connection pool. The properties can
-    be retrieved using the <code>getDriverClass()</code>, <code>getConnectionUrl()</code>, 
+    be retrieved using the <code>getDriverClass()</code>, <code>getDatabaseURL()</code>, 
     <code>getSchema()</code>, <code>getUser()</code> and <code>getPassword()</code>
     methods of the 
     <a href="@TOP@org/netbeans/api/db/explorer/DatabaseConnection.html">DatabaseConnection</a>
