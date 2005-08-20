@@ -2,7 +2,6 @@
 <RuntimeJars>
 
 <Jar file="modules/ext/jaxrpc16/activation.jar"/>
-<Jar file="modules/ext/jaxrpc16/dom.jar"/>
 <Jar file="modules/ext/jaxrpc16/FastInfoset.jar"/>
 <Jar file="modules/ext/jaxrpc16/jax-qname.jar"/>
 <Jar file="modules/ext/jaxrpc16/jaxp-api.jar"/>
@@ -14,8 +13,5 @@
 <Jar file="modules/ext/jaxrpc16/relaxngDatatype.jar"/>
 <Jar file="modules/ext/jaxrpc16/saaj-api.jar"/>
 <Jar file="modules/ext/jaxrpc16/saaj-impl.jar"/>
-<Jar file="modules/ext/jaxrpc16/sax.jar"/>
-<Jar file="modules/ext/jaxrpc16/xalan.jar"/>
-<Jar file="modules/ext/jaxrpc16/xercesImpl.jar"/>
 
 </RuntimeJars>

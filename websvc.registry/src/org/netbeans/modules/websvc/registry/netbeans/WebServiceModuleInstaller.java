@@ -90,7 +90,6 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
  
     private static String JAXRPC_16 [] = {
         "modules/ext/jaxrpc16/activation.jar",
-        "modules/ext/jaxrpc16/dom.jar",
         "modules/ext/jaxrpc16/jax-qname.jar",
         "modules/ext/jaxrpc16/jaxp-api.jar",
         "modules/ext/jaxrpc16/FastInfoset.jar",
@@ -102,9 +101,6 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         "modules/ext/jaxrpc16/relaxngDatatype.jar",
         "modules/ext/jaxrpc16/saaj-api.jar",
         "modules/ext/jaxrpc16/saaj-impl.jar",
-        "modules/ext/jaxrpc16/sax.jar",
-        "modules/ext/jaxrpc16/xalan.jar",
-        "modules/ext/jaxrpc16/xercesImpl.jar",
         "modules/ext/jaxrpc16/xsdlib.jar"
     };
         
