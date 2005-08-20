@@ -17,8 +17,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +33,14 @@ import java.io.IOException;
 public final class DeleteLocalAction extends AbstractSystemAction {
 
     public void actionPerformed(ActionEvent ev) {
-        File[] files = getFilesToProcess();
+        File [] files = getContext().getFiles();
+        int res = JOptionPane.showConfirmDialog(
+                null,
+                NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Prompt"),
+                NbBundle.getMessage(DeleteLocalAction.class, "CTL_DeleteLocal_Title"),
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (res != JOptionPane.YES_OPTION) return;
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileObject fo = FileUtil.toFileObject(file);
