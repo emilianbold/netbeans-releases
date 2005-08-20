@@ -48,8 +48,8 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <attr name="JUnit/NetBeansModuleDevelopment" boolvalue="true"/>
-        <folder name="NetBeansModuleDevelopment">        
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.Bundle"/>            
+        <folder name="NetBeansModuleDevelopment">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
             <!-- New Action wizard -->
             <!--
             <file name="newAction">
@@ -78,15 +78,15 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/objectTypes.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newLoader.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>            
+            </file>
             <file name="newProject">
                 <attr name="template" boolvalue="true"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.NewProjectIterator.createIterator"/>                
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.NewProjectIterator.createIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>                            
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
-            </file>            
+            </file>
         </folder>
     </folder>
 
@@ -94,7 +94,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Tools">
             <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance"/>
-            <attr name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
+            <attr name="org-netbeans-modules-apisupport-project-ui-platform-NbPlatformCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>
         </folder>
     </folder>
 
