@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?> <!-- -*- sgml-indent-step: 2 -*- -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="websvc/jaxrpc16" default="netbeans" basedir=".">
+
+    <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="netbeans-extra" depends="release"/>
+
+    <target name="release" depends="init">
+        <ant dir="../external" target="unscramble"/>
+     
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
+        <copy file="../external/jaxrpc16/activation.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/activation.jar"/>
+<!--        <copy file="../external/jaxrpc16/dom.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/dom.jar"/>-->
+        <copy file="../external/jaxrpc16/FastInfoset.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/FastInfoset.jar"/>
+        <copy file="../external/jaxrpc16/jax-qname.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jax-qname.jar"/>
+        <copy file="../external/jaxrpc16/jaxp-api.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxp-api.jar"/>
+        <copy file="../external/jaxrpc16/jaxrpc-api.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-api.jar"/>
+        <copy file="../external/jaxrpc16/jaxrpc-impl.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-impl.jar"/>
+        <copy file="../external/jaxrpc16/jaxrpc-spi.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-spi.jar"/>
+        <copy file="../external/jaxrpc16/jsr173_api.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jsr173_api.jar"/>
+        <copy file="../external/jaxrpc16/mail.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/mail.jar"/>
+        <copy file="../external/jaxrpc16/relaxngDatatype.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/relaxngDatatype.jar"/>
+        <copy file="../external/jaxrpc16/saaj-api.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/saaj-api.jar"/>
+        <copy file="../external/jaxrpc16/saaj-impl.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/saaj-impl.jar"/>
+<!--        <copy file="../external/jaxrpc16/sax.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/sax.jar"/>
+        <copy file="../external/jaxrpc16/xalan.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xalan.jar"/>
+        <copy file="../external/jaxrpc16/xercesImpl.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xercesImpl.jar"/>-->
+        <copy file="../external/jaxrpc16/xsdlib.jar"
+              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xsdlib.jar"/>              
+              
+   <!--     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <copy file="../external/jaxws20-javadoc.zip"
+              todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>
+        <copy file="../external/jsr181-javadoc.zip"
+              todir="${netbeans.dest.dir}/${cluster.dir}/docs"/>-->
+    </target>
+
+<!--    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
+                 productdir="${netbeans.dest.dir}/${cluster.dir}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
+            <license name="jstl11-license.txt">
+                <text>For the integration module:</text>
+                <file location="${license.file}"/>
+                <text>For the JSTL 1.1 library:</text>
+                <file location="${nb_all}/nbbuild/external/apache-license-2.0.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>-->
+
+</project>
