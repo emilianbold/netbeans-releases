@@ -29,11 +29,11 @@ import javax.swing.Action;
  * The top level node representing Web Services in the Server Navigator
  * @author Ludovic
  */
-public class WebServicesRootNodeNetBeansSide extends AbstractNode implements WebServicesRootNodeInterface, java.beans.PropertyChangeListener {
+public class WebServicesRootNodeNetBeansSide extends AbstractNode implements WebServicesRootNodeInterface/*, java.beans.PropertyChangeListener*/ {
     private static  WebServicesRootNodeInterface realNode;
     public WebServicesRootNodeNetBeansSide() {
         super(createChildrenNodes());
-        WebServiceModuleInstaller.findObject(WebServiceModuleInstaller.class).addPropertyChangeListener(this);
+//        WebServiceModuleInstaller.findObject(WebServiceModuleInstaller.class).addPropertyChangeListener(this);
         setName("default-");
         
         if(realNode != null) {
@@ -104,18 +104,15 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
         
     }
 
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        //System.out.println("propertyChange WebServicesRootNodeNetBeansSide");
-        setChildren(createChildrenNodes());// test before doing that
-        if(realNode != null) {
-            setDisplayName(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services"));
-            setShortDescription(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services"));
-        } else {
-            setDisplayName(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services_Disabled"));
-            setShortDescription(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services_Disabled_Desc"));
-        }
-    
-   
-
-    }
+//    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+//        //System.out.println("propertyChange WebServicesRootNodeNetBeansSide");
+//        setChildren(createChildrenNodes());// test before doing that
+//        if(realNode != null) {
+//            setDisplayName(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services"));
+//            setShortDescription(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services"));
+//        } else {
+//            setDisplayName(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services_Disabled"));
+//            setShortDescription(NbBundle.getMessage(WebServicesRootNodeNetBeansSide.class, "Web_Services_Disabled_Desc"));
+//        }
+//    }
 }

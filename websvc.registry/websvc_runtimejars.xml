@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RuntimeJars>
-<Jar file="{appserv.home}/lib/j2ee.jar"/>
 
-<Jar file="{appserv.home}/lib/endorsed/xercesImpl.jar"/>
-<Jar file="{appserv.home}/lib/endorsed/dom.jar"/>
-<Jar file="{appserv.home}/lib/endorsed/xalan.jar"/>
-<!-- J2EE.JAR <Jar file="{appserv.home}/lib/jax-qname.jar"/> -->
-<Jar file="{appserv.home}/lib/mail.jar"/>
-<Jar file="{appserv.home}/lib/activation.jar"/>
-<Jar file="{appserv.home}/lib/xsdlib.jar"/>
-<Jar file="{appserv.home}/lib/relaxngDatatype.jar"/>
-<Jar file="{appserv.home}/lib/commons-logging.jar"/>
-<!-- JAXR-IMPL <Jar file="{appserv.home}/lib/namespace.jar"/> -->
-<Jar file="{appserv.home}/lib/jaxr-impl.jar"/>
-<!-- J2EE.JAR <Jar file="{appserv.home}/lib/jaxrpc-api.jar"/> -->
-<Jar file="{appserv.home}/lib/jaxrpc-impl.jar"/>
-<!-- JAXRPC-IMPL.JAR <Jar file="{appserv.home}/lib/jaxrpc-spi.jar"/> -->
-<!-- J2EE.JAR <Jar file="{appserv.home}/lib/saaj-api.jar"/> -->
-<Jar file="{appserv.home}/lib/saaj-impl.jar"/>
+<Jar file="modules/ext/jaxrpc16/activation.jar"/>
+<Jar file="modules/ext/jaxrpc16/dom.jar"/>
+<Jar file="modules/ext/jaxrpc16/FastInfoset.jar"/>
+<Jar file="modules/ext/jaxrpc16/jax-qname.jar"/>
+<Jar file="modules/ext/jaxrpc16/jaxp-api.jar"/>
+<Jar file="modules/ext/jaxrpc16/jaxrpc-api.jar"/>
+<Jar file="modules/ext/jaxrpc16/jaxrpc-impl.jar"/>
+<Jar file="modules/ext/jaxrpc16/jaxrpc-spi.jar"/>
+<Jar file="modules/ext/jaxrpc16/jsr173_api.jar"/>
+<Jar file="modules/ext/jaxrpc16/mail.jar"/>
+<Jar file="modules/ext/jaxrpc16/relaxngDatatype.jar"/>
+<Jar file="modules/ext/jaxrpc16/saaj-api.jar"/>
+<Jar file="modules/ext/jaxrpc16/saaj-impl.jar"/>
+<Jar file="modules/ext/jaxrpc16/sax.jar"/>
+<Jar file="modules/ext/jaxrpc16/xalan.jar"/>
+<Jar file="modules/ext/jaxrpc16/xercesImpl.jar"/>
 
 </RuntimeJars>

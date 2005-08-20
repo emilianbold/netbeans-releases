@@ -198,8 +198,12 @@ public class UpdateHelper {
      */
     public synchronized boolean isCurrent () {
         if (this.isCurrent == null) {
-            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) == null ? //NOI18N
-                Boolean.TRUE : Boolean.FALSE;
+            if ((this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true) != null) || 
+                (this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true) != null)) {
+                this.isCurrent = Boolean.FALSE;
+            } else {
+                this.isCurrent = Boolean.TRUE;
+            }
         }
         return isCurrent.booleanValue();
     }
@@ -229,6 +233,7 @@ public class UpdateHelper {
     private void saveUpdate () throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
         this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true); //NOI18N
+        this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true); //NOI18N
         ProjectManager.getDefault().saveProject (this.project);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;
@@ -253,6 +258,14 @@ public class UpdateHelper {
                 testRoots.appendChild (root);
                 newRoot.appendChild (testRoots);
                 cachedElement = newRoot;
+            } else {
+                oldRoot = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true);    //NOI18N
+                if (oldRoot != null) {
+                    Document doc = oldRoot.getOwnerDocument();
+                    Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+                    copyDocument (doc, oldRoot, newRoot);
+                    cachedElement = newRoot;
+                }
             }
         }
         return cachedElement;

@@ -645,10 +645,10 @@ public class Util {
         
         Document document = null;
         try {
-			File runtimeJarsFile = InstalledFileLocator.getDefault().locate(
-				"config" + File.separator + "WebServices" + File.separator +
-				"websvc_runtimejars.xml", null, false);
-			document = builder.parse(runtimeJarsFile);
+            File runtimeJarsFile = InstalledFileLocator.getDefault().locate(
+                    "config" + File.separator + "WebServices" + File.separator +
+                    "websvc_runtimejars.xml", null, false);
+            document = builder.parse(runtimeJarsFile);
         } catch(SAXException se) {
             ErrorManager.getDefault().notify(se);
             ErrorManager.getDefault().log("Util.getRunTimeJarFiles: SAXException=" + se);
@@ -661,23 +661,19 @@ public class Util {
         
         NodeList list = document.getElementsByTagName("Jar");
         
-                String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
-                J2eePlatform platform = null;
-                for (int i = 0; i < serverInstanceIDs.length; i++) {
-                    J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
-                    if (p != null && p.isToolSupported ("wscompile")) {
-                        platform = p;
-                        break;
-                    }
-                }
-                File appserverRoot = platform == null ? null : platform.getPlatformRoots () [0];
-		String asRootPath = (appserverRoot != null) ? appserverRoot.getAbsolutePath() : "";
-                asRootPath = asRootPath.replace('\\', '/');
-
-		// !PW FIXME this should use InstalledFileLocator instead.
-//		String netbeansHome =  System.getProperty("netbeans.home");
-//		netbeansHome = netbeansHome.replace('\\', '/');
-		
+        String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
+        J2eePlatform platform = null;
+        for (int i = 0; i < serverInstanceIDs.length; i++) {
+            J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
+            if (p != null && p.isToolSupported ("wscompile")) {
+                platform = p;
+                break;
+            }
+        }
+        File appserverRoot = platform == null ? null : platform.getPlatformRoots () [0];
+        String asRootPath = (appserverRoot != null) ? appserverRoot.getAbsolutePath() : "";
+        asRootPath = asRootPath.replace('\\', '/');
+            
         Node currentNode = null;
         for (int ii=0; ii < list.getLength(); ii++) {
             currentNode = list.item(ii);
@@ -689,14 +685,19 @@ public class Util {
             String jarString = "";
             try {
                 jarString = fileNode.getNodeValue();
-            } catch(DOMException de) {
+            } catch (DOMException de) {
                 ErrorManager.getDefault().notify(de);
                 ErrorManager.getDefault().log("Util.getRunTimeJarFiles: DOMException=" + de);
                 throw new WebServiceException(NbBundle.getMessage(Util.class, "ERROR_READING_RUNTIMEJARS"),de);
             }
-			
-            jarString = jarString.replaceAll("\\{appserv\\.home\\}", asRootPath);
-//            jarString = jarString.replaceAll("\\{netbeans\\.home\\}", netbeansHome);
+            if (jarString.indexOf("\\{appserv\\.home\\}") > -1) {
+                jarString = jarString.replaceAll("\\{appserv\\.home\\}", asRootPath);
+            } else {
+                File f = InstalledFileLocator.getDefault().locate(jarString, null, false);
+                if (f != null) {
+                    jarString = f.getPath();
+                } 
+            }
             returnJarFileNames.add(jarString);
         }
         

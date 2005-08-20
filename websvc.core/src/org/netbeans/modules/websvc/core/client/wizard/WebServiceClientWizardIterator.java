@@ -16,6 +16,12 @@ package org.netbeans.modules.websvc.core.client.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Collections;
 import java.util.Set;
@@ -23,10 +29,23 @@ import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.ProgressMonitor;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
         
@@ -36,6 +55,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileAlreadyLockedException;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
@@ -108,6 +129,83 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         panels = null;
     }
 
+    /**
+     * Returns Java source groups for all source packages in given project.<br>
+     * Doesn't include test packages.
+     *
+     * @param project Project to search
+     * @return Array of SourceGroup. It is empty if any probelm occurs.
+     */
+    private static SourceGroup[] getJavaSourceGroups(Project project) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
+                                    JavaProjectConstants.SOURCES_TYPE_JAVA);
+        Set testGroups = getTestSourceGroups(project, sourceGroups);
+        List result = new ArrayList();
+        for (int i = 0; i < sourceGroups.length; i++) {
+            if (!testGroups.contains(sourceGroups[i])) {
+                result.add(sourceGroups[i]);
+            }
+        }
+        return (SourceGroup[]) result.toArray(new SourceGroup[result.size()]);
+    }
+    
+    private static Set/*<SourceGroup>*/ getTestSourceGroups(Project project, SourceGroup[] sourceGroups) {
+        Map foldersToSourceGroupsMap = createFoldersToSourceGroupsMap(sourceGroups);
+        Set testGroups = new HashSet();
+        for (int i = 0; i < sourceGroups.length; i++) {
+            testGroups.addAll(getTestTargets(sourceGroups[i], foldersToSourceGroupsMap));
+        }
+        return testGroups;
+    }
+    
+    private static List/*<SourceGroup>*/ getTestTargets(SourceGroup sourceGroup, Map foldersToSourceGroupsMap) {
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroup.getRootFolder());
+        if (rootURLs.length == 0) {
+            return new ArrayList();
+        }
+        List result = new ArrayList();
+        List sourceRoots = getFileObjects(rootURLs);
+        for (int i = 0; i < sourceRoots.size(); i++) {
+            FileObject sourceRoot = (FileObject) sourceRoots.get(i);
+            SourceGroup srcGroup = (SourceGroup) foldersToSourceGroupsMap.get(sourceRoot);
+            if (srcGroup != null) {
+                result.add(srcGroup);
+            }
+        }
+        return result;
+    }
+    
+    private static Map createFoldersToSourceGroupsMap(final SourceGroup[] sourceGroups) {
+        Map result;
+        if (sourceGroups.length == 0) {
+            result = Collections.EMPTY_MAP;
+        } else {
+            result = new HashMap(2 * sourceGroups.length, .5f);
+            for (int i = 0; i < sourceGroups.length; i++) {
+                SourceGroup sourceGroup = sourceGroups[i];
+                result.put(sourceGroup.getRootFolder(), sourceGroup);
+            }
+        }
+        return result;
+    }
+    
+    private static List/*<FileObject>*/ getFileObjects(URL[] urls) {
+        List result = new ArrayList();
+        for (int i = 0; i < urls.length; i++) {
+            FileObject sourceRoot = URLMapper.findFileObject(urls[i]);
+            if (sourceRoot != null) {
+                result.add(sourceRoot);
+            } else {
+                int severity = ErrorManager.INFORMATIONAL;
+                if (ErrorManager.getDefault().isNotifiable(severity)) {
+                    ErrorManager.getDefault().notify(severity, new IllegalStateException(
+                       "No FileObject found for the following URL: " + urls[i])); //NOI18N
+                }
+            }
+        }
+        return result;
+    }
+    
     public Set/*FileObject*/ instantiate() throws IOException {
 
         Set result = Collections.EMPTY_SET;
@@ -139,6 +237,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             return result;
         }
 
+        
         final byte [] sourceWsdlDownload = (byte []) wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_FILE);
         String wsdlFilePath = (String) wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
@@ -199,7 +298,21 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             }
         }
 
-        // 2. add the service client to the project.
+        // 2. add jax-rpc library if wscompile isnt present
+        SourceGroup[] sgs = getJavaSourceGroups(project);
+        ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+        FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");
+        if (wscompileFO==null) {
+            // add jax-rpc16 if webservice is not on classpath
+            ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
+            Library jaxrpclib = LibraryManager.getDefault().getLibrary("jaxrpc16"); //NOI18N
+            if ((pce!=null) && (jaxrpclib != null)) {
+                pce.addLibrary(jaxrpclib);
+            }
+        }
+        
+        
+        // 3. add the service client to the project.
         // " " for note parameter ensures monitor panel has proper room for our notes.
         final ProgressMonitor monitor = new ProgressMonitor(WindowManager.getDefault().getMainWindow(), 
             NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"), " ", 0, 100); // NOI18N
@@ -235,7 +348,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                     builder.updateMonitor(monitor, null, 100);
                 }
             }
-        });
+        },500);
         
         return result;
     }

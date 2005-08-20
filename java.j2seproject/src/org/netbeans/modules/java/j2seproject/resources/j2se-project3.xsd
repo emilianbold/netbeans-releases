@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/j2se-project/3"
+            xmlns="http://www.netbeans.org/ns/j2se-project/3"
+            elementFormDefault="qualified">
+    <xsd:element name="data">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="name" type="xsd:token"/>
+                <xsd:element name="minimum-ant-version" minOccurs="0">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:NMTOKEN">
+                            <xsd:enumeration value="1.6"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="explicit-platform" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:attribute name="explicit-source-supported" use="required">
+                            <xsd:simpleType>
+                                <xsd:restriction base="xsd:NMTOKEN">
+                                    <xsd:enumeration value="true"/>
+                                    <xsd:enumeration value="false"/>
+                                </xsd:restriction>
+                            </xsd:simpleType>
+                        </xsd:attribute>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="web-service-clients" minOccurs="0" type="webServiceClientsType"/>
+                <xsd:element name="source-roots">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:attribute name="id" use="required" type="xsd:token"/>
+                                    <xsd:attribute name="name" use="optional" type="xsd:token"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="test-roots">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="root" minOccurs="0" maxOccurs="unbounded">
+                                <xsd:complexType>
+                                    <xsd:attribute name="id" use="required" type="xsd:token"/>
+                                    <xsd:attribute name="name" use="optional" type="xsd:token"/>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="webServiceClientsType">
+        <xsd:sequence>
+            <xsd:element name="web-service-client" type="webServiceClientType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+     
+    <xsd:complexType name="webServiceClientType">
+        <xsd:sequence>
+            <xsd:element name="web-service-client-name" type="xsd:token"/>
+            <xsd:element name="web-service-stub-type" type="xsd:token"/>
+            <xsd:element name="client-source-url" type="xsd:anyURI" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>

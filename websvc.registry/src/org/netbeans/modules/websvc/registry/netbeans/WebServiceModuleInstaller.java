@@ -23,9 +23,9 @@ import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
+//import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+//import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+//import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 
 
 /** class WebServiceModuleInstaller
@@ -33,16 +33,16 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
  *  ModuleInstall for the web service registry module.  Handles reading
  *  the registry on module startup and saving any changes on module shutdown.
  */
-public class WebServiceModuleInstaller extends ModuleInstall implements InstanceListener {
+public class WebServiceModuleInstaller extends ModuleInstall /*implements InstanceListener*/ {
     
     private static ExtensionClassLoader specialLoader = null;
     private static boolean registryInstalled = false;
         
     public void restored() {
-            restoreds();
-           Deployment.getDefault().addInstanceListener(this);
+        restoreds();
+//           Deployment.getDefault().addInstanceListener(this);
         
-      /*  if(registryInstalled) {
+        if(registryInstalled) {
             try {
                 PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
                 specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
@@ -50,7 +50,7 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }
-        }*/
+        }
     }
     
     public void close() {
@@ -77,7 +77,7 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
         if(specialLoader == null) {
             try {
                 specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
-                updatesSecialLoader(specialLoader);
+                updatesSpecialLoader(specialLoader);
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }
@@ -87,21 +87,41 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
     public static ClassLoader getExtensionClassLoader() {
         return specialLoader;
     }
-    
-    public  void updatesSecialLoader(ExtensionClassLoader loader) throws Exception {
+ 
+    private static String JAXRPC_16 [] = {
+        "modules/ext/jaxrpc16/activation.jar",
+        "modules/ext/jaxrpc16/dom.jar",
+        "modules/ext/jaxrpc16/jax-qname.jar",
+        "modules/ext/jaxrpc16/jaxp-api.jar",
+        "modules/ext/jaxrpc16/FastInfoset.jar",
+        "modules/ext/jaxrpc16/jaxrpc-api.jar",
+        "modules/ext/jaxrpc16/jaxrpc-impl.jar",
+        "modules/ext/jaxrpc16/jaxrpc-spi.jar",
+        "modules/ext/jaxrpc16/jsr173_api.jar",
+        "modules/ext/jaxrpc16/mail.jar",
+        "modules/ext/jaxrpc16/relaxngDatatype.jar",
+        "modules/ext/jaxrpc16/saaj-api.jar",
+        "modules/ext/jaxrpc16/saaj-impl.jar",
+        "modules/ext/jaxrpc16/sax.jar",
+        "modules/ext/jaxrpc16/xalan.jar",
+        "modules/ext/jaxrpc16/xercesImpl.jar",
+        "modules/ext/jaxrpc16/xsdlib.jar"
+    };
+        
+    public  void updatesSpecialLoader(ExtensionClassLoader loader) throws Exception {
         try {
-            String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs();
-            J2eePlatform platform = null;
-            for (int i = 0; i < serverInstanceIDs.length; i++) {
-                J2eePlatform p = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs [i]);
-                if (p!= null && p.isToolSupported("wscompile")) {
-                    platform = p;
-                    break;
-                }
-            }
-             File f1 = platform == null ? null : platform.getPlatformRoots() [0];
-            if(f1 != null && f1.exists()) {
-                String installRoot = f1.getAbsolutePath();
+//            String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs();
+//            J2eePlatform platform = null;
+//            for (int i = 0; i < serverInstanceIDs.length; i++) {
+//                J2eePlatform p = Deployment.getDefault().getJ2eePlatform(serverInstanceIDs [i]);
+//                if (p!= null && p.isToolSupported("wscompile")) {
+//                    platform = p;
+//                    break;
+//                }
+//            }
+//            File f1 = platform == null ? null : platform.getPlatformRoots() [0];
+//            if(f1 != null && f1.exists()) {
+//                String installRoot = f1.getAbsolutePath();
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 
                 File f = locator.locate("modules/ext/websvcregistry.jar", null, true); // NOI18N
@@ -114,13 +134,18 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
                 }
                 
                 // Add correct jars from the installed application server.
-                SJSASVersion appServerVersion = SJSASVersion.getSJSAppServerVersion();
-                String [] registryRuntimeJars = appServerVersion.getRegistryRuntimeLibraries();
+//                SJSASVersion appServerVersion = SJSASVersion.getSJSAppServerVersion();
+                String [] registryRuntimeJars = JAXRPC_16;
                 
                 for(int i = 0; i < registryRuntimeJars.length; i++) {
-                    loader.addURL(new File(installRoot + registryRuntimeJars[i]));
+                    File jarFile = locator.locate(registryRuntimeJars[i], null, false);
+                    if (jarFile != null) {
+                        loader.addURL(jarFile);
+                    } else {
+                        System.out.println("Cannot load jar: " + registryRuntimeJars[i]);
+                    }
                 }
-            }
+//            }
         } catch(Exception ex) {
             throw new Exception(ex.getLocalizedMessage(), ex);
         }
@@ -161,34 +186,34 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
         return fileName;
     }    
 
-    public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
-    }
-    
-    public void instanceAdded(String serverInstanceID) {
-        if (registryInstalled==false){
-            specialLoader = null;
-            restoreds();
-            try {
-                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
-                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
-                persistenceManager.load(specialLoader);
-            } catch (ClassNotFoundException cnfe){
-                // nothing to do in this case, this server does not support wscompile or web services
-                // see bug 55323 
-            } catch(Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
-            
-            firePropertyChange("specialLoader", null,"specialLoader");//NOI18N
-        }
-    }
-
-    public void instanceRemoved(String serverInstanceID) {
-    }
-        /*
-         * Used to get the netbeans classloader of this class.
-         *
-         */
+//    public void changeDefaultInstance(String oldServerInstanceID, String newServerInstanceID) {
+//    }
+//    
+//    public void instanceAdded(String serverInstanceID) {
+//        if (registryInstalled==false){
+//            specialLoader = null;
+//            restoreds();
+//            try {
+//                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
+//                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+//                persistenceManager.load(specialLoader);
+//            } catch (ClassNotFoundException cnfe){
+//                // nothing to do in this case, this server does not support wscompile or web services
+//                // see bug 55323 
+//            } catch(Exception ex) {
+//                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+//            }
+//            
+//            firePropertyChange("specialLoader", null,"specialLoader");//NOI18N
+//        }
+//    }
+//
+//    public void instanceRemoved(String serverInstanceID) {
+//    }
+//        /*
+//         * Used to get the netbeans classloader of this class.
+//         *
+//         */
     static class Empty {
     }
 }

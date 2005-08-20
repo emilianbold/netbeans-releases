@@ -35,6 +35,10 @@ import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
+import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesSupportProvider;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -80,6 +84,10 @@ public final class J2SEProject implements Project, AntProjectListener {
     private MainClassUpdater mainClassUpdater;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
+    
+    // WS client support
+    private J2SEProjectWebServicesClientSupport j2seProjectWebServicesClientSupport;
+    private WebServicesClientSupport apiWebServicesClientSupport;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -89,6 +97,9 @@ public final class J2SEProject implements Project, AntProjectListener {
         genFilesHelper = new GeneratedFilesHelper(helper);
         this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper,
             UpdateHelper.createDefaultNotifier());
+        j2seProjectWebServicesClientSupport = new J2SEProjectWebServicesClientSupport(this, helper, refHelper);
+        apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (j2seProjectWebServicesClientSupport);
+
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
     }
@@ -153,6 +164,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEProjectClassPathExtender(this, this.updateHelper, eval,refHelper),
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this),
+            new J2SEProjectWebServicesSupportProvider()
         });
     }
 
@@ -375,6 +387,10 @@ public final class J2SEProject implements Project, AntProjectListener {
         }
         
     }
+    
+    public WebServicesClientSupport getAPIWebServicesClientSupport () {
+            return apiWebServicesClientSupport;
+    }    
 
     /**
      * Exports the main JAR as an official build product for use from other scripts.
@@ -439,6 +455,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "Templates/Classes/Interface.java", // NOI18N
             "Templates/GUIForms/JPanel.java", // NOI18N
             "Templates/GUIForms/JFrame.java", // NOI18N
+            "Templates/WebServices/WebServiceClient"   // NOI18N                    
         };
         
         public String[] getRecommendedTypes() {

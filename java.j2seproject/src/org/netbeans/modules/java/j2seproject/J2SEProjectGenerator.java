@@ -202,6 +202,9 @@ public class J2SEProjectGenerator {
             "${run.test.classpath}", // NOI18N
         });
 
+        ep.setProperty("build.generated.dir", "${build.dir}/generated"); // NOI18N
+        ep.setProperty("meta.inf.dir", "${src.dir}/META-INF"); // NOI18N
+        
         ep.setProperty("build.dir", "build"); // NOI18N
         ep.setComment("build.dir", new String[] {"# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_build.dir")}, false); // NOI18N
         ep.setProperty("build.classes.dir", "${build.dir}/classes"); // NOI18N

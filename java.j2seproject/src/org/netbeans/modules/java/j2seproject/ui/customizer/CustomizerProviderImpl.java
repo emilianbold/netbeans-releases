@@ -20,6 +20,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
@@ -28,6 +29,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost;
+import org.netbeans.modules.java.j2seproject.wsclient.NoWebServiceClientsPanel;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -129,6 +133,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private static final String RUN = "Run";    
     private static final String RUN_TESTS = "RunTests";
     
+    private static final String WEBSERVICECLIENTS = "WebServiceClients";
+    private static final String WEBSERVICE_CATEGORY = "WebServiceCategory";
+    
     private void init( J2SEProjectProperties uiProperties ) {
         
         ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
@@ -186,12 +193,40 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 bundle.getString( "LBL_Config_BuildCategory" ), // NOI18N
                 null,
                 new ProjectCustomizer.Category[] { build, jar, javadoc }  );
+                
+        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
+                WEBSERVICECLIENTS,
+                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
+                null,
+                null);
+                
+        ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
+                WEBSERVICE_CATEGORY,
+                bundle.getString( "LBL_Config_WebServices" ), // NOI18N
+                null,
+                new ProjectCustomizer.Category[] { clients } );
+                
         categories = new ProjectCustomizer.Category[] { 
                 sources,
                 libraries,        
                 buildCategory,
                 run,  
+                webServices
         };
+                
+        List serviceClientsSettings = null;
+        WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+        if (clientSupport != null) {
+            serviceClientsSettings = clientSupport.getServiceClients();
+        }
+                
+        categories = new ProjectCustomizer.Category[] { 
+                sources,
+                libraries,        
+                buildCategory,
+                run,  
+                webServices
+        };        
         
         Map panels = new HashMap();
         panels.put( sources, new CustomizerSources( uiProperties ) );
@@ -201,6 +236,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         panels.put( javadoc, new CustomizerJavadoc( uiProperties ) );
         panels.put( run, new CustomizerRun( uiProperties ) ); 
         
+        if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
+            panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
+        } else {
+            panels.put( clients, new NoWebServiceClientsPanel());
+        }
         panelProvider = new PanelProvider( panels );
         
     }
@@ -267,5 +307,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     static interface SubCategoryProvider {
         public void showSubCategory (String name);
     }
+   
                             
 }

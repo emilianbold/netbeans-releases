@@ -26,7 +26,7 @@ public final class J2SEProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.modules.java.j2seproject"; // NOI18N
     private static final String PROJECT_CONFIGURATION_NAME = "data"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/2"; // NOI18N
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAME = "data"; // NOI18N
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project-private/1"; // NOI18N
     

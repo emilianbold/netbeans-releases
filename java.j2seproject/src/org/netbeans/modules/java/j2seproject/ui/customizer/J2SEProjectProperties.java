@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 import javax.swing.ButtonModel;
@@ -193,6 +194,8 @@ public class J2SEProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     
+    private Properties additionalProperties;    
+    
     J2SEProject getProject() {
         return project;
     }
@@ -208,6 +211,8 @@ public class J2SEProjectProperties {
                 
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
+        
+        additionalProperties = new Properties();
         
         init(); // Load known properties        
     }
@@ -350,10 +355,19 @@ public class J2SEProjectProperties {
             privateProperties.remove( RUN_WORK_DIR ); // Remove the property completely if not set
         }
                 
+        storeAdditionalProperties(projectProperties);
+        
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );        
         
+    }
+  
+    private void storeAdditionalProperties(EditableProperties projectProperties) {
+        for (Iterator i = additionalProperties.keySet().iterator(); i.hasNext();) {
+            Object key = i.next();
+            projectProperties.put(key, additionalProperties.get(key));
+        }
     }
     
     private static String getDocumentText( Document document ) {
@@ -492,6 +506,11 @@ public class J2SEProjectProperties {
         else {
             return property;
         }
+    }
+    
+    /* This is used by CustomizerWSServiceHost */
+    public void putAdditionalProperty(String propertyName, String propertyValue) {
+        additionalProperties.setProperty(propertyName, propertyValue);
     }
     
     private static boolean showModifiedMessage (String title) {

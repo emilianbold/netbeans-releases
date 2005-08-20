@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1"   
                 xmlns:j2seproject2="http://www.netbeans.org/ns/j2se-project/2"
+                xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 exclude-result-prefixes="xalan p projdeps projdeps2">
@@ -46,7 +47,7 @@ is divided into following sections:
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:name"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:name"/>
         <!-- Synch with build-impl.xsl: -->
         <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
         <project name="{$codename}-impl">
@@ -90,7 +91,7 @@ is divided into following sections:
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                     <j2seproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <j2seproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
                     <j2seproject1:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
@@ -127,7 +128,7 @@ is divided into following sections:
                     </and>
                 </condition>
                 <xsl:call-template name="createRootAvailableTest">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:test-roots"/>
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                     <xsl:with-param name="propName">have.tests</xsl:with-param>
                 </xsl:call-template>
                 <condition property="netbeans.home+have.tests">
@@ -160,10 +161,10 @@ is divided into following sections:
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
                 <xsl:call-template name="createSourcePathValidityTest">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                 </xsl:call-template>
                 <xsl:call-template name="createSourcePathValidityTest">
-                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:test-roots"/>
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                 </xsl:call-template>
                 <fail unless="build.dir">Must set build.dir</fail>
                 <fail unless="dist.dir">Must set dist.dir</fail>
@@ -194,12 +195,12 @@ is divided into following sections:
             <target name="-init-macrodef-javac">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/2</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">srcdir</xsl:attribute>
                         <xsl:attribute name="default">
                             <xsl:call-template name="createPath">
-                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                             </xsl:call-template>
                         </xsl:attribute>
                     </attribute>
@@ -225,11 +226,11 @@ is divided into following sections:
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
-                            <xsl:if test ="not(/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform/@explicit-source-supported ='false')">                            
+                            <xsl:if test ="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform/@explicit-source-supported ='false')">                            
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                                 <xsl:attribute name="target">${javac.target}</xsl:attribute>
                             </xsl:if>                            
-                            <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                                 <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
@@ -248,7 +249,7 @@ is divided into following sections:
             <target name="-init-macrodef-junit">
                 <macrodef>
                     <xsl:attribute name="name">junit</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/2</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">includes</xsl:attribute>
                         <xsl:attribute name="default">**/*Test.java</xsl:attribute>
@@ -260,12 +261,12 @@ is divided into following sections:
                             <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> --> 
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <batchtest todir="${{build.test.results.dir}}">
                                 <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:test-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                                     <xsl:with-param name="includes">@{includes}</xsl:with-param>
                                 </xsl:call-template>
                             </batchtest>
@@ -306,7 +307,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
@@ -332,7 +333,7 @@ is divided into following sections:
             <target name="-init-macrodef-debug">
                 <macrodef>
                     <xsl:attribute name="name">debug</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/2</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
@@ -348,7 +349,7 @@ is divided into following sections:
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg value="-Xdebug"/>
@@ -384,7 +385,7 @@ is divided into following sections:
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg line="${{run.jvmargs}}"/>
@@ -427,8 +428,92 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
+            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                <target name="wscompile-init" depends="init">
+                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile"
+                        classpath="${{wscompile.classpath}}"/>
+                    <taskdef name="wsclientuptodate" classname="org.netbeans.modules.websvc.core.ant.WsClientUpToDate"
+                        classpath="${{wsclientuptodate.classpath}}"/>
+
+                    <mkdir dir="${{build.classes.dir}}"/>
+                    <mkdir dir="${{build.generated.dir}}/wsclient"/>
+                    <mkdir dir="${{build.generated.dir}}/wsbinary"/>
+
+                    <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                        <xsl:variable name="wsclientname">
+                            <xsl:value-of select="j2seproject3:web-service-client-name"/>
+                        </xsl:variable>
+
+                        <wsclientuptodate property="wscompile.client.{$wsclientname}.notrequired"
+                            sourcewsdl="${{meta.inf.dir}}/wsdl/{$wsclientname}.wsdl"
+                            targetdir="${{build.generated.dir}}/wsclient"/>
+                    </xsl:for-each>
+                </target>
+            </xsl:if>
+
+            <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                <xsl:variable name="wsclientname">
+                    <xsl:value-of select="j2seproject3:web-service-client-name"/>
+                </xsl:variable>
+                <xsl:variable name="useimport">
+                    <xsl:choose>
+                        <xsl:when test="j2seproject3:web-service-stub-type">
+                            <xsl:value-of select="j2seproject3:web-service-stub-type='jsr-109_client'"/>
+                        </xsl:when>
+                        <xsl:otherwise>true</xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="useclient">
+                    <xsl:choose>
+                        <xsl:when test="j2seproject3:web-service-stub-type">
+                            <xsl:value-of select="j2seproject3:web-service-stub-type='jaxrpc_static_client'"/>
+                        </xsl:when>
+                        <xsl:otherwise>false</xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+
+                <target name="{$wsclientname}-client-wscompile" depends="wscompile-init" unless="wscompile.client.{$wsclientname}.notrequired">
+                    <property name="config_target" location="${{meta.inf.dir}}/wsdl"/>
+                    <copy file="${{meta.inf.dir}}/wsdl/{$wsclientname}-config.xml"
+                        tofile="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml" filtering="on">
+                        <filterset>
+                            <!-- replace token with reference to WSDL file in source tree, not build tree, since the
+                                 the file probably has not have been copied to the build tree yet. -->
+                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{config_target}}"/>
+                        </filterset>
+                    </copy>
+                    <wscompile
+                        xPrintStackTrace="true" verbose="false" fork="true" keep="true"
+                        client="{$useclient}" import="{$useimport}"
+                        features="${{wscompile.client.{$wsclientname}.features}}"
+                        base="${{build.classes.dir}}"
+                        sourceBase="${{build.generated.dir}}/wsclient"
+                        classpath="${{wscompile.classpath}}:${{javac.classpath}}"
+                        mapping="${{meta.inf.dir}}/{$wsclientname}-mapping.xml"
+                        config="${{build.generated.dir}}/wsclient/wsdl/{$wsclientname}-config.xml">
+                    </wscompile>
+                </target>
+            </xsl:for-each>
+
+            <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                <target name="web-service-client-generate">
+                    <xsl:attribute name="depends">
+                        <xsl:for-each select="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">
+                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                            <xsl:variable name="wsname2">
+                                <xsl:value-of select="j2seproject3:web-service-client-name"/>
+                            </xsl:variable>
+                            <xsl:value-of select="j2seproject3:web-service-client-name"/><xsl:text>-client-wscompile</xsl:text>
+                        </xsl:for-each>
+                    </xsl:attribute>
+                </target>
+                <target name="web-service-client-compile" depends="web-service-client-generate">
+                    <j2seproject3:javac srcdir="${{build.generated.dir}}/wsclient" classpath="${{wscompile.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                </target>
+            </xsl:if>
+            
             <target name="-pre-pre-compile">
-                <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,deps-jar<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-generate</xsl:if></xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
             </target>
 
@@ -438,11 +523,11 @@ is divided into following sections:
             </target>
 
             <target name="-do-compile">
-                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile</xsl:attribute>
-                <j2seproject2:javac/>
+                <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile,-pre-compile<xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:web-service-clients/j2seproject3:web-service-client">,web-service-client-compile</xsl:if></xsl:attribute>
+                <j2seproject3:javac/>
                 <copy todir="${{build.classes.dir}}">
                     <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                         <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
                     </xsl:call-template>
                 </copy>
@@ -466,11 +551,11 @@ is divided into following sections:
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <j2seproject2:javac>
+                <j2seproject3:javac>
                     <customize>
                         <patternset includes="${{javac.includes}}"/>
                     </customize>
-                </j2seproject2:javac>
+                </j2seproject3:javac>
             </target>
 
             <target name="-post-compile-single">
@@ -568,11 +653,11 @@ is divided into following sections:
 
             <target name="-debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
-                <j2seproject2:debug>
+                <j2seproject3:debug>
                     <customize>
                         <arg line="${{application.args}}"/>
                     </customize>
-                </j2seproject2:debug>
+                </j2seproject3:debug>
             </target>
 
             <target name="debug">
@@ -596,7 +681,7 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
-                <j2seproject2:debug classname="${{debug.class}}"/>
+                <j2seproject3:debug classname="${{debug.class}}"/>
             </target>
 
             <target name="debug-single">
@@ -632,7 +717,7 @@ is divided into following sections:
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform">
+                    <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                         <!-- XXX #46901: <javadoc> does not support an explicit executable -->
                         <j2seproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
                         <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
@@ -683,7 +768,7 @@ is divided into following sections:
                         <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
                             <arg value="-d"/>
                             <arg file="${{dist.javadoc.dir}}"/>
-                            <xsl:if test ="not(/p:project/p:configuration/j2seproject2:data/j2seproject2:explicit-platform/@explicit-source-supported ='false')">
+                            <xsl:if test ="not(/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform/@explicit-source-supported ='false')">
                                 <arg value="-source"/>
                                 <arg value="${{javac.source}}"/>
                             </xsl:if>
@@ -696,12 +781,12 @@ is divided into following sections:
                             <xsl:element name="arg">
                                 <xsl:attribute name="path">
                                     <xsl:call-template name="createPath">
-                                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                                     </xsl:call-template>
                                 </xsl:attribute>
                             </xsl:element>
                             <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                                     <xsl:with-param name="includes">**/*.java</xsl:with-param>
                            </xsl:call-template>
                         </apply>
@@ -726,15 +811,15 @@ is divided into following sections:
                             </classpath>
                             <sourcepath>
                                 <xsl:call-template name="createPathElements">
-                                    <xsl:with-param name="locations" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                    <xsl:with-param name="locations" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                                 </xsl:call-template>
                             </sourcepath>
                             <xsl:call-template name="createPackagesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                                     <xsl:with-param name="includes">*/**</xsl:with-param>
                            </xsl:call-template>
                             <xsl:call-template name="createFilesets">
-                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:source-roots"/>
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:source-roots"/>
                                     <xsl:with-param name="includes">*.java</xsl:with-param>
                            </xsl:call-template>
                         </javadoc>
@@ -774,10 +859,10 @@ is divided into following sections:
             <target name="-do-compile-test">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
-                <xsl:element name="j2seproject2:javac">
+                <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:test-roots"/>
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
@@ -786,7 +871,7 @@ is divided into following sections:
                 </xsl:element>
                 <copy todir="${{build.test.classes.dir}}">
                     <xsl:call-template name="createFilesets">
-                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:test-roots"/>
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                         <xsl:with-param name="excludes">**/*.java</xsl:with-param>
                     </xsl:call-template>
                 </copy>
@@ -810,10 +895,10 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <xsl:element name="j2seproject2:javac">
+                <xsl:element name="j2seproject3:javac">
                     <xsl:attribute name="srcdir">
                         <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject2:data/j2seproject2:test-roots"/>
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/j2seproject3:data/j2seproject3:test-roots"/>
                         </xsl:call-template>
                     </xsl:attribute>
                     <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
@@ -849,7 +934,7 @@ is divided into following sections:
             <target name="-do-test-run">
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
-                <j2seproject2:junit/>
+                <j2seproject3:junit/>
             </target>
 
             <target name="-post-test-run">
@@ -894,7 +979,7 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
                 <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
-                <j2seproject2:junit includes="${{test.includes}}"/>
+                <j2seproject3:junit includes="${{test.includes}}"/>
             </target>
 
             <target name="-post-test-run-single">
@@ -918,11 +1003,11 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <j2seproject2:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}">
+                <j2seproject3:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}">
                     <customize>
                         <arg line="${{test.class}}"/>
                     </customize>
-                </j2seproject2:debug>
+                </j2seproject3:debug>
             </target>
 
             <target name="-debug-start-debugger-test">
@@ -973,11 +1058,11 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="applet.url">Must select one file in the IDE or set applet.url</fail>
-                <j2seproject2:debug classname="sun.applet.AppletViewer">
+                <j2seproject3:debug classname="sun.applet.AppletViewer">
                     <customize>
                         <arg value="${{applet.url}}"/>
                     </customize>
-                </j2seproject2:debug>
+                </j2seproject3:debug>
             </target>
 
             <target name="debug-applet">
@@ -1102,7 +1187,7 @@ is divided into following sections:
         <xsl:element name="condition">
             <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
             <or>
-                <xsl:for-each select="$roots/j2seproject2:root">
+                <xsl:for-each select="$roots/j2seproject3:root">
                     <xsl:element name="available">
 			        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
 		            </xsl:element>
@@ -1113,7 +1198,7 @@ is divided into following sections:
 
     <xsl:template name="createSourcePathValidityTest">
         <xsl:param name="roots"/>
-        <xsl:for-each select="$roots/j2seproject2:root">
+        <xsl:for-each select="$roots/j2seproject3:root">
             <xsl:element name="fail">
 			    <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
                 <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
@@ -1125,7 +1210,7 @@ is divided into following sections:
         <xsl:param name="roots"/>
         <xsl:param name="includes"/>
         <xsl:param name="excludes"/>
-        <xsl:for-each select="$roots/j2seproject2:root">
+        <xsl:for-each select="$roots/j2seproject3:root">
             <xsl:element name="fileset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
                 <xsl:if test="$includes">
@@ -1142,7 +1227,7 @@ is divided into following sections:
         <xsl:param name="roots"/>
         <xsl:param name="includes"/>
         <xsl:param name="excludes"/>
-        <xsl:for-each select="$roots/j2seproject2:root">
+        <xsl:for-each select="$roots/j2seproject3:root">
             <xsl:element name="packageset">
                 <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
                 <xsl:if test="$includes">
@@ -1157,7 +1242,7 @@ is divided into following sections:
 
     <xsl:template name="createPathElements">
         <xsl:param name="locations"/>
-        <xsl:for-each select="$locations/j2seproject2:root">
+        <xsl:for-each select="$locations/j2seproject3:root">
             <xsl:element name="pathelement">
 			    <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
 		    </xsl:element>
@@ -1166,7 +1251,7 @@ is divided into following sections:
 
 	<xsl:template name="createPath">
 		<xsl:param name="roots"/>
-		<xsl:for-each select="$roots/j2seproject2:root">
+		<xsl:for-each select="$roots/j2seproject3:root">
 		    <xsl:if test="position() != 1">
 			    <xsl:text>:</xsl:text>
 		    </xsl:if>

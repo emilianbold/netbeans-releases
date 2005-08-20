@@ -1021,7 +1021,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
                 Thread pipeThread = new Thread(readerTask);
                 pipeThread.start();
                 
-                if(!Util.createWSJar(inWSData,pos,inJarFileName)) {
+                if (!Util.createWSJar(inWSData,pos,inJarFileName)) {
                     ErrorManager.getDefault().log(this.getClass().getName() + ": " + NbBundle.getMessage(this.getClass(), "PROXY_GEN_ERROR"));
                     displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
                     displayError(NbBundle.getMessage(this.getClass(), "PROXY_GEN_ERROR"));
@@ -1029,7 +1029,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
                 }
                 inWSData.setProxyJarFileName(inJarFileName);
                 this.displayMessage(NbBundle.getMessage(this.getClass(), "WSCOMPILE_END"));
-            } catch(IOException ioe) {
+            } catch (IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
                 displayInfo("<FONT COLOR=\"RED\">" + NbBundle.getMessage(AddWebServiceDlg.class, "PROCESSING_ERROR") + "</FONT>");
                 this.displayError(NbBundle.getMessage(this.getClass(), "PROXY_GEN_ERROR"));

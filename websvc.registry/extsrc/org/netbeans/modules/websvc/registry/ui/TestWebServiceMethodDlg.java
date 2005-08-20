@@ -126,9 +126,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
 
             Document document = null;
             try {
-				File runtimeJarsFile = InstalledFileLocator.getDefault().locate(
-					"config" + File.separator + "WebServices" + File.separator +
-					"websvc_runtimejars.xml", null, false);
+                File runtimeJarsFile = InstalledFileLocator.getDefault().locate(
+                        "config" + File.separator + "WebServices" + File.separator +
+                        "websvc_runtimejars.xml", null, false);
                 document = builder.parse(runtimeJarsFile);
             } catch(SAXException se) {
                 ErrorManager.getDefault().notify(se);
@@ -165,24 +165,20 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
                 return null;
             }
 
-			// Now build remainder of class path from websvc_runtimejars.xml
-                        String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
-                        J2eePlatform platform = null;
-                        for (int i = 0; i < serverInstanceIDs.length; i++) {
-                            J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
-                            if (p != null && p.isToolSupported ("wscompile")) {
-                                platform = p;
-                                break;
-                            }
-                        }
-			File appserverRoot = platform == null ? null : platform.getPlatformRoots () [0];
-			String asRootPath = (appserverRoot != null) ? appserverRoot.getAbsolutePath() : "";
-			asRootPath = asRootPath.replace('\\', '/');
-			
-			// !PW FIXME this should use InstalledFileLocator instead.
-//			String netbeansHome =  System.getProperty("netbeans.home");
-//			netbeansHome = netbeansHome.replace('\\', '/');			
-
+            // Now build remainder of class path from websvc_runtimejars.xml
+            String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs ();
+            J2eePlatform platform = null;
+            for (int i = 0; i < serverInstanceIDs.length; i++) {
+                J2eePlatform p = Deployment.getDefault().getJ2eePlatform (serverInstanceIDs [i]);
+                if (p != null && p.isToolSupported ("wscompile")) {
+                    platform = p;
+                    break;
+                }
+            }
+            File appserverRoot = platform == null ? null : platform.getPlatformRoots () [0];
+            String asRootPath = (appserverRoot != null) ? appserverRoot.getAbsolutePath() : "";
+            asRootPath = asRootPath.replace('\\', '/');
+                        
             Node currentNode = null;
             for (int ii=0; ii < list.getLength(); ii++) {
                 currentNode = list.item(ii);
@@ -202,9 +198,15 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
                     return null;
                 }
 
-				jarString = jarString.replaceAll("\\{appserv\\.home\\}", asRootPath);
-//				jarString = jarString.replaceAll("\\{netbeans\\.home\\}", netbeansHome);
-
+                if (jarString.indexOf("\\{appserv\\.home\\}") > -1) {
+                    jarString = jarString.replaceAll("\\{appserv\\.home\\}", asRootPath);
+                } else {
+                    File f = InstalledFileLocator.getDefault().locate(jarString, null, false);
+                    if (f != null) {
+                        jarString = f.getPath();
+                    } 
+                }
+                
                 /**
                  * Make sure we are starting with "file:".  If not, ifthe first character is
                  * not a "/", It's probably a drive letter and colon like

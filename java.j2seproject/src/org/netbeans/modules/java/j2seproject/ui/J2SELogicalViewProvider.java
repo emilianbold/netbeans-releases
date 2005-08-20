@@ -52,6 +52,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -64,6 +65,8 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
@@ -87,6 +90,9 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
+import org.netbeans.modules.java.j2seproject.wsclient.J2SEProjectWebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 
 /**
  * Support for creating logical views.
@@ -102,6 +108,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
     private List changeListeners;
+
+    // Web service client
+    private static final Object KEY_SERVICE_REFS = "serviceRefs"; // NOI18N
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -589,24 +598,29 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         private final UpdateHelper helper;
         private final ReferenceHelper resolver;
         private final SourceRoots testSources;
-        
+            
+        private final WsdlCreationListener wsdlListener;
+                
         public LogicalViewChildren(J2SEProject project, PropertyEvaluator evaluator, UpdateHelper helper, ReferenceHelper resolver) {
             this.project = project;
             this.evaluator = evaluator;
             this.helper = helper;
             this.resolver = resolver;
             this.testSources = project.getTestSourceRoots();
+            this.wsdlListener = new WsdlCreationListener();
         }
         
         protected void addNotify() {
             super.addNotify();
             getSources().addChangeListener(this);
+            project.getProjectDirectory().addFileChangeListener(wsdlListener);
             setKeys(getKeys());
         }
         
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             getSources().removeChangeListener(this);
+            project.getProjectDirectory().removeFileChangeListener(wsdlListener);
             super.removeNotify();
         }
         
@@ -652,6 +666,18 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             else if (key instanceof SourceGroupKey) {
                 //Source root
                 result = new Node[] {new PackageViewFilterNode(((SourceGroupKey) key).group, project)};
+
+            } else if (key == KEY_SERVICE_REFS) {
+                result = null;
+                FileObject clientRoot = project.getProjectDirectory();
+                WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
+                if (clientView != null) {
+                    WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
+                    List clients = wss.getServiceClients();
+                    if ((clients != null) && (clients.size() > 0)) {
+                        result = new Node[] {clientView.createWebServiceClientView(wss.getWsdlFolder())};
+                    }
+                }
             } else {
                 assert false : "Unknown key type";  //NOI18N
                 result = new Node[0];
@@ -692,6 +718,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             if (addTestSources) {
                 result.add(TEST_LIBRARIES);
             }
+            
+            result.add(KEY_SERVICE_REFS);
+            
             return result;
         }
         
@@ -727,8 +756,14 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             }
             
         }
+        
+        private final class WsdlCreationListener extends FileChangeAdapter {
+            public void fileFolderCreated (FileEvent fe) {
+                refreshKey(KEY_SERVICE_REFS);
+            }
+        }
     }
-    
+                
     /** Yet another cool filter node just to add properties action
      */
     private static class PackageViewFilterNode extends FilterNode {
