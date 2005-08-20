@@ -388,6 +388,19 @@ public class Utils {
     }
 
     /**
+     * Determines parent project for a file.
+     *
+     * @param file file to examine
+     * @return Project owner of the file or null if the file does not belong to a project
+     */
+    public static Project getProject(File file) {
+        if (file == null) return null;
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) return getProject(file.getParentFile());
+        return FileOwnerQuery.getOwner(fo);
+    }
+
+    /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 
     public static class ByImportanceComparator implements Comparator {

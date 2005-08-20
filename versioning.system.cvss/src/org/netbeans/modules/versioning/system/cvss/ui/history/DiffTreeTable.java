@@ -21,10 +21,12 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
+import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.beans.PropertyVetoException;
 
 /**
  * Treetable to show results of Search History action.
@@ -70,12 +72,50 @@ class DiffTreeTable extends TreeTableView {
         });
     }
 
-    public void setSelection(int idx) {
+    void setSelection(int idx) {
         treeTable.getSelectionModel().setSelectionInterval(idx, idx);
+    }
+
+    void setSelection(SearchHistoryPanel.ResultsContainer container) {
+        RevisionNode node = (RevisionNode) getNode(rootNode, container);
+        if (node == null) return;
+        ExplorerManager em = ExplorerManager.find(this);
+        try {
+            em.setSelectedNodes(new Node [] { node });
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void setSelection(LogInformation.Revision revision) {
+        RevisionNode node = (RevisionNode) getNode(rootNode, revision);
+        if (node == null) return;
+        ExplorerManager em = ExplorerManager.find(this);
+        try {
+            em.setSelectedNodes(new Node [] { node });
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Node getNode(Node node, Object obj) {
+        Object object = node.getLookup().lookup(obj.getClass());
+        if (obj == object) return node;
+        Enumeration children = node.getChildren().nodes();
+        while (children.hasMoreElements()) {
+            Node child = (Node) children.nextElement();
+            Node result = getNode(child, obj);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     public int [] getSelection() {
         return treeTable.getSelectedRows();
+    }
+
+    public int getRowCount() {
+        return treeTable.getRowCount();
     }
 
     private static class ColumnDescriptor extends PropertySupport.ReadOnly {

@@ -189,6 +189,18 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         search();
     }
 
+    void showDiff(LogInformation.Revision revision) {
+        tbDiff.setSelected(true);
+        refreshComponents();
+        diffView.select(revision);
+    }
+
+    public void showDiff(ResultsContainer container) {
+        tbDiff.setSelected(true);
+        refreshComponents();
+        diffView.select(container);
+    }
+
     static class ResultsContainer {
         
         private List revisions = new ArrayList(2);
@@ -231,6 +243,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         
         public String getPath() {
             return path;
+        }
+
+        public File getFile() {
+            return ((LogInformation.Revision) revisions.get(0)).getLogInfoHeader().getFile();
         }
     }
 

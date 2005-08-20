@@ -16,8 +16,17 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.ErrorManager;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
+import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
+import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.system.cvss.*;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
@@ -74,9 +83,16 @@ class RevisionNode extends AbstractNode {
 
     public Action[] getActions(boolean context) {
         if (context) return null;
-        return new Action [] {
-            new FindAssociateChangesAction()
-        };
+        // TODO: reuse action code from SummaryView
+        if (revision == null) {
+            return new Action [0];
+        } else {
+            return new Action [] {
+                new RollbackAction(),
+                new FindCommitAction(false),
+                new FindCommitAction(true),
+            };
+        }
     }
     
     private void initProperties() {
@@ -193,16 +209,67 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class FindAssociateChangesAction extends AbstractAction {
+    private class FindCommitAction extends AbstractAction {
 
-        public FindAssociateChangesAction() {
-            super(NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindAssociateChanges"));
+        private boolean allProjects;
+
+        public FindCommitAction(boolean allProjects) {
+            this.allProjects = allProjects;
+            if (allProjects) {
+                putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProjects"));
+            } else {
+                File file = revision.getLogInfoHeader().getFile();
+                Project project = Utils.getProject(file);
+                if (project != null) {
+                    String prjName = ProjectUtils.getInformation(project).getDisplayName();
+                    putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommitInProject", prjName));
+                } else {
+                    putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_FindCommit"));
+                    setEnabled(false);
+                }
+            }
         }
 
         public void actionPerformed(ActionEvent e) {
             File file = revision.getLogInfoHeader().getFile();
-            SearchHistoryAction.openSearch(NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), revision.getNumber()), 
-                                           revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+            if (allProjects) {
+                SearchHistoryAction.openSearch(NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), revision.getNumber()),
+                                               revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+            } else {
+                Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
+                SearchHistoryAction.openSearch(context, NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), revision.getNumber()),
+                                               revision.getMessage().trim(), revision.getAuthor(), revision.getDate());
+            }
+        }
+    }
+
+    private class RollbackAction extends AbstractAction {
+
+        public RollbackAction() {
+            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getNumber()));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            File file = revision.getLogInfoHeader().getFile();
+            int res = JOptionPane.showConfirmDialog(
+                    null,
+                    NbBundle.getMessage(RevisionNode.class, "CTL_Rollback_Prompt", file.getName(), revision.getNumber()),
+                    NbBundle.getMessage(RevisionNode.class, "CTL_Rollback_Title"),
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (res != JOptionPane.YES_OPTION) return;
+
+            try {
+                File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision.getNumber());
+                FileUtils.copyFile(cleanFile, file);
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    fo.refresh();
+                }
+                CvsVersioningSystem.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            } catch (Exception e1) {
+                ErrorManager.getDefault().notify(e1);
+            }
         }
     }
 

@@ -19,11 +19,8 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -158,8 +155,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     private void onPopup(MouseEvent e) {
-        final int [] selection = resultsList.getSelectedIndices();
-        
+        int [] sel = resultsList.getSelectedIndices();
+        if (sel.length == 0) {
+            int idx = resultsList.locationToIndex(e.getPoint());
+            if (idx == -1) return;
+            resultsList.setSelectedIndex(idx);
+            sel = new int [] { idx };
+        }
+        final int [] selection = sel;
+
         JPopupMenu menu = new JPopupMenu();
         
         String previousRevision = null;
@@ -204,7 +208,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 }
             }));
 
-            Project prj = getProject(drev.getRevision().getLogInfoHeader().getFile());
+            Project prj = Utils.getProject(drev.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
                 String prjName = ProjectUtils.getInformation(prj).getDisplayName();
                 menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_Action_AssociateChangesInProject", prjName)) {
@@ -240,31 +244,14 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }
     }
 
-    private Project getProject(File file) {
-        if (file == null) return null;
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return getProject(file.getParentFile());
-        return FileOwnerQuery.getOwner(fo);
-    }
-
     private void diffPrevious(int idx) {
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            File file = drev.getRevision().getLogInfoHeader().getFile();
-            DiffExecutor de = new DiffExecutor(file.getName());
-            String revision = drev.getRevision().getNumber().trim();
-            de.showDiff(file, Utils.previousRevision(revision), revision);
+            master.showDiff(drev.getRevision());
         } else {
             SearchHistoryPanel.ResultsContainer container = (SearchHistoryPanel.ResultsContainer) o;
-            File file = ((LogInformation.Revision) container.getRevisions().get(0)).getLogInfoHeader().getFile();
-            DiffExecutor de = new DiffExecutor(file.getName());
-            String eldest = container.getEldestRevision();
-            if (eldest == null) {
-                eldest = ((LogInformation.Revision) container.getRevisions().get(container.getRevisions().size() - 1)).getNumber();
-            }
-            String revision2 = container.getNewestRevision();
-            de.showDiff(file, eldest, revision2);
+            master.showDiff(container);
         }
     }
 
@@ -283,7 +270,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
             File file = drev.getRevision().getLogInfoHeader().getFile();
-            Context context = Utils.getProjectsContext(new Project[] { getProject(file) });
+            Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
             SearchHistoryAction.openSearch(context, NbBundle.getMessage(SummaryView.class, "CTL_FindAssociateChanges_Title", file.getName(), drev.getRevision().getNumber()), 
                                            drev.getRevision().getMessage().trim(), drev.getRevision().getAuthor(), drev.getRevision().getDate());
         }
@@ -480,7 +467,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 actionsPane.add(diffLink);
             }
             
-            Project prj = getProject(dispRevision.getRevision().getLogInfoHeader().getFile());
+            Project prj = Utils.getProject(dispRevision.getRevision().getLogInfoHeader().getFile());
             if (prj != null) {
                 String prjName = ProjectUtils.getInformation(prj).getDisplayName();
                 acpLink = new HyperlinkLabel(NbBundle.getMessage(SummaryView.class, "CTL_Action_AssociateChangesInProject", prjName), foregroundColor, backgroundColor);
