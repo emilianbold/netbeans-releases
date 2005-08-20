@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.netbeans.spi.debugger.ContextProvider;
+import org.openide.ErrorManager;
 
 
 /**
@@ -119,6 +120,8 @@ abstract class Lookup implements ContextProvider {
     
     static class MetaInf extends Lookup {
         
+        private static final String HIDDEN = "-hidden"; // NOI18N
+        
         private String rootFolder;
         private HashMap registrationCache = new HashMap ();
         private HashMap instanceCache = new HashMap ();
@@ -142,7 +145,8 @@ abstract class Lookup implements ContextProvider {
             int i, k = l.size ();
             for (i = 0; i < k; i++) {
                 String className = (String) l.get (i);
-                if (s.contains (className + "-hidden")) continue;
+                if (className.endsWith(HIDDEN)) continue;
+                if (s.contains (className + HIDDEN)) continue;
                 Object instance = null;
                 instance = instanceCache.get (className);
                 if (instance == null) {
@@ -160,7 +164,7 @@ abstract class Lookup implements ContextProvider {
             Set h = new HashSet ();
             while (i.hasNext ()) {
                 String s = (String) i.next ();
-                if (!s.endsWith ("-hidden")) continue;
+                if (!s.endsWith (HIDDEN)) continue;
                 h.add (s.substring (0, s.length () - 7));
             }
             return h;
@@ -250,20 +254,35 @@ abstract class Lookup implements ContextProvider {
                         " created");
                 return o;
             } catch (ClassNotFoundException e) {
-                System.out.println("\nservice: " + service);
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(
+                            e,
+                            "The service "+service+" is not found.")
+                        );
             } catch (InstantiationException e) {
-                System.out.println("\nservice: " + service);
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(
+                            e,
+                            "The service "+service+" can not be instantiated.")
+                        );
             } catch (IllegalAccessException e) {
-                System.out.println("\nservice: " + service);
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(
+                            e,
+                            "The service "+service+" can not be accessed.")
+                        );
             } catch (InvocationTargetException ex) {
-                System.out.println("\nservice: " + service);
-                ex.getCause ().printStackTrace ();
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(
+                            ex,
+                            "The service "+service+" can not be created.")
+                        );
             } catch (ExceptionInInitializerError ex) {
-                System.out.println("\nservice: " + service);
-                ex.getCause ().printStackTrace ();
+                ErrorManager.getDefault().notify(
+                        ErrorManager.getDefault().annotate(
+                            ex,
+                            "The service "+service+" can not be initialized.")
+                        );
             }
             return null;
         }
