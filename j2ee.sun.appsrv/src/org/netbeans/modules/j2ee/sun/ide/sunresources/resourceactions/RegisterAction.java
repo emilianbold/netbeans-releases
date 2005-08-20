@@ -21,17 +21,19 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 import org.openide.util.actions.NodeAction;
-import org.openide.nodes.Node.PropertySet;
 
-import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ListServerInstances;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+
+import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ListServerInstances;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 /**
  *
  * @author Nitya Doraisamy
@@ -40,12 +42,12 @@ public class RegisterAction extends NodeAction implements WizardConstants{
     String resourceType = null;
     protected void performAction(Node[] nodes) {
         try{
+            SunResourceDataObject dobj = (SunResourceDataObject)nodes[0].getCookie(SunResourceDataObject.class);
             resourceType = nodes[0].getValue(__ResourceType).toString();            
-            PropertySet[] props = nodes[0].getPropertySets();
             InstanceProperties target = getTargetServer(nodes[0]);
-            new ListServerInstances(NbBundle.getMessage (RegisterAction.class, ("Reg_" + resourceType)), props[0].getProperties(), resourceType, nodes[0].getName(), target); //NOI18N
+            new ListServerInstances(NbBundle.getMessage (RegisterAction.class, ("Reg_" + resourceType)), dobj, resourceType, target); //NOI18N 
         }catch(Exception ex){
-            ex.printStackTrace();
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
         }
     }
     
@@ -71,7 +73,7 @@ public class RegisterAction extends NodeAction implements WizardConstants{
     public HelpCtx getHelpCtx() {
         return null; // HelpCtx.DEFAULT_HELP;
         // If you will provide context help then use:
-        // return new HelpCtx(RegisterConnPoolAction.class);
+        // return new HelpCtx(RegisterAction.class);
     }
     
     private InstanceProperties getTargetServer(Node node){
@@ -92,7 +94,7 @@ public class RegisterAction extends NodeAction implements WizardConstants{
      * PLEASE do not use constructors for this purpose!
      * protected void initialize() {
      * super.initialize();
-     * putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RegisterConnPoolAction.class, "HINT_Action"));
+     * putProperty(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RegisterAction.class, "HINT_Action"));
      * }
      */
     

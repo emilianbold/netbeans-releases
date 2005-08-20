@@ -14,40 +14,35 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.beans.PropertyEditor;
 
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.cookies.SaveCookie;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.RenameAction;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.*;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions.RegisterAction;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.PropertySupport;
+
+import org.openide.filesystems.FileObject;
+
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePairsPropertyEditor;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 
 /**
  * 
  * @author nityad
  */
-public class PersistenceManagerBeanDataNode extends DataNode implements java.beans.PropertyChangeListener{
+public class PersistenceManagerBeanDataNode extends BaseResourceNode implements java.beans.PropertyChangeListener{
     PersistenceManagerBean resource = null;
     
     public PersistenceManagerBeanDataNode(SunResourceDataObject obj, PersistenceManagerBean key) {
-        this(obj, Children.LEAF, key);
-    }
-  
-    public PersistenceManagerBeanDataNode(SunResourceDataObject obj, Children ch, PersistenceManagerBean key) {
-        super(obj, ch);
+        super(obj);
         setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
         setShortDescription (NbBundle.getMessage (PersistenceManagerBeanDataNode.class, "DSC_PersistenceManagerNode"));//NOI18N
         resource = key;
         
         key.addPropertyChangeListener(this);
-        //getCookieSet().add(this);
         Class clazz = key.getClass ();
         try{
             createProperties(key, Utilities.getBeanInfo(clazz));
@@ -55,27 +50,6 @@ public class PersistenceManagerBeanDataNode extends DataNode implements java.bea
             e.printStackTrace();
         }
         
-        // Set FeatureDescriptor stuff:
-        /*setName("preferablyUniqueNameForThisNodeAmongSiblings"); // or, super.setName if needed
-        setDisplayName(NbBundle.getMessage(PersistenceManagerBeanDataNode.class, "LBL_node"));
-        setShortDescription(NbBundle.getMessage(PersistenceManagerBeanDataNode.class, "HINT_node"));*/
-        // Add cookies, e.g.:
-        /*
-        getCookieSet().add(new OpenCookie() {
-                public void open() {
-                    // Open something useful...
-                    // will typically use the data model somehow
-                }
-            });
-         */
-    }
-    
-    public javax.swing.Action getPreferredAction(){
-        return SystemAction.get(PropertiesAction.class);
-    }
-    
-    protected SunResourceDataObject getSunResourceDataObject() {
-        return (SunResourceDataObject)getDataObject();
     }
     
     protected PersistenceManagerBeanDataNode getPersistenceManagerBeanDataNode(){
@@ -86,23 +60,19 @@ public class PersistenceManagerBeanDataNode extends DataNode implements java.bea
         return resource;
     }
     
-    protected SystemAction[] createActions(){
-        return new SystemAction[]{
-            SystemAction.get(RegisterAction.class),
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+    public Resources getBeanGraph(){
+        return resource.getGraph();
+    }
+    
+    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        FileObject resFile = getPersistenceManagerBeanDataNode().getDataObject().getPrimaryFile();
+        ResourceUtils.saveNodeToXml(resFile, resource.getGraph());
     }
     
     public HelpCtx getHelpCtx() {
         return null; // new HelpCtx ("AS_Res_PMF");//NOI18N
     }
     
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        ResourceUtils.saveNodeToXml(getPersistenceManagerBeanDataNode(), getPersistenceManagerBean());
-    }
-       
     protected void createProperties(Object bean, java.beans.BeanInfo info) {
         BeanNode.Descriptor d = BeanNode.computeProperties(bean, info);
         Node.Property p = new PropertySupport.ReadWrite(

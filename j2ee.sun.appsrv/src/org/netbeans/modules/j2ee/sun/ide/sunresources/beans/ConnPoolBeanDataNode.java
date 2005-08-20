@@ -13,43 +13,37 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.beans.PropertyEditor;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.cookies.SaveCookie;
+
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.RenameAction;
-import org.openide.cookies.InstanceCookie;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.*;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions.RegisterAction;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.PropertySupport;
+
+import org.openide.filesystems.FileObject;
+
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePairsPropertyEditor;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 
 /** A node to represent this object.
  *
  * @author nityad
  */
-public class ConnPoolBeanDataNode extends DataNode implements java.beans.PropertyChangeListener{
+public class ConnPoolBeanDataNode extends BaseResourceNode implements java.beans.PropertyChangeListener{
     ConnPoolBean resource = null;
-    public ConnPoolBeanDataNode(SunResourceDataObject obj, ConnPoolBean key) {
-        this(obj, Children.LEAF, key);
-    }
     
-    public ConnPoolBeanDataNode(SunResourceDataObject obj, Children ch, ConnPoolBean key) {
-        super(obj, ch);
+    public ConnPoolBeanDataNode(SunResourceDataObject obj, ConnPoolBean key) {
+        super(obj);
         setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
-        //setName ("preferablyUniqueNameForThisNodeAmongSiblings");//NOI18N // or, super.setName if needed
-        //setDisplayName (NbBundle.getMessage (DeployedApplicationsNode.class, "LBL_DeployedApps"));//NOI18N
         setShortDescription (NbBundle.getMessage (ConnPoolBeanDataNode.class, "DSC_ConnPoolNode"));//NOI18N
         
         resource = key;
         key.addPropertyChangeListener(this);
-        //getCookieSet().add(this);
-        //getCookieSet().add(resource);
+        
         Class clazz = key.getClass();
         try{
             createProperties(key, Utilities.getBeanInfo(clazz));
@@ -59,15 +53,7 @@ public class ConnPoolBeanDataNode extends DataNode implements java.beans.Propert
         
     }
     
-    public javax.swing.Action getPreferredAction(){
-        return SystemAction.get(PropertiesAction.class);
-    }
-    
-    protected SunResourceDataObject getSunResourceDataObject() {
-        return (SunResourceDataObject)getDataObject();
-    }
-    
-    protected ConnPoolBeanDataNode getConnPoolBeanDataNode(){
+   protected ConnPoolBeanDataNode getConnPoolBeanDataNode(){
         return this;
     }
     
@@ -75,21 +61,17 @@ public class ConnPoolBeanDataNode extends DataNode implements java.beans.Propert
         return resource;
     }
     
-    protected SystemAction[] createActions(){
-        return new SystemAction[]{
-            SystemAction.get(RegisterAction.class),
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+    public HelpCtx getHelpCtx() {
+        return null; // new HelpCtx ("AS_Res_ConnectionPool");//NOI18N
     }
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        ResourceUtils.saveNodeToXml(getConnPoolBeanDataNode(), getConnPoolBean());
+        FileObject resFile = getConnPoolBeanDataNode().getDataObject().getPrimaryFile();
+        ResourceUtils.saveNodeToXml(resFile, resource.getGraph());
     }
     
-    public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx ("AS_Res_ConnectionPool");//NOI18N
+    public Resources getBeanGraph(){
+        return resource.getGraph();
     }
     
     protected void createProperties(Object bean, java.beans.BeanInfo info) {

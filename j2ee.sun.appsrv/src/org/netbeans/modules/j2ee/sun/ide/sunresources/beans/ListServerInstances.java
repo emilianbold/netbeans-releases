@@ -27,27 +27,26 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Iterator;
 import java.util.Vector;
 import java.text.MessageFormat;
 
 import org.openide.util.HelpCtx;
-import org.openide.nodes.Node;
-import org.openide.nodes.Node.Cookie;
-import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.management.ObjectName;
-import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 
+import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.PropertyElement;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.BaseResourceNode;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 
 public class ListServerInstances extends JPanel implements WizardConstants{
                 
@@ -55,22 +54,16 @@ public class ListServerInstances extends JPanel implements WizardConstants{
     
     Component initialFocusOwner = null;
     String title;
-    
     Hashtable servers = new Hashtable();
-    
-    public ListServerInstances(String _title, Property[] props, String resType, String resFileName, InstanceProperties targetName) {
+    Resources resourceGraph = null;
+            
+    public ListServerInstances(String _title, SunResourceDataObject dObj, String type, InstanceProperties targetName) {
         title = _title;
-        initComponents(props, resType, resFileName, targetName);
-//        HelpCtx.setHelpIDString(this, "S1_register.html");//NOI18N
+        initComponents(dObj, type, targetName); 
+        //HelpCtx.setHelpIDString(this, "S1_register.html");//NOI18N
     }
     
-    public ListServerInstances(String _title, Property[] props, String resType, String resFileName) {
-        title = _title;
-        initComponents(props, resType, resFileName, null);
-//        HelpCtx.setHelpIDString(this, "S1_register.html");//NOI18N
-    }
-    
-    private void initComponents(final Property[] props, final String resType, String resFileName, InstanceProperties targetName) {
+    private void initComponents(final SunResourceDataObject resourceObj, final String resType, InstanceProperties targetName) {
         Vector names = new Vector();
         if(targetName == null){
             showInvalidServerError();
@@ -91,7 +84,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         JLabel nameLabel = new JLabel(bundle.getString("LBL_resource_name"));  //NOI18N
         //FIXME:this should show the name of the resource which may not be same as the name of the node
         //get property from node 
-        JLabel rsNameLabel = new JLabel(resFileName);
+        JLabel rsNameLabel = new JLabel(resourceObj.getName());
         
         //Now displaying only default server instance
         //serverListCB = new JComboBox(names);
@@ -117,7 +110,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyButton.setEnabled(false);
-                doRegistration(props, resType);
+                doRegistration(resourceObj, resType); 
                 applyButton.setEnabled(true);
             }
         });
@@ -183,93 +176,96 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         
     }
     
-    
     //Handles case when Register is called from xml file. No checks for registered CP or JDBC
-    public void doRegistration(Property[] props, String resType) {
-        //String serverNm = (String) serverListCB.getSelectedItem();
+    public void doRegistration(SunResourceDataObject resourceObj, String resType) {
         String serverNm = (String) serverListCB.getText();
         try{
             msgArea.setText(bundle.getString("Msg_RegDS")); //NOI18N
             setTopManagerStatus(bundle.getString( "Msg_RegDS"));//NOI18N
-            if(resType.equals(__JdbcConnectionPool)){
-                registerConnectionPool(props, resType, serverNm);
-            }else if(resType.equals(__JdbcResource)){
-                registerDataSource(props, resType, serverNm);
-            }else if(resType.equals(__PersistenceManagerFactoryResource)){
-                registerPersistenceManager(props, resType, serverNm);
-            }else if(resType.equals(__MailResource)){
-                registerMailSession(props, resType, serverNm);
-            }else if(resType.equals(__JmsResource)){
-                registerJMS(props, resType, serverNm);
+            Resources res = getResourceGraph(resourceObj);
+            if(res != null){
+                if(resType.equals(__JdbcConnectionPool)){
+                    registerConnectionPool(res, serverNm);
+                }else if(resType.equals(__JdbcResource)){
+                    registerDataSource(res, serverNm);
+                }else if(resType.equals(__PersistenceManagerFactoryResource)){
+                    registerPersistenceManager(res, serverNm);
+                }else if(resType.equals(__MailResource)){
+                    registerMailSession(res, serverNm);
+                }else if(resType.equals(__JmsResource)){
+                    registerJMS(res, serverNm);
+                }
+                setTopManagerStatus(bundle.getString( "Msg_RegDone"));//NOI18N
+                msgArea.setText(bundle.getString( "Msg_RegDone")); //NOI18N
             }
-            setTopManagerStatus(bundle.getString( "Msg_RegDone"));//NOI18N
-            msgArea.setText(bundle.getString( "Msg_RegDone")); //NOI18N
         }catch(Exception ex){
             String errorMsg = MessageFormat.format(bundle.getString( "Msg_RegFailure"), new Object[]{ex.getLocalizedMessage()}); //NOI18N
             msgArea.setText(errorMsg);
             setTopManagerStatus(errorMsg);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
     
-    public void registerConnectionPool(Property[] props, String resType, String serverName) throws Exception{
-        //FIXME: last param needs to be target ?? servername??
-        Object[] params = new Object[]{ResourceUtils.getAttributes(props, __JdbcConnectionPool), ResourceUtils.getProperties(props), null};
-        String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
+    public void registerConnectionPool(Resources res, String serverName) throws Exception{
+        PropertyElement[] props = res.getJdbcConnectionPool(0).getPropertyElement();
+        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getJdbcConnectionPool(0)), ResourceUtils.getProperties(props), null};  
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateCP"); //NOI18N
         
-        createResource(operName, params, signature, getManagementObject(serverName));
+        createResource(operName, params, getManagementObject(serverName));
     }
     
-    public void registerDataSource(Property[] props, String resType, String serverName) throws Exception{
-        //FIXME: last param needs to be target ?? servername??
-        Object[] params = new Object[]{ResourceUtils.getAttributes(props, __JdbcResource), ResourceUtils.getProperties(props), null};
-        String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
+    public void registerDataSource(Resources res, String serverName) throws Exception{
+        PropertyElement[] props = res.getJdbcResource(0).getPropertyElement();
+        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getJdbcResource(0)), ResourceUtils.getProperties(props), null};   
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateDS"); //NOI18N
         
-        createResource(operName, params, signature, getManagementObject(serverName));
+        createResource(operName, params, getManagementObject(serverName));
     }
     
-    public void registerPersistenceManager(Property[] props, String resType, String serverName) throws Exception{
-        //FIXME: last param needs to be target ?? servername??
-        Object[] params = new Object[]{ResourceUtils.getAttributes(props, __PersistenceManagerFactoryResource), ResourceUtils.getProperties(props), null};
-        String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
+    public void registerPersistenceManager(Resources res, String serverName) throws Exception{       
+        PropertyElement[] props = res.getPersistenceManagerFactoryResource(0).getPropertyElement();
+        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getPersistenceManagerFactoryResource(0)), ResourceUtils.getProperties(props), null};   
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreatePMF"); //NOI18N
         
-        createResource(operName, params, signature, getManagementObject(serverName));
+        createResource(operName, params, getManagementObject(serverName));
     }
     
-    public void registerMailSession(Property[] props, String resType, String serverName) throws Exception{
-        //FIXME: last param needs to be target ?? servername??
-        Object[] params = new Object[]{ResourceUtils.getAttributes(props, __MailResource), ResourceUtils.getProperties(props), null};
-        String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
+    public void registerMailSession(Resources res, String serverName) throws Exception{
+        PropertyElement[] props = res.getMailResource(0).getPropertyElement();
+        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getMailResource(0)), ResourceUtils.getProperties(props), null};   
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateMail"); //NOI18N
         
-        createResource(operName, params, signature, getManagementObject(serverName));
+        createResource(operName, params, getManagementObject(serverName));
     }
     
-    public void registerJMS(Property[] props, String resType, String serverName) throws Exception{
-        //FIXME: last param needs to be target ?? servername??
-        Object[] params = new Object[]{ResourceUtils.getAttributes(props, __JmsResource), ResourceUtils.getProperties(props), null};
-        String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
+    public void registerJMS(Resources res, String serverName) throws Exception{
+        PropertyElement[] props = res.getJmsResource(0).getPropertyElement();
+        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getJmsResource(0)), ResourceUtils.getProperties(props), null};   
         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateJMS"); //NOI18N
         
-        createResource(operName, params, signature, getManagementObject(serverName));
+        createResource(operName, params, getManagementObject(serverName));
     }
     
     private void setTopManagerStatus(String msg){
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
     }
     
+    private Resources getResourceGraph(SunResourceDataObject resourceObj){
+        BaseResourceNode resNode = (BaseResourceNode)resourceObj.getNodeDelegate();
+        return resNode.getBeanGraph();
+    }
+       
     private ServerInterface getManagementObject(String serverName){
         SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)servers.get(serverName);
         ServerInterface mejb = eightDM.getManagement(); 
         return mejb;
     }
     
-     static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
-   private void createResource(String operName, Object[] params, String[] signature, ServerInterface mejb) throws Exception{
+    static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
+    private void createResource(String operName, Object[] params, ServerInterface mejb) throws Exception{
         try{
             ObjectName objName = new ObjectName(MAP_RESOURCES);
+            String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
             mejb.invoke(objName, operName, params, signature);
         }catch(Exception ex){
             throw new Exception(ex.getLocalizedMessage());

@@ -33,6 +33,7 @@ import javax.management.ObjectName;
 import javax.management.AttributeList;
 
 import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.nodes.Node.Property;
@@ -46,7 +47,6 @@ import org.openide.filesystems.FileAlreadyLockedException;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 
-import org.netbeans.modules.j2ee.sun.share.dd.resources.*;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.*;
@@ -59,6 +59,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /*
  *
@@ -70,397 +72,91 @@ public class ResourceUtils implements WizardConstants{
     public ResourceUtils() {
     }
     
-    public static void saveNodeToXml(ConnPoolBeanDataNode currentNode, ConnPoolBean bean){
-        try {
-            FileObject resFile = currentNode.getDataObject().getPrimaryFile();
-                        
-            Resources res = new Resources();
-            JdbcConnectionPool connPool = new JdbcConnectionPool();
-            connPool.setDescription(bean.getDescription());
-            connPool.setAttributeValue(__Name, bean.getName());
-            connPool.setAttributeValue(__DatasourceClassname, bean.getDsClass());
-            connPool.setAttributeValue(__ResType, bean.getResType());
-            connPool.setAttributeValue(__SteadyPoolSize, bean.getSteadyPoolSize());
-            connPool.setAttributeValue(__MaxPoolSize, bean.getMaxPoolSize());
-            connPool.setAttributeValue(__MaxWaitTimeInMillis, bean.getMaxWaitTimeMilli());
-            connPool.setAttributeValue(__PoolResizeQuantity, bean.getPoolResizeQty());
-            connPool.setAttributeValue(__IdleTimeoutInSeconds, bean.getIdleIimeoutSecond());
-            String isolation = bean.getTranxIsoLevel();
-            if (isolation != null && (isolation.length() == 0 || isolation.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default")))) {  //NOI18N
-                isolation = null;
-            }
-            connPool.setAttributeValue(__TransactionIsolationLevel, isolation);
-            connPool.setAttributeValue(__IsIsolationLevelGuaranteed, bean.getIsIsoLevGuaranteed());
-            connPool.setAttributeValue(__IsConnectionValidationRequired, bean.getIsConnValidReq());
-            connPool.setAttributeValue(__ConnectionValidationMethod, bean.getConnValidMethod());
-            connPool.setAttributeValue(__ValidationTableName, bean.getValidationTableName());
-            connPool.setAttributeValue(__FailAllConnections, bean.getFailAllConns());
-            
-            NameValuePair[] params = bean.getExtraParams();
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    ExtraProperty prop = new ExtraProperty();
-                    prop.setAttributeValue("name", params[i].getParamName()); //NOI18N
-                    prop.setAttributeValue("value", params[i].getParamValue()); //NOI18N
-                    //prop.setDescription(params[i].getParamDescription());
-                    connPool.addExtraProperty(prop);
-                }
-            }
-            res.addJdbcConnectionPool(connPool);
+    public static void saveNodeToXml(FileObject resFile, Resources res){
+        try {             
             res.write(FileUtil.toFile(resFile));
-            
         }catch(Exception ex){
-            System.out.println("Unable to save file  nodeToXml for JDBC Connection Pool" + ex.getLocalizedMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
         }
-    } // JDBC Connection Pool
+    } 
     
-    public static void saveNodeToXml(DataSourceBeanDataNode currentNode, DataSourceBean bean){
-        try {
-            FileObject resFile = currentNode.getDataObject().getPrimaryFile();
-                        
-            Resources res = new Resources();
-            JdbcResource datasource = new JdbcResource();
-            datasource.setDescription(bean.getDescription());
-            datasource.setAttributeValue(__JndiName, bean.getJndiName());
-            datasource.setAttributeValue(__PoolName, bean.getConnPoolName());
-            datasource.setAttributeValue(__JdbcObjectType, bean.getResType());
-            datasource.setAttributeValue(__Enabled, bean.getIsEnabled());
-            
-            // set properties
-            NameValuePair[] params = bean.getExtraParams();
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    ExtraProperty prop = new ExtraProperty();
-                    prop.setAttributeValue("name", params[i].getParamName()); //NOI18N
-                    prop.setAttributeValue("value", params[i].getParamValue()); //NOI18N
-                    //prop.setDescription(params[i].getParamDescription());
-                    datasource.addExtraProperty(prop);
-                }
-            }
-            
-            res.addJdbcResource(datasource);
-            res.write(FileUtil.toFile(resFile));
-            
-        }catch(Exception ex){
-            System.out.println("Unable to save file  nodeToXml for DataSource" + ex.getLocalizedMessage());
-        }
-    }// DataSource
-    
-    public static void saveNodeToXml(PersistenceManagerBeanDataNode currentNode, PersistenceManagerBean bean){
-        try {
-            FileObject resFile = currentNode.getDataObject().getPrimaryFile();
-                        
-            Resources res = new Resources();
-            PersistenceManagerFactoryResource pmfresource = new PersistenceManagerFactoryResource();
-            pmfresource.setDescription(bean.getDescription());
-            pmfresource.setAttributeValue(__JndiName, bean.getJndiName());
-            pmfresource.setAttributeValue(__FactoryClass, bean.getFactoryClass());
-            pmfresource.setAttributeValue(__JdbcResourceJndiName, bean.getDatasourceJndiName());
-            pmfresource.setAttributeValue(__Enabled, bean.getIsEnabled());
-            
-            // set properties
-            NameValuePair[] params = bean.getExtraParams();
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    ExtraProperty prop = new ExtraProperty();
-                    prop.setAttributeValue("name", params[i].getParamName()); //NOI18N
-                    prop.setAttributeValue("value", params[i].getParamValue()); //NOI18N
-                    //prop.setDescription(params[i].getParamDescription());
-                    pmfresource.addExtraProperty(prop);
-                }
-            }
-            
-            res.addPersistenceManagerFactoryResource(pmfresource);
-            res.write(FileUtil.toFile(resFile));
-            
-        }catch(Exception ex){
-            System.out.println("Unable to save file  nodeToXml for Persistence Manager" + ex.getLocalizedMessage());
-        }
-    }// Persistence Manager
-    
-    public static void saveNodeToXml(JavaMailSessionBeanDataNode currentNode, JavaMailSessionBean bean){
-        try {
-            FileObject resFile = currentNode.getDataObject().getPrimaryFile();
-                        
-            Resources res = new Resources();
-            MailResource mlresource = new MailResource();
-            mlresource.setDescription(bean.getDescription());
-            mlresource.setAttributeValue(__JndiName, bean.getJndiName());
-            mlresource.setAttributeValue(__StoreProtocol, bean.getStoreProt());
-            mlresource.setAttributeValue(__StoreProtocolClass, bean.getStoreProtClass());
-            mlresource.setAttributeValue(__TransportProtocol, bean.getTransProt());
-            mlresource.setAttributeValue(__TransportProtocolClass, bean.getTransProtClass());
-            mlresource.setAttributeValue(__Host, bean.getHostName());
-            mlresource.setAttributeValue(__MailUser, bean.getUserName());
-            mlresource.setAttributeValue(__From, bean.getFromAddr());
-            mlresource.setAttributeValue(__Debug, bean.getIsDebug());
-            mlresource.setAttributeValue(__Enabled, bean.getIsEnabled());
-            
-            // set properties
-            NameValuePair[] params = bean.getExtraParams();
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    ExtraProperty prop = new ExtraProperty();
-                    prop.setAttributeValue("name", params[i].getParamName()); //NOI18N
-                    prop.setAttributeValue("value", params[i].getParamValue()); //NOI18N
-                    //prop.setDescription(params[i].getParamDescription());
-                    mlresource.addExtraProperty(prop);
-                }
-            }
-            
-            res.addMailResource(mlresource);
-            res.write(FileUtil.toFile(resFile));
-            
-        }catch(Exception ex){
-            System.out.println("Unable to save file  nodeToXml for Java Mail Session" + ex.getLocalizedMessage());
-        }
-    }// Java Mail Session
-    
-    public static void saveNodeToXml(JMSBeanDataNode currentNode, JMSBean bean){
-        try {
-            FileObject resFile = currentNode.getDataObject().getPrimaryFile();
-                        
-            Resources res = new Resources();
-            JmsResource jmsresource = new JmsResource();
-            jmsresource.setDescription(bean.getDescription());
-            jmsresource.setAttributeValue(__JndiName, bean.getJndiName());
-            jmsresource.setAttributeValue(__ResType, bean.getResType());
-            jmsresource.setAttributeValue(__Enabled, bean.getIsEnabled());
-            
-            // set properties
-            NameValuePair[] params = bean.getExtraParams();
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    ExtraProperty prop = new ExtraProperty();
-                    prop.setAttributeValue("name", params[i].getParamName()); //NOI18N
-                    prop.setAttributeValue("value", params[i].getParamValue()); //NOI18N
-                    //prop.setDescription(params[i].getParamDescription());
-                    jmsresource.addExtraProperty(prop);
-                }
-            }
-            
-            res.addJmsResource(jmsresource);
-            res.write(FileUtil.toFile(resFile));
-            
-        }catch(Exception ex){
-            System.out.println("Unable to save file  nodeToXml for Java Message Service" + ex.getLocalizedMessage());
-        }
-    }// Java Message Service
-    
-    public static AttributeList getAttributes(Property[] props, String type){
-        AttributeList attrList = null;
-        if(type.equals(__JdbcConnectionPool)){
-            attrList = getConnPoolAttributesFromNode(props);
-        }else if(type.equals(__JdbcResource)){
-            attrList = getDataSourceAttributesFromNode(props);
-        }else if(type.equals(__PersistenceManagerFactoryResource)){
-            attrList = getPersistenceManagerAttributesFromNode(props);
-        }else if(type.equals(__MailResource)){
-            attrList = getMailSessionAttributesFromNode(props);
-        }else if(type.equals(__JmsResource)){
-            attrList = getJMSAttributesFromNode(props);
-        }
-        return attrList;
-    }
-    
-    public static AttributeList getConnPoolAttributesFromNode(Property[] props){
+    public static AttributeList getResourceAttributes(JdbcConnectionPool connPool){
         AttributeList attrs = new AttributeList();
-        try{
-            for(int i=0; i<props.length; i++){
-                String propName = props[i].getName();
-                Object propValue = props[i].getValue();
-                String value = ""; //NOI18N 
-                if(propValue != null){
-                    value = propValue.toString();
-                }
-                if(propName.equals(__Name)){
-                    attrs.add(new Attribute(__Name, value));
-                }else if(propName.equals(__CPdsClass)){
-                    attrs.add(new Attribute(__DatasourceClassname, value));
-                }else if(propName.equals(__CPresType)){
-                    attrs.add(new Attribute(__ResType, value));
-                }else if(propName.equals(__CPsteadyPoolSize)){
-                    attrs.add(new Attribute(__SteadyPoolSize, value));
-                }else if(propName.equals(__CPmaxPoolSize)){
-                    attrs.add(new Attribute(__MaxPoolSize, value));
-                }else if(propName.equals(__CPmaxWaitTimeMilli)){
-                    attrs.add(new Attribute(__MaxWaitTimeInMillis, value));
-                }else if(propName.equals(__CPpoolResizeQty)){
-                    attrs.add(new Attribute(__PoolResizeQuantity, value));
-                }else if(propName.equals(__CPidleIimeoutSecond)){
-                    attrs.add(new Attribute(__IdleTimeoutInSeconds, value));
-                }else if(propName.equals(__CPtranxIsoLevel)){
-                    String isolation = value;
-                    if (value != null && (value.length() == 0 || value.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default"))) ){  //NOI18N
-                        isolation = null;
-                    }
-                    attrs.add(new Attribute(__TransactionIsolationLevel, isolation));
-                }else if(propName.equals(__CPisIsoLevGuaranteed)){
-                    attrs.add(new Attribute(__IsIsolationLevelGuaranteed, value));
-                }else if(propName.equals(__CPisConnValidReq)){
-                    attrs.add(new Attribute(__IsConnectionValidationRequired, value));
-                }else if(propName.equals(__CPconnValidMethod)){
-                    attrs.add(new Attribute(__ConnectionValidationMethod, value));
-                }else if(propName.equals(__CPvalidationTableName)){
-                    attrs.add(new Attribute(__ValidationTableName, value));
-                }else if(propName.equals(__CPfailAllConns)){
-                    attrs.add(new Attribute(__FailAllConnections, value));
-                }else if(propName.equals(__Description)){
-                    attrs.add(new Attribute(__Description, value));
-                }
-            }
-        }catch(Exception ex){
-            System.out.println("Unable to construct attribute list for: getConnPoolAttributesFromNode " );
-            ex.printStackTrace();
+        attrs.add(new Attribute(__Name, connPool.getName()));
+        attrs.add(new Attribute(__DatasourceClassname, connPool.getDatasourceClassname()));
+        attrs.add(new Attribute(__ResType, connPool.getResType()));
+        attrs.add(new Attribute(__SteadyPoolSize, connPool.getSteadyPoolSize()));
+        attrs.add(new Attribute(__MaxPoolSize, connPool.getMaxPoolSize()));
+        attrs.add(new Attribute(__MaxWaitTimeInMillis, connPool.getMaxWaitTimeInMillis()));
+        attrs.add(new Attribute(__PoolResizeQuantity, connPool.getPoolResizeQuantity()));
+        attrs.add(new Attribute(__IdleTimeoutInSeconds, connPool.getIdleTimeoutInSeconds()));
+        String isolation = connPool.getTransactionIsolationLevel();
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default"))) ){  //NOI18N
+            isolation = null;
         }
+        attrs.add(new Attribute(__TransactionIsolationLevel, isolation));
+        attrs.add(new Attribute(__IsIsolationLevelGuaranteed, connPool.getIsIsolationLevelGuaranteed()));
+        attrs.add(new Attribute(__IsConnectionValidationRequired, connPool.getIsConnectionValidationRequired()));
+        attrs.add(new Attribute(__ConnectionValidationMethod, connPool.getConnectionValidationMethod()));
+        attrs.add(new Attribute(__ValidationTableName, connPool.getValidationTableName()));
+        attrs.add(new Attribute(__FailAllConnections, connPool.getFailAllConnections()));
+        attrs.add(new Attribute(__Description, connPool.getDescription()));
         return attrs;
     }
     
-    public static AttributeList getDataSourceAttributesFromNode(Property[] props){
+    public static AttributeList getResourceAttributes(JdbcResource jdbcResource){
         AttributeList attrs = new AttributeList();
-        try{
-            for(int i=0; i<props.length; i++){
-                String propName = props[i].getName();
-                Object propValue = props[i].getValue();
-                String value = ""; //NOI18N
-                if(propValue != null){
-                    value = propValue.toString();
-                }
-                
-                if(propName.equals(__BeanjndiName)){
-                    attrs.add(new Attribute(__JndiName, value));
-                }else if(propName.equals(__DSconnPoolName)){
-                    attrs.add(new Attribute(__PoolName, value));
-                }else if(propName.equals(__DSresType)){
-                    attrs.add(new Attribute(__JdbcObjectType, value));
-                }else if(propName.equals(__BeanisEnabled)){
-                    attrs.add(new Attribute(__Enabled, value));
-                }else if(propName.equals(__Description)){
-                    attrs.add(new Attribute(__Description, value));
-                }
-            }
-        }catch(Exception ex){
-            System.out.println("Unable to construct attribute list: getDataSourceAttributesFromNode ");
-        }
+        attrs.add(new Attribute(__JndiName, jdbcResource.getJndiName()));
+        attrs.add(new Attribute(__PoolName, jdbcResource.getPoolName()));
+        attrs.add(new Attribute(__JdbcObjectType, jdbcResource.getObjectType()));
+        attrs.add(new Attribute(__Enabled, jdbcResource.getEnabled()));
+        attrs.add(new Attribute(__Description, jdbcResource.getDescription()));
         return attrs;
     }
     
-    public static AttributeList getPersistenceManagerAttributesFromNode(Property[] props){
+    public static AttributeList getResourceAttributes(PersistenceManagerFactoryResource pmResource){
         AttributeList attrs = new AttributeList();
-        try{
-            for(int i=0; i<props.length; i++){
-                String propName = props[i].getName();
-                Object propValue = props[i].getValue();
-                String value = ""; //NOI18N
-                if(propValue != null){
-                    value = propValue.toString();
-                }
-                
-                if(propName.equals(__BeanjndiName)){
-                    attrs.add(new Attribute(__JndiName, value));
-                }else if(propName.equals(__PMFfactoryClass)){
-                    attrs.add(new Attribute(__FactoryClass, value));
-                }else if(propName.equals(__PMFdatasourceJndiName)){
-                    attrs.add(new Attribute(__JdbcResourceJndiName, value));
-                }else if(propName.equals(__BeanisEnabled)){
-                    attrs.add(new Attribute(__Enabled, value));
-                }else if(propName.equals(__Description)){
-                    attrs.add(new Attribute(__Description, value));
-                }
-            }
-        }catch(Exception ex){
-            System.out.println("Unable to construct attribute list: getPersistenceManagerAttributesFromNode ");
-        }
+        attrs.add(new Attribute(__JndiName, pmResource.getJndiName()));
+        attrs.add(new Attribute(__FactoryClass, pmResource.getFactoryClass()));
+        attrs.add(new Attribute(__JdbcResourceJndiName, pmResource.getJdbcResourceJndiName()));
+        attrs.add(new Attribute(__Enabled, pmResource.getEnabled()));
+        attrs.add(new Attribute(__Description, pmResource.getDescription()));
         return attrs;
     }
     
-    public static AttributeList getMailSessionAttributesFromNode(Property[] props){
+    public static AttributeList getResourceAttributes(MailResource mailResource){
         AttributeList attrs = new AttributeList();
-        try{
-            for(int i=0; i<props.length; i++){
-                String propName = props[i].getName();
-                Object propValue = props[i].getValue();
-                String value = ""; //NOI18N
-                if(propValue != null){
-                    value = propValue.toString();
-                }
-                
-                if(propName.equals(__BeanjndiName)){
-                    attrs.add(new Attribute(__JndiName, value));
-                }else if(propName.equals(__MAILstoreProt)){
-                    attrs.add(new Attribute(__StoreProtocol, value));
-                }else if(propName.equals(__MAILstoreProtClass)){
-                    attrs.add(new Attribute(__StoreProtocolClass, value));
-                }else if(propName.equals(__MAILtransProt)){
-                    attrs.add(new Attribute(__TransportProtocol, value));
-                }else if(propName.equals(__MAILtransProtClass)){
-                    attrs.add(new Attribute(__TransportProtocolClass, value));
-                }else if(propName.equals(__MAILhostName)){
-                    attrs.add(new Attribute(__Host, value));
-                }else if(propName.equals(__MAILuserName)){
-                    attrs.add(new Attribute(__MailUser, value));
-                }else if(propName.equals(__MAILfromAddr)){
-                    attrs.add(new Attribute(__From, value));
-                }else if(propName.equals(__MAILisDebug)){
-                    attrs.add(new Attribute(__Debug, value));
-                }else if(propName.equals(__BeanisEnabled)){
-                    attrs.add(new Attribute(__Enabled, value));
-                }else if(propName.equals(__Description)){
-                    attrs.add(new Attribute(__Description, value));
-                }
-            }
-        }catch(Exception ex){
-            System.out.println("Unable to construct attribute list: getMailSessionAttributesFromNode ");
-        }
+        attrs.add(new Attribute(__JndiName, mailResource.getJndiName()));
+        attrs.add(new Attribute(__StoreProtocol, mailResource.getStoreProtocol()));
+        attrs.add(new Attribute(__StoreProtocolClass, mailResource.getStoreProtocolClass()));
+        attrs.add(new Attribute(__TransportProtocol, mailResource.getTransportProtocol()));
+        attrs.add(new Attribute(__TransportProtocolClass, mailResource.getTransportProtocolClass()));
+        attrs.add(new Attribute(__Host, mailResource.getHost()));
+        attrs.add(new Attribute(__MailUser, mailResource.getUser()));
+        attrs.add(new Attribute(__From, mailResource.getFrom()));
+        attrs.add(new Attribute(__Debug, mailResource.getDebug()));
+        attrs.add(new Attribute(__Enabled, mailResource.getEnabled()));
+        attrs.add(new Attribute(__Description, mailResource.getDescription()));
         return attrs;
     }
     
-    public static AttributeList getJMSAttributesFromNode(Property[] props){
+    public static AttributeList getResourceAttributes(JmsResource jmsResource){
         AttributeList attrs = new AttributeList();
-        try{
-            for(int i=0; i<props.length; i++){
-                String propName = props[i].getName();
-                Object propValue = props[i].getValue();
-                String value = ""; //NOI18N
-                if(propValue != null){
-                    value = propValue.toString();
-                }
-                
-                if(propName.equals(__BeanjndiName)){
-                    attrs.add(new Attribute(__JavaMessageJndiName, value)); 
-                }else if(propName.equals(__JMSResType)){
-                    attrs.add(new Attribute(__JavaMessageResType, value));
-                }else if(propName.equals(__BeanisEnabled)){
-                    attrs.add(new Attribute(__Enabled, value));
-                }else if(propName.equals(__Description)){
-                    attrs.add(new Attribute(__Description, value));
-                }
-            }
-        }catch(Exception ex){
-            System.out.println("Unable to construct attribute list: getJMSAttributesFromNode ");
-        }
+        attrs.add(new Attribute(__JavaMessageJndiName, jmsResource.getJndiName()));
+        attrs.add(new Attribute(__JavaMessageResType, jmsResource.getResType()));
+        attrs.add(new Attribute(__Enabled, jmsResource.getEnabled()));
+        attrs.add(new Attribute(__Description, jmsResource.getDescription()));
         return attrs;
     }
     
-    public static Properties getProperties(Property[] props){
+    public static Properties getProperties(PropertyElement[] props){
         Properties propList = new Properties();
-        try{
-            for(int i=0; i<props.length; i++){
-                String propName = props[i].getName();
-                Object propValue = props[i].getValue();
-                if(propValue != null && propName.equals(__ExtraParams)){
-                    NameValuePair[] extraValue = (NameValuePair[])props[i].getValue();
-                    for(int j=0; j<extraValue.length; j++){
-                        propList.put(extraValue[j].getParamName(), extraValue[j].getParamValue());
-                    }
-                }    
-            }
-        }catch(Exception ex){
-            System.out.println("Unable to construct properties list for: getProperties " );
+        for(int i=0; i<props.length; i++){
+            propList.put(props[i].getName(), props[i].getValue());
         }
         return propList;
     }
-
+    
     public List getTargetServers(){
         String instances [] = InstanceProperties.getInstanceList();
         List targets = new ArrayList();
@@ -475,14 +171,12 @@ public class ResourceUtils implements WizardConstants{
         //}
         return targets;
     }
-     
-
     
     public static void saveConnPoolDatatoXml(ResourceConfigData data) {
         try{
             Vector vec = data.getProperties();
-            Resources res = new Resources();
-            JdbcConnectionPool connPool = new JdbcConnectionPool();
+            Resources res = getResourceGraph();
+            JdbcConnectionPool connPool = res.newJdbcConnectionPool();
             
             String[] keys = data.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
@@ -491,47 +185,43 @@ public class ResourceUtils implements WizardConstants{
                     Vector props = (Vector)data.getProperties();
                     for (int j = 0; j < props.size(); j++) {
                         NameValuePair pair = (NameValuePair)props.elementAt(j);
-                        ExtraProperty prop = new ExtraProperty();
-                        prop.setAttributeValue("name",pair.getParamName()); //NOI18N
-                        prop.setAttributeValue("value", pair.getParamValue()); //NOI18N
-                        //prop.setDescription(pair.getParamDescription());
-                        connPool.addExtraProperty(prop);
+                        PropertyElement prop = connPool.newPropertyElement();
+                        prop = populatePropertyElement(prop, pair);
+                        connPool.addPropertyElement(prop);
                     }
                 }else{
                     String value = data.getString(key);
                     if (key.equals(__Name))
-                        connPool.setAttributeValue(__Name, value);
+                        connPool.setName(value);
                     else if (key.equals(__DatasourceClassname))
-                        connPool.setAttributeValue(__DatasourceClassname, value);
+                        connPool.setDatasourceClassname(value);
                     else if (key.equals(__ResType))
-                        connPool.setAttributeValue(__ResType, value);
+                        connPool.setResType(value);
                     else if (key.equals(__SteadyPoolSize))
-                        connPool.setAttributeValue(__SteadyPoolSize, value);
+                        connPool.setSteadyPoolSize(value);
                     else if (key.equals(__MaxPoolSize))
-                        connPool.setAttributeValue(__MaxPoolSize, value);
+                        connPool.setMaxPoolSize(value);
                     else if (key.equals(__MaxWaitTimeInMillis))
-                        connPool.setAttributeValue(__MaxWaitTimeInMillis, value);
+                        connPool.setMaxWaitTimeInMillis(value);
                     else if (key.equals(__PoolResizeQuantity))
-                        connPool.setAttributeValue(__PoolResizeQuantity, value);
+                        connPool.setPoolResizeQuantity(value);
                     else if (key.equals(__IdleTimeoutInSeconds))
-                        connPool.setAttributeValue(__IdleTimeoutInSeconds, value);
+                        connPool.setIdleTimeoutInSeconds(value);
                     else if (key.equals(__TransactionIsolationLevel))
-                        connPool.setAttributeValue(__TransactionIsolationLevel, value);
+                        connPool.setTransactionIsolationLevel(value);
                     else if (key.equals(__IsIsolationLevelGuaranteed))
-                        connPool.setAttributeValue(__IsIsolationLevelGuaranteed, value);
+                        connPool.setIsIsolationLevelGuaranteed(value);
                     else if (key.equals(__IsConnectionValidationRequired))
-                        connPool.setAttributeValue(__IsConnectionValidationRequired, value);
+                        connPool.setIsConnectionValidationRequired(value);
                     else if (key.equals(__ConnectionValidationMethod))
-                        connPool.setAttributeValue(__ConnectionValidationMethod, value);
+                        connPool.setConnectionValidationMethod(value);
                     else if (key.equals(__ValidationTableName))
-                        connPool.setAttributeValue(__ValidationTableName, value);
+                        connPool.setValidationTableName(value);
                     else if (key.equals(__FailAllConnections))
-                        connPool.setAttributeValue(__FailAllConnections, value);
+                        connPool.setFailAllConnections(value);
                     else if (key.equals(__Description)){
                         connPool.setDescription(value); 
                     }    
-                    //else if(key.equals(__IsCPExisting))
-                    //bean.setIsExistingConnection(value);
                 }
                 
             } //for
@@ -544,8 +234,8 @@ public class ResourceUtils implements WizardConstants{
     
     public static void saveJDBCResourceDatatoXml(ResourceConfigData dsData, ResourceConfigData cpData) {
         try{
-            Resources res = new Resources();
-            JdbcResource datasource = new JdbcResource();
+            Resources res = getResourceGraph();
+            JdbcResource datasource = res.newJdbcResource();
            
             String[] keys = dsData.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
@@ -554,22 +244,20 @@ public class ResourceUtils implements WizardConstants{
                     Vector props = (Vector)dsData.getProperties();
                     for (int j = 0; j < props.size(); j++) {
                         NameValuePair pair = (NameValuePair)props.elementAt(j);
-                        ExtraProperty prop = new ExtraProperty();
-                        prop.setAttributeValue("name",pair.getParamName()); //NOI18N
-                        prop.setAttributeValue("value", pair.getParamValue()); //NOI18N
-                        //prop.setDescription(pair.getParamDescription());
-                        datasource.addExtraProperty(prop);
+                        PropertyElement prop = datasource.newPropertyElement();
+                        prop = populatePropertyElement(prop, pair);
+                        datasource.addPropertyElement(prop);
                     }
                 }else{
                     String value = dsData.getString(key);
                     if (key.equals(__JndiName))
-                        datasource.setAttributeValue(__JndiName, value);
+                        datasource.setJndiName(value);
                     else if (key.equals(__PoolName))
-                        datasource.setAttributeValue(__PoolName, value);
+                        datasource.setPoolName(value);
                     else if (key.equals(__JdbcObjectType))
-                        datasource.setAttributeValue(__JdbcObjectType, value);
+                        datasource.setObjectType(value);
                     else if (key.equals(__Enabled))
-                        datasource.setAttributeValue(__Enabled, value);
+                        datasource.setEnabled(value);
                     else if (key.equals(__Description))
                         datasource.setDescription(value); 
                 }
@@ -588,8 +276,8 @@ public class ResourceUtils implements WizardConstants{
     
     public static void savePMFResourceDatatoXml(ResourceConfigData pmfData, ResourceConfigData dsData, ResourceConfigData cpData) {
         try{
-            Resources res = new Resources();
-            PersistenceManagerFactoryResource pmfresource = new PersistenceManagerFactoryResource();
+            Resources res = getResourceGraph();
+            PersistenceManagerFactoryResource pmfresource = res.newPersistenceManagerFactoryResource();
            
             String[] keys = pmfData.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
@@ -598,22 +286,20 @@ public class ResourceUtils implements WizardConstants{
                     Vector props = (Vector)pmfData.getProperties();
                     for (int j = 0; j < props.size(); j++) {
                         NameValuePair pair = (NameValuePair)props.elementAt(j);
-                        ExtraProperty prop = new ExtraProperty();
-                        prop.setAttributeValue("name",pair.getParamName()); //NOI18N
-                        prop.setAttributeValue("value", pair.getParamValue()); //NOI18N
-                        //prop.setDescription(pair.getParamDescription());
-                        pmfresource.addExtraProperty(prop);
+                        PropertyElement prop = pmfresource.newPropertyElement();
+                        prop = populatePropertyElement(prop, pair);
+                        pmfresource.addPropertyElement(prop);
                     }
                 }else{
                     String value = pmfData.getString(key);
                     if (key.equals(__JndiName))
-                        pmfresource.setAttributeValue(__JndiName, value);
+                        pmfresource.setJndiName(value);
                     else if (key.equals(__FactoryClass))
-                        pmfresource.setAttributeValue(__FactoryClass, value);
+                        pmfresource.setFactoryClass(value);
                     else if (key.equals(__JdbcResourceJndiName))
-                        pmfresource.setAttributeValue(__JdbcResourceJndiName, value);
+                        pmfresource.setJdbcResourceJndiName(value);
                     else if (key.equals(__Enabled))
-                        pmfresource.setAttributeValue(__Enabled, value);
+                        pmfresource.setEnabled(value);
                     else if (key.equals(__Description))
                         pmfresource.setDescription(value); 
                 }
@@ -632,8 +318,9 @@ public class ResourceUtils implements WizardConstants{
     
     public static void saveJMSResourceDatatoXml(ResourceConfigData jmsData) {
         try{
-            Resources res = new Resources();
-            JmsResource jmsResource = new JmsResource();
+            Resources res = getResourceGraph();
+            JmsResource jmsResource = res.newJmsResource();
+            
             String[] keys = jmsData.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
                 String key = keys[i];
@@ -641,21 +328,18 @@ public class ResourceUtils implements WizardConstants{
                     Vector props = (Vector)jmsData.getProperties();
                     for (int j = 0; j < props.size(); j++) {
                         NameValuePair pair = (NameValuePair)props.elementAt(j);
-                        ExtraProperty prop = new ExtraProperty();
-                        prop.setAttributeValue("name",pair.getParamName()); //NOI18N
-                        prop.setAttributeValue("value", pair.getParamValue()); //NOI18N
-                        //prop.setDescription(pair.getParamDescription());
-                        jmsResource.addExtraProperty(prop);
+                        PropertyElement prop = jmsResource.newPropertyElement();
+                        prop = populatePropertyElement(prop, pair);
+                        jmsResource.addPropertyElement(prop);
                     }
                 }else{
                     String value = jmsData.getString(key);
                     if (key.equals(__JndiName))
-                        jmsResource.setAttributeValue(__JndiName, value);
+                        jmsResource.setJndiName(value);
                     else if (key.equals(__ResType))
-                        jmsResource.setAttributeValue(__ResType, value);
+                        jmsResource.setResType(value);
                     else if (key.equals(__Enabled))
-
-                        jmsResource.setAttributeValue(__Enabled, value);
+                        jmsResource.setEnabled(value);
                     else if (key.equals(__Description))
                         jmsResource.setDescription(value); 
                 }
@@ -670,8 +354,8 @@ public class ResourceUtils implements WizardConstants{
     public static void saveMailResourceDatatoXml(ResourceConfigData data) {
         try{
             Vector vec = data.getProperties();
-            Resources res = new Resources();
-            MailResource mlresource = new MailResource();
+            Resources res = getResourceGraph();
+            MailResource mlresource = res.newMailResource();
                         
             String[] keys = data.getFieldNames();
             for (int i = 0; i < keys.length; i++) {
@@ -680,32 +364,30 @@ public class ResourceUtils implements WizardConstants{
                     Vector props = (Vector)data.getProperties();
                     for (int j = 0; j < props.size(); j++) {
                         NameValuePair pair = (NameValuePair)props.elementAt(j);
-                        ExtraProperty prop = new ExtraProperty();
-                        prop.setAttributeValue("name",pair.getParamName()); //NOI18N
-                        prop.setAttributeValue("value", pair.getParamValue()); //NOI18N
-                        //prop.setDescription(pair.getParamDescription());
-                        mlresource.addExtraProperty(prop);
+                        PropertyElement prop = mlresource.newPropertyElement();
+                        prop = populatePropertyElement(prop, pair);
+                        mlresource.addPropertyElement(prop);
                     }
                 }else{
                     String value = data.getString(key);
                     if (key.equals(__JndiName))
-                        mlresource.setAttributeValue(__JndiName, value);
+                        mlresource.setJndiName(value);
                     else if (key.equals(__StoreProtocol))
-                        mlresource.setAttributeValue(__StoreProtocol, value);
+                        mlresource.setStoreProtocol(value);
                     else if (key.equals(__StoreProtocolClass))
-                        mlresource.setAttributeValue(__StoreProtocolClass, value);
+                        mlresource.setStoreProtocolClass(value);
                     else if (key.equals(__TransportProtocol))
-                        mlresource.setAttributeValue(__TransportProtocol, value);
+                        mlresource.setTransportProtocol(value);
                     else if (key.equals(__TransportProtocolClass))
-                        mlresource.setAttributeValue(__TransportProtocolClass, value);
+                        mlresource.setTransportProtocolClass(value);
                     else if (key.equals(__Host))
-                        mlresource.setAttributeValue(__Host, value);
+                        mlresource.setHost(value);
                     else if (key.equals(__MailUser))
-                        mlresource.setAttributeValue(__MailUser, value);
+                        mlresource.setUser(value);
                     else if (key.equals(__From))
-                        mlresource.setAttributeValue(__From, value);
+                        mlresource.setFrom(value);
                     else if (key.equals(__Debug))
-                        mlresource.setAttributeValue(__Debug, value);
+                        mlresource.setDebug(value);
                     else if (key.equals(__Description))
                         mlresource.setDescription(value); 
                 }    
@@ -863,7 +545,7 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = Resources.createGraph(in);
+                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                 
                 // identify JDBC Connection Pool xml
                 JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
@@ -881,7 +563,7 @@ public class ResourceUtils implements WizardConstants{
         try{
             if(! primaryFile.isDirectory()){
                 FileInputStream in = new FileInputStream(primaryFile);
-                Resources resources = Resources.createGraph(in);
+                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                 
                 // identify JDBC Resources xml
                 JdbcResource[] dataSources = resources.getJdbcResource();
@@ -916,6 +598,17 @@ public class ResourceUtils implements WizardConstants{
         }    
         return targetFolder;
     }
+    
+    private static Resources getResourceGraph(){
+        return DDProvider.getDefault().getResourcesGraph();
+    }
+    
+    private static PropertyElement populatePropertyElement(PropertyElement prop, NameValuePair pair){
+        prop.setName(pair.getParamName()); 
+        prop.setValue(pair.getParamValue()); 
+        return prop;
+    }
+    
     //Obtained from com.iplanet.ias.util.io.FileUtils - Byron's
     public static boolean isLegalFilename(String filename) {
         for(int i = 0; i < ILLEGAL_FILENAME_CHARS.length; i++)

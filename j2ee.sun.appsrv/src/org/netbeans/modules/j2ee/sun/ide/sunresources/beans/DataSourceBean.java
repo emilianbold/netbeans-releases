@@ -22,8 +22,8 @@ import java.util.Vector;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.JdbcDS;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.JdbcResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.ExtraProperty;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /**
  *
@@ -55,13 +55,12 @@ public class DataSourceBean extends JdbcDS implements java.io.Serializable {
         bean.setResType(datasource.getObjectType());
         bean.setIsEnabled(datasource.getEnabled());
         
-        ExtraProperty[] extraProperties = datasource.getExtraProperty();
+        PropertyElement[] extraProperties = datasource.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();
-            pair.setParamName(extraProperties[i].getAttributeValue("name"));  //NOI18N
-            pair.setParamValue(extraProperties[i].getAttributeValue("value"));  //NOI18N
-            //pair.setParamDescription(extraProperties[i].getDescription());
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
             vec.add(pair);
         }
         
@@ -72,4 +71,29 @@ public class DataSourceBean extends JdbcDS implements java.io.Serializable {
         
         return bean;
     }
+    
+    public Resources getGraph(){
+        Resources res = getResourceGraph();
+        JdbcResource datasource = res.newJdbcResource();
+        datasource.setDescription(getDescription());
+        datasource.setJndiName(getJndiName());
+        datasource.setPoolName(getConnPoolName());
+        datasource.setObjectType(getResType());
+        datasource.setEnabled(getIsEnabled());
+        
+        // set properties
+        NameValuePair[] params = getExtraParams();
+        if (params != null && params.length > 0) {
+            for (int i = 0; i < params.length; i++) {
+                NameValuePair pair = params[i];
+                PropertyElement prop = datasource.newPropertyElement();
+                prop = populatePropertyElement(prop, pair);
+                datasource.addPropertyElement(prop);
+            }
+        }
+        
+        res.addJdbcResource(datasource);
+        return res;
+    }
+    
 }

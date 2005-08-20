@@ -21,8 +21,8 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 import java.util.Vector;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.MailSessionResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.MailResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.ExtraProperty;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /**
  *
@@ -59,13 +59,12 @@ public class JavaMailSessionBean extends MailSessionResource implements java.io.
         bean.setIsDebug(mailresource.getDebug());
         bean.setIsEnabled(mailresource.getEnabled());
            
-        ExtraProperty[] extraProperties = mailresource.getExtraProperty();
+        PropertyElement[] extraProperties = mailresource.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();
-            pair.setParamName(extraProperties[i].getAttributeValue("name"));  //NOI18N
-            pair.setParamValue(extraProperties[i].getAttributeValue("value"));  //NOI18N
-            //pair.setParamDescription(extraProperties[i].getDescription());
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
             vec.add(pair);
         }
         
@@ -76,4 +75,35 @@ public class JavaMailSessionBean extends MailSessionResource implements java.io.
         
         return bean;
     }
+    
+    public Resources getGraph(){
+        Resources res = getResourceGraph();
+        MailResource mlresource = res.newMailResource();
+        mlresource.setDescription(getDescription());
+        mlresource.setJndiName(getJndiName());
+        mlresource.setStoreProtocol(getStoreProt());
+        mlresource.setStoreProtocolClass(getStoreProtClass());
+        mlresource.setTransportProtocol(getTransProt());
+        mlresource.setTransportProtocolClass(getTransProtClass());
+        mlresource.setHost(getHostName());
+        mlresource.setUser(getUserName());
+        mlresource.setFrom(getFromAddr());
+        mlresource.setDebug(getIsDebug());
+        mlresource.setEnabled(getIsEnabled());
+        
+        // set properties
+        NameValuePair[] params = getExtraParams();
+        if (params != null && params.length > 0) {
+            for (int i = 0; i < params.length; i++) {
+                NameValuePair pair = params[i];
+                PropertyElement prop = mlresource.newPropertyElement();
+                prop = populatePropertyElement(prop, pair);
+                mlresource.addPropertyElement(prop);
+            }
+        }
+        
+        res.addMailResource(mlresource);
+        return res;
+    }
+        
 }

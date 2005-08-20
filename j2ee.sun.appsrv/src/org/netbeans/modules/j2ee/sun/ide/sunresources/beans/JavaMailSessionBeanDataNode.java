@@ -20,54 +20,42 @@ package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 
 import java.beans.PropertyEditor;
 
-import org.openide.loaders.*;
-import org.openide.nodes.*;
-import org.openide.cookies.SaveCookie;
 import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.DeleteAction;
-import org.openide.actions.RenameAction;
 
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.*;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions.RegisterAction;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
+import org.openide.nodes.BeanNode;
+import org.openide.nodes.PropertySupport;
+
+import org.openide.filesystems.FileObject;
+
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePairsPropertyEditor;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 
 /**
  *
  * @author  nityad
  */
-public class JavaMailSessionBeanDataNode extends DataNode implements java.beans.PropertyChangeListener{
+public class JavaMailSessionBeanDataNode extends BaseResourceNode implements java.beans.PropertyChangeListener{
     private JavaMailSessionBean resource = null;
    
     /** Creates a new instance of JavaMailSessionBeanDataNode */
     public JavaMailSessionBeanDataNode(SunResourceDataObject obj, JavaMailSessionBean key) {
-        this(obj, Children.LEAF, key);
-    }
-    
-    public JavaMailSessionBeanDataNode(SunResourceDataObject obj, Children ch, JavaMailSessionBean key) {
-        super(obj, ch);
+        super(obj);
         resource = key;
         setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
         setShortDescription (NbBundle.getMessage (JavaMailSessionBeanDataNode.class, "DSC_MailNode"));//NOI18N
         key.addPropertyChangeListener(this);
-        //getCookieSet().add(this);
+        
         Class clazz = key.getClass ();
         try{
             createProperties(key, Utilities.getBeanInfo(clazz));
         } catch (Exception e){
             e.printStackTrace();
         }
-    }
-    
-    public javax.swing.Action getPreferredAction(){
-        return SystemAction.get(PropertiesAction.class);
-    }
-    
-    protected SunResourceDataObject getSunResourceDataObject() {
-        return (SunResourceDataObject)getDataObject();
     }
     
     protected JavaMailSessionBeanDataNode getJavaMailSessionBeanDataNode(){
@@ -78,17 +66,13 @@ public class JavaMailSessionBeanDataNode extends DataNode implements java.beans.
         return resource;
     }
     
-    protected SystemAction[] createActions(){
-        return new SystemAction[]{
-            SystemAction.get(RegisterAction.class),
-            SystemAction.get(DeleteAction.class),
-            SystemAction.get(RenameAction.class),
-            SystemAction.get(PropertiesAction.class),
-        };
+    public void propertyChange(java.beans.PropertyChangeEvent evt) {
+        FileObject resFile = getJavaMailSessionBeanDataNode().getDataObject().getPrimaryFile();
+        ResourceUtils.saveNodeToXml(resFile, resource.getGraph());
     }
     
-    public void propertyChange(java.beans.PropertyChangeEvent evt) {
-        ResourceUtils.saveNodeToXml(getJavaMailSessionBeanDataNode(), getJavaMailSessionBean());
+    public Resources getBeanGraph(){
+        return resource.getGraph();
     }
     
     public HelpCtx getHelpCtx() {

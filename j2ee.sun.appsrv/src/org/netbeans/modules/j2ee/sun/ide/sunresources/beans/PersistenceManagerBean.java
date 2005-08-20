@@ -22,8 +22,8 @@ import java.util.Vector;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.PersistenceManagerResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.PersistenceManagerFactoryResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.ExtraProperty;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /**
  *
@@ -54,13 +54,12 @@ public class PersistenceManagerBean extends PersistenceManagerResource implement
         bean.setDatasourceJndiName(pmfresource.getJdbcResourceJndiName());
         bean.setIsEnabled(pmfresource.getEnabled());
         
-        ExtraProperty[] extraProperties = pmfresource.getExtraProperty();
+        PropertyElement[] extraProperties = pmfresource.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();
-            pair.setParamName(extraProperties[i].getAttributeValue("name"));  //NOI18N
-            pair.setParamValue(extraProperties[i].getAttributeValue("value"));  //NOI18N
-            //pair.setParamDescription(extraProperties[i].getDescription());
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
             vec.add(pair);
         }
         
@@ -70,6 +69,30 @@ public class PersistenceManagerBean extends PersistenceManagerResource implement
         }
         
         return bean;
+    }
+    
+    public Resources getGraph(){
+        Resources res = getResourceGraph();
+        PersistenceManagerFactoryResource pmfresource = res.newPersistenceManagerFactoryResource();
+        pmfresource.setDescription(getDescription());
+        pmfresource.setJndiName(getJndiName());
+        pmfresource.setFactoryClass(getFactoryClass());
+        pmfresource.setJndiName(getDatasourceJndiName());
+        pmfresource.setEnabled(getIsEnabled());
+        
+        // set properties
+        NameValuePair[] params = getExtraParams();
+        if (params != null && params.length > 0) {
+            for (int i = 0; i < params.length; i++) {
+                NameValuePair pair = params[i];
+                PropertyElement prop = pmfresource.newPropertyElement();
+                prop = populatePropertyElement(prop, pair);
+                pmfresource.addPropertyElement(prop);
+            }
+        }
+        
+        res.addPersistenceManagerFactoryResource(pmfresource);
+        return res;
     }
     
 }

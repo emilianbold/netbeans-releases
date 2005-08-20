@@ -22,9 +22,11 @@ import java.util.Vector;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.JdbcCP;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.JdbcConnectionPool;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.ExtraProperty;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
+import org.netbeans.modules.j2ee.sun.ide.editors.IsolationLevelEditor;
+import org.openide.util.NbBundle;
 /**
  *
  * @author  nityad
@@ -59,13 +61,12 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         bean.setValidationTableName(pool.getValidationTableName());
         bean.setFailAllConns(pool.getFailAllConnections());
                 
-        ExtraProperty[] extraProperties = pool.getExtraProperty();
+        PropertyElement[] extraProperties = pool.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();
-            pair.setParamName(extraProperties[i].getAttributeValue("name"));  //NOI18N
-            pair.setParamValue(extraProperties[i].getAttributeValue("value"));  //NOI18N
-            //pair.setParamDescription(extraProperties[i].getDescription());
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
             vec.add(pair);
         }
         
@@ -76,4 +77,39 @@ public class ConnPoolBean extends JdbcCP implements java.io.Serializable{
         return bean;
     }
     
+    public Resources getGraph(){
+        Resources res = getResourceGraph();
+        JdbcConnectionPool connPool = res.newJdbcConnectionPool();
+        connPool.setDescription(getDescription());
+        connPool.setName(getName());
+        connPool.setDatasourceClassname(getDsClass());
+        connPool.setResType(getResType());
+        connPool.setSteadyPoolSize(getSteadyPoolSize());
+        connPool.setMaxPoolSize(getMaxPoolSize());
+        connPool.setMaxWaitTimeInMillis(getMaxWaitTimeMilli());
+        connPool.setPoolResizeQuantity(getPoolResizeQty());
+        connPool.setIdleTimeoutInSeconds(getIdleIimeoutSecond());
+        String isolation = getTranxIsoLevel();
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(NbBundle.getMessage(IsolationLevelEditor.class, "LBL_driver_default")))) {  //NOI18N
+            isolation = null;
+        }
+        connPool.setTransactionIsolationLevel(isolation);
+        connPool.setIsIsolationLevelGuaranteed(getIsIsoLevGuaranteed());
+        connPool.setIsConnectionValidationRequired(getIsConnValidReq());
+        connPool.setConnectionValidationMethod(getConnValidMethod());
+        connPool.setValidationTableName(getValidationTableName());
+        connPool.setFailAllConnections(getFailAllConns());
+        
+        NameValuePair[] params = getExtraParams();
+        if (params != null && params.length > 0) {
+            for (int i = 0; i < params.length; i++) {
+                NameValuePair pair = params[i];
+                PropertyElement prop = connPool.newPropertyElement();
+                prop = populatePropertyElement(prop, pair); 
+                connPool.addPropertyElement(prop);
+            }
+        }
+        res.addJdbcConnectionPool(connPool);
+        return res;
+    }    
 }

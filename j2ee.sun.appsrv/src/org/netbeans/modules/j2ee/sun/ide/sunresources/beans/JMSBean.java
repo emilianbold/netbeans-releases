@@ -22,8 +22,8 @@ import java.util.Vector;
 
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 import org.netbeans.modules.j2ee.sun.share.serverresources.JavaMsgServiceResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.JmsResource;
-import org.netbeans.modules.j2ee.sun.share.dd.resources.ExtraProperty;
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /**
  *
@@ -49,13 +49,12 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
         bean.setResType(jmsresource.getResType());
         bean.setIsEnabled(jmsresource.getEnabled());
         
-        ExtraProperty[] extraProperties = jmsresource.getExtraProperty();
+        PropertyElement[] extraProperties = jmsresource.getPropertyElement();
         Vector vec = new Vector();       
         for (int i = 0; i < extraProperties.length; i++) {
             NameValuePair pair = new NameValuePair();
-            pair.setParamName(extraProperties[i].getAttributeValue("name"));  //NOI18N
-            pair.setParamValue(extraProperties[i].getAttributeValue("value"));  //NOI18N
-            //pair.setParamDescription(extraProperties[i].getDescription());
+            pair.setParamName(extraProperties[i].getName());
+            pair.setParamValue(extraProperties[i].getValue());
             vec.add(pair);
         }
         
@@ -66,4 +65,28 @@ public class JMSBean extends JavaMsgServiceResource implements java.io.Serializa
         
         return bean;
     }
+     
+    public Resources getGraph(){
+         Resources res = getResourceGraph();
+         JmsResource jmsresource = res.newJmsResource();
+         jmsresource.setDescription(getDescription());
+         jmsresource.setJndiName(getJndiName());
+         jmsresource.setResType(getResType());
+         jmsresource.setEnabled(getIsEnabled());
+         
+         // set properties
+         NameValuePair[] params = getExtraParams();
+         if (params != null && params.length > 0) {
+             for (int i = 0; i < params.length; i++) {
+                 NameValuePair pair = params[i];
+                 PropertyElement prop = jmsresource.newPropertyElement();
+                 prop = populatePropertyElement(prop, pair);
+                 jmsresource.addPropertyElement(prop);
+             }
+         }
+         
+         res.addJmsResource(jmsresource);
+         return res;
+     }
+    
 }

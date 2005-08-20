@@ -11,18 +11,23 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
+
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.ErrorManager;
 
 import java.io.InputStream;
 
-import org.netbeans.modules.j2ee.sun.share.dd.resources.*;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.*;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
+
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /** Represents a SunResource object in the Repository.
  *
@@ -104,7 +109,8 @@ public class SunResourceDataObject extends MultiDataObject{
                 node.setValue(WizardConstants.__ResourceType, WizardConstants.__JmsResource);
                 return node;
             }else{
-                System.out.println("File with sun-resource not matching defined types ");
+                String mess = NbBundle.getMessage(SunResourceDataObject.class, "Info_notSunResource"); //NOI18N
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, mess); 
                 return new SunResourceDataNode(this);
             }    
         }else{
@@ -117,7 +123,8 @@ public class SunResourceDataObject extends MultiDataObject{
        try {
             if((! primaryFile.isFolder()) && primaryFile.isValid()){
                 InputStream in = primaryFile.getInputStream();
-                Resources resources = Resources.createGraph(in);
+                DDProvider.getDefault().getResourcesGraph();
+                Resources resources = DDProvider.getDefault().getResourcesGraph(in);
                 
                 // identify JDBC Connection Pool xml
                 JdbcConnectionPool[] pools = resources.getJdbcConnectionPool();
@@ -168,10 +175,10 @@ public class SunResourceDataObject extends MultiDataObject{
             }else
                 return type;
         }catch(NullPointerException npe){
-            System.out.println("Null Pointer Exception ex");
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, npe);
             return type;
         }catch(Exception ex){
-            System.out.println("Other exceptions  ");
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             return type;
         }
        

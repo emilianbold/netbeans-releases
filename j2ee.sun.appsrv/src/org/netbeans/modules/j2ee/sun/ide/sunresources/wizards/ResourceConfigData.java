@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 
-import org.netbeans.modules.j2ee.sun.share.dd.resources.ExtraProperty;
 import org.netbeans.modules.j2ee.sun.ide.editors.NameValuePair;
 
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
