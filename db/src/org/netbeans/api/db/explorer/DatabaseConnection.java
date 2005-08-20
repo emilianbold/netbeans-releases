@@ -23,7 +23,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
  * 
  * <p>This class provides access to the properties of a database connection,
  * such as the connection name, database URL, user or default schema. New connections
- * can be created using the {@link #create} method (these connection can be
+ * can be created using the {@link #create} method (these connections can be
  * added to the Database Explorer using the 
  * {@link ConnectionManager#addConnection} method.</p>
  * 
@@ -33,6 +33,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnectionAccessor;
  * and {@link ConnectionManager#disconnect} methods.</p>
  * 
  * @author Andrei Badea
+ *
  * @see ConnectionManager
  */
 public final class DatabaseConnection {
@@ -78,13 +79,14 @@ public final class DatabaseConnection {
     /**
      * Creates a new DatabaseConnection instance. 
      * 
-     * 
      * @param driver the JDBC driver the new connection uses; cannot be null.
      * @param connectionURL the URL of this connection; cannot be null.
      * @param user the username.
      * @param password the password.
      * @param rememberPassword whether to remeber the password for the current session.
+     *
      * @return the new instance.
+     *
      * @throws NullPointerException if driver or database are null.
      */
     public static DatabaseConnection create(JDBCDriver driver, String connectionURL, 
@@ -132,9 +134,9 @@ public final class DatabaseConnection {
     }
     
     /**
-     * Returns the username used to connect to the database.
+     * Returns the user name used to connect to the database.
      *
-     * @return the username
+     * @return the user name
      */
     public String getUser() {
         return delegate.getUser();
