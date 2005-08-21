@@ -43,12 +43,6 @@ public class EncodingTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new TestSuite(EncodingTest.class));
-        // In case it fails to shut itself down afterwards:
-        System.exit(0);
-    }
-    
     /**/
     protected void setUp() throws Exception {
         Utils.setUp();
@@ -60,6 +54,9 @@ public class EncodingTest extends NbTestCase {
         
         fs = new LocalFileSystem ();
         fs.setRootDirectory(f);
+        
+        // to help the loader to recognize our files
+        FileUtil.setMIMEType("html", "text/html");
         
         Repository.getDefault ().addFileSystem(fs);
     }
