@@ -269,6 +269,7 @@ public class JellyConstants {
    public static final String SNMP_URL_WITH_SUFFIX = "service:jmx:snmp://kernighan.imag.com:2004/mynameserver";
    public static final String SAMPLE_URL = "service:jmx:<your protocol>:<agent address>";
    public static final String RMI_URL = "service:jmx:rmi://localhost:1099/jndi/rmi://localhost:1099/jmxrmi";
+   public static final String RMI_URL_WITHOUT_SUFFIX = "service:jmx:rmi://localhost:1099/";
    public static final String RMI_URL_K = "service:jmx:rmi://kernighan.imag.com:8080/jndi/rmi://kernighan.imag.com:8080/jmxrmi";
    public static final String JNDI_SUFFIX = "jndi/rmi://localhost:1099/jmxrmi";
    public static final String JNDI_SUFFIX_BIS = "jndi/rmi://kernighan.imag.com:8080/jmxrmi";
