@@ -873,6 +873,8 @@ public final class DocumentModel {
                 parent = getRootElement();
             }
             
+            elements.remove(de);
+            
             //fire events for all affected children
             while(childrenIterator.hasNext()) {
                 DocumentElement child = (DocumentElement)childrenIterator.next();
@@ -883,7 +885,7 @@ public final class DocumentModel {
             //notify the parent element that one of its children has been removed
             if(parent != null) parent.childRemoved(de);
             
-            elements.remove(de);
+            
             
             fireDocumentModelEvent(de, ELEMENT_REMOVED);
         }
