@@ -26,6 +26,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * The thrid panel in the <em>New Action Wizard</em>.
@@ -83,13 +84,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     /** className, packageName */
     private void refreshBaseData() {
-        data.setClassName(className.getText());
+        data.setClassName(getClassName());
         data.setPackageName(packageName.getEditor().getItem().toString());
         data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
     }
     
     private void checkValidity() {
-        if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) { // NOI18N
+        if (!Utilities.isJavaIdentifier(getClassName())) {
+            setErrorMessage(getMessage("MSG_ClassNameMustBeValidJavaIdentifier")); // NOI18N
+        } else if (getDisplayName().equals("") || getDisplayName().equals(ENTER_LABEL)) {
             setErrorMessage(getMessage("MSG_DisplayNameMustBeEntered")); // NOI18N
         } else if (classAlreadyExists()) {
             setErrorMessage(getMessage("MSG_ClassAlreadyExists")); // NOI18N
@@ -104,6 +107,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private String getDisplayName() {
         return displayName.getText().trim();
+    }
+    
+    private String getClassName() {
+        return className.getText().trim();
     }
     
     /** This method is called from within the constructor to

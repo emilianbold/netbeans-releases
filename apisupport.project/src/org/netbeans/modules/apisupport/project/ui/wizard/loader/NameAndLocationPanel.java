@@ -23,6 +23,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * the second panel in loaders wizard.
@@ -86,7 +87,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("ERR_Name_Prefix_Empty"));
             return;
         }
-        if (!txtPrefix.getText().trim().matches("[A-Z]([A-Za-z0-9])*")) {
+        if (!Utilities.isJavaIdentifier(txtPrefix.getText().trim())) {
             setErrorMessage(getMessage("ERR_Name_Prefix_Invalid"));
             return;
         }
