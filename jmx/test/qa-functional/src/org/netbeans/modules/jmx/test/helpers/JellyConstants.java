@@ -260,21 +260,27 @@ public class JellyConstants {
    
    //Protocol
    public static final String RMI = "rmi";
+   public static final String JMXMP = "jmxmp";
+   public static final String SNMP = "snmp";
    
    // URL
-   public static final String JMXMP_URL = "service:jmx:jmxmp://localhost:2004";
-   public static final String SNMP_URL = "service:jmx:snmp://kernighan.imag.com:2004";
+   public static final String JMXMP_URL = "service:jmx:jmxmp://localhost:2004/";
+   public static final String SNMP_URL = "service:jmx:snmp://kernighan.imag.com:2004/";
+   public static final String SNMP_URL_WITH_SUFFIX = "service:jmx:snmp://kernighan.imag.com:2004/mynameserver";
    public static final String SAMPLE_URL = "service:jmx:<your protocol>:<agent address>";
    public static final String RMI_URL = "service:jmx:rmi://localhost:1099/jndi/rmi://localhost:1099/jmxrmi";
    public static final String RMI_URL_K = "service:jmx:rmi://kernighan.imag.com:8080/jndi/rmi://kernighan.imag.com:8080/jmxrmi";
-   public static final String K_HOST = "kernighan.imag.com";
    public static final String JNDI_SUFFIX = "jndi/rmi://localhost:1099/jmxrmi";
+   public static final String JNDI_SUFFIX_BIS = "jndi/rmi://kernighan.imag.com:8080/jmxrmi";
    public static final String JNDI = "jndi";
+   public static final String NAMESERVER_SUFFIX = "mynameserver";
    
    public static final String PORT_8080 = "8080";
    public static final String PORT_1099 = "1099";
+   public static final String PORT_2004 = "2004";
    
    public static final String LOCALHOST = "localhost";
+   public static final String K_HOST = "kernighan.imag.com";
    
    // Project and package
    public static final String MANAGER_PROJ = "ManagerFunctionalTest";
