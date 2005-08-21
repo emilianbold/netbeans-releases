@@ -24,14 +24,10 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="text">
             <folder name="base">
-<!--                <folder name="UpToDateStatusProvider">
+                <folder name="UpToDateStatusProvider">
                     <file name="org-netbeans-modules-editor-errorstripe-caret-CaretMarkProviderCreator.instance">
                     </file>
                 </folder>
-                <folder name="Services">
-                    <file name="org-netbeans-modules-editor-errorstripe-find-FindMarkProviderCreator.instance">
-                    </file>
-                </folder>-->
             </folder>
         </folder>
     </folder>
