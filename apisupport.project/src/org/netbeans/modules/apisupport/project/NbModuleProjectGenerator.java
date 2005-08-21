@@ -89,7 +89,7 @@ public class NbModuleProjectGenerator {
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
-
+    
     /** Generates suite component Library Wrapper NetBeans Module. */
     public static void createSuiteLibraryModule(File projectDir, String cnb,
             String name, String bundlePath, File suiteDir, File license, File[] jars) throws IOException {
@@ -106,7 +106,7 @@ public class NbModuleProjectGenerator {
         File releaseDir = new File(projectDir, "release/modules/ext"); //NOI18N
         if (!releaseDir.mkdirs()) {
             //TODO report error
-            ErrorManager.getDefault().log("cannot create release directory.");
+            Util.err.log("cannot create release directory.");
         }
         FileObject relDirFo = FileUtil.toFileObject(releaseDir);
         for (int i = 0; i < jars.length; i++) {
@@ -131,12 +131,13 @@ public class NbModuleProjectGenerator {
                     classPathExtensions.put("ext/" + orig.getNameExt(), "release/modules/ext/" + orig.getNameExt()); // NOI18N
                 } catch (IOException e) {
                     //TODO report
-                    ErrorManager.getDefault().notify(e);
+                    Util.err.notify(e);
                 } finally {
                     if (jf != null) {
                         try {
                             jf.close();
                         } catch (IOException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
                     }
                 }
@@ -151,7 +152,7 @@ public class NbModuleProjectGenerator {
                 //TODO set the nbm.license property
             } catch (IOException e) {
                 //TODO report
-                    ErrorManager.getDefault().notify(e);
+                Util.err.notify(e);
             }
             
         }
@@ -163,19 +164,16 @@ public class NbModuleProjectGenerator {
         createBundle(dirFO, bundlePath, name);
         appendToSuite(dirFO, suiteDir);
         
-        //write down the nbproject/properties file
-        String pathToProjectProperties;
-        pathToProjectProperties = "nbproject" + File.separator + "project.properties";// NOI18N
+        // write down the nbproject/properties file
         FileObject bundleFO = createFileObject(
-                dirFO, pathToProjectProperties.replace('\\','/')); // NOI18N
+                dirFO, "nbproject/project.properties"); // NOI18N
         Util.storeProperties(bundleFO, props);
         
         ModuleList.refresh();
         ProjectManager.getDefault().clearNonProjectCache();
     }
     
-    
-    /** 
+    /**
      * Generates NetBeans Module within the netbeans.org CVS tree.
      */
     public static void createNetBeansOrgModule(File projectDir, String cnb,
@@ -232,7 +230,7 @@ public class NbModuleProjectGenerator {
         prjEl.appendChild(el);
         
         el = prjDoc.createElement("import"); // NOI18N
-        el.setAttribute("file", PropertyUtils.relativizeFile(FileUtil.toFile(projectDir), 
+        el.setAttribute("file", PropertyUtils.relativizeFile(FileUtil.toFile(projectDir), // NOI18N
                 new File(nborg, "nbbuild/templates/projectized.xml"))); // NOI18N
         prjEl.appendChild(el);
         
@@ -274,9 +272,9 @@ public class NbModuleProjectGenerator {
     }
     
     /** 
-     * Appends currently created project in the <code>projectDir<code> to a 
-     * suite project contained in the <code>suiteDir</code>. Also intelligently 
-     * decides whether an added project is relative to a destination suite or 
+     * Appends currently created project in the <code>projectDir<code> to a
+     * suite project contained in the <code>suiteDir</code>. Also intelligently
+     * decides whether an added project is relative to a destination suite or
      * absolute and uses either <em>nbproject/project.properties</em> or
      * <em>nbproject/private/private.properties</em> appropriately.
      */
@@ -335,11 +333,10 @@ public class NbModuleProjectGenerator {
     
     private static void createBundle(FileObject projectDir, String bundlePath,
             String name) throws IOException {
-        String pathToBundle = "src" + File.separator + bundlePath;// NOI18N        
-        FileObject bundleFO = createFileObject(
-                projectDir, pathToBundle.replace('\\','/')); // NOI18N
+        String pathToBundle = "src/" + bundlePath.replace('\\','/'); // NOI18N
+        FileObject bundleFO = createFileObject(projectDir, pathToBundle);
         EditableProperties props = new EditableProperties(true);
-        props.put(LocalizedBundleInfo.NAME, name); // NOI18N
+        props.put(LocalizedBundleInfo.NAME, name);
         Util.storeProperties(bundleFO, props);
     }
     
@@ -422,7 +419,7 @@ public class NbModuleProjectGenerator {
             rootFO.getFileSystem().refresh(false);
         } else {
             assert false : "At least disk roots must be mounted! " + root; // NOI18N
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot resolve" + // NOI18N
+            Util.err.log(ErrorManager.WARNING, "Cannot resolve" + // NOI18N
                     "file object for " + root.getAbsolutePath()); // NOI18N
         }
     }
