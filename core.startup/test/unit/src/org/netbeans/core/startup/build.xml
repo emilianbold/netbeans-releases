@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
         <!-- For cyclic stuff, we precompile them together. For other tests -->
         <!-- this is illegal and we do not need to. -->
-        <javac destdir="jars/cyclic-1">
+        <javac source="1.4" destdir="jars/cyclic-1">
             <src path="jars/cyclic-1"/>
             <src path="jars/cyclic-2"/>
         </javac>
@@ -111,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
             <param name="name" value="patchable"/>
         </antcall>
         <!-- Make the patch JAR specially: -->
-        <javac srcdir="jars/patch" destdir="jars/patch">
+        <javac source="1.4" srcdir="jars/patch" destdir="jars/patch">
             <classpath>
                 <pathelement location="jars/patchable.jar"/>
             </classpath>
@@ -232,7 +232,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Create a JAR file under jars/; give the name (must have subdir w/ contents and manifest) -->
     <target name="create-jar">
         <property name="sourcedir" location="jars/${name}"/>
-        <javac destdir="${sourcedir}" srcdir="${sourcedir}">
+        <javac source="1.4" destdir="${sourcedir}" srcdir="${sourcedir}">
             <!-- Permit use of Open APIs from module code: -->
             <classpath refid="openide"/>
             <!-- Permit them to compile against one another -->
