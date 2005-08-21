@@ -38,7 +38,7 @@ public class SearchHistoryTopComponent extends TopComponent {
     }
 
     public SearchHistoryTopComponent(Context context, String commitMessage, String username, Date from, Date to) {
-        initComponents(context.getFiles(), commitMessage, username, from, to);
+        initComponents(context.getRootFiles(), commitMessage, username, from, to);
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }

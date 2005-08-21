@@ -29,7 +29,6 @@ import org.openide.util.NbBundle;
 import java.util.*;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
 
 /**
  * Executes a given 'rlog' command.
@@ -56,36 +55,47 @@ public class RLogExecutor extends ExecutorSupport {
         
         CvsVersioningSystem cvs = CvsVersioningSystem.getInstance();
         AdminHandler ah = cvs.getAdminHandler();
-
-        RLogExecutor [] executors = new RLogExecutor[roots.length];
         CommandDuplicator cloner = CommandDuplicator.getDuplicator(cmd);
-        Set remoteRepositories = new HashSet(roots.length);
-        for (int i = 0; i < roots.length; i++) {
-            File file = roots[i];
-            File directory = file.isDirectory() ? file : file.getParentFile();
-            try {
-                String repository = ah.getRepositoryForDirectory(directory.getAbsolutePath(), "").substring(1);
-                remoteRepositories.add(repository);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-                return null;
-            }
-            GlobalOptions currentOptions = (GlobalOptions) options.clone();
-            try {
-                currentOptions.setCVSRoot(Utils.getCVSRootFor(file));
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-                return null;
-            }
 
-            RlogCommand command = (RlogCommand) cloner.duplicate();
-            command.setModules((String[]) remoteRepositories.toArray(new String[remoteRepositories.size()]));
-            String commandContext = NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdContext", file.getName());
-            command.setDisplayName(MessageFormat.format(cmd.getDisplayName(), new Object [] { commandContext }));
-            executors[i] = new RLogExecutor(cvs, command, directory, currentOptions);
-            executors[i].execute();
+        List executors = new ArrayList();
+        try {
+            File [][] split = ExecutorSupport.splitByCvsRoot(roots);
+            for (int i = 0; i < split.length; i++) {
+                File [] files = split[i];
+                GlobalOptions currentOptions = (GlobalOptions) options.clone();
+                currentOptions.setCVSRoot(Utils.getCVSRootFor(files[0]));
+                String remoteRepository = null;
+                File directory = null;
+                for (int j = 0; j < files.length; j++) {
+                    File file = files[j];
+                    File dir = file.isDirectory() ? file : file.getParentFile();
+                    String repository = ah.getRepositoryForDirectory(dir.getAbsolutePath(), "").substring(1);
+                    if (remoteRepository == null || remoteRepository.equals(repository)) {
+                        remoteRepository = repository;
+                        directory = dir;
+                    } else {
+                        RlogCommand command = (RlogCommand) cloner.duplicate();
+                        command.setModule(remoteRepository);
+                        command.setDisplayName(NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdContext", remoteRepository));
+                        RLogExecutor executor = new RLogExecutor(cvs, command, directory, currentOptions);
+                        executor.execute();
+                        executors.add(executor);
+                        remoteRepository = repository;
+                        directory = dir;
+                    }
+                }
+                RlogCommand command = (RlogCommand) cloner.duplicate();
+                command.setModule(remoteRepository);
+                command.setDisplayName(NbBundle.getMessage(RLogExecutor.class, "MSG_RLogExecutor_CmdContext", remoteRepository));
+                RLogExecutor executor = new RLogExecutor(cvs, command, directory, currentOptions);
+                executor.execute();
+                executors.add(executor);
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+            return new RLogExecutor[0];
         }
-        return executors;
+        return (RLogExecutor[]) executors.toArray(new RLogExecutor[executors.size()]);
     }
 
     private RLogExecutor(CvsVersioningSystem cvs, RlogCommand cmd, File localRoot, GlobalOptions options) {

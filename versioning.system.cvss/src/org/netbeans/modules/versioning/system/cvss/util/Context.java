@@ -58,4 +58,8 @@ public class Context implements Serializable {
     public File [] getFiles() {
         return (File[]) filteredFiles.toArray(new File[filteredFiles.size()]);
     }
+
+    public File[] getRootFiles() {
+        return (File[]) rootFiles.toArray(new File[rootFiles.size()]);
+    }
 }

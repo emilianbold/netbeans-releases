@@ -103,6 +103,7 @@ class SearchExecutor implements Runnable {
             lcmd.setRevisionFilter(revFilter);
         }
         
+        rcmd.setNoTags(true);
         rcmd.setUserFilter(criteria.getUsername());
         lcmd.setUserFilter(criteria.getUsername());
         

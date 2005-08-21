@@ -20,10 +20,13 @@ import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.xml.parsers.DocumentInputSource;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.LogOutputListener;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
+import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.lib.cvsclient.command.annotate.AnnotateLine;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.ErrorManager;
@@ -312,7 +315,27 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         });
         popupMenu.add(rollbackMenu);
 
-        JMenuItem menu = new JMenuItem(loc.getString("CTL_MenuItem_FindAssociateChanges"));
+        Project prj = Utils.getProject(getCurrentFile());
+        if (prj != null) {
+            String prjName = ProjectUtils.getInformation(prj).getDisplayName();
+            JMenuItem menu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_FindCommitInProject", prjName));
+            menu.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    int line = getCurrentLine();
+                    if (line == -1) return;
+                    AnnotateLine al = getAnnotateLine(line);
+                    if (al == null) return;
+                    String message = (String) commitMessages.get(al.getRevision());
+                    File file = getCurrentFile();
+                    Context context = Utils.getProjectsContext(new Project[] { Utils.getProject(file) });
+                    SearchHistoryAction.openSearch(context, NbBundle.getMessage(AnnotationBar.class, "CTL_FindAssociateChanges_Title", file.getName(), recentRevision),
+                                                   message, al.getAuthor(), al.getDate());
+                }
+            });
+            popupMenu.add(menu);
+        }
+
+        JMenuItem menu = new JMenuItem(loc.getString("CTL_MenuItem_FindCommitInProjects"));
         menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 int line = getCurrentLine();
