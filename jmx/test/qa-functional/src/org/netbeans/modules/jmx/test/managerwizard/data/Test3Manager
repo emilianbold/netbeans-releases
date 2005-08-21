@@ -38,7 +38,7 @@ public class Test3Manager {
         */ 
         
         //Create JMX Agent URL 
-        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://kernighan.imag.com:8080/jmxrmi");
+        JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://kernighan.imag.com:8080/jndi/rmi://kernighan.imag.com:8080/jmxrmi");
         
         //Connect the JMXConnector 
         connector = JMXConnectorFactory.connect(url, null);

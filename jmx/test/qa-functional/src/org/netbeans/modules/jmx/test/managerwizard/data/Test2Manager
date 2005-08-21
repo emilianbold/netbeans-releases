@@ -49,7 +49,7 @@ public class Test2Manager {
         env.put(JMXConnector.CREDENTIALS, new String[]{"name", "password"});
         
         //Create JMX Agent URL 
-        JMXServiceURL url = new JMXServiceURL("service:jmx:jmxmp://localhost:2004");
+        JMXServiceURL url = new JMXServiceURL("service:jmx:jmxmp://localhost:2004/");
         
         //Connect the JMXConnector 
         connector = JMXConnectorFactory.connect(url, env);
