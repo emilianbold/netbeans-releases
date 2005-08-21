@@ -164,8 +164,10 @@ public class NbModuleProjectGenerator {
         appendToSuite(dirFO, suiteDir);
         
         //write down the nbproject/properties file
+        String pathToProjectProperties;
+        pathToProjectProperties = "nbproject" + File.separator + "project.properties";// NOI18N
         FileObject bundleFO = createFileObject(
-                dirFO, "nbproject" + File.separator + "project.properties"); // NOI18N
+                dirFO, pathToProjectProperties.replace('\\','/')); // NOI18N
         Util.storeProperties(bundleFO, props);
         
         ModuleList.refresh();
@@ -333,8 +335,9 @@ public class NbModuleProjectGenerator {
     
     private static void createBundle(FileObject projectDir, String bundlePath,
             String name) throws IOException {
+        String pathToBundle = "src" + File.separator + bundlePath;// NOI18N        
         FileObject bundleFO = createFileObject(
-                projectDir, "src" + File.separator + bundlePath); // NOI18N
+                projectDir, pathToBundle.replace('\\','/')); // NOI18N
         EditableProperties props = new EditableProperties(true);
         props.put(LocalizedBundleInfo.NAME, name); // NOI18N
         Util.storeProperties(bundleFO, props);

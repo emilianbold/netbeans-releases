@@ -111,6 +111,10 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final FileObject createFolder(final String name) throws java.io.IOException {
+        if (name.indexOf('\\') != -1 || name.indexOf('/') != -1) {//NOI18N
+            throw new IllegalArgumentException(name);
+        }
+        
         FolderObj retVal = null;
         File folder2Create;
         final ChildrenCache childrenCache = getChildrenCache();
@@ -146,9 +150,13 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public final FileObject createData(final String name, final String ext) throws java.io.IOException {
+        if (name.indexOf('\\') != -1 || name.indexOf('/') != -1) {//NOI18N
+            throw new IllegalArgumentException(name);
+        }
+        
         final ChildrenCache childrenCache = getChildrenCache();        
         final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
-
+        
         mutexPrivileged.enterWriteAccess();
 
         FileObj retVal;
