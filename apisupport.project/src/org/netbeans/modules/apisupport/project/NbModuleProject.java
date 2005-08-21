@@ -192,8 +192,9 @@ public final class NbModuleProject implements Project {
             }
         });
         Manifest mf = getManifest();
-        if (mf != null) {
-            bundleInfo = Util.findLocalizedBundleInfo(getSourceDirectory(), getManifest());
+        FileObject srcFO = getSourceDirectory();
+        if (mf != null && srcFO != null) {
+            bundleInfo = Util.findLocalizedBundleInfo(srcFO, getManifest());
         }
         typeProvider = new NbModuleTypeProviderImpl();
         lookup = Lookups.fixed(new Object[] {

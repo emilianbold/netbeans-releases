@@ -240,9 +240,19 @@ public abstract class TestBase extends NbTestCase {
      *   <li>module1/src/org/example/module1/resources/Bundle.properties
      *   <li>module1/src/org/example/module1/resources/layer.xml
      * </ul>
+     *
      * Do not forget to first call {@link #initializeBuildProperties} if you are not a TestBase subclass!
      */
     public static NbModuleProject generateStandaloneModule(File workDir, String prjDir) throws IOException {
+        FileObject prjDirFO = generateStandaloneModuleDirectory(workDir, prjDir);
+        return (NbModuleProject) ProjectManager.getDefault().findProject(prjDirFO);
+    }
+
+    /**
+     * The same as {@link #generateStandaloneModule(File, String)} but without
+     * <em>opening</em> a generated project.
+     */
+    public static FileObject generateStandaloneModuleDirectory(File workDir, String prjDir) throws IOException {
         String prjDirDotted = prjDir.replace('/', '.');
         File prjDirF = file(workDir, prjDir);
         NbModuleProjectGenerator.createStandAloneModule(
@@ -252,8 +262,7 @@ public abstract class TestBase extends NbTestCase {
                 "org/example/" + prjDir + "/resources/Bundle.properties",
                 "org/example/" + prjDir + "/resources/layer.xml",
                 "default"); // platform id
-        FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
-        return (NbModuleProject) ProjectManager.getDefault().findProject(prjDirFO);
+        return FileUtil.toFileObject(prjDirF);
     }
-
+    
 }

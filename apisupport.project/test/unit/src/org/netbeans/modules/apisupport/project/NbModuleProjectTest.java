@@ -39,6 +39,7 @@ public class NbModuleProjectTest extends TestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        TestBase.initializeBuildProperties(getWorkDir());
         FileObject dir = nbroot.getFileObject("java/project");
         assertNotNull("have java/project checked out", dir);
         Project p = ProjectManager.getDefault().findProject(dir);
@@ -174,4 +175,10 @@ public class NbModuleProjectTest extends TestBase {
         assertEquals(file("xtest/lib/insanelib.jar"), actionProject.getNbrootFile("xtest/lib/insanelib.jar"));
     }
     
+    public void testThatModuleWithOverriddenSrcDirPropertyDoesNotThrowNPE() throws Exception {
+        FileObject prjFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module1");
+        FileObject srcFO = prjFO.getFileObject("src");
+        FileUtil.moveFile(srcFO, prjFO, "src2");
+        ProjectManager.getDefault().findProject(prjFO);
+    }
 }
