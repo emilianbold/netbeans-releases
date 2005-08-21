@@ -230,19 +230,24 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     }
     
     private void parseURL(String txt) {
+        System.out.println("url: " +txt);
         //eliminate service:jmx
         String txtWithoutFix = txt.substring(12);
         String protocol = extractUntilChar(txtWithoutFix.toCharArray(), 0, ':');
+        System.out.println("protocol: " +protocol);
         
         //get the rest of the string without ://
         String temp = txtWithoutFix.substring(protocol.length() +3);
         String host = extractUntilChar(temp.toCharArray(), 0, ':');
+        System.out.println("host: " +host);
         
         temp = temp.substring(host.length() +1);
         String port = extractUntilChar(temp.toCharArray(), 0, '/');
+        System.out.println("port: " +port);
         
         String rest = temp.substring(port.length() +1);
         boolean ok = Pattern.matches(JNDI, rest);
+        System.out.println("rest: " +rest);
         
         if (ok) //url is rmi with jndi suffix
             protocol = bundle.getString("TXT_protocol");// NOI18N
