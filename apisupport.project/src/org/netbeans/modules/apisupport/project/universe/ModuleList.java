@@ -840,7 +840,7 @@ public final class ModuleList {
         return new HashSet(entries.values());
     }
     
-    static LocalizedBundleInfo loadBundleInfo(File projectDir) {
+    public static LocalizedBundleInfo loadBundleInfo(File projectDir) {
         LocalizedBundleInfo bundleInfo = Util.findLocalizedBundleInfo(projectDir);
         return bundleInfo == null ? LocalizedBundleInfo.EMPTY : bundleInfo;
     }
