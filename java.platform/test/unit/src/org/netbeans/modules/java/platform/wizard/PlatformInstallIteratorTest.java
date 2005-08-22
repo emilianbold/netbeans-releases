@@ -171,6 +171,28 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         assertEquals ("Invalid PlatformInstall",installers[1],platformInstall);
     }
     
+    public void testIteratorWithMorePanels () throws IOException {
+        InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
+            new OtherPlatformInstall ("Custom1", new WizardDescriptor.Panel[] {
+                new Panel ("Custom1_panel1"),
+                new Panel ("Custom1_panel2"),
+            })
+        });
+        PlatformInstallIterator iterator = PlatformInstallIterator.create();
+        WizardDescriptor wd = new WizardDescriptor (iterator);
+        iterator.initialize(wd);
+        assertEquals("Invalid state", 3, iterator.getPanelIndex());
+        WizardDescriptor.Panel panel = iterator.current();
+        assertEquals("Invalid panel","Custom1_panel1",panel.getComponent().getName());
+        assertTrue ("Should have next panel",iterator.hasNext());
+        assertFalse ("Should not have previous panel", iterator.hasPrevious());
+        iterator.nextPanel();
+        panel = iterator.current();
+        assertEquals("Invalid panel","Custom1_panel2",panel.getComponent().getName());
+        assertFalse ("Should not have next panel",iterator.hasNext());
+        assertTrue ("Should have previous panel", iterator.hasPrevious());
+    }
+    
     private static class FileBasedPlatformInstall extends PlatformInstall {
         
         private String name;

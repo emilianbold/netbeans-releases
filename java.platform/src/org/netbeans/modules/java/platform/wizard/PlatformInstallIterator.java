@@ -191,6 +191,9 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         } else if (panelIndex == 1) {
             panelIndex = 2;
         }
+        else {
+            typeIterator.nextPanel();
+        }
         panelNumber++;
         wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
             new Integer(panelNumber));
