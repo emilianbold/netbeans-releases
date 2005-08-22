@@ -26,6 +26,27 @@ public class Main extends Object {
      * @throws Exception for lots of reasons
      */
     public static void main (String args[]) throws Exception {
+        fixNetBeansUser();
         org.netbeans.Main.main(args);
+    }
+    
+    /** Fixes value of netbeans.user property.
+     */
+    final static void fixNetBeansUser() {
+        String userDir = System.getProperty("netbeans.user"); // NOI18N
+        if (userDir == null) {
+            return;
+        }
+        final String PREFIX = "${user.home}/"; // NOI18N
+        int uh = userDir.indexOf(PREFIX);
+        if (uh == -1) {
+            return;
+        }
+        String newDir = 
+            userDir.substring(0, uh) + 
+            System.getProperty("user.home") + // NOI18N
+            java.io.File.separator + 
+            userDir.substring(uh + PREFIX.length()); 
+        System.setProperty("netbeans.user", newDir); // NOI18N
     }
 }
