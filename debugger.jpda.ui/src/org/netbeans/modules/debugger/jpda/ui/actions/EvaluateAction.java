@@ -14,10 +14,16 @@
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.ui.Evaluator;
 import org.openide.util.HelpCtx;
@@ -29,25 +35,54 @@ import org.openide.util.actions.CallableSystemAction;
  *
  * @author Martin Entlicher
  */
-public class EvaluateAction extends CallableSystemAction {
+public class EvaluateAction extends AbstractAction implements PropertyChangeListener,
+                                                              Runnable {
     
-    public String getName() {
-        return NbBundle.getMessage(EvaluateAction.class, "CTL_Evaluate");
+    private EnableListener listener;
+    private JPDADebugger lastDebugger;
+
+    public EvaluateAction () {
+        listener = new EnableListener (this);
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                DebuggerManager.PROP_CURRENT_ENGINE,
+                listener);
+        putValue (
+            Action.NAME, 
+            NbBundle.getMessage(EvaluateAction.class, "CTL_Evaluate") // NOI18N
+        );
+        checkEnabled();
     }
     
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    public boolean isEnabled() {
+    private synchronized boolean canBeEnabled() {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return false;
         JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
-        if (debugger == null || debugger.getCurrentThread() == null) return false;
-        return true;
+        if (lastDebugger != null && debugger != lastDebugger) {
+            lastDebugger.removePropertyChangeListener(
+                    JPDADebugger.PROP_CURRENT_THREAD,
+                    this);
+            lastDebugger = null;
+        }
+        if (debugger != null) {
+            lastDebugger = debugger;
+            debugger.addPropertyChangeListener(
+                    JPDADebugger.PROP_CURRENT_THREAD,
+                    this);
+            return (debugger.getCurrentThread() != null);
+        } else {
+            return false;
+        }
     }
     
-    public void performAction() {
+    private void checkEnabled() {
+        SwingUtilities.invokeLater(this);
+    }
+    
+    public void run() {
+        setEnabled(canBeEnabled());
+    }
+    
+    public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return ;
         JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
@@ -55,8 +90,36 @@ public class EvaluateAction extends CallableSystemAction {
         Evaluator.open(debugger);
     }
     
-    public HelpCtx getHelpCtx() {
-        return null;
+    public synchronized void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+        //System.err.println("EvaluateAction.propertyChange("+propertyChangeEvent+"), lastDebugger = "+lastDebugger);
+        if (lastDebugger != null) {
+            //System.err.println(  "currentThread = "+lastDebugger.getCurrentThread());
+            setEnabled(lastDebugger.getCurrentThread() != null);
+        }
     }
     
+    protected void finalize() throws Throwable {
+        DebuggerManager.getDebuggerManager().removeDebuggerListener(
+                DebuggerManager.PROP_CURRENT_ENGINE,
+                listener);
+    }
+
+        
+    private static class EnableListener extends DebuggerManagerAdapter {
+        
+        private Reference actionRef;
+        
+        public EnableListener(EvaluateAction action) {
+            actionRef = new WeakReference(action);
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            EvaluateAction action = (EvaluateAction) actionRef.get();
+            if (action != null) {
+                action.checkEnabled();
+            }
+        }
+        
+    }
+
 }
