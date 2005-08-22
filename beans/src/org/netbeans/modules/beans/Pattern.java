@@ -66,7 +66,7 @@ public abstract class  Pattern extends Object {
      * @return The Cookie.
      */
     Node.Cookie getCookie( Class type ) {
-        if (DataObject.class.isAssignableFrom(type)) {
+        if (this.src != null && type.isAssignableFrom(this.src.getClass())) {
             return this.src; 
         }
         return null;
