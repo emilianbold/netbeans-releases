@@ -29,10 +29,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
 
     private static final Icon openedIcon = (Icon)UIManager.get("Tree.expandedIcon"); // NOI18N
     private static final Icon closedIcon = (Icon)UIManager.get("Tree.collapsedIcon"); // NOI18N
-    static final Color BK_COLOR = "GTK".equals(UIManager.getLookAndFeel().getID()) // NOI18N
-        ? new Color( 184,207,229 ) 
-            : UIManager.getColor("Aqua".equals(UIManager.getLookAndFeel().getID()) // NOI18N
-                ? "Table.selectionBackground" : "PropSheet.setBackground"); // NOI18N
+    private static final Color GTK_BK_COLOR = new Color( 184,207,229 );
 
     private CategoryDescriptor descriptor;
     private Category category;
@@ -43,7 +40,7 @@ class CategoryButton extends JCheckBox implements Autoscroll {
         this.descriptor = descriptor;
         this.category = category;
 
-        setBackground( BK_COLOR );
+        setBackground( getCategoryBackgroundColor() );
         setFont( getFont().deriveFont( Font.BOLD ) );
         setMargin(new Insets(0, 3, 0, 3));
         if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
@@ -67,6 +64,19 @@ class CategoryButton extends JCheckBox implements Autoscroll {
                 setExpanded( opened );
             }
         });
+    }
+    
+    private static Color getCategoryBackgroundColor() {
+        String lafId = UIManager.getLookAndFeel().getID();
+        if( "GTK".equals( lafId ) ) {
+            return GTK_BK_COLOR;
+        } else if( "Aqua".equals( lafId ) ) {
+            return UIManager.getColor( "Table.selectionBackground" );
+        } else {
+            //force initialization of PropSheet look'n'feel values 
+            UIManager.get( "nb.propertysheet" );
+            return UIManager.getColor( "PropSheet.setBackground" );
+        }
     }
 
     void updateProperties() {
