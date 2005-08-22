@@ -78,6 +78,7 @@ case "`uname`" in
             --clusters "$netbeans_clusters" \
             --userdir "${userdir}" \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
+            -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
             $args
         ;;
@@ -88,6 +89,7 @@ case "`uname`" in
             --clusters "$netbeans_clusters" \
             --userdir "${userdir}" \
             -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade \
+            -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense \
             ${netbeans_default_options} \
             $args
         ;;

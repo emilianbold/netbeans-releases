@@ -117,6 +117,22 @@ public class PostInstallFixupAction extends ProductAction {
                 logEvent(this, Log.ERROR, ex);
             }
         }
+        //Create file 'license_accepted'. It gives info to IDE that user
+        //accepted license during installation
+        try {
+            String dir = nbInstallDir + sep + nbClusterDir + sep + "var";
+            if (!fileService.fileExists(dir)) {
+                fileService.createDirectory(dir);
+            } else if (!fileService.isDirectory(dir)) {
+                logEvent(this, Log.WARNING, "File: " + dir + " already exists but is not directory.");
+            }
+            String fileName = nbInstallDir + sep + nbClusterDir + sep + "var" + sep + "license_accepted";
+            logEvent(this, Log.DBG, "create file: " + fileName);
+            fileService.createBinaryFile(fileName,new byte[0]);
+        }
+        catch (Exception ex) {
+            logEvent(this, Log.ERROR, ex);
+        }
         
         installIDEConfigFile();
         
@@ -139,6 +155,11 @@ public class PostInstallFixupAction extends ProductAction {
             deleteFiles(nbInstallDir, new String[] {"etc" + sep + "netbeans.conf"});
             deleteFiles(uninstallDir, new String[] {"install.log"});
             deleteFiles(nbInstallDir, new String[] {nbClusterDir + sep + "config" + sep + "productid" });
+            deleteFiles(nbInstallDir, new String[] {nbClusterDir + sep + "var" + sep + "license_accepted" });
+            //Delete only this dir and only if empty
+            String dirName = nbInstallDir + sep + nbClusterDir + sep + "var";
+            logEvent(this, Log.DBG, "Trying to delete: " + dirName);
+            fileService.deleteDirectory(dirName,true,false);
             
             if (Util.isMacOSX()) {
                 deleteSymbolicLink();
@@ -290,11 +311,11 @@ public class PostInstallFixupAction extends ProductAction {
     }
     
     public void deleteFiles(String dir, String[] fileNames) {
-        for (int i=0; i< fileNames.length; i++) {
+        for (int i = 0; i < fileNames.length; i++) {
             if (fileNames[i] == null) { //array bigger than num objs in array.
                 return;
             }
-            String filename =dir + sep + fileNames[i];
+            String filename = dir + sep + fileNames[i];
             try {
                 if (fileService.fileExists(filename)) {
                     logEvent(this, Log.DBG, "deleting " + filename);

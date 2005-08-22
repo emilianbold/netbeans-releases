@@ -12,34 +12,27 @@
  */
 
 package org.netbeans.core.startup;
-
-import java.awt.*;
-import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
 import java.lang.reflect.Method;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.prefs.Preferences;
 import javax.swing.*;
-import javax.swing.border.*;
 
 import org.openide.*;
 import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem;
 import org.openide.modules.SpecificationVersion;
 import org.openide.modules.Dependency;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
-import org.openide.util.io.*;
-
-import java.util.Hashtable;
-import java.lang.reflect.Field;
 import java.net.URL;
-import javax.swing.plaf.InputMapUIResource;
-import javax.swing.plaf.metal.MetalLookAndFeel;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * Main class for NetBeans when run in GUI mode.
@@ -331,6 +324,19 @@ public final class Main extends Object {
 
 
     // -----------------------------------------------------------------------------------------------------
+    // License check
+    try {
+        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+            if (!handleLicenseCheck()) {
+                org.netbeans.TopSecurityManager.exit(0);
+            }
+        }
+    } catch (Exception e) {
+        ErrorManager.getDefault().notify(e);
+    }
+    StartLog.logProgress ("License check performed"); // NOI18N
+    
+    // -----------------------------------------------------------------------------------------------------
     // Upgrade
     try {
         if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
@@ -565,7 +571,157 @@ public final class Main extends Object {
         
         
         ImportHandler handler = new ImportHandler ();
-
+        
+        return handler.canContinue ();
+    }
+    
+    /** Displays license to user to accept if necessary. Made non-private just for testing purposes.
+     *
+     * @return true if the execution should continue or false if it should
+     * stop
+     */
+    static boolean handleLicenseCheck () {
+        class LicenseHandler implements Runnable {
+            private String classname;
+            private boolean executedOk; 
+            private String nbHome;
+            private Preferences prefUserNode;
+            private String licenseVersion;
+            private String LICENSE = "LICENSE"; // NOI18N
+            private String md5sumKey;
+            
+            /** Generate 32 byte long fingerprint of input string in sting form */
+            private String generateKey (String input) {
+                String key = null;
+                //Set default value in case anything fails.
+                if (input.length() > 32) {
+                    key = input.substring(input.length() - 32, input.length());
+                } else {
+                    key = input;
+                }
+                MessageDigest md = null;
+                try {
+                    md = MessageDigest.getInstance("MD5"); // NOI18N
+                } catch (NoSuchAlgorithmException exc) {
+                    exc.printStackTrace();
+                    return key;
+                }
+                
+                byte [] arr = new byte[0];
+                try {
+                    arr = nbHome.getBytes("UTF-8"); // NOI18N
+                } catch (UnsupportedEncodingException exc) {
+                    exc.printStackTrace();
+                    return key;
+                }
+                
+                byte [] md5sum = md.digest(arr);
+                StringBuffer keyBuff = new StringBuffer(32);
+                //Convert byte array to hexadecimal string to be used as key
+                for (int i = 0; i < md5sum.length; i++) {
+                    int val = md5sum[i];
+                    if (val < 0) {
+                        val = val + 256;
+                    }
+                    String s = Integer.toHexString(val);
+                    if (s.length() == 1) {
+                        keyBuff.append("0"); // NOI18N
+                    }
+                    keyBuff.append(Integer.toHexString(val));
+                }
+                key = keyBuff.toString();
+                return key;
+            }
+            
+            /** Checks if licence was accepted already or not. */
+            public boolean shouldDisplayLicense () {
+                File f = InstalledFileLocator.getDefault().locate("var/license_accepted",null,false); // NOI18N
+                if (f != null) {
+                    return false;
+                }
+                //Check preferences
+                licenseVersion = NbBundle.getMessage(Main.class,"licenseVersion"); // NOI18N
+                nbHome = System.getProperty("netbeans.home"); // NOI18N
+                File nbHomeDir = new File(nbHome);
+                try {
+                    nbHome = nbHomeDir.getCanonicalPath();
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
+                md5sumKey = generateKey(nbHome);
+                        
+                prefUserNode = Preferences.userNodeForPackage(Main.class);
+                String value = prefUserNode.get(LICENSE + "|" + licenseVersion + "|" + md5sumKey,"N/A"); // NOI18N
+                if ("N/A".equals(value)) { // NOI18N
+                    classname = System.getProperty("netbeans.accept_license_class"); // NOI18N
+                    return (classname != null);
+                } else {
+                    //Create file "var/license_accepted" in user dir if it does not exist 
+                    //to speed up check
+                    f = new File (new File(CLIOptions.getUserDir(), "var"), "license_accepted"); // NOI18N
+                    if (!f.exists()) {
+                        f.getParentFile().mkdirs ();
+                        try {
+                            f.createNewFile();
+                        } catch (IOException exc) {
+                            exc.printStackTrace();
+                        }
+                    }
+                    return false;
+                }
+            }
+            
+            public void run() {
+                Class clazz = getKlass (classname);
+                
+                // This module is included in our distro somewhere... may or may not be turned on.
+                // Whatever - try running some classes from it anyway.
+                try {
+                    Method showMethod = clazz.getMethod("showLicensePanel",null); // NOI18N
+                    showMethod.invoke (null, null);
+                    executedOk = true;
+                    //License accepted - set any string != "N/A"
+                    prefUserNode.put(LICENSE + "|" + licenseVersion + "|" + md5sumKey,"accepted"); // NOI18N
+                } catch (java.lang.reflect.InvocationTargetException ex) {
+                    // canceled by user, all is fine
+                    if (ex.getTargetException() instanceof org.openide.util.UserCancelException) {
+                        executedOk = false;
+                    } else {
+                        ex.printStackTrace();
+                    }
+                } catch (Exception ex) {
+                    // If exceptions are thrown, notify them - something is broken.
+                    ex.printStackTrace();
+                } catch (LinkageError ex) {
+                    // These too...
+                    ex.printStackTrace();
+                }
+            }
+            
+            public boolean canContinue () {
+                if (shouldDisplayLicense ()) {
+                    try {
+                        SwingUtilities.invokeAndWait (this);
+                        if (executedOk) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } catch (java.lang.reflect.InvocationTargetException ex) {
+                        return false;
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                        return false;
+                    }
+                } else {
+                    // if there is no need to upgrade that every thing is good
+                    return true;
+                }
+            }
+        }
+                
+        LicenseHandler handler = new LicenseHandler ();
+        
         return handler.canContinue ();
     }
 

@@ -109,7 +109,7 @@ int WINAPI
     
     sprintf(nbexec, "%s\\platform6\\lib\\nbexec.exe", topdir);
 
-    sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
+    sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade -J-Dnetbeans.accept_license_class=org.netbeans.license.AcceptLicense --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
             jdkswitch,
             dirs,
