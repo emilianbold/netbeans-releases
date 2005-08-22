@@ -20,7 +20,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectOperationsImplementation.DeleteOperationImplementation;
+import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -94,7 +94,7 @@ public class WebProjectOperations implements DeleteOperationImplementation {
         return files;
     }
     
-    public void performClean() throws IOException {
+    public void notifyDeleting() throws IOException {
         WebActionProvider ap = (WebActionProvider) project.getLookup().lookup(WebActionProvider.class);
         
         assert ap != null;

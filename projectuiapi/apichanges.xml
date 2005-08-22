@@ -76,6 +76,24 @@ is the proper place.
 
     <changes>
         
+        <change id="delete-copy-move-support">
+            <api name="general"/>
+            <summary>Project Delete/Copy/Rename/Move Support Added, Support for Default Project Delete/Copy/Rename/Move Added</summary>
+            <version major="1" minor="10"/>
+            <date day="22" month="8" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" />
+            <description>
+                Introduced:
+                <ul>
+                    <li><code>CommonProjectActions.deleteProjectAction</code>, <code>CommonProjectActions.copyProjectAction</code>,
+                        <code>CommonProjectActions.moveProjectAction</code>, <code>CommonProjectActions.removeProjectAction</code> methods.</li>
+                    <li><code>DefaultProjectOperations</code> support to simplify implementation of project delete/copy/rename/move for simple projects.</li>
+                </ul>
+            </description>
+            <issue number="61546" />
+        </change>
+        
         <change id="ProjectCustomizer.Category.errorMessage">
             <api name="general"/>
             <summary>Added ability to set an error message for project customizer's categories.</summary>
@@ -137,22 +155,6 @@ is the proper place.
             <issue number="57874"/>
         </change>
 
-        <change id="action-delete-added">
-            <api name="general"/>
-            <summary>Delete Action Added</summary>
-            <version major="1" minor="8"/>
-            <date day="11" month="7" year="2005"/>
-            <author login="jlahoda"/>
-            <compatibility addition="yes" />
-            <description>            
-                Introduced:
-                <ul>
-                    <li><code>CommonProjectActions.deleteProjectAction</code> method</li>
-                </ul>                
-            </description>
-            <issue number="51468" />            
-        </change>
-        
         <change id="CommonProjectActions.EXISTING_SOURCES_FOLDER">
             <api name="general"/>
             <summary>New Project Wizard Action</summary>

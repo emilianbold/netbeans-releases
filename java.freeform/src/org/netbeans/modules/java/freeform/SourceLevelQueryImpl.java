@@ -7,12 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.java.freeform;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +34,9 @@ import org.w3c.dom.Element;
  */
 final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntProjectListener {
     
-    private AntProjectHelper helper;
-    private PropertyEvaluator evaluator;
-    private AuxiliaryConfiguration aux;
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
+    private final AuxiliaryConfiguration aux;
     
     /**
      * Map from package roots to source levels.
@@ -49,15 +50,17 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
         this.helper.addAntProjectListener(this);
     }
     
-    public synchronized String getSourceLevel(FileObject file) {
+    public String getSourceLevel(FileObject file) {
         // Check for cached value.
-        Iterator it = sourceLevels.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry)it.next();
-            FileObject root = (FileObject)entry.getKey();
-            if (root == file || FileUtil.isParentOf(root, file)) {
-                // Already have it.
-                return (String)entry.getValue();
+        synchronized (this) {
+            Iterator it = sourceLevels.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry entry = (Map.Entry)it.next();
+                FileObject root = (FileObject)entry.getKey();
+                if (root == file || FileUtil.isParentOf(root, file)) {
+                    // Already have it.
+                    return (String)entry.getValue();
+                }
             }
         }
         // Need to compute it.
@@ -66,7 +69,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
             return null;
         }
         List/*<Element>*/ compilationUnits = Util.findSubElements(java);
-        it = compilationUnits.iterator();
+        Iterator it = compilationUnits.iterator();
         while (it.hasNext()) {
             Element compilationUnitEl = (Element)it.next();
             assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
@@ -75,14 +78,16 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntP
             while (it2.hasNext()) {
                 FileObject root = (FileObject)it2.next();
                 if (root == file || FileUtil.isParentOf(root, file)) {
-                    // Got it. Retrieve source level and cache it (for each root).
-                    String lvl = getLevel(compilationUnitEl);
-                    it2 = packageRoots.iterator();
-                    while (it2.hasNext()) {
-                        FileObject root2 = (FileObject)it2.next();
-                        sourceLevels.put(root2, lvl);
+                    synchronized (this) {
+                        // Got it. Retrieve source level and cache it (for each root).
+                        String lvl = getLevel(compilationUnitEl);
+                        it2 = packageRoots.iterator();
+                        while (it2.hasNext()) {
+                            FileObject root2 = (FileObject)it2.next();
+                            sourceLevels.put(root2, lvl);
+                        }
+                        return lvl;
                     }
-                    return lvl;
                 }
             }
         }

@@ -33,6 +33,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -163,7 +164,7 @@ class WebActionProvider implements ActionProvider {
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.getAntProjectHelper().performDefaultDeleteOperation();
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
         

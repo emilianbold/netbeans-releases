@@ -20,7 +20,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectOperationsImplementation.DeleteOperationImplementation;
+import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
@@ -90,7 +90,7 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation {
         return files;
     }
     
-    public void performClean() throws IOException {
+    public void notifyDeleting() throws IOException {
         EjbJarActionProvider ap = (EjbJarActionProvider) project.getLookup().lookup(EjbJarActionProvider.class);
         
         assert ap != null;

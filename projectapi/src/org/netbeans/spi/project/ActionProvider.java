@@ -94,6 +94,27 @@ public interface ActionProvider {
     String COMMAND_DELETE = "delete"; // NOI18N
     
     /**
+     * Standard command for deleting the project.
+     *
+     * @since 1.7
+     */
+    String COMMAND_COPY = "copy"; // NOI18N
+    
+    /**
+     * Standard command for deleting the project.
+     *
+     * @since 1.7
+     */
+    String COMMAND_MOVE = "move"; // NOI18N
+
+    /**
+     * Standard command for deleting the project.
+     *
+     * @since 1.7
+     */
+    String COMMAND_RENAME = "rename"; // NOI18N
+    
+    /**
      * Get a list of all commands which this project supports.
      * @return a list of command names suitable for {@link #invokeAction}
      * @see #COMMAND_BUILD

@@ -113,6 +113,48 @@ public class CommonProjectActions {
     }
 
     /**
+     * Create an action "Copy Project".
+     * It should be invoked with an action context containing
+     * one or more {@link org.netbeans.api.project.Project}s.
+     * <p class="nonnormative">
+     * You might include this in the context menu of a logical view.
+     * </p>
+     * @since 1.10
+     * @return an action
+     */
+    public static Action copyProjectAction() {
+        return Utilities.getActionsFactory().copyProjectAction();
+    }
+    
+    /**
+     * Create an action "Move Project".
+     * It should be invoked with an action context containing
+     * one or more {@link org.netbeans.api.project.Project}s.
+     * <p class="nonnormative">
+     * You might include this in the context menu of a logical view.
+     * </p>
+     * @since 1.10
+     * @return an action
+     */
+    public static Action moveProjectAction() {
+        return Utilities.getActionsFactory().moveProjectAction();
+    }
+    
+    /**
+     * Create an action "Rename Project".
+     * It should be invoked with an action context containing
+     * one or more {@link org.netbeans.api.project.Project}s.
+     * <p class="nonnormative">
+     * You might include this in the context menu of a logical view.
+     * </p>
+     * @since 1.10
+     * @return an action
+     */
+    public static Action renameProjectAction() {
+        return Utilities.getActionsFactory().renameProjectAction();
+    }
+    
+    /**
      * Creates action that invokes <b>New Project</b> wizard.
      * 
      * <p>{@link #EXISTING_SOURCES_FOLDER} keyed action

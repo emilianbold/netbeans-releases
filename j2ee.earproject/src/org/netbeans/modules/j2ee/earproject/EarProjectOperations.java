@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectOperationsImplementation.DeleteOperationImplementation;
+import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -66,7 +66,7 @@ public class EarProjectOperations implements DeleteOperationImplementation {
         return files;
     }
     
-    public void performClean() throws IOException {
+    public void notifyDeleting() throws IOException {
         EarActionProvider ap = (EarActionProvider) project.getLookup().lookup(EarActionProvider.class);
         
         assert ap != null;

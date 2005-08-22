@@ -66,7 +66,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.swing.event.DocumentListener,
-    FileChangeListener, PropertyChangeListener {
+    /*FileChangeListener,*/ PropertyChangeListener {
     
     private FileObject fo;
 

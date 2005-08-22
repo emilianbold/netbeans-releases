@@ -37,6 +37,10 @@ public interface ActionsFactory {
     
     public Action deleteProjectAction();
     
+    public Action copyProjectAction();
+    
+    public Action moveProjectAction();
+    
     public Action newProjectAction();
             
     // Actions sensitive to project selection
@@ -54,5 +58,7 @@ public interface ActionsFactory {
     // Actions sensitive to file
     
     public Action fileCommandAction( String command, String name, Icon icon );
+
+    public Action renameProjectAction();
     
 }

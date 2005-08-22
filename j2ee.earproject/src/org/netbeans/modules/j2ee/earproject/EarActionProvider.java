@@ -25,6 +25,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -127,7 +128,7 @@ public class EarActionProvider implements ActionProvider {
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.getAntProjectHelper().performDefaultDeleteOperation();
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
         

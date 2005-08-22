@@ -18,12 +18,9 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -35,7 +32,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
@@ -46,6 +42,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -84,6 +81,9 @@ class J2SEActionProvider implements ActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_DEBUG_STEP_INTO,
         COMMAND_DELETE,
+        COMMAND_COPY,
+        COMMAND_MOVE,
+        COMMAND_RENAME,
     };
     
     // Project
@@ -140,7 +140,22 @@ class J2SEActionProvider implements ActionProvider {
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.getAntProjectHelper().performDefaultDeleteOperation();
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
+            return ;
+        }
+        
+        if (COMMAND_COPY.equals(command)) {
+            DefaultProjectOperations.performDefaultCopyOperation(project);
+            return ;
+        }
+        
+        if (COMMAND_MOVE.equals(command)) {
+            DefaultProjectOperations.performDefaultMoveOperation(project);
+            return ;
+        }
+        
+        if (COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
         

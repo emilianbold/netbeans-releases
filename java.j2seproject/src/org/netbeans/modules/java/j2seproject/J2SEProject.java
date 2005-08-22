@@ -130,6 +130,10 @@ public final class J2SEProject implements Project, AntProjectListener {
         return this.refHelper;
     }
 
+    UpdateHelper getUpdateHelper() {
+        return this.updateHelper;
+    }
+    
     public Lookup getLookup() {
         return lookup;
     }
@@ -210,7 +214,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     // Currently unused (but see #47230):
-    /** Store configured project name. * /
+    /** Store configured project name. */
     public void setName(final String name) {
         ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
@@ -226,7 +230,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                     }
                 } else {
                     nameEl = data.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
-                    data.insertBefore(nameEl, / * OK if null * /data.getChildNodes().item(0));
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
                 helper.putPrimaryConfigurationData(data, true);
@@ -234,7 +238,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             }
         });
     }
-     */
 
 
 

@@ -16,11 +16,10 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
-import org.netbeans.spi.project.ProjectOperationsImplementation.DeleteOperationImplementation;
+import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -101,7 +100,7 @@ public class FreeformProjectOperations implements DeleteOperationImplementation 
         }
     }
     
-    public void performClean() throws IOException {
+    public void notifyDeleting() throws IOException {
         //TODO: invoke clean action if bound.
     }
     

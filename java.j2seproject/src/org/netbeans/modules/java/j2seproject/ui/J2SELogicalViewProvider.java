@@ -61,6 +61,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
@@ -250,7 +251,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         public J2SELogicalViewRootNode() {
             super(new LogicalViewChildren(project, evaluator, helper, resolver), Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif");
-            setName(ProjectUtils.getInformation(project).getDisplayName());
+            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             if (hasBrokenLinks()) {
                 broken = true;
             }
@@ -433,7 +434,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         }
         
         public boolean canRename() {
-            return false;
+            return true;
+        }
+        
+        public void setName(String s) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
         
         /*
@@ -471,6 +476,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.openSubprojectsAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
+            actions.add(CommonProjectActions.renameProjectAction());
+            actions.add(CommonProjectActions.moveProjectAction());
+            actions.add(CommonProjectActions.copyProjectAction());
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get(FindAction.class));

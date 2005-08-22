@@ -40,6 +40,7 @@ import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -173,7 +174,7 @@ public final class Actions implements ActionProvider {
     
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
-            project.helper().performDefaultDeleteOperation();
+            DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
         Element genldata = project.helper().getPrimaryConfigurationData(true);

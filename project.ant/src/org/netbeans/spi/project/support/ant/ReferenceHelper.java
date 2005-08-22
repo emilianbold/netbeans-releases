@@ -19,7 +19,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1229,6 +1231,91 @@ public final class ReferenceHelper {
      */
     AntProjectHelper getAntProjectHelper() {
         return h;
+    }
+    
+    /**Tries to fix references after copy/rename/move operation on the project.
+     * Handles relative/absolute paths.
+     *
+     * @param originalPath the project folder of the original project
+     * @see org.netbeans.spi.project.CopyOperationImplementation
+     * @see org.netbeans.spi.project.MoveOperationImplementation
+     * @since 1.9
+     */
+    public void fixReferences(File originalPath) {
+        String[] prefixesToFix = new String[] {"file.reference.", "project."};
+        EditableProperties pub  = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        EditableProperties priv = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        
+        File projectDir = FileUtil.toFile(h.getProjectDirectory());
+        
+        List pubRemove = new ArrayList();
+        List privRemove = new ArrayList();
+        Map pubAdd = new HashMap();
+        Map privAdd = new HashMap();
+        
+        for (Iterator i = pub.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry e    = (Map.Entry) i.next();
+            String    key  = (String) e.getKey();
+            boolean   cont = false;
+            
+            for (int cntr = 0; cntr < prefixesToFix.length; cntr++) {
+                if (key.startsWith(prefixesToFix[cntr])) {
+                    cont = true;
+                    break;
+                }
+            }
+            if (!cont)
+                continue;
+            
+            String    value = (String) e.getValue();
+            
+            File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
+            
+            //TODO: extra base dir relativization:
+            if (!CollocationQuery.areCollocated(absolutePath, projectDir)) {
+                pubRemove.add(key);
+                privAdd.put(key, absolutePath.getAbsolutePath());
+            }
+        }
+        
+        for (Iterator i = priv.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry e    = (Map.Entry) i.next();
+            String    key  = (String) e.getKey();
+            boolean   cont = false;
+            
+            for (int cntr = 0; cntr < prefixesToFix.length; cntr++) {
+                if (key.startsWith(prefixesToFix[cntr])) {
+                    cont = true;
+                    break;
+                }
+            }
+            if (!cont)
+                continue;
+            
+            String    value = (String) e.getValue();
+            
+            File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
+            
+            //TODO: extra base dir relativization:
+            if (CollocationQuery.areCollocated(absolutePath, projectDir)) {
+                privRemove.add(key);
+                pubAdd.put(key, PropertyUtils.relativizeFile(projectDir, absolutePath));
+            }
+        }
+        
+        for (Iterator i = pubRemove.iterator(); i.hasNext(); ) {
+            pub.remove(i.next());
+        }
+        
+        for (Iterator i = privRemove.iterator(); i.hasNext(); ) {
+            priv.remove(i.next());
+        }
+        
+        pub.putAll(pubAdd);
+        priv.putAll(privAdd);
+        
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
     }
     
     /**

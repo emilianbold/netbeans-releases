@@ -78,14 +78,13 @@ is the proper place.
 
         <change id="delete-support">
             <api name="general"/>
-            <summary>Basic Support SPI for Project Delete</summary>
-            <version major="1" minor="8"/>
+            <summary>Basic Support SPI for Project Delete/Copy/Rename/Move</summary>
+            <version major="1" minor="9"/>
             <date day="11" month="7" year="2005"/>
             <author login="jlahoda"/>
             <compatibility addition="yes"/>
             <description>
-                <code>AntProjectHelper.notifyDeleted()</code> and <code>AntProjectHelper.performDefaultDeleteOperation()</code>
-                added.
+                Added <code>AntProjectHelper.notifyDeleted()</code>. Added <code>ReferenceHelper.fixReferences</code>.
             </description>
             <issue number="51468"/>
         </change>

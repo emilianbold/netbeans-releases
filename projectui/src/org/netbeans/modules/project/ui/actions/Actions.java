@@ -51,6 +51,9 @@ public class Actions implements ActionsFactory {
     private static Action OPEN_SUBPROJECTS;
     private static Action CLOSE_PROJECT;
     private static Action NEW_FILE;
+    private static Action COPY_PROJECT;
+    private static Action MOVE_PROJECT;
+    private static Action RENAME_PROJECT;
             
     public synchronized Action setAsMainProjectAction() {
         if ( SET_AS_MAIN_PROJECT == null ) {
@@ -91,6 +94,18 @@ public class Actions implements ActionsFactory {
         return deleteProject();
     }
 
+    public Action copyProjectAction() {
+        return copyProject();
+    }
+    
+    public Action moveProjectAction() {
+        return moveProject();
+    }
+    
+    public Action renameProjectAction() {
+        return renameProject();
+    }
+    
     public synchronized Action newProjectAction() {
         return new NewProject();
     }
@@ -178,6 +193,45 @@ public class Actions implements ActionsFactory {
         a.putValue(Action.ACCELERATOR_KEY, DeleteAction.get(DeleteAction.class).getValue(Action.ACCELERATOR_KEY));
         
         return a;
+    }
+    
+    public static synchronized Action copyProject() {
+        if (COPY_PROJECT == null) {
+            Action a = new ProjectAction(
+                    ActionProvider.COMMAND_COPY,
+                    "Copy Project", // NO18N
+                    null, //NOI18N
+                    null );
+            COPY_PROJECT = a;
+        }
+        
+        return COPY_PROJECT;
+    }
+    
+    public static synchronized Action moveProject() {
+        if (MOVE_PROJECT == null) {
+            Action a = new ProjectAction(
+                    ActionProvider.COMMAND_MOVE,
+                    "Move Project", // NO18N
+                    null, //NOI18N
+                    null );
+            MOVE_PROJECT = a;
+        }
+        
+        return MOVE_PROJECT;
+    }
+    
+    public static synchronized Action renameProject() {
+        if (RENAME_PROJECT == null) {
+            Action a = new ProjectAction(
+                    ActionProvider.COMMAND_RENAME,
+                    "Rename Project", // NO18N
+                    null, //NOI18N
+                    null );
+            RENAME_PROJECT = a;
+        }
+        
+        return RENAME_PROJECT;
     }
     
     // 1-off actions -----------------------------------------------------------

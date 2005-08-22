@@ -76,31 +76,32 @@ is the proper place.
 
     <changes>
 
-        <change id="delete-support">
+        <change id="copy-move-support">
             <api name="general"/>
-            <summary>Support for project delete</summary>
-            <version major="1" minor="6"/>
-            <date day="11" month="7" year="2005"/>
+            <summary>Added support for project delete/copy/rename/move</summary>
+            <version major="1" minor="7"/>
+            <date day="22" month="8" year="2005"/>
             <author login="jlahoda"/>
-            <compatibility>
-                <p>
-                    As only the ProjectManager is allowed to implement ProjectState interface,
-                    this change should not directly affect any clients.
-                </p>
+            <compatibility addition="true" binary="true" deletion="false" deprecation="false" modification="false" semantic="false" source="true">
             </compatibility>
             <description>
                 <p>
-                    The <code>notifyDeleted</code> action is added to the <code>ProjectState</code>,
-                    allowing the project implmentation to let the <code>ProjectManager</code>
-                    know that the project has been deleted. <code>ProjectManager.isValid(Project)</code> added
-		    to detect deleted projects.
-                </p>
-                <p>
-                    <code>ProjectOperations</code> and <code>ProjectOperationsImplementation</code> added to support
-                    project delete operation.
+                    Introduced:
+                    <ul>
+                        <li>
+                            New method <code>notifyDeleted</code> added to <code>ProjectState</code>.
+                        </li>
+                        <li>
+                            Interfaces DataFilesProviderImplementation, DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation has
+                            been added to support project delete/copy/rename/move.
+                        </li>
+                        <li>
+                            Support class ProjectOperations has been added to simplify operations on compound projects.
+                        </li>
+                    </ul>
                 </p>
             </description>
-            <issue number="51468"/>
+            <issue number="61546"/>
         </change>
         
         <change id="markExternal-for-file-and-URIs">
