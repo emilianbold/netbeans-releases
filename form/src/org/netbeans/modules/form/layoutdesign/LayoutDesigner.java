@@ -3033,8 +3033,6 @@ public class LayoutDesigner implements LayoutConstants {
     private void intervalRemoved(LayoutInterval parent, int index, boolean primary, boolean wasResizing, int dimension) {
 //        dirty = true;
         if (parent.isSequential()) {
-            boolean restResizing = LayoutInterval.contentWantResize(parent);
-
             LayoutInterval leadingGap;
             LayoutInterval leadingNeighbor;
             if (index > 0) {
@@ -3074,6 +3072,12 @@ public class LayoutDesigner implements LayoutConstants {
                 trailingGap = null;
                 trailingNeighbor = null;
             }
+
+            boolean restResizing = LayoutInterval.contentWantResize(parent);
+            if (!wasResizing
+                && ((leadingGap != null && LayoutInterval.canResize(leadingGap))
+                    || (trailingGap != null && LayoutInterval.canResize(trailingGap))))
+                wasResizing = true;
 
             // [check for last interval (count==1), if parallel superParent try to re-add the interval]
             if (parent.getSubIntervalCount() == 0) { // nothing remained
@@ -3129,6 +3133,7 @@ public class LayoutDesigner implements LayoutConstants {
                     if (parent.getSubIntervalCount() == 1) {
                         LayoutInterval last = layoutModel.removeInterval(parent, 0);
                         layoutModel.addInterval(last, superParent, layoutModel.removeInterval(parent));
+                        layoutModel.setIntervalAlignment(last, parent.getRawAlignment());
                     }
                     maintainSize(superParent, wasResizing || restResizing, dimension,
                                  parent, parent.getCurrentSpace().size(dimension) - cutSize);
