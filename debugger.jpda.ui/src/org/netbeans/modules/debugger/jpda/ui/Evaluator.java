@@ -27,6 +27,7 @@ import java.util.List;
 import javax.swing.ComboBoxEditor;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -190,8 +191,7 @@ public class Evaluator extends javax.swing.JPanel {
     /** Get the current expression. */
     public String getExpression() {
         String textInEditor =
-                ((JTextComponent) expressionComboBox.getEditor().getEditorComponent()).
-                    getText();
+                (String) expressionComboBox.getEditor().getItem();
         String exp = (String) expressionComboBox.getSelectedItem();
         if (textInEditor != null && !textInEditor.equals(exp)) {
             try {
@@ -350,12 +350,16 @@ public class Evaluator extends javax.swing.JPanel {
     private static final class CompletionedEditor implements ComboBoxEditor {
         
         private JEditorPane editor;
+        private java.awt.Component component;
         private Object oldValue;
         
         public CompletionedEditor() {
             editor = new JEditorPane("text/x-java", ""); //NOI18N
             editor.setBorder(null);
             editor.setKeymap(new FilteredKeymap(editor.getKeymap()));
+            component = new JScrollPane(editor,
+                                        JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                                        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         }
         
         public void addActionListener(java.awt.event.ActionListener actionListener) {
@@ -365,7 +369,7 @@ public class Evaluator extends javax.swing.JPanel {
         }
 
         public java.awt.Component getEditorComponent() {
-            return editor;
+            return component;
         }
 
         public Object getItem() {
