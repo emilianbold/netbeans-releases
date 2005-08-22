@@ -294,66 +294,6 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
             urlJTextField.setText(getPanel().getSuffix());// NOI18N  
     }
     
-    /*
-    private void parseURL(String txt) {
-        String host = WizardConstants.EMPTYSTRING;
-        String port = WizardConstants.EMPTYSTRING;
-        String rest = WizardConstants.EMPTYSTRING;
-        boolean ok = false;
-        
-        System.out.println("url: " +txt);
-        //eliminate service:jmx
-        String txtWithoutFix = txt.substring(12);
-        String protocol = extractUntilChar(txtWithoutFix.toCharArray(), ':');
-        System.out.println("protocol: " +protocol);
-        
-        //get the rest of the string without ://
-        String temp = txtWithoutFix.substring(protocol.length() +3);
-        if (temp.charAt(0) != '/') { // first char not / ==> there is a host
-            host = extractUntilChar(temp.toCharArray(), ':');
-            System.out.println("host: " +host);
-        }
-        
-        if (temp.substring(host.length()).startsWith(":")) { // there is a port
-            temp = temp.substring(host.length() +1); // jump ':'
-            port = extractUntilChar(temp.toCharArray(), '/');
-            System.out.println("port: " +port);
-        }
-        
-        if (temp.substring(port.length()).startsWith("/")) { // there is a suffix
-            rest = temp.substring(port.length() +1); // jump /
-            ok = Pattern.matches(JNDI, rest);
-            System.out.println("rest: " +rest);
-        }
-        
-        if (ok) //url is rmi with jndi suffix
-            protocol = bundle.getString("TXT_protocol");// NOI18N
-        else //url is another one: url textfield is editable
-            urlJTextField.setEditable(true);
-        
-        protocolJComboBox.setSelectedItem(protocol);
-        rmiHostJTextField.setText(host);
-        rmiPortJTextField.setText(port);
-        urlJTextField.setText(rest);
-    }
-    
-    private String extractUntilChar(char[] c, char toSearch) {
-        String result = WizardConstants.EMPTYSTRING;
-        int index = 0;
-        
-        if (index >= c.length)
-            return WizardConstants.EMPTYSTRING;
-        
-        System.out.println("Je rentre dans la boucle");
-        
-        while ((c[index] != toSearch) && (index < c.length)) {
-           result += c[index];
-           index++;
-        }
-        System.out.println("Result: " + result);
-        return result;
-    }
-    */
     // regular expression which matches rmi protocol with jndi suffix
     public static String JNDI = "jndi/rmi://[a-zA-Z0-9.-_:]*:[0-9]*/jmxrmi";// NOI18N
     
