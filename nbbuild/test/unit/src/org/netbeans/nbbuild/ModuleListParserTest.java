@@ -85,7 +85,7 @@ public class ModuleListParserTest extends TestCase {
             file(nball, "xml/external/flute.jar"),
             file(nball, "xml/external/sac.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
-        e = p.findByCodeNameBase("org.netbeans.modules.javanavigation");
+        e = p.findByCodeNameBase("org.netbeans.swing.tabcontrol");
         assertNotNull("found module in a subsubdir", e);
         e = p.findByCodeNameBase("org.netbeans.core.startup");
         assertNotNull(e);
@@ -132,34 +132,34 @@ public class ModuleListParserTest extends TestCase {
         assertNotNull("found sister project in suite", e);
         assertEquals("org.netbeans.examples.modules.lib", e.getCnb());
         assertEquals(file(nball, "apisupport/project/test/unit/data/example-external-projects/suite1/build/cluster/modules/org-netbeans-examples-modules-lib.jar"), e.getJar());
-        File jar = file(nball, "nbbuild/netbeans/ide5/modules/org-netbeans-libs-xerces.jar");
+        File jar = file(nball, "nbbuild/netbeans/ide6/modules/org-netbeans-libs-xerces.jar");
         assertTrue("Build all-libs/xerces first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.libs.xerces");
         assertNotNull("found netbeans.org module by its binary", e);
         assertEquals("org.netbeans.libs.xerces", e.getCnb());
         assertEquals(jar, e.getJar());
         assertEquals("correct CP extensions (using Class-Path header in manifest)", Arrays.asList(new File[] {
-            file(nball, "nbbuild/netbeans/ide5/modules/ext/xerces-2.6.2.jar"),
-            file(nball, "nbbuild/netbeans/ide5/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
+            file(nball, "nbbuild/netbeans/ide6/modules/ext/xerces-2.6.2.jar"),
+            file(nball, "nbbuild/netbeans/ide6/modules/ext/xml-commons-dom-ranges-1.0.b2.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.openide.loaders");
         assertNotNull(e);
         assertEquals("org.openide.loaders", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/platform5/modules/org-openide-loaders.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
         e = p.findByCodeNameBase("org.netbeans.bootstrap");
         assertNotNull(e);
         assertEquals("org.netbeans.bootstrap", e.getCnb());
-        assertEquals(file(nball, "nbbuild/netbeans/platform5/lib/boot.jar"), e.getJar());
+        assertEquals(file(nball, "nbbuild/netbeans/platform6/lib/boot.jar"), e.getJar());
         assertEquals(Collections.EMPTY_LIST, Arrays.asList(e.getClassPathExtensions()));
-        jar = file(nball, "nbbuild/netbeans/ide5/modules/autoload/xml-tax.jar");
+        jar = file(nball, "nbbuild/netbeans/ide6/modules/autoload/xml-tax.jar");
         assertTrue("Build all-xml/tax first!", jar.isFile());
         e = p.findByCodeNameBase("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("org.netbeans.modules.xml.tax", e.getCnb());
         assertEquals(jar, e.getJar());
         assertEquals(Arrays.asList(new File[] {
-            file(nball, "nbbuild/netbeans/ide5/modules/autoload/ext/tax.jar"),
+            file(nball, "nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"),
         }), Arrays.asList(e.getClassPathExtensions()));
     }
     
@@ -167,6 +167,7 @@ public class ModuleListParserTest extends TestCase {
         Hashtable properties = new Hashtable();
         properties.put("netbeans.dest.dir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/nbplatform"));
         properties.put("basedir", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project"));
+        properties.put("project", filePath(nball, "apisupport/project/test/unit/data/example-external-projects/suite3/dummy-project"));
         ModuleListParser p = new ModuleListParser(properties, ParseProjectXml.TYPE_STANDALONE, null);
         ModuleListParser.Entry e = p.findByCodeNameBase("org.netbeans.examples.modules.dummy");
         assertNotNull("found myself", e);
