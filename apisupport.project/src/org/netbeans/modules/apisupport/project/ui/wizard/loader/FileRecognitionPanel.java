@@ -76,24 +76,24 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
         String txt = txtMimeType.getText().trim();
         
         if (txt.length() == 0 || DEFAULT_MIME_TYPE.equals(txt) || (!MIME_TYPE_PATTERN.matcher(txt).matches())) {
-            message = "Not a valid MIME type.";
+            message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NotValidMimeType");
         } else {
             if (rbByElement.isSelected()) {
                 if (txtNamespace.getText().trim().length() == 0) {
-                    message = "Namespace must be entered";
+                    message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoNamespace");
                 } else {
                     Matcher match = ELEMENT_PATTERN.matcher(txt);
                     if (!match.matches()) {
-                        message = "Inappropriate MIME type. Must be one of text/<something>+xml or application/<something>+xml";
+                        message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadMimeTypeForXML");
                     }
                 }
             } else {
                 if (txtExtension.getText().trim().length() == 0) {
-                    message = "Extension must be entered";
+                    message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoExtension");
                 } else {
                     Matcher match = EXTENSION_PATTERN.matcher(txtExtension.getText());
                     if (!match.matches()) {
-                        message = "Invalid extension pattern. Must be a list of extensions separated by commas.";
+                        message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadExtensionPattern");
                     }
                 }
             }
