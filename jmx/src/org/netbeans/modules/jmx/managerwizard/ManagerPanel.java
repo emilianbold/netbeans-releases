@@ -36,7 +36,7 @@ public class ManagerPanel extends javax.swing.JPanel {
     private ManagerWizardPanel wiz;
     private ResourceBundle bundle;
     private static WizardDescriptor wizDesc;
-    private boolean mainMethodSelected = false;
+    private boolean mainMethodSelected = true;
     private boolean mainClassSelected = true;
     private boolean sampleCodeSelected = true;
     
@@ -150,7 +150,8 @@ public class ManagerPanel extends javax.swing.JPanel {
         mainMethodSelected = generateMainMethodJCheckBox.isSelected();
         
         //mainClassJCheckBox.setEnabled(mainSelected && shouldEnableMainProjectClass());
-        setAsMainClassJCheckBox.setEnabled(mainMethodSelected && shouldEnableMainProjectClass());
+        //setAsMainClassJCheckBox.setEnabled(mainMethodSelected && shouldEnableMainProjectClass());
+        setAsMainClassJCheckBox.setEnabled(mainMethodSelected);
         generateSampleCodeJCheckBox.setEnabled(mainMethodSelected);
         
         if (!mainMethodSelected) {
@@ -229,7 +230,7 @@ public class ManagerPanel extends javax.swing.JPanel {
         public void readSettings (Object settings) 
         {
             wizDesc = (WizardDescriptor) settings;
-            getPanel().setAsMainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
+            //getPanel().setAsMainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
         }
         
         /**

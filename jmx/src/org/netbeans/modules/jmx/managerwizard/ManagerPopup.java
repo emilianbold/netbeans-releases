@@ -154,19 +154,16 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         ((JTextField) protocolJComboBox.getEditor().getEditorComponent()).
                 getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
-                System.out.println("combobox documentlistener");
                 Document doc = e.getDocument();
                 updateURLPath(e.getDocument());
             }
             
             public void removeUpdate(DocumentEvent e) {
-                System.out.println("combobox documentlistener");
                 Document doc = e.getDocument();
                 updateURLPath(e.getDocument());
             }
             
             public void changedUpdate(DocumentEvent e) {
-                System.out.println("combobox documentlistener");
                 Document doc = e.getDocument();
                 updateURLPath(e.getDocument());
             }
@@ -218,27 +215,22 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     }
     
     public void insertUpdate(DocumentEvent e) {
-        System.out.println("Adding new Document Listener on txtfield host or port");
         updateURLPathWithHostAndPort();
     }
     
     public void removeUpdate(DocumentEvent e) {
-        System.out.println("Adding new Document Listener on txtfield host or port");
         updateURLPathWithHostAndPort();
     }
     
     public void changedUpdate(DocumentEvent e) {
-        System.out.println("Adding new Document Listener on txtfield host or port");
         updateURLPathWithHostAndPort();
     }
     
     public void focusGained(FocusEvent evt) {
-        System.out.println("host got focus");
         ((JTextField)evt.getSource()).selectAll();
     }
     
     public void focusLost(FocusEvent evt) {
-        System.out.println("host lost focus");
         ((JTextField)evt.getSource()).select(0,0);
     }
     
