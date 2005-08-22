@@ -278,9 +278,7 @@ is divided into following sections:
                                 <mapper type="glob" from="test-sys-prop.*" to="*"/>
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
-                            <!-- TBD
                             <formatter type="xml"/>
-                            -->
                         </junit>
                     </sequential>
                 </macrodef>
