@@ -143,9 +143,13 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 first = item;
             }
             
+            // #62654 incorrect syntax element create for reference when it is right after a tag ( <atag>&ref;... )
+            if(id == XMLDefaultTokenContext.TAG && item.getImage().endsWith(">")) {
+                return createElement(item.getNext());
+            }
+            
             // now item is either XMLSyntax.VALUE or we're in text, or at BOF
             if( id != VALUE && id != TEXT && id != CDATA_SECTION ) {
-                
                 // #34453 it may start of element tag or end of start tag (skip attributtes)
                 if( id == XMLDefaultTokenContext.TAG ) {
                     if( item.getImage().startsWith( "<" ) ) {
@@ -158,9 +162,9 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                         return createElement( item );       // TAGC
                     }
                 }
-                
                 return createElement( first );
             } // else ( for VALUE or TEXT ) fall through
+            
         }
         
         // these are possible only in containers (tags or doctype)
@@ -324,7 +328,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     id = item.getTokenID();
                 }
                 return new TextImpl( this, first, lastOffset );
-            
+                
             case CDATA_SECTION_ID:
                 return new CDATASectionImpl( this, first, first.getOffset() + first.getImage().length() );
                 
