@@ -51,6 +51,12 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
     private boolean userNameValid = true;
     private boolean userPasswordValid = true;
     
+    // instance variables for the popup
+    private String protocol = WizardConstants.EMPTYSTRING;
+    private String host = WizardConstants.EMPTYSTRING;
+    private String port = WizardConstants.EMPTYSTRING;
+    private String suffix = WizardConstants.EMPTYSTRING;
+    
     
     /** 
      * Constructor
@@ -63,8 +69,8 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         initComponents();
         
         //jmxURLJTextField.setText(bundle.getString("TXT_rbtJmxAgent"));// NOI18N
-        jmxURLJTextField.setSelectionStart(0);
-        jmxURLJTextField.addFocusListener(new FocusListener() {
+        getJmxURLJTextField().setSelectionStart(0);
+        getJmxURLJTextField().addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
                 ((JTextField)e.getSource()).selectAll();
             }
@@ -84,9 +90,9 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         Mnemonics.setLocalizedText(jmxAgentURLPopupJButton,bundle.getString("LBL_urlPopupBtn.text"));// NOI18N
         
         //for accessibility
-        jmxURLJTextField.getAccessibleContext().setAccessibleName(
+        getJmxURLJTextField().getAccessibleContext().setAccessibleName(
                 bundle.getString("ACCESS_JMX_URL")); // NOI18N
-        jmxURLJTextField.getAccessibleContext().setAccessibleDescription(
+        getJmxURLJTextField().getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_JMX_URL_DESCRIPTION")); // NOI18N
         jmxAgentURLPopupJButton.getAccessibleContext().setAccessibleName(
                 bundle.getString("ACCESS_BUTTON_JMX_URL")); // NOI18N
@@ -392,7 +398,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
     // </editor-fold>//GEN-END:initComponents
 
     private void jmxAgentURLPopupJButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmxAgentURLPopupJButtonActionPerformed
-        ManagerPopup rmiPopup = new ManagerPopup(getPanel(), jmxURLJTextField);
+        ManagerPopup rmiPopup = new ManagerPopup(getPanel());
     }//GEN-LAST:event_jmxAgentURLPopupJButtonActionPerformed
 
     private void codeExampleJRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_codeExampleJRadioButtonActionPerformed
@@ -599,7 +605,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
             // checkboxes/ radiobuttons has been selected
             
             wiz.putProperty(WizardConstants.PROP_MANAGER_AGENT_URL,
-                    getPanel().jmxURLJTextField.getText());
+                    getPanel().getJmxURLJTextField().getText());
             
             // storage for the security part of the panel
             wiz.putProperty(WizardConstants.PROP_MANAGER_SECURITY_SELECTED,
@@ -649,4 +655,40 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
                 setUserPasswordValidity(!rmiPasswordJTextField.getText().equals(WizardConstants.EMPTYSTRING));
                 wiz.event();
             }
+
+    public javax.swing.JTextField getJmxURLJTextField() {
+        return jmxURLJTextField;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
 }

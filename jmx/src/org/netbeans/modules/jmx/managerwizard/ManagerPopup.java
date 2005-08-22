@@ -42,15 +42,17 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     FocusListener {
     
     private ResourceBundle bundle;
-    private JTextField urlField;
+    //private JTextField urlField;
     private JButton okJButton;
+    private JPanel panel;
     
     /**
      * Creates new form ManagerPopup 
      */
-    public ManagerPopup(JPanel ancestorPanel, JTextField urlField) {
+    public ManagerPopup(JPanel ancestorPanel) {
         //super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor()); 
-        this.urlField = urlField;
+        //this.urlField = urlField;
+        this.panel = ancestorPanel;
         bundle = NbBundle.getBundle(ManagerPopup.class);
         initComponents();
         
@@ -86,10 +88,16 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         setName("ManagerPopup");// NOI18N
         
-        if (urlField.getText().equals(WizardConstants.EMPTYSTRING))
+        /*if (urlField.getText().equals(WizardConstants.EMPTYSTRING))
             updateURLPathWithHostAndPort();
         else
             parseURL(urlField.getText());
+         */
+        String urlText = getPanel().getJmxURLJTextField().getText();
+        if (urlText.equals(WizardConstants.EMPTYSTRING))
+            updateURLPathWithHostAndPort();
+        else
+            parseURL();
         
         //protocolJComboBox.requestFocus();
         
@@ -97,6 +105,10 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         configure();
         protocolJComboBox.requestFocus();
+    }
+    
+    private AgentURLPanel getPanel() {
+        return (AgentURLPanel)panel;
     }
     
     /**
@@ -209,9 +221,25 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         else
             protocol = ((String)protocolJComboBox.getSelectedItem());
         
-        urlField.setText(bundle.getString("TXT_SERVICEJMX") + protocol +// NOI18N
-                "://" + rmiHostJTextField.getText() + ":" + rmiPortJTextField.getText() +// NOI18N
-                "/" + urlJTextField.getText());// NOI18N
+        String completePort = rmiPortJTextField.getText();
+        if (!completePort.equals(WizardConstants.EMPTYSTRING))
+            completePort = ":"+rmiPortJTextField.getText();// NOI18N
+        
+        String suffix = urlJTextField.getText();
+        if (!suffix.equals(WizardConstants.EMPTYSTRING)) {
+            if (!suffix.startsWith("/"))// NOI18N
+                suffix = "/" + suffix;// NOI18N
+        }
+        
+        getPanel().getJmxURLJTextField().setText(bundle.getString("TXT_SERVICEJMX") + protocol +// NOI18N
+                "://" + rmiHostJTextField.getText() +  completePort +// NOI18N
+                suffix);// NOI18N
+        
+        // save host, port and suffix for future needs
+        getPanel().setProtocol((String)protocolJComboBox.getSelectedItem());
+        getPanel().setHost(rmiHostJTextField.getText());
+        getPanel().setPort(rmiPortJTextField.getText());
+        getPanel().setSuffix(urlJTextField.getText());
     }
     
     public void insertUpdate(DocumentEvent e) {
@@ -237,32 +265,66 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     private void updateURLPathWithHostAndPort() {
         Object protocol = protocolJComboBox.getSelectedItem();
         boolean isRmi = protocol.equals(bundle.getString("TXT_protocol"));// NOI18N
+        String completePort = rmiPortJTextField.getText();
+        
+        if (!completePort.equals(WizardConstants.EMPTYSTRING))
+            completePort = (":" + completePort);// NOI18N
+        
+        String suffix = bundle.getString("TXT_JNDIRMI");// NOI18N
+        if (!suffix.startsWith("/"))// NOI18N
+            suffix = "/" + suffix;// NOI18N
+        
         if (isRmi) {
             urlJTextField.setText(
-                    bundle.getString("TXT_JNDIRMI") + rmiHostJTextField.getText() +// NOI18N
-                    ":" +rmiPortJTextField.getText() + bundle.getString("TXT_JMXRMI"));// NOI18N
+                    suffix + rmiHostJTextField.getText() +// NOI18N
+                    completePort + bundle.getString("TXT_JMXRMI"));// NOI18N
         }
     }
     
+    private void parseURL() {
+        
+        protocolJComboBox.setSelectedItem(getPanel().getProtocol());  
+        rmiHostJTextField.setText(getPanel().getHost());
+        rmiPortJTextField.setText(getPanel().getPort());
+        
+        if (!getPanel().getProtocol().equals(bundle.getString("TXT_protocol")))// NOI18N
+            urlJTextField.setEditable(true);
+        
+        if (!getPanel().getSuffix().equals(WizardConstants.EMPTYSTRING))
+            urlJTextField.setText(getPanel().getSuffix());// NOI18N  
+    }
+    
+    /*
     private void parseURL(String txt) {
+        String host = WizardConstants.EMPTYSTRING;
+        String port = WizardConstants.EMPTYSTRING;
+        String rest = WizardConstants.EMPTYSTRING;
+        boolean ok = false;
+        
         System.out.println("url: " +txt);
         //eliminate service:jmx
         String txtWithoutFix = txt.substring(12);
-        String protocol = extractUntilChar(txtWithoutFix.toCharArray(), 0, ':');
+        String protocol = extractUntilChar(txtWithoutFix.toCharArray(), ':');
         System.out.println("protocol: " +protocol);
         
         //get the rest of the string without ://
         String temp = txtWithoutFix.substring(protocol.length() +3);
-        String host = extractUntilChar(temp.toCharArray(), 0, ':');
-        System.out.println("host: " +host);
+        if (temp.charAt(0) != '/') { // first char not / ==> there is a host
+            host = extractUntilChar(temp.toCharArray(), ':');
+            System.out.println("host: " +host);
+        }
         
-        temp = temp.substring(host.length() +1);
-        String port = extractUntilChar(temp.toCharArray(), 0, '/');
-        System.out.println("port: " +port);
+        if (temp.substring(host.length()).startsWith(":")) { // there is a port
+            temp = temp.substring(host.length() +1); // jump ':'
+            port = extractUntilChar(temp.toCharArray(), '/');
+            System.out.println("port: " +port);
+        }
         
-        String rest = temp.substring(port.length() +1);
-        boolean ok = Pattern.matches(JNDI, rest);
-        System.out.println("rest: " +rest);
+        if (temp.substring(port.length()).startsWith("/")) { // there is a suffix
+            rest = temp.substring(port.length() +1); // jump /
+            ok = Pattern.matches(JNDI, rest);
+            System.out.println("rest: " +rest);
+        }
         
         if (ok) //url is rmi with jndi suffix
             protocol = bundle.getString("TXT_protocol");// NOI18N
@@ -275,15 +337,23 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         urlJTextField.setText(rest);
     }
     
-    private String extractUntilChar(char[] c, int index, char toSearch) {
+    private String extractUntilChar(char[] c, char toSearch) {
         String result = WizardConstants.EMPTYSTRING;
-        while (c[index] != toSearch) {
-            result += c[index];
-            index++;
+        int index = 0;
+        
+        if (index >= c.length)
+            return WizardConstants.EMPTYSTRING;
+        
+        System.out.println("Je rentre dans la boucle");
+        
+        while ((c[index] != toSearch) && (index < c.length)) {
+           result += c[index];
+           index++;
         }
+        System.out.println("Result: " + result);
         return result;
     }
-    
+    */
     // regular expression which matches rmi protocol with jndi suffix
     public static String JNDI = "jndi/rmi://[a-zA-Z0-9.-_:]*:[0-9]*/jmxrmi";// NOI18N
     
