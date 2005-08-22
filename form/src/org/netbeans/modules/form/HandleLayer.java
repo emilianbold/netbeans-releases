@@ -334,24 +334,23 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 return;
             }
         }
-        else if (keyCode == KeyEvent.VK_F10) {
-            if (e.isShiftDown()) { // Shift F10 invokes context menu
-                Point p = null;
-                java.util.List selected = formDesigner.getSelectedComponents();
-                if (selected.size() > 0) {
-                    RADComponent metacomp = (RADComponent) selected.get(0);
-                    Object sel = (Component) formDesigner.getComponent(metacomp);
-                    if (sel instanceof Component) {
-                        Component comp = (Component) sel;
-                        p = convertPointFromComponent(comp.getLocation(), comp.getParent());
-                    }
-                    else p = new Point(6, 6);
-
-                    showContextMenu(p);
-                    e.consume();
-                    return;
+        else if ((keyCode == 525) // PENDING replace by KeyEvent.VK_CONTEXT_MENU on JDK 5
+                || ((keyCode == KeyEvent.VK_F10) && e.isShiftDown())) { // Shift F10 invokes context menu
+            Point p = null;
+            java.util.List selected = formDesigner.getSelectedComponents();
+            if (selected.size() > 0) {
+                RADComponent metacomp = (RADComponent) selected.get(0);
+                Object sel = (Component) formDesigner.getComponent(metacomp);
+                if (sel instanceof Component) {
+                    Component comp = (Component) sel;
+                    p = convertPointFromComponent(comp.getLocation(), comp.getParent());
                 }
-            }
+                else p = new Point(6, 6);
+
+                showContextMenu(p);
+                e.consume();
+                return;
+        }
         } else if (((keyCode == KeyEvent.VK_D) || (keyCode == KeyEvent.VK_E)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormModel formModel = formDesigner.getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();
