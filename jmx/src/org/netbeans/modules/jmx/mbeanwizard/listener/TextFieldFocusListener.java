@@ -44,6 +44,6 @@ public class TextFieldFocusListener implements FocusListener {
          * @param e FocusEvent
          */
         public void focusLost(FocusEvent e) {
-            
+            System.out.println("host or port lost focus");
         }
     }
