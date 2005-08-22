@@ -14,29 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE editor_palette_item PUBLIC "-//NetBeans//Editor Palette Item 1.0//EN" "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
 <editor_palette_item version="1.0">
-    <body>
-        <![CDATA[
-            <sql:query var="result">
-            </sql:query>
-            <table>
-                <!-- column headers -->
-                <tr>
-                    <c:forEach var="columnName" items="${result.columnNames}">
-                        <th><c:out value="${columnName}"/></th>
-                    </c:forEach>
-                </tr>
-                <!-- column data -->
-                <c:forEach var="row" items="${result.rowsByIndex}">
-                    <tr>
-                        <c:forEach var="column" items="${row}">
-                            <td><c:out value="${column}"/></td>
-                        </c:forEach>
-                    </tr>
-                </c:forEach>
-            </table>
-        ]]>
-    </body>
-  
+    <class name="org.netbeans.modules.web.core.palette.items.Report" />
+
     <icon16 urlvalue="javax/swing/beaninfo/images/JTableColor16.gif" />
     <icon32 urlvalue="javax/swing/beaninfo/images/JTableColor32.gif" />
     <description localizing-bundle="org.netbeans.modules.web.core.palette.items.resources.Bundle"

@@ -14,13 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE editor_palette_item PUBLIC "-//NetBeans//Editor Palette Item 1.0//EN" "http://www.netbeans.org/dtds/editor-palette-item-1_0.dtd">
 
 <editor_palette_item version="1.0">
-    <body>
-        <![CDATA[
-            <sql:update>
-            </sql:update>
-        ]]>
-    </body>
-  
+    <class name="org.netbeans.modules.web.core.palette.items.Insert" />
+
     <icon16 urlvalue="javax/swing/beaninfo/images/JTableColor16.gif" />
     <icon32 urlvalue="javax/swing/beaninfo/images/JTableColor32.gif" />
     <description localizing-bundle="org.netbeans.modules.web.core.palette.items.resources.Bundle"
