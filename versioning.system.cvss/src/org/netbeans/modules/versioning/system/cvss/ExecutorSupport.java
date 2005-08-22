@@ -27,6 +27,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.UIUtils;
 import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.TaskListener;
@@ -190,6 +191,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                         return;
                     }
                     if (error instanceof CommandException) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
                         reportError(Arrays.asList(new Object [] { error.getMessage() }));
                     }
                     else if (retryConnection(error)) {
@@ -239,12 +241,9 @@ public abstract class ExecutorSupport implements CVSListener  {
             errorReport.append(i.next());
             errorReport.append('\n');
         }
-        JOptionPane.showMessageDialog(
-                null,
-                errorReport.toString(),
-                NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
-                JOptionPane.ERROR_MESSAGE
-                );
+        NotifyDescriptor nd = new NotifyDescriptor.Message(errorReport.toString(), JOptionPane.ERROR_MESSAGE);
+        nd.setTitle(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"));
+        DialogDisplayer.getDefault().notify(nd);
     }
 
     /** Retry aware task events source*/
