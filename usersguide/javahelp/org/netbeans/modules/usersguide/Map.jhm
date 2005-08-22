@@ -26,6 +26,7 @@
 <mapID target="proj_sources_multi" url="project/proj_sources_multi.html" />
 <mapID target="proj_templates" url="project/proj_templates.html" />
 <mapID target="proj_stand_about" url="project/proj_stand_about.html" />
+<mapID target="proj_stand_ant_structure" url="project/proj_stand_ant_structure.html" />
 <mapID target="proj_jdk" url="project/proj_jdk.html" />
 <mapID target="proj_free_about" url="project/proj_free_about.html" />
 <mapID target="proj_free_add" url="project/proj_free_add.html" />

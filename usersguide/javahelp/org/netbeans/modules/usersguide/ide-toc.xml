@@ -33,6 +33,7 @@
       <tocitem text="About Standard Projects" target="proj_stand_about" />
       <tocitem text="Managing the Classpath" target="comp_classpath" />
       <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
+      <tocitem text="About IDE-Generated Ant Scripts" target="proj_stand_ant_structure" />
       <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
     </tocitem>
     <tocitem text="Free-Form Projects" >
