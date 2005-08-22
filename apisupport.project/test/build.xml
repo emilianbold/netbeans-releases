@@ -16,8 +16,4 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
-    <target name="buildtests" depends="xtest.buildtests">
-        <ant dir="../../../projects/projectapi" target="test-build"/>
-        <ant dir="../../../ant/project" target="test-build"/>
-    </target>
 </project>
