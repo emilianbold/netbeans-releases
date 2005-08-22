@@ -52,36 +52,52 @@ public class BrandingSupportTest extends TestBase {
         
     }
             
-    public void testBrandingOfBundleKey() throws IOException {
+    public void testBranding1() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
         Set keys = new HashSet(Arrays.asList(new String[]{"CTL_About_Title"}));
-        Set bKeys = instance.getOrCreateBundleKeys("org.netbeans.core.startup", keys);
-        
+        implOfBundleKeyTest("org.netbeans.core.startup", "org/netbeans/core/startup/Bundle.properties",keys, "About");
+    }
+    
+    public void testBranding2() throws IOException {
+        assertFalse(instance.getBrandingRoot().exists());
+        Set keys = new HashSet(Arrays.asList(new String[]{"CTL_MainWindow_Title"}));
+        implOfBundleKeyTest("org.netbeans.core.windows","org/netbeans/core/windows/view/ui/Bundle.properties", keys, "NetBeans Platform {0}");
+    }
+    
+
+    private void implOfBundleKeyTest(final String moduleCodeNameBase, final String bundleEntry, final Set keys, String expectedValue) throws IOException {
+        Set bKeys = instance.getBundleKeys(moduleCodeNameBase,bundleEntry,keys);
+
         assertNotNull(bKeys);
         assertEquals(1, bKeys.size());
-        
+
         BrandingSupport.BundleKey bKey = (BrandingSupport.BundleKey) bKeys.toArray()[0];
         assertFalse(instance.isBranded(bKey));
         assertFalse(instance.isBranded(bKey.getModuleEntry()));
         assertFalse(instance.getBrandingRoot().exists());
         assertFalse(instance.getModuleEntryDirectory(bKey.getModuleEntry()).exists());
-        
-        assertEquals("About", bKey.getValue());
- 
+        assertNotNull(instance.getListOfBrandedBundleKeys(bKey.getModuleEntry()));
+        assertFalse(instance.getListOfBrandedBundleKeys(bKey.getModuleEntry()).contains(bKey));
+        assertEquals(expectedValue, bKey.getValue());
+
         instance.brandBundleKeys(bKeys);
         assertFalse(instance.isBranded(bKey));
         assertFalse(instance.isBranded(bKey.getModuleEntry()));
         assertFalse(instance.getBrandingRoot().exists());
         assertFalse(instance.getModuleEntryDirectory(bKey.getModuleEntry()).exists());        
-        assertEquals("About", bKey.getValue());
-        
-        
+        assertNotNull(instance.getListOfBrandedBundleKeys(bKey.getModuleEntry()));
+        assertFalse(instance.getListOfBrandedBundleKeys(bKey.getModuleEntry()).contains(bKey));        
+        assertEquals(expectedValue, bKey.getValue());
+
+
         bKey.setValue("brandedValue");
         instance.brandBundleKeys(bKeys);
         assertTrue(instance.isBranded(bKey));
         assertTrue(instance.isBranded(bKey.getModuleEntry()));
         assertTrue(instance.getBrandingRoot().exists());
         assertTrue(instance.getModuleEntryDirectory(bKey.getModuleEntry()).exists());        
+        assertNotNull(instance.getListOfBrandedBundleKeys(bKey.getModuleEntry()));
+        assertTrue(instance.getListOfBrandedBundleKeys(bKey.getModuleEntry()).contains(bKey));        
         assertEquals("brandedValue", bKey.getValue());
     }
         
