@@ -7,26 +7,23 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import org.openide.util.WeakListeners;
-import org.openide.*;
-import org.openide.loaders.*;
-import org.openide.options.*;
+import org.netbeans.core.ui.LookupNode;
 import org.openide.actions.PropertiesAction;
 import org.openide.actions.ToolsAction;
+import org.openide.loaders.DataFolder;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
 import org.openide.util.NbBundle;
-
-import org.netbeans.core.startup.ManifestSection;
-import org.netbeans.core.ui.LookupNode;
+import org.openide.util.actions.SystemAction;
 
 /** This object represents environment settings in the Corona system.
 * This class is final only for performance purposes.
@@ -46,6 +43,13 @@ final class EnvironmentNode extends AbstractNode {
     /** A lock for the find method. */
     private static final Object lock = new Object();
 
+    /** Type to add an entry to the root nodes. */
+    public static final String TYPE_ROOTS = "roots"; // NOI18N
+    /** Type to add an entry to the Environment (in the Explorer). */
+    public static final String TYPE_ENVIRONMENT = "environment"; // NOI18N
+    /** Type to add an entry to the Session settings. */
+    public static final String TYPE_SESSION = "session"; // NOI18N
+    
     /** Constructor */
     private EnvironmentNode (String filter, Children children) {
         super (children);
@@ -65,11 +69,12 @@ final class EnvironmentNode extends AbstractNode {
                         Node n = (Node)types.get (name);
                         if (n == null) {
                             DataFolder folder = null;
-                            if (ManifestSection.NodeSection.TYPE_ENVIRONMENT.equals(name)) {
+                            if (TYPE_ENVIRONMENT.equals(name)) {
                                 folder = NbPlaces.getDefault().findSessionFolder("UI/Runtime"); // NOI18N
-                            } else if(ManifestSection.NodeSection.TYPE_ROOTS.equals(name)) {
+                            } else if (TYPE_ROOTS.equals(name)) {
                                 folder = NbPlaces.getDefault().findSessionFolder("UI/Roots");
                             } else {
+                                assert TYPE_SESSION.equals(name) : name;
                                 folder = NbPlaces.getDefault().findSessionFolder("UI/Services"); // NOI18N
                             }
 
@@ -128,7 +133,7 @@ final class EnvironmentNode extends AbstractNode {
             super(folder);
             this.filter = filter;
             
-            if(ManifestSection.NodeSection.TYPE_ROOTS.equals(filter)) {
+            if (TYPE_ROOTS.equals(filter)) {
                 folder.addPropertyChangeListener(
                     org.openide.util.WeakListeners.propertyChange(this, folder));
             }
@@ -160,7 +165,7 @@ final class EnvironmentNode extends AbstractNode {
             String f = filter;
             if (f == null) {
                 // use the original node
-                f = ManifestSection.NodeSection.TYPE_ENVIRONMENT;
+                f = TYPE_ENVIRONMENT;
             }
             
             return find (f);

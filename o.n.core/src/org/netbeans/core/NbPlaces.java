@@ -7,28 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
-import org.openide.*;
+import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.nodes.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-
-import org.netbeans.core.startup.ManifestSection;
 
 /** Important places in the system.
 *
@@ -80,13 +81,13 @@ public final class NbPlaces extends Object {
     * the IDE.
     */
     public Node environment () {
-        return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_ENVIRONMENT);
+        return EnvironmentNode.find(EnvironmentNode.TYPE_ENVIRONMENT);
     }
 
 
     /** Session node */
     public Node session () {
-        return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_SESSION); 
+        return EnvironmentNode.find(EnvironmentNode.TYPE_SESSION); 
     }
 
     /** Node with all workspaces */
@@ -130,7 +131,7 @@ public final class NbPlaces extends Object {
     /** Root nodes.
     */
     public Node[] roots () {
-        return EnvironmentNode.find (ManifestSection.NodeSection.TYPE_ROOTS).getChildren ().getNodes (); 
+        return EnvironmentNode.find(EnvironmentNode.TYPE_ROOTS).getChildren ().getNodes (); 
     }
 
     /** Default folder for templates.

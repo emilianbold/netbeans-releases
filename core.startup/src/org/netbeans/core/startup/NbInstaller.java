@@ -7,30 +7,58 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.Attributes;
-import java.util.*;
-import java.io.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import org.netbeans.Events;
+import org.netbeans.InvalidException;
+import org.netbeans.Module;
+import org.netbeans.ModuleInstaller;
+import org.netbeans.ModuleManager;
+import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
-
-import org.xml.sax.SAXException;
-
-import org.openide.modules.*;
-import org.netbeans.*;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.modules.Dependency;
+import org.openide.modules.ModuleInstall;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.xml.sax.SAXException;
 
 /** Concrete implementation of the module installation functionality.
  * This class can pay attention to the details of manifest format,
@@ -372,19 +400,13 @@ final class NbInstaller extends ModuleInstaller {
                     }
                     CoreBridge.getDefault ().loadActionSection((ManifestSection.ActionSection)sect, load);
                 } else if (sect instanceof ManifestSection.ClipboardConvertorSection) {
-                    loadClipboardConvertorSection((ManifestSection.ClipboardConvertorSection)sect, load);
+                    loadGenericSection(sect, load);
                 } else if (sect instanceof ManifestSection.DebuggerSection) {
-                    loadDebuggerSection((ManifestSection.DebuggerSection)sect, load);
-                } else if (sect instanceof ManifestSection.FileSystemSection) {
-                    loadFileSystemSection((ManifestSection.FileSystemSection)sect, load);
+                    loadGenericSection(sect, load);
                 } else if (sect instanceof ManifestSection.LoaderSection) {
                     CoreBridge.getDefault().loadLoaderSection((ManifestSection.LoaderSection)sect, load);
-                } else if (sect instanceof ManifestSection.NodeSection) {
-                    loadNodeSection((ManifestSection.NodeSection)sect, load);
-                } else if (sect instanceof ManifestSection.OptionSection) {
-                    loadOptionSection((ManifestSection.OptionSection)sect, load);
-                } else /*if (sect instanceof ManifestSection.ServiceSection)*/ {
-                    loadServiceSection((ManifestSection.ServiceSection)sect, load);
+                } else {
+                    assert false : sect;
                 }
             }
         } finally {
@@ -401,8 +423,8 @@ final class NbInstaller extends ModuleInstaller {
      * You tell it whether to convert the result to the real
      * instance, or just register the section itself.
      */
-    private void loadGenericSection(ManifestSection s, boolean load, boolean convert) {
-        CoreBridge.getDefault().loadDefaultSection(s, convert ? convertor : null, load);
+    private void loadGenericSection(ManifestSection s, boolean load) {
+        CoreBridge.getDefault().loadDefaultSection(s, convertor, load);
     }
     
     private final InstanceContent.Convertor convertor = new Convertor();
@@ -418,7 +440,7 @@ final class NbInstaller extends ModuleInstaller {
                 // to throw errors over and over. Hopefully it is kosher to
                 // do this while it is in the process of converting! I.e.
                 // hopefully InstanceLookup is well-synchronized.
-                loadGenericSection(s, false, true);
+                loadGenericSection(s, false);
                 return null;
             }
         }
@@ -444,22 +466,6 @@ final class NbInstaller extends ModuleInstaller {
         }
         
     }
-    
-    private void loadClipboardConvertorSection(ManifestSection.ClipboardConvertorSection s, boolean load) throws Exception {
-        loadGenericSection(s, load, true);
-    }
-    
-    private void loadDebuggerSection(ManifestSection.DebuggerSection s, boolean load) throws Exception {
-        loadGenericSection(s, load, true);
-    }
-    
-    private void loadFileSystemSection(ManifestSection.FileSystemSection s, boolean load) throws Exception {}
-    
-    private void loadNodeSection(ManifestSection.NodeSection s, boolean load) throws Exception {}
-    
-    private void loadOptionSection(ManifestSection.OptionSection s, boolean load) throws Exception {}
-    
-    private void loadServiceSection(ManifestSection.ServiceSection s, boolean load) throws Exception {}
     
     /** Either load or unload the layer, if any, for a set of modules.
      * If the parameter load is true, load it, else unload it.

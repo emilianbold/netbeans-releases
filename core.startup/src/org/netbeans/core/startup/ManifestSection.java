@@ -7,34 +7,26 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core.startup;
 
-// Permitted to reference API classes but should not directly do stuff with
-// the core, and should try to avoid loading TopManager.
-// ManifestSection itself can only reference generic module things and
-// utility APIs; other API references are made in the create() method
-// and in its subclasses.
-
 import java.beans.Beans;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.jar.Attributes;
-
-import org.openide.filesystems.FileSystem;
-import org.openide.ServiceType;
+import org.netbeans.Events;
+import org.netbeans.InvalidException;
+import org.netbeans.Module;
+import org.netbeans.Util;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.HelpCtx;
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.SharedClassObject;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
-
-import org.netbeans.*;
-
-// XXX probably should delete deprecated section handlers now (NbInstaller does not load them)
 
 // XXX synchronization?
 
@@ -247,23 +239,25 @@ public abstract class ManifestSection {
             return new ActionSection(name, attr, module);
         } else if (sectionName.equalsIgnoreCase("Option")) { // NOI18N
             warnObsolete(sectionName, module);
-            return new OptionSection(name, attr, module);
+            return null;
         } else if (sectionName.equalsIgnoreCase("Loader")) { // NOI18N
             return new LoaderSection(name, attr, module);
         } else if (sectionName.equalsIgnoreCase("Filesystem")) { // NOI18N
             warnObsolete(sectionName, module);
-            return new FileSystemSection(name, attr, module);
+            return null;
         } else if (sectionName.equalsIgnoreCase("Node")) { // NOI18N
             warnObsolete(sectionName, module);
             Util.err.log(ErrorManager.WARNING, "(See http://www.netbeans.org/issues/show_bug.cgi?id=19609, last comment, for howto.)");
-            return new NodeSection(name, attr, module);
+            return null;
         } else if (sectionName.equalsIgnoreCase("Service")) { // NOI18N
             warnObsolete(sectionName, module);
-            return new ServiceSection(name, attr, module);
+            return null;
         } else if (sectionName.equalsIgnoreCase("Debugger")) { // NOI18N
+            // XXX should support for this be dropped entirely?
             warnObsolete(sectionName, module);
             return new DebuggerSection(name, attr, module);
         } else if (sectionName.equalsIgnoreCase("ClipboardConvertor")) { // NOI18N
+            // XXX should support for this be dropped entirely?
             warnObsolete(sectionName, module);
             return new ClipboardConvertorSection(name, attr, module);
         } else {
@@ -282,15 +276,6 @@ public abstract class ManifestSection {
     public static final class ActionSection extends ManifestSection {
         ActionSection(String name, Attributes attrs, Module module) throws InvalidException {
             super(name, module, SystemAction.class);
-        }
-    }
-    
-    /** Module section for an Option.
-     * @see SystemOption
-     */
-    public static final class OptionSection extends ManifestSection {
-        OptionSection(String name, Attributes attrs, Module module) throws InvalidException {
-            super(name, module, getClazz ("org.openide.options.SystemOption", module)); // NOI18N
         }
     }
     
@@ -361,135 +346,6 @@ public abstract class ManifestSection {
     public static final class DebuggerSection extends ManifestSection {
         DebuggerSection(String name, Attributes attrs, Module module) throws InvalidException {
             super(name, module, getClazz("org.openide.debugger.Debugger", module)); // NOI18N
-        }
-    }
-    
-    /** Module section for a service type.
-     * @see ServiceType
-     */
-    public static final class ServiceSection extends ManifestSection {
-        private final boolean deflt;
-        
-        ServiceSection(String name, Attributes attrs, Module module) throws InvalidException {
-            super(name, module, ServiceType.class);
-            deflt = Boolean.valueOf(attrs.getValue("Default")).booleanValue(); // NOI18N
-        }
-        
-        /** Is this service type default? That means should it be placed
-         * in front of other services?
-         *
-         * @return true if it is
-         */
-        public boolean isDefault() {
-            return deflt;
-        }
-        
-        /** Create a new service type of the specified type.
-         * @return the service type
-         * @throws InstantiationException if the Service could not be created
-         */
-        public ServiceType createServiceType() throws InstantiationException {
-            try {
-                return (ServiceType)createInstance();
-            } catch (Exception ex) {
-                InstantiationException ie = new InstantiationException(ex.toString());
-                Util.err.annotate(ie, ex);
-                throw ie;
-            }
-        }
-    }
-    
-    /** Module section for a File System.
-     * @see FileSystem
-     */
-    public static final class FileSystemSection extends ManifestSection {
-        private final String locAttr;
-        private final HelpCtx help;
-        FileSystemSection(String name, Attributes attr, Module module) throws InvalidException {
-            super (name, module, FileSystem.class);
-            locAttr = name + "/Display-Name"; // NOI18N
-            String s = attr.getValue("Help"); // NOI18N
-            if (s == null) {
-                help = HelpCtx.DEFAULT_HELP;
-            } else {
-                // [PENDING] this constructor looks for a JavaHelp tag, but docs say /com/mycom/index.html!
-                help = new HelpCtx(s);
-            }
-        }
-        
-        /** Get the display name of the file system.
-         * This could be used e.g. in a context menu on the Repository.
-         * If none was specified, a default name will be created.
-         *
-         * @return the name
-         */
-        public String getName() {
-            String s = (String)getModule().getLocalizedAttribute(locAttr);
-            if (s == null) {
-                return "<unnamed filesystem>"; // NOI18N
-            } else {
-                return s;
-            }
-        }
-        
-        /** Get a help context for the file system.
-         * If none was specified, a default context will be created.
-         * @return the help context
-         */
-        public HelpCtx getHelpCtx() {
-            return help;
-        }
-        
-        /** Create a new file system.
-         * @return the file system
-         * @throws InstantiationException if it could not be created
-         */
-        public FileSystem createFileSystem() throws InstantiationException {
-            try {
-                return (FileSystem)createInstance();
-            } catch (Exception ex) {
-                InstantiationException ie = new InstantiationException(ex.toString());
-                Util.err.annotate(ie, ex);
-                throw ie;
-            }
-        }
-    }
-    
-    /** Module section for a node.
-     * @see Node
-     */
-    public static final class NodeSection extends ManifestSection {
-        /** Type to add an entry to the root nodes. */
-        public static final String TYPE_ROOTS = "roots"; // NOI18N
-        /** Type to add an entry to the Environment (in the Explorer). */
-        public static final String TYPE_ENVIRONMENT = "environment"; // NOI18N
-        /** Type to add an entry to the Session settings. */
-        public static final String TYPE_SESSION = "session"; // NOI18N
-        
-        
-        /** type of the node */
-        private String type;
-        
-        NodeSection(String name, Attributes attrs, Module module) throws InvalidException {
-            super(name, module, getClazz ("org.openide.nodes.Node", module)); // NOI18N
-            type = attrs.getValue("Type"); // NOI18N
-            if (type == null) {
-                type = TYPE_ENVIRONMENT;
-            }
-            type = type.toLowerCase();
-            if (! type.equalsIgnoreCase(TYPE_ROOTS) &&
-                    ! type.equalsIgnoreCase(TYPE_ENVIRONMENT) &&
-                    ! type.equalsIgnoreCase(TYPE_SESSION)) {
-                throw new InvalidException(module, "Unrecognized node section type: " + type); // NOI18N
-            }
-        }
-        
-        /** Get the node type. Determines where the node should be placed in
-         * the IDE.
-         * @return one of TYPE_*
-         */
-        public String getType() {
-            return type;
         }
     }
     
