@@ -83,6 +83,7 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
     private static final String RIGHT_ATTR = "right"; // NOI18N
     private static final String BOTTOM_ATTR = "bottom"; // NOI18N
     private static final String TYPE_ATTR = "type"; // NOI18N
+    private static final String REFERENCE_ATTR = "reference"; // NOI18N
     // font styles
     private static final String FONTSTYLE_BOLD = "bold"; // NOI18N
     private static final String FONTSTYLE_ITALIC = "italic"; // NOI18N
@@ -187,6 +188,9 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
                 inActiveTheme = activeThemes.contains(themeName);
             } else {
                 if (inActiveTheme) {
+                    if (handleReference(atts)) {
+                        return;
+                    }
                     if (p1.equals (COLOR_ATTR)) {
                         handleColor (atts);
                         return;
@@ -236,6 +240,19 @@ public class NbTheme extends MetalTheme implements org.xml.sax.DocumentHandler {
                 }
             }
         }
+    }
+    
+    private boolean handleReference(org.xml.sax.AttributeList atts) throws SAXException  {
+        String key = atts.getValue (KEY_ATTR);
+        String reference = atts.getValue(REFERENCE_ATTR);
+        if (reference != null) {
+            Object res = defaults.get(reference);
+            if (res != null) {
+                defaults.put(key, res);
+                return true;
+            }
+        }
+        return false;
     }
     
     private final void handleFont (org.xml.sax.AttributeList atts) throws SAXException  {
