@@ -109,4 +109,55 @@ public final class CompletionUtilities {
         }
     }
     
+    public static void renderHtml(ImageIcon icon, String leftHtmlText, String rightHtmlText,
+    Graphics g, Font defaultFont, Color defaultColor,
+    int width, int height, boolean selected, boolean preferLeftText) {
+        if (!preferLeftText) {
+            renderHtml(icon, leftHtmlText, rightHtmlText, g, defaultFont, defaultColor, width, height, selected);
+        } else {
+            // Prefer left text to be fully displayed
+            if (icon != null) {
+                // The image of the ImageIcon should already be loaded
+                // so no ImageObserver should be necessary
+                boolean done = g.drawImage(icon.getImage(), BEFORE_ICON_GAP, 0, null);
+                assert (done);
+            }
+            int iconWidth = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP;
+            int textWidth = width - iconWidth - AFTER_RIGHT_TEXT_GAP;
+            FontMetrics fm = g.getFontMetrics(defaultFont);
+            int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();
+            int textX = iconWidth;
+            if (leftHtmlText != null) {
+                int leftTextWidth = (int)PatchedHtmlRenderer.renderHTML(
+                        leftHtmlText, g, iconWidth, textY, textX, textY,
+                        defaultFont, defaultColor,
+                        PatchedHtmlRenderer.STYLE_CLIP, true, selected
+                );
+                leftTextWidth += BEFORE_RIGHT_TEXT_GAP;
+                textX += leftTextWidth;
+                textWidth -= leftTextWidth;
+            }
+            
+            // Render left text
+            if (rightHtmlText != null && textWidth > 0) { // any space for right text?
+                int rightTextWidth = (int)PatchedHtmlRenderer.renderHTML(
+                        rightHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
+                        defaultFont, defaultColor,
+                        PatchedHtmlRenderer.STYLE_CLIP, false, true
+                );
+                // Shift right text more to the right if too narrow
+                if (rightTextWidth < textWidth) {
+                    textX += textWidth - rightTextWidth;
+                }
+
+                PatchedHtmlRenderer.renderHTML(rightHtmlText, g,
+                        textX, textY, textWidth, textY,
+                        defaultFont, defaultColor,
+                        PatchedHtmlRenderer.STYLE_TRUNCATE, true, selected
+                );
+            }
+            
+        }
+    }
+
 }
