@@ -31,5 +31,9 @@ public final class @@CLASS_NAME@@ extends CookieAction {
         };
     }
 
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }
 
