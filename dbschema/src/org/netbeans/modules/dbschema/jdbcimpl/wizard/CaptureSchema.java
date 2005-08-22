@@ -133,7 +133,8 @@ public class CaptureSchema {
                             sei.initTables(c, tables, views, true);
                         else
                             sei.initTables(c, tables, views, false);
-
+                        pf.finishProgress();
+                        
                         if (! sei.isStop()) {
                             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                                 public void run() throws java.io.IOException {

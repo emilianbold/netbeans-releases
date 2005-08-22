@@ -161,6 +161,7 @@ public class RecaptureSchema {
                         se.setName(elem.getName());
                         
                         sei.initTables(c, tables, views, false);
+                        pf.finishProgress();
 
                         if (! sei.isStop()) {
                             fo1.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
