@@ -22,7 +22,7 @@
         <Component class="javax.swing.JTextArea" name="infoTextArea">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="ee" green="ee" id="inactiveCaption" palette="3" red="ee" type="palette"/>
+              <Color blue="ee" green="ee" id="Panel.background" palette="3" red="ee" type="palette"/>
             </Property>
             <Property name="editable" type="boolean" value="false"/>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
