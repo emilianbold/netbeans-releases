@@ -36,76 +36,46 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     public SearchCriteriaPanel(File [] roots) {
         this.roots = roots;
         initComponents();
-        setupComponents();
     }
 
     public String getFrom() {
-        return cbUseFrom.isSelected() ? tfFrom.getText().trim() : null;
+        String s = tfFrom.getText().trim();
+        return s.length() > 0 ? s : null;
     }
 
     public String getTo() {
-        return cbUseTo.isSelected() ? tfTo.getText().trim() : null;
+        String s = tfTo.getText().trim();
+        return s.length() > 0 ? s : null;
     }
     
     public String getCommitMessage() {
-        return cbUseCommitMessage.isSelected() ? tfCommitMessage.getText().trim() : null;
+        String s = tfCommitMessage.getText().trim();
+        return s.length() > 0 ? s : null;
     }
 
     public String getUsername() {
-        return cbUseCommitMessage1.isSelected() ? tfUsername.getText().trim() : null;
+        String s = tfUsername.getText().trim();
+        return s.length() > 0 ? s : null;
     }
 
     public void setFrom(String from) {
-        if (from == null) {
-            cbUseFrom.setSelected(false);
-        } else {
-            cbUseFrom.setSelected(true);
-            tfFrom.setText(from);
-        }
-        refreshComponents();
+        if (from == null) from = "";
+        tfFrom.setText(from);
     }
 
     public void setTo(String to) {
-        if (to == null) {
-            cbUseTo.setSelected(false);
-        } else {
-            cbUseTo.setSelected(true);
-            tfTo.setText(to);
-        }
-        refreshComponents();
+        if (to == null) to = "";
+        tfTo.setText(to);
     }
     
     public void setCommitMessage(String message) {
-        if (message == null) {
-            cbUseCommitMessage.setSelected(false);
-        } else {
-            cbUseCommitMessage.setSelected(true);
-            tfCommitMessage.setText(message);
-        }
-        refreshComponents();
+        if (message == null) message = "";
+        tfCommitMessage.setText(message);
     }
 
     public void setUsername(String username) {
-        if (username == null) {
-            cbUseCommitMessage1.setSelected(false);
-        } else {
-            cbUseCommitMessage1.setSelected(true);
-            tfUsername.setText(username);
-        }
-        refreshComponents();
-    }
-    
-    private void setupComponents() {
-        refreshComponents();
-    }
-
-    private void refreshComponents() {
-        tfCommitMessage.setEnabled(cbUseCommitMessage.isSelected());
-        tfFrom.setEnabled(cbUseFrom.isSelected());
-        bBrowseFrom.setEnabled(cbUseFrom.isSelected());
-        tfTo.setEnabled(cbUseTo.isSelected());
-        bBrowseTo.setEnabled(cbUseTo.isSelected());
-        tfUsername.setEnabled(cbUseCommitMessage1.isSelected());
+        if (username == null) username = "";
+        tfUsername.setText(username);
     }
     
     /** This method is called from within the constructor to
@@ -117,99 +87,61 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        cbUseCommitMessage = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
         tfCommitMessage = new javax.swing.JTextField();
-        cbUseCommitMessage1 = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
         tfUsername = new javax.swing.JTextField();
-        cbUseFrom = new javax.swing.JCheckBox();
-        cbUseTo = new javax.swing.JCheckBox();
+        jLabel3 = new javax.swing.JLabel();
         tfFrom = new javax.swing.JTextField();
-        tfTo = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
         bBrowseFrom = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        tfTo = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
         bBrowseTo = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 12, 0, 11)));
-        cbUseCommitMessage.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseCommitMessage"));
-        cbUseCommitMessage.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        cbUseCommitMessage.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbUseCommitMessage.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshComponents(evt);
-            }
-        });
-
+        jLabel1.setLabelFor(tfCommitMessage);
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseCommitMessage"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(cbUseCommitMessage, gridBagConstraints);
+        add(jLabel1, gridBagConstraints);
 
         tfCommitMessage.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(tfCommitMessage, gridBagConstraints);
 
-        cbUseCommitMessage1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseUsername"));
-        cbUseCommitMessage1.setBorder(null);
-        cbUseCommitMessage1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbUseCommitMessage1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshComponents(evt);
-            }
-        });
-
+        jLabel2.setLabelFor(tfUsername);
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseUsername"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(cbUseCommitMessage1, gridBagConstraints);
+        add(jLabel2, gridBagConstraints);
 
         tfUsername.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(tfUsername, gridBagConstraints);
 
-        cbUseFrom.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseFrom"));
-        cbUseFrom.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        cbUseFrom.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbUseFrom.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshComponents(evt);
-            }
-        });
-
+        jLabel3.setLabelFor(tfFrom);
+        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseFrom"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(cbUseFrom, gridBagConstraints);
-
-        cbUseTo.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseTo"));
-        cbUseTo.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        cbUseTo.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        cbUseTo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshComponents(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.weighty = 1.0;
-        add(cbUseTo, gridBagConstraints);
+        add(jLabel3, gridBagConstraints);
 
         tfFrom.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -219,6 +151,35 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(tfFrom, gridBagConstraints);
+
+        jLabel5.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_FromToHint"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 4);
+        add(jLabel5, gridBagConstraints);
+
+        bBrowseFrom.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_BrowseFrom"));
+        bBrowseFrom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onFromBrowse(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        add(bBrowseFrom, gridBagConstraints);
+
+        jLabel4.setLabelFor(tfTo);
+        jLabel4.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_UseTo"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        add(jLabel4, gridBagConstraints);
 
         tfTo.setColumns(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -232,17 +193,14 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         add(tfTo, gridBagConstraints);
 
-        bBrowseFrom.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_BrowseFrom"));
-        bBrowseFrom.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onFromBrowse(evt);
-            }
-        });
-
+        jLabel6.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_FromToHint"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        add(bBrowseFrom, gridBagConstraints);
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 2, 0, 4);
+        add(jLabel6, gridBagConstraints);
 
         bBrowseTo.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_BrowseTo"));
         bBrowseTo.addActionListener(new java.awt.event.ActionListener() {
@@ -252,19 +210,16 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(bBrowseTo, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
-
-    private void refreshComponents(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshComponents
-        refreshComponents();
-    }//GEN-LAST:event_refreshComponents
 
     private void onToBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onToBrowse
         onBrowse(tfTo);
@@ -299,10 +254,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bBrowseFrom;
     private javax.swing.JButton bBrowseTo;
-    private javax.swing.JCheckBox cbUseCommitMessage;
-    private javax.swing.JCheckBox cbUseCommitMessage1;
-    private javax.swing.JCheckBox cbUseFrom;
-    private javax.swing.JCheckBox cbUseTo;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JTextField tfCommitMessage;
     private javax.swing.JTextField tfFrom;
     private javax.swing.JTextField tfTo;
