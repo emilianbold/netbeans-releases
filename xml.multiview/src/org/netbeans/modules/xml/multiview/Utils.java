@@ -248,7 +248,7 @@ public class Utils {
         public void startElement(String uri, String localName, String qName, Attributes attributes)
                 throws SAXException {
             if (level == 0) {
-                startPosition = getPosition();
+                startPosition = xmlString.lastIndexOf('<', getPosition());
             }
             level++;
         }
@@ -262,10 +262,10 @@ public class Utils {
 
         private int getPosition() {
             int position = 0;
-            for (int i = 0, n = locator.getLineNumber() - 1; i < n; i++) {
+            for (int i = 0, n = locator.getLineNumber(); i < n; i++) {
                 position = xmlString.indexOf("\n", position) + 1;
             }
-            position += locator.getColumnNumber() - 1;
+            position += locator.getColumnNumber();
             return position;
         }
 
