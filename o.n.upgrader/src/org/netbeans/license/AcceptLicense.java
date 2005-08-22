@@ -20,6 +20,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.ResourceBundle;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -46,8 +47,9 @@ public final class AcceptLicense {
     public static void showLicensePanel () throws Exception {
         URL url = AcceptLicense.class.getResource("LICENSE.html"); // NOI18N
         LicensePanel licensePanel = new LicensePanel(url);
-        String yesLabel = NbBundle.getMessage(AcceptLicense.class, "MSG_LicenseYesButton");
-        String noLabel = NbBundle.getMessage(AcceptLicense.class, "MSG_LicenseNoButton");
+        ResourceBundle bundle = NbBundle.getBundle(AcceptLicense.class);
+        String yesLabel = bundle.getString("MSG_LicenseYesButton");
+        String noLabel = bundle.getString("MSG_LicenseNoButton");
         JButton yesButton = new JButton();
         JButton noButton = new JButton();
         setLocalizedText(yesButton,yesLabel);
@@ -60,8 +62,16 @@ public final class AcceptLicense {
         };
         yesButton.addActionListener(listener);
         noButton.addActionListener(listener);
+        
         yesButton.setActionCommand("yes"); // NOI18N
         noButton.setActionCommand("no"); // NOI18N
+        
+        yesButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_AcceptButton"));
+        yesButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_AcceptButton"));
+        
+        noButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_RejectButton"));
+        noButton.getAccessibleContext().setAccessibleName(bundle.getString("ACSD_RejectButton"));
+        
         Dimension yesPF = yesButton.getPreferredSize();
         Dimension noPF = noButton.getPreferredSize();
         int maxWidth = Math.max(yesButton.getPreferredSize().width, noButton.getPreferredSize().width);
@@ -69,7 +79,11 @@ public final class AcceptLicense {
         yesButton.setPreferredSize(new Dimension(maxWidth, maxHeight));
         noButton.setPreferredSize(new Dimension(maxWidth, maxHeight));
         
-        d = new JDialog((Frame) null,NbBundle.getMessage(AcceptLicense.class, "MSG_LicenseDlgTitle"),true);
+        d = new JDialog((Frame) null,bundle.getString("MSG_LicenseDlgTitle"),true);
+        
+        d.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_LicenseDlg"));
+        d.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_LicenseDlg"));
+        
         d.getContentPane().add(licensePanel,BorderLayout.CENTER);
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
