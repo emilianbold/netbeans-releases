@@ -19,6 +19,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -69,7 +70,7 @@ public class SQLStmtCustomizer extends javax.swing.JPanel {
         dialogOK = false;
         
         descriptor = new DialogDescriptor
-                (this, "Insert " + displayName, true,
+                (this, NbBundle.getMessage(SQLStmtCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
