@@ -55,6 +55,7 @@ public class AgentPanel extends javax.swing.JPanel {
     private boolean agentNameSelected = false;
     private boolean updateNameRunning = false;
     private boolean mainSelected = false;
+    private boolean mainClassSelected = false;
     private boolean codeExampleSelected = false;
     
     /**
@@ -77,6 +78,7 @@ public class AgentPanel extends javax.swing.JPanel {
         // init flags
         codeExampleSelected = codeExampleJCheckBox.isSelected();
         mainSelected = mainJCheckBox.isSelected();
+        mainClassSelected = mainClassJCheckBox.isSelected();
         
         // Provide a name in the title bar.
         setName(NbBundle.getMessage(AgentPanel.class, "LBL_Agent_Panel"));  //NOI18N
@@ -90,7 +92,6 @@ public class AgentPanel extends javax.swing.JPanel {
         
         codeExampleJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_GENERATE_SAMPLE"));// NOI18N
         codeExampleJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_GENERATE_SAMPLE_DESCRIPTION"));// NOI18N
-
     }
     
     private static boolean shouldEnableMainProjectClass() {
@@ -151,6 +152,15 @@ public class AgentPanel extends javax.swing.JPanel {
         mainSelected = mainJCheckBox.isSelected();
         
         mainClassJCheckBox.setEnabled(mainSelected && shouldEnableMainProjectClass());
+        
+        if (!mainSelected) {
+            mainClassSelected = mainClassJCheckBox.isSelected();
+            mainClassJCheckBox.setSelected(false);
+            
+        } else {
+            mainClassJCheckBox.setSelected(mainClassSelected);
+        }
+        
     }//GEN-LAST:event_mainJCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -217,7 +227,8 @@ public class AgentPanel extends javax.swing.JPanel {
         public void readSettings (Object settings) 
         {
             wizDesc = (WizardDescriptor) settings;
-            getPanel().mainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
+            if (!shouldEnableMainProjectClass())
+                getPanel().mainClassJCheckBox.setEnabled(false);
         }
         
         /**

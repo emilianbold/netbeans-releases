@@ -150,20 +150,20 @@ public class ManagerPanel extends javax.swing.JPanel {
         mainMethodSelected = generateMainMethodJCheckBox.isSelected();
         
         //mainClassJCheckBox.setEnabled(mainSelected && shouldEnableMainProjectClass());
-        //setAsMainClassJCheckBox.setEnabled(mainMethodSelected && shouldEnableMainProjectClass());
-        setAsMainClassJCheckBox.setEnabled(mainMethodSelected);
+        setAsMainClassJCheckBox.setEnabled(mainMethodSelected && shouldEnableMainProjectClass());
         generateSampleCodeJCheckBox.setEnabled(mainMethodSelected);
         
         if (!mainMethodSelected) {
-            mainClassSelected= setAsMainClassJCheckBox.isSelected();
-            sampleCodeSelected = generateSampleCodeJCheckBox.isSelected();
-            setAsMainClassJCheckBox.setSelected(false);
-            generateSampleCodeJCheckBox.setSelected(false);
-            
-        } else {
-            setAsMainClassJCheckBox.setSelected(mainClassSelected);
-            generateSampleCodeJCheckBox.setSelected(sampleCodeSelected);
-        }
+                mainClassSelected= setAsMainClassJCheckBox.isSelected();
+                sampleCodeSelected = generateSampleCodeJCheckBox.isSelected();
+                setAsMainClassJCheckBox.setSelected(false);
+                generateSampleCodeJCheckBox.setSelected(false);
+                
+            } else {
+                setAsMainClassJCheckBox.setSelected(mainClassSelected);
+                generateSampleCodeJCheckBox.setSelected(sampleCodeSelected);
+            }
+       
     }//GEN-LAST:event_generateMainMethodJCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -230,7 +230,8 @@ public class ManagerPanel extends javax.swing.JPanel {
         public void readSettings (Object settings) 
         {
             wizDesc = (WizardDescriptor) settings;
-            //getPanel().setAsMainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
+            if (!shouldEnableMainProjectClass())
+                getPanel().setAsMainClassJCheckBox.setEnabled(false);
         }
         
         /**
