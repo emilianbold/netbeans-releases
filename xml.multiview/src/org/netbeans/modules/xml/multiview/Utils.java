@@ -16,22 +16,12 @@ package org.netbeans.modules.xml.multiview;
 import org.openide.ErrorManager;
 import org.openide.text.NbDocument;
 import org.openide.util.RequestProcessor;
-import org.xml.sax.helpers.DefaultHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.XMLReader;
-import org.xml.sax.SAXException;
-import org.xml.sax.InputSource;
-import org.xml.sax.Attributes;
 
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import java.awt.*;
-import java.io.IOException;
-import java.io.StringReader;
 
 /**
  * Utils.java
@@ -62,13 +52,7 @@ public class Utils {
             public void run() {
                 try {
                     String origDocument = filterEndLines(doc.getText(0, doc.getLength()));
-                    String newDocument = replaceRootElement(origDocument, newDoc);
-
-                    if (origDocument.equals(newDoc)) {
-                        // no change in document
-                        return;
-                    }
-                    newDocument = filterEndLines(newDocument);
+                    String newDocument = filterEndLines(newDoc);
 
                     if (origDocument.equals(newDocument)) {
                         // no change in document
@@ -202,94 +186,5 @@ public class Utils {
             }
         }
     }
-    /**
-     * Replaces root element in the original document by root element of the new document
-     * @param origDoc original document
-     * @param newDoc new document
-     * @return resulting document
-     */
-    public static String replaceRootElement(String origDoc, String newDoc) {
-        origDoc = filterEndLines(origDoc);
-        newDoc = filterEndLines(newDoc);
-        String result = origDoc;
-        try {
-            RootElementParser parser = new RootElementParser(newDoc);
-            String newContent = newDoc.substring(parser.startPosition, parser.endPosition);
-            result = newDoc;
-            parser = new RootElementParser(origDoc);
-            result = new StringBuffer(origDoc).replace(parser.startPosition, parser.endPosition, newContent).toString();
-        } catch (Exception e) {
-            //ErrorManager.getDefault().notify(e);
-        }
-        return result;
-    }
 
-    private static class RootElementParser extends DefaultHandler {
-        private int level = 0;
-        private Locator locator;
-        private int startPosition = 0;
-        private int endPosition = 0;
-        private final String xmlString;
-        private boolean noColumnInfo = false;
-
-        public RootElementParser(String xmlString) throws IOException, ParserConfigurationException, SAXException {
-            this.xmlString = xmlString;
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setValidating(false);
-            XMLReader reader = factory.newSAXParser().getXMLReader();
-            reader.setContentHandler(this);
-            reader.setEntityResolver(this);
-            reader.parse(new InputSource(new StringReader(xmlString)));
-        }
-
-        public void setDocumentLocator(Locator locator) {
-            this.locator = locator;
-        }
-
-        public void startElement(String uri, String localName, String qName, Attributes attributes)
-                throws SAXException {
-            if (level == 0) {
-                startPosition = getPosition();
-                if (noColumnInfo) {
-                    int i = xmlString.lastIndexOf('<' + qName + '>', startPosition);
-                    if (i == -1) {
-                        i = xmlString.lastIndexOf('<' + qName + ' ', startPosition);
-                        i = xmlString.indexOf('>', i) + 1;
-                    } else {
-                        i += qName.length() + 2;
-                    }
-                    startPosition = i;
-                }
-
-            }
-            level++;
-        }
-
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-            level--;
-            if (level == 0) {
-                endPosition = xmlString.lastIndexOf("</" + qName, getPosition()); //NOI18N
-            }
-        }
-
-        private int getPosition() {
-            int position = 0;
-            int line = locator.getLineNumber() - 1;
-            int column = locator.getColumnNumber();
-            if (column == -1) {
-                line++;
-                column = 0;
-                noColumnInfo = true;
-            }
-            for (int i = 0; i < line; i++) {
-                position = xmlString.indexOf("\n", position) + 1;
-            }
-            position += column - 1;
-            return position;
-        }
-
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
-            return new InputSource(new StringReader(""));
-         }
-    }
 }

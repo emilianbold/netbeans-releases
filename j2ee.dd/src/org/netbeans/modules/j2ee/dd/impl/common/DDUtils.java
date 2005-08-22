@@ -49,13 +49,14 @@ public class DDUtils {
         try {
             EjbJarProxy newEjbJarProxy = createEjbJarProxy(is);
             BigDecimal newVersion = newEjbJarProxy.getVersion();
+            EjbJar newOriginal = newEjbJarProxy.getOriginal();
             if (newVersion.equals(ejbJarProxy.getVersion())) {// the same version
                 // merging original in proxy EjbJar
-                ejbJarProxy.getOriginal().merge(newEjbJarProxy.getOriginal(), EjbJar.MERGE_UPDATE);
-            } else {
-                // replacing original in proxy EjbJar
-                ejbJarProxy.setOriginal(newEjbJarProxy.getOriginal());
+                ejbJarProxy.getOriginal().merge(newOriginal, EjbJar.MERGE_UPDATE);
             }
+            // replacing original in proxy EjbJar
+            ejbJarProxy.setOriginal(newOriginal);
+
             ejbJarProxy.setProxyVersion(newVersion.toString());
             ejbJarProxy.setStatus(newEjbJarProxy.getStatus());
             ejbJarProxy.setError(newEjbJarProxy.getError());

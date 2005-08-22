@@ -182,7 +182,6 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         protected void updateDataFromModel(FileLock lock, boolean modify) {
             String origDocument = new String(getDataCache().getData());
             String newDocument = generateDocumentFromModel();
-            newDocument = org.netbeans.modules.xml.multiview.Utils.replaceRootElement(origDocument, newDocument);
             try {
                 getDataCache().setData(lock, newDocument.getBytes(), modify);
             } catch (IOException e) {
