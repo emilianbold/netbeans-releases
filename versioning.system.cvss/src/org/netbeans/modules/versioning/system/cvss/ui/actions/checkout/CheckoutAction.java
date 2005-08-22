@@ -171,7 +171,7 @@ public final class CheckoutAction extends SystemAction {
             }
 
             List checkedOutProjects = new LinkedList();
-            FileObject fo = FileUtil.toFileObject(workingFolder);
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(workingFolder));
             if (fo != null) {
                 String name = NbBundle.getMessage(CheckoutAction.class, "BK1007");
                 ProgressHandle progressHandle = ProgressHandleFactory.createHandle(name);
