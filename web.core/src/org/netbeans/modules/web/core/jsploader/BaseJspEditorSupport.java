@@ -61,7 +61,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.palette.PaletteController;
 
-public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
+class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
     
@@ -428,24 +428,13 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
             super();
         }
         
-        private static WebModule getWebModule(FileObject fo){
-            WebModule wm = WebModule.getWebModule(fo);
-            if (wm != null){
-                FileObject wmRoot = wm.getDocumentBase();
-                if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
-                    return wm;
-                }
-            }
-            return null;
-        }
-        
-        public static boolean isXmlSyntax(DataObject dataObject) {
+        public boolean isXmlSyntax(DataObject dataObject) {
             
             FileObject fileObject = (dataObject != null) ? dataObject.getPrimaryFile() : null;
             if (fileObject == null)
                 return false;
-            
-            JspParserAPI.JspOpenInfo info = JspParserFactory.getJspParser().getJspOpenInfo(fileObject, JspParserAccess.getJspParserWM (getWebModule (fileObject)), false);
+            WebModule wm = ((BaseJspEditorSupport)cloneableEditorSupport()).getWebModule(fileObject);
+            JspParserAPI.JspOpenInfo info = JspParserFactory.getJspParser().getJspOpenInfo(fileObject, JspParserAccess.getJspParserWM (wm), false);
             boolean isXmlSyntax = info.isXmlSyntax();
             
             return isXmlSyntax;
