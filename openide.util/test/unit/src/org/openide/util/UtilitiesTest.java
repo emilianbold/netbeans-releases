@@ -97,6 +97,7 @@ public class UtilitiesTest extends TestCase {
     // XXX sorry, but NoCustomCursorToolkit does not compile on Mustang:
     // org.openide.util.UtilitiesTest.NoCustomCursorToolkit is not abstract and does not override abstract method isModalExclusionTypeSupported(java.awt.Dialog.ModalExclusionType) in java.awt.Toolkit
     // and since Toolkit is not an interface, we can't use java.lang.reflect.Proxy to solve the problem...
+    // Filed as #6313637.
     /*
     public void testCustomCursorNotSupported() {
         NoCustomCursorToolkit toolkit = new NoCustomCursorToolkit();
