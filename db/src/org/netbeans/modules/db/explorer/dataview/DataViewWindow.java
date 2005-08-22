@@ -595,8 +595,8 @@ public class DataViewWindow extends TopComponent {
 
             try {
                 DataFlavor multiFlavor = new DataFlavor (
-                    NbBundle.getBundle(ExTransferable.class).getString("MultiNodeMimeType"), //NOI18N
-                    NbBundle.getBundle (ExTransferable.class).getString ("transferFlavorsMultiFlavorName") //NOI18N
+                    "application/x-java-openide-multinode;class=org.openide.util.datatransfer.MultiTransferObject", // NOI18N
+                    NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("transferFlavorsMultiFlavorName")
                 );
 
                 if (t.isDataFlavorSupported(multiFlavor)) {
