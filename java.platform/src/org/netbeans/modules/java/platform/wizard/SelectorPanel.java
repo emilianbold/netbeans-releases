@@ -108,9 +108,11 @@ class SelectorPanel extends javax.swing.JPanel implements ItemListener {
     }
     
     private void readSettings () {
-        java.util.Enumeration buttonEnum = this.group.getElements();
-        assert buttonEnum.hasMoreElements();
-        ((JRadioButton)buttonEnum.nextElement()).setSelected(true);
+        if (this.group.getSelection()==null) {
+            java.util.Enumeration buttonEnum = this.group.getElements();
+            assert buttonEnum.hasMoreElements();
+            ((JRadioButton)buttonEnum.nextElement()).setSelected(true);
+        }
     }
 
     public void itemStateChanged(java.awt.event.ItemEvent e) {

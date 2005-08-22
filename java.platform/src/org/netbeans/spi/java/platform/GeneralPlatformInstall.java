@@ -25,8 +25,10 @@ public abstract class GeneralPlatformInstall {
     }
     
     /**
-     * Gets the display name of the platform.
-     * XXX does this mean "the display name of the platform type"?
+     * Gets the display name of the platform installer.
+     * If the platform type has a single installer the display name should
+     * correspond to the platform name. If there are more installers for
+     * a single platform type the display name should also describe the installation process.
      * @return the display name
      */
     public abstract String getDisplayName ();
