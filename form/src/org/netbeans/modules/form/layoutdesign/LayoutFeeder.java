@@ -1881,14 +1881,22 @@ class LayoutFeeder implements LayoutConstants {
             return true;
 
         LayoutInterval commonGroup;
-        if (iDesc1.parent.isParentOf(iDesc2.parent))
+        boolean subNeighbor;
+        if (iDesc1.parent.isParentOf(iDesc2.parent)) {
             commonGroup = iDesc1.parent;
-        else if (iDesc2.parent.isParentOf(iDesc1.parent))
+            subNeighbor = iDesc1.neighbor != null;
+        }
+        else if (iDesc2.parent.isParentOf(iDesc1.parent)) {
             commonGroup = iDesc2.parent;
-        else
+            subNeighbor = iDesc2.neighbor != null;
+        }
+        else {
             commonGroup = LayoutInterval.getFirstParent(iDesc1.parent, SEQUENTIAL);
+            subNeighbor = false;
+        }
 
-        if (commonGroup.isSequential()) {
+        if (commonGroup.isSequential() || subNeighbor) {
+            // inclusions in common sequence or the upper inclusion has the lower as neighbor
             if (iDesc1.alignment == TRAILING) {
                 IncludeDesc temp = iDesc1;
                 iDesc1 = iDesc2;
@@ -1896,29 +1904,27 @@ class LayoutFeeder implements LayoutConstants {
             } // so iDesc1 is leading and iDesc2 trailing
 
             int startIndex = 0;
-            LayoutInterval ext1;
+            LayoutInterval ext1 = null;
             boolean startGap = false;
-            if (commonGroup.isParentOf(iDesc1.parent)) {
-                ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
-                if (ext1 != null)
-                    startIndex = commonGroup.indexOf(ext1.getParent());
-            }
-            else {
-                ext1 = null;
-                startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
-            }
-
-            int endIndex = commonGroup.getSubIntervalCount() - 1;
-            LayoutInterval ext2;
+            int endIndex = 0;
+            LayoutInterval ext2 = null;
             boolean endGap = false;
-            if (commonGroup.isParentOf(iDesc2.parent)) {
-                ext2 = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
-                if (ext2 != null)
-                    endIndex = commonGroup.indexOf(ext2.getParent());
-            }
-            else {
-                ext2 = null;
-                endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
+
+            if (commonGroup.isSequential()) {
+                if (commonGroup.isParentOf(iDesc1.parent)) {
+                    ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
+                    if (ext1 != null)
+                        startIndex = commonGroup.indexOf(ext1.getParent());
+                }
+                else startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
+
+                endIndex = commonGroup.getSubIntervalCount() - 1;
+                if (commonGroup.isParentOf(iDesc2.parent)) {
+                    ext2 = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
+                    if (ext2 != null)
+                        endIndex = commonGroup.indexOf(ext2.getParent());
+                }
+                else endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
             }
 
             if (endIndex > startIndex + 1
