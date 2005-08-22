@@ -69,6 +69,16 @@ final class ModuleListParser {
         return entries;
     }
     
+    /** Borrowed from org.netbeans.modules.apisupport.project.universe.ModuleList; cf. #61579 */
+    private static final String[] EXCLUDED_DIR_NAMES = {
+        "CVS", // NOI18N
+        "nbproject", // NOI18N
+        "www", // NOI18N
+        "test", // NOI18N
+        "build", // NOI18N
+        "src", // NOI18N
+        "org", // NOI18N
+    };
     /**
      * Scan a root for all NBM projects.
      */
@@ -80,11 +90,17 @@ final class ModuleListParser {
         if (kids == null) {
             return;
         }
-        for (int i = 0; i < kids.length; i++) {
+        KIDS: for (int i = 0; i < kids.length; i++) {
             if (!kids[i].isDirectory()) {
                 continue;
             }
-            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + kids[i].getName() : kids[i].getName();
+            String name = kids[i].getName();
+            for (int j = 0; j < EXCLUDED_DIR_NAMES.length; j++) {
+                if (name.equals(EXCLUDED_DIR_NAMES[j])) {
+                    continue KIDS;
+                }
+            }
+            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name;
             scanPossibleProject(kids[i], entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project);
             doScanNetBeansOrgSources(entries, kids[i], depth - 1, properties, newPathPrefix, project);
         }
@@ -456,6 +472,7 @@ final class ModuleListParser {
      * <li> ${suite.dir} - directory of the suite (used only for suite modules)
      * <li> ${nb.cluster.TOKEN} - list of module paths included in cluster TOKEN (comma-separated) (used only for netbeans.org modules)
      * <li> ${nb.cluster.TOKEN.dir} - directory in ${netbeans.dest.dir} where cluster TOKEN is built (used only for netbeans.org modules)
+     * <li> ${project} - basedir for standalone modules
      * </ol>
      * @param properties some properties to be used (see above)
      * @param type the type of project
