@@ -18,8 +18,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="ide" name="JSP Syntax validation">
         <testset dir="qa-functional/src">
             <patternset>
-		<include name="org/netbeans/test/web/core/syntax/JspColoringTest.class"/>
-		<include name="org/netbeans/test/web/core/syntax/CompletionTest.class"/>
+		<include name="**/JspColoringTest.class"/>
+		<include name="**/CompletionTest.class"/>
+		<include name="**/CompletionTestOld.class"/>
             </patternset>
         </testset>
     </testbag>
