@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -181,12 +181,13 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         WebModule wm = WebModule.getWebModule(fo);
         if (wm != null){
             FileObject wmRoot = wm.getDocumentBase();
-            if (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo)) {
+            if (wmRoot != null && (fo == wmRoot || FileUtil.isParentOf(wmRoot, fo))) {
                 return wm;
             }
         }
         return null;
     }
+    
     /** Restart the timer which starts the parser after the specified delay.
      * @param onlyIfRunning Restarts the timer only if it is already running
      */
