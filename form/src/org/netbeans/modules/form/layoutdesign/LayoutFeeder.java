@@ -932,7 +932,7 @@ class LayoutFeeder implements LayoutConstants {
 
             LayoutRegion subSpace = li.getCurrentSpace();
 
-            if (contentOverlap(space, li, dimension^1)) { // orthogonal overlap
+            if (LayoutUtils.contentOverlap(space, li, dimension^1)) { // orthogonal overlap
                 // this interval makes a hard boundary
                 if (getAddDirection(space, subSpace, dimension, point) == LEADING) {
                     // given interval is positioned before this subinterval (trailing boundary)
@@ -1402,7 +1402,7 @@ class LayoutFeeder implements LayoutConstants {
                 // overlap (not required in vertical dimension)
                 analyzeSequential(sub, inclusions);
             }
-            else if (usable && contentOverlap(addingSpace, sub, dimension^1)) {
+            else if (usable && LayoutUtils.contentOverlap(addingSpace, sub, dimension^1)) {
                 boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, 0);
                 if (dimOverlap && !solveOverlap) {
                     continue; // don't want to deal with the overlap here
@@ -1470,7 +1470,7 @@ class LayoutFeeder implements LayoutConstants {
             }
 
             // second analyze the interval as a single element for "next to" placement
-            boolean ortOverlap = contentOverlap(addingSpace, sub, dimension^1);
+            boolean ortOverlap = LayoutUtils.contentOverlap(addingSpace, sub, dimension^1);
             int margin = (dimension == VERTICAL && !ortOverlap ? 4 : 0);
             boolean dimOverlap = LayoutRegion.overlap(addingSpace, subSpace, dimension, margin);
             // in vertical dimension always pretend orthogonal overlap if there
@@ -2123,32 +2123,6 @@ class LayoutFeeder implements LayoutConstants {
         return aSnappedParallel == null
                || (group.isSequential() && group.isParentOf(aSnappedParallel)) // subgroup to be created
                || (group.isParallel() && canAlignWith(aSnappedParallel, group, aEdge));
-    }
-
-    /**
-     * Computes whether a space overlaps with content of given interval.
-     * The difference from LayoutRegion.overlap(...) is that this method goes
-     * recursivelly to sub-intervals (in case of parallel groups).
-     */
-    private static boolean contentOverlap(LayoutRegion space, LayoutInterval interval, int dimension) {
-        LayoutRegion examinedSpace = interval.getCurrentSpace();
-        if (!interval.isGroup()) {
-            return LayoutRegion.overlap(space, examinedSpace, dimension, 0);
-        }
-        boolean overlap = !examinedSpace.isSet(dimension)
-                          || LayoutRegion.overlap(space, examinedSpace, dimension, 0);
-        if (overlap) {
-            overlap = false;
-            Iterator it = interval.getSubIntervals();
-            while (it.hasNext()) {
-                LayoutInterval li = (LayoutInterval) it.next();
-                if (!li.isEmptySpace() && contentOverlap(space, li, dimension)) {
-                    overlap = true;
-                    break;
-                }
-            }
-        }
-        return overlap;
     }
 
     /**

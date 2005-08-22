@@ -284,4 +284,40 @@ public class LayoutUtils implements LayoutConstants {
         }
         return components;
     }
+
+    /**
+     * Computes whether a space overlaps with content of given interval.
+     * The difference from LayoutRegion.overlap(...) is that this method goes
+     * recursivelly down to components in case of a group - does not use the
+     * union space for whole group (which might be inaccurate).
+     */
+    static boolean contentOverlap(LayoutRegion space, LayoutInterval interval, int dimension) {
+        return contentOverlap(space, interval, -1, -1, dimension);
+    }
+
+    static boolean contentOverlap(LayoutRegion space, LayoutInterval interval, int fromIndex, int toIndex, int dimension) {
+        LayoutRegion examinedSpace = interval.getCurrentSpace();
+        if (!interval.isGroup()) {
+            return LayoutRegion.overlap(space, examinedSpace, dimension, 0);
+        }
+        boolean overlap = !examinedSpace.isSet(dimension)
+                          || LayoutRegion.overlap(space, examinedSpace, dimension, 0);
+        if (overlap) {
+            if (fromIndex < 0)
+                fromIndex = 0;
+            if (toIndex < 0)
+                toIndex = interval.getSubIntervalCount()-1;
+            assert fromIndex <= toIndex;
+
+            overlap = false;
+            for (int i=fromIndex; i <= toIndex; i++) {
+                LayoutInterval li = interval.getSubInterval(i);
+                if (!li.isEmptySpace() && contentOverlap(space, li, dimension)) {
+                    overlap = true;
+                    break;
+                }
+            }
+        }
+        return overlap;
+    }
 }

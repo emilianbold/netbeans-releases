@@ -485,13 +485,7 @@ class LayoutOperations implements LayoutConstants {
             }
             else {
                 if (!atBorder && gap && sub.isParallel()) {
-                    LayoutRegion space = new LayoutRegion();
-                    for (int i=idx-d-d; i >= 0 && i < count; i-=d) {
-                        LayoutInterval li = parent.getSubInterval(i);
-                        if (!li.isEmptySpace())
-                            space.expand(li.getCurrentSpace());
-                    }
-                    LayoutInterval extend = prepareGroupExtension(sub, space, dimension, alignment^1);
+                    LayoutInterval extend = prepareGroupExtension(sub, dimension, alignment^1);
                     if (extend != null)
                         return extend;
                 }
@@ -503,9 +497,20 @@ class LayoutOperations implements LayoutConstants {
         return null;
     }
 
-    private LayoutInterval prepareGroupExtension(LayoutInterval group, LayoutRegion space, int dimension, int alignment) {
+    private LayoutInterval prepareGroupExtension(LayoutInterval group, int dimension, int alignment) {
         if (LayoutInterval.isClosedGroup(group, alignment)) {
             return null; // can't expand the group - it is not open
+        }
+
+        LayoutInterval parent = group.getParent(); // parent sequence
+        int startIndex, endIndex;
+        if (alignment == LEADING) {
+            startIndex = 0;
+            endIndex = parent.indexOf(group) - 1;
+        }
+        else  {
+            startIndex = parent.indexOf(group) + 1;
+            endIndex = parent.getSubIntervalCount() - 1;
         }
 
         boolean allOverlapping = true;
@@ -517,7 +522,7 @@ class LayoutOperations implements LayoutConstants {
         while (it.hasNext()) {
             LayoutInterval li = (LayoutInterval) it.next();
             if (!li.isEmptySpace()) {
-                if (LayoutRegion.overlap(li.getCurrentSpace(), space, dimension^1, 0)) {
+                if (LayoutUtils.contentOverlap(li.getCurrentSpace(), parent, startIndex, endIndex, dimension^1)) {
                     // interval overlaps orthogonally
                     if (singleOverlap == null) {
                         singleOverlap = li;
@@ -570,7 +575,7 @@ class LayoutOperations implements LayoutConstants {
             else subParallel = null;
 
             LayoutInterval subOverlap = subParallel != null ?
-                prepareGroupExtension(subParallel, space, dimension, alignment) : null;
+                prepareGroupExtension(subParallel, dimension, alignment) : null;
             if (subOverlap != null)
                 singleOverlap = subOverlap;
         }
