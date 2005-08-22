@@ -19,6 +19,7 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
 import org.netbeans.lib.cvsclient.command.CommandException;
+import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RootWizard;
@@ -142,7 +143,16 @@ public abstract class ExecutorSupport implements CVSListener  {
                 message.setLength(0);
             }
         } else {
-            clientRuntime.log(e.getMessage() + "\n");  // NOI18N
+            // do not log file content while fetching diff revisions
+            boolean log = true;
+            if (cmd instanceof CheckoutCommand) {
+                CheckoutCommand checkout = (CheckoutCommand) cmd;
+                log = checkout.isPipeToOutput() == false;
+            }
+
+            if (log) {
+                clientRuntime.log(e.getMessage() + "\n");  // NOI18N
+            }
         }
     }
 
