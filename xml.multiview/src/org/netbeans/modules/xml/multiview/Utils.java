@@ -230,6 +230,7 @@ public class Utils {
         private int startPosition = 0;
         private int endPosition = 0;
         private final String xmlString;
+        private boolean noColumnInfo = false;
 
         public RootElementParser(String xmlString) throws IOException, ParserConfigurationException, SAXException {
             this.xmlString = xmlString;
@@ -248,7 +249,18 @@ public class Utils {
         public void startElement(String uri, String localName, String qName, Attributes attributes)
                 throws SAXException {
             if (level == 0) {
-                startPosition = xmlString.lastIndexOf('<', getPosition());
+                startPosition = getPosition();
+                if (noColumnInfo) {
+                    int i = xmlString.lastIndexOf('<' + qName + '>', startPosition);
+                    if (i == -1) {
+                        i = xmlString.lastIndexOf('<' + qName + ' ', startPosition);
+                        i = xmlString.indexOf('>', i) + 1;
+                    } else {
+                        i += qName.length() + 2;
+                    }
+                    startPosition = i;
+                }
+
             }
             level++;
         }
@@ -256,16 +268,23 @@ public class Utils {
         public void endElement(String uri, String localName, String qName) throws SAXException {
             level--;
             if (level == 0) {
-                endPosition = xmlString.lastIndexOf('<', getPosition());
+                endPosition = xmlString.lastIndexOf("</" + qName, getPosition()); //NOI18N
             }
         }
 
         private int getPosition() {
             int position = 0;
-            for (int i = 0, n = locator.getLineNumber(); i < n; i++) {
+            int line = locator.getLineNumber() - 1;
+            int column = locator.getColumnNumber();
+            if (column == -1) {
+                line++;
+                column = 0;
+                noColumnInfo = true;
+            }
+            for (int i = 0; i < line; i++) {
                 position = xmlString.indexOf("\n", position) + 1;
             }
-            position += locator.getColumnNumber();
+            position += column - 1;
             return position;
         }
 
