@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-zip" depends="build" description="Builds zip distribution of the suite and selected modules from the platform" >
         <property name="disabled.modules" value="" />
         <property name="disabled.clusters" value="" />
-        <property name="application.name" value="netbeans-based-app" />
+        <property name="application.name" value="nbbasedapp" />
         
         <pathconvert property="zip.platform.update.tracking" >
             <path >
@@ -43,26 +43,63 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
             </path>
         </pathconvert>
+
+        <selector id="zip.platform.included.files" >
+            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
+                <param name="excludeModules" value="${disabled.modules}" />
+                <param name="excludeClusters" value="${disabled.clusters}" />
+                <param name="updateTrackingFiles" value="${zip.platform.update.tracking}" />
+            </custom>
+        </selector>
+        
+        <pathconvert property="zip.platform.clusters.duplicates" pathsep="," >
+            <path>
+                <fileset dir="${netbeans.dest.dir}" >
+                    <selector refid="zip.platform.included.files" />
+                </fileset>
+            </path>
+            <mapper type="regexp" from="^${netbeans.dest.dir}/([^/]*)" to="\1"/>
+        </pathconvert>
+        
+        <pathconvert property="zip.platform.clusters" pathsep="${line.separator}" >
+            <path>
+                <dirset dir="${netbeans.dest.dir}" includes="${zip.platform.clusters.duplicates}" />
+            </path>
+            <mapper type="regexp" from="^${netbeans.dest.dir}/([^/]*)" to="\1"/>
+        </pathconvert>
+        
+        
+        <mkdir dir="build/tmp/launch/etc" />
+        <mkdir dir="build/tmp/launch/bin" />
+
+        <copy file="${harness.dir}/launchers/app.exe" tofile="build/tmp/launch/bin/${application.name}.exe" />
+        <copy file="${harness.dir}/launchers/app_w.exe" tofile="build/tmp/launch/bin/${application.name}w.exe" />
+        <copy file="${harness.dir}/launchers/app.sh" tofile="build/tmp/launch/bin/${application.name}" />
+        <copy file="${harness.dir}/etc/app.conf" tofile="build/tmp/launch/etc/${application.name}.conf" />
+        <echo message="${zip.platform.clusters}" file="build/tmp/launch/etc/${application.name}.clusters" />
+        <echo message="${line.separator}" file="build/tmp/launch/etc/${application.name}.clusters" append="true" />
+        <echo message="${application.name}" file="build/tmp/launch/etc/${application.name}.clusters" append="true" />
+        <echo message="${line.separator}" file="build/tmp/launch/etc/${application.name}.clusters" append="true" />
         
         <mkdir dir="dist" />
         <zip destfile="dist/${application.name}.zip" >
+            <zipfileset dir="build/tmp/launch/bin/" filemode="755" prefix="bin" />
+            <zipfileset dir="build/tmp/launch/etc/" prefix="etc" />
             <zipfileset dir="${netbeans.dest.dir}" filemode="755" >
                 <include name="**/lib/nbexec*" />
             </zipfileset>
+                
             <zipfileset dir="${netbeans.dest.dir}" >
                 <and>
                     <not>
                         <filename name="**/lib/nbexec*" />
                     </not>
-                    <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
-                        <param name="excludeModules" value="${disabled.modules}" />
-                        <param name="excludeClusters" value="${disabled.clusters}" />
-                        <param name="updateTrackingFiles" value="${zip.platform.update.tracking}" />
-                    </custom>
+                    <selector refid="zip.platform.included.files" />
                 </and>
             </zipfileset>
             
             <zipfileset dir="${cluster}" prefix="${application.name}/" />
+            
         </zip>
     </target>
     

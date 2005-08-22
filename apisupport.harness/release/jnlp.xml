@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <property name="disabled.modules" value="" />
         <property name="disabled.clusters" value="" />
-        <property name="application.name" value="netbeans-based-app" />
+        <property name="application.name" value="nbbasedapp" />
         
         <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}" >
             <and>
