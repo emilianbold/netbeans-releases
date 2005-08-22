@@ -145,6 +145,12 @@ public class ScrollPopupMenu extends JPopupMenu {
                 Field field = clazz.getDeclaredField("HIDE_POPUP_KEY"); // NOI18N
                 field.setAccessible(true);
                 component.putClientProperty("doNotCancelPopup", field.get(null)); // NOI18N
+                for (int i=0; i<component.getComponentCount(); i++) {
+                    Component comp = component.getComponent(i);
+                    if (comp instanceof JComponent) {
+                        doNotCancelPopupHack((JComponent)comp);
+                    }
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
