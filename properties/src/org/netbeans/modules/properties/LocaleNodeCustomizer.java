@@ -360,7 +360,7 @@ public class LocaleNodeCustomizer extends JPanel {
     private void updateKeyList() {
         // Very ugly, but now there is incosistency gap in the properties structure.
         // REmove threads when changed parsing.
-        RequestProcessor.getDefault().post(new Runnable() {
+        PropertiesRequestProcessor.getInstance().post(new Runnable() {
             public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
