@@ -2634,10 +2634,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 && (toBeSaved
                     || (!formSettings.getGenerateOnSave() && !toBeClosed))) 
             {
+                codeUpToDate = true;
                 regenerateVariables();
                 regenerateInitComponents();
                 ensureMainClassImplementsListeners();
-                codeUpToDate = true;
                 FormModel.t("code regenerated"); //NOI18N
             }
 
