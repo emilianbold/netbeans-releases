@@ -155,7 +155,15 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                </dependency>
-              </module-dependencies>
+               <dependency>
+                    <code-name-base>org.netbeans.spi.navigator</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                    	<release-version>1</release-version>
+                    </run-dependency>
+               </dependency>
+            </module-dependencies>
             <public-packages/>
         </data>
     </configuration>
