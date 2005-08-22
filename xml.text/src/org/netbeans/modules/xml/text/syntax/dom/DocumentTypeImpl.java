@@ -50,7 +50,16 @@ public class DocumentTypeImpl extends SyntaxNode implements DocumentType, XMLTok
     }
     
     public String getName() {
-        return null;  //!!! parse for it
+        //<!DOCTYPE id ...
+        String docType = first.getImage();
+        int idIndex = docType.indexOf(' ');
+        if(idIndex > 0) {
+            int idEndIndex = docType.indexOf(' ', idIndex + 1);
+            if(idEndIndex > 0 && idEndIndex > idIndex) {
+                return docType.substring(idIndex + 1, idEndIndex);
+            }
+        }
+        return null;
     }
     
     public org.w3c.dom.NamedNodeMap getEntities() {

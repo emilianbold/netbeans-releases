@@ -32,4 +32,16 @@ public class XmlFoldTypes {
     /** XML comment fold type */
     public static final FoldType COMMENT = new FoldType(FOLD_TYPE_PREFIX + "comment"); // NOI18N
 
+    /** XML processing instruction fold type */
+    public static final FoldType PI = new FoldType(FOLD_TYPE_PREFIX + "pi"); // NOI18N
+
+    /** XML doctype fold type */
+    public static final FoldType DOCTYPE = new FoldType(FOLD_TYPE_PREFIX + "doctype"); // NOI18N
+
+    /** XML cdata section fold type */
+    public static final FoldType CDATA = new FoldType(FOLD_TYPE_PREFIX + "cdata"); // NOI18N
+
+    /** XML content section fold type */
+    public static final FoldType TEXT = new FoldType(FOLD_TYPE_PREFIX + "text"); // NOI18N
+
 }

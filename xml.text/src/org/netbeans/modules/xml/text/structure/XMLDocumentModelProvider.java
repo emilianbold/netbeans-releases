@@ -32,8 +32,12 @@ import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.XMLTokenIDs;
 import org.netbeans.modules.xml.text.syntax.dom.AttrImpl;
+import org.netbeans.modules.xml.text.syntax.dom.CDATASectionImpl;
+import org.netbeans.modules.xml.text.syntax.dom.CommentImpl;
+import org.netbeans.modules.xml.text.syntax.dom.DocumentTypeImpl;
 import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.EndTag;
+import org.netbeans.modules.xml.text.syntax.dom.ProcessingInstructionImpl;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.ErrorManager;
@@ -47,7 +51,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
     
     
     public void updateModel(DocumentModel.DocumentModelModificationTransaction dtm,
-            DocumentModel model, DocumentChange[] changes) 
+            DocumentModel model, DocumentChange[] changes)
             throws DocumentModelException, DocumentModelTransactionCancelledException {
         
         if(debug) System.out.println("\n\n\n\n\n");
@@ -88,7 +92,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                         break;
                     }
                     ti = ti.getNext();
-                } 
+                }
             }catch(BadLocationException e) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             }
@@ -192,7 +196,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
 //                if(debug) System.out.println("--- found syntax element ---\n"+sel.toString());
                 
                 if(sel instanceof SyntaxElement.Error) {
-                    if(debug) System.out.println("Error found! => breaking the generation.");
+                    System.out.println("Error found! => breaking the generation.");
                     throw new DocumentModelException("XML File is unparsable.");
                 }
                 
@@ -203,18 +207,21 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     
                     //do not skip the 'de' element which is to be regenerated
                     if(tagDE != null && !tagDE.equals(de)) {
-                        //there is an element - skip it - analyze an element after the end of the
-                        //existing element
-                        if(debug) System.out.println("found existing element " + tagDE + " => skipping");
-                        sel = sup.getElementChain(Math.min(doc.getLength(), tagDE.getEndOffset() + 1));
-                        
-                        skipped.add(tagDE);
-                        
-                        continue;
-                    } else {
-                        //add the tag syntax element into stack
-                        elementsStack.add(sel);
+                        //test if the element has also correct end tag
+                        SyntaxElement endTagCheck = sup.getElementChain(Math.min(doc.getLength(), tagDE.getEndOffset() + 1));
+                        if(endTagCheck instanceof EndTag && ((EndTag)endTagCheck).getTagName().equals(stag.getTagName())) {
+                            //there is an element - skip it - analyze an element after the end of the
+                            //existing element
+                            if(debug) System.out.println("found existing element " + tagDE + " => skipping");
+                            sel = sup.getElementChain(Math.min(doc.getLength(), tagDE.getEndOffset() + 1));
+                            skipped.add(tagDE);
+                            continue;
+                        }
                     }
+                    
+                    //add the tag syntax element into stack
+                    elementsStack.add(sel);
+                    
                 } else if(sel instanceof EndTag) {
                     if(!elementsStack.isEmpty()) {
                         StartTag latest = (StartTag)elementsStack.peek();
@@ -268,17 +275,25 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                     Map attribs = createAttributesMap((Tag)sel);
                     addedElements.add(dtm.addDocumentElement(((EmptyTag)sel).getTagName(), XML_EMPTY_TAG, attribs,
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                } else if (sel instanceof CDATASectionImpl) {
+                    //CDATA section
+                    addedElements.add(dtm.addDocumentElement(((CDATASectionImpl)sel).getNodeName(), XML_CDATA, Collections.EMPTY_MAP,
+                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                } else if (sel instanceof ProcessingInstructionImpl) {
+                    //PI section
+                    addedElements.add(dtm.addDocumentElement(((ProcessingInstructionImpl)sel).getNodeName(), XML_PI, Collections.EMPTY_MAP,
+                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                } else if (sel instanceof DocumentTypeImpl) {
+                    //document type <!DOCTYPE xxx [...]>
+                    addedElements.add(dtm.addDocumentElement(((DocumentTypeImpl)sel).getName(), XML_DOCTYPE, Collections.EMPTY_MAP,
+                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                } else if (sel instanceof CommentImpl) {
+                    //comment element <!-- xxx -->
+                    addedElements.add(dtm.addDocumentElement("", XML_COMMENT, Collections.EMPTY_MAP,
+                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else {
-                    //we found a SE which is not a tag =>
-                    //XXX everything else should be added to the current open
-                    //tag syntaxt element - the stack peek
-                    //TODO - create a separate DocumentElementTypes for PIs, CDATAS etc...
-                    
-                    //do not create whitespace elements
-//                    String elementContent = doc.getText(sel.getElementOffset(), sel.getElementLength()).trim();
-//                    if(elementContent.length() > 0) {
-                        addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
-//                    }
+                    //everything else is content
+                    addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 }
                 //find next syntax element
                 sel = sel.getNext();
@@ -289,16 +304,6 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             //we need to get all descendants from non-skipped elements
             List existingElements = getDescendantsOfNotSkippedElements(de, skipped);
             existingElements.add(de);
-            
-//            if(debug) {
-//                System.out.println("DEBUG - existing elements:");
-//                System.out.println("------------->>>");
-//                Iterator i2 = existingElements.iterator();
-//                while(i2.hasNext()) {
-//                    System.out.println(i2.next());
-//                }
-//                System.out.println("-------------<<<");
-//            }
             
             Iterator existingItr = existingElements.iterator();
             //iterate all existing elements and check if they are still valid
@@ -330,8 +335,8 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
     }
     
     private int getSyntaxElementEndOffset(SyntaxElement sel) {
-        //XXX tohle je kurevsky dulezite!!!!! zmenil jsem velikost vsech elementu tak, ze jejich
-        //delka je kratsi o jeden => to resi problem kdyz se zacne psat na end position -> 
+        //zmenil jsem velikost vsech elementu tak, ze jejich
+        //delka je kratsi o jeden => to resi problem kdyz se zacne psat na end position ->
         //text se v tomto pripade pridava jeste do elementu pred end positionou
         //napr:
         // <a>xxx</a>X
@@ -350,10 +355,14 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
         return map;
     }
     
+    public static final String XML_TAG = "tag";
+    public static final String XML_EMPTY_TAG = "empty_tag";
+    public static final String XML_CONTENT = "content";
+    public static final String XML_PI = "pi";
+    public static final String XML_CDATA = "cdata";
+    public static final String XML_DOCTYPE = "doctype";
+    public static final String XML_COMMENT = "comment";
     
-    public static String XML_TAG = "tag";
-    public static String XML_EMPTY_TAG = "empty_tag";
-    public static String XML_CONTENT = "content";
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.debug");
     

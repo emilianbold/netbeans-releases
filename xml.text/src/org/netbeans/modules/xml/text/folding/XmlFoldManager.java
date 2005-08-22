@@ -22,6 +22,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
@@ -31,11 +32,12 @@ import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.editor.structure.api.DocumentModelListener;
+import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.ErrorManager;
-import org.openide.util.RequestProcessor;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -66,7 +68,6 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     
     public void init(FoldOperation operation) {
         this.operation = operation;
-        this.timer = new Timer();
         Settings.addSettingsChangeListener(this);
 //        foldsUpdateInterval = getSetting(JspSettings.CODE_FOLDING_UPDATE_TIMEOUT);
     }
@@ -93,30 +94,22 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         
         //the initFolds is called when the document is disposed - I need to filter this call
         if(getDocument().getLength() > 0) {
-            //init the folds lazily - the model creation may take a long time so do that in a background thread
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    //get document structure model
-                    try {
-                        Document document = getDocument();
-                        if(!(document instanceof BaseDocument)) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new ClassCastException("<FoldHierarchyOperation>.getHierarchy().getComponent().getDocument() returned FilterDocument instead of AbstractDocument. This is likely caused by not yet resolved issue #49497")); //NOI18N
-                            return ;
-                        }
-                        
-                        model = DocumentModel.getDocumentModel((BaseDocument)document);
-                        //add changes listener which listenes to model changes
-                        model.addDocumentModelListener(XmlFoldManager.this);
-                        
-                        //init the folds - it must be done since the folds
-                        //are created based on events fired from model and the model
-                        initFolds();
-                        updateFolds();
-                    } catch (DocumentModelException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
-                }
-            }, 0, Thread.currentThread().getPriority() - 1);
+            //get document structure model
+            try {
+                model = DocumentModel.getDocumentModel((BaseDocument)getDocument());
+                //add changes listener which listenes to model changes
+                model.addDocumentModelListener(this);
+                
+                //init the folds - it must be done since the folds
+                //are created based on events fired from model and the model
+                initFolds();
+            } catch (DocumentModelException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+            //start folds updater timer
+            //put off the initial fold search due to the processor overhead during page opening
+            timer = new Timer();
+            restartTimer();
         }
     }
     
@@ -133,7 +126,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         Iterator children = de.getChildren().iterator();
         while(children.hasNext()) {
             DocumentElement child = (DocumentElement)children.next();
-            if(!child.isLeaf()) addElementsRecursivelly(changes, child);
+            addElementsRecursivelly(changes, child);
         }
     }
     
@@ -170,38 +163,61 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     private TimerTask createTimerTask() {
         return new TimerTask() {
             public void run() {
-                if(lightDebug) System.out.println("updating folds...");
-                updateFolds();
-                if(lightDebug) System.out.println("done.");
+                try {
+                    if(lightDebug) System.out.println("updating folds...");
+                    updateFolds();
+                    if(lightDebug) System.out.println("done.");
+                }catch(Exception e) {
+                    //catch all exceptions to prevent the timer to be cancelled
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
             }
         };
     }
     
+    /** Applies changes in the document model to the fold hierarchy
+     */
+    
     private void updateFolds() {
-        //check for 49497 :-(
-        //very rarely the getOperation().getHierarchy().getComponent().getDocument()
-        //returns FilterDocument - nobody understands why???
-        Document document = getDocument();
-        if(!(document instanceof AbstractDocument)) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new ClassCastException("<FoldHierarchyOperation>.getHierarchy().getComponent().getDocument() returned FilterDocument instead of AbstractDocument. This is likely caused by not yet resolved issue #49497")); //NOI18N
-            return ;
-        }
-        
-        ((AbstractDocument)document).readLock();
+        ((AbstractDocument)getDocument()).readLock();
         try {
             FoldHierarchy fh = getOperation().getHierarchy();
             fh.lock();
             try {
                 FoldHierarchyTransaction fhTran = getOperation().openTransaction();
                 try {
-                    Iterator changesItr = changes.iterator();
+                    Iterator changesItr = ((Vector)changes.clone()).iterator(); //clone the vector to prevent concurrent modifications
                     while(changesItr.hasNext()) {
                         DocumentModelChangeInfo chi = (DocumentModelChangeInfo)changesItr.next();
                         DocumentElement de = chi.getDocumentElement();
-                        if(chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_ADDED && !de.isLeaf()) {
-                            getOperation().addToHierarchy(XmlFoldTypes.TAG, de.getName(), false,
+                        if(chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_ADDED 
+                                && de.getStartOffset() < de.getEndOffset()
+                                && !de.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
+                            String foldName = "";
+                            FoldType type = XmlFoldTypes.TEXT; //fold of this type should not be ever used 
+                            
+                            //create folds of appropriate type 
+                            if(de.getType().equals(XMLDocumentModelProvider.XML_TAG) 
+                                    || de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
+                                foldName = de.getName();
+                                type = XmlFoldTypes.TAG;
+                            } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+                                foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_PI"); //NOI18N
+                                type = XmlFoldTypes.PI;
+                            } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+                                foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_DOCTYPE"); //NOI18N
+                                type = XmlFoldTypes.DOCTYPE;
+                            } else if(de.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+                                foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_COMMENT"); //NOI18N
+                                type = XmlFoldTypes.COMMENT;
+                            } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+                                foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_CDATA"); //NOI18N
+                                type = XmlFoldTypes.CDATA;
+                            }
+
+                            getOperation().addToHierarchy(type, foldName, false,
                                     Math.max(0, de.getStartOffset() +1 ) ,
-                                    Math.min(document.getLength(), de.getEndOffset()),
+                                    Math.min(getDocument().getLength(), de.getEndOffset()),
                                     0, 0, null, fhTran);
                         } else if (chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_REMOVED) {
                             //find appropriate fold for the document element
@@ -210,8 +226,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                             Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold(), XmlFoldTypes.TAG).iterator();
                             while(allFolds.hasNext()) {
                                 Fold f = (Fold)allFolds.next();
-                                //why the startoffset + 1??? - because we create the folds so they do not contain the starting < :-)
-                                if(f.getStartOffset() == (de.getStartOffset() + 1) &&
+                                if(f.getStartOffset() == de.getStartOffset() &&
                                         f.getEndOffset() == de.getEndOffset()) {
                                     //remove the fold
                                     getOperation().removeFromHierarchy(f, fhTran);
@@ -230,7 +245,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                 fh.unlock();
             }
         } finally {
-            ((AbstractDocument)document).readUnlock();
+            ((AbstractDocument)getDocument()).readUnlock();
         }
         changes.clear();
     }
@@ -279,10 +294,6 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     public void expandNotify(Fold expandedFold) {
     }
     
-    
-//    private boolean isOneRowElement(DocumentElement de) {
-//        Utilities.get de.getStartOffset()
-//    }
     
     private static final class DocumentModelChangeInfo {
         static final int ELEMENT_ADDED = 1;
