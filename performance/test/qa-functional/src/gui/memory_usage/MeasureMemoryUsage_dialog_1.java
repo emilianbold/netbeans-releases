@@ -42,7 +42,7 @@ public class MeasureMemoryUsage_dialog_1 {
  
         suite.addTest(new UpdateCenter("doMeasurement", "Update Center wizard open"));
         suite.addTest(new ProxyConfiguration("doMeasurement", "Proxy Configuration open"));
-        suite.addTest(new VersioningManager("doMeasurement", "Versioning Manager open"));
+// TEMPORARY until Jellytools fixed suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
                 
         return suite;
     }
