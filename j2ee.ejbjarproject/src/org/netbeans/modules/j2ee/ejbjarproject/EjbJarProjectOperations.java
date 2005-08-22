@@ -18,9 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectOperationsImplementation.DeleteOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -56,7 +58,6 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation {
     }
     
     public List/*<FileObject>*/ getDataFiles() {
-        FileObject projectDirectory = project.getProjectDirectory();
         List/*<FileObject>*/ files = new ArrayList();
         
         FileObject metaInf = project.getEjbModule().getMetaInf();
@@ -70,6 +71,15 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation {
             files.add(srcRoots[cntr]);
         }
         
+        PropertyEvaluator evaluator = project.evaluator();
+        String prop = evaluator.getProperty(EjbJarProjectProperties.SOURCE_ROOT);
+        if (prop != null) {
+            FileObject projectDirectory = project.getProjectDirectory();
+            FileObject srcDir = project.getAntProjectHelper().resolveFileObject(prop);
+            if (projectDirectory != srcDir && !files.contains(srcDir))
+                files.add(srcDir);
+        }
+  
         SourceRoots test = project.getTestSourceRoots();
         FileObject[] testRoots = test.getRoots();
         
