@@ -90,12 +90,16 @@ public class EvaluateAction extends AbstractAction implements PropertyChangeList
         Evaluator.open(debugger);
     }
     
-    public synchronized void propertyChange(PropertyChangeEvent propertyChangeEvent) {
-        //System.err.println("EvaluateAction.propertyChange("+propertyChangeEvent+"), lastDebugger = "+lastDebugger);
-        if (lastDebugger != null) {
-            //System.err.println(  "currentThread = "+lastDebugger.getCurrentThread());
-            setEnabled(lastDebugger.getCurrentThread() != null);
-        }
+    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                synchronized (this) {
+                    if (lastDebugger != null) {
+                        setEnabled(lastDebugger.getCurrentThread() != null);
+                    }
+                }
+            }
+        });
     }
     
     protected void finalize() throws Throwable {
