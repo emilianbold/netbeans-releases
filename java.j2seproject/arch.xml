@@ -769,6 +769,10 @@ Microsystems, Inc. All Rights Reserved.
    <code>api</code> folder, and the <code>package-summary.html</code> and Javadoc pages for classes in the
    package structure under the <code>api</code> folder.
   </p>
+  <p>
+   <!-- #58823 --> Writes XML-format JUnit results to <code>${build.test.results.dir}</code> for use by
+   <code>org.netbeans.modules.junit</code>.
+  </p>
  </answer>
 
 
