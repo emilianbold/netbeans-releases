@@ -39,6 +39,7 @@ public class LayoutDesigner implements LayoutConstants {
     private Listener modelListener;
 
     private boolean dirty;
+    private boolean visualStateUpToDate;
 
     // -----
 
@@ -85,8 +86,11 @@ public class LayoutDesigner implements LayoutConstants {
 
             updatePositions(updatedContainers);
 
+            visualStateUpToDate = true;
             return true;
         }
+
+        visualStateUpToDate = true;
         return false;
     }
 
@@ -151,9 +155,6 @@ public class LayoutDesigner implements LayoutConstants {
         int leadingSpace = 0;
         while (it.hasNext()) {
             LayoutInterval sub = (LayoutInterval) it.next();
-//            if (dirty) {
-//                sub.unsetAttribute(LayoutInterval.DESIGN_ATTRS);
-//            }
             if (sub.isEmptySpace()) {
                 if (interval.isSequential() && (first || !it.hasNext())) {
                     int min = sub.getMinimumSize(true);
@@ -269,9 +270,12 @@ public class LayoutDesigner implements LayoutConstants {
 
     public void startAdding(LayoutComponent[] comps,
                             Rectangle[] bounds,
-                            Point hotspot)
+                            Point hotspot,
+                            String defaultContId)
     {
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
+        if (defaultContId != null)
+            dragger.setTargetContainer(layoutModel.getLayoutComponent(defaultContId));
     }
 
     public void startMoving(String[] compIds, Rectangle[] bounds, Point hotspot) {
@@ -281,6 +285,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         prepareDragger(comps, bounds, hotspot, LayoutDragger.ALL_EDGES);
+        dragger.setTargetContainer(comps[0].getParent());
     }
 
     // [change to one component only?]
@@ -347,7 +352,7 @@ public class LayoutDesigner implements LayoutConstants {
                      boolean lockDimension,
                      Rectangle[] bounds)
     {
-        if (dirty) {
+        if (!visualStateUpToDate) {
             return; // visual state of layout structure not updated yet (from last operation)
         }
 
@@ -452,6 +457,8 @@ public class LayoutDesigner implements LayoutConstants {
             }
             else { // resizing root container
                 assert dragger.isResizing();
+                if (!dragger.isResizing())
+                    return; // no data about target container
 
                 modelListener.deactivate(); // do not react on model changes
 
@@ -460,13 +467,13 @@ public class LayoutDesigner implements LayoutConstants {
                     components[0].getLayoutInterval(dim).setCurrentSpace(space);
                 }
                 imposeCurrentSize(components[0], dragger.getSizes());
-                // not changing structure, need not set "dirty"
             }
 
             if (dragger.isResizing() && components[0].isLayoutContainer())
                 updateDesignModifications(components[0]);
 
             modelListener.activate();
+            visualStateUpToDate = false;
         }
 
         dragger = null;
@@ -1040,9 +1047,11 @@ public class LayoutDesigner implements LayoutConstants {
                                 true,
                                 LayoutInterval.wantResize(ev.getInterval()),
                                 dim);
-                if (comp.getParent() != null)
+                if (comp.getParent() != null) {
                     updateDesignModifications(comp.getParent().getLayoutRoot(dim), dim);
-                // or 'dirty = true' if we can't ensure removing handles gaps properly
+                    // or 'dirty = true' if we can't ensure removing handles gaps properly
+                    visualStateUpToDate = false;
+                }
             }
         }
     }
@@ -1169,7 +1178,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
         updateDesignModifications(interval, dimension);
         modelListener.activate();
-        //dirty = true;
+        visualStateUpToDate = false;
     }
 
     /**
@@ -1499,6 +1508,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         updateDesignModifications(comp.getParent());
+        visualStateUpToDate = false;
     }
     
     private boolean fillResizable(LayoutInterval interval) {
@@ -1541,6 +1551,7 @@ public class LayoutDesigner implements LayoutConstants {
         modelListener.deactivate();
         alignIntervals(intervals, closed, dimension, alignment);
         modelListener.activate();
+        visualStateUpToDate = false;
         dirty = true;
     }
 
@@ -3031,7 +3042,6 @@ public class LayoutDesigner implements LayoutConstants {
 
     // recursive
     private void intervalRemoved(LayoutInterval parent, int index, boolean primary, boolean wasResizing, int dimension) {
-//        dirty = true;
         if (parent.isSequential()) {
             LayoutInterval leadingGap;
             LayoutInterval leadingNeighbor;

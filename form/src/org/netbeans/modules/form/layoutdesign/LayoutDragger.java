@@ -156,8 +156,10 @@ class LayoutDragger implements LayoutConstants {
         visualMapper = mapper;
 
         movingBounds = new LayoutRegion[compBounds.length];
+        movingSpace = new LayoutRegion();
         for (int i=0; i < compBounds.length; i++) {
             movingBounds[i] = new LayoutRegion();
+            movingSpace.expand(compBounds[i]);
         }
         
         // set canSnapToBaseline field - check that we are moving baseline group
@@ -404,9 +406,6 @@ class LayoutDragger implements LayoutConstants {
     }
 
     void paintMoveFeedback(Graphics2D g) {
-        if (movingSpace == null) {
-            return; // paint requested before the move actually started ('move' not called yet)
-        }
         final int OVERLAP = 10;
         for (int i=0; i < DIM_COUNT; i++) {    
             LayoutDragger.PositionDef position = bestPositions[i];

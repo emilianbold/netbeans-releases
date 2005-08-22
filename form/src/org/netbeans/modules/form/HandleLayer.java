@@ -1869,6 +1869,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     g.translate(-convertPoint.x, -convertPoint.y);
                 }
                 else if (oldDrag && targetContainer != null && targetContainer.getLayoutSupport() != null) {
+                    showingComponents[i].setBounds(movingBounds[i]);
                     oldPaintFeedback(g, gg);
                 }
                 else if (showingComponents != null) { // non-visual area
@@ -2026,7 +2027,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     }
                 }
                 formDesigner.getLayoutDesigner().startAdding(
-                    layoutComps, originalBounds, hotSpot);                    
+                    layoutComps, originalBounds, hotSpot, null);                    
             }
 
             if ((modifiers & InputEvent.ALT_MASK) != 0) {
@@ -2322,23 +2323,31 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         FakePeerSupport.attachFakePeerRecursively((Container)showingComponents[0]);
                     }
                 }
+
                 Dimension size = showingComponents[0].getPreferredSize();
-                hotSpot = new Point(size.width/2 - 4, size.height/2);
-                if (hotSpot.x < 0) {
-                    hotSpot.x = 0;
-                }
-                if (originalBounds == null) {
+                if (originalBounds == null) { // new adding
+                    hotSpot = new Point();
                     originalBounds = new Rectangle[] { new Rectangle(convertPoint.x, convertPoint.y, size.width, size.height) };
-                    showingComponents[0].setBounds(originalBounds[0]);
-                    compoundBounds = originalBounds[0];
                     movingBounds = new Rectangle[] { new Rectangle(0, 0, size.width, size.height) };
                 }
+                else { // repeated adding of the same component type, reuse last bounds
+                    movingBounds[0].width = size.width;
+                    movingBounds[0].height = size.height;
+                    originalBounds[0] = movingBounds[0];
+                    movingBounds[0] = new Rectangle(movingBounds[0]);
+                    originalBounds[0].x += convertPoint.x;
+                    originalBounds[0].y += convertPoint.y;
+                }
+                compoundBounds = originalBounds[0];
+                hotSpot.x = movingBounds[0].x + size.width/2 - 4;
+                hotSpot.y = movingBounds[0].y + size.height/2;
+                if (hotSpot.x < movingBounds[0].x)
+                    hotSpot.x = movingBounds[0].x;
 
                 if (formDesigner.getLayoutDesigner() != null) {
                     formDesigner.getLayoutDesigner().startAdding(
-                            layoutComponents,
-                            new Rectangle[] { new Rectangle(0, 0, size.width, size.height) },
-                            hotSpot);
+                            layoutComponents, movingBounds, hotSpot,
+                            targetContainer != null ? targetContainer.getId() : null);
                 }
 
                 newDrag = oldDrag = true;
@@ -2376,9 +2385,8 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
                 Object constraints;
                 if (oldLayout) {
-                    Point point = new Point(p.x - hotSpot.x, p.y - hotSpot.y);
                     constraints = !paletteItem.isMenu() && paletteItem.isVisual() ?
-                        getConstraintsAtPoint(targetContainer, point) : null;
+                        getConstraintsAtPoint(targetContainer, p) : null;
                 }
                 else constraints = null;
 
