@@ -52,7 +52,7 @@ public class BUTTONCustomizer extends javax.swing.JPanel {
         catch (Exception e) {}
         
         descriptor = new DialogDescriptor
-                (this, "Insert " + displayName, true,
+                (this, NbBundle.getMessage(BUTTONCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {

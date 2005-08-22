@@ -51,7 +51,7 @@ public class CHECKBOXCustomizer extends javax.swing.JPanel {
         catch (Exception e) {}
         
         descriptor = new DialogDescriptor
-                (this, "Insert " + displayName, true,
+                (this, NbBundle.getMessage(CHECKBOXCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
