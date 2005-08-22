@@ -74,8 +74,6 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
             }
         });
         
-        Mnemonics.setLocalizedText(patternJLabel,bundle.getString("TXT_jmxURLPattern"));// NOI18N
-        
         Mnemonics.setLocalizedText(rmiUserNameJLabel,bundle.getString("LBL_userName.text"));// NOI18N
         Mnemonics.setLocalizedText(rmiPasswordJLabel,bundle.getString("LBL_password.text"));// NOI18N
         
@@ -226,7 +224,6 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         jmxURLJTextField = new javax.swing.JTextField();
         jmxURLJLabel = new javax.swing.JLabel();
         jmxAgentURLPopupJButton = new javax.swing.JButton();
-        patternJLabel = new javax.swing.JLabel();
         rmiPasswordJLabel = new javax.swing.JLabel();
         rmiUserNameJTextField = new javax.swing.JTextField();
         rmiUserNameJLabel = new javax.swing.JLabel();
@@ -340,16 +337,6 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         urlPanel.add(jmxAgentURLPopupJButton, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        urlPanel.add(patternJLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -469,7 +456,6 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
     private javax.swing.JButton jmxAgentURLPopupJButton;
     private javax.swing.JLabel jmxURLJLabel;
     private javax.swing.JTextField jmxURLJTextField;
-    private javax.swing.JLabel patternJLabel;
     private javax.swing.JLabel rmiPasswordJLabel;
     private javax.swing.JTextField rmiPasswordJTextField;
     private javax.swing.JLabel rmiUserNameJLabel;

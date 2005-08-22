@@ -25,6 +25,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import org.openide.util.NbBundle;
@@ -36,7 +38,8 @@ import org.openide.DialogDisplayer;
  *
  * @author  an156382
  */
-public class ManagerPopup extends javax.swing.JPanel implements DocumentListener {
+public class ManagerPopup extends javax.swing.JPanel implements DocumentListener,
+    FocusListener {
     
     private ResourceBundle bundle;
     private JTextField urlField;
@@ -88,11 +91,12 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         else
             parseURL(urlField.getText());
         
-        protocolJComboBox.requestFocus();
+        //protocolJComboBox.requestFocus();
         
         addListeners();
         
         configure();
+        protocolJComboBox.requestFocus();
     }
     
     /**
@@ -135,8 +139,11 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     private void addListeners() {
         rmiHostJTextField.getDocument().addDocumentListener(this);
         rmiPortJTextField.getDocument().addDocumentListener(this); 
-        rmiHostJTextField.addFocusListener(new TextFieldFocusListener());
-        rmiPortJTextField.addFocusListener(new TextFieldFocusListener());
+        //rmiHostJTextField.addFocusListener(new TextFieldFocusListener());
+        //rmiPortJTextField.addFocusListener(new TextFieldFocusListener());
+        rmiHostJTextField.addFocusListener(this);
+        rmiPortJTextField.addFocusListener(this);
+        
         okJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 okButtonAction();
@@ -147,16 +154,19 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         ((JTextField) protocolJComboBox.getEditor().getEditorComponent()).
                 getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
+                System.out.println("combobox documentlistener");
                 Document doc = e.getDocument();
                 updateURLPath(e.getDocument());
             }
             
             public void removeUpdate(DocumentEvent e) {
+                System.out.println("combobox documentlistener");
                 Document doc = e.getDocument();
                 updateURLPath(e.getDocument());
             }
             
             public void changedUpdate(DocumentEvent e) {
+                System.out.println("combobox documentlistener");
                 Document doc = e.getDocument();
                 updateURLPath(e.getDocument());
             }
@@ -208,15 +218,28 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     }
     
     public void insertUpdate(DocumentEvent e) {
+        System.out.println("Adding new Document Listener on txtfield host or port");
         updateURLPathWithHostAndPort();
     }
     
     public void removeUpdate(DocumentEvent e) {
+        System.out.println("Adding new Document Listener on txtfield host or port");
         updateURLPathWithHostAndPort();
     }
     
     public void changedUpdate(DocumentEvent e) {
+        System.out.println("Adding new Document Listener on txtfield host or port");
         updateURLPathWithHostAndPort();
+    }
+    
+    public void focusGained(FocusEvent evt) {
+        System.out.println("host got focus");
+        ((JTextField)evt.getSource()).selectAll();
+    }
+    
+    public void focusLost(FocusEvent evt) {
+        System.out.println("host lost focus");
+        ((JTextField)evt.getSource()).select(0,0);
     }
     
     private void updateURLPathWithHostAndPort() {
