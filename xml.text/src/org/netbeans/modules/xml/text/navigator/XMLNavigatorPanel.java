@@ -39,7 +39,7 @@ import org.openide.util.LookupListener;
  */
 public class XMLNavigatorPanel implements NavigatorPanel {
     
-    private JComponent panelUI;
+    private NavigatorContent navigator;
     
     private Lookup.Result selection;
     private final LookupListener selectionListener = new LookupListener() {
@@ -52,6 +52,7 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     
     /** public no arg constructor needed for system to instantiate the provider. */
     public XMLNavigatorPanel() {
+        navigator = new NavigatorContent();
     }
     
     public String getDisplayHint() {
@@ -63,7 +64,7 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     }
     
     public JComponent getComponent() {
-        return panelUI;
+        return navigator;
     }
     
     public Lookup getLookup() {
@@ -89,12 +90,9 @@ public class XMLNavigatorPanel implements NavigatorPanel {
             try {
                 //test if the document is opened in editor
                 BaseDocument bdoc = (BaseDocument)ec.openDocument();
-                if(bdoc != null)
-                    model = DocumentModel.getDocumentModel(bdoc);
                 //create UI
-                panelUI = new NavigatorContent(model);
-            }catch(DocumentModelException e) {
-                ErrorManager.getDefault().notify(e);
+                if(bdoc != null) navigator.navigate(bdoc);
+                
             }catch(IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
