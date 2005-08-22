@@ -270,8 +270,8 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../junit</project>
                 <project>../libs/commons_logging</project>
                 <project>../libs/j2eeeditor</project>
-                <project>../libs/xerces</project>
                 <project>../libs/jsch</project>
+                <project>../libs/xerces</project>
                 <project>../mdr/jmi</project>
                 <project>../mdr/mdrapi</project>
                 <project>../mdr/module</project>
@@ -339,6 +339,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../websvc/clientapi</project>
                 <project>../websvc/core</project>
                 <project>../websvc/dev</project>
+                <project>../websvc/jaxrpc16</project>
                 <project>../websvc/registry</project>
                 <project>../websvc/websvcapi</project>
                 <project>../websvc/websvcddapi</project>
