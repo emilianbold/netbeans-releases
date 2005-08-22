@@ -14,6 +14,7 @@
 package org.netbeans.modules.form.layoutdesign.support;
 
 import java.util.*;
+import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 
 /**
  * Utilities for swing layout support.
@@ -93,4 +94,32 @@ public class SwingLayoutUtils {
         return STATUS_UNKNOWN;
     }
 
+    public static Map createLinkSizeGroups(LayoutComponent layoutComponent, int dimension) {
+        
+        Map linkSizeGroup = new HashMap();
+        
+        if (layoutComponent.isLayoutContainer()) {
+            Iterator i = layoutComponent.getSubcomponents();
+            
+            while (i.hasNext()) {
+                LayoutComponent lc = (LayoutComponent)i.next();
+                if (lc != null) {
+                    if (lc.isLinkSized(dimension)) {
+                        String cid = lc.getId();
+                        Integer id = new Integer(lc.getLinkSizeId(dimension));
+                        List l = (List)linkSizeGroup.get(id);
+                        if (l == null) {
+                            l = new ArrayList();
+                            l.add(cid);
+                            linkSizeGroup.put(id, l);
+                        } else {
+                            l.add(cid);
+                        }
+                    }
+                }
+            }
+        }
+        return linkSizeGroup;
+    }
+    
 }

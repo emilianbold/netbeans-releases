@@ -13,14 +13,18 @@
 
 package org.netbeans.modules.form.layoutdesign;
 
+
 import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.util.*;
+import org.openide.util.Utilities;
 
 public class LayoutDesigner implements LayoutConstants {
 
@@ -408,7 +412,15 @@ public class LayoutDesigner implements LayoutConstants {
                 for (int i=0; i<components.length; i++) {
                     if (components[i].getParent() != null) {
                         LayoutComponent comp = components[i];
-                        layoutModel.removeComponent(comp);
+                        if (components[i].getParent() != null) {
+                            if (dragger.isResizing(HORIZONTAL)) {
+                                layoutModel.removeComponentFromLinkSizedGroup(components[i], HORIZONTAL);
+                            }
+                            if (dragger.isResizing(VERTICAL)) {
+                                layoutModel.removeComponentFromLinkSizedGroup(components[i], VERTICAL);
+                            }
+                        }
+                        layoutModel.removeComponent(comp, false);
                         if (components.length == 1) { // remove also the intervals
                             for (int dim=0; dim < DIM_COUNT; dim++) {
                                 layoutModel.removeInterval(comp.getLayoutInterval(dim));
@@ -675,6 +687,9 @@ public class LayoutDesigner implements LayoutConstants {
      */
     private void paintSelection(Graphics2D g, LayoutComponent component, int dimension) {
         LayoutInterval interval = component.getLayoutInterval(dimension);
+        if (component.isLinkSized(HORIZONTAL) || component.isLinkSized(VERTICAL)) {
+            paintLinks(g, component);
+        }
         // Paint baseline alignment
         if (interval.getAlignment() == BASELINE) {
             LayoutInterval alignedParent = interval.getParent();
@@ -732,6 +747,95 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
+    private void paintLinks(Graphics2D g, LayoutComponent component) {
+        
+        if ((component.isLinkSized(HORIZONTAL)) && (component.isLinkSized(VERTICAL))) {
+            Map linkGroupsH = layoutModel.getLinkSizeGroups(HORIZONTAL);            
+            Map linkGroupsV = layoutModel.getLinkSizeGroups(VERTICAL);
+            Integer linkIdH = new Integer(component.getLinkSizeId(HORIZONTAL));
+            Integer linkIdV = new Integer(component.getLinkSizeId(VERTICAL));
+            
+            List lH = (List)linkGroupsH.get(linkIdH);
+            List lV = (List)linkGroupsV.get(linkIdV);
+
+            Set merged = new HashSet(); 
+            for (int i=0; i < lH.size(); i++) {
+                merged.add(lH.get(i));
+            }
+            for (int i=0; i < lV.size(); i++) {
+                merged.add(lV.get(i));
+            }
+
+            Iterator mergedIt = merged.iterator();
+            while (mergedIt.hasNext()) {
+                String id = (String)mergedIt.next();
+                LayoutComponent lc = layoutModel.getLayoutComponent(id);
+                LayoutInterval interval = lc.getLayoutInterval(HORIZONTAL);
+                LayoutRegion region = interval.getCurrentSpace();
+                Image badge = null;
+                if ((lV.contains(id)) && (lH.contains(id))) {
+                    badge = getLinkBadge(BOTH_DIMENSIONS);
+                } else {
+                    if (lH.contains(lc.getId())) {
+                        badge = getLinkBadge(HORIZONTAL);
+                    }
+                    if (lV.contains(lc.getId())) {
+                        badge = getLinkBadge(VERTICAL);
+                    }
+                }
+                int x = region.positions[HORIZONTAL][TRAILING] - region.size(HORIZONTAL) / 4  - (badge.getWidth(null) / 2);
+                int y = region.positions[VERTICAL][LEADING] - (badge.getHeight(null));;
+                g.drawImage(badge, x, y, null);
+            }
+        } else {
+            int dimension = (component.isLinkSized(HORIZONTAL)) ? HORIZONTAL : VERTICAL;
+            Map map =  layoutModel.getLinkSizeGroups(dimension);
+            
+            Integer linkId = new Integer(component.getLinkSizeId(dimension));
+            List l = (List)map.get(linkId);
+            Iterator mergedIt = l.iterator();
+            
+            while (mergedIt.hasNext()) {
+                String id = (String)mergedIt.next();
+                LayoutComponent lc = layoutModel.getLayoutComponent(id);
+                LayoutInterval interval = lc.getLayoutInterval(dimension);
+                LayoutRegion region = interval.getCurrentSpace();
+                Image badge = getLinkBadge(dimension);
+                int x = region.positions[HORIZONTAL][TRAILING] - region.size(HORIZONTAL) / 4 - (badge.getWidth(null) / 2);
+                int y = region.positions[VERTICAL][LEADING] - (badge.getHeight(null));
+                g.drawImage(badge, x, y, null);
+            }
+        }
+    }
+    
+    private Image linkBadgeBoth = null;
+    private Image linkBadgeHorizontal = null;
+    private Image linkBadgeVertical = null;
+    
+    private final int BOTH_DIMENSIONS = 2;
+            
+    private Image getLinkBadge(int dimension) {
+        if (dimension == (BOTH_DIMENSIONS)) {
+            if (linkBadgeBoth == null) {
+                linkBadgeBoth = Utilities.loadImage("org/netbeans/modules/form/resources/sameboth.png"); //NOI18N
+            }
+            return linkBadgeBoth;
+        }
+        if (dimension == HORIZONTAL) {
+            if (linkBadgeHorizontal == null) {
+                linkBadgeHorizontal = Utilities.loadImage("org/netbeans/modules/form/resources/samewidth.png"); //NOI18N
+            }
+            return linkBadgeHorizontal;
+        }
+        if (dimension == VERTICAL) {
+            if (linkBadgeVertical == null) {
+                linkBadgeVertical = Utilities.loadImage("org/netbeans/modules/form/resources/sameheight.png"); //NOI18N
+            }
+            return linkBadgeVertical;
+        }
+        return null;
+    }
+    
     private void paintAlignment(Graphics2D g, LayoutInterval interval, int dimension, int alignment) {
         LayoutInterval parent = interval.getParent();
         boolean baseline = parent.isParallel() && (parent.getGroupAlignment() == BASELINE);

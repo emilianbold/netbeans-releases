@@ -16,6 +16,7 @@ package org.netbeans.modules.form.layoutdesign.support;
 import java.io.*;
 import java.awt.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 import org.jdesktop.layout.*;
@@ -74,12 +75,24 @@ public class SwingLayoutCodeGenerator {
         composeGroup(sb, horizontalInterval, true, true);
         String horizontalGroup = sb.toString();
         writer.write(layoutVarName + ".setHorizontalGroup(\n" + horizontalGroup + "\n);\n"); // NOI18N
+                
+        sb = new StringBuffer();
+        composeLinks(sb, container, layoutVarName, LayoutConstants.HORIZONTAL);
+        String horizontalLinks = sb.toString();
+        writer.write(horizontalLinks); // NOI18N
+
         sb = new StringBuffer();
         LayoutInterval verticalInterval = container.getLayoutRoot(LayoutConstants.VERTICAL);
         composeGroup(sb, verticalInterval, true, true);
         String verticalGroup = sb.toString();
         writer.write(layoutVarName + ".setVerticalGroup(\n" + verticalGroup + "\n);\n"); // NOI18N
-    }
+
+
+        sb = new StringBuffer();
+        composeLinks(sb, container, layoutVarName, LayoutConstants.VERTICAL);
+        String verticalLinks = sb.toString();
+        writer.write(verticalLinks); // NOI18N
+    }                                       
 
     /**
      * Fills the <code>componentIDMap</code>.
@@ -294,7 +307,49 @@ public class SwingLayoutCodeGenerator {
         }
         return convertedSize;
     }
-    
+
+    private void composeLinks(StringBuffer layout, LayoutComponent containerLC, String layoutVarName, int dimension) throws IOException {
+
+        Map linkSizeGroups = SwingLayoutUtils.createLinkSizeGroups(containerLC, dimension);
+        
+        Collection linkGroups = linkSizeGroups.values();
+        Iterator linkGroupsIt = linkGroups.iterator();
+        while (linkGroupsIt.hasNext()) {
+            List l = (List)linkGroupsIt.next();
+            // sort so that the generated line is always the same when no changes were made
+            Collections.sort(l, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    String id1 =(String)o1;
+                    String id2 =(String)o2;
+                    ComponentInfo info1 = (ComponentInfo)componentIDMap.get(id1);
+                    ComponentInfo info2 = (ComponentInfo)componentIDMap.get(id2);                    
+                    return info1.variableName.compareTo(info2.variableName);
+                }
+            });
+            if (l.size() > 1) {
+                layout.append("\n\n" + layoutVarName + ".linkSize(new java.awt.Component[] {"); //NOI18N
+                Iterator i = l.iterator();
+                boolean first = true;
+                while (i.hasNext()) {
+                    String cid = (String)i.next();
+                    ComponentInfo info = (ComponentInfo)componentIDMap.get(cid);
+                    if (first) {
+                        first = false;
+                        layout.append(info.variableName);
+                    } else {
+                        layout.append(", " + info.variableName); // NOI18N
+                    }
+                }
+                layout.append( "}, ");
+                if (dimension == LayoutConstants.HORIZONTAL) {
+                    layout.append(LAYOUT_NAME + ".HORIZONTAL);\n\n"); //NOI18N
+                } else {
+                    layout.append(LAYOUT_NAME + ".VERTICAL);\n\n"); //NOI18N
+                }
+            }
+        }
+    }
+
     /**
      * Information about one component.
      */

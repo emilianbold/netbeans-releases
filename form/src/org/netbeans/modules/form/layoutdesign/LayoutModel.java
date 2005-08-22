@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.List;
 import javax.swing.undo.*;
 
+
 /**
  * This class manages layout data of a form. Specifically it:
  * - provides entry points for exploring the layout,
@@ -48,7 +49,7 @@ public class LayoutModel implements LayoutConstants {
     private LayoutUndoableEdit lastUndoableEdit;
 
     // -----
-
+    
     /**
      * Basic mapping method. Returns LayoutComponent for given Id.
      * @return LayoutComponent of given Id, null if there is no such component
@@ -146,6 +147,8 @@ public class LayoutModel implements LayoutConstants {
                 unregisterComponent((LayoutComponent)it.next(), recursive);
             }
         }
+        removeComponentFromLinkSizedGroup(comp, HORIZONTAL);
+        removeComponentFromLinkSizedGroup(comp, VERTICAL);
         idToComponents.remove(comp.getId());
     }
 
@@ -201,13 +204,14 @@ public class LayoutModel implements LayoutConstants {
             unregisterComponent(component, true);
         }
 
+        
         // record undo/redo and fire event
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REMOVED);
         ev.setComponent(component, parent, index);
         addChange(ev);
         fireEvent(ev);
     }
-
+    
     void addInterval(LayoutInterval interval, LayoutInterval parent, int index) {
         assert interval.getParent() == null;
 
@@ -866,5 +870,177 @@ public class LayoutModel implements LayoutConstants {
     public void loadModel(String rootId, org.w3c.dom.NodeList dimLayoutList, Map nameToIdMap) {
         new LayoutPersistenceManager(this).loadModel(rootId, dimLayoutList, nameToIdMap);
     }
+    
+    /* 
+     * LINKSIZE 
+     */
+    
+    // each object in the map is a List and contains list of components within the group
+    private Map linkSizeGroupsH = new HashMap();
+    private Map linkSizeGroupsV = new HashMap();
+    
+    private int maxLinkGroupId = 0;
+    
+    void addComponentToLinkSizedGroup(int groupId, String compId, int dimension) {
+                
+        if (NOT_EXPLICITLY_DEFINED == groupId) { // 
+            return;
+        }
+        if (maxLinkGroupId < groupId) {
+            maxLinkGroupId=groupId;
+        }
+        LayoutComponent lc = getLayoutComponent(compId);        
+        Integer groupIdInt = new Integer(groupId);
+        Map linkSizeGroups = (dimension == HORIZONTAL) ? linkSizeGroupsH : linkSizeGroupsV;
+        List l = (List)linkSizeGroups.get(groupIdInt);
+        if (l != null) {
+            if ((!l.contains(compId)) && (sameContainer(compId, (String)l.get(0)))) {
+                l.add(compId);
+            } else {
+                return;
+            }
+        } else {
+            l = new ArrayList();
+            l.add(compId);
+            linkSizeGroups.put(groupIdInt, l);
+        }
 
+        int oldLinkSizeId = lc.getLinkSizeId(dimension);
+        lc.setLinkSizeId(groupId, dimension);
+        
+        // record undo/redo and fire event
+        LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
+        ev.setLinkSizeGroup(lc, oldLinkSizeId, groupId, dimension);
+        addChange(ev);
+        fireEvent(ev);
+    }
+    
+    private boolean sameContainer(String compId1, String compId2) {
+        LayoutComponent lc1 = getLayoutComponent(compId1);
+        LayoutComponent lc2 = getLayoutComponent(compId2);
+        return lc1.getParent().equals(lc2.getParent());
+    }
+    
+    void removeComponentFromLinkSizedGroup(LayoutComponent comp, int dimension) {
+
+        if (comp == null) return;
+        
+        int linkId = comp.getLinkSizeId(dimension);
+        if (linkId != NOT_EXPLICITLY_DEFINED) {
+
+            Map map = (dimension == HORIZONTAL) ? linkSizeGroupsH : linkSizeGroupsV;
+            Integer linkIdInt = new Integer(linkId);
+            
+            List l = null;
+            l = (List)map.get(linkIdInt);
+            l.remove(comp.getId());
+            comp.setLinkSizeId(NOT_EXPLICITLY_DEFINED, dimension);
+            
+            if (l.size() == 1) {
+                LayoutComponent lc = getLayoutComponent((String)l.get(0));
+                int oldLinkSizeId = lc.getLinkSizeId(dimension);
+                lc.setLinkSizeId(NOT_EXPLICITLY_DEFINED, dimension);
+                map.remove(linkIdInt);
+                // record undo/redo and fire event
+                LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
+                ev.setLinkSizeGroup(lc, oldLinkSizeId, NOT_EXPLICITLY_DEFINED, dimension);
+                addChange(ev);
+                fireEvent(ev);
+            }
+            
+            if (l.size() == 0) {
+                map.remove(linkIdInt);
+            }
+
+            // record undo/redo and fire event
+            LayoutEvent ev = new LayoutEvent(this, LayoutEvent.INTERVAL_LINKSIZE_CHANGED);
+            ev.setLinkSizeGroup(comp, linkId, NOT_EXPLICITLY_DEFINED, dimension);
+            addChange(ev);
+            fireEvent(ev);
+        }
+    }
+    
+    /**
+     * @return returns FALSE if components are not linked, and if so, they are linked in the same group
+     *         returns TRUE if all components are in the same linksize group
+     *         returns INVALID if none of above is true
+     */
+    public int areComponentsLinkSized(List/*<String>*/ components, int dimension) {
+
+        if (components.size() == 1) {
+            String id = (String)components.get(0);
+            boolean retVal = (getLayoutComponent(id).isLinkSized(dimension));
+            return retVal ? TRUE : FALSE;
+        }
+        
+        Iterator i = components.iterator();
+        boolean someUnlinkedPresent = false;
+        List idsFound = new ArrayList();
+
+        while (i.hasNext()) {
+            String cid = (String)i.next();
+            LayoutComponent lc = getLayoutComponent(cid);
+            Integer linkSizeId =  new Integer(lc.getLinkSizeId(dimension));
+            if (!idsFound.contains(linkSizeId)) {
+                idsFound.add(linkSizeId);
+            }
+            if (idsFound.size() > 2) { // components are from at least two different groups
+                return INVALID;
+            }
+        }
+        if (idsFound.size() == 1) {
+            if (idsFound.contains(new Integer(NOT_EXPLICITLY_DEFINED))) {
+                return FALSE;
+            }
+            return TRUE;
+        }
+        if (idsFound.contains(new Integer(NOT_EXPLICITLY_DEFINED))) { // == 2 elements
+            return FALSE;
+        } else {
+            return INVALID;
+        }
+    }
+        
+    Map getLinkSizeGroups(int dimension) {
+        if (HORIZONTAL == dimension) {
+            return linkSizeGroupsH;
+        } 
+        if (VERTICAL == dimension) {
+            return linkSizeGroupsV;
+        }
+        return null; // incorrect dimension passed
+    }
+    
+    public void unsetSameSize(List/*<String>*/ components, int dimension) {
+        Iterator i = components.iterator();
+        while (i.hasNext()) {
+            String cid = (String)i.next();
+            LayoutComponent lc = getLayoutComponent(cid);
+            removeComponentFromLinkSizedGroup(lc, dimension);            
+        }
+    }
+    
+    public void setSameSize(List/*<String>*/ components, int dimension) {
+        Iterator i = components.iterator();
+        int groupId = findGroupId(components, dimension);
+        
+        while (i.hasNext()) {
+            String cid = (String)i.next();
+            LayoutComponent lc = getLayoutComponent(cid);
+            int oldLinkSizeId = lc.getLinkSizeId(dimension);
+            addComponentToLinkSizedGroup(groupId, lc.getId(), dimension); 
+        }
+    }
+    
+    private int findGroupId(List/*<String*/ components, int dimension) {
+        Iterator i = components.iterator();
+        while (i.hasNext()) {
+            String cid = (String)i.next();
+            LayoutComponent lc = getLayoutComponent(cid);
+            if (lc.isLinkSized(dimension)) {
+                return lc.getLinkSizeId(dimension);
+            }
+        }
+        return ++maxLinkGroupId;
+    }
 }

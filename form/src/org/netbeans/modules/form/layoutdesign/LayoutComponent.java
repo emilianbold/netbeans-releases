@@ -58,6 +58,12 @@ public final class LayoutComponent implements LayoutConstants {
     
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+    // horizontal size-link
+    private int horizontalLinkId = NOT_EXPLICITLY_DEFINED;
+    
+    // vertical size-link
+    private int verticalLinkId = NOT_EXPLICITLY_DEFINED;
+    
     // -----
     // setup
 
@@ -135,7 +141,7 @@ public final class LayoutComponent implements LayoutConstants {
 
     // --------
 
-    Iterator getSubcomponents() {
+    public Iterator getSubcomponents() {
         return subComponents != null && subComponents.size() > 0 ?
                subComponents.iterator() : Collections.EMPTY_LIST.iterator();
     }
@@ -215,6 +221,38 @@ public final class LayoutComponent implements LayoutConstants {
                 layoutRoots[i].setCurrentSpace(space);
             }
         }
+    }
+    
+    /**
+     * @return whether this intervals size is linked with some other component in a direction horizontal or vertical
+     */
+    public boolean isLinkSized(int dimension) {
+        if (dimension == HORIZONTAL) {
+            return NOT_EXPLICITLY_DEFINED != horizontalLinkId;
+        }
+        return NOT_EXPLICITLY_DEFINED != verticalLinkId;
+    }
+    
+    /**
+     * @return whether this intervals size is linked with some other component in a direction horizontal or vertical
+     */
+    public int getLinkSizeId(int dimension) {
+        if (dimension == HORIZONTAL) {
+            return horizontalLinkId;
+        }
+        return verticalLinkId;
+    }
+
+    /**
+     * @return whether this intervals size is linked with some other component in a direction horizontal or vertical
+     */
+    public void setLinkSizeId(int id, int dimension) {
+        if (dimension == HORIZONTAL) {
+            horizontalLinkId = id;
+        } else {
+            verticalLinkId = id;
+        }
+        
     }
     
     // Listener support

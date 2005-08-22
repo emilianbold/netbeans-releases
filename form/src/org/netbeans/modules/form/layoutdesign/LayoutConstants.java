@@ -92,4 +92,8 @@ public interface LayoutConstants {
     String PROP_VERTICAL_PREF_SIZE = "verticalPrefSize"; // NOI18N
     String PROP_VERTICAL_MAX_SIZE = "verticalMaxSize"; // NOI18N
 
+    // are components in same linksizegroup?
+    int INVALID = -1;
+    int FALSE = 0;
+    int TRUE = 1;
 }

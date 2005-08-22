@@ -51,6 +51,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
     static final String ATTR_SIZE_MAX = "max"; // NOI18N
     static final String ATTR_ALIGNMENT = "alignment"; // NOI18N
     static final String ATTR_GROUP_ALIGNMENT = "groupAlignment"; // NOI18N
+    static final String ATTR_LINK_SIZE = "linkSize"; // NOI18N
     static final String ATTR_COMPONENT_ID = "id"; // NOI18N
     static final String ATTR_ATTRIBUTES = "attributes"; // NOI18N
     
@@ -104,7 +105,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
             }
             sb.append("\">\n"); // NOI18N
             LayoutInterval interval = root.getLayoutRoot(i);
-            saveInterval(interval);
+            saveInterval(interval, i);
             indent().append("</").append(XML_DIMENSION_LAYOUT).append(">\n"); // NOI18N
         }
         return sb.toString();
@@ -115,7 +116,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
      *
      * @param interval layout interval to dump.
      */
-    private void saveInterval(LayoutInterval interval) {
+    private void saveInterval(LayoutInterval interval, int dimension) {
         indent++;
         indent();
         if (interval.isGroup()) {
@@ -139,7 +140,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
             Iterator iter = interval.getSubIntervals();
             while (iter.hasNext()) {
                 LayoutInterval subInterval = (LayoutInterval)iter.next();
-                saveInterval(subInterval);
+                saveInterval(subInterval, dimension);
             }
             indent--;
             indent().append("</").append(XML_GROUP).append(">\n"); // NOI18N
@@ -152,6 +153,8 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 }
                 sb.append('<').append(XML_COMPONENT).append(' ');
                 sb.append(ATTR_COMPONENT_ID).append("=\"").append(name).append("\""); // NOI18N
+                sb.append(' ');
+                sb.append(ATTR_LINK_SIZE).append("=\"").append(interval.getComponent().getLinkSizeId(dimension)).append("\""); // NOI18N
                 saveAlignment(interval.getRawAlignment(), false);
             } else if (interval.isEmptySpace()) {
                 sb.append('<').append(XML_EMPTY_SPACE);
@@ -261,10 +264,10 @@ public class LayoutPersistenceManager implements LayoutConstants {
             for (int j=0; j<childs.getLength(); j++) {
                 Node node = childs.item(j);
                 if (node instanceof Element) {
-                    loadGroup(dimLayoutInterval, node);
+                    loadGroup(dimLayoutInterval, node, dimension);
                     break;
                 }
-            }            
+            }
         }
     }
     
@@ -274,7 +277,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
      * @param group group whose layout information should be loaded.
      * @param groupNode node holding the information about the layout of the group.
      */
-    private void loadGroup(LayoutInterval group, Node groupNode) {
+    private void loadGroup(LayoutInterval group, Node groupNode, int dimension) {
         NamedNodeMap attrMap = groupNode.getAttributes();
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
         Node groupAlignmentNode = attrMap.getNamedItem(ATTR_GROUP_ALIGNMENT);
@@ -304,12 +307,12 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 int type = integerFromNode(typeNode);
                 LayoutInterval subGroup = new LayoutInterval(type);
                 group.add(subGroup, -1);
-                loadGroup(subGroup, subNode);
+                loadGroup(subGroup, subNode, dimension);
             } else if (XML_EMPTY_SPACE.equals(nodeName)) {
                 loadEmptySpace(group, subNode);
             } else {
                 assert XML_COMPONENT.equals(nodeName);
-                loadComponent(group, subNode);
+                loadComponent(group, subNode, dimension);
             }
         }
     }
@@ -333,10 +336,12 @@ public class LayoutPersistenceManager implements LayoutConstants {
      *
      * @param parent layout parent of the loaded layout interval.
      * @param componentNode node with the information about the component.
+     * @param dimension loaded dimension
      */
-    private void loadComponent(LayoutInterval parent, Node componentNode) {
+    private void loadComponent(LayoutInterval parent, Node componentNode, int dimension) {
         NamedNodeMap attrMap = componentNode.getAttributes();
         String name = attrMap.getNamedItem(ATTR_COMPONENT_ID).getNodeValue();
+        Node linkSizeId = attrMap.getNamedItem(ATTR_LINK_SIZE);
         String id = (String)idNameMap.get(name);
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
         int alignment = integerFromNode(alignmentNode);
@@ -349,6 +354,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
         }
         LayoutInterval interval = layoutComponent.getLayoutInterval(dimension);
         interval.setAlignment(alignment);
+        if (linkSizeId != null) {
+            layoutModel.addComponentToLinkSizedGroup(integerFromNode(linkSizeId), layoutComponent.getId(), dimension);
+        }
         loadSizes(interval, attrMap);
         loadAttributes(interval, attrMap);
         parent.add(interval, -1);

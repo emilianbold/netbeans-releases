@@ -352,7 +352,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     return;
                 }
             }
-        } else if (keyCode == KeyEvent.VK_D && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
+        } else if (((keyCode == KeyEvent.VK_D) || (keyCode == KeyEvent.VK_E)) && e.isAltDown() && e.isControlDown() && (e.getID() == KeyEvent.KEY_PRESSED)) {
             FormModel formModel = formDesigner.getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();
             if (layoutModel != null) {

@@ -30,6 +30,7 @@ final class LayoutEvent extends EventObject {
     static final int GROUP_ALIGNMENT_CHANGED = 6;
     static final int INTERVAL_SIZE_CHANGED = 7;
     static final int INTERVAL_ATTRIBUTES_CHANGED = 8;
+    static final int INTERVAL_LINKSIZE_CHANGED = 9;
 
     private int changeType;
 
@@ -44,6 +45,11 @@ final class LayoutEvent extends EventObject {
     private int newAttributes;
     private int[] oldSizes;
     private int[] newSizes;
+
+    private int oldLinkSizeId;
+    private int newLinkSizeId;
+
+    private int dimension;
 
     // -----
     // setup
@@ -69,6 +75,16 @@ final class LayoutEvent extends EventObject {
         this.interval = interval;
         this.oldAlignment = oldAlign;
         this.newAlignment = newAlign;
+    }
+
+    void setLinkSizeGroup(LayoutComponent component, int oldLinkSizeId, int newLinkSizeId, int dimension) {
+        if (component == null) {
+            Thread.dumpStack();
+        }
+        this.component = component;
+        this.oldLinkSizeId = oldLinkSizeId;
+        this.newLinkSizeId = newLinkSizeId;
+        this.dimension = dimension;
     }
 
     void setAttributes(LayoutInterval interval, int oldAttributes, int newAttributes) {
@@ -149,6 +165,9 @@ final class LayoutEvent extends EventObject {
             case INTERVAL_ATTRIBUTES_CHANGED:
                 interval.setAttributes(oldAttributes);
                 break;
+            case INTERVAL_LINKSIZE_CHANGED:
+                undoLinkSize(oldLinkSizeId);
+                break;
         }
     }
 
@@ -181,6 +200,16 @@ final class LayoutEvent extends EventObject {
             case INTERVAL_ATTRIBUTES_CHANGED:
                 interval.setAttributes(newAttributes);
                 break;
+            case INTERVAL_LINKSIZE_CHANGED:
+                undoLinkSize(newLinkSizeId);
+                break;
+        }
+    }
+    
+    private void undoLinkSize(int id) {
+        getModel().removeComponentFromLinkSizedGroup(component, dimension);
+        if (!(id == LayoutConstants.NOT_EXPLICITLY_DEFINED)) {
+            getModel().addComponentToLinkSizedGroup(id, component.getId(), dimension);
         }
     }
 
