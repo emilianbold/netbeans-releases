@@ -13,12 +13,17 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.Vector;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.openide.util.NbBundle;
 
@@ -27,11 +32,11 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 public class SchemaPanel extends javax.swing.JPanel {
 
     private DatabaseConnection dbcon;
+    private ProgressHandle progressHandle;
+    private JComponent progressComponent;
 
     /**
-     * Creates new form SchemaPanel
-     * 
-     * 
+     * Creates a new form SchemaPanel
      * 
      * @deprecated use SchemaPanel(DatabaseConnection dbcon)
      */
@@ -39,16 +44,13 @@ public class SchemaPanel extends javax.swing.JPanel {
     }
     
     /**
-     * Creates new form SchemaPanel
-     * 
-     * 
+     * Creates a new form SchemaPanel
      * 
      * @param dbcon instance of DatabaseConnection object
      */
     public SchemaPanel(DatabaseConnection dbcon) {
         this.dbcon = dbcon;
         initComponents();
-        connectProgressBar.setBorderPainted(false);
         initAccessibility();
 
         PropertyChangeListener connectionListener = new PropertyChangeListener() {
@@ -72,8 +74,8 @@ public class SchemaPanel extends javax.swing.JPanel {
         schemaComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaDialogTextComboBoxA11yName")); //NOI18N
         commentTextArea.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaPanelCommentA11yName")); //NOI18N
         commentTextArea.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_SchemaPanelCommentA11yDesc")); //NOI18N
-        connectProgressBar.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
-        connectProgressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
+        connectProgressPanel.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
+        connectProgressPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
         schemaButton.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yName")); //NOI18N
         schemaButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_GetSchemasButtonA11yDesc")); //NOI18N
     }
@@ -91,7 +93,9 @@ public class SchemaPanel extends javax.swing.JPanel {
         schemaLabel = new javax.swing.JLabel();
         schemaComboBox = new javax.swing.JComboBox();
         schemaButton = new javax.swing.JButton();
-        connectProgressBar = new javax.swing.JProgressBar();
+        connectProgressPanel = new javax.swing.JPanel();
+        progressMessageLabel = new javax.swing.JLabel();
+        progressContainerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -106,8 +110,6 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(commentTextArea, gridBagConstraints);
 
@@ -118,6 +120,7 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(schemaLabel, gridBagConstraints);
 
@@ -128,6 +131,7 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(schemaComboBox, gridBagConstraints);
 
@@ -144,21 +148,31 @@ public class SchemaPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(schemaButton, gridBagConstraints);
 
-        connectProgressBar.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
-        connectProgressBar.setString("");
-        connectProgressBar.setStringPainted(true);
+        connectProgressPanel.setLayout(new java.awt.BorderLayout(0, 5));
+
+        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
+        progressMessageLabel.setText(" ");
+        connectProgressPanel.add(progressMessageLabel, java.awt.BorderLayout.NORTH);
+
+        progressContainerPanel.setLayout(new java.awt.BorderLayout());
+
+        progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
+        progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+        connectProgressPanel.add(progressContainerPanel, java.awt.BorderLayout.CENTER);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
-        add(connectProgressBar, gridBagConstraints);
+        add(connectProgressPanel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -189,7 +203,9 @@ public class SchemaPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea commentTextArea;
-    private javax.swing.JProgressBar connectProgressBar;
+    private javax.swing.JPanel connectProgressPanel;
+    private javax.swing.JPanel progressContainerPanel;
+    private javax.swing.JLabel progressMessageLabel;
     private javax.swing.JButton schemaButton;
     private javax.swing.JComboBox schemaComboBox;
     private javax.swing.JLabel schemaLabel;
@@ -236,27 +252,36 @@ public class SchemaPanel extends javax.swing.JPanel {
     public void setComment(String msg) {
         commentTextArea.setText(msg);
     }
-
+    
     private void startProgress() {
-        connectProgressBar.setBorderPainted(true);
-        connectProgressBar.setIndeterminate(true);
-        connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting")); //NOI18N
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressHandle = ProgressHandleFactory.createHandle(null);
+                progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+                progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
+                progressHandle.start();
+                progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting"));
+            }
+        });
     }
 
-    private void stopProgress(boolean connected) {
-        connectProgressBar.setIndeterminate(false);
-        if (connected) {
-            connectProgressBar.setValue(connectProgressBar.getMaximum());
-            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established")); //NOI18N
-        } else {
-            connectProgressBar.setValue(connectProgressBar.getMinimum());
-            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed")); //NOI18N
-        }
+    private void stopProgress(final boolean connected) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressHandle.finish();
+                progressContainerPanel.remove(progressComponent);
+                // without this, the removed progress component remains painted on its parent... why?
+                progressContainerPanel.repaint();
+                if (connected) {
+                    progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established"));
+                } else {
+                    progressMessageLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed"));
+                }
+            }
+        });
     }
-
+    
     public void resetProgress() {
-        connectProgressBar.setBorderPainted(false);
-        connectProgressBar.setValue(connectProgressBar.getMinimum());
-        connectProgressBar.setString(""); //NOI18N
+        progressMessageLabel.setText(""); // NOI18N
     }
 }

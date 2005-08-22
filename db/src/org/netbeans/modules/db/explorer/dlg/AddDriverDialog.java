@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
+import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -24,9 +25,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.jar.JarFile;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -41,6 +44,8 @@ import org.openide.windows.WindowManager;
 
 import org.netbeans.modules.db.explorer.DbURLClassLoader;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 public class AddDriverDialog extends javax.swing.JPanel {
@@ -48,6 +53,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private DefaultListModel dlm;
     private List drvs;
     private boolean customizer;
+    private ProgressHandle progressHandle;
+    private JComponent progressComponent;
     
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
@@ -55,7 +62,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
     public AddDriverDialog() {
         customizer = false;
         initComponents();
-        findProgressBar.setBorderPainted(false);
+        // hack to force the progressContainerPanel honor its preferred height
+        // without it, the preferred height is sometimes ignored during resize
+        // progressContainerPanel.add(Box.createVerticalStrut(progressContainerPanel.getPreferredSize().height), BorderLayout.EAST);
         initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
         drvs = new LinkedList();
@@ -101,8 +110,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         browseButton.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverAddButtonA11yDesc")); //NOI18N
         findButton.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverRemoveButtonA11yDesc")); //NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverFindButtonA11yDesc")); //NOI18N
-        findProgressBar.getAccessibleContext().setAccessibleName(b.getString("ACS_AddDriverProgressBarA11yName")); //NOI18N
-        findProgressBar.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverProgressBarA11yDesc")); //NOI18N
+        progressContainerPanel.getAccessibleContext().setAccessibleName(b.getString("ACS_AddDriverProgressBarA11yName")); //NOI18N
+        progressContainerPanel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_AddDriverProgressBarA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -124,7 +133,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         findButton = new javax.swing.JButton();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
-        findProgressBar = new javax.swing.JProgressBar();
+        progressMessageLabel = new javax.swing.JLabel();
+        progressContainerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -147,8 +157,9 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
         add(drvListScrollPane, gridBagConstraints);
 
         browseButton.setMnemonic(NbBundle.getBundle(BUNDLE).getString("AddDriverDriverAdd_Mnemonic").charAt(0));
@@ -240,17 +251,28 @@ public class AddDriverDialog extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         add(nameTextField, gridBagConstraints);
 
-        findProgressBar.setToolTipText(NbBundle.getBundle(BUNDLE).getString("ACS_AddDriverProgressBarA11yDesc"));
-        findProgressBar.setString("");
-        findProgressBar.setStringPainted(true);
+        progressMessageLabel.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 11);
-        add(findProgressBar, gridBagConstraints);
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
+        add(progressMessageLabel, gridBagConstraints);
+
+        progressContainerPanel.setLayout(new java.awt.BorderLayout());
+
+        progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
+        progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 12);
+        add(progressContainerPanel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -261,7 +283,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_drvClassComboBoxActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
-        hideProgress();
+        stopProgress();
         
         ListSelectionModel lsm = drvList.getSelectionModel();
         int count = dlm.getSize();
@@ -284,6 +306,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
+        
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 startProgress();
@@ -332,7 +355,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }//GEN-LAST:event_findButtonActionPerformed
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        hideProgress();
+        stopProgress();
         
         JFileChooser fc = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(fc, null);
@@ -376,9 +399,10 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private javax.swing.JLabel drvListLabel;
     private javax.swing.JScrollPane drvListScrollPane;
     private javax.swing.JButton findButton;
-    private javax.swing.JProgressBar findProgressBar;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
+    private javax.swing.JPanel progressContainerPanel;
+    private javax.swing.JLabel progressMessageLabel;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
     
@@ -427,9 +451,11 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                findProgressBar.setBorderPainted(true);
-                findProgressBar.setIndeterminate(true);
-                findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStart")); //NOI18N
+                progressHandle = ProgressHandleFactory.createHandle(null);
+                progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+                progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
+                progressHandle.start();
+                progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStart"));
             }
         });
     }
@@ -437,20 +463,14 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private void stopProgress() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                findProgressBar.setValue(findProgressBar.getMaximum());
-                findProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("AddDriverProgressStop")); //NOI18N
-                findProgressBar.setIndeterminate(false);
-            }
-        });
-    }
-
-    private void hideProgress() {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                findProgressBar.setBorderPainted(false);
-                findProgressBar.setIndeterminate(false);
-                findProgressBar.setString(""); //NOI18N
-                findProgressBar.setValue(findProgressBar.getMinimum());
+                if (progressHandle != null) {
+                    progressHandle.finish();
+                    progressHandle = null;
+                    progressMessageLabel.setText(" "); // NOI18N
+                    progressContainerPanel.remove(progressComponent);
+                    // without this, the removed progress component remains painted on its parent... why?
+                    repaint();
+                }
             }
         });
     }

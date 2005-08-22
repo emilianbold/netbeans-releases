@@ -12,12 +12,14 @@
  */
 
 package org.netbeans.modules.db.explorer.dlg;
-
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
@@ -26,6 +28,8 @@ import org.netbeans.lib.ddl.DBConnection;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.util.DriverListUtil;
 
 import org.openide.util.NbBundle;
@@ -34,6 +38,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
 
     private Vector templates;
     private DatabaseConnection connection;
+    private ProgressHandle progressHandle;
+    private JComponent progressComponent;
 
     private static final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
 
@@ -49,9 +55,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         this.templates = wrapperTemplates;
         this.connection = connection;
         initComponents();
-        connectProgressBar.setBorderPainted(false);
         initAccessibility();
-
+        
         PropertyChangeListener connectionListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getPropertyName().equals("connecting")) { //NOI18N
@@ -104,8 +109,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         userTextField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
         passwordLabel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
         passwordField.getAccessibleContext().setAccessibleName(b.getString("ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
-        connectProgressBar.getAccessibleContext().setAccessibleName(b.getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
-        connectProgressBar.getAccessibleContext().setAccessibleDescription(b.getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
+        connectProgressPanel.getAccessibleContext().setAccessibleName(b.getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
+        connectProgressPanel.getAccessibleContext().setAccessibleDescription(b.getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -128,7 +133,10 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
         passwordCheckBox = new javax.swing.JCheckBox();
-        connectProgressBar = new javax.swing.JProgressBar();
+        jPanel1 = new javax.swing.JPanel();
+        connectProgressPanel = new javax.swing.JPanel();
+        progressMessageLabel = new javax.swing.JLabel();
+        progressContainerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -243,19 +251,32 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(passwordCheckBox, gridBagConstraints);
 
-        connectProgressBar.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
-        connectProgressBar.setString("");
-        connectProgressBar.setStringPainted(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
+
+        connectProgressPanel.setLayout(new java.awt.BorderLayout(0, 5));
+
+        connectProgressPanel.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc"));
+        progressMessageLabel.setText(" ");
+        connectProgressPanel.add(progressMessageLabel, java.awt.BorderLayout.NORTH);
+
+        progressContainerPanel.setLayout(new java.awt.BorderLayout());
+
+        progressContainerPanel.setMinimumSize(new java.awt.Dimension(20, 20));
+        progressContainerPanel.setPreferredSize(new java.awt.Dimension(20, 20));
+        connectProgressPanel.add(progressContainerPanel, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
-        add(connectProgressBar, gridBagConstraints);
+        add(connectProgressPanel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
@@ -280,12 +301,15 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JProgressBar connectProgressBar;
+    private javax.swing.JPanel connectProgressPanel;
     private javax.swing.JLabel driverLabel;
     private javax.swing.JTextField driverTextField;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JCheckBox passwordCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
+    private javax.swing.JPanel progressContainerPanel;
+    private javax.swing.JLabel progressMessageLabel;
     private javax.swing.JComboBox templateComboBox;
     private javax.swing.JLabel templateLabel;
     private javax.swing.JComboBox urlComboBox;
@@ -342,22 +366,37 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }
 
     private void startProgress() {
-        connectProgressBar.setBorderPainted(true);
-        connectProgressBar.setIndeterminate(true);
-        connectProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Connecting")); //NOI18N
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressHandle = ProgressHandleFactory.createHandle(null);
+                progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
+                progressContainerPanel.add(progressComponent, BorderLayout.CENTER);
+                progressHandle.start();
+                progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Connecting"));
+            }
+        });
     }
 
-    private void stopProgress(boolean connected) {
-        connectProgressBar.setIndeterminate(false);
-        if (connected) {
-            connectProgressBar.setValue(connectProgressBar.getMaximum());
-            connectProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Established")); //NOI18N
-        } else {
-            connectProgressBar.setValue(connectProgressBar.getMinimum());
-            connectProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Failed")); //NOI18N
-        }
+    private void stopProgress(final boolean connected) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                progressHandle.finish();
+                progressContainerPanel.remove(progressComponent);
+                // without this, the removed progress component remains painted on its parent... why?
+                progressContainerPanel.repaint();
+                if (connected) {
+                    progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Established"));
+                } else {
+                    progressMessageLabel.setText(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Failed"));
+                }
+            }
+        });
     }
-
+    
+    private void resetProgress() {
+        progressMessageLabel.setText(""); // NOI18N
+    }
+    
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         fireChange();
     }
@@ -384,9 +423,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
 
     private void fireChange() {
         firePropertyChange("argumentChanged", null, null);
-        connectProgressBar.setBorderPainted(false);
-        connectProgressBar.setValue(connectProgressBar.getMinimum());
-        connectProgressBar.setString(""); //NOI18N
+        resetProgress();
     }
     
     private static final class DriverWrapper {
