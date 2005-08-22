@@ -19,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +46,8 @@ public final class BrandingSupport {
     private final SuiteProject suiteProject;
     private Set brandedModules = null;
     private Set brandedBundleKeys = null;
+    private Set brandedFiles = null;
+    
     private NbPlatform platform;
     private final File brandingDir;
     
@@ -105,7 +109,7 @@ public final class BrandingSupport {
     }
     
     public boolean isBranded(final BundleKey key) {
-        boolean retval = getListOfBrandedBundleKeys(key.getModuleEntry()).contains(key);
+        boolean retval = getBrandedBundleKeys().contains(key);
         return retval;
         
     }
@@ -114,17 +118,21 @@ public final class BrandingSupport {
      * @return true if NetBeans module is already branded
      */
     public boolean isBranded(final ModuleEntry entry) {
-        boolean retval = getListOfBrandedModules().contains(entry);
+        boolean retval = getBrandedModules().contains(entry);
         assert (retval == getModuleEntryDirectory(entry).exists());
         return retval;
     }
     
-    public Set getListOfBrandedModules() {
+    public Set getBrandedModules() {
         return brandedModules;
     }
     
-    public Set getListOfBrandedBundleKeys(final ModuleEntry moduleEntry) {
+    public Set getBrandedBundleKeys() {
         return brandedBundleKeys;
+    }
+    
+    public Set getBrandedFiles() {
+        return brandedFiles;
     }
     
     public Set getLocalizingBundleKeys(final String moduleCodeNameBase, final Set keys) {
@@ -134,7 +142,7 @@ public final class BrandingSupport {
     
     public Set getLocalizingBundleKeys(final ModuleEntry moduleEntry, final Set keys) {
         Set retval = new HashSet();
-        for (Iterator it = getListOfBrandedBundleKeys(moduleEntry).iterator();
+        for (Iterator it = getBrandedBundleKeys().iterator();
         it.hasNext() && retval.size() != keys.size();) {
             BundleKey bKey = (BundleKey)it.next();
             if (keys.contains(bKey.getKey())) {
@@ -147,7 +155,28 @@ public final class BrandingSupport {
         }
         return (retval.size() != keys.size()) ? null : retval;
     }
-
+    
+    public BrandedFile getBrandedFile(final String moduleCodeNameBase, final String entryPath) {
+        ModuleEntry foundEntry = getModuleEntry(moduleCodeNameBase);
+        return (foundEntry != null) ? getBrandedFile(foundEntry,entryPath) : null;
+    }
+    
+    public BrandedFile getBrandedFile(final ModuleEntry moduleEntry, final String entryPath) {
+        BrandedFile retval = null;
+        try {
+            retval = new BrandedFile(moduleEntry, entryPath);
+            for (Iterator it = getBrandedFiles().iterator();it.hasNext() ;) {
+                BrandedFile bFile = (BrandedFile)it.next();
+                if (retval.equals(bFile)) {
+                    retval = bFile;
+                }
+            }
+        } catch (MalformedURLException ex) {
+            retval = null;
+        }
+        return retval;
+    }
+    
     public Set getBundleKeys(final String moduleCodeNameBase, final String bundleEntry,final Set keys) {
         ModuleEntry foundEntry = getModuleEntry(moduleCodeNameBase);
         return (foundEntry != null) ? getBundleKeys(foundEntry,bundleEntry,  keys) : null;
@@ -155,7 +184,7 @@ public final class BrandingSupport {
     
     public Set getBundleKeys(final ModuleEntry moduleEntry, final String bundleEntry, final Set keys) {
         Set retval = new HashSet();
-        for (Iterator it = getListOfBrandedBundleKeys(moduleEntry).iterator();
+        for (Iterator it = getBrandedBundleKeys().iterator();
         it.hasNext() && retval.size() != keys.size();) {
             BundleKey bKey = (BundleKey)it.next();
             if (keys.contains(bKey.getKey())) {
@@ -184,6 +213,36 @@ public final class BrandingSupport {
             }
         }
         return foundEntry;
+    }
+    
+    public void brandFile(final BrandedFile bFile) throws IOException {
+        if (!bFile.isModified()) return;
+        
+        File target = new File(getModuleEntryDirectory(bFile.getModuleEntry()),bFile.getEntryPath());
+        if (!target.exists()) {
+            target.getParentFile().mkdirs();
+            target.createNewFile();
+        }
+
+        assert target.exists();
+                
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = bFile.getBrandingSource().openStream();
+            os = new FileOutputStream(target);        
+            FileUtil.copy(is, os);
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+            
+            if (os != null) {
+                os.close();
+            }
+            
+            brandedFiles.add(bFile);
+        }                
     }
     
     public void brandBundleKeys(final Set bundleKeys) throws IOException {
@@ -228,6 +287,7 @@ public final class BrandingSupport {
         if (brandedModules == null || !newPlatform.equals(platform)) {
             brandedModules = new HashSet();
             brandedBundleKeys = new HashSet();
+            brandedFiles = new HashSet();
             platform = newPlatform;
             
             if (brandingDir.exists()) {
@@ -248,8 +308,7 @@ public final class BrandingSupport {
             ModuleEntry foundEntry = null;
             for (int i = 0; i < platformModules.length; i++){
                 if (isBrandingForModuleEntry(srcDir, platformModules[i])) {
-                    scanBundles(srcDir, platformModules[i]);
-                    //scanImages(srcDir, platformModules[i]);
+                    scanBrandedFiles(srcDir, platformModules[i]);
                     
                     foundEntry = platformModules[i];
                     break;
@@ -275,14 +334,7 @@ public final class BrandingSupport {
         }
     }
     
-    /*private void loadLocalizingBundle(final ModuleEntry mEntry) throws IOException {
-        File bundle = getLocalizingBundle(mEntry);
-        if (bundle != null && bundle.exists()) {
-            loadBundleKeys(mEntry, bundle, brandedBundleKeys);
-        }        
-    }*/
-    
-    private void scanBundles(final File srcDir, final ModuleEntry mEntry) throws IOException {
+    private void scanBrandedFiles(final File srcDir, final ModuleEntry mEntry) throws IOException {
         String[] kids = srcDir.list();
         assert (kids != null);
         
@@ -291,24 +343,35 @@ public final class BrandingSupport {
             if (!kid.isDirectory()) {
                 if (kid.getName().endsWith(BUNDLE_NAME)) {//NOI18N
                     if (kid != null ) {
-                        loadBundleKeys(mEntry, kid, brandedBundleKeys);
+                        loadBundleKeys(mEntry, kid);
                     }
+                } else {
+                    loadBrandedFiles(mEntry, kid);
                 }
+                
                 continue;
             }
-            scanBundles(kid, mEntry);
-        }        
+            scanBrandedFiles(kid, mEntry);
+        }
     }
     
     private void loadBundleKeys(final ModuleEntry mEntry,
-            final File bundle, final Set allBundleKeys) throws IOException {
+            final File bundle) throws IOException {
         
         EditableProperties p = getEditableProperties(bundle);
         
         for (Iterator it = p.entrySet().iterator(); it.hasNext();) {
             Map.Entry entry = (Map.Entry)it.next();
-            allBundleKeys.add(new BundleKey(mEntry, bundle,(String)entry.getKey(), (String)entry.getValue()));
+            brandedBundleKeys.add(new BundleKey(mEntry, bundle,(String)entry.getKey(), (String)entry.getValue()));
         }
+    }
+    
+    private void loadBrandedFiles(final ModuleEntry mEntry,
+            final File file) throws IOException {
+        
+        String entryPath = PropertyUtils.relativizeFile(getModuleEntryDirectory(mEntry),file);
+        BrandedFile bf = new BrandedFile(mEntry, entryPath);
+        brandedFiles.add(bf);
     }
     
     
@@ -349,15 +412,15 @@ public final class BrandingSupport {
         }
     }
     
-    private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry, 
+    private void loadLocalizedBundlesFromPlatform(final ModuleEntry moduleEntry,
             final String bundleEntry, final Set keys, final Set bundleKeys) throws IOException {
-        Properties p = new Properties();        
-        JarFile module = new JarFile (moduleEntry.getJarLocation());
+        Properties p = new Properties();
+        JarFile module = new JarFile(moduleEntry.getJarLocation());
         JarEntry je = module.getJarEntry(bundleEntry);
         InputStream is = module.getInputStream(je);
-        File bundle = new File (getModuleEntryDirectory(moduleEntry),bundleEntry);
+        File bundle = new File(getModuleEntryDirectory(moduleEntry),bundleEntry);
         try {
-
+            
             p.load(is);
         } finally {
             is.close();
@@ -436,9 +499,62 @@ public final class BrandingSupport {
         private boolean isModified() {
             return modified;
         }
-
+        
         public File getBrandingBundle() {
             return brandingBundle;
+        }
+    }
+    
+    public final class BrandedFile {
+        private final ModuleEntry moduleEntry;
+        private final String entryPath;
+        private URL brandingSource;
+        private boolean modified = false;
+        
+        private BrandedFile(final ModuleEntry moduleEntry, final String entry) throws MalformedURLException {
+            this.moduleEntry = moduleEntry;
+            this.entryPath = entry;
+            brandingSource = moduleEntry.getJarLocation().toURI().toURL();
+            brandingSource =  new URL("jar:" + brandingSource + "!/" + entryPath); // NOI18N
+        }
+        
+        public ModuleEntry getModuleEntry() {
+            return moduleEntry;
+        }
+        
+        public String getEntryPath() {
+            return entryPath;
+        }
+        
+        public URL getBrandingSource()  {
+            return brandingSource;
+        }
+        
+        public void setBrandingSource(URL brandingSource) {
+            if (!brandingSource.equals(this.brandingSource)) {
+                modified = true;
+            }
+            this.brandingSource = brandingSource;
+        }
+        
+        public void setBrandingSource(File brandingFile) throws MalformedURLException {
+            setBrandingSource(brandingFile.toURI().toURL());
+        }
+        
+        public boolean isModified() {
+            return modified;
+        }
+        
+        public boolean equals(Object obj) {
+            boolean retval = false;
+            
+            if (obj instanceof BrandedFile) {
+                BrandedFile bFile = (BrandedFile)obj;
+                 retval = getModuleEntry().equals(bFile.getModuleEntry()) 
+                 && getBrandingSource().equals(bFile.getBrandingSource());
+            }
+            
+            return  retval;
         }
     }
 }
