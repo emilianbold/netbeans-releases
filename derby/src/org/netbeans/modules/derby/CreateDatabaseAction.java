@@ -37,19 +37,18 @@ public class CreateDatabaseAction extends CallableSystemAction {
     }    
     
     public void performAction() {
-        if (!RegisterDerby.getDefault().isRunning()) {
-            RegisterDerby.getDefault().start(5000);
-        }
         NotifyDescriptor.InputLine il = new NotifyDescriptor.InputLine(
             NbBundle.getMessage(CreateDatabaseAction.class, "CTL_SelectName"),
             NbBundle.getMessage(CreateDatabaseAction.class, "CTL_CreateDBAction"));
         if (DialogDisplayer.getDefault().notify(il) == NotifyDescriptor.OK_OPTION) {
             try {
+                if (!RegisterDerby.getDefault().isRunning()) {
+                    RegisterDerby.getDefault().start(5000);
+                }
                 makeDatabase(il.getInputText());
             }
             catch (Exception e) {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                
             }
         }        
         

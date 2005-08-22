@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,6 +28,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Properties;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -57,7 +59,6 @@ public class RegisterDerby implements DatabaseRuntime {
     
     public static final String INST_DIR = "db-derby-10.1.1.0"; // NOI18N
     public static final String NET_DRIVER_CLASS_NAME = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
-    public static final String DERBY_DATABASES_DIR = "derby"; // NOI18N
     
     
     private static RegisterDerby reg=null;
@@ -207,6 +208,41 @@ public class RegisterDerby implements DatabaseRuntime {
             ph.finish();
         }
     }
+    
+    private String getDerbySystemHome() {
+        return System.getProperty("netbeans.user") + File.separator + "derby";
+    }
+    
+    private void createDerbyPropertiesFile() {
+        File derbyProperties = new File(getDerbySystemHome(), "derby.properties");
+        if (derbyProperties.exists())
+            return;
+        Properties derbyProps = new Properties();
+        // fill it
+        if (Utilities.OS_MAC == Utilities.getOperatingSystem()) {
+            derbyProps.setProperty("derby.storage.fileSyncTransactionLog", "true");
+        }
+
+        // write it out
+        OutputStream fileos = null; 
+        try {
+            File derbyPropertiesParent = derbyProperties.getParentFile();
+            derbyPropertiesParent.mkdirs();
+            fileos = new FileOutputStream(derbyProperties);
+            derbyProps.store(fileos, NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyPropsFile"));
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } finally {
+            if (fileos != null) {
+                try {
+                    fileos.close();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                }
+            }
+        }
+        
+    }
             
     private String[] getEnvironment() {
         File installLoc = getInstallLocation();
@@ -233,12 +269,16 @@ public class RegisterDerby implements DatabaseRuntime {
             String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
             if (java == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+            
+            // create the derby.properties file
+            createDerbyPropertiesFile();
+            
             // java -Dderby.system.home=<userdir/derby> -classpath  
             //     <DERBY_INSTALL>/lib/derby.jar:<DERBY_INSTALL>/lib/derbytools.jar:<DERBY_INSTALL>/lib/derbynet.jar
             //     org.apache.derby.drda.NetworkServerControl start
             NbProcessDescriptor desc = new NbProcessDescriptor(
               java,
-              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + DERBY_DATABASES_DIR + " " +
+              "-Dderby.system.home=" + getDerbySystemHome() + " " +
               "-classpath " + getNetworkServerClasspath() +
               " org.apache.derby.drda.NetworkServerControl start"
             );
@@ -283,7 +323,7 @@ public class RegisterDerby implements DatabaseRuntime {
             //     org.apache.derby.drda.NetworkServerControl shutdown
             NbProcessDescriptor desc = new NbProcessDescriptor(
               java,
-              "-Dderby.system.home=" + System.getProperty("netbeans.user") + File.separator + DERBY_DATABASES_DIR + " " +
+              "-Dderby.system.home=" + getDerbySystemHome() + " " +
               "-classpath " + getNetworkServerClasspath() +
               " org.apache.derby.drda.NetworkServerControl shutdown"
             );
