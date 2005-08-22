@@ -166,9 +166,11 @@ final class NavigatorController implements LookupListener, ActionListener, Looku
     private void setContext (Node node) {
         Node oldNode = oldNodeRef != null ? (Node)oldNodeRef.get() : null;
         // same node, do nothing...
-        if ((oldNode != null) && (oldNode.equals(node))) {
-            return;
-        }
+        
+        //commented out because of activated nodes problems when using NavigatorLookupHint-s.
+//        if ((oldNode != null) && (oldNode.equals(node))) {
+//            return;
+//        }
         
         oldNodeRef = node != null ? new WeakReference(node) : null;
         
