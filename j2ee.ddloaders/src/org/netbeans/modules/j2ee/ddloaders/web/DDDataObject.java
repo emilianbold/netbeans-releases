@@ -53,14 +53,13 @@ import org.netbeans.modules.j2ee.ddloaders.web.multiview.*;
 import org.netbeans.modules.j2ee.ddloaders.multiview.DDMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 
 /** Represents a DD object in the Repository.
  *
  * @author  mkuchtiak
  */
 public class DDDataObject extends  DDMultiViewDataObject
-    implements DDChangeListener, WebAppProxy.OutputProvider, ChangeListener, PropertyChangeListener {
+    implements DDChangeListener, ChangeListener, PropertyChangeListener {
     private transient WebApp webApp;
     private transient FileObject srcRoots[];
     protected transient final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
@@ -270,29 +269,11 @@ public class DDDataObject extends  DDMultiViewDataObject
     }
 
     public boolean isDocumentParseable() {
-        return WebApp.STATE_INVALID_UNPARSABLE != webApp.getStatus();
+        return WebApp.STATE_INVALID_UNPARSABLE != getWebApp().getStatus();
     }
 
     protected String getPrefixMark() {
         return "<web-app";
-    }
-
-    /** Method from WebAppProxy.OutputProvider
-    */
-    public void write(WebApp webAppProxy) throws IOException {
-        // provide synchronization between model and text document
-        XmlMultiViewDataSynchronizer synchronizer = getModelSynchronizer();
-        FileLock lock = waitForLock();
-        try {
-            synchronizer.updateData(lock, false);
-        } finally {
-            lock.releaseLock();
-        }
-    }
-    /** Method from WebAppProfy.OutputProvider
-    */
-    public FileObject  getTarget() {
-        return getPrimaryFile();
     }
 
     /**
