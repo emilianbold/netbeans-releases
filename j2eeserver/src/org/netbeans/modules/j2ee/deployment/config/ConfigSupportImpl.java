@@ -521,8 +521,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             return;
         DeploymentConfiguration config = cs.getDeploymentConfiguration();
         ConfigurationSupport serverConfig = getServer().geConfigurationSupport();
-        serverConfig.setMappingInfo(config, mappings);
-        saveConfiguration();
+        if (serverConfig != null) {
+            serverConfig.setMappingInfo(config, mappings);
+            saveConfiguration();
+        }
     }
     
     public void ensureResourceDefinedForEjb(final String ejbname, final String ejbtype) {
