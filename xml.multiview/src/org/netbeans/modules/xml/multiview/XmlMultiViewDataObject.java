@@ -177,7 +177,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 return true;
             }
         }
-        FileLock lock = null;
+        FileLock lock;
         try {
             lock = waitForLock();
         } catch (IOException e) {
@@ -281,19 +281,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             }
         }
 
-        public synchronized void saveData() {
-            FileObject file = getPrimaryFile();
-            if (fileTime == file.lastModified().getTime()) {
-                return;
-            }
+        public synchronized void saveData(FileLock dataLock) {
             try {
-                OutputStream outputStream = getEditorSupport().getXmlEnv().getFileOutputStream();
-                try {
-                    outputStream.write(buffer);
-                } finally {
-                    outputStream.close();
-                }
-                fileTime = file.lastModified().getTime();
+                getEditorSupport().saveDocument(dataLock);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -329,7 +319,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             long oldTimeStamp = timeStamp;
             if (setData(data)) {
                 if (!modified) {
-                    saveData();
+                    saveData(lock);
                     firePropertyChange(PROPERTY_DATA_UPDATED, new Long(oldTimeStamp), new Long(timeStamp));
                 } else {
                     firePropertyChange(PROPERTY_DATA_MODIFIED, new Long(oldTimeStamp), new Long(timeStamp));
@@ -381,7 +371,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                     super.close();
                     setData(dataLock, toByteArray(), modify);
                     if (!modify) {
-                        dataCache.saveData();
+                        dataCache.saveData(dataLock);
                     }
                 }
             };

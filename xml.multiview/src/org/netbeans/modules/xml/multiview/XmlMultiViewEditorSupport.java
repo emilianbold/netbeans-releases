@@ -74,7 +74,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private MultiViewDescription[] multiViewDescriptions;
     private XmlMultiViewEditorSupport.DocumentSynchronizer documentSynchronizer;
     private int loading = 0;
-    private int saving = 0;
     private FileLock saveLock;
     private static final String PROPERTY_MODIFICATION_LISTENER = "modificationListener"; // NOI18N
 
@@ -137,6 +136,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 }
             });
         } catch (IOException e) {
+            loading--;
             e.printStackTrace();
         }
         return reloadDocumentTask;
@@ -150,16 +150,24 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         if (loading > 0) {
             return;
         }
-        saveLock = ((XmlMultiViewDataObject) getDataObject()).waitForLock();
-        saving++;
+        FileLock dataLock = ((XmlMultiViewDataObject) getDataObject()).waitForLock();
         try {
-            super.saveDocument();
-            XmlMultiViewDataObject.DataCache dataCache = ((XmlMultiViewDataObject) getDataObject()).getDataCache();
-            dataCache.resetFileTime();
+            saveDocument(dataLock);
         } finally {
-            saveLock.releaseLock();
-            saveLock = null;
-            saving--;
+            dataLock.releaseLock();
+        }
+    }
+
+    void saveDocument(FileLock dataLock) throws IOException {
+        if (saveLock != dataLock) {
+            saveLock = dataLock;
+            documentSynchronizer.reloadModel();
+            try {
+                super.saveDocument();
+                ((XmlMultiViewDataObject) getDataObject()).getDataCache().resetFileTime();
+            } finally {
+                saveLock = null;
+            }
         }
     }
 
@@ -325,7 +333,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         public OutputStream outputStream() throws IOException {
             XmlMultiViewEditorSupport editorSupport = xmlMultiViewDataObject.getEditorSupport();
             XmlMultiViewDataObject.DataCache dataCache = xmlMultiViewDataObject.getDataCache();
-            if (editorSupport.saving > 0) {
+            if (editorSupport.saveLock != null) {
                 return dataCache.createOutputStream(editorSupport.saveLock, false);
             } else {
                 return dataCache.createOutputStream();
@@ -420,7 +428,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
 
         private void doUpdate() {
-            if (saving == 0) {
+            if (saveLock == null) {
                 documentSynchronizer.requestUpdateData();
             }
         }
