@@ -426,26 +426,12 @@ public class MakeJNLPTest extends NbTestCase {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Generate Keystore\" basedir=\".\" default=\"all\" >" +
             "<target name=\"all\" >" +
-        "<exec \n" +
-            " executable='keytool' \n" +
-            " dir='" + where.getParent() + "'  \n" +
-            " inputstring='\n" +
-            " noname${line.separator}\n" +
-            " noorganization${line.separator}\n" +
-            " nolocation${line.separator}\n" +
-            " nostate${line.separator}\n" +
-            " no${line.separator}yes${line.separator}yes${line.separator}'\n" +
-        ">\n" +
-          "<arg value='--genkey' />\n" +
-          "<arg value='--alias' />\n" +
-          "<arg value='" + alias + "' />\n" +
-          "<arg value='--keystore' />\n" +
-          "<arg file='" + where + "' />\n" +
-          "<arg value='--storepass' />\n" +
-          "<arg value='" + password + "' />\n" +
-          "<arg value='--keypass' />\n" +
-          "<arg value='" + password + "' />\n" +
-        "</exec>\n" +
+            "<genkey \n" +
+              "alias='" + alias + "' \n" +
+              "keystore='" + where + "' \n" +
+              "storepass='" + password + "' \n" +
+              "dname='CN=A NetBeans Friend, OU=NetBeans, O=netbeans.org, C=US' \n" +
+            "/>\n" +
             "</target></project>\n";
         
         java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
