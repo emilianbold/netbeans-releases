@@ -68,10 +68,13 @@ public class InstanceNode extends AbstractNode implements ServerInstance.StateLi
     // StateListener implementation -------------------------------------------
     
     public void stateChanged(int oldState, int newState) {
-        if (instance.getServerState() != ServerInstance.STATE_WAITING) {
+        if (instance.getServerState() != ServerInstance.STATE_WAITING
+            && instance.getServerState() != ServerInstance.STATE_SUSPENDED) {
             setChildren(new InstanceChildren(instance));
             InstanceChildren ch = (InstanceChildren) getChildren();
             ch.updateKeys();
+        } else if (instance.getServerState() == ServerInstance.STATE_SUSPENDED) {
+            setChildren(Children.LEAF);
         }
     }
     

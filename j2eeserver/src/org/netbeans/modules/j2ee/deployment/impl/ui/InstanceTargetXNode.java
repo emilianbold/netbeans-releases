@@ -155,11 +155,14 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     // StateListener implementation -------------------------------------------
     
     public void stateChanged(int oldState, int newState) {
-        if (instance.getServerState() != ServerInstance.STATE_WAITING) {
+        if (instance.getServerState() != ServerInstance.STATE_WAITING 
+            && instance.getServerState() != ServerInstance.STATE_SUSPENDED) {
             instanceTarget = null;
             resetDelegateTargetNode();
             setChildren(new InstanceTargetChildren(Node.EMPTY, instance));
             ((InstanceTargetChildren)getChildren()).updateKeys();
+        } else if (instance.getServerState() == ServerInstance.STATE_SUSPENDED) {
+            setChildren(Children.LEAF);
         }
     }
 }

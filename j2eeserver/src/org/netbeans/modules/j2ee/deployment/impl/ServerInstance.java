@@ -966,6 +966,7 @@ public class ServerInstance implements Node.Cookie {
             }
             
             managerStartedByIde = false;
+            reset();
             return true;
             
         } finally {
