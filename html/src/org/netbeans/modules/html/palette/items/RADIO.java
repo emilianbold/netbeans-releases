@@ -12,8 +12,14 @@
  */
 
 package org.netbeans.modules.html.palette.items;
+import java.util.TreeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.TokenItem;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.modules.html.palette.HTMLPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 
@@ -35,13 +41,17 @@ public class RADIO implements ActiveEditorDrop {
     private String[] groups;
     
     public RADIO() {
-        groups = findGroups();
-        if (groups.length > 0)
-            groupIndex = 0;
     }
 
     public boolean handleTransfer(JTextComponent targetComponent) {
 
+        Document doc = targetComponent.getDocument();
+        if (doc instanceof BaseDocument) {
+            groups = findGroups((BaseDocument)doc);
+            if (groups.length > 0 && groupIndex == GROUP_DEFAULT)
+                groupIndex = 0;
+        }
+        
         RADIOCustomizer c = new RADIOCustomizer(this);
         boolean accept = c.showDialog();
         if (accept) {
@@ -75,10 +85,67 @@ public class RADIO implements ActiveEditorDrop {
         return radioBody;
     }
 
-    private String[] findGroups() {
+    private String[] findGroups(BaseDocument doc) {
          
-        //TODO retrieve existing group names
         String[] groups = new String[] {};
+        
+        if (doc.getLength() == 0)
+            return groups;
+
+        HTMLSyntaxSupport sup = (HTMLSyntaxSupport)(doc.getSyntaxSupport().get(HTMLSyntaxSupport.class));
+        
+        try {
+            TokenItem token = sup.getTokenChain(0, 1);
+            final int end = doc.getLength();
+            
+            boolean inputTagFound = false; // '<input' found
+            boolean typeAttrFound = false; // '<input type' found
+            boolean radioValFound = false; // '<input type="radio"' found
+            boolean nameAttrFound = false; // '<input name' found
+            String groupName = null;
+            TreeSet groupSet = new TreeSet();
+            
+            while (token != null && token.getOffset() < end) {
+                token = token.getNext();
+                if (token != null) {
+                    if (token.getTokenID() == HTMLTokenContext.TAG_OPEN && token.getImage().equals("input")) { //input open
+                        inputTagFound = true;
+                    }
+                    else if (inputTagFound && token.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) { // input close
+                        
+                        if (radioValFound && groupName != null && groupName.length() > 0)
+                            groupSet.add(groupName);
+                        
+                        inputTagFound = false;
+                        typeAttrFound = false;
+                        radioValFound = false;
+                        nameAttrFound = false;
+                        groupName = null;
+                    }
+                    else if (inputTagFound && token.getTokenID() == HTMLTokenContext.ARGUMENT) {
+                        if (token.getImage().equals("type"))
+                            typeAttrFound = true;
+                        else if (token.getImage().equals("name"))
+                            nameAttrFound = true;
+                    }
+                    else if (typeAttrFound && token.getTokenID() == HTMLTokenContext.VALUE && token.getImage().equals("\"radio\"")) {
+                        radioValFound = true;
+                        typeAttrFound = false;
+                    }
+                    else if (nameAttrFound && token.getTokenID() == HTMLTokenContext.VALUE) {
+                        groupName = token.getImage();
+                        groupName = groupName.substring(1);
+                        groupName = groupName.substring(0, groupName.length() - 1);
+                        nameAttrFound = false;
+                    }
+                }
+            }
+
+            groups = (String[])groupSet.toArray(new String[0]);
+            
+        } catch (IllegalStateException ise) {
+        } catch (BadLocationException ble) {
+        }
         
         return groups;
     }
