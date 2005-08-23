@@ -13,9 +13,8 @@
 
 package org.netbeans.modules.palette.ui;
 
+import java.awt.Dialog;
 import javax.swing.*;
-import java.awt.event.*;
-import java.lang.ref.WeakReference;
 import javax.swing.text.DefaultEditorKit;
 import java.beans.*;
 import org.netbeans.spi.palette.PaletteActions;
@@ -39,8 +38,6 @@ import org.netbeans.modules.palette.*;
 public class Customizer extends JPanel implements ExplorerManager.Provider,
                                                       Lookup.Provider
 {
-    private static WeakReference dialogRef; // is weak reference necessary?
-
     private ExplorerManager explorerManager;
     private Lookup lookup;
     
@@ -57,25 +54,19 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
      * @param paletteRoot Palette root node.
      */
     public static void show( Node paletteRoot, Settings settings ) {
-        java.awt.Dialog dialog = null;
-        if (dialogRef != null)
-            dialog = (JDialog) dialogRef.get();
-        if (dialog == null) {
-            JButton closeButton = new JButton();
-            org.openide.awt.Mnemonics.setLocalizedText(
-                closeButton, Utils.getBundleString("CTL_Close_Button")); // NOI18N
-            DialogDescriptor dd = new DialogDescriptor(
-                new Customizer( paletteRoot, settings ),
-                Utils.getBundleString("CTL_Customizer_Title"), // NOI18N
-                false,
-                new Object[] { closeButton },
-                closeButton,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
-                null);
-            dialog = DialogDisplayer.getDefault().createDialog(dd);
-            dialogRef = new WeakReference(dialog);
-        }
+        JButton closeButton = new JButton();
+        org.openide.awt.Mnemonics.setLocalizedText(
+            closeButton, Utils.getBundleString("CTL_Close_Button")); // NOI18N
+        DialogDescriptor dd = new DialogDescriptor(
+            new Customizer( paletteRoot, settings ),
+            Utils.getBundleString("CTL_Customizer_Title"), // NOI18N
+            false,
+            new Object[] { closeButton },
+            closeButton,
+            DialogDescriptor.DEFAULT_ALIGN,
+            null,
+            null);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
     }
 
