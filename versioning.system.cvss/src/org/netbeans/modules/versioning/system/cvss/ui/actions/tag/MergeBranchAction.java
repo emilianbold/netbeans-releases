@@ -25,6 +25,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
@@ -58,10 +59,23 @@ public class MergeBranchAction extends AbstractSystemAction {
                                          new Object[] { getContextDisplayName() });
         
         MergeBranchPanel settings = new MergeBranchPanel(roots);
-        DialogDescriptor descriptor = new DialogDescriptor(settings, title);
+
+        JButton merge = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Merge"));
+        JButton cancel = new JButton(NbBundle.getMessage(MergeBranchAction.class, "CTL_MergeBranchDialog_Action_Cancel"));
+        DialogDescriptor descriptor = new DialogDescriptor(
+                settings,
+                title,
+                true,
+                new Object [] { merge, cancel },
+                merge,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        descriptor.setClosingOptions(null);
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
-        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
+        if (descriptor.getValue() != merge) return;
 
         settings.saveSettings();
        

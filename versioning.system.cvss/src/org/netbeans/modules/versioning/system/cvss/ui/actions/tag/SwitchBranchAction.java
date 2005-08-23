@@ -23,6 +23,7 @@ import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
@@ -57,10 +58,23 @@ public class SwitchBranchAction extends AbstractSystemAction {
                                          new Object[] { getContextDisplayName() });
         
         SwitchBranchPanel settings = new SwitchBranchPanel(roots);
-        DialogDescriptor descriptor = new DialogDescriptor(settings, title);
+
+        JButton swich = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Switch"));
+        JButton cancel = new JButton(NbBundle.getMessage(SwitchBranchAction.class, "CTL_SwitchBranchDialog_Action_Cancel"));
+        DialogDescriptor descriptor = new DialogDescriptor(
+                settings,
+                title,
+                true,
+                new Object [] { swich, cancel },
+                swich,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        descriptor.setClosingOptions(null);
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
-        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
+        if (descriptor.getValue() != swich) return;
 
         settings.saveSettings();
         if (settings.isSwitchToTrunk()) {

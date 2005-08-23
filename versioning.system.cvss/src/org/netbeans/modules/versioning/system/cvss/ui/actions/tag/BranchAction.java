@@ -25,6 +25,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
@@ -54,18 +55,30 @@ public class BranchAction extends AbstractSystemAction {
     public void actionPerformed(ActionEvent ev) {
         File [] roots = getFilesToProcess();
 
-        String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"), 
-                                     new Object[] { getContextDisplayName() });            
-        
+        String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"),
+                                     new Object[] { getContextDisplayName() });
+
+        JButton branch = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Branch"));
+        JButton cancel = new JButton(NbBundle.getMessage(BranchAction.class, "CTL_BranchDialog_Action_Cancel"));
         BranchSettings settings = new BranchSettings(roots);
-        DialogDescriptor descriptor = new DialogDescriptor(settings, title);
+        DialogDescriptor descriptor = new DialogDescriptor(
+                settings,
+                title,
+                true,
+                new Object [] { branch, cancel },
+                branch,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        descriptor.setClosingOptions(null);
+
         settings.putClientProperty("org.openide.DialogDescriptor", descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
-        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) return;
+        if (descriptor.getValue() != branch) return;
 
         settings.saveSettings();
-        
+
         RequestProcessor.getDefault().post(new BranchExecutor(roots, settings));
     }
     
