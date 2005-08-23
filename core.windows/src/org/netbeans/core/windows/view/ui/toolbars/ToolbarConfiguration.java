@@ -695,9 +695,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         boolean someBarRemoved = checkConfigurationOver();
 
         if (isImportant || someBarRemoved) {
-            if (toolbarLayout == null) {
-                toolbarLayout = new ToolbarLayout (this);
-            }
+            toolbarLayout = new ToolbarLayout (this);
             toolbarPanel().setLayout (toolbarLayout);
             reactivatePanel (someBarRemoved, writeAtAll);
         }
