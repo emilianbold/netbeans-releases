@@ -7,16 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.tax;
-
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 
 /**
  * All exceptions in tree are by default unchecked so they must be
@@ -30,15 +25,11 @@ import java.io.PrintWriter;
  * It is a folding exception.
  *
  * @author Libor Kramolis
- * @version 0.1
  */
 public class TreeException extends Exception {
     
     /** Serial Version UID */
     private static final long serialVersionUID =1949769568282926780L;
-    
-    /** Encapsulated exception. */
-    private Exception exception;
     
     //
     // init
@@ -47,8 +38,9 @@ public class TreeException extends Exception {
     /** Create new TreeException. */
     public TreeException (String msg, Exception exception) {
         super (msg);
-        
-        this.exception = exception;
+        if (exception != null) {
+            initCause(exception);
+        }
     }
     
     
@@ -64,7 +56,7 @@ public class TreeException extends Exception {
      * @param exc encapsulated exception
      */
     public TreeException (Exception exc) {
-        this (exc.getMessage (), exc);
+        this(exc.toString(), exc);
     }
     
     
@@ -76,43 +68,7 @@ public class TreeException extends Exception {
      * @return encapsulated encapsulated
      */
     public Exception getException () {
-        return exception;
-    }
-
-    /**
-     * Print out all nested exceptions.
-     */
-    public void printStackTrace(PrintStream s) {
-        super.printStackTrace(s);
-        if (exception != null) {
-            System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + exception.getMessage ());
-            exception.printStackTrace (s);
-            if (exception instanceof SAXException) {
-                Throwable t = ((SAXException)exception).getException();
-                if (t != null) {
-                    System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + t.getMessage ());
-                    t.printStackTrace (s);
-                }
-            }
-        }
-    }
-
-    /**
-     * Print out all nested exceptions.
-     */
-    public void printStackTrace(PrintWriter s) {
-        super.printStackTrace(s);
-        if (exception != null) {
-            System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + exception.getMessage ());
-            exception.printStackTrace (s);
-            if (exception instanceof SAXException) {
-                Throwable t = ((SAXException)exception).getException();
-                if (t != null) {
-                    System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + t.getMessage ());
-                    t.printStackTrace (s);
-                }
-            }
-        }
+        return (Exception) getCause();
     }
 
 }
