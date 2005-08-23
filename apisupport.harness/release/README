@@ -599,6 +599,12 @@ jnlp.platform.codebase - can point to a shared repository which can be generated
   modules of your suite and platform modules will be referenced by value of this
   property
 
+jnlp.verify.excludes - the default implementation of "jnlp" task in common.xml
+  does verification and compares that all files from module NBM are really
+  referenced from the JNLP file. Sometimes not all of them need to be, for
+  them you can put their full names (relative to your cluster root) into this
+  property and separate them by colon.
+
 
 TARGETS AVAILABLE FOR OVERRIDING IN YOUR build.xml
 --------------------------------------------------
