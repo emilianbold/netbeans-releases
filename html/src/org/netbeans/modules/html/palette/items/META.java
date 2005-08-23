@@ -59,9 +59,9 @@ public class META implements ActiveEditorDrop {
     private String createBody() {
         
         if (getNameIndex() != -1) {
-            if (getType().equals(TYPE_HEADERS) && getNameIndex() != HEADER_DEFAULT) 
+            if (getType().equals(TYPE_HEADERS) && getNameIndex() != -1) 
                 setName(headers[getNameIndex()]);
-            else if (getType().equals(TYPE_ENGINES) && getNameIndex() != ENGINE_DEFAULT) 
+            else if (getType().equals(TYPE_ENGINES) && getNameIndex() != -1) 
                 setName(engines[getNameIndex()]);
         }
         
