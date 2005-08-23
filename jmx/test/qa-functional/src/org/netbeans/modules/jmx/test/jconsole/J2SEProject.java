@@ -43,8 +43,18 @@ public class J2SEProject extends JellyTestCase {
     static {
         //We need it to help tools.jar API to findout the local connector
         //This is an horrible hack! But no way to make it work without /var/tmp/ tmp file
+        //java.io.tmpdir.default is defined on 4.2 ...
         String tmpFile = System.getProperty("java.io.tmpdir.default");
+        if(tmpFile == null) {
+            String os = System.getProperty("os.name");
+            if(!os.startsWith("Win"))
+                tmpFile = "/var/tmp";
+            else
+                tmpFile = System.getProperty("java.io.tmpdir");
+        }
         ORIGINAL_TMP_FILE =  tmpFile == null ? null :  tmpFile + File.separator;
+    
+        System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
     }
     
     /** Creates a new instance of BundleKeys */
@@ -198,7 +208,15 @@ public class J2SEProject extends JellyTestCase {
       //Access output and synchronize on it
       OutputTabOperator oto = new OutputTabOperator(target);
       System.out.println("*********************** WAITING FOR TEXT Found manageable process ... ************");
-      oto.waitText("Found manageable process, connecting JConsole to process...");
+      while(true) {
+          try {
+              System.out.println("Waiting for JConsole to start");
+              oto.waitText("Found manageable process, connecting JConsole to process...");   
+              break;
+          }catch(Exception e){
+              System.out.println("JConsole not started, will wait again");
+          }
+      }
       System.out.println("*********************** TEXT FOUND ************");
       OutputTabOperator oto2 = new OutputTabOperator("-connect-jconsole");
       oto2.waitText("jconsole  -interval=4");
