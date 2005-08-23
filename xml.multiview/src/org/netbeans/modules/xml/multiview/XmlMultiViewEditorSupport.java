@@ -334,7 +334,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             XmlMultiViewEditorSupport editorSupport = xmlMultiViewDataObject.getEditorSupport();
             XmlMultiViewDataObject.DataCache dataCache = xmlMultiViewDataObject.getDataCache();
             if (editorSupport.saveLock != null) {
-                return dataCache.createOutputStream(editorSupport.saveLock, false);
+                return super.outputStream();
             } else {
                 return dataCache.createOutputStream();
             }
