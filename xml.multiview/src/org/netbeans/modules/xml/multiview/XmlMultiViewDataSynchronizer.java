@@ -66,13 +66,13 @@ public abstract class XmlMultiViewDataSynchronizer {
 
     protected void dataModified(long timeStamp) {
         if (this.timeStamp < timeStamp) {
-            reloadTask.schedule(0);
+            reloadTask.schedule(10);
         }
     }
 
     protected void dataUpdated(long timeStamp) {
         if (this.timeStamp < timeStamp) {
-            reloadTask.schedule(0);
+            reloadTask.schedule(10);
         }
     }
 

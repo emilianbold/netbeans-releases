@@ -113,6 +113,11 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
     protected abstract void parseDocument() throws IOException;
 
     /**
+     * @throws IOException
+     */
+    protected abstract void validateDocument() throws IOException;
+
+    /**
      * Update text document from data model. Called when something is changed in visual editor.
      */
     protected abstract String generateDocumentFromModel();
@@ -131,10 +136,12 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             Transaction transaction = new Transaction() {
                 public void rollback() {
                     synchronizerTransaction.rollback();
+                    transactionReference = null;
                 }
 
                 public void commit() throws IOException {
                     synchronizerTransaction.commit();
+                    transactionReference = null;
                 }
             };
             transactionReference = new WeakReference(transaction);
@@ -179,8 +186,16 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             return overwriteUnparseable.booleanValue();
         }
 
+        public void updateData(FileLock dataLock, boolean modify) {
+            super.updateData(dataLock, modify);
+            try {
+                validateDocument();
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+            }
+        }
+
         protected void updateDataFromModel(FileLock lock, boolean modify) {
-            String origDocument = new String(getDataCache().getData());
             String newDocument = generateDocumentFromModel();
             try {
                 getDataCache().setData(lock, newDocument.getBytes(), modify);

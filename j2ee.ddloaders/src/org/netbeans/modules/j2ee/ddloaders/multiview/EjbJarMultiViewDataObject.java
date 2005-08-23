@@ -374,6 +374,10 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         setSaxError(ejbJar.getError());
     }
 
+    protected void validateDocument() throws IOException {
+        setSaxError(DDUtils.createEjbJarProxy(createInputStream()).getError());
+    }
+
     private void setEjbJar(EjbJarProxy newEjbJar) {
         if(ejbJar != null) {
             ejbJar.removePropertyChangeListener(ejbJarChangeListener);

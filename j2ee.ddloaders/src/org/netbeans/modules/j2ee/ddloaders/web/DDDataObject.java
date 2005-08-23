@@ -194,7 +194,7 @@ public class DDDataObject extends  DDMultiViewDataObject
     }
 
     protected void parseDocument() throws IOException {
-        if (webApp == null || ((WebAppProxy)webApp).getOriginal() == null) {
+        if (webApp == null || ((WebAppProxy) webApp).getOriginal() == null) {
             try {
                 webApp = DDProvider.getDefault().getDDRoot(getPrimaryFile());
             } catch (IOException e) {
@@ -203,47 +203,40 @@ public class DDDataObject extends  DDMultiViewDataObject
                 }
             }
         }
-        InputSource is = createInputSource();
-        if (is!=null) { // merging model with the document
-            org.xml.sax.SAXParseException error = null;
-            String version=null;
-            try {
-                version = DDUtils.getVersion(is);
-                // preparsing
-                is = createInputSource();
-                error = DDUtils.parse(is);
+        // update model with the document
+        parseDocument(true);
+    }
 
-                // creating model
-                java.io.InputStream inputStream = createInputStream();
-                WebAppProxy app = new WebAppProxy(DDUtils.createWebApp(inputStream, version), version);
-                inputStream.close();
+    protected void validateDocument() throws IOException {
+        // parse document without updating model
+        parseDocument(false);
+    }
+
+    private void parseDocument(boolean updateWebApp) throws IOException {
+        try {
+            String version = DDUtils.getVersion(createInputSource());
+            // preparsing
+            SAXParseException error = DDUtils.parse(createInputSource());
+
+            // creating model
+            WebAppProxy app = new WebAppProxy(DDUtils.createWebApp(createInputStream(), version), version);
+            if (updateWebApp) {
                 if (((WebAppProxy) webApp).getOriginal() != null) {
                     webApp.merge(app, WebApp.MERGE_UPDATE);
                 }
-                ((WebAppProxy) webApp).setOriginal(app.getOriginal());
-
-                if (error!=null) {
-                    ((WebAppProxy)webApp).setStatus(WebApp.STATE_INVALID_PARSABLE);
-                    ((WebAppProxy)webApp).setError(error);
-                } else {
-                    ((WebAppProxy)webApp).setStatus(WebApp.STATE_VALID);
-                    ((WebAppProxy)webApp).setError(null);
-                }
-                //System.out.println("version:"+webApp.getVersion()+" Status:"+webApp.getStatus()+" Error:"+webApp.getError());
-                setSaxError(error);
-            } catch (org.xml.sax.SAXException ex) {
-                // this should never happen when updateModel==false
-                if (webApp==null || ((WebAppProxy)webApp).getOriginal()==null) {
-                    webApp = new WebAppProxy(null,version);
-                   ((WebAppProxy)webApp).setStatus(WebApp.STATE_INVALID_UNPARSABLE);
-                    if (ex instanceof org.xml.sax.SAXParseException) {
-                        ((WebAppProxy)webApp).setError((org.xml.sax.SAXParseException)ex);
-                    } else if ( ex.getException() instanceof org.xml.sax.SAXParseException) {
-                        ((WebAppProxy)webApp).setError((org.xml.sax.SAXParseException)ex.getException());
-                    }
-                }
-                setSaxError(ex);
+                ((WebAppProxy) webApp).setOriginal(app);
             }
+            ((WebAppProxy) webApp).setStatus(error != null ? WebApp.STATE_INVALID_PARSABLE : WebApp.STATE_VALID);
+            ((WebAppProxy) webApp).setError(error);
+            setSaxError(error);
+        } catch (SAXException ex) {
+            ((WebAppProxy) webApp).setStatus(WebApp.STATE_INVALID_UNPARSABLE);
+            if (ex instanceof SAXParseException) {
+                ((WebAppProxy) webApp).setError((SAXParseException) ex);
+            } else if (ex.getException() instanceof SAXParseException) {
+                ((WebAppProxy) webApp).setError((SAXParseException) ex.getException());
+            }
+            setSaxError(ex);
         }
     }
 
