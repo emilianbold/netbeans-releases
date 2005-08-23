@@ -46,7 +46,10 @@ Microsystems, Inc. All Rights Reserved.
             </file>                                    
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffAction"/>
-            </file>                                    
+            </file>
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.ExportDiffAction"/>
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateAction"/>
             </file>                                    
@@ -121,6 +124,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.instance"/>
             </file>
+            <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance"/>
+            </file>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-log-SearchHistoryAction.instance"/>
             </file>            
@@ -161,7 +167,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator6.instance">
         		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	        </file>
-            
+            <file name="Separator7.instance">
+        		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	        </file>
+
+
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-StatusProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateProjectsAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitProjectsAction.shadow" boolvalue="true" />
@@ -180,7 +190,10 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-update-UpdateAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.shadow/Separator3.instance" boolvalue="true" />
 
-            <attr name="Separator3.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow" boolvalue="true" />
+            <attr name="Separator3.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.shadow/Separator7.instance" boolvalue="true" />
+
+            <attr name="Separator7.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-TagAction.shadow/org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.shadow" boolvalue="true" />
             <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-tag-BranchesMenu.shadow/Separator4.instance" boolvalue="true" />
 

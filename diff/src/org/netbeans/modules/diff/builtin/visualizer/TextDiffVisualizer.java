@@ -197,7 +197,7 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
     private static final String LINE_PREP_REMOVE = "- ";
     private static final String LINE_PREP_CHANGE = "! ";
     
-    static InputStream differenceToContextDiffText(TextDiffInfo diffInfo) throws IOException {
+    public static InputStream differenceToContextDiffText(TextDiffInfo diffInfo) throws IOException {
         StringBuffer content = new StringBuffer();
         content.append(CONTEXT_MARK1B);
         content.append(diffInfo.getName1());
@@ -343,7 +343,7 @@ public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
         return line;
     }
     
-    static class TextDiffInfo extends DiffPresenter.Info {
+    public static class TextDiffInfo extends DiffPresenter.Info {
         
         private Reader r1;
         private Reader r2;
