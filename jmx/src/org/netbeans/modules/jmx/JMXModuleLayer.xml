@@ -51,6 +51,22 @@ Microsystems, Inc. All Rights Reserved.
                                                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
+            <file name="JUnitTest.java" url="">
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" 
+                      stringvalue="org.netbeans.modules.jmx.Bundle"/>
+                      
+                <attr name="SystemFileSystem.icon" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/JUnitTest.gif" />
+                      
+                <attr name="instantiatingIterator" 
+                      methodvalue="org.netbeans.modules.jmx.mbeanwizard.MBeanJUnitTestIterator.createMBeanJUnitTestIterator"/>
+                      
+                <attr name="templateWizardURL" 
+                      urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/JUnitTest.html"/>
+                                               
+                <attr name="templateCategory" stringvalue="java-classes"/>
+            </file>
 
             <file name="Agent.java" url="resources/templates/Agent.java.template">
                 <attr name="template" boolvalue="true"/>

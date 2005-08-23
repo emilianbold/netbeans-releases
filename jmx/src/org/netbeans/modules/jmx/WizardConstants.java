@@ -175,6 +175,10 @@ public class WizardConstants
     public static final String PROP_JUNIT_JAVADOC_SELECTED       = "wizdata.junitJavadocSelected";// NOI18N
     public static final String PROP_JUNIT_HINT_SELECTED          = "wizdata.junitHintSelected";// NOI18N
     
+    // action to create JUnit tests for an existing MBean
+    public static final String PROP_MBEAN_JUNIT_TEST_MBEANDO = "wizdata.mbeanjunitMBeanDO";// NOI18N
+    public static final String PROP_MBEAN_JUNIT_TEST_GENINFO = "wizdata.mbeanjunitMBeanGenInfo";// NOI18N
+            
     // number of times the user switched panels
     public static final String PROP_USER_ORDER_NUMBER            = "wizdata.intro_attributeName";// NOI18N
     
