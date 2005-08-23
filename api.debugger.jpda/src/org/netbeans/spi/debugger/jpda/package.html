@@ -87,25 +87,28 @@ Some dummy node will be displayed in the place of this frames.<br>
 <h4>Step 1.</h4>
 <div style="margin-left: 40px;">We should implement {@link
 org.netbeans.spi.viewmodel.TreeModelFilter} first:<br>
-<pre style="background-color: rgb(255, 255, 102);">public class CallStackFilter implements TreeModelFilter {<br>    <br>    public Object[] getChildren (TreeModel original, Object parent, int from, int to) {<br>        Object[] originalCh = original.getChildren (parent, from, to);<br>        int i, k = originalCh.length;<br>        ArrayList newCh = new ArrayList ();<br>        boolean in = false;<br>        for (i = 0; i &lt; k; i++) {<br>            if (! (originalCh [i] instanceof CallStackFrame)) {<br>                newCh.add (originalCh [i]);<br><img
- src="../../../../../examples/CallStackViewFilterring2.JPG" title=""
- alt="Callstack Filterring 2" style="width: 559px; height: 285px;"
- align="right">                continue;<br>            }<br>            CallStackFrame f = (CallStackFrame) originalCh [i];<br>            String className = f.getClassName ();<br>            if (className.startsWith ("java")) {<br>                if (!in) {<br>                    newCh.add (new JavaxSwing ());<br>                    in = true;<br>                }<br>            } else {<br>                in = false;<br>                newCh.add (f);<br>            }<br>        }<br>        return newCh.toArray ();<br>    }<br>    <br>    public Object getRoot (TreeModel original) {<br>        return original.getRoot ();<br>    }<br>    <br>    public boolean isLeaf (TreeModel original, Object node) <br>    throws UnknownTypeException {<br>        if (node instanceof JavaxSwing) return true;<br>        return original.isLeaf (node);<br>    }<br>    <br>    private static class JavaFrames {}<br>}<br></pre>
+<pre style="background-color: rgb(255, 255, 102);">public class CallStackFilter implements TreeModelFilter {<br>    <br>    public Object[] getChildren (TreeModel original, Object parent, int from, int to) {<br>        Object[] originalCh = original.getChildren (parent, from, to);<br>        int i, k = originalCh.length;<br>        ArrayList newCh = new ArrayList ();<br>        boolean in = false;<br>        for (i = 0; i &lt; k; i++) {<br>            if (! (originalCh [i] instanceof CallStackFrame)) {<br>                newCh.add (originalCh [i]);<br>
+                continue;<br>            }<br>            CallStackFrame f = (CallStackFrame) originalCh [i];<br>            String className = f.getClassName ();<br>            if (className.startsWith ("java")) {<br>                if (!in) {<br>                    newCh.add (new JavaxSwing ());<br>                    in = true;<br>                }<br>            } else {<br>                in = false;<br>                newCh.add (f);<br>            }<br>        }<br>        return newCh.toArray ();<br>    }<br>    <br>    public Object getRoot (TreeModel original) {<br>        return original.getRoot ();<br>    }<br>    <br>    public boolean isLeaf (TreeModel original, Object node) <br>    throws UnknownTypeException {<br>        if (node instanceof JavaxSwing) return true;<br>        return original.isLeaf (node);<br>    }<br>    <br>    private static class JavaFrames {}<br>}<br></pre>
 And register it in file:<br>
 <pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDADebuggerEngine\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
 As you can see on the picture this Filter replaces some original frames
 by some dummy node.<br>
+<img
+ src="doc-files/CallStackViewFilterring2.JPG"
+ alt="Callstack Filterring 2" width="559" height="285">
 </div>
+ 
 <h4>Step 2.</h4>
 </div>
 <div style="margin-left: 80px;">We should provide NodeModel (at least)
 for our new node type (JavaFrames) now.<br>
-<pre style="background-color: rgb(255, 255, 102);">public class CallStackFilter implements NodeModel {<img
- src="../../../../../examples/CallStackViewFilterring3.JPG" title=""
- alt="Callstack View Filterring 3" style="width: 322px; height: 285px;"
- align="right"><br><br>  &nbsp; public String getDisplayName (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Java Callstack Frames";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getIconBase (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "org/netbeans/examples/debugger/jpda/callstackviewfilterring/NonCurrentFrame";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getShortDescription (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Unimportant hidden callstack frames";<br>        throw new UnknownTypeException (node);<br>    }<br>}<br></pre>
+<pre style="background-color: rgb(255, 255, 102);">public class CallStackFilter implements NodeModel {
+<br><br>  &nbsp; public String getDisplayName (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Java Callstack Frames";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getIconBase (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "org/netbeans/examples/debugger/jpda/callstackviewfilterring/NonCurrentFrame";<br>        throw new UnknownTypeException (node);<br>    }<br>    <br>    public String getShortDescription (Object node) throws UnknownTypeException {<br>        if (node instanceof JavaFrames)<br>            return "Unimportant hidden callstack frames";<br>        throw new UnknownTypeException (node);<br>    }<br>}<br></pre>
 And registration:<br>
 <pre style="background-color: rgb(255, 255, 102);">Meta-inf\debugger\netbeans-JPDADebuggerEngine\CallStackView\org.netbeans.spi.viewmodel.TreeModelFilter</pre>
+<img
+ src="doc-files/CallStackViewFilterring3.JPG" title=""
+ alt="Callstack View Filterring 3" style="width: 322px; height: 285px;">
 <br>
 <br>
 <pre style="background-color: rgb(255, 255, 102);"></pre>
