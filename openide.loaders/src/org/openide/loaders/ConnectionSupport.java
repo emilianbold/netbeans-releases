@@ -24,6 +24,7 @@ import org.openide.nodes.Node;
 * listeners in extended attributes of associated entry.
 *
 * @author Jaroslav Tulach, Petr Hamernik
+ * @deprecated Should no longer be used.
 */
 public class ConnectionSupport extends Object implements ConnectionCookie {
     /** extended attribute to store (ArrayList of Type and Node.Handle) */

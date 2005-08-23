@@ -23,6 +23,7 @@ import java.util.EventListener;
 * persistent connections.
 *
 * @author Jaroslav Tulach
+ * @deprecated Should no longer be used.
 */
 public interface ConnectionCookie extends Node.Cookie {
     /** Attaches new node to listen to events produced by this
