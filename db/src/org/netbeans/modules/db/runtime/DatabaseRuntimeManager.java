@@ -51,11 +51,6 @@ public final class DatabaseRuntimeManager {
     private static DatabaseRuntimeManager DEFAULT = null;
     
     /**
-     * The list of registered runtimes.
-     */
-    private List/*<DatabaseRuntime>*/ runtimes = null;
-    
-    /**
      * The Lookup.Result instance containing all the DatabaseRuntime instances.
      */
     private Lookup.Result result = getLookupResult();
@@ -69,7 +64,6 @@ public final class DatabaseRuntimeManager {
         }
         return DEFAULT;
     }
-    
     
     /**
      * Returns the runtimes registered for the specified JDBC driver.
