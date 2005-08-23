@@ -2784,53 +2784,54 @@ public class LayoutDesigner implements LayoutConstants {
                     propEmptyContainer(root, i);
                 }
                 else { // not empty, there can be a resizing gap inside the container
-                    LayoutInterval resGap = resizingDef != null && resizingDef[i] != null ?
-                                            resizingDef[i].getResizingGap() : null;
-                    if (resGap != null) { // this is it (special gap for design time resizing)
-                        int size = resizingDef[i].getResizingGapSize(currentSize);
-                        if (size == 0) { // remove the gap
-                            LayoutInterval gapParent = resGap.getParent();
-                            assert gapParent.isSequential();
-                            int index = layoutModel.removeInterval(resGap);
-                            assert index == 0 || index == gapParent.getSubIntervalCount();
-                            if (gapParent.getSubIntervalCount() == 1) {
-                                LayoutInterval last = layoutModel.removeInterval(gapParent, 0);
-                                operations.addContent(last, gapParent.getParent(), layoutModel.removeInterval(gapParent));
+                    if (resizingDef != null && resizingDef[i] != null) {
+                        LayoutInterval resGap = resizingDef[i].getResizingGap();
+                        if (resGap != null) { // this is it (special gap for design time resizing)
+                            int size = resizingDef[i].getResizingGapSize(currentSize);
+                            if (size == 0) { // remove the gap
+                                LayoutInterval gapParent = resGap.getParent();
+                                assert gapParent.isSequential();
+                                int index = layoutModel.removeInterval(resGap);
+                                assert index == 0 || index == gapParent.getSubIntervalCount();
+                                if (gapParent.getSubIntervalCount() == 1) {
+                                    LayoutInterval last = layoutModel.removeInterval(gapParent, 0);
+                                    operations.addContent(last, gapParent.getParent(), layoutModel.removeInterval(gapParent));
+                                }
+                                else if (LayoutInterval.canResize(resGap) && !LayoutInterval.wantResize(root)) {
+                                    // don't lose resizability of the layout
+                                    index = index == 0 ? gapParent.getSubIntervalCount()-1 : 0;
+                                    LayoutInterval otherGap = gapParent.getSubInterval(index);
+                                    if (otherGap.isEmptySpace()) { // the gap should be resizing
+                                        layoutModel.setIntervalSize(otherGap,
+                                            NOT_EXPLICITLY_DEFINED, otherGap.getPreferredSize(), Short.MAX_VALUE);
+                                    }
+                                }
                             }
-                            else if (LayoutInterval.canResize(resGap) && !LayoutInterval.wantResize(root)) {
-                                // don't lose resizability of the layout
-                                index = index == 0 ? gapParent.getSubIntervalCount()-1 : 0;
-                                LayoutInterval otherGap = gapParent.getSubInterval(index);
-                                if (otherGap.isEmptySpace()) { // the gap should be resizing
-                                    layoutModel.setIntervalSize(otherGap,
-                                        NOT_EXPLICITLY_DEFINED, otherGap.getPreferredSize(), Short.MAX_VALUE);
+                            else { // set gap size
+                                operations.resizeInterval(resGap, size);
+                                if (size == NOT_EXPLICITLY_DEFINED && LayoutInterval.canResize(resGap)) {
+                                    // hack: eliminate unnecessary resizing of default padding gap
+                                    resGap.setMaximumSize(USE_PREFERRED_SIZE);
+                                    boolean layoutResizing = LayoutInterval.wantResize(root);
+                                    resGap.setMaximumSize(Short.MAX_VALUE);
+                                    if (layoutResizing) { // the gap should be fixed
+                                        layoutModel.setIntervalSize(resGap,
+                                            NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, USE_PREFERRED_SIZE);
+                                    }
                                 }
                             }
                         }
-                        else { // set gap size
-                            operations.resizeInterval(resGap, size);
-                            if (size == NOT_EXPLICITLY_DEFINED && LayoutInterval.canResize(resGap)) {
-                                // hack: eliminate unnecessary resizing of default padding gap
-                                resGap.setMaximumSize(USE_PREFERRED_SIZE);
-                                boolean layoutResizing = LayoutInterval.wantResize(root);
-                                resGap.setMaximumSize(Short.MAX_VALUE);
-                                if (layoutResizing) { // the gap should be fixed
-                                    layoutModel.setIntervalSize(resGap,
-                                        NOT_EXPLICITLY_DEFINED, NOT_EXPLICITLY_DEFINED, USE_PREFERRED_SIZE);
-                                }
+                        else if (!LayoutInterval.wantResize(root)) {
+                            // no resizing gap in fixed layout of resizing container
+                            int minLayoutSize = computeMinimumDesignSize(root);
+                            int growth = root.getCurrentSpace().size(i) - minLayoutSize;
+                            if (growth > 0) { // add new resizing gap at the end to hold the new extra space
+                                LayoutInterval endGap = new LayoutInterval(SINGLE);
+                                endGap.setSizes(NOT_EXPLICITLY_DEFINED, growth, Short.MAX_VALUE);
+                                operations.insertGap(endGap, root, minLayoutSize, i, TRAILING);
                             }
                         }
                     }
-                    else if (!LayoutInterval.wantResize(root)) { // no resizing gap in fixed layout
-                        int minLayoutSize = computeMinimumDesignSize(root);
-                        int growth = root.getCurrentSpace().size(i) - minLayoutSize;
-                        if (growth > 0) { // add new resizing gap at the end
-                            LayoutInterval endGap = new LayoutInterval(SINGLE);
-                            endGap.setSizes(NOT_EXPLICITLY_DEFINED, growth, Short.MAX_VALUE);
-                            operations.insertGap(endGap, root, minLayoutSize, i, TRAILING);
-                        }
-                    }
-
                     updateLayoutStructure(root, i);
                     imposeGapsSize(root, i);
                 }
