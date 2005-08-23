@@ -14,12 +14,9 @@
 package org.netbeans.modules.j2ee.ejbjarproject;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -44,7 +41,7 @@ import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
 
 import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
-import org.netbeans.modules.javacore.JMManager;
+
 
 
 /** Action provider of the Web project. This is the place where to do
@@ -87,9 +84,6 @@ class EjbJarActionProvider implements ActionProvider {
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    /**Set of commands which are affected by background scanning*/
-    final Set bkgScanSensitiveActions;
-
     public EjbJarActionProvider(EjbJarProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         commands = new HashMap();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
@@ -107,14 +101,6 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
         commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
         commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
-
-        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
-            COMMAND_RUN, 
-            COMMAND_RUN_SINGLE, 
-            COMMAND_DEBUG, 
-            COMMAND_DEBUG_SINGLE,
-            COMMAND_DEBUG_STEP_INTO
-        }));
 
         this.antProjectHelper = antProjectHelper;
         this.project = project;
@@ -159,12 +145,7 @@ class EjbJarActionProvider implements ActionProvider {
             }            
         };
         
-        if (this.bkgScanSensitiveActions.contains(command)) {        
-            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (EjbJarActionProvider.class,"ACTION_"+command)); //NOI18N
-        }
-        else {
-            action.run();
-        }
+        action.run();
     }
     
     /**

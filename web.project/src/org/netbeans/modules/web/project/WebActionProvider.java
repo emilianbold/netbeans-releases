@@ -63,7 +63,6 @@ import org.netbeans.jmi.javamodel.*;
 import java.util.HashSet;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.web.api.webmodule.RequestParametersQuery;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
@@ -117,9 +116,6 @@ class WebActionProvider implements ActionProvider {
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    /**Set of commands which are affected by background scanning*/
-    final Set bkgScanSensitiveActions;
-
     public WebActionProvider(WebProject project, UpdateHelper updateHelper) {
         
         commands = new HashMap();
@@ -143,13 +139,6 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
             commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         
-        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
-            COMMAND_RUN, 
-            COMMAND_RUN_SINGLE, 
-            COMMAND_DEBUG, 
-            COMMAND_DEBUG_SINGLE
-        }));
-
         this.updateHelper = updateHelper;
         this.project = project;
     }
@@ -192,12 +181,7 @@ class WebActionProvider implements ActionProvider {
             }            
         };
         
-        if (this.bkgScanSensitiveActions.contains(command)) {        
-            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (WebActionProvider.class,"ACTION_"+command)); //NOI18N
-        }
-        else {
-            action.run();
-        }
+        action.run();
     }
 
     /**

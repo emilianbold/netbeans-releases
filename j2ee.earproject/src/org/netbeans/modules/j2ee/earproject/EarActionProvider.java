@@ -14,12 +14,9 @@
 package org.netbeans.modules.j2ee.earproject;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -46,7 +43,6 @@ import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
@@ -82,9 +78,6 @@ public class EarActionProvider implements ActionProvider {
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    /**Set of commands which are affected by background scanning*/
-    final Set bkgScanSensitiveActions;
-
     public EarActionProvider(
         EarProject project,
         UpdateHelper updateHelper, 
@@ -106,13 +99,6 @@ public class EarActionProvider implements ActionProvider {
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
             commands.put(COMMAND_VERIFY, new String[] {"verify"}); // NOI18N
         
-        this.bkgScanSensitiveActions = new HashSet (Arrays.asList(new String[] {
-            COMMAND_RUN, 
-            COMMAND_RUN_SINGLE, 
-            COMMAND_DEBUG, 
-            COMMAND_DEBUG_SINGLE
-        }));
-
         this.updateHelper = updateHelper;
         this.project = project;
         this.refHelper = refHelper;
@@ -156,12 +142,7 @@ public class EarActionProvider implements ActionProvider {
             }            
         };
         
-        if (this.bkgScanSensitiveActions.contains(command)) {        
-            JMManager.getManager().invokeAfterScanFinished(action, NbBundle.getMessage (EarActionProvider.class,"ACTION_"+command)); //NOI18N
-        }
-        else {
-            action.run();
-        }
+        action.run();
     }
 
     /**

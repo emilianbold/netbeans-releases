@@ -265,22 +265,6 @@ Microsystems, Inc. All Rights Reserved.
                         <implementation-version/>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.jmiutils</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <public-packages/>
         </data>
