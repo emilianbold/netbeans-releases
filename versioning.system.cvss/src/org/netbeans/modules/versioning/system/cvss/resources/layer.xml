@@ -250,13 +250,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="AnnotationTypes">
             <file name="org-netbeans-modules-versioning-system-cvss-Annotation.xml" url="cvs_annotation.xml"/>
-            
-            <folder name="StatusForAnnotationType">
-                <file name="org-netbeans-modules-versioning-system-cvss-Annotation">
-                    <attr name="status" stringvalue="ok" />
-                    <attr name="color" stringvalue="0x000FF" />
-                </file>   
-            </folder>
         </folder>
     </folder>
 
