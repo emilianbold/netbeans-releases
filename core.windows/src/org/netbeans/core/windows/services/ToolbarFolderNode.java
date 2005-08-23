@@ -13,6 +13,7 @@
 
 package org.netbeans.core.windows.services;
 
+import java.text.MessageFormat;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.netbeans.core.NbPlaces;
@@ -126,6 +127,10 @@ public final class ToolbarFolderNode extends DataFolder.FolderNode implements Pr
                                 Boolean.TRUE
                             );
                         }
+                    } else {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message( 
+                                MessageFormat.format( bundle.getString("MSG_ToolbarExists"), new Object[] { s } ) ); // NOI18N
+                        org.openide.DialogDisplayer.getDefault().notify( msg );
                     }
                 } catch (IOException e) {
                     ErrorManager.getDefault ().notify (e);
