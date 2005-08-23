@@ -2131,7 +2131,7 @@ class LayoutFeeder implements LayoutConstants {
      *         in an incompatible branch
      */
     private boolean allowsSubAlignWith(LayoutInterval interval, LayoutInterval group, int alignment) {
-        if (group.isParentOf(interval))
+        if (group == interval || group.isParentOf(interval))
             return true;
 
         LayoutInterval parent = LayoutInterval.getFirstParent(interval, PARALLEL);
@@ -2154,6 +2154,9 @@ class LayoutFeeder implements LayoutConstants {
      *         allows parallel align with 'interval'
      */
     private boolean canAlignWith(LayoutInterval interval, LayoutInterval group, int alignment) {
+        if (interval == group)
+            return true; // can align to group border from inside
+
         LayoutInterval parent = interval.getParent();
         if (parent == null)
             parent = interval;
