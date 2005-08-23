@@ -114,6 +114,13 @@ public final class BrandingSupport {
         
     }
     
+    public boolean isBranded(final BrandedFile bFile) {
+        boolean retval = getBrandedFiles().contains(bFile);
+        return retval;
+        
+    }
+    
+    
     /**
      * @return true if NetBeans module is already branded
      */
@@ -175,6 +182,14 @@ public final class BrandingSupport {
             retval = null;
         }
         return retval;
+    }
+
+    public BundleKey getBundleKey(final String moduleCodeNameBase, 
+            final String bundleEntry,final String key) {        
+        Set keys = new HashSet();
+        keys.add(key);
+        keys = getBundleKeys(moduleCodeNameBase,bundleEntry, keys);
+        return (keys == null) ? null : (BrandingSupport.BundleKey) keys.toArray()[0];
     }
     
     public Set getBundleKeys(final String moduleCodeNameBase, final String bundleEntry,final Set keys) {
@@ -243,6 +258,12 @@ public final class BrandingSupport {
             
             brandedFiles.add(bFile);
         }                
+    }
+
+    public void brandBundleKey(final BundleKey bundleKey) throws IOException {
+        Set keys = new HashSet();
+        keys.add(bundleKey);
+        brandBundleKeys(keys);
     }
     
     public void brandBundleKeys(final Set bundleKeys) throws IOException {

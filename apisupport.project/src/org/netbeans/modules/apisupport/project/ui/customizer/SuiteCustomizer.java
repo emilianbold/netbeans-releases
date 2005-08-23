@@ -126,6 +126,8 @@ public final class SuiteCustomizer implements CustomizerProvider {
     private static final String SOURCES = "Sources"; // NOI18N
     private static final String LIBRARIES = "Libraries"; // NOI18N
     private static final String MODULE_LIST = "ModuleList"; // NOI18N
+    private static final String BUILD = "Build"; // NOI18N    
+    private static final String BASIC_BRANDING = "BasicBranding"; // NOI18N
 
     private void init() {
         ResourceBundle bundle = NbBundle.getBundle(SuiteCustomizer.class);
@@ -136,14 +138,29 @@ public final class SuiteCustomizer implements CustomizerProvider {
                 bundle.getString("LBL_ConfigLibraries")); // NOI18N
         ProjectCustomizer.Category moduleList = createCategory(MODULE_LIST,
                 bundle.getString("LBL_ConfigModuleList")); // NOI18N
+
+        ProjectCustomizer.Category basicBranding = createCategory(BASIC_BRANDING,
+                bundle.getString("LBL_BasicBranding")); // NOI18N
+                
+        ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
+                BUILD,
+                bundle.getString( "LBL_Build" ), // NOI18N
+                null,
+                new ProjectCustomizer.Category[] {basicBranding}
+        );
+        
+        
+        
         
         categories = new ProjectCustomizer.Category[] {
-            sources, libraries, moduleList
+            sources, libraries, moduleList, build
         };
         
         panels.put(sources, new SuiteCustomizerSources(suiteProps));
         panels.put(libraries, new SuiteCustomizerLibraries(suiteProps));
         panels.put(moduleList, new SuiteCustomizerModuleList(suiteProps));
+        panels.put(basicBranding, new SuiteCustomizerBasicBranding(suiteProps));        
+        
         
         panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
             public JComponent create(ProjectCustomizer.Category category) {
