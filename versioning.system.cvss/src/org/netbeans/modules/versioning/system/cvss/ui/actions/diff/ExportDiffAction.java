@@ -182,6 +182,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             r2,
             differences
         );
+        info.setContextMode(true, 3);
         InputStream is = TextDiffVisualizer.differenceToContextDiffText(info);
         while(true) {
             int i = is.read();
