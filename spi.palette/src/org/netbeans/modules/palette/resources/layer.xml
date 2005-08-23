@@ -25,11 +25,16 @@ Microsystems, Inc. All Rights Reserved.
             <file name="ShowPaletteAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
             </file>
-            <attr name="oldRootsEnd.txt/ShowPaletteAction.shadow" boolvalue="true" />
-            <attr name="ShowPaletteAction.shadow/Form" boolvalue="true" />
+            <attr name="ShowPaletteAction.shadow/org-netbeans-core-actions-GlobalPropertiesAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-navigator-ShowNavigatorAction.instance/ShowPaletteAction.shadow" boolvalue="true" />
         </folder>
     </folder>
 
+    <folder name="Shortcuts">
+        <file name="CS-6.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
+        </file>
+    </folder>
     
     <!-- default workspaces, frames and their layout defined by core -->
     <folder name="Windows2">
