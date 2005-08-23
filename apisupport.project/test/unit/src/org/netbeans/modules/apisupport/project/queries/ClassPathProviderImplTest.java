@@ -175,28 +175,6 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
         expectedRoots.add(urlForJar("java/parser/dist/java-parser.jar"));
         assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
-        // xml/tools depends on xml/tax, which is not yet projectized, but exports a class path extension anyway.
-        src = nbroot.getFileObject("xml/tools/src");
-        assertNotNull("have xml/tools/src", src);
-        cp = ClassPath.getClassPath(src, ClassPath.COMPILE);
-        assertNotNull("have a COMPILE classpath", cp);
-        assertNotNull("xml/tax built", nbroot.getFileObject("nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"));
-        expectedRoots = new TreeSet();
-        // Keep up to date w/ changes in xml/tools/nbproject/project.xml:
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-java.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-api-xml.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-xml-core.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/autoload/xml-tax.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/core/org-openide-filesystems.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/lib/org-openide-util.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-nodes.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-awt.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-dialogs.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-text.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-openide-loaders.jar"));
-        expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-openide-src.jar"));
-        assertEquals("right COMPILE classpath", expectedRoots.toString(), urlsOfCp(cp).toString());
     }
     
     public void testExtraCompilationUnits() throws Exception {

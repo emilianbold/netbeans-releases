@@ -133,7 +133,7 @@ public class ModuleListTest extends TestBase {
         e = ml.getEntry("org.netbeans.modules.xml.tax");
         assertNotNull(e);
         assertEquals("correct CP extensions (using runtime-relative-path)",
-            ":" + file("nbbuild/netbeans/ide6/modules/autoload/ext/tax.jar"),
+            ":" + file("nbbuild/netbeans/ide6/modules/ext/org-netbeans-tax.jar"),
             e.getClassPathExtensions());
         e = ml.getEntry("org.openide.util.enumerations");
         assertNotNull(e);

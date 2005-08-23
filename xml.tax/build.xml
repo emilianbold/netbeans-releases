@@ -11,157 +11,53 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="xml/tax" default="netbeans" basedir=".">
-    <import file="../../nbbuild/default.xml"/> 
 
-    <property name="lib_root" location="lib"/>
-    <property name="xml_root" location=".."/>
-    <property name="api_root" location="${xml_root}/api"/>
-    
-    <property name="build.compiler.deprecation" value="true"/>
-    <property name="build.compiler.debug" value="true"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-
-    <target name="init" depends="default.init">
-      <patternset id="xml/tax.files">
-        <include name="modules/autoload/xml-tax.jar"/>
-        <include name="modules/autoload/ext/tax.jar"/>
-        <!--<include name="modules/autoload/ext/xerces2.jar"/>-->
-      </patternset>
-      <path id="cp">
-         <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
-         <pathelement location="${openide/modules.dir}/lib/org-openide-modules.jar"/>
-         <pathelement location="${openide/fs.dir}/core/org-openide-filesystems.jar"/>
-         <pathelement location="${openide/awt.dir}/modules/org-openide-awt.jar"/>
-         <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
-         <pathelement location="${openide/explorer.dir}/modules/org-openide-explorer.jar"/>
-         <pathelement location="${openide/dialogs.dir}/modules/org-openide-dialogs.jar"/>
-         <pathelement location="${openide/loaders.dir}/modules/org-openide-loaders.jar"/>
-         <pathelement location="${openide/text.dir}/modules/org-openide-text.jar"/>
-         <pathelement location="${lib_root}/src"/>
-         <pathelement location="${xml/api.dir}/modules/org-netbeans-api-xml.jar"/>
-         <pathelement location="${xml/core.dir}/modules/org-netbeans-modules-xml-core.jar"/>
-      </path>
+    <target name="lib-init">
+        <available property="do-not-generate-user-handler" classname="org.w3c.dom.UserDataHandler" />
+        <mkdir dir="build/domhack/org/w3c/dom"/>
     </target>
 
-    <target name="compile" depends="init">
-        <for-each locations="lib"/>
+    <!--
+    Workaround for new DOM3 interfaces that are not avalable on JDK 1.4
+    At runtime on JDK 1.4 we are happy because we do not call any DOM3 methods
+               on JDK 1.5 we are happy because system DOM3 interfaces prevail
+    -->    
+    <target name="generate-user-handler" depends="lib-init" unless="do-not-generate-user-handler">
+        <echo file="build/domhack/org/w3c/dom/UserDataHandler.java">
+        package org.w3c.dom; public interface UserDataHandler {}
+        </echo>
+        <echo file="build/domhack/org/w3c/dom/TypeInfo.java">
+        package org.w3c.dom; public interface TypeInfo {}
+        </echo>
+        <echo file="build/domhack/org/w3c/dom/DOMConfiguration.java">
+        package org.w3c.dom; public interface DOMConfiguration {}
+        </echo>
+    </target>
 
-        <echo message="Compiling TAX module classes..."/>
-        <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-            <classpath refID="cp"/>
+    <target name="lib-compile" depends="build-init,lib-init,generate-user-handler">
+        <mkdir dir="build/libclasses"/>
+        <javac destdir="build/libclasses" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" includeantruntime="false">
+            <src path="lib/src"/>
+            <src path="build/domhack"/>
+            <classpath>
+                <pathelement location="build/domhack"/>
+                <pathelement location="${xni-impl.jar}"/>
+            </classpath>
         </javac>
-    </target>
-
-    <target name="jars" depends="compile">
-        <for-each locations="lib"/>
-        <mkdir dir="${cluster}/modules/autoload"/>
-        <copy file="manifest.mf" tofile="manifest-subst.mf">
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
+        <copy todir="build/libclasses">
+            <fileset dir="lib/src" excludes="${jar-excludes}"/>
         </copy>
-        <jar jarfile="${cluster}/modules/autoload/xml-tax.jar"
-             manifest="manifest-subst.mf"
-             compress="false">
-            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+    </target>
+
+    <target name="lib-jar" depends="lib-compile">
+        <jar jarfile="${cluster}/modules/ext/org-netbeans-tax.jar" index="${build.package.index}" compress="${build.package.compress}">
+            <fileset dir="build/libclasses"/>
         </jar>
     </target>
 
-    <target name="release">
-        <for-each locations="lib"/>
-    </target>
-
-    <target name="modulexml" depends="init">
-        <mkdir dir="${cluster}/config/Modules"/>
-        <createmodulexml xmldir="${cluster}/config/Modules">
-            <autoload dir="${cluster}">
-                <include name="modules/autoload/xml-tax.jar"/>
-            </autoload>
-        </createmodulexml>
-    </target>
-
-    <target name="netbeans" depends="jars,release,modulexml">
-       <for-each locations="lib"/>
-       <genlist outputfiledir="${cluster}" module="modules/autoload/xml-tax.jar">
-          <fileset dir="${cluster}">
-             <patternset refID="xml/tax.files"/>
-          </fileset>
-       </genlist>
-    </target>
-
-    <target name="reload" depends="compile" description="Test module inside running IDE (API Support with Ant required).">
-        <mkdir dir="test"/>
-
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="test/xml-tax-test.jar" manifest="manifest-subst.mf" compress="false">
-            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="${lib_root}/src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-        </jar>
-        <nbinstaller module="test/xml-tax-test.jar" action="reinstall"/>
-    </target>
-    
-    
-    <target name="nbm" depends="netbeans">
-        <makenbm file="xml-tax.nbm"
-                 productdir="${cluster}"
-                 needsrestart="false"
-                 module="modules/autoload/xml-tax.jar"
-                 homepage="http://xml.${homepage.base}/tax/"
-                 distribution="http://${dist.base}/xml-tax.nbm">
-             <license name="xml-tax-license.txt">
-                 <text>For the Tree API for XML ("TAX") module itself:</text>
-                 <file location="${license.file}"/>
-                 <text>For the Apache's XML Parser (Xerces):</text>
-                 <file location="${nb_all}/nbbuild/external/apache-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
-    <target name="clean" depends="init">
-        <for-each locations="lib"/>
-
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>
-            <fileset dir="${cluster}">
-              <patternset refID="xml/tax.files"/>
-            </fileset>
-        </delete>
-        <delete file="manifest-subst.mf"/>
-        <delete file="xml-tax.nbm"/>
-    </target>
-
-    <target name="real-clean" depends="clean">
-        <for-each locations="lib"/>
-
-        <delete dir="javadoc"/>
-
-        <!--ant dir="test" target="realclean"/-->
-    </target>
-
-    <target name="all" depends="clean,nbm"/>
-
-    <target name="javadoc">
-        <for-each locations="lib"/>
-    </target>
-
-
-    <!-- This target compile all XML sub-modules. -->
-    <target name="all-xml">
-        <echo message="Compile all XML sub-modules ..."/>
-        <ant dir=".." target="clean"/>
-        <ant dir=".." target="compile"/>
-    </target>
-
-    <target name="test">
-        <for-each locations="lib"/>
-
-        <!--ant dir="test"/-->
-    </target>
+    <target name="compile" depends="lib-jar,projectized-common.compile"/>
 
 </project>

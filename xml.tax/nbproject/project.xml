@@ -119,14 +119,13 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/tax.jar</runtime-relative-path>
+                <runtime-relative-path>ext/org-netbeans-tax.jar</runtime-relative-path>
             </class-path-extension>
             <extra-compilation-unit>
                 <package-root>lib/src</package-root>
-                <classpath>${libs/xerces.dir}/modules/ext/xerces-2.6.2.jar</classpath>
-                <!-- XXX the following should be fixed! -->
-                <built-to>lib/src</built-to>
-                <built-to>${cluster}/modules/autoload/ext/tax.jar</built-to>
+                <classpath>${xni-impl.jar}</classpath>
+                <built-to>build/libclasses</built-to>
+                <built-to>${cluster}/modules/ext/org-netbeans-tax.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>
