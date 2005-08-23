@@ -133,8 +133,12 @@ public class CreateModuleXML extends Task {
                         codenamebase = codename;
                         rel = -1;
                     } else {
-                        codenamebase = codename.substring(0, idx).trim();
-                        rel = Integer.parseInt(codename.substring(idx + 1));
+                        codenamebase = codename.substring(0, idx);
+                        try {
+                            rel = Integer.parseInt(codename.substring(idx + 1).trim());
+                        } catch (NumberFormatException nfe) {
+                            throw new BuildException("Unable to parse integer number of release from module codename string \""+codename+"\". Check module's manifest key \"OpenIDE-Module:\" for trailing spaces.",nfe,getLocation());
+                        } 
                     }
                     File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                     if (xml.exists()) {
