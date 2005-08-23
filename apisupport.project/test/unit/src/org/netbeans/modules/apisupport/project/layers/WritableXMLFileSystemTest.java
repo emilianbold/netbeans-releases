@@ -162,7 +162,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileSystem fs = l.read();
         FileObject f = FileUtil.createData(fs.getRoot(), "Templates/Other/Foo.java");
         f.setAttribute("hello", "there");
-        dump(f, "some stuff");
+        TestBase.dump(f, "some stuff");
         String xml =
                 "    <folder name=\"Templates\">\n" +
                 "        <folder name=\"Other\">\n" +
@@ -176,16 +176,16 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         Map m = new HashMap();
         m.put("Foo_java", "some stuff");
         assertEquals("one external file created in " + l, m, l.files());
-        dump(f, "new stuff");
+        TestBase.dump(f, "new stuff");
         assertEquals("same XML as before", xml, l.write());
         m.put("Foo_java", "new stuff");
         assertEquals("different external file", m, l.files());
         f = FileUtil.createData(fs.getRoot(), "Templates/Other2/Foo.java");
-        dump(f, "unrelated stuff");
+        TestBase.dump(f, "unrelated stuff");
         f = FileUtil.createData(fs.getRoot(), "Templates/Other2/Bar.xml");
-        dump(f, "unrelated XML stuff");
+        TestBase.dump(f, "unrelated XML stuff");
         f = FileUtil.createData(fs.getRoot(), "Services/foo.settings");
-        dump(f, "scary stuff");
+        TestBase.dump(f, "scary stuff");
         xml =
                 "    <folder name=\"Services\">\n" +
                 // *.settings are also potentially dangerous in module sources, so rename them.
@@ -211,7 +211,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         l = new Layer("", Collections.singletonMap("file.txt", "existing stuff"));
         fs = l.read();
         f = FileUtil.createData(fs.getRoot(), "wherever/file.txt");
-        dump(f, "unrelated stuff");
+        TestBase.dump(f, "unrelated stuff");
         xml =
                 "    <folder name=\"wherever\">\n" +
                 // Need to pick a different location even though there is no conflict inside the layer.
@@ -226,11 +226,11 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         l = new Layer("");
         fs = l.read();
         f = FileUtil.createData(fs.getRoot(), "one/bare");
-        dump(f, "bare #1");
+        TestBase.dump(f, "bare #1");
         f = FileUtil.createData(fs.getRoot(), "two/bare");
-        dump(f, "bare #2");
+        TestBase.dump(f, "bare #2");
         f = FileUtil.createData(fs.getRoot(), "three/bare");
-        dump(f, "bare #3");
+        TestBase.dump(f, "bare #3");
         xml =
                 "    <folder name=\"one\">\n" +
                 "        <file name=\"bare\" url=\"bare\"/>\n" +
@@ -386,7 +386,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         FileObject f = fs.getRoot().createFolder("f");
         FileObject x = f.createData("x");
         x.setAttribute("foo", "bar");
-        dump(x, "stuff");
+        TestBase.dump(x, "stuff");
         FileObject y = FileUtil.createData(fs.getRoot(), "y");
         x.delete();
         assertEquals("one file and one folder left",
@@ -404,7 +404,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         fs = l.read();
         f = fs.getRoot().createFolder("f");
         x = f.createData("x");
-        dump(x, "stuff");
+        TestBase.dump(x, "stuff");
         f.delete();
         assertEquals("layer empty again", "", l.write());
         assertEquals("no external files left even after only implicitly deleting file", Collections.EMPTY_MAP, l.files());
@@ -493,7 +493,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         Layer l = new Layer("");
         FileSystem fs = l.read();
         FileObject foo = fs.getRoot().createData("foo");
-        dump(foo, "foo text");
+        TestBase.dump(foo, "foo text");
         long start = foo.lastModified().getTime();
         assertEquals(start, l.externalLastModified("foo"));
         Thread.sleep(1000L); // make sure the timestamp actually changed
@@ -532,21 +532,6 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
             return baos.toString("UTF-8");
         } finally {
             is.close();
-        }
-    }
-    private static void dump(FileObject f, String contents) throws IOException {
-        FileLock lock = f.lock();
-        try {
-            OutputStream os = f.getOutputStream(lock);
-            try {
-                Writer w = new OutputStreamWriter(os, "UTF-8");
-                w.write(contents);
-                w.flush();
-            } finally {
-                os.close();
-            }
-        } finally {
-            lock.releaseLock();
         }
     }
     private static void dump(File f, String contents) throws IOException {
@@ -631,7 +616,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          * Edit the text of the layer.
          */
         public void edit(String newText) throws Exception {
-            dump(f, HEADER + newText + FOOTER);
+            TestBase.dump(f, HEADER + newText + FOOTER);
         }
         /**
          * Edit a referenced external file.
@@ -640,7 +625,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
             assert !path.equals("layer.xml");
             File f = new File(folder, path.replace('/', File.separatorChar));
             assert f.isFile();
-            dump(FileUtil.toFileObject(f), newText);
+            TestBase.dump(FileUtil.toFileObject(f), newText);
         }
         public long externalLastModified(String path) {
             File f = new File(folder, path.replace('/', File.separatorChar));

@@ -21,6 +21,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,6 +33,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
+import org.openide.filesystems.FileLock;
 
 /**
  * Basic setup for all the tests.
@@ -191,6 +194,21 @@ public abstract class TestBase extends NbTestCase {
             return baos.toString("UTF-8");
         } finally {
             is.close();
+        }
+    }
+    public static void dump(FileObject f, String contents) throws IOException {
+        FileLock lock = f.lock();
+        try {
+            OutputStream os = f.getOutputStream(lock);
+            try {
+                Writer w = new OutputStreamWriter(os, "UTF-8");
+                w.write(contents);
+                w.flush();
+            } finally {
+                os.close();
+            }
+        } finally {
+            lock.releaseLock();
         }
     }
     

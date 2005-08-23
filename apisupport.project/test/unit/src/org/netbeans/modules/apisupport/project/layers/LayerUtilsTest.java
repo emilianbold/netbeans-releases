@@ -81,4 +81,36 @@ public class LayerUtilsTest extends LayerTestBase {
     // XXX testInitiallyMissingLayer
     // XXX testGcLayerHandle
     
+    /*
+    public void testSystemFilesystemStandaloneProject() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        FileObject layerXML = handle.getLayerFile();
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n" +
+                "    <file name=\"foo\"/>\n" +
+                "</filesystem>\n";
+        TestBase.dump(layerXML, xml);
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
+        assertNotNull("have stuff from the platform", fs.findResource("Menu/File"));
+        assertNotNull("have stuff from my own layer", fs.findResource("foo"));
+        fs.getRoot().createData("quux");
+        handle.save();
+        xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n" +
+                "    <file name=\"foo\"/>\n" +
+                "    <file name=\"quux\"/>\n" +
+                "</filesystem>\n";
+        assertEquals("new layer stored", xml, TestBase.slurp(layerXML));
+    }
+     */
+    
+    // XXX testSystemFilesystemSuiteProject
+    // XXX testSystemFilesystemSuiteComponentProject
+    // XXX testSystemFilesystemLocalizedNames
+    
 }

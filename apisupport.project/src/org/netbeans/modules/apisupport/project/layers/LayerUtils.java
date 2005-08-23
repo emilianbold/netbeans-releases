@@ -29,6 +29,7 @@ import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.EditableManifest;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -469,5 +470,34 @@ public class LayerUtils {
         }
         
     }
+    
+    /**
+     * Get a filesystem that will look like what this project would "see".
+     * <p>There are three possibilities:</p>
+     * <ol>
+     * <li><p>For a standalone module project, the filesystem will include all the XML
+     * layers from all modules in the selected platform, plus this module's XML layer
+     * as the writable layer (use {@link LayerHandle#save} to save changes as needed).</p></li>
+     * <li><p>For a module suite project, the filesystem will include all the XML layers
+     * from all modules in the selected platform which are not excluded in the current
+     * suite configuration, plus the XML layers for modules in the suite (currently all
+     * read-only, i.e. the filesystem is read-only).</p></li>
+     * <li><p>For a suite component module project, the filesystem will include all XML
+     * layers from non-excluded platform modules, plus the XML layers for modules in the
+     * suite, with this module's layer being writable.</p></li>
+     * </ol>
+     * <p>Does not currently attempt to cache the result,
+     * though that could be attempted later as needed.</p>
+     * <p>Will try to produce pleasant-looking display names and/or icons for files.</p>
+     * @param project a project of one of the three types enumerated above
+     * @return the effective system filesystem seen by that project
+     * @throws IOException if there were problems loading layers, etc.
+     * @see "#62257"
+     */
+    /*
+    public static FileSystem getEffectiveSystemFilesystem(Project project) throws IOException {
+        return FileUtil.createMemoryFileSystem();//XXX
+    }
+     */
     
 }
