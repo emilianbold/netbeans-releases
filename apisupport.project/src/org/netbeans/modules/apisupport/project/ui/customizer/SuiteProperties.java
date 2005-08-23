@@ -67,7 +67,7 @@ final class SuiteProperties extends ModuleProperties {
         this.disabledModules = getArrayProperty(evaluator, "disabled.modules"); // NOI18N
         this.disabledClusters = getArrayProperty(evaluator, "disabled.clusters"); // NOI18N
     }
-
+    
     Project getProject() {
         return project;
     }
@@ -87,6 +87,7 @@ final class SuiteProperties extends ModuleProperties {
     String[] getDisabledModules() {
         return disabledModules;
     }
+    
     String[] getDisabledClusters() {
         return disabledClusters;
     }
@@ -98,6 +99,7 @@ final class SuiteProperties extends ModuleProperties {
         this.disabledClusters = value;
         this.changedDisabledClusters = true;
     }
+    
     void setDisabledModules(String[] value) {
         if (Arrays.asList(disabledModules).equals(Arrays.asList(value))) {
             return;
@@ -111,7 +113,7 @@ final class SuiteProperties extends ModuleProperties {
         if (s == null) {
             return new String[0];
         }
-        StringTokenizer tok = new StringTokenizer(s, ",");
+        StringTokenizer tok = new StringTokenizer(s, ","); // NOI18N
         String[] arr = new String[tok.countTokens()];
         for (int i = 0; i < arr.length; i++) {
             arr[i] = tok.nextToken();
@@ -127,36 +129,29 @@ final class SuiteProperties extends ModuleProperties {
     void storeProperties() throws IOException {
         ModuleProperties.storePlatform(getHelper(), platform);
         
-        boolean changed = false;
         // store submodules if they've changed
         SuiteSubModulesListModel model = getModulesListModel();
         if (model.isChanged()) {
             SuiteUtils.replaceSubModules(this);
-            changed = true;
         }
-
+        
         if (changedDisabledModules) {
             String[] separated = (String[])disabledModules.clone();
             for (int i = 0; i < disabledModules.length - 1; i++) {
-                separated[i] = disabledModules[i] + ",";
+                separated[i] = disabledModules[i] + ',';
             }
-            getProjectProperties().setProperty("disabled.modules", separated);
-            changed = true;
+            setProperty("disabled.modules", separated); // NOI18N
         }
         
         if (changedDisabledClusters) {
             String[] separated = (String[])disabledClusters.clone();
             for (int i = 0; i < disabledClusters.length - 1; i++) {
-                separated[i] = disabledClusters[i] + ",";
+                separated[i] = disabledClusters[i] + ',';
             }
-            getProjectProperties().setProperty("disabled.clusters", separated);
-            
+            setProperty("disabled.clusters", separated); // NOI18N
         }
-
-        if (changed) {
-            // this saves the private&project properties
-            super.storeProperties();
-        }
+        
+        super.storeProperties();
     }
     
     Set/*<Project>*/ getSubModules() {
@@ -166,7 +161,7 @@ final class SuiteProperties extends ModuleProperties {
     Set/*<Project>*/ getOrigSubModules() {
         return origSubModules;
     }
-
+    
     /**
      * Returns list model of module's dependencies regarding the currently
      * selected platform.
