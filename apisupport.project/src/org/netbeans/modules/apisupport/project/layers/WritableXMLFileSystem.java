@@ -1380,7 +1380,18 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             // Document was modified, and reparsed OK. See what changed.
             try {
                 doc = cookie.openDocumentRoot();
-                refreshResource("", true);
+                /* Neither of the following work:
+                refreshResource("", true); // only works on root folder
+                refreshRoot();             // seems to do nothing at all
+                 */
+                Enumeration/*<FileObject>*/ e = existingFileObjects(getRoot());
+                while (e.hasMoreElements()) {
+                    FileObject fo = (FileObject) e.nextElement();
+                    // fo.refresh() does not work
+                    refreshResource(fo.getPath(), true);
+                }
+                //System.err.println("got changes; new files: " + Collections.list(getRoot().getChildren(true)));
+                //Thread.dumpStack();
             } catch (TreeException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             } catch (IOException e) {
