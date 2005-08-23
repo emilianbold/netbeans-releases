@@ -51,6 +51,7 @@ import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
@@ -109,7 +110,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                 Component c = Utilities.getLastActiveComponent();
                 if (c != null) {
                     c.requestFocus();
-                }
+                }   
             }
         };
        
@@ -234,10 +235,48 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
     
     public void settingsChange(SettingsChangeEvent evt) {
         final boolean visible = isToolBarVisible();        
+        final boolean keyBindingsChanged = 
+                evt!=null && 
+                SettingsNames.KEY_BINDING_LIST.equals(evt.getSettingName());
         Runnable r = new Runnable() {
                 public void run() {
                     if (visible) {
                         checkPresentersAdded();
+                        if (keyBindingsChanged){ //#62487
+                            int componentCount = getComponentCount();
+                            Map keybsMap = getKeyBindingMap();
+                            Component comps[] = getComponents();
+                            for (int i=0; i<comps.length; i++){
+                                Component comp = comps[i];
+                                if (comp instanceof JButton){
+                                    JButton button = (JButton)comp;
+                                    Action action = button.getAction();
+                                    if (action == null){
+                                        continue;
+                                    }
+                                    String actionName = (String) action.getValue(Action.NAME);
+                                    if (actionName == null){
+                                        continue;
+                                    }
+                                    
+                                    String tooltipText = button.getToolTipText();
+                                    if (tooltipText!=null){
+                                        int index = tooltipText.indexOf("("); //NOI18N
+                                        if (index > 0){
+                                            tooltipText = tooltipText.substring(0, index-1);
+                                        }
+                                    }
+                                    
+                                    MultiKeyBinding mkb = (MultiKeyBinding)keybsMap.get(actionName);
+                                    if (mkb != null){
+                                        button.setToolTipText(tooltipText
+                                            + " (" + getMnemonic(mkb) + ")"); // NOI18N
+                                    } else {
+                                        button.setToolTipText(tooltipText);
+                                    }
+                                }
+                            }
+                        }
                     } else {
                         checkPresentersRemoved();
                     }
@@ -357,16 +396,24 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
         
         return sb.toString();
     }
+
+    private Map/*<ActionName,MultiKeyBinding>*/ getKeyBindingMap(){
+        Map retMap = new HashMap();
+        List keybList = getKeyBindingList();
+        Iterator it = keybList.iterator();
+        while(it.hasNext()){
+            Object obj = it.next();
+            if (obj instanceof MultiKeyBinding){
+                MultiKeyBinding keyb = (MultiKeyBinding)obj;
+                retMap.put(keyb.actionName, keyb);
+            }
+        }
+        return retMap;
+    }
     
-    /** Add the presenters (usually buttons) for the contents of the toolbar
-     * contained in the base and mime folders.
-     * @param baseFolder folder that corresponds to "text/base"
-     * @param mimeFolder target mime type folder.
-     * @param toolbar toolbar being constructed.
-     */
-    private void addPresenters(DataFolder baseFolder, DataFolder mimeFolder) {
+    private List getKeyBindingList(){
         List keyBindingsList = new ArrayList();
-        
+
         AllOptionsFolder aof = AllOptionsFolder.getDefault();
         if (aof != null) {
             List gkbl = aof.getKeyBindingList();
@@ -385,6 +432,25 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                     keyBindingsList.addAll(kbl);
                 }
             }
+        }
+        
+        return keyBindingsList;
+        
+    }
+    
+    /** Add the presenters (usually buttons) for the contents of the toolbar
+     * contained in the base and mime folders.
+     * @param baseFolder folder that corresponds to "text/base"
+     * @param mimeFolder target mime type folder.
+     * @param toolbar toolbar being constructed.
+     */
+    private void addPresenters(DataFolder baseFolder, DataFolder mimeFolder) {
+        
+        List keyBindingsList = getKeyBindingList();
+
+        EditorKit kit = Utilities.getKit(editorUI.getComponent());
+        if (kit instanceof BaseKit) {
+            BaseKit baseKit = (BaseKit)kit;
 
             for (Iterator it = getToolbarObjects(baseFolder, mimeFolder).iterator();
                 it.hasNext();
