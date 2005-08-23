@@ -154,7 +154,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 sb.append('<').append(XML_COMPONENT).append(' ');
                 sb.append(ATTR_COMPONENT_ID).append("=\"").append(name).append("\""); // NOI18N
                 sb.append(' ');
-                sb.append(ATTR_LINK_SIZE).append("=\"").append(interval.getComponent().getLinkSizeId(dimension)).append("\""); // NOI18N
+                saveLinkSize(interval.getComponent().getLinkSizeId(dimension));
                 saveAlignment(interval.getRawAlignment(), false);
             } else if (interval.isEmptySpace()) {
                 sb.append('<').append(XML_EMPTY_SPACE);
@@ -168,6 +168,17 @@ public class LayoutPersistenceManager implements LayoutConstants {
             sb.append("/>\n");
         }
         indent--;
+    }
+
+    /**
+     * Saves linkSize group identifier
+     *
+     * @param linksizeid 
+     */
+    private void saveLinkSize(int linkSizeId) {
+        if (linkSizeId != NOT_EXPLICITLY_DEFINED) {
+            sb.append(ATTR_LINK_SIZE).append("=\"").append(linkSizeId).append("\""); // NOI18N
+        }
     }
     
     /**
@@ -191,7 +202,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 sb.append("\""); // NOI18N
             }
         } else {
-            sb.append(attrPrefix).append(alignment).append("\""); // NOI18N
+            if (alignment != DEFAULT) {
+                sb.append(attrPrefix).append(alignment).append("\""); // NOI18N
+            }
         }
     }
     
@@ -218,7 +231,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 sb.append("\""); // NOI18N
             }
         } else {
-            sb.append(attrPrefix).append(size).append("\""); // NOI18N
+            if (size != NOT_EXPLICITLY_DEFINED) {
+                sb.append(attrPrefix).append(size).append("\""); // NOI18N
+            }
         }
     }
 
@@ -283,16 +298,16 @@ public class LayoutPersistenceManager implements LayoutConstants {
         Node groupAlignmentNode = attrMap.getNamedItem(ATTR_GROUP_ALIGNMENT);
         Node minNode = attrMap.getNamedItem(ATTR_SIZE_MIN);
         Node maxNode = attrMap.getNamedItem(ATTR_SIZE_MAX);
-        int alignment = integerFromNode(alignmentNode);
+        int alignment = (alignmentNode == null) ? DEFAULT : integerFromNode(alignmentNode);
         group.setAlignment(alignment);
         if (group.isParallel()) {
-            int groupAlignment = integerFromNode(groupAlignmentNode);
+            int groupAlignment = (groupAlignmentNode == null) ? DEFAULT : integerFromNode(groupAlignmentNode);
             if (groupAlignment != DEFAULT) {
                 group.setGroupAlignment(groupAlignment);
             }
         }
-        int min = integerFromNode(minNode);
-        int max = integerFromNode(maxNode);
+        int min = (minNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(minNode);
+        int max = (maxNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(maxNode);
         group.setMinimumSize(min);
         group.setMaximumSize(max);
         loadAttributes(group, attrMap);
@@ -344,7 +359,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
         Node linkSizeId = attrMap.getNamedItem(ATTR_LINK_SIZE);
         String id = (String)idNameMap.get(name);
         Node alignmentNode = attrMap.getNamedItem(ATTR_ALIGNMENT);
-        int alignment = integerFromNode(alignmentNode);
+        int alignment = (alignmentNode == null) ? DEFAULT : integerFromNode(alignmentNode);
         LayoutComponent layoutComponent = layoutModel.getLayoutComponent(id);
         if (layoutComponent == null) {
             layoutComponent = new LayoutComponent(id, false  /*PENDING*/);
@@ -372,9 +387,9 @@ public class LayoutPersistenceManager implements LayoutConstants {
         Node minNode = attrMap.getNamedItem(ATTR_SIZE_MIN);
         Node prefNode = attrMap.getNamedItem(ATTR_SIZE_PREF);
         Node maxNode = attrMap.getNamedItem(ATTR_SIZE_MAX);
-        int min = integerFromNode(minNode);
-        int pref = integerFromNode(prefNode);
-        int max = integerFromNode(maxNode);
+        int min = (minNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(minNode);
+        int pref = (prefNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(prefNode);
+        int max = (maxNode == null) ? NOT_EXPLICITLY_DEFINED : integerFromNode(maxNode);
         interval.setSizes(min, pref, max);
     }
     
