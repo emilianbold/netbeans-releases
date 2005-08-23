@@ -164,6 +164,7 @@ public class SwingLayoutBuilder {
                            boolean first, boolean last) {
         if (interval.isGroup()) {
             if (group instanceof GroupLayout.SequentialGroup) {
+                assert (interval.getAlignment() == LayoutConstants.DEFAULT);
                 ((GroupLayout.SequentialGroup)group).add(composeGroup(layout, interval, first, last));
             } else {
                 int alignment = convertAlignment(interval.getAlignment());
