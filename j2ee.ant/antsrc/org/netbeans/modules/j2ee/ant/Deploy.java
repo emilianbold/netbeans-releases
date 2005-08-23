@@ -16,6 +16,7 @@ package org.netbeans.modules.j2ee.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
+import org.openide.util.Lookup;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.*;
@@ -48,41 +49,59 @@ public class Deploy extends Task implements Deployment.Logger {
 
     
     public void execute() throws BuildException { 
-
-        J2eeModuleProvider jmp = null;
+        
+        ClassLoader originalLoader = null;        
+        
         try {
-            FileObject fob = FileUtil.toFileObject(getProject().getBaseDir());
-            fob.refresh(); // without this the "build" directory is not found in filesystems
-            jmp = (J2eeModuleProvider) FileOwnerQuery.getOwner(fob).getLookup().lookup(J2eeModuleProvider.class);
-        } catch (Exception e) {
-            throw new BuildException(e);
-        }
-
-        try {
-            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, this);
-            if (clientUrl != null) {
-                getProject().setProperty("client.url", clientUrl);
+            // see issue #62448
+            ClassLoader current = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            if (current == null) {
+                current = ClassLoader.getSystemClassLoader();
             }
-            
-            ServerDebugInfo sdi = jmp.getServerDebugInfo();
-            
-            if (sdi != null) { //fix for bug 57854, this can be null
-                String h = sdi.getHost();
-                String transport = sdi.getTransport();
-                String address = "";   //NOI18N
-                
-                if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                    address = sdi.getShmemName();
-                } else {
-                    address = Integer.toString(sdi.getPort());
+            if (current != null) {
+                originalLoader = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(current);
+            }
+
+            J2eeModuleProvider jmp = null;
+            try {
+                FileObject fob = FileUtil.toFileObject(getProject().getBaseDir());
+                fob.refresh(); // without this the "build" directory is not found in filesystems
+                jmp = (J2eeModuleProvider) FileOwnerQuery.getOwner(fob).getLookup().lookup(J2eeModuleProvider.class);
+            } catch (Exception e) {
+                throw new BuildException(e);
+            }
+
+            try {
+                String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, clientModuleUri, clientUrlPart, forceRedeploy, this);
+                if (clientUrl != null) {
+                    getProject().setProperty("client.url", clientUrl);
                 }
-                
-                getProject().setProperty("jpda.transport", transport);
-                getProject().setProperty("jpda.host", h);
-                getProject().setProperty("jpda.address", address);
+
+                ServerDebugInfo sdi = jmp.getServerDebugInfo();
+
+                if (sdi != null) { //fix for bug 57854, this can be null
+                    String h = sdi.getHost();
+                    String transport = sdi.getTransport();
+                    String address = "";   //NOI18N
+
+                    if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                        address = sdi.getShmemName();
+                    } else {
+                        address = Integer.toString(sdi.getPort());
+                    }
+
+                    getProject().setProperty("jpda.transport", transport);
+                    getProject().setProperty("jpda.host", h);
+                    getProject().setProperty("jpda.address", address);
+                }
+            } catch (Exception ex) {
+                throw new BuildException(ex);
             }
-        } catch (Exception ex) {
-            throw new BuildException(ex);
+        } finally {
+            if (originalLoader != null) {
+                Thread.currentThread().setContextClassLoader(originalLoader);
+            }
         }
     }
 
