@@ -13,6 +13,7 @@
 
 package org.netbeans.lib.editor.util.swing;
 
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
@@ -24,6 +25,8 @@ import javax.swing.text.Document;
  */
 
 public final class DocumentUtilities {
+    
+    private static final Object TYPING_MODIFICATION_DOCUMENT_PROPERTY = new Object();
     
     private DocumentUtilities() {
         // No instances
@@ -112,6 +115,46 @@ public final class DocumentUtilities {
         PriorityDocumentListenerList instance = new PriorityDocumentListenerList();
         doc.putProperty(PriorityDocumentListenerList.class, instance);
         return instance;
+    }
+    
+    /**
+     * Mark that the ongoing document modification(s) will be caused
+     * by user's typing.
+     * It should be used by default-key-typed-action and the actions
+     * for backspace and delete keys.
+     * <br/>
+     * The document listeners being fired may
+     * query it by using {@link #isTypingModification(Document)}.
+     * This method should always be used in the following pattern:
+     * <pre>
+     * DocumentUtilities.setTypingModification(doc, true);
+     * try {
+     *     doc.insertString(offset, typedText, null);
+     * } finally {
+     *    DocumentUtilities.setTypingModification(doc, false);
+     * }
+     * </pre>
+     *
+     * @see #isTypingModification(Document)
+     */
+    public static void setTypingModification(Document doc, boolean typingModification) {
+        doc.putProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY, Boolean.valueOf(typingModification));
+    }
+    
+    /**
+     * This method should be used by document listeners to check whether
+     * the just performed document modification was caused by user's typing.
+     * <br/>
+     * Certain functionality such as code completion or code templates
+     * may benefit from that information. For example the java code completion
+     * should only react to the typed "." but not if the same string was e.g.
+     * pasted from the clipboard.
+     *
+     * @see #setTypingModification(Document, boolean)
+     */
+    public static boolean isTypingModification(DocumentEvent evt) {
+        Boolean b = (Boolean)evt.getDocument().getProperty(TYPING_MODIFICATION_DOCUMENT_PROPERTY);
+        return (b != null) ? b.booleanValue() : false;
     }
 
 }

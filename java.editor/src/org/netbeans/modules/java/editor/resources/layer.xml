@@ -163,6 +163,9 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
+                <folder name="CodeTemplateProcessorFactories">
+                    <file name="org-netbeans-modules-java-editor-codetemplates-JavaCodeTemplateProcessor$Factory.instance"/>
+                </folder>
             </folder>
 
         </folder>

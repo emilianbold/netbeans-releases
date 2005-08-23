@@ -154,7 +154,22 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
 
         javaAbbrevMap.put("pst", "printStackTrace();"); // NOI18N
         javaAbbrevMap.put("tds", "Thread.dumpStack();"); // NOI18N
+        
+        // Code templates
+        javaAbbrevMap.put("forc", // NOI18N
+                "for (Iterator ${iterator} = ${collection instanceof=\"java.util.Collection\"}.iterator();"
+                + " ${iterator}.hasNext();) {\n"
+                + "    ${Type} ${elem} = (${Type}) ${iterator}.next();\n"
+                + "    ${cursor}"
+                + "}"
+        );
 
+        javaAbbrevMap.put("fori", // NOI18N
+                "for (int ${i index} = 0; ${i} < ${arr array}.length; ${i}++) {\n"
+                + "    ${cursor}\n"
+                + "}"
+        );
+        
         return javaAbbrevMap;
     }
 
