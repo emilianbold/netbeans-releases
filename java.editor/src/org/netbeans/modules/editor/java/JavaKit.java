@@ -883,7 +883,7 @@ public class JavaKit extends NbEditorKit {
                     t = wrapper.wrap(); 
                 } catch (JmiException e) {
                     //if error - write it on status line
-                    Utilities.setStatusText(target, e.getLocalizedMessage());
+                    Utilities.setStatusBoldText(target, e.getLocalizedMessage());
                     return ;
                 } finally {
                     JavaModel.getJavaRepository().endTrans();
