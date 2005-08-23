@@ -166,8 +166,8 @@ public class ExportDiffAction extends AbstractSystemAction {
         r2 = setup.getSecondSource().createReader();
         if (r2 == null) r2 = new StringReader("");
         TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
-            name + " " + setup.getFirstSource().getTitle(), // NOI18N
-            name + " " + setup.getSecondSource().getTitle(),  // NOI18N
+            name, // + " " + setup.getFirstSource().getTitle(), // NOI18N
+            name, // + " " + setup.getSecondSource().getTitle(),  // NOI18N
             null,
             null,
             r1,
