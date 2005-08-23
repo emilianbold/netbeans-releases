@@ -68,7 +68,7 @@ public class BrandingSupportTest extends TestBase {
         assertFalse(instance.getBrandingRoot().exists());
         Set keys = new HashSet(Arrays.asList(new String[]{"LBL_ProductInformation"}));
         implOfBundleKeyTest("org.netbeans.core",
-                "org/netbeans/core/ui/Bundle.properties", keys, "NetBeans Platform {0}");
+                "org/netbeans/core/ui/Bundle.properties", keys, "NetBeans Product Information");
     }
 
     public void testBranding4() throws IOException {
