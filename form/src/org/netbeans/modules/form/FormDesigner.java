@@ -1501,7 +1501,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     }
                 }
                 else if (type == FormModelEvent.COMPONENT_ADDED) {
-                    if (metacont instanceof RADVisualContainer
+                    if ((metacont instanceof RADVisualContainer
+                            || metacont instanceof RADMenuComponent)
                         && (prevType != FormModelEvent.COMPONENT_ADDED
                             || prevContainer != metacont))
                     {
