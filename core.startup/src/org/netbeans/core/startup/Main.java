@@ -15,13 +15,10 @@ package org.netbeans.core.startup;
 import java.beans.*;
 import java.io.*;
 import java.lang.reflect.Method;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.prefs.Preferences;
 import javax.swing.*;
 
 import org.openide.*;
@@ -584,54 +581,6 @@ public final class Main extends Object {
         class LicenseHandler implements Runnable {
             private String classname;
             private boolean executedOk; 
-            private String nbHome;
-            private Preferences prefUserNode;
-            private String licenseVersion;
-            private String LICENSE = "LICENSE"; // NOI18N
-            private String md5sumKey;
-            
-            /** Generate 32 byte long fingerprint of input string in sting form */
-            private String generateKey (String input) {
-                String key = null;
-                //Set default value in case anything fails.
-                if (input.length() > 32) {
-                    key = input.substring(input.length() - 32, input.length());
-                } else {
-                    key = input;
-                }
-                MessageDigest md = null;
-                try {
-                    md = MessageDigest.getInstance("MD5"); // NOI18N
-                } catch (NoSuchAlgorithmException exc) {
-                    exc.printStackTrace();
-                    return key;
-                }
-                
-                byte [] arr = new byte[0];
-                try {
-                    arr = nbHome.getBytes("UTF-8"); // NOI18N
-                } catch (UnsupportedEncodingException exc) {
-                    exc.printStackTrace();
-                    return key;
-                }
-                
-                byte [] md5sum = md.digest(arr);
-                StringBuffer keyBuff = new StringBuffer(32);
-                //Convert byte array to hexadecimal string to be used as key
-                for (int i = 0; i < md5sum.length; i++) {
-                    int val = md5sum[i];
-                    if (val < 0) {
-                        val = val + 256;
-                    }
-                    String s = Integer.toHexString(val);
-                    if (s.length() == 1) {
-                        keyBuff.append("0"); // NOI18N
-                    }
-                    keyBuff.append(Integer.toHexString(val));
-                }
-                key = keyBuff.toString();
-                return key;
-            }
             
             /** Checks if licence was accepted already or not. */
             public boolean shouldDisplayLicense () {
@@ -639,36 +588,8 @@ public final class Main extends Object {
                 if (f != null) {
                     return false;
                 }
-                //Check preferences
-                licenseVersion = NbBundle.getMessage(Main.class,"licenseVersion"); // NOI18N
-                nbHome = System.getProperty("netbeans.home"); // NOI18N
-                File nbHomeDir = new File(nbHome);
-                try {
-                    nbHome = nbHomeDir.getCanonicalPath();
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                }
-                md5sumKey = generateKey(nbHome);
-                        
-                prefUserNode = Preferences.userNodeForPackage(Main.class);
-                String value = prefUserNode.get(LICENSE + "|" + licenseVersion + "|" + md5sumKey,"N/A"); // NOI18N
-                if ("N/A".equals(value)) { // NOI18N
-                    classname = System.getProperty("netbeans.accept_license_class"); // NOI18N
-                    return (classname != null);
-                } else {
-                    //Create file "var/license_accepted" in user dir if it does not exist 
-                    //to speed up check
-                    f = new File (new File(CLIOptions.getUserDir(), "var"), "license_accepted"); // NOI18N
-                    if (!f.exists()) {
-                        f.getParentFile().mkdirs ();
-                        try {
-                            f.createNewFile();
-                        } catch (IOException exc) {
-                            exc.printStackTrace();
-                        }
-                    }
-                    return false;
-                }
+                classname = System.getProperty("netbeans.accept_license_class"); // NOI18N
+                return (classname != null);
             }
             
             public void run() {
@@ -680,8 +601,16 @@ public final class Main extends Object {
                     Method showMethod = clazz.getMethod("showLicensePanel",null); // NOI18N
                     showMethod.invoke (null, null);
                     executedOk = true;
-                    //License accepted - set any string != "N/A"
-                    prefUserNode.put(LICENSE + "|" + licenseVersion + "|" + md5sumKey,"accepted"); // NOI18N
+                    //User accepted license => create file marker in userdir
+                    File f = new File(new File(CLIOptions.getUserDir(), "var"), "license_accepted"); // NOI18N
+                    if (!f.exists()) {
+                        f.getParentFile().mkdirs();
+                        try {
+                            f.createNewFile();
+                        } catch (IOException exc) {
+                            exc.printStackTrace();
+                        }
+                    }
                 } catch (java.lang.reflect.InvocationTargetException ex) {
                     // canceled by user, all is fine
                     if (ex.getTargetException() instanceof org.openide.util.UserCancelException) {
@@ -699,9 +628,9 @@ public final class Main extends Object {
             }
             
             public boolean canContinue () {
-                if (shouldDisplayLicense ()) {
+                if (shouldDisplayLicense()) {
                     try {
-                        SwingUtilities.invokeAndWait (this);
+                        SwingUtilities.invokeAndWait(this);
                         if (executedOk) {
                             return true;
                         } else {

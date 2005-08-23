@@ -13,15 +13,10 @@
 package org.netbeans.core.startup;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.prefs.Preferences;
-import org.netbeans.junit.*;
-import org.openide.util.NbBundle;
 
-/** Tests the behaviour of the import user dir "api".
+import org.netbeans.junit.*;
+
+/** Tests the behavior of the license check "api".
  */
 public class NonGuiHandleCheckOfLicenseTest extends NbTestCase {
     private static NonGuiHandleCheckOfLicenseTest instance;
@@ -30,7 +25,6 @@ public class NonGuiHandleCheckOfLicenseTest extends NbTestCase {
     private File userVar;
     private boolean updaterInvoked;
     private Throwable toThrow;
-    private String nbHome;
     
     public static void showLicensePanel () throws Throwable {
         if (instance != null) {
@@ -63,20 +57,6 @@ public class NonGuiHandleCheckOfLicenseTest extends NbTestCase {
         
         System.setProperty ("netbeans.accept_license_class", NonGuiHandleCheckOfLicenseTest.class.getName ());
         
-        //Clean preferences
-        String licenseVersion = NbBundle.getMessage(Main.class,"licenseVersion");
-        
-        nbHome = System.getProperty("netbeans.home");
-        File nbHomeDir = new File(nbHome);
-        try {
-            nbHome = nbHomeDir.getCanonicalPath();
-        } catch (IOException exc) {
-            exc.printStackTrace();
-        }
-        String md5sumKey = generateKey(nbHome);
-        
-        Preferences prefUserNode = Preferences.userNodeForPackage(Main.class);
-        prefUserNode.remove("LICENSE" + "|" + licenseVersion + "|" + md5sumKey);
         File f = new File(userVar,"license_accepted");
         if (f.exists()) {
             f.delete();
@@ -114,13 +94,6 @@ public class NonGuiHandleCheckOfLicenseTest extends NbTestCase {
         assertTrue ("The check is not called anymore 3", Main.handleLicenseCheck ());
         assertTrue ("The check is not called anymore 4", Main.handleLicenseCheck ());
         
-        //Clean preferences and user dir
-        String licenseVersion = NbBundle.getMessage(Main.class,"licenseVersion");
-
-        String md5sumKey = generateKey(nbHome);
-
-        Preferences prefUserNode = Preferences.userNodeForPackage(Main.class);
-        prefUserNode.remove("LICENSE" + "|" + licenseVersion + "|" + md5sumKey);
         File f = new File(userVar,"license_accepted");
         if (f.exists()) {
             f.delete();
@@ -144,47 +117,4 @@ public class NonGuiHandleCheckOfLicenseTest extends NbTestCase {
         assertNull("Justs to be sure the exception was cleared", toThrow);
     }
     
-    /** Generate 32 byte long fingerprint of input string in sting form */
-    private String generateKey (String input) {
-        String key = null;
-        //Set default value in case anything fails.
-        if (input.length() > 32) {
-            key = input.substring(input.length() - 32, input.length());
-        } else {
-            key = input;
-        }
-        MessageDigest md = null;
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException exc) {
-            exc.printStackTrace();
-            return key;
-        }
-
-        byte [] arr = new byte[0];
-        try {
-            arr = nbHome.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException exc) {
-            exc.printStackTrace();
-            return key;
-        }
-
-        byte [] md5sum = md.digest(arr);
-        StringBuffer keyBuff = new StringBuffer(32);
-        //Convert byte array to hexadecimal string to be used as key
-        for (int i = 0; i < md5sum.length; i++) {
-            int val = md5sum[i];
-            if (val < 0) {
-                val = val + 256;
-            }
-            String s = Integer.toHexString(val);
-            if (s.length() == 1) {
-                keyBuff.append("0");
-            }
-            keyBuff.append(Integer.toHexString(val));
-        }
-        key = keyBuff.toString();
-        return key;
-    }
-            
 }
