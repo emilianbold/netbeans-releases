@@ -142,7 +142,10 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     }
     
     public void documentElementChanged(DocumentElement de) {
-        ;
+        //XXX we need to handle this - when a fold is changed from 
+        //one-line to more-lines we have to add it or remove (in the opposite 
+        //situation)
+        
     }
     
     public void documentElementAttributesChanged(DocumentElement de) {
@@ -199,7 +202,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                             //create folds of appropriate type 
                             if(de.getType().equals(XMLDocumentModelProvider.XML_TAG) 
                                     || de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
-                                foldName = de.getName();
+                                foldName = "<"+de.getName()+">";
                                 type = XmlFoldTypes.TAG;
                             } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
                                 foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_PI"); //NOI18N
@@ -214,21 +217,24 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                                 foldName = NbBundle.getMessage(XmlFoldManager.class, "LBL_CDATA"); //NOI18N
                                 type = XmlFoldTypes.CDATA;
                             }
-
+                            if(debug) System.out.println("[XML folding] adding fold for " + de);
                             getOperation().addToHierarchy(type, foldName, false,
-                                    Math.max(0, de.getStartOffset() +1 ) ,
-                                    Math.min(getDocument().getLength(), de.getEndOffset()),
+                                    Math.max(0, de.getStartOffset()) ,
+                                    Math.min(getDocument().getLength(), de.getEndOffset() + 1),
                                     0, 0, null, fhTran);
                         } else if (chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_REMOVED) {
+                            if(debug) System.out.println("[XML folding] about to remove fold for " + chi.getDocumentElement());
                             //find appropriate fold for the document element
                             //XXX this is very uneffective - I need a method like
                             //FoldUtilitites.getFold(int startOffset, int endOffset);
-                            Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold(), XmlFoldTypes.TAG).iterator();
+                            Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold()).iterator();
                             while(allFolds.hasNext()) {
                                 Fold f = (Fold)allFolds.next();
-                                if(f.getStartOffset() == de.getStartOffset() &&
-                                        f.getEndOffset() == de.getEndOffset()) {
+                                if(debug) System.out.println("testing fold " + f);
+                                if((f.getStartOffset()) == de.getStartOffset() &&
+                                        (f.getEndOffset()-1) == de.getEndOffset()) {
                                     //remove the fold
+                                    if(debug) System.out.println("[XML folding] removing fold " + chi.getDocumentElement());
                                     getOperation().removeFromHierarchy(f, fhTran);
                                     break; //there should be only one fold for document element
                                 }
