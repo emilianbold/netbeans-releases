@@ -323,7 +323,8 @@ public final class Main extends Object {
     // -----------------------------------------------------------------------------------------------------
     // License check
     try {
-        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null) &&
+            (System.getProperty ("netbeans.skip_license_check") == null)) {
             if (!handleLicenseCheck()) {
                 org.netbeans.TopSecurityManager.exit(0);
             }
