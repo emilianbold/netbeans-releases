@@ -131,7 +131,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             if ("updateTrackingFiles".equals(arr[i].getName())) {
                 fileToOwningModule = new HashMap();
                 try {
-                    readUpdateTracking(arr[i].getValue(), fileToOwningModule);
+                    readUpdateTracking(getProject(), arr[i].getValue(), fileToOwningModule);
                 } catch (IOException ex) {
                     throw new BuildException(ex);
                 } catch (ParserConfigurationException ex) {
@@ -154,7 +154,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         }
     }
 
-    private void readUpdateTracking(String tokens, final HashMap files) throws SAXException, IOException, ParserConfigurationException {
+    static void readUpdateTracking(final Project p, String tokens, final HashMap files) throws SAXException, IOException, ParserConfigurationException {
         StringTokenizer tok = new StringTokenizer(tokens, File.pathSeparator);
         
         javax.xml.parsers.SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance();
@@ -187,7 +187,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                     module = module.replace('-', '.');
 
                     try {
-                        log("Parsing " + where, Project.MSG_VERBOSE);
+                        p.log("Parsing " + where, Project.MSG_VERBOSE);
                         parser.parse(where, this);
                     } catch (SAXException ex) {
                         throw new BuildException("Wrong file " + where, ex);

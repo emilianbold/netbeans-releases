@@ -24,16 +24,20 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.jar.Attributes;
@@ -97,6 +101,19 @@ public class MakeJNLP extends Task {
     public void setCodebase(String s) {
         this.codebase = s;
     }
+    
+    private boolean verify;
+    public void setVerify(boolean v) {
+        this.verify = v;
+    }
+    
+    private String verifyExcludes;
+    /** Comma separated list of allowed excluded names of files during verify
+     * phase.
+     */
+    public void setVerifyExcludes(String s) {
+        this.verifyExcludes = s;
+    }
 
     public void execute() throws BuildException {
         if (target == null) throw new BuildException("Output dir must be provided");
@@ -153,12 +170,15 @@ public class MakeJNLP extends Task {
                 shrt = prop.getProperty("OpenIDE-Module-Long-Description", oneline);
             }
             
+            if (verify) {
+                verifyExtensions(jar, theJar.getManifest(), dashcnb, codenamebase);
+            }
             
 
             File signed = new File(target, dashcnb + ".jar");
             File jnlp = new File(target, dashcnb + ".jnlp");
             
-            FileWriter writeJNLP = new FileWriter(jnlp);
+            StringWriter writeJNLP = new StringWriter();
             writeJNLP.write("<?xml version='1.0' encoding='UTF-8'?>\n");
             writeJNLP.write("<jnlp spec='1.0+' codebase='" + codebase + "' >\n");
             writeJNLP.write("  <information>\n");
@@ -178,6 +198,9 @@ public class MakeJNLP extends Task {
             writeJNLP.write("</jnlp>\n");
             writeJNLP.close();
             
+            FileWriter w = new FileWriter(jnlp);
+            w.write(writeJNLP.toString());
+            w.close();
 
             getSignTask().setJar(jar);
             getSignTask().setSignedjar(signed);
@@ -188,8 +211,69 @@ public class MakeJNLP extends Task {
         }
         
     }
+    
+    private void verifyExtensions(File f, Manifest mf, String dashcnb, String codebasename) throws IOException, BuildException {
+        File clusterRoot = f.getParentFile();
+        String moduleDirPrefix = "";
+        File updateTracking;
+        for(;;) {
+            updateTracking = new File(clusterRoot, "update_tracking");
+            if (updateTracking.isDirectory()) {
+                break;
+            }
+            moduleDirPrefix = clusterRoot.getName() + "/" + moduleDirPrefix;
+            clusterRoot = clusterRoot.getParentFile();
+            if (clusterRoot == null || !clusterRoot.exists()) {
+                throw new BuildException("Cannot find update_tracking directory for module " + f);
+            }
+        }
+        
+        File ut = new File(updateTracking, dashcnb + ".xml");
+        if (!ut.exists()) {
+            throw new BuildException("The file " + ut + " for module " + codebasename + " cannot be found");
+        }
+        
+        HashMap fileToOwningModule = new HashMap();
+        try {
+            ModuleSelector.readUpdateTracking(getProject(), ut.toString(), fileToOwningModule);
+        } catch (IOException ex) {
+            throw new BuildException(ex);
+        } catch (javax.xml.parsers.ParserConfigurationException ex) {
+            throw new BuildException(ex);
+        } catch (org.xml.sax.SAXException ex) {
+            throw new BuildException(ex);
+        }
+        
+        fileToOwningModule.remove(relative(f, clusterRoot));
+        fileToOwningModule.remove("config/Modules/" + dashcnb + ".xml");
+        
+        String path = mf.getMainAttributes().getValue("Class-Path");
+        if (path != null) {
+            StringTokenizer tok = new StringTokenizer(path, ", ");
+            while(tok.hasMoreElements()) {
+                String s = tok.nextToken();
+                File e = new File(f.getParentFile(), s);
+                fileToOwningModule.remove(relative(e, clusterRoot));
+            }
+        }
+        
+        if (verifyExcludes != null) {
+            StringTokenizer tok = new StringTokenizer(verifyExcludes, ", ");
+            while(tok.hasMoreElements()) {
+                fileToOwningModule.remove(tok.nextToken());
+            }
+        }
+            
+        
+        if (!fileToOwningModule.isEmpty()) {
+            throw new BuildException(
+                "Cannot build JNLP for module " + f + " as these files are in " +
+                "module's NBM, but are not referenced from any path:\n" + fileToOwningModule.keySet()
+            );
+        }
+    }
 
-    private void processExtensions(File f, Manifest mf, FileWriter fileWriter, String dashcnb, String codebase) throws IOException, BuildException {
+    private void processExtensions(File f, Manifest mf, Writer fileWriter, String dashcnb, String codebase) throws IOException, BuildException {
         String path = mf.getMainAttributes().getValue("Class-Path");
         if (path == null) {
             return;
@@ -242,6 +326,15 @@ public class MakeJNLP extends Task {
                 getSignTask().execute();
             }
         }
+    }
+    
+    private static String relative(File file, File root) {
+        String sfile = file.toString();
+        String sroot = root.toString() + File.separator;
+        if (sfile.startsWith(sroot)) {
+            return sfile.substring(sroot.length());
+        }
+        return sfile;
     }
     
     private static boolean isSigned(File f) throws IOException {

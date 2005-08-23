@@ -14,6 +14,7 @@
 package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -347,6 +348,105 @@ public class MakeJNLPTest extends NbTestCase {
         }
     }
     
+    public void testGenerateJNLPFailsForModulesWithExtraFiles() throws Exception {
+        doCompareJNLPFileWithUpdateTracking(true, null, "");
+    }
+    public void testGenerateJNLPSucceedsWithExtraFiles() throws Exception {
+        doCompareJNLPFileWithUpdateTracking(false, null, "");
+    }
+    public void testGenerateJNLPSucceedsWhenExtraFileIsExcluded() throws Exception {
+        doCompareJNLPFileWithUpdateTracking(false, "lib/nbexec", " verifyexcludes=' one, lib/nbexec, three ' ");
+    }
+    
+    private void doCompareJNLPFileWithUpdateTracking(boolean useNonModule, String fakeEntry, String extraScript) throws Exception {
+        File nonModule = generateJar (new String[0], ModuleDependenciesTest.createManifest());
+        
+        Manifest m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes ().putValue ("OpenIDE-Module", "aaa.my.module/3");
+        File module = generateJar (new String[0], m);
+        
+        File updateTracking = new File(getWorkDir(), "update_tracking");
+        updateTracking.mkdirs();
+        assertTrue("Created", updateTracking.isDirectory());
+
+        File enableXML = new File(new File(getWorkDir(), "config"), "Modules");
+        enableXML.getParentFile().mkdirs();
+        enableXML.createNewFile();
+        
+        File trackingFile = new File(updateTracking, "aaa-my-module.xml");
+        FileWriter w = new FileWriter(trackingFile);
+        w.write(
+"<?xml version='1.0' encoding='UTF-8'?>\n" +
+"<module codename='org.apache.tools.ant.module/3'>\n" +
+    "<module_version specification_version='3.22' origin='installer' last='true' install_time='1124194231878'>\n" +
+        (useNonModule ? ("<file name='modules/" + nonModule.getName() + "' crc='1536373800'/>\n") : "") +
+        "<file name='modules/" + module.getName() + "' crc='3245456472'/>\n" +
+        "<file name='config/Modules/aaa-my-module.xml' crc='43434' />\n" +
+        (fakeEntry != null ? "<file name='" + fakeEntry + "' crc='43222' />\n" : "") +
+"    </module_version>\n" +
+"</module>\n"
+        );
+        w.close();
+        
+        
+        
+        String script =
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='${test.output}' />" + 
+            "  <jnlp dir='${test.output}' alias='jnlp' storepass='netbeans-test' keystore='${test.ks}' verify='true' " + extraScript + " >" +
+            "    <modules dir='${test.parent}' >" +
+            "      <include name='${test.name}' />" +
+            "    </modules>" +
+            "  </jnlp>" +
+            "</target>" +
+            "</project>";
+
+        assertEquals("Both modules in the same dir", module.getParentFile(), nonModule.getParentFile());
+        
+        File output = new File(getWorkDir(), "output");
+        File ks = genereteKeystore("jnlp", "netbeans-test");
+        
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
+        try {
+            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+                "-Dtest.output=" + output, 
+                "-Dtest.parent=" + module.getParent(), 
+                "-Dtest.name=" + module.getName(),
+                "-Dtest.ks=" + ks,
+            });
+            if (useNonModule) {
+                fail("The task has to fail");   
+            }
+            
+            assertTrue ("Output exists", output.exists ());
+            assertTrue ("Output directory created", output.isDirectory());
+
+            File ext = new File (output, module.getName());
+
+
+            String[] files = ext.getParentFile().list();
+            assertEquals("Two files are there", 2, files.length);
+        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+            if (!useNonModule) {
+                throw ex;
+            } else {
+                // ok, this is fine
+                assertTrue ("Output exists", output.exists ());
+                assertTrue ("Output directory created", output.isDirectory());
+
+                File ext = new File (output, module.getName());
+
+
+                String[] files = ext.getParentFile().list();
+                assertEquals("Output dir is empty as nothing has been generated", 0, files.length);
+            }
+        }
+        
+    }
+    
     private File doClassPathModuleCheck(String script) throws Exception {
         Manifest m;
 
@@ -382,9 +482,12 @@ public class MakeJNLPTest extends NbTestCase {
     
     
     private final File createNewJarFile () throws IOException {
+        File dir = new File(this.getWorkDir(), "modules");
+        dir.mkdirs();
+        
         int i = 0;
         for (;;) {
-            File f = new File (this.getWorkDir(), i++ + ".jar");
+            File f = new File (dir, i++ + ".jar");
             if (!f.exists ()) return f;
         }
     }

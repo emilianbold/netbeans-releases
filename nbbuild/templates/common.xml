@@ -218,12 +218,15 @@ Microsystems, Inc. All Rights Reserved.
         
         <property name="jnlp.codebase" value="$$$$codebase" /> 
         
+		    <property name="jnlp.verify.excludes" value="" />
         <makejnlp 
             dir="${jnlp.dest.dir}" 
             alias="${jnlp.signjar.alias}"
             storepass="${jnlp.signjar.password}"
             keystore="${jnlp.signjar.keystore}"
             codebase="${jnlp.codebase}"
+            verify="true"
+            verifyexcludes="${jnlp.verify.excludes}"
         >
             <modules dir="${cluster}" >
                 <include name="${module.jar}" />
