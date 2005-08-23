@@ -7,12 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
+// XXX is this really an appropriate package? Perhaps move to e.g. org.netbeans.jnlplauncher.
 package org.netbeans.modules.apisupport.jnlplauncher;
 
+import java.io.File;
 
 /** The JNLP entry point. Does not do much, in future it can do more
  * of JNLP related stuff.
@@ -45,8 +47,9 @@ public class Main extends Object {
         String newDir = 
             userDir.substring(0, uh) + 
             System.getProperty("user.home") + // NOI18N
-            java.io.File.separator + 
+            File.separator + 
             userDir.substring(uh + PREFIX.length()); 
         System.setProperty("netbeans.user", newDir); // NOI18N
     }
+    
 }
