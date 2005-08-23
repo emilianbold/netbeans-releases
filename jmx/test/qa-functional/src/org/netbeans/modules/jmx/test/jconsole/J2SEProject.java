@@ -44,14 +44,9 @@ public class J2SEProject extends JellyTestCase {
         //We need it to help tools.jar API to findout the local connector
         //This is an horrible hack! But no way to make it work without /var/tmp/ tmp file
         //java.io.tmpdir.default is defined on 4.2 ...
-        String tmpFile = System.getProperty("java.io.tmpdir.default");
-        if(tmpFile == null) {
-            String os = System.getProperty("os.name");
-            if(!os.startsWith("Win"))
-                tmpFile = "/var/tmp";
-            else
-                tmpFile = System.getProperty("java.io.tmpdir");
-        }
+        //String tmpFile = System.getProperty("java.io.tmpdir.default");
+        String tmpFile = System.getProperty("Env-TMP");
+        
         ORIGINAL_TMP_FILE =  tmpFile == null ? null :  tmpFile + File.separator;
     
         System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
