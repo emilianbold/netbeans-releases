@@ -87,10 +87,6 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  */
 public final class NbModuleProject implements Project {
     
-    public static final int TYPE_NETBEANS_ORG = 0;
-    public static final int TYPE_SUITE_COMPONENT = 1;
-    public static final int TYPE_STANDALONE = 2;
-    
     private static final Icon NB_PROJECT_ICON = new ImageIcon(
         Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
     
@@ -243,15 +239,14 @@ public final class NbModuleProject implements Project {
         return evaluator().getProperty("src.dir"); // NOI18N
     }
     
-    // XXX get rid of this method. Use NbModuleProjectType.NbModuleType instead
-    public int getModuleType() {
+    private NbModuleTypeProvider.NbModuleType getModuleType() {
         Element data = getHelper().getPrimaryConfigurationData(true);
         if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) {
-            return TYPE_SUITE_COMPONENT;
+            return NbModuleTypeProvider.SUITE_COMPONENT;
         } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) {
-            return TYPE_STANDALONE;
+            return NbModuleTypeProvider.STANDALONE;
         } else {
-            return TYPE_NETBEANS_ORG;
+            return NbModuleTypeProvider.NETBEANS_ORG;
         }
     }
     
@@ -289,9 +284,9 @@ public final class NbModuleProject implements Project {
         PropertyProvider predefs = helper.getStockPropertyPreprovider();
         Map/*<String,String>*/ stock = new HashMap();
         File dir = FileUtil.toFile(getProjectDirectory());
-        int type = getModuleType();
+        NbModuleTypeProvider.NbModuleType type = getModuleType();
         File nbroot = ModuleList.findNetBeansOrg(dir);
-        assert type == TYPE_NETBEANS_ORG ^ nbroot == null : dir;
+        assert type == NbModuleTypeProvider.NETBEANS_ORG ^ nbroot == null : dir;
         if (nbroot != null) {
             stock.put("nb_all", nbroot.getAbsolutePath()); // NOI18N
         }
@@ -319,7 +314,7 @@ public final class NbModuleProject implements Project {
         List/*<PropertyProvider>*/ providers = new ArrayList();
         providers.add(PropertyUtils.fixedPropertyProvider(stock));
         // XXX should listen to changes in values of properties which refer to property files:
-        if (type == TYPE_SUITE_COMPONENT) {
+        if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
             providers.add(helper.getPropertyProvider("nbproject/private/suite-private.properties")); // NOI18N
             providers.add(helper.getPropertyProvider("nbproject/suite.properties")); // NOI18N
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
@@ -329,11 +324,11 @@ public final class NbModuleProject implements Project {
                 providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "private" + File.separatorChar + "platform-private.properties"))); // NOI18N
                 providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(suiteDir, "nbproject" + File.separatorChar + "platform.properties"))); // NOI18N
             }
-        } else if (type == TYPE_STANDALONE) {
+        } else if (type == NbModuleTypeProvider.STANDALONE) {
             providers.add(helper.getPropertyProvider("nbproject/private/platform-private.properties")); // NOI18N
             providers.add(helper.getPropertyProvider("nbproject/platform.properties")); // NOI18N
         }
-        if (type == TYPE_SUITE_COMPONENT || type == TYPE_STANDALONE) {
+        if (type == NbModuleTypeProvider.SUITE_COMPONENT || type == NbModuleTypeProvider.STANDALONE) {
             PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
             String buildS = baseEval.getProperty("user.properties.file"); // NOI18N
             if (buildS != null) {
@@ -795,7 +790,7 @@ public final class NbModuleProject implements Project {
             GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, compile = cpProvider.getProjectClassPaths(ClassPath.COMPILE));
             assert compile != null : "No COMPILE path";
             // write user.properties.file=$userdir/build.properties to platform-private.properties
-            if (getModuleType() == TYPE_STANDALONE) {
+            if (getModuleType() == NbModuleTypeProvider.STANDALONE) {
                 // XXX skip this in case nbplatform.active is not defined
                 ProjectManager.mutex().writeAccess(new Mutex.Action() {
                     public Object run() {
@@ -814,7 +809,7 @@ public final class NbModuleProject implements Project {
                 });
             }
             // refresh build.xml and build-impl.xml for external modules
-            if (getModuleType() != TYPE_NETBEANS_ORG) {
+            if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
                 try {
                     genFilesHelper.refreshBuildScript(
                         GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
@@ -858,7 +853,7 @@ public final class NbModuleProject implements Project {
         
         protected void projectXmlSaved() throws IOException {
             // refresh build.xml and build-impl.xml for external modules
-            if (getModuleType() != TYPE_NETBEANS_ORG) {
+            if (getModuleType() != NbModuleTypeProvider.NETBEANS_ORG) {
                 genFilesHelper.refreshBuildScript(
                     GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
                     NbModuleProject.class.getResource("resources/build-impl.xsl"), // NOI18N
@@ -887,14 +882,7 @@ public final class NbModuleProject implements Project {
         
         public NbModuleType getModuleType() {
             if (type == null) {
-                Element data = getHelper().getPrimaryConfigurationData(true);
-                if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) {
-                    type = NbModuleTypeProvider.SUITE_COMPONENT;
-                } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) {
-                    type = NbModuleTypeProvider.STANDALONE;
-                } else {
-                    type = NbModuleTypeProvider.NETBEANS_ORG;
-                }
+                type = NbModuleProject.this.getModuleType();
             }
             return type;
         }

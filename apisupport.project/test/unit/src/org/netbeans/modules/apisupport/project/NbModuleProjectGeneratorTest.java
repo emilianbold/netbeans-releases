@@ -87,7 +87,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
     public void testCreateSuiteComponentModule() throws Exception {
         // create suite for the module being tested
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteModule(suiteDir, "default");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
         FileObject fo = FileUtil.toFileObject(suiteDir);
         Project suiteProject = ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + suiteDir, suiteProject);

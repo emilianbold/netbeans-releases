@@ -41,7 +41,7 @@ public class BrandingSupportTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         File suiteDir  = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteModule(suiteDir, "default");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
         FileObject fo = FileUtil.toFileObject(suiteDir);
         SuiteProject suitePrj = (SuiteProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull(suitePrj);

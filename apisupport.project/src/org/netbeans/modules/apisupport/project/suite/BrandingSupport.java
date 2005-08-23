@@ -220,7 +220,7 @@ public final class BrandingSupport {
     
     private ModuleEntry getModuleEntry(final String moduleCodeNameBase) {
         ModuleEntry foundEntry = null;
-        for (Iterator it = Arrays.asList(getActivePlatform().getModules()).iterator(); it.hasNext();) {
+        for (Iterator it = Arrays.asList(suiteProject.getActivePlatform().getModules()).iterator(); it.hasNext();) {
             ModuleEntry entry = (ModuleEntry)it.next();
             if (entry.getCodeNameBase().equals(moduleCodeNameBase)) {
                 foundEntry = entry;
@@ -303,7 +303,7 @@ public final class BrandingSupport {
     }
     
     private void init() throws IOException {
-        NbPlatform newPlatform = getActivePlatform();
+        NbPlatform newPlatform = suiteProject.getActivePlatform();
         
         if (brandedModules == null || !newPlatform.equals(platform)) {
             brandedModules = new HashSet();
@@ -316,12 +316,6 @@ public final class BrandingSupport {
                 scanModulesInBrandingDir(brandingDir, platform.getModules());
             }
         }
-    }
-    
-    private NbPlatform getActivePlatform() {
-        NbPlatform newPlatform = NbPlatform.getPlatformByID(
-                suiteProject.getEvaluator().getProperty("nbplatform.active")); // NOI18N
-        return newPlatform;
     }
     
     private  void scanModulesInBrandingDir(final File srcDir, final ModuleEntry[] platformModules) throws IOException  {

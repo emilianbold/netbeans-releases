@@ -13,10 +13,16 @@
 
 package org.netbeans.modules.apisupport.project.layers;
 
+import java.io.File;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Test writing changes to layers.
@@ -81,7 +87,6 @@ public class LayerUtilsTest extends LayerTestBase {
     // XXX testInitiallyMissingLayer
     // XXX testGcLayerHandle
     
-    /*
     public void testSystemFilesystemStandaloneProject() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
@@ -93,7 +98,10 @@ public class LayerUtilsTest extends LayerTestBase {
                 "    <file name=\"foo\"/>\n" +
                 "</filesystem>\n";
         TestBase.dump(layerXML, xml);
+        long start = System.currentTimeMillis();
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(project);
+        System.err.println("LayerUtils.getEffectiveSystemFilesystem ran in " + (System.currentTimeMillis() - start) + "msec");
+        assertFalse("can write to it", fs.isReadOnly());
         assertNotNull("have stuff from the platform", fs.findResource("Menu/File"));
         assertNotNull("have stuff from my own layer", fs.findResource("foo"));
         fs.getRoot().createData("quux");
@@ -107,10 +115,61 @@ public class LayerUtilsTest extends LayerTestBase {
                 "</filesystem>\n";
         assertEquals("new layer stored", xml, TestBase.slurp(layerXML));
     }
-     */
     
+    public void testSystemFilesystemSuiteComponentProject() throws Exception {
+        File suiteDir = new File(getWorkDir(), "testSuite");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
+        SuiteProject suiteProject = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
+        File module1Dir = new File(suiteDir, "testModule1");
+        NbModuleProjectGenerator.createSuiteComponentModule(
+                module1Dir,
+                "test.module1",
+                "module1",
+                "test/module1/resources/Bundle.properties",
+                "test/module1/resources/layer.xml",
+                suiteDir);
+        NbModuleProject module1 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module1Dir));
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(module1);
+        FileUtil.createData(handle.layer().getRoot(), "random/stuff");
+        handle.save();
+        File module2Dir = new File(suiteDir, "testModule2");
+        NbModuleProjectGenerator.createSuiteComponentModule(
+                module2Dir,
+                "test.module2",
+                "module2",
+                "test/module2/resources/Bundle.properties",
+                "test/module2/resources/layer.xml",
+                suiteDir);
+        NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
+        handle = LayerUtils.layerForProject(module2);
+        FileObject layerXML = handle.getLayerFile();
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n" +
+                "    <file name=\"existing\"/>\n" +
+                "</filesystem>\n";
+        TestBase.dump(layerXML, xml);
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
+        assertFalse("can write to it", fs.isReadOnly());
+        assertNotNull("have stuff from the platform", fs.findResource("Menu/File"));
+        assertNotNull("have stuff from my own layer", fs.findResource("existing"));
+        assertNotNull("have stuff from other modules in the same suite", fs.findResource("random/stuff"));
+        fs.getRoot().createData("new");
+        handle.save();
+        xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n" +
+                "    <file name=\"existing\"/>\n" +
+                "    <file name=\"new\"/>\n" +
+                "</filesystem>\n";
+        assertEquals("new layer stored", xml, TestBase.slurp(layerXML));
+    }
+    
+    // XXX testClusterAndModuleExclusions
     // XXX testSystemFilesystemSuiteProject
-    // XXX testSystemFilesystemSuiteComponentProject
+    // XXX testSystemFilesystemNetBeansOrgProject
     // XXX testSystemFilesystemLocalizedNames
     
 }

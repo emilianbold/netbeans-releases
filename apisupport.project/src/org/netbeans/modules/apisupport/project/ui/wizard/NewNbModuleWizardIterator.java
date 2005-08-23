@@ -109,7 +109,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
             
         } else if (this.type == TYPE_SUITE) {
             ModuleUISettings.getDefault().setNewSuiteCounter(data.getSuiteCounter());
-            SuiteProjectGenerator.createSuiteModule(projectFolder, data.getPlatform());
+            SuiteProjectGenerator.createSuiteProject(projectFolder, data.getPlatform());
         } else {
             throw new IllegalStateException("Uknown wizard type: " + this.type); // NOI18N
         }

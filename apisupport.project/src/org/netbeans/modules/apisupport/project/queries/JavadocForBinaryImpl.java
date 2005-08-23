@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -59,7 +60,8 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
                 candidates.add(new URL(roots[i], cnbdashes + "/")); // NOI18N
             }
             File dir;
-            if (project.getModuleType() == NbModuleProject.TYPE_NETBEANS_ORG) {
+            NbModuleTypeProvider typeProv = (NbModuleTypeProvider) project.getLookup().lookup(NbModuleTypeProvider.class);
+            if (typeProv.getModuleType() == NbModuleTypeProvider.NETBEANS_ORG) {
                 dir = project.getNbrootFile(NB_ALL_INFIX + cnbdashes);
             } else {
                 dir = new File(FileUtil.toFile(project.getProjectDirectory()), EXT_INFIX + cnbdashes);

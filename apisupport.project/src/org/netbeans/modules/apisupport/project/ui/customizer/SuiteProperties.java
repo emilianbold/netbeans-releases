@@ -30,7 +30,10 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
  *
  * @author Martin Krauskopf
  */
-final class SuiteProperties extends ModuleProperties {
+public final class SuiteProperties extends ModuleProperties {
+    
+    public static final String DISABLED_MODULES_PROPERTY = "disabled.modules"; // NOI18N
+    public static final String DISABLED_CLUSTERS_PROPERTY = "disabled.clusters"; // NOI18N
     
     private NbPlatform platform;
     
@@ -62,10 +65,11 @@ final class SuiteProperties extends ModuleProperties {
         this.project = project;
         this.origSubModules = Collections.unmodifiableSet(subModules);
         this.subModules = subModules;
+        // XXX similar to SuiteProject.getActivePlatform:
         platform = NbPlatform.getPlatformByID(
                 evaluator.getProperty("nbplatform.active")); // NOI18N
-        this.disabledModules = getArrayProperty(evaluator, "disabled.modules"); // NOI18N
-        this.disabledClusters = getArrayProperty(evaluator, "disabled.clusters"); // NOI18N
+        this.disabledModules = getArrayProperty(evaluator, DISABLED_MODULES_PROPERTY);
+        this.disabledClusters = getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY);
     }
     
     Project getProject() {
@@ -108,7 +112,7 @@ final class SuiteProperties extends ModuleProperties {
         this.changedDisabledModules = true;
     }
     
-    private String[] getArrayProperty(PropertyEvaluator evaluator, String p) {
+    public static String[] getArrayProperty(PropertyEvaluator evaluator, String p) {
         String s = evaluator.getProperty(p);
         if (s == null) {
             return new String[0];
@@ -140,7 +144,7 @@ final class SuiteProperties extends ModuleProperties {
             for (int i = 0; i < disabledModules.length - 1; i++) {
                 separated[i] = disabledModules[i] + ',';
             }
-            setProperty("disabled.modules", separated); // NOI18N
+            setProperty(DISABLED_MODULES_PROPERTY, separated);
         }
         
         if (changedDisabledClusters) {
@@ -148,7 +152,7 @@ final class SuiteProperties extends ModuleProperties {
             for (int i = 0; i < disabledClusters.length - 1; i++) {
                 separated[i] = disabledClusters[i] + ',';
             }
-            setProperty("disabled.clusters", separated); // NOI18N
+            setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
         }
         
         super.storeProperties();

@@ -40,9 +40,9 @@ public class SuiteProjectGeneratorTest extends TestBase {
         "nbproject/project.properties",
     };
     
-    public void testCreateSuiteModule() throws Exception {
+    public void testCreateSuiteProject() throws Exception {
         File targetPrjDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteModule(targetPrjDir, "default");
+        SuiteProjectGenerator.createSuiteProject(targetPrjDir, "default");
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);

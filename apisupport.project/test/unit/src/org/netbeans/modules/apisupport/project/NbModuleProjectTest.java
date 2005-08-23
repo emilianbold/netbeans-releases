@@ -150,15 +150,18 @@ public class NbModuleProjectTest extends TestBase {
     }
     
     public void testGetType() throws Exception {
-        assertEquals(NbModuleProject.TYPE_NETBEANS_ORG, javaProjectProject.getModuleType());
+        assertEquals(NbModuleTypeProvider.NETBEANS_ORG, typeOf(javaProjectProject));
         FileObject suite1 = extexamples.getFileObject("suite1");
         FileObject action = suite1.getFileObject("action-project");
         NbModuleProject actionProject = (NbModuleProject) ProjectManager.getDefault().findProject(action);
-        assertEquals(NbModuleProject.TYPE_SUITE_COMPONENT, actionProject.getModuleType());
+        assertEquals(NbModuleTypeProvider.SUITE_COMPONENT, typeOf(actionProject));
         FileObject suite3 = extexamples.getFileObject("suite3");
         FileObject dummy = suite3.getFileObject("dummy-project");
         NbModuleProject dummyProject = (NbModuleProject) ProjectManager.getDefault().findProject(dummy);
-        assertEquals(NbModuleProject.TYPE_STANDALONE, dummyProject.getModuleType());
+        assertEquals(NbModuleTypeProvider.STANDALONE, typeOf(dummyProject));
+    }
+    private NbModuleTypeProvider.NbModuleType typeOf(Project p) {
+        return ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
     }
     
     public void testSupportsJavadoc() throws Exception {

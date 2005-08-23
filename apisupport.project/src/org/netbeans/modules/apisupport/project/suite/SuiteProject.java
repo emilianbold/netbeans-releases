@@ -29,6 +29,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.SuiteActions;
 import org.netbeans.modules.apisupport.project.ui.SuiteLogicalView;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizer;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -36,7 +37,6 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
@@ -100,6 +100,14 @@ public final class SuiteProject implements Project {
     /** For unit tests purpose only. */
     public PropertyEvaluator getEvaluator() {
         return eval;
+    }
+    
+    /**
+     * Get the platform selected for use with this suite.
+     */
+    public NbPlatform getActivePlatform() {
+        // XXX what if the platform is invalid?
+        return NbPlatform.getPlatformByID(getEvaluator().getProperty("nbplatform.active")); // NOI18N
     }
     
     private PropertyEvaluator createEvaluator() {
