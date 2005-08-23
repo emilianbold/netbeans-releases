@@ -3084,25 +3084,25 @@ public class LayoutDesigner implements LayoutConstants {
                 trailingNeighbor = null;
             }
 
-            boolean restResizing = LayoutInterval.contentWantResize(parent);
             if (!wasResizing
                 && ((leadingGap != null && LayoutInterval.canResize(leadingGap))
                     || (trailingGap != null && LayoutInterval.canResize(trailingGap))))
                 wasResizing = true;
 
+            LayoutInterval superParent = parent.getParent();
+
             // [check for last interval (count==1), if parallel superParent try to re-add the interval]
             if (parent.getSubIntervalCount() == 0) { // nothing remained
-                LayoutInterval superParent = parent.getParent();
                 int idx = layoutModel.removeInterval(parent);
                 if (superParent.getParent() != null) {
-                    boolean res = LayoutInterval.canResize(parent) && (wasResizing || restResizing);
-                    intervalRemoved(superParent, idx, false, res, dimension);
+                    intervalRemoved(superParent, idx, false, wasResizing, dimension);
                 }
                 else if (superParent.getSubIntervalCount() == 0) { // empty root group - add a filling gap
                     propEmptyContainer(superParent, dimension);
                 }
             }
             else { // the sequence remains
+                boolean restResizing = LayoutInterval.contentWantResize(parent);
                 if (wasResizing && !restResizing) {
                     if (leadingNeighbor == null && parent.getAlignment() == LEADING) {
                         layoutModel.setIntervalAlignment(parent, TRAILING);
@@ -3111,25 +3111,21 @@ public class LayoutDesigner implements LayoutConstants {
                         layoutModel.setIntervalAlignment(parent, LEADING);
                     }
                 }
-                // [what about not to compensate the removed space if there is a resizing interval in the sequence?
-                //  i.e. taking into account the effective alignment of the removed interval]
-                LayoutInterval superParent = parent.getParent();
+
                 int cutSize = LayoutRegion.distance(
                         (leadingNeighbor != null ? leadingNeighbor : parent).getCurrentSpace(),
                         (trailingNeighbor != null ? trailingNeighbor : parent).getCurrentSpace(),
                         dimension,
                         leadingNeighbor != null ? TRAILING : LEADING,
                         trailingNeighbor != null ? LEADING : TRAILING);
+
                 if ((leadingNeighbor != null && trailingNeighbor != null) // inside a sequence
                     || superParent.getParent() == null // in root parallel group
-                    || (leadingNeighbor != null && LayoutInterval.getCount(superParent, TRAILING, true) > 0)
-                    || (trailingNeighbor != null && LayoutInterval.getCount(superParent, LEADING, true) > 0))
+                    || (leadingNeighbor != null && LayoutInterval.getEffectiveAlignment(leadingNeighbor, TRAILING) == TRAILING)
+                    || (trailingNeighbor != null && LayoutInterval.getEffectiveAlignment(trailingNeighbor, LEADING) == LEADING))
                 {   // create a placeholder gap
                     int min, max;
-                    if (wasResizing
-                        || (leadingGap != null && leadingGap.getMaximumSize() >= Short.MAX_VALUE)
-                        || (trailingGap != null && trailingGap.getMaximumSize() >= Short.MAX_VALUE))
-                    {   // the gap should be resizing
+                    if (wasResizing && !restResizing) { // the gap should be resizing
                         min = NOT_EXPLICITLY_DEFINED;
                         max = Short.MAX_VALUE;
                     }
