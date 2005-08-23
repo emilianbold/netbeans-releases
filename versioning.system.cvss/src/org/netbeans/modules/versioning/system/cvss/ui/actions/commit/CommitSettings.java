@@ -181,7 +181,6 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("MNE_CommitForm_Message").charAt(0));
         jLabel2.setLabelFor(taMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_Message"));
         jLabel2.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 2, 0)));
@@ -209,8 +208,6 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         gridBagConstraints.weightx = 1.0;
         add(jScrollPane1, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("MNE_CommitForm_Message").charAt(0));
-        jLabel3.setLabelFor(taMessage);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/actions/commit/Bundle").getString("CTL_CommitForm_FilesToCommit"));
         jLabel3.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 0, 0, 0)));
         gridBagConstraints = new java.awt.GridBagConstraints();
