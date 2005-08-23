@@ -118,11 +118,16 @@ class CompletionLayoutPopup {
     }
     
     final Dimension getPreferredSize() {
-        return getContentComponent().getPreferredSize();
+        JComponent comp = getContentComponent();
+        return (comp == null) ? new Dimension(0,0) : comp.getPreferredSize();
     }
     
     final void resetPreferredSize() {
-        getContentComponent().setPreferredSize(null);
+        JComponent comp = getContentComponent();
+        if (comp == null){
+            return;
+        }
+        comp.setPreferredSize(null);
     }
     
     final boolean isShowRetainedPreferredSize() {
@@ -216,12 +221,16 @@ class CompletionLayoutPopup {
         // Explicitly set the preferred size
         Dimension origPrefSize = getPreferredSize();
         Dimension newPrefSize = popupBounds.getSize();
-        contentComponent.setPreferredSize(newPrefSize);
+        JComponent contComp = getContentComponent();
+        if (contComp == null){
+            return;
+        }
+        contComp.setPreferredSize(newPrefSize);
         showRetainedPreferredSize = newPrefSize.equals(origPrefSize);
 
         PopupFactory factory = PopupFactory.getSharedInstance();
         // Create popup without explicit parent window
-        popup = factory.getPopup(null, contentComponent,
+        popup = factory.getPopup(null, contComp,
                 popupBounds.x, popupBounds.y);
         popup.show();
 
