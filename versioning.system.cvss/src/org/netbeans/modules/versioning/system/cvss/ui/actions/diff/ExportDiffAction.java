@@ -29,9 +29,11 @@ import org.netbeans.spi.diff.DiffProvider;
 import org.openide.windows.WindowManager;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 
 import javax.swing.*;
 import java.io.*;
@@ -107,45 +109,51 @@ public class ExportDiffAction extends AbstractSystemAction {
 
         int ret = chooser.showDialog(WindowManager.getDefault().getMainWindow(), "Export");
         if (ret == JFileChooser.APPROVE_OPTION) {
-            boolean success = false;
-            OutputStream out = null;
-            File destination = chooser.getSelectedFile();
-            ProgressHandle progress = ProgressHandleFactory.createHandle("Exporting diff");
-            try {
-                out = new BufferedOutputStream(new FileOutputStream(destination));
-                Context context = getContext();
-                File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
-                progress.start(files.length + 1);
-                for (int i = 0; i < files.length; i++) {
-                    progress.progress(i);
-                    File file = files[i];
-                    boolean binary = CvsVersioningSystem.getInstance().isText(file) == false;
-                    Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL, binary);
-                    exportDiff(setup, out);
+            final File destination = chooser.getSelectedFile();
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    async(destination);
                 }
-                success = true;
-            } catch (IOException ex) {
-                ErrorManager.getDefault().annotate(ex, "Diff export failed!");
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);   // stack trace to log
-                ErrorManager.getDefault().notify(ErrorManager.USER, ex);  // message to user
-            } finally {
-                progress.finish();
-                if (out != null) {
-                    try {
-                        out.flush();
-                        out.close();
-                    } catch (IOException alreadyClsoed) {
-                    }
-                }
-                if (success) {
-                    DialogDisplayer dialogs = DialogDisplayer.getDefault();
-                    NotifyDescriptor dd = new NotifyDescriptor.Message("Export done!");
-                    dialogs.notify(dd);
-                } else {
-                    destination.delete();
-                }
+            });
+        }
+    }
 
+    private void async(File destination) {
+        boolean success = false;
+        OutputStream out = null;
+        ProgressHandle progress = ProgressHandleFactory.createHandle("Exporting diff");
+        try {
+            out = new BufferedOutputStream(new FileOutputStream(destination));
+            Context context = getContext();
+            File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
+            progress.start(files.length + 1);
+            for (int i = 0; i < files.length; i++) {
+                progress.progress(i);
+                File file = files[i];
+                boolean binary = CvsVersioningSystem.getInstance().isText(file) == false;
+                Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL, binary);
+                exportDiff(setup, out);
             }
+            success = true;
+        } catch (IOException ex) {
+            ErrorManager.getDefault().annotate(ex, "Diff patch export failed!");
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);   // stack trace to log
+            ErrorManager.getDefault().notify(ErrorManager.USER, ex);  // message to user
+        } finally {
+            progress.finish();
+            if (out != null) {
+                try {
+                    out.flush();
+                    out.close();
+                } catch (IOException alreadyClsoed) {
+                }
+            }
+            if (success) {
+                StatusDisplayer.getDefault().setStatusText("Diff patch export done!");
+            } else {
+                destination.delete();
+            }
+
         }
     }
 
