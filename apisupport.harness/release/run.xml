@@ -20,7 +20,14 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="install" location="${netbeans.dest.dir}"/>
-        <available file="${install}/bin" type="dir" property="platform.is.complete.app"/>
+        <condition property="platform.is.complete.app">
+            <and>
+                <available file="${install}/bin" type="dir"/>
+                <not>
+                    <istrue value="${run.without.ide.clusters}"/>
+                </not>
+            </and>
+        </condition>
         <property name="run.args.common" value="--userdir ${test.user.dir} -J-Dnetbeans.logger.console=true -J-ea"/>
     </target>
 
