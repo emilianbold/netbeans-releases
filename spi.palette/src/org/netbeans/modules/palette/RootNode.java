@@ -78,7 +78,6 @@ public final class RootNode extends FilterNode {
             actions = new Action[] {
                 new Utils.NewCategoryAction( this ),
                 null,
-                new Utils.ReorderCategoriesAction( this ),
                 new Utils.SortCategoriesAction( this ),
                 null,
                 new Utils.RefreshPaletteAction()

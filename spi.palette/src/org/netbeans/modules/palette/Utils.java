@@ -134,29 +134,6 @@ public final class Utils {
     }
     
     /**
-     * An action to change the order of categories.
-     */
-    static class ReorderCategoriesAction extends AbstractAction {
-        private Node paletteNode;
-        public ReorderCategoriesAction( Node paletteNode ) {
-            putValue(Action.NAME, getBundleString("CTL_OrderCategories")); // NOI18N
-            this.paletteNode = paletteNode;
-        }
-        
-        public void actionPerformed(ActionEvent event) {
-            Index order = (Index)paletteNode.getCookie(Index.class);
-            if (order != null) {
-                order.reorder();
-            }
-        }
-        
-        public boolean isEnabled() {
-            return (paletteNode.getCookie(Index.class) != null);
-        }
-        
-    }
-    
-    /**
      * An action to sort categories alphabetically.
      */
     static class SortCategoriesAction extends AbstractAction {
@@ -330,30 +307,6 @@ public final class Utils {
         }
     }
 
-    /**
-     * An action to change the order of items in a category.
-     */
-    static class ReorderItemsAction extends AbstractAction {
-        private Node categoryNode;
-        
-        public ReorderItemsAction(Node categoryNode) {
-            this.categoryNode = categoryNode;
-            putValue(Action.NAME, getBundleString("CTL_OrderItems")); // NOI18N
-        }
-        
-        public void actionPerformed(ActionEvent event) {
-            Index order = (Index)categoryNode.getCookie(Index.class);
-            if (order != null) {
-                order.reorder();
-            }
-        }
-        
-        public boolean isEnabled() {
-            return (categoryNode.getCookie(Index.class) != null);
-        }
-    }
-    
-    
     /**
      * An action to sort categories alphabetically.
      */

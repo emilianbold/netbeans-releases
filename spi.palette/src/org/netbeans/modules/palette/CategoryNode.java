@@ -23,7 +23,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
-import org.openide.nodes.Index;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 import org.openide.util.Lookup;
@@ -101,15 +100,15 @@ class CategoryNode extends FilterNode {
     public Action[] getActions(boolean context) {
         if (actions == null) {
             actions = new Action[] {
+                new Utils.PasteItemAction( this ),
+                null,
                 new Utils.NewCategoryAction( getParentNode() ),
                 null,
                 new Utils.DeleteCategoryAction(this),
                 new Utils.RenameCategoryAction(this),
                 null,
-                new Utils.ReorderItemsAction(this),
                 new Utils.SortItemsAction(this),
                 null,
-                new Utils.ReorderCategoriesAction( getParentNode() ),
                 new Utils.SortCategoriesAction( getParentNode() ),
                 null,
                 new Utils.RefreshPaletteAction()

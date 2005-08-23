@@ -64,7 +64,6 @@ class ItemNode extends FilterNode {
                 null,
                 new Utils.RemoveItemAction( this ),
                 null,
-                new Utils.ReorderItemsAction( getParentNode() ),
                 new Utils.SortItemsAction( getParentNode() ),
                 null,
                 new Utils.RefreshPaletteAction()
