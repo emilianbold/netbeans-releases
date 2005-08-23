@@ -82,24 +82,16 @@ is the proper place.
             <version major="1" minor="7"/>
             <date day="22" month="8" year="2005"/>
             <author login="jlahoda"/>
-            <compatibility addition="true" binary="true" deletion="false" deprecation="false" modification="false" semantic="false" source="true">
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
             </compatibility>
             <description>
-                <p>
+	        <p>
                     Introduced:
-                    <ul>
-                        <li>
                             New method <code>notifyDeleted</code> added to <code>ProjectState</code>.
-                        </li>
-                        <li>
                             Interfaces DataFilesProviderImplementation, DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation has
                             been added to support project delete/copy/rename/move.
-                        </li>
-                        <li>
                             Support class ProjectOperations has been added to simplify operations on compound projects.
-                        </li>
-                    </ul>
-                </p>
+		</p>
             </description>
             <issue number="61546"/>
         </change>
