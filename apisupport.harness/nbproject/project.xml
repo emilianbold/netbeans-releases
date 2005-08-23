@@ -27,10 +27,10 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages/>
             <extra-compilation-unit>
-                <package-root>src-jnlp</package-root>
+                <package-root>jnlp-src</package-root>
                 <classpath>${module.classpath}</classpath>
-                <built-to>build/jnlp-classes</built-to>
-                <built-to>${cluster}/jnlp/jnlplauncher.jar</built-to>
+                <built-to>build/jnlp-launcher-classes</built-to>
+                <built-to>${cluster}/jnlp/jnlp-launcher.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>
