@@ -17,6 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <transformations version="1.0">
 
     <transformationgroup>
+        <!-- XXX new link? -->
         <description>Separation of Execution API: cf. http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#4.0-execution</description>
         <transformation>
             <trigger-dependency type="older">

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,7 +29,7 @@ package org.netbeans.spi.editor.fold;
  *
  * <p>
  * The factories present in the folder can be sorted by using standard
- * <a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/modules/doc-files/api.html#how-layer">
+ * <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">
  * Layer Ordering</a>.
  * <br>
  * The fold manager of factory A registered prior factory B produces

@@ -1108,6 +1108,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     
     private static final String ASSERTION_ERROR_MESSAGE = "WindowsAPI is required to be called from AWT thread only, see " // NOI18N
+        // XXX new link?
         + "http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/threading.html"; // NOI18N
     
     static void assertEventDispatchThread() {

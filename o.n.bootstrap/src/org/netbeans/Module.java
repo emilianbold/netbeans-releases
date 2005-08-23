@@ -486,6 +486,7 @@ public final class Module extends ModuleInfo {
                     publicPackages = (PackageExport[])exports.toArray(new PackageExport[exports.size()]);
                 }
             } else {
+                // XXX new link?
                 Util.err.log(ErrorManager.WARNING, "Warning: module " + codeNameBase + " does not declare OpenIDE-Module-Public-Packages in its manifest, so all packages are considered public by default: http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/upgrade.html#3.4-public-packages");
                 publicPackages = null;
             }

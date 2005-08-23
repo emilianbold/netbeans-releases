@@ -58,7 +58,7 @@ committed to CVS for legal reasons. You need to download it:
 
     <!-- Overridable parameters: -->
     <xsl:param name="issue-url-base" select="'http://www.netbeans.org/issues/show_bug.cgi?id='"/>
-    <xsl:param name="javadoc-url-base" select="'http://www.netbeans.org/download/dev/javadoc/OpenAPIs'"/>
+    <xsl:param name="javadoc-url-base" select="'???'"/>
 
     <!-- Main document structure: -->
     <xsl:template match="/">
