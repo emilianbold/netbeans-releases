@@ -12,11 +12,10 @@
  */
 
 package org.netbeans.modules.db.runtime;
-
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -79,22 +78,29 @@ public final class DatabaseRuntimeManager {
         if (jdbcDriverClassName == null) {
             throw new NullPointerException();
         }
-        Collection/*<DatabaseRuntime>*/ runtimes = result.allInstances();
-        List/*<DatabaseRuntime>*/ result = new LinkedList();
-        for (Iterator i = runtimes.iterator(); i.hasNext();) {
-            Object next = i.next();
-            if (!(next instanceof DatabaseRuntime)) {
-                continue;
-            }
-            DatabaseRuntime runtime = (DatabaseRuntime)next;
+        List/*<DatabaseRuntime>*/ runtimeList = new LinkedList();
+        for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
+            DatabaseRuntime runtime = (DatabaseRuntime)i.next();
             if (LOG) {
                 LOGGER.log(ErrorManager.INFORMATIONAL, "Runtime: " + runtime.getClass().getName() + " for driver " + runtime.getJDBCDriverClass()); // NOI18N
             }
             if (jdbcDriverClassName.equals(runtime.getJDBCDriverClass())) {
-                result.add(runtime);
+                runtimeList.add(runtime);
             }
         }
-        return (DatabaseRuntime[])result.toArray(new DatabaseRuntime[result.size()]);
+        return (DatabaseRuntime[])runtimeList.toArray(new DatabaseRuntime[runtimeList.size()]);
+    }
+    
+    /**
+     * Stops the running runtimes.
+     */
+    public void stopRuntimes() {
+        for (Iterator i = result.allInstances().iterator(); i.hasNext();) {
+            DatabaseRuntime runtime = (DatabaseRuntime)i.next();
+            if (runtime.isRunning()) {
+                runtime.stop();
+            }
+        }
     }
     
     private synchronized Lookup.Result getLookupResult() {
