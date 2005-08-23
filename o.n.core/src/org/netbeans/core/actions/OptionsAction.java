@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,7 +41,6 @@ import javax.swing.border.Border;
 import javax.swing.table.JTableHeader;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.DialogDescriptor;
@@ -116,7 +115,7 @@ public class OptionsAction extends CallableSystemAction {
                 
                 StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             }
-        }); // EQ.iL
+        });
     }
     
     protected boolean asynchronous() {
