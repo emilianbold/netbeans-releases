@@ -43,12 +43,29 @@ public class J2SEProject extends JellyTestCase {
     static {
         //We need it to help tools.jar API to findout the local connector
         //This is an horrible hack! But no way to make it work without /var/tmp/ tmp file
+        //Flushing env
+        java.util.Enumeration e = System.getProperties().keys();
+        java.util.Enumeration e2 = System.getProperties().elements();
+        while(e.hasMoreElements())
+            System.out.println(e.nextElement() + "=" + e2.nextElement());
+            
         //java.io.tmpdir.default is defined on 4.2 ...
-        //String tmpFile = System.getProperty("java.io.tmpdir.default");
-        String tmpFile = System.getProperty("Env-TMP");
+        String tmpFile = System.getProperty("java.io.tmpdir.default");
+       
+        if(tmpFile == null) {
+            //This is for Windows platform, hoping it is set.
+            tmpFile = System.getProperty("Env-TMP");
+        }
+           
+        if(tmpFile == null) {
+            if(!System.getProperty("os.name").startsWith("Win"))
+                tmpFile = "/var/tmp";
+            //else
+            //We can't find the tmp dir. The test must fail
+        }
         
         ORIGINAL_TMP_FILE =  tmpFile == null ? null :  tmpFile + File.separator;
-    
+        
         System.out.println("TMP FILE : " + ORIGINAL_TMP_FILE);
     }
     
@@ -94,12 +111,14 @@ public class J2SEProject extends JellyTestCase {
     }
     
     public void runWithJConsole() {
+        assertTmpDir();
         String ctxt = preLocalConnection();
         doItLocal("Run Main Project With Local Management", "run-management");
         postLocalConnection(ctxt);
     }
     
     public void debugWithJConsole() {
+        assertTmpDir();
         String ctxt = preLocalConnection();
         doItLocal("Debug Main Project With Local Management", "debug-management");
         postLocalConnection(ctxt);
@@ -111,6 +130,11 @@ public class J2SEProject extends JellyTestCase {
    
     public void debugWithRemoteManagement() {
        doItRemote("Debug Main Project with Remote Management...", "debug-management");      
+    }
+    
+    private void assertTmpDir() {
+        if(ORIGINAL_TMP_FILE == null)
+            throw new IllegalArgumentException("TMP DIR is not set, check env");
     }
     
     private String preLocalConnection() {
@@ -129,12 +153,18 @@ public class J2SEProject extends JellyTestCase {
     private void doItLocal(String action, String target) {
        syncOnProject();
        activateLocalAction(action);
+       try {
+           Thread.sleep(2000);
+       }catch(Exception e){}
        trackAndKillJConsole(target);
     }
     
     private void doItRemote(String action, String target) {
        syncOnProject();
        activateRemoteAction(action); 
+       try {
+           Thread.sleep(2000);
+       }catch(Exception e){}
        trackAndKillJConsole(target);
     }
     
@@ -200,16 +230,28 @@ public class J2SEProject extends JellyTestCase {
     }
     
     private void trackAndKillJConsole(String target) {
-      //Access output and synchronize on it
-      OutputTabOperator oto = new OutputTabOperator(target);
-      System.out.println("*********************** WAITING FOR TEXT Found manageable process ... ************");
-      while(true) {
+        //Access output and synchronize on it
+        OutputTabOperator oto = null;
+        int maxToWait = 10;
+        while(maxToWait > 0) {
+            try {
+                oto = new OutputTabOperator(target);
+                break;
+            }catch(Exception e) {
+                System.out.println("Output tab not yet displayed " + e.toString());
+                maxToWait--;
+            }
+        }
+        System.out.println("*********************** WAITING FOR TEXT Found manageable process ... ************");
+        maxToWait = 10;
+      while(maxToWait > 0) {
           try {
               System.out.println("Waiting for JConsole to start");
               oto.waitText("Found manageable process, connecting JConsole to process...");   
               break;
           }catch(Exception e){
               System.out.println("JConsole not started, will wait again");
+              maxToWait--;
           }
       }
       System.out.println("*********************** TEXT FOUND ************");

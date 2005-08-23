@@ -18,8 +18,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="ide" name="JMX module validation">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/modules/jmx/test/jconsole/JConsole.class"/>
-                <include name="org/netbeans/modules/jmx/test/jconsole/J2SEProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/CreateAgentProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/ConstructAgent.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/CompileAgentProject.class"/>
@@ -46,6 +44,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/actions/CreateJUnitTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/RegisterMBeansTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
+                <include name="org/netbeans/modules/jmx/test/jconsole/JConsole.class"/>
+                <include name="org/netbeans/modules/jmx/test/jconsole/J2SEProject.class"/>
             </patternset>
         </testset>
     </testbag>
