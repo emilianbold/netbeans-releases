@@ -61,6 +61,22 @@ public class LayerUtilsTest extends LayerTestBase {
         assertEquals("right contents too", xml, TestBase.slurp(layerXML));
     }
     
+    public void testLayerAutoSave() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        FileSystem fs = handle.layer();
+        handle.setAutosave(true);
+        fs.getRoot().createData("foo");
+        FileObject layerXML = handle.getLayerFile();
+        String xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n" +
+                "    <file name=\"foo\"/>\n" +
+                "</filesystem>\n";
+        assertEquals("saved automatically", xml, TestBase.slurp(layerXML));
+    }
+    
     // XXX testInitiallyInvalidLayer
     // XXX testInitiallyMissingLayer
     // XXX testGcLayerHandle

@@ -134,13 +134,24 @@ public final class CreatedModifiedFiles {
      * instance in order in which operations have been added.
      */
     public void run() throws IOException {
-        for (Iterator it = operations.iterator(); it.hasNext(); ) {
-            Operation op = (Operation) it.next();
-            op.run();
-        }
+        boolean oldAutosave = false;
         if (layerHandle != null) {
-            // XXX clumsy, see above
-            layerHandle.save();
+            oldAutosave = layerHandle.isAutosave();
+            layerHandle.setAutosave(false);
+        }
+        try {
+            for (Iterator it = operations.iterator(); it.hasNext(); ) {
+                Operation op = (Operation) it.next();
+                op.run();
+            }
+            if (layerHandle != null) {
+                // XXX clumsy, see above
+                layerHandle.save();
+            }
+        } finally {
+            if (layerHandle != null) {
+                layerHandle.setAutosave(oldAutosave);
+            }
         }
         // XXX should get EditCookie/OpenCookie for created/modified files for which isForEditing
         // XXX should return a Set<FileObject> of created/modified files for which isRelevant

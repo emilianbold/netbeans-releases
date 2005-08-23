@@ -218,6 +218,7 @@ public class LayerUtils {
         private Exception problem;
         private final FileObject f;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private boolean saving;
         public CookieImpl(FileObject f) {
             this.f = f;
             f.addFileChangeListener(FileUtil.weakFileChangeListener(this, f));
@@ -244,7 +245,7 @@ public class LayerUtils {
                     dirty = false;
                     pcs.firePropertyChange(PROP_DIRTY, oldDirty, false);
                     pcs.firePropertyChange(PROP_STATUS, oldStatus, TreeEditorCookie.STATUS_OK);
-                    pcs.firePropertyChange(PROP_DOCUMENT_ROOT, null, root);
+                    //pcs.firePropertyChange(PROP_DOCUMENT_ROOT, null, root);
                 } catch (IOException e) {
                     problem = e;
                     throw e;
@@ -279,21 +280,27 @@ public class LayerUtils {
             return dirty;
         }
         public void save() throws IOException {
-            if (root == null && !dirty) {
+            if (root == null || !dirty) {
                 return;
             }
-            FileLock lock = f.lock();
+            assert !saving;
+            saving = true;
             try {
-                OutputStream os = f.getOutputStream(lock);
+                FileLock lock = f.lock();
                 try {
-                    new TreeStreamResult(os).getWriter(root).writeDocument();
-                } catch (TreeException e) {
-                    throw (IOException) new IOException(e.toString()).initCause(e);
+                    OutputStream os = f.getOutputStream(lock);
+                    try {
+                        new TreeStreamResult(os).getWriter(root).writeDocument();
+                    } catch (TreeException e) {
+                        throw (IOException) new IOException(e.toString()).initCause(e);
+                    } finally {
+                        os.close();
+                    }
                 } finally {
-                    os.close();
+                    lock.releaseLock();
                 }
             } finally {
-                lock.releaseLock();
+                saving = false;
             }
             dirty = false;
             pcs.firePropertyChange(PROP_DIRTY, true, false);
@@ -317,6 +324,9 @@ public class LayerUtils {
             assert false;
         }
         private void changed() {
+            if (saving) {
+                return;
+            }
             problem = null;
             dirty = false;
             root = null;
@@ -336,6 +346,7 @@ public class LayerUtils {
         private final NbModuleProject project;
         private FileSystem fs;
         private SavableTreeEditorCookie cookie;
+        private boolean autosave;
         
         LayerHandle(NbModuleProject project) {
             this.project = project;
@@ -372,6 +383,35 @@ public class LayerUtils {
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }
+                fs.addFileChangeListener(new FileChangeListener() {
+                    public void fileAttributeChanged(FileAttributeEvent fe) {
+                        changed();
+                    }
+                    public void fileChanged(FileEvent fe) {
+                        changed();
+                    }
+                    public void fileDataCreated(FileEvent fe) {
+                        changed();
+                    }
+                    public void fileDeleted(FileEvent fe) {
+                        changed();
+                    }
+                    public void fileFolderCreated(FileEvent fe) {
+                        changed();
+                    }
+                    public void fileRenamed(FileRenameEvent fe) {
+                        changed();
+                    }
+                    private void changed() {
+                        if (autosave) {
+                            try {
+                                save();
+                            } catch (IOException e) {
+                                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            }
+                        }
+                    }
+                });
             }
             return fs;
         }
@@ -397,6 +437,28 @@ public class LayerUtils {
                 return null;
             }
             return project.getSourceDirectory().getFileObject(path);
+        }
+        
+        /**
+         * Set whether to automatically save changes to disk.
+         * @param true to save changes immediately, false to save only upon request
+         */
+        public void setAutosave(boolean autosave) {
+            this.autosave = autosave;
+            if (autosave && cookie != null) {
+                try {
+                    cookie.save();
+                } catch (IOException e) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                }
+            }
+        }
+        
+        /**
+         * Check whether this handle is currently in autosave mode.
+         */
+        public boolean isAutosave() {
+            return autosave;
         }
         
         /**
