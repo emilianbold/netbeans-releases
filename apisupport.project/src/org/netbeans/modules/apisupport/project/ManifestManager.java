@@ -121,21 +121,17 @@ public final class ManifestManager {
     }
     
     public static ManifestManager getInstanceFromJAR(File jar) {
-        ManifestManager mm = null;
-        JarFile jf = null;
         try {
-            jf = new JarFile(jar);
-            mm = ManifestManager.getInstance(jf.getManifest(), true);
+            JarFile jf = new JarFile(jar, false);
+            try {
+                return ManifestManager.getInstance(jf.getManifest(), true);
+            } finally {
+                jf.close();
+            }
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
-        } finally {
-            try {
-                if (jf != null) { jf.close(); }
-            } catch (IOException e) {
-                Util.err.notify(ErrorManager.INFORMATIONAL, e);
-            }
+            return new ManifestManager();
         }
-        return mm == null ? new ManifestManager() : mm;
     }
     
     public static ManifestManager getInstance(Manifest manifest, boolean loadPublicPackages) {
