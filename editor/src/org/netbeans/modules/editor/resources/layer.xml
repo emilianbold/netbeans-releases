@@ -23,29 +23,30 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="Edit">
-            <file name="SeparatorBeforeGoTo.instance">
+            <file name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance/org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$FindNextAction.instance/org-netbeans-modules-editor-MainMenuAction$FindPreviousAction.instance" boolvalue="true"/>
+        
+            <file name="org-netbeans-modules-editor-MainMenuAction$FindPreviousAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$FindPreviousAction.instance/SeparatorAfterFindPrevious.instance" boolvalue="true"/>
+            
+            <file name="SeparatorAfterFindPrevious.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            <attr name="sep-before-reposearch.instance/SeparatorBeforeGoTo.instance" boolvalue="true"/>
-
             
-            <file name="org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/empty.gif"/>
+            <attr name="org-netbeans-modules-search-project-ProjectsSearchAction.instance/SeparatorAfterProjectsSearch.instance" boolvalue="true"/>
+            <file name="SeparatorAfterProjectsSearch.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            <attr name="SeparatorBeforeGoTo.instance/org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance" boolvalue="true"/>
+            <attr name="SeparatorAfterProjectsSearch.instance/org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance" boolvalue="true"/>
             
-            <file name="org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/empty.gif"/>
-            </file>
-            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance/org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance" boolvalue="true"/>                        
+            <file name="org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance/org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance" boolvalue="true"/>
             
-            <file name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/empty.gif"/>
-            </file>    
-            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance/org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance" boolvalue="true"/>
-
-            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true"/>
-
+            <file name="org-netbeans-modules-editor-MainMenuAction$StopMacroRecordingAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance/org-netbeans-modules-editor-MainMenuAction$StopMacroRecordingAction.instance" boolvalue="true"/>
         </folder>
                 
         <folder name="View">
@@ -57,6 +58,64 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance"/>
             <attr name="org-netbeans-modules-editor-MainMenuAction$ShowLineNumbersAction.instance/org-netbeans-modules-editor-MainMenuAction$ShowToolBarAction.instance" boolvalue="true"/>
         </folder>
+        
+        <folder name="GoTo">
+            <file name="org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance"/>
+            <attr name="core-windows-SeparatorAfterRecentList.instance/org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToSourceAction.instance/org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance" boolvalue="true"/>                        
+            
+            <file name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance/org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance" boolvalue="true"/>
+
+            <file name="SeparatorBeforeJumpBack.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance/SeparatorBeforeJumpBack.instance" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-editor-MainMenuAction$JumpBackAction.instance"/>
+            <attr name="SeparatorBeforeJumpBack.instance/org-netbeans-modules-editor-MainMenuAction$JumpBackAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$JumpForwardAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$JumpBackAction.instance/org-netbeans-modules-editor-MainMenuAction$JumpForwardAction.instance" boolvalue="true"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$JumpForwardAction.instance/SeparatorBeforeGoToLine.instance" boolvalue="true"/>
+        </folder>
+        
+        <attr name="GoTo/Source" boolvalue="true" />
+        <folder name="Source">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="SeparatorBeforeReformat.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="SeparatorBeforeReformat.instance/org-netbeans-modules-editor-MainMenuAction$FormatAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$FormatAction.instance/org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$ShiftLineLeftAction.instance/org-netbeans-modules-editor-MainMenuAction$ShiftLineRightAction.instance" boolvalue="true"/>
+        
+            <file name="org-netbeans-modules-editor-MainMenuAction$ShiftLineRightAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$ShiftLineRightAction.instance/org-netbeans-modules-editor-MainMenuAction$CommentAction.instance" boolvalue="true"/>
+
+            <file name="org-netbeans-modules-editor-MainMenuAction$CommentAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$CommentAction.instance/org-netbeans-modules-editor-MainMenuAction$UncommentAction.instance" boolvalue="true"/>
+                    
+            <file name="org-netbeans-modules-editor-MainMenuAction$UncommentAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$UncommentAction.instance/SeparatorAfterUncomment.instance" boolvalue="true"/>
+
+            <file name="SeparatorAfterUncomment.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+                        
+            <attr name="SeparatorAfterUncomment.instance/org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance" boolvalue="true"/>
+            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance"/>
+            <attr name="org-netbeans-modules-editor-MainMenuAction$WordMatchNextAction.instance/org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance" boolvalue="true"/>
+            
+            <file name="org-netbeans-modules-editor-MainMenuAction$WordMatchPrevAction.instance"/>
+        </folder>
+        <attr name="Source/BuildProject" boolvalue="true" />
+                
     </folder>
 
     <folder name="Services">

@@ -39,7 +39,7 @@ public class WrapperBookmarkAction extends NodeAction {
 
     public WrapperBookmarkAction(Action originalAction) {
         this.originalAction = originalAction;
-        
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
         // Re-add the property as SystemAction.putValue() is final
 //        putValue(BaseAction.ICON_RESOURCE_PROPERTY, getValue(BaseAction.ICON_RESOURCE_PROPERTY));
     }

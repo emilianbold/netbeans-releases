@@ -37,6 +37,7 @@ import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.StatementBlock;
 import org.netbeans.jmi.javamodel.TryStatement;
+import org.netbeans.modules.editor.MainMenuAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -909,6 +910,34 @@ public class JavaKit extends NbEditorKit {
 
             }
         }
+        
+        /** Surround With try-catch action in Source main menu, wrapper for TryCatchAction
+         */ 
+        public static final class MainMenuWrapper extends MainMenuAction {
+
+            private JMenuItem menuItem;
+
+            public MainMenuWrapper () {
+                super();
+                menuItem = new JMenuItem(getMenuItemText());
+                setMenu();
+            }
+
+            protected String getMenuItemText () {
+                return NbBundle.getBundle(MainMenuWrapper.class).getString(
+                    "try_catch_main_menu_item"); //NOI18N
+            }
+
+            public JMenuItem getMenuPresenter () {
+                return menuItem;
+            }
+
+            protected String getActionName () {
+                return JavaKit.tryCatchAction;
+            }
+
+        } // end of MainMenuWrapper
+        
     }
 
     public static class JavaInsertBreakAction extends InsertBreakAction {

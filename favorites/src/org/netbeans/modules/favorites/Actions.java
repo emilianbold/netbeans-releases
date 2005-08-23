@@ -57,6 +57,7 @@ public final class Actions extends Object {
     public static Action addOnFavoritesNode () { return AddOnFavoritesNode.getDefault(); }
     public static Action remove () { return Remove.getDefault(); }
     public static Action select () { return Select.getDefault(); }
+    public static Action selectMainMenu () { return SelectMainMenu.getDefault(); }
     
     /**
      * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
@@ -93,7 +94,7 @@ public final class Actions extends Object {
     /** An action which selects activated nodes in the Explorer's tab.
     * @author   Dusan Balek
     */
-    private static final class Select extends NodeAction {
+    private static class Select extends NodeAction {
         private static final Select SELECT = new Select ();
         
         public static Action getDefault () {
@@ -138,7 +139,26 @@ public final class Actions extends Object {
         }
 
     } // end of Select
-    
+
+
+    private static final class SelectMainMenu extends Select {
+        private static final Select SELECT_MAIN_MENU = new SelectMainMenu ();
+
+        private SelectMainMenu () {
+            super();
+            putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        }
+        
+        public static Action getDefault () {
+            return SELECT_MAIN_MENU;
+        }
+        
+        public String getName() {
+            return NbBundle.getMessage(Select.class, "ACT_Select_Main_Menu"); // NOI18N
+        }
+        
+    } // end of SelectMainMenu
+
     
     /** Removes root link from favorites
     * @author   Jaroslav Tulach

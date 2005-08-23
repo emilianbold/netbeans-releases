@@ -97,9 +97,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
         <folder name="File">
-            <attr name="org-netbeans-core-actions-UnmountFSAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
+            <!-- position of OpenFileAction defined in projects/ui module -->
             <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
-            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2.instance" boolvalue="true"/>
         </folder> <!-- File -->
 
         <folder name="Window">

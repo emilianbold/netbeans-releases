@@ -47,14 +47,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-JumpPrevAction.shadow_hidden" />
         </folder>
         
-        <folder name="BuildProject" >
+        <folder name="GoTo" >
+            <attr name="SeparatorAfterBookmarks.instance/org-netbeans-core-actions-JumpNextAction.shadow" boolvalue="true" />
             <file name="org-netbeans-core-actions-JumpNextAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance" />
             </file>
             <attr name="org-netbeans-core-actions-JumpNextAction.shadow/org-netbeans-core-actions-JumpPrevAction.shadow" boolvalue="true" />
+            
             <file name="org-netbeans-core-actions-JumpPrevAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance" />
             </file>
+            <attr name="org-netbeans-core-actions-JumpPrevAction.shadow/SeparatorBeforeSelectIn.instance" boolvalue="true" />
         </folder>
     </folder>
     

@@ -60,10 +60,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-ToolsAction.instance"/>
             <file name="org-openide-actions-ViewAction.instance"/>
             <file name="org-openide-actions-NewTemplateAction.instance"/>
-            <file name="org-netbeans-core-actions-JumpNextAction.instance">
-            </file>
-            <file name="org-netbeans-core-actions-JumpPrevAction.instance">
-            </file>
+            <file name="org-netbeans-core-actions-JumpNextAction.instance"/>
+            <file name="org-netbeans-core-actions-JumpPrevAction.instance"/>
             
         </folder>
         
@@ -143,13 +141,13 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator2.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
-            <attr name="Separator2.instance/org-openide-actions-FindAction.instance" boolvalue="true" />
+            <attr name="Separator2.instance/org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance" boolvalue="true"/>
+            <!-- note, actions defined in editor moduel are here between -->
+            <attr name="SeparatorAfterFindPrevious.instance/org-openide-actions-FindAction.instance" boolvalue="true"/>
             <file name="org-openide-actions-FindAction.instance"/>
             <attr name="org-openide-actions-FindAction.instance/org-openide-actions-ReplaceAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ReplaceAction.instance"/>
-            <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GotoAction.instance"/>
-            <attr name="org-openide-actions-GotoAction.instance/Separator3.instance" boolvalue="true" />
+            <attr name="org-openide-actions-ReplaceAction.instance/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
 		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>
@@ -169,7 +167,19 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-HTMLViewAction.instance"/>
         </folder>
         
-        <attr name="View/Tools" boolvalue="true" />
+        <attr name="View/GoTo" boolvalue="true" />
+        <folder name="GoTo">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+            <file name="SeparatorBeforeGoToLine.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <file name="org-openide-actions-GotoAction.shadow" >
+                <attr name="originalFile" stringvalue="/Actions/Edit/org-openide-actions-GotoAction.instance" />
+            </file>
+            <attr name="SeparatorBeforeGoToLine.instance/org-openide-actions-GotoAction.shadow" boolvalue="true" />
+        </folder>
+        
+        <attr name="GoTo/Tools" boolvalue="true" />
         <folder name="Tools">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-ToolsAction.instance"/>

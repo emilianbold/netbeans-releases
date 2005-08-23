@@ -128,6 +128,15 @@ Microsystems, Inc. All Rights Reserved.
             </folder>        
         </folder>
         
+        <folder name="GoTo">
+            <file name="org-netbeans-modules-project-ui-SelectInProjectsMainMenu.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjectsMainMenu"/>
+            </file>
+
+            <file name="org-netbeans-modules-project-ui-SelectInFilesMainMenu.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFilesMainMenu"/>
+            </file>       
+        </folder>
     </folder>
 
     <folder name="org-netbeans-modules-project-ui-WelcomeScreenHack">
@@ -246,9 +255,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-OpenProject.instance"/>
             </file>
                         
-            <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
-            
-            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true" />
+            <attr name="org-netbeans-modules-project-ui-OpenProject.shadow/org-netbeans-modules-project-ui-RecentProjects.shadow" boolvalue="true" />
             
             <file name="org-netbeans-modules-project-ui-RecentProjects.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RecentProjects.instance"/>
@@ -260,8 +267,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
             </file>
             
-            <attr name="org-netbeans-modules-project-ui-CloseProject.shadow/SeparatorOpen.instance" boolvalue="true" />
-                                    
+            <attr name="org-netbeans-modules-project-ui-CloseProject.shadow/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
+
+            <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/SeparatorOpen.instance" boolvalue="true" />
+                                                
             <file name="SeparatorOpen.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                 
             </file>
@@ -283,6 +292,22 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/SeparatorPrj.instance" boolvalue="true" />            
             <attr name="org-netbeans-modules-project-ui-CustomizeProject.shadow/Separator2.instance" boolvalue="true" />            
 
+        </folder>
+        
+        <folder name="GoTo">
+            <file name="SeparatorBeforeSelectIn.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <attr name="SeparatorBeforeSelectIn.instance/org-netbeans-modules-project-ui-SelectInProjects.shadow" boolvalue="true"/>            
+            
+            <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
+                <attr name="originalFile" stringvalue="Actions/GoTo/org-netbeans-modules-project-ui-SelectInProjectsMainMenu.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-project-ui-SelectInProjects.shadow/org-netbeans-modules-project-ui-SelectInFiles.shadow" boolvalue="true"/>            
+            
+            <file name="org-netbeans-modules-project-ui-SelectInFiles.shadow">
+                <attr name="originalFile" stringvalue="Actions/GoTo/org-netbeans-modules-project-ui-SelectInFilesMainMenu.instance"/>
+            </file>
         </folder>
         
         <attr name="View/BuildProject" boolvalue="true" />

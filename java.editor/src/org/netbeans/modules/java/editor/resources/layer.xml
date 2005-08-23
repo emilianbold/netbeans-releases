@@ -24,15 +24,26 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Menu">
-        <folder name="Edit">
+        <folder name="GoTo">
             <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow">            
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>            
             </file>
-
-            <attr name="org-openide-actions-GotoAction.instance/org-netbeans-modules-editor-java-JavaFastOpenAction.shadow" boolvalue="true"/>           
-
+            <attr name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow/org-netbeans-modules-junit-OpenTestAction.shadow" boolvalue="true"/>   
+            <attr name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>           
         </folder>
+        
+        <folder name="Source">
+            <file name="org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance"/>            
+            <attr name="org-netbeans-modules-java-tools-OverrideAction.shadow/org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance" boolvalue="true"/>   
+            
+            <file name="org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance"/>            
+            <attr name="org-netbeans-modules-editor-java-JavaFixAllImports$MainMenuWrapper.instance/org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance" boolvalue="true"/>   
+            <attr name="org-netbeans-modules-editor-java-JavaKit$TryCatchAction$MainMenuWrapper.instance/SeparatorBeforeReformat.instance" boolvalue="true"/>   
+        </folder>
+        
     </folder>
+    
+    
                 
     <folder name="Shortcuts">
         <file name="OS-O.shadow">

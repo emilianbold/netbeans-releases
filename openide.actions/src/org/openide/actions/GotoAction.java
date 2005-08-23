@@ -22,6 +22,12 @@ import org.openide.util.actions.CallbackSystemAction;
 * @author   Miloslav Metelka
 */
 public class GotoAction extends CallbackSystemAction {
+    
+    public GotoAction () {
+        super();
+        putProperty ("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+    
     public String getName() {
         return NbBundle.getMessage(GotoAction.class, "Goto");
     }

@@ -41,6 +41,30 @@ Microsystems, Inc. All Rights Reserved.
         </file>
     </folder>
 
+    <folder name="Menu" >
+        <folder name="GoTo" >
+            <file name="org-netbeans-editor-bookmarks-ToggleBookmark.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-toggle.instance" />
+            </file>
+            <attr name="org-openide-actions-GotoAction.shadow/org-netbeans-editor-bookmarks-ToggleBookmark.shadow" boolvalue="true" />
+            <attr name="org-netbeans-editor-bookmarks-ToggleBookmark.shadow/org-netbeans-editor-bookmarks-BookmarkNext.shadow" boolvalue="true" />
+            
+            <file name="org-netbeans-editor-bookmarks-BookmarkNext.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-next.instance" />
+            </file>
+            <attr name="org-netbeans-editor-bookmarks-BookmarkNext.shadow/org-netbeans-editor-bookmarks-BookmarkPrevious.shadow" boolvalue="true" />
+            
+            <file name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Edit/bookmark-previous.instance" />
+            </file>
+            <attr name="org-netbeans-editor-bookmarks-BookmarkPrevious.shadow/SeparatorAfterBookmarks.instance" boolvalue="true" />
+            
+            <file name="SeparatorAfterBookmarks.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="Editors">
         <folder name="text">
             <folder name="base">

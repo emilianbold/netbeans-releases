@@ -46,6 +46,8 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
     
     private static final String SELECT_IN_PROJECTS_NAME_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_MenuName" ); // NOI18N
     private static final String SELECT_IN_FILES_NAME_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_MenuName" ); // NOI18N
+    private static final String SELECT_IN_PROJECTS_NAME_MAIN_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_MainMenuName" ); // NOI18N
+    private static final String SELECT_IN_FILES_NAME_MAIN_MENU = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_MainMenuName" ); // NOI18N
     
     private String command;
     private ProjectActionPerformer performer;
@@ -53,26 +55,47 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
     
     private String findIn;
     
+    /** true when action should be placed in main menu, false otherwise */
+    private final boolean isMainMenu;
+    
     public static Action inProjects() {
-        SelectNodeAction a = new SelectNodeAction( SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME );
-        a.findIn = ProjectTab.ID_LOGICAL;
-        return a;
+        return createInProjects(false);
     }
     
     public static Action inFiles() {
-        SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME );
+        return createInFiles(false);
+    }
+    
+    public static Action inProjectsMainMenu () {
+        return createInProjects(true);
+    }
+    
+    public static Action inFilesMainMenu () {
+        return createInFiles(true);
+    }
+    
+    private static Action createInProjects (boolean isMainMenu) {
+        SelectNodeAction a = new SelectNodeAction( SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME, isMainMenu );
+        a.findIn = ProjectTab.ID_LOGICAL;
+        return a;
+    } 
+    
+    private static Action createInFiles (boolean isMainMenu) {
+        SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME, isMainMenu );
         a.findIn = ProjectTab.ID_PHYSICAL;
         return a;
     }
+    
     
     /** 
      * Constructor for global actions. E.g. actions in main menu which 
      * listen to the global context.
      *
      */
-    public SelectNodeAction( Icon icon, String name ) {
+    public SelectNodeAction( Icon icon, String name, boolean isMainMenu ) {
         super( icon, null, new Class[] { DataObject.class } );
         this.setDisplayName( name );
+        this.isMainMenu = isMainMenu;
     }
     
     private SelectNodeAction(String command, ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
@@ -80,6 +103,7 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         this.command = command;
         this.performer = performer;
         this.namePattern = namePattern;
+        this.isMainMenu = false;
         refresh( getLookup() );
     }
        
@@ -111,9 +135,14 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         JMenuItem menuPresenter = new JMenuItem (this);
         
         if (ProjectTab.ID_LOGICAL.equals (this.findIn)) {
-            menuPresenter.setText (SELECT_IN_PROJECTS_NAME_MENU);
+            menuPresenter.setText (isMainMenu ? SELECT_IN_PROJECTS_NAME_MAIN_MENU : SELECT_IN_PROJECTS_NAME_MENU);
         } else {
-            menuPresenter.setText (SELECT_IN_FILES_NAME_MENU);
+            menuPresenter.setText (isMainMenu ? SELECT_IN_FILES_NAME_MAIN_MENU : SELECT_IN_FILES_NAME_MENU);
+        }
+        
+        // remove icon if we are in main menu
+        if (isMainMenu) {
+            menuPresenter.setIcon(null);
         }
         
         return menuPresenter;

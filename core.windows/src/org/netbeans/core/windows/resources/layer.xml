@@ -73,6 +73,18 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-windows-actions-ToolbarsListAction.instance"/>
             <attr name="Separator2.instance/org-netbeans-core-windows-actions-ToolbarsListAction.instance" boolvalue="true" />
         </folder>
+        
+        <folder name="GoTo">
+            <file name="org-netbeans-core-windows-actions-RecentViewListAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-RecentViewListAction.instance" />
+            </file>
+            <attr name="org-netbeans-core-windows-actions-RecentViewListAction.shadow/core-windows-SeparatorAfterRecentList.instance" boolvalue="true"/>
+
+            <file name="core-windows-SeparatorAfterRecentList.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+                        
+        </folder>
 
         <attr name="Tools/Window" boolvalue="true" />
         <folder name="Window">
