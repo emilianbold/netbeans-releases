@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
+import java.io.IOException;
 
 import java.util.Collections;
 
@@ -135,6 +136,14 @@ public class StartActionProvider extends ActionsProvider {
                 System.out.println ("\nS StartActionProvider." +
                     "doAction ().thread end: success"
                 );
+        } catch (IOException ioex) {
+            if (startVerbose)
+                System.out.println ("\nS StartActionProvider." +
+                    "doAction ().thread end: exception " + ioex
+                );
+            debuggerImpl.setException (ioex);
+            ((Session) lookupProvider.lookupFirst 
+                (null, Session.class)).kill ();
         } catch (Exception ex) {
             if (startVerbose)
                 System.out.println ("\nS StartActionProvider." +
