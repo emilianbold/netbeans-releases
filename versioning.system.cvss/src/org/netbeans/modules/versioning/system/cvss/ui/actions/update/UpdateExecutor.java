@@ -138,16 +138,15 @@ public class UpdateExecutor extends ExecutorSupport {
     private void refreshRecursively(File file) {
         try {
             if (cvs.isIgnoredFilename(file)) return;
-            if (refreshedFiles.contains(file)) return;
             if (file.isDirectory()) {
                 if (cache.getStatus(file).getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) return;
                 File [] files = file.listFiles();
                 for (int i = 0; i < files.length; i++) {
                     refreshRecursively(files[i]);
                 }
-                cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                if (!refreshedFiles.contains(file)) cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             } else {
-                refreshFile(file);
+                if (!refreshedFiles.contains(file)) refreshFile(file);
             }
         } catch (Throwable e) {
             // we catch exceptions here because we want to refresh statuses of all files regardless of any errors below 
