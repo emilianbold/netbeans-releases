@@ -133,7 +133,7 @@ public class CreateModuleXML extends Task {
                         codenamebase = codename;
                         rel = -1;
                     } else {
-                        codenamebase = codename.substring(0, idx);
+                        codenamebase = codename.substring(0, idx).trim();
                         rel = Integer.parseInt(codename.substring(idx + 1));
                     }
                     File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
