@@ -75,16 +75,23 @@ public class GetCleanAction extends AbstractSystemAction {
             }
             try {
                 File cleanFile = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE);
-                FileUtils.copyFile(cleanFile, file);
-                if (entry != null && entry.isUserFileToBeRemoved()) {
-                    entry.setRevision(entry.getRevision().substring(1));
-                    ah.setEntry(file, entry);
+                if (cleanFile != null) {
+                    FileUtils.copyFile(cleanFile, file);
+                    if (entry != null && entry.isUserFileToBeRemoved()) {
+                        entry.setRevision(entry.getRevision().substring(1));
+                        ah.setEntry(file, entry);
+                    }
+                    FileObject fo = FileUtil.toFileObject(file);
+                    if (fo != null) {
+                        fo.refresh();
+                    }
+                    cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
+                } else {
+                    // TODO can not find in repository
+                    // locally delete? NOt yet there seems to be bug in checkout -p
+                    System.err.println("CVSrepo: can not locate: " + file);
+                    cleanFile.getName(); // raise compatability NPE
                 }
-                FileObject fo = FileUtil.toFileObject(file);
-                if (fo != null) {
-                    fo.refresh();
-                }
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }

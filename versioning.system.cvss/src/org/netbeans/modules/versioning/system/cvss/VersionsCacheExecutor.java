@@ -40,6 +40,9 @@ final class VersionsCacheExecutor extends ExecutorSupport {
     protected synchronized void commandFinished(ClientRuntime.Result result) {
         finished = true;
         this.result = result;
+        if (checkedOutVersion == null) {
+            System.err.println("CVS: " + cmd.getCVSCommand() + " misses piped response!");
+        }
         notifyAll();
     }
 
