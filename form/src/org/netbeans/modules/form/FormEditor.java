@@ -825,11 +825,7 @@ public class FormEditor {
         return false;
     }
 
-    public static boolean isNaturalLayoutEnabled() {
-        return Boolean.getBoolean("netbeans.form.new_layout"); // NOI18N
-    }
-
     public static boolean isNonVisualTrayEnabled() {
-        return isNaturalLayoutEnabled() || Boolean.getBoolean("netbeans.form.non_visual_tray"); // NOI18N
+        return Boolean.getBoolean("netbeans.form.non_visual_tray"); // NOI18N
     }
 }

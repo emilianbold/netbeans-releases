@@ -128,7 +128,7 @@ public class RADComponentNode extends FormNode
      * @return default action, or <code>null</code> if there should be none
      */
     public SystemAction getDefaultAction() {
-        if (component instanceof RADVisualContainer && !FormEditor.isNaturalLayoutEnabled())
+        if (component instanceof RADVisualContainer && !getFormModel().isFreeDesignDefaultLayout())
             return SystemAction.get(EditContainerAction.class);
 //        if (component.getEventHandlers().getDefaultEvent() != null)
         return SystemAction.get(DefaultRADAction.class);
@@ -176,7 +176,7 @@ public class RADComponentNode extends FormNode
                     actions.add(SystemAction.get(TestAction.class));
 
                 // [possibility to change the designed container temporarily disabled in new layout]
-                if (!FormEditor.isNaturalLayoutEnabled()
+                if (!getFormModel().isFreeDesignDefaultLayout()
                     && component instanceof RADVisualContainer)
                 {
                     actions.add(SystemAction.get(EditContainerAction.class));

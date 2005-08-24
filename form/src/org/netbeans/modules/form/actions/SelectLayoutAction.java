@@ -21,6 +21,7 @@ import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.palette.PaletteUtils;
 
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.nodes.Node;
 import org.netbeans.modules.form.palette.PaletteItem;
@@ -129,16 +130,14 @@ public class SelectLayoutAction extends CallableSystemAction {
             if (nodes.length != 0 && !initialized) {
                 popup.removeAll();
 
-                if (FormEditor.isNaturalLayoutEnabled()) {
-                    JMenuItem mi = new JMenuItem("Free Design"); // [need to choose right label and do i18n]
-                    popup.add(mi);
-                    mi.addActionListener(new LayoutActionListener(null));
-                    popup.addSeparator();
-                }
+                JMenuItem mi = new JMenuItem(NbBundle.getMessage(SelectLayoutAction.class, "NAME_FreeDesign")); // NOI18N
+                popup.add(mi);
+                mi.addActionListener(new LayoutActionListener(null));
+                popup.addSeparator();
 
                 PaletteItem[] layouts = getAllLayouts();
                 for (int i = 0; i < layouts.length; i++) {
-                    JMenuItem mi = new JMenuItem(layouts[i].getNode().getDisplayName());
+                    mi = new JMenuItem(layouts[i].getNode().getDisplayName());
                     HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
                     popup.add(mi);
                     mi.addActionListener(new LayoutActionListener(layouts[i]));

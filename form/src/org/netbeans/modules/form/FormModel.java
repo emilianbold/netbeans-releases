@@ -1011,7 +1011,7 @@ public class FormModel
         return codeStructure;
     }
     
-    boolean isFreeDesignDefaultLayout() {
+    public boolean isFreeDesignDefaultLayout() {
         return freeDesignDefaultLayout;
     }
     

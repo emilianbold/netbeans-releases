@@ -120,7 +120,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             }
  
             // set size
-            if (FormEditor.isNaturalLayoutEnabled()) {
+            if (formModel.isFreeDesignDefaultLayout()) {
                 // [temporary hack for new layout: always set the size according to the form designer]
                 if (formContainer != null) {
                     Dimension size = formContainer.getDesignerSize();

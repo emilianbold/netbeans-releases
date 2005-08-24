@@ -50,7 +50,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String NB32_VERSION = "1.0"; // NOI18N
     static final String NB33_VERSION = "1.1"; // NOI18N
     static final String NB34_VERSION = "1.2"; // NOI18N
-    static final String NB42_VERSION = "experimental"; // NOI18N
+    static final String NB42_VERSION = "1.3"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -674,13 +674,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         if ((visualContainer != null) && (convIndex == LAYOUT_NATURAL)) {
-            if (!FormEditor.isNaturalLayoutEnabled()) {
-                PersistenceException ex = new PersistenceException("Cannot open form");
-                ErrorManager.getDefault().annotate(ex, "This form was created using new experimental layout design support. "
-                        + "It is not possible to open the form as this support is not enabled now. "
-                        + "You need to run the IDE with \"-J-Dnetbeans.form.new_layout=true\" in netbeans.conf file.");
-                throw ex;
-            }
             visualContainer.setOldLayoutSupport(false);
             formModel.setFreeDesignDefaultLayout(true);
             LayoutModel layoutModel = formModel.getLayoutModel();
@@ -710,21 +703,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 try {
                     layoutInitialized =
                         layoutSupport.initializeLayoutDelegate(true);
-
-                    // hack: set new layout support to top container if it is empty
-                    // [this won't be needed once the templates are updated to new layout]
-                    if (FormEditor.isNaturalLayoutEnabled()
-                        && !layoutSupport.isDedicated()
-                        && childComponents.length == 0
-                        && formModel.getTopRADComponent() == visualContainer)
-                    {
-                        visualContainer.setOldLayoutSupport(false);
-                        formModel.setFreeDesignDefaultLayout(true);
-                        formModel.getLayoutModel().addRootComponent(
-                            new LayoutComponent(visualContainer.getId(), true));
-                        newLayout = true;
-                        layoutSupport = null;
-                    }
                 }
                 catch (Exception ex) {
                     layoutEx = ex;
@@ -5035,7 +5013,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         return NB32_VERSION.equals(ver)
                || NB33_VERSION.equals(ver)
                || NB34_VERSION.equals(ver)
-               || "1.3".equals(ver) // PENDING should be removed when NB42_VERSION.equals("1.3")
                || NB42_VERSION.equals(ver);
     }
 

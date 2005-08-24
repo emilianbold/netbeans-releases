@@ -602,7 +602,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateDesignerActions() {
-        if (!FormEditor.isNaturalLayoutEnabled()) return;
         Collection selectedIds = selectedLayoutComponentIds();
         boolean enabled = false;
         if (selectedIds.size() >= 2) {
@@ -623,7 +622,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     private void updateAlignmentPalette() {
-        if (!FormEditor.isNaturalLayoutEnabled()) return;
         if (alignmentPalette == null) {
             Rectangle hBounds = handleLayer.getBounds();
             // Handle layer not laid out yet - will be notified later again
