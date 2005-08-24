@@ -320,4 +320,19 @@ public class JellyConstants {
    public static final String HOST_TXT = "hostJTextField";
    public static final String PORT_TXT = "portJTextField";
    public static final String URLSUFFIX_TXT = "urlTextField";
+   
+   /********************** UI tests *******************************************/
+   
+   //project
+   public static final String MBEAN_DEFAULT_NAME = "NewJMXClass";
+   
+   //step 1
+   public static final String WARN_STEP1 = "Warning: As of JDK 1.4," +
+                " it is highly recommended that you do NOT place Java classes" +
+                " in the default package.";
+   public static final String PKG_NAME = "uitestPackage";
+   
+   //step 2
+   public static final String BROWSE_BTN = "browseButton";
+   public static final String DEF_DESCR = "NewJMXClass Description";
 }
