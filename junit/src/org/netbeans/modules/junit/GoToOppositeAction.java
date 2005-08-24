@@ -14,14 +14,12 @@
 package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.jmi.reflect.RefFeatured;
 import javax.jmi.reflect.RefObject;
-import javax.swing.AbstractAction;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -35,12 +33,13 @@ import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 
 /**
@@ -53,12 +52,7 @@ import org.openide.windows.TopComponent;
  * @see  OpenTestAction
  * @author  Marian Petras
  */
-public final class GoToOppositeAction extends AbstractAction {
-    
-    /** */
-    private String[] displayName = new String[2];
-    /** */
-    private Integer[] mnemPos = new Integer[2];
+public final class GoToOppositeAction extends NodeAction {
     
     /**
      *
@@ -69,10 +63,9 @@ public final class GoToOppositeAction extends AbstractAction {
     
     /**
      */
-    public void actionPerformed(ActionEvent e) {
+    protected void performAction(Node[] nodes) {
         assert EventQueue.isDispatchThread();
         
-        Node[] nodes;
         FileObject selectedFO;
         FileObject selectedFORoot;
         Project project;
@@ -82,7 +75,7 @@ public final class GoToOppositeAction extends AbstractAction {
         FileObject[] oppositeRoots;
         boolean sourceToTest = true;   //false .. navigation from test to source
 
-        if (((nodes = TopComponent.getRegistry().getCurrentNodes()).length != 1)
+        if ((nodes.length != 1)
           || ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) == null)
           || ((project = FileOwnerQuery.getOwner(selectedFO)) == null)
           || ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
@@ -204,10 +197,9 @@ public final class GoToOppositeAction extends AbstractAction {
 
     /**
      */
-    public boolean isEnabled() {
+    protected boolean enable(Node[] nodes) {
         assert EventQueue.isDispatchThread();
         
-        Node[] nodes;
         FileObject selectedFO;
         FileObject selectedFORoot;
         Project project;
@@ -216,7 +208,7 @@ public final class GoToOppositeAction extends AbstractAction {
         FileObject[] oppositeRootsRaw;
         
         return
-            ((nodes = TopComponent.getRegistry().getCurrentNodes()).length == 1)
+            (nodes.length == 1)
           && ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) != null)
           && ((project = FileOwnerQuery.getOwner(selectedFO)) != null)
           && ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
@@ -233,25 +225,8 @@ public final class GoToOppositeAction extends AbstractAction {
     
     /**
      */
-    public Object getValue(String key) {
-        Object value = super.getValue(key);
-        if (value != null) {
-            return value;
-        }
-        
-        if (key.equals(NAME)) {
-            return getDisplayName();
-        } else if (key.equals(MNEMONIC_KEY)) {
-            getValue(NAME);             //sets value for MNEMONIC_KEY
-        } else if (key.equals(ACTION_COMMAND_KEY)) {
-            return "GoToOpposite/Test";                                 //NOI18N
-        }
-        return null;
-    }
-    
-    /**
-     */
-    private String getDisplayName() {
+    public String getName() {
+        assert EventQueue.isDispatchThread();
 
         Node[] nodes;
         FileObject selectedFO;
@@ -279,45 +254,22 @@ public final class GoToOppositeAction extends AbstractAction {
                         || (Utils.skipNulls(oppositeRootsRaw).length == 0)
                         || (sourceToTest = false));
 
-        return getDisplayName(disabled || sourceToTest);
+        return NbBundle.getMessage(
+                        getClass(), disabled || sourceToTest
+                                    ? "LBL_Action_GoToTest"             //NOI18N
+                                    : "LBL_Action_GoToSource");         //NOI18N
     }
     
     /**
      */
-    private String getDisplayName(boolean sourceToTest) {
-        final int index = sourceToTest ? 0 : 1;
-        String dispName = displayName[index];
-        
-        if (dispName == null) {
-            dispName = initDisplayName(sourceToTest);
-        }
-        //putValue(MNEMONIC_KEY, mnemPos[index]);
-        return dispName;
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
     
     /**
      */
-    private String initDisplayName(boolean sourceToTest) {
-        final int index = sourceToTest ? 0 : 1;
-        
-        String bundleValue = NbBundle.getMessage(
-                                getClass(),
-                                sourceToTest ? "LBL_Action_GoToTest"    //NOI18N
-                                             : "LBL_Action_GoToSource");//NOI18N
-
-        int ampersandPos = Mnemonics.findMnemonicAmpersand(bundleValue);
-        String dispName = (ampersandPos == -1)
-                          ? bundleValue
-                          : (ampersandPos == 0)
-                            ? bundleValue.substring(1)
-                            : bundleValue.substring(0, ampersandPos)
-                              + bundleValue.substring(ampersandPos + 1);
-
-        
-        mnemPos[index] = (ampersandPos >= 0) ? new Integer(ampersandPos) : null;
-        displayName[index] = dispName;
-        
-        return dispName;
+    protected boolean asynchronous() {
+        return false;
     }
     
     /**
