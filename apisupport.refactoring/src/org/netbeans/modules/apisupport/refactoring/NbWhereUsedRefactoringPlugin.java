@@ -16,7 +16,9 @@ package org.netbeans.modules.apisupport.refactoring;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
@@ -26,9 +28,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -94,8 +100,52 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
                 if (project != null && project instanceof NbModuleProject) {
                     checkMetaInfServices(project, clzz, refactoringElements);
                     checkManifest((NbModuleProject)project, clzz, refactoringElements);
+                    checkLayer((NbModuleProject)project, clzz, refactoringElements);
                 }
             }
+            if (refObject instanceof Method) {
+                Method method = (Method)refObject;
+                // do our check just on public static methods..
+                if (! Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) {
+                    return problem;
+                }
+                // with no parameters or with parameter of type FileObject
+                List params = method.getParameters();
+                if (params.size() > 1) {
+                    return problem;
+                }
+                Iterator it = params.iterator();
+                while (it.hasNext()) {
+                    Parameter param =(Parameter)it.next();
+                    if (! "org.openide.filesystems.FileObject".equals(param.getType().getName())) {
+                        return problem;
+                    }
+                }
+                Resource res = method.getResource();
+                FileObject fo = JavaModel.getFileObject(res);
+                Project project = FileOwnerQuery.getOwner(fo);
+                if (project != null && project instanceof NbModuleProject) {
+                    checkLayer((NbModuleProject)project, method, refactoringElements);
+                }
+            }
+            if (refObject instanceof Constructor) {
+                Constructor constructor = (Constructor)refObject;
+                // just consider public constructors with no params..
+                if (!Modifier.isPublic(constructor.getModifiers())) {
+                    return problem;
+                }
+                List params = constructor.getParameters();
+                if (params.size() > 0) {
+                    return problem;
+                }
+                Resource res = constructor.getResource();
+                FileObject fo = JavaModel.getFileObject(res);
+                Project project = FileOwnerQuery.getOwner(fo);
+                if (project != null && project instanceof NbModuleProject) {
+                    checkLayer((NbModuleProject)project, constructor, refactoringElements);
+                }
+            }
+            
             
             
             err.log("Gonna return problem: " + problem);
@@ -118,6 +168,57 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
     protected RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz, FileObject serviceFile) {
         return new ServicesWhereUsedRefactoringElement(clazz.getSimpleName(), serviceFile);
     }
+    
+    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        return new LayerWhereUserRefElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+    }
+    
+    protected RefactoringElementImplementation createLayerRefactoring(Method method,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        return new LayerWhereUserRefElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+    }
+    
+    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        return new LayerWhereUserRefElement(handle.getLayerFile(), layerFileObject, layerAttribute);
+    }
+    
+    public final class LayerWhereUserRefElement extends AbstractRefactoringElement {
+        private String attr;
+        private String path;
+        private String attrValue;
+        public LayerWhereUserRefElement(FileObject fo, FileObject layerFo, String attribute) {
+            parentFile = fo;
+            attr = attribute;
+            this.path = layerFo.getPath();
+            if (attr != null) {
+                Object vl = layerFo.getAttribute("literal:" + attr); //NOI18N
+                if (vl instanceof String) {
+                    attrValue = (String)vl;
+                }
+            }
+        }
+        /** Returns text describing the refactoring formatted for display (using HTML tags).
+         * @return Formatted text.
+         */
+        public String getDisplayText() {
+            if (attr != null && attrValue != null) {
+                return NbBundle.getMessage(getClass(), "TXT_LayerAttrValueWhereUsed", path, attr, attrValue);
+            }
+            if (attr != null) {
+                return NbBundle.getMessage(getClass(), "TXT_LayerAttrWhereUsed", path, attr);
+            }
+            return NbBundle.getMessage(getClass(), "TXT_LayerWhereUsed", path);
+        }
+    }
+    
     
     public final class ManifestWhereUsedRefactoringElement extends AbstractRefactoringElement {
         

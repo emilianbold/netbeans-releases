@@ -16,16 +16,22 @@ package org.netbeans.modules.apisupport.refactoring;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -33,6 +39,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -42,6 +49,8 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     protected static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.apisupport.refactoring");   // NOI18N
     
     protected AbstractRefactoring refactoring;
+    // a regexp pattern for ordering attributes
+    protected Pattern orderingLayerAttrPattern = Pattern.compile("([\\S]+)/([\\S]+)"); //NOI18N
     /** Creates a new instance of AbstractRefactoringPlugin */
     public AbstractRefactoringPlugin(AbstractRefactoring refactoring) {
         this.refactoring = refactoring;
@@ -147,6 +156,154 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         }
     }
     
+    protected final void checkLayer(NbModuleProject project, JavaClass clzz, RefactoringElementsBag refactoringElements) {
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        FileSystem fs = handle.layer();
+        checkFileObject(fs.getRoot(), clzz, refactoringElements, handle);
+    }
+
+   
+    private void checkFileObject(FileObject fo, JavaClass clzz, RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
+        if (fo.isFolder()) {
+            FileObject[] childs = fo.getChildren();
+            for (int i =0; i < childs.length; i++) {
+                checkFileObject(childs[i], clzz, refactoringElements, handle);
+            }
+            Enumeration en = fo.getAttributes();
+            // check ordering attributes?
+            while (en.hasMoreElements()) {
+                String attrKey = (String)en.nextElement();
+                Matcher match = orderingLayerAttrPattern.matcher(attrKey);
+                if (match.matches()) {
+                    String first = match.group(1);
+                    if (first.endsWith(".instance")) { //NOI18N
+                        String name = first.substring(0, first.length() - ".instance".length()).replace('-', '.'); //NOI18N
+                        if (name.equals(clzz.getName())) {
+                            RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, attrKey);
+                            if (elem != null) {
+                                refactoringElements.add(refactoring, elem);
+                            }
+                        }
+                    }
+                    String second = match.group(2);
+                    if (second.endsWith(".instance")) { //NOI18N
+                        String name = second.substring(0, second.length() - ".instance".length()).replace('-', '.'); //NOI18N
+                        if (name.equals(clzz.getName())) {
+                            RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, attrKey);
+                            if (elem != null) {
+                                refactoringElements.add(refactoring, elem);
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (fo.isData()) {
+            if ("instance".equals(fo.getExt())) {
+                String name = fo.getName().replace('-', '.');
+                if (name.equals(clzz.getName())) {
+                    RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, null);
+                    if (elem != null) {
+                        refactoringElements.add(refactoring, elem);
+                    }
+                }
+            }
+            if ("settings".equals(fo.getExt())) {
+                //TODO check also content of settings files for matches?
+            }
+            Enumeration en = fo.getAttributes();
+            // check just a few specific attributes or iterate all?
+            while (en.hasMoreElements()) {
+                String attrKey = (String)en.nextElement();
+                Object val = fo.getAttribute("literal:" + attrKey); //NOI18N
+                if (val instanceof String) {
+                    String attrValue = (String)val;
+                    boolean check = false;
+                    String value = null;
+                    if (attrValue.startsWith("new:")) { //NOI18N
+                        value = attrValue.substring("new:".length()); //NOI18N
+                        check = true;
+                    }
+                    if (attrValue.startsWith("method:")) { //NOI18N
+                        value = attrValue.substring("method:".length()); //NOI18N
+                        int index = value.lastIndexOf('.');
+                        if (index > 0) {
+                            value = value.substring(0, index);
+                        }
+                        check = true;
+                    }
+                    if (check && value.equals(clzz.getName())) {
+                        RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, attrKey);
+                        if (elem != null) {
+                            refactoringElements.add(refactoring, elem);
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+
+    protected final void checkLayer(NbModuleProject project, Method method, RefactoringElementsBag refactoringElements) {
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        FileSystem fs = handle.layer();
+        checkFileObject(fs.getRoot(), method, null, refactoringElements, handle);
+    }
+    
+    protected final void checkLayer(NbModuleProject project, Constructor constructor, RefactoringElementsBag refactoringElements) {
+        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
+        FileSystem fs = handle.layer();
+        checkFileObject(fs.getRoot(), null, constructor, refactoringElements, handle);
+    }
+    
+    private void checkFileObject(FileObject fo, Method method, Constructor constructor, 
+                                 RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
+        if (fo.isFolder()) {
+            FileObject[] childs = fo.getChildren();
+            for (int i =0; i < childs.length; i++) {
+                checkFileObject(childs[i], method, constructor, refactoringElements, handle);
+            }
+        } else if (fo.isData()) {
+            if ("settings".equals(fo.getExt())) {
+                //TODO check also content of settings files for matches?
+            }
+            Enumeration en = fo.getAttributes();
+            // check just a few specific attributes or iterate all?
+            while (en.hasMoreElements()) {
+                String attrKey = (String)en.nextElement();
+                Object val = fo.getAttribute("literal:" + attrKey); //NOI18N
+                if (val instanceof String) {
+                    String attrValue = (String)val;
+                    if (method != null && attrValue.startsWith("method:") && attrValue.endsWith(method.getName())) { //NOI18N
+                        String clazz = attrValue.substring("method:".length()); //NOI18N
+                        String methodString = null;
+                        int index = clazz.lastIndexOf('.');
+                        if (index > 0) {
+                            methodString = clazz.substring(index + 1);
+                            clazz = clazz.substring(0, index);
+                        }
+                        if (methodString != null && methodString.equals(method.getName()) &&
+                            clazz.equals(method.getDeclaringClass().getName())) {
+                           RefactoringElementImplementation elem = createLayerRefactoring(method, handle, fo, attrKey);
+                           if (elem != null) {
+                               refactoringElements.add(refactoring, elem);
+                           }
+                        }
+                    }
+                    if (constructor != null && attrValue.startsWith("new:")) { //NOI18N
+                        String clazz = attrValue.substring("new:".length()); //NOI18N
+                        if (clazz.equals(constructor.getDeclaringClass().getName())) {
+                           RefactoringElementImplementation elem = createLayerRefactoring(constructor, handle, fo, attrKey);
+                           if (elem != null) {
+                               refactoringElements.add(refactoring, elem);
+                           }
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+    
     protected abstract RefactoringElementImplementation createMetaInfServicesRefactoring(JavaClass clazz,
             FileObject serviceFile);
     
@@ -156,7 +313,25 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             String attributeValue,
             String section);
     
+    protected RefactoringElementImplementation createLayerRefactoring(JavaClass clazz,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        throw new RuntimeException("if you call checkLayer(), you need to implement this method");
+    }
     
+    protected RefactoringElementImplementation createLayerRefactoring(Method method,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        throw new RuntimeException("if you call checkLayer(), you need to implement this method");
+    }
     
-
+    protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
+            LayerUtils.LayerHandle handle,
+            FileObject layerFileObject,
+            String layerAttribute) {
+        throw new RuntimeException("if you call checkLayer(), you need to implement this method");
+    }
+    
 }
