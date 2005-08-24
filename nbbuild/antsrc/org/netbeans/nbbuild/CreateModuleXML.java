@@ -30,6 +30,7 @@ public class CreateModuleXML extends Task {
     private final List disabled = new ArrayList(1); // List<FileSet>
     private final List autoload = new ArrayList(1); // List<FileSet>
     private final List eager = new ArrayList(1); // List<FileSet>
+    private final List hidden = new ArrayList(1); // List<FileSet>
     
     /** Add a set of module JARs that should be enabled.
      */
@@ -55,6 +56,12 @@ public class CreateModuleXML extends Task {
         eager.add(fs);
     }
     
+    /** Add a set of module JARs that should be hidden.
+     */
+    public void addHidden(FileSet fs) {
+        hidden.add(fs);
+    }
+    
     private File xmldir = null;
     
     /** Set the modules directory where XML will be stored.
@@ -68,35 +75,41 @@ public class CreateModuleXML extends Task {
     private List disabledNames = new ArrayList(10); // List<String>
     private List autoloadNames = new ArrayList(10); // List<String>
     private List eagerNames = new ArrayList(10); // List<String>
+    private List hiddenNames = new ArrayList(10); // List<String>
     
     public void execute() throws BuildException {
         if (xmldir == null) throw new BuildException("Must set xmldir attribute", getLocation());
         if (!xmldir.exists ()) {
             if (!xmldir.mkdirs()) throw new BuildException("Cannot create directory " + xmldir, getLocation());
         }
-        if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty()) {
+        if (enabled.isEmpty() && disabled.isEmpty() && autoload.isEmpty() && eager.isEmpty() && hidden.isEmpty()) {
             log("Warning: <createmodulexml> with no modules listed", Project.MSG_WARN);
         }
         Iterator it = enabled.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), true, false, false, enabledNames);
+            scanModules((FileSet)it.next(), true, false, false, false, enabledNames);
         }
         it = disabled.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, false, disabledNames);
+            scanModules((FileSet)it.next(), false, false, false, false, disabledNames);
         }
         it = autoload.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, true, false, autoloadNames);
+            scanModules((FileSet)it.next(), false, true, false, false, autoloadNames);
         }
         it = eager.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, true, eagerNames);
+            scanModules((FileSet)it.next(), false, false, true, false, eagerNames);
+        }
+        it = hidden.iterator();
+        while (it.hasNext()) {
+            scanModules((FileSet)it.next(), false, false, false, true, hiddenNames);
         }
         Collections.sort(enabledNames);
         Collections.sort(disabledNames);
         Collections.sort(autoloadNames);
         Collections.sort(eagerNames);
+        Collections.sort(hiddenNames);
         if (!enabledNames.isEmpty()) {
             log("Enabled modules: " + enabledNames);
         }
@@ -109,9 +122,12 @@ public class CreateModuleXML extends Task {
         if (!eagerNames.isEmpty()) {
             log("Eager modules: " + eagerNames);
         }
+        if (!hiddenNames.isEmpty()) {
+            log("Hidden modules: " + hiddenNames);
+        }
     }
     
-    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, List names) throws BuildException {
+    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, boolean isHidden, List names) throws BuildException {
         FileScanner scan = fs.getDirectoryScanner(getProject());
         File dir = scan.getBasedir();
         String[] kids = scan.getIncludedFiles();
@@ -184,33 +200,41 @@ public class CreateModuleXML extends Task {
                     if (displayname == null) displayname = codename;
                     names.add(displayname);
                     String spec = attr.getValue("OpenIDE-Module-Specification-Version");
-                    OutputStream os = new FileOutputStream(xml);
-                    try {
-                        PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-                        // Please make sure formatting matches what the IDE actually spits
-                        // out; it could matter.
-                        pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                        pw.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"");
-                        pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
-                        pw.println("<module name=\"" + codenamebase + "\">");
-                        pw.println("    <param name=\"autoload\">" + isAutoload + "</param>");
-                        pw.println("    <param name=\"eager\">" + isEager + "</param>");
-                        if (!isAutoload && !isEager) {
-                            pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
+                    
+                    if (isHidden) {
+                        File h = new File(xml.getParentFile(), xml.getName() + "_hidden");
+                        h.createNewFile();
+                    }
+                    
+                    if (isEager || isAutoload || isEnabled) {
+                        OutputStream os = new FileOutputStream(xml);
+                        try {
+                            PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+                            // Please make sure formatting matches what the IDE actually spits
+                            // out; it could matter.
+                            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+                            pw.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Module Status 1.0//EN\"");
+                            pw.println("                        \"http://www.netbeans.org/dtds/module-status-1_0.dtd\">");
+                            pw.println("<module name=\"" + codenamebase + "\">");
+                            pw.println("    <param name=\"autoload\">" + isAutoload + "</param>");
+                            pw.println("    <param name=\"eager\">" + isEager + "</param>");
+                            if (!isAutoload && !isEager) {
+                                pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
+                            }
+                            pw.println("    <param name=\"jar\">" + kids[i].replace(File.separatorChar, '/') + "</param>");
+                            if (rel != -1) {
+                                pw.println("    <param name=\"release\">" + rel + "</param>");
+                            }
+                            pw.println("    <param name=\"reloadable\">false</param>");
+                            if (spec != null) {
+                                pw.println("    <param name=\"specversion\">" + spec + "</param>");
+                            }
+                            pw.println("</module>");
+                            pw.flush();
+                            pw.close();
+                        } finally {
+                            os.close();
                         }
-                        pw.println("    <param name=\"jar\">" + kids[i].replace(File.separatorChar, '/') + "</param>");
-                        if (rel != -1) {
-                            pw.println("    <param name=\"release\">" + rel + "</param>");
-                        }
-                        pw.println("    <param name=\"reloadable\">false</param>");
-                        if (spec != null) {
-                            pw.println("    <param name=\"specversion\">" + spec + "</param>");
-                        }
-                        pw.println("</module>");
-                        pw.flush();
-                        pw.close();
-                    } finally {
-                        os.close();
                     }
                 } finally {
                     jar.close();
