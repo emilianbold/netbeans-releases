@@ -590,6 +590,7 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
         public void readSettings (Object settings) 
         {
             wiz = (WizardDescriptor) settings;
+            
             wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, WizardConstants.EMPTY_STRING);
             //getPanel().mainClassJCheckBox.setEnabled(shouldEnableMainProjectClass());
         }
