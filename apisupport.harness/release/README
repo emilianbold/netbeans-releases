@@ -725,6 +725,8 @@ will be packed into
 
 run - start application for testing.
 
+run-standalone - executes your suite as if it has its own launcher, only with selected clusters and modules
+
 debug - like run, but run in the JPDA debugger. (Only available from inside the
 IDE.)
 

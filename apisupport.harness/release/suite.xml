@@ -40,11 +40,8 @@ Microsystems, Inc. All Rights Reserved.
         </createmodulexml>
     </target>
     
-    <target name="build-zip" depends="build" description="Builds zip distribution of the suite and selected modules from the platform" >
-        <property name="disabled.modules" value="" />
-        <property name="disabled.clusters" value="" />
-        <property name="application.name" value="nbbasedapp" />
-        
+    
+    <target name="build-launchers" depends="-init" >
         <pathconvert property="zip.platform.update.tracking" >
             <path >
                 <fileset dir="${netbeans.dest.dir}" >
@@ -70,30 +67,40 @@ Microsystems, Inc. All Rights Reserved.
             <mapper type="regexp" from="^${netbeans.dest.dir}/([^/]*)" to="\1"/>
         </pathconvert>
         
+        <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}" />
+        
         <pathconvert property="zip.platform.clusters" pathsep="${line.separator}" >
             <path>
-                <dirset dir="${netbeans.dest.dir}" includes="${zip.platform.clusters.duplicates}" />
+                <dirset refid="platform.clusters" />
             </path>
             <mapper type="regexp" from="^${netbeans.dest.dir}/([^/]*)" to="\1"/>
         </pathconvert>
-        
-        
-        <mkdir dir="build/tmp/launch/etc" />
-        <mkdir dir="build/tmp/launch/bin" />
 
-        <copy file="${harness.dir}/launchers/app.exe" tofile="build/tmp/launch/bin/${application.name}.exe" />
-        <copy file="${harness.dir}/launchers/app_w.exe" tofile="build/tmp/launch/bin/${application.name}w.exe" />
-        <copy file="${harness.dir}/launchers/app.sh" tofile="build/tmp/launch/bin/${application.name}" />
-        <copy file="${harness.dir}/etc/app.conf" tofile="build/tmp/launch/etc/${application.name}.conf" />
-        <echo message="${zip.platform.clusters}" file="build/tmp/launch/etc/${application.name}.clusters" />
-        <echo message="${line.separator}" file="build/tmp/launch/etc/${application.name}.clusters" append="true" />
-        <echo message="${application.name}" file="build/tmp/launch/etc/${application.name}.clusters" append="true" />
-        <echo message="${line.separator}" file="build/tmp/launch/etc/${application.name}.clusters" append="true" />
+        <property name="build.launcher.dir" location="build/launcher" />
+        
+        <mkdir dir="${build.launcher.dir}/etc" />
+        <mkdir dir="${build.launcher.dir}/bin" />
+
+        <copy file="${harness.dir}/launchers/app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" />
+        <copy file="${harness.dir}/launchers/app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}w.exe" />
+        <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}" />
+        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf" />
+        <echo message="${zip.platform.clusters}" file="${build.launcher.dir}/etc/${app.name}.clusters" />
+        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true" />
+        <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true" />
+        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true" />
+        
+    </target>
+    
+    <target name="build-zip" depends="build, build-launchers" description="Builds zip distribution of the suite and selected modules from the platform" >
+        <property name="disabled.modules" value="" />
+        <property name="disabled.clusters" value="" />
+        <property name="app.name" value="nbbasedapp" />
         
         <mkdir dir="dist" />
-        <zip destfile="dist/${application.name}.zip" >
-            <zipfileset dir="build/tmp/launch/bin/" filemode="755" prefix="bin" />
-            <zipfileset dir="build/tmp/launch/etc/" prefix="etc" />
+        <zip destfile="dist/${app.name}.zip" >
+            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="bin" />
+            <zipfileset dir="${build.launcher.dir}/etc/" prefix="etc" />
             <zipfileset dir="${netbeans.dest.dir}" filemode="755" >
                 <include name="**/lib/nbexec*" />
             </zipfileset>
@@ -107,7 +114,7 @@ Microsystems, Inc. All Rights Reserved.
                 </and>
             </zipfileset>
             
-            <zipfileset dir="${cluster}" prefix="${application.name}/" />
+            <zipfileset dir="${cluster}" prefix="${app.name}/" />
             
         </zip>
     </target>
@@ -127,6 +134,20 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
         
+    <target name="run-standalone" depends="build-launchers" >
+        <pathconvert property="run.platform.clusters" >
+            <path>
+                <dirset refid="platform.clusters" />
+                <pathelement location="${cluster}" />
+            </path>
+        </pathconvert>
+        
+        <ant antfile="${harness.dir}/run.xml" target="run">
+            <property name="run.args.prepared" value="--clusters ${run.platform.clusters}"/>
+            <property name="run.without.ide.clusters" value="true" />
+        </ant>
+    </target>
+    
     <target name="debug" depends="build" >
         <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>

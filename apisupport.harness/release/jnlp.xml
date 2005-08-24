@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <property name="disabled.modules" value="" />
         <property name="disabled.clusters" value="" />
-        <property name="application.name" value="nbbasedapp" />
+        <property name="app.name" value="nbbasedapp" />
         
         <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}" >
             <and>
@@ -141,7 +141,7 @@ Microsystems, Inc. All Rights Reserved.
  </servlet-mapping>
 </web-app>         
 ]]></echo>
-        <war basedir="${jnlp.dest.dir}" destfile="dist/${application.name}.war" webxml="build/tmp/web.xml" >
+        <war basedir="${jnlp.dest.dir}" destfile="dist/${app.name}.war" webxml="build/tmp/web.xml" >
             <zipfileset dir="${jnlp.servlet.jar}/.." file="${jnlp.servlet.jar}" prefix="WEB-INF/lib" />
         </war>
     </target>
@@ -201,7 +201,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo file="${jnlp.master.dir}/resources.xml" ><![CDATA[
     <j2se version="1.4+" />
     <jar href='startup.jar' />
-    <property name='netbeans.user' value='$${user.home}/.${application.name}' />
+    <property name='netbeans.user' value='$${user.home}/.${app.name}' />
 ]]></echo>
         <concat append="true" destfile="${jnlp.master.dir}/resources.xml" >
             <fileset dir="${jnlp.master.dir}" >
