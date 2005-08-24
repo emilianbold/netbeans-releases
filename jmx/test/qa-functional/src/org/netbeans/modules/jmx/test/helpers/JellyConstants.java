@@ -17,7 +17,8 @@ package org.netbeans.modules.jmx.test.helpers;
 public class JellyConstants {
     
    //Package 
-   public static final String PROJECT_NAME = "MBeanFunctionalTest";
+   public static final String PROJECT_NAME = "JMXTESTMBeanFunctionalTest";
+   
    public static final String PROJECT_CAT = "General";
    public static final String PROJECT_APP = "Java Application";
    public static final String JAVA_PACKAGE = "Java Package";
@@ -284,7 +285,7 @@ public class JellyConstants {
    public static final String K_HOST = "kernighan.imag.com";
    
    // Project and package
-   public static final String MANAGER_PROJ = "ManagerFunctionalTest";
+   public static final String MANAGER_PROJ = "JMXTESTManagerFunctionalTest";
    public static final String MANAGER_CATEGORY = "JMX Manager";
    public static final String MANAGER_PACKAGE = "managertestpackage";
    
