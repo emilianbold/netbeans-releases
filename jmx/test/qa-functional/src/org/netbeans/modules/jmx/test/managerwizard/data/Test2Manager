@@ -27,7 +27,6 @@ public class Test2Manager {
      */
     public static void main(String[] args) throws Exception  {
 
-        
         //manager instantiation and connection to the remote agent
         Test2Manager manager = Test2Manager.getDefault();
         
