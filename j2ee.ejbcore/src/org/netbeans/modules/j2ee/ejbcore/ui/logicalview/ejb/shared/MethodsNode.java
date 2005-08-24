@@ -15,11 +15,18 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.shared;
 
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.j2ee.common.ui.nodes.ComponentMethodModel;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddActionGroup;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.GoToSourceAction;
+import org.openide.actions.OpenAction;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -30,25 +37,47 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Martin Adamek
  */
-public class MethodsNode extends AbstractNode {
+public class MethodsNode extends AbstractNode implements OpenCookie {
     
     private final EjbViewController controller;
+    private ComponentMethodModel methodChildren;
+    private EntityAndSession model;
+    private ClassPath srcPath;
 
-    public MethodsNode(Ejb model, EjbJar module, ClassPath srcPath, Children children) {
+    public MethodsNode(EntityAndSession model, EjbJar module, ClassPath srcPath, Children children) {
         this(new InstanceContent(), model, module, srcPath, children);
     }
     
-    private MethodsNode(InstanceContent content, Ejb model, EjbJar module, ClassPath srcPath, Children children) {
+    private MethodsNode(InstanceContent content, EntityAndSession model, EjbJar module, ClassPath srcPath, Children children) {
         super(children, new AbstractLookup(content));
         controller = new EjbViewController(model, module, srcPath);
+        methodChildren = (ComponentMethodModel) children;
+        this.model = model;
+        this.srcPath = srcPath;
         content.add(this);
         content.add(controller.getBeanDo());
     }
     
     public Action[] getActions(boolean context) {
-        return new SystemAction[] {
+        return new Action[] {
+                new GoToSourceAction(srcPath, methodChildren.isLocal() ? model.getLocal() : model.getRemote(), 
+                        NbBundle.getMessage(GoToSourceAction.class, "LBL_GoToSourceGroup")),
             SystemAction.get(AddActionGroup.class),
         };
     }
 
+    public Action getPreferredAction() {
+        return new GoToSourceAction(srcPath, methodChildren.isLocal() ? model.getLocal() : model.getRemote(), 
+                        NbBundle.getMessage(GoToSourceAction.class, "LBL_GoToSourceGroup"));
+    }
+
+    public void open() {
+        DataObject ce = controller.getBeanDo();
+        if (ce != null) {
+            OpenCookie cookie = (OpenCookie) ce.getCookie(OpenCookie.class);
+            if(cookie != null){
+                cookie.open();
+            }
+        }
+    }
 }

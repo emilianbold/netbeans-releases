@@ -64,6 +64,10 @@ public class MethodChildren extends ComponentMethodModel {
     public ComponentMethodViewStrategy createViewStrategy() {
         return mvs;
     }
+
+    public boolean isLocal() {
+        return local;
+    }
     
     private class EntityStrategy implements ComponentMethodViewStrategy {
         
