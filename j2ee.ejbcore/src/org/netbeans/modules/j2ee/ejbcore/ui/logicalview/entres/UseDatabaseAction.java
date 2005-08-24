@@ -93,7 +93,7 @@ public class UseDatabaseAction extends NodeAction {
                     if (dbconn.getJDBCConnection() != null) {
                         String jndiName = generateJNDILookup(
                                 databaseName, erc, 
-                                beanClass.getName(), displayName);
+                                beanClass.getName(), displayName, p.createServerResources());
                         String serviceLocator = p.getServiceLocator();
                         ServiceLocatorStrategy serviceLocatorStrategy = null;
                         if (serviceLocator != null) {
@@ -133,9 +133,11 @@ public class UseDatabaseAction extends NodeAction {
     private String generateJNDILookup(String databaseName, 
                                     EnterpriseReferenceContainer erc,
                                     String className, 
-                                    String nodeName) throws IOException {
+                                    String nodeName, boolean createServerResources) throws IOException {
         ResourceRef ref = erc.createResourceRef(className);
-        ref.setDescription(nodeName);
+        if (createServerResources) {
+            ref.setDescription(nodeName);
+        }
         ref.setResRefName("jdbc/"+databaseName); // NOI18N
         ref.setResAuth(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_AUTH_CONTAINER); 
         ref.setResSharingScope(org.netbeans.modules.j2ee.dd.api.common.ResourceRef.RES_SHARING_SCOPE_SHAREABLE);

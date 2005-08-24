@@ -20,6 +20,7 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.j2ee.ejbcore.ui.FoldersListSettings;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -46,6 +47,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         databaseName.setText(dbName);
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
+        createResourcesCheckBox.setSelected(FoldersListSettings.getDefault().isAgreedCreateServerResources());
     }
     
     private void getConnections() {
@@ -88,6 +90,10 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         return slPanel;
     }
     
+    public boolean createServerResources() {
+        return createResourcesCheckBox.isSelected();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -104,6 +110,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         databaseName = new javax.swing.JTextField();
         serviceLocatorPanel = new javax.swing.JPanel();
+        createResourcesCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -114,7 +121,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(connectionCombo, gridBagConstraints);
         connectionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_connectionCombo"));
 
@@ -129,13 +136,13 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(addDriverButton, gridBagConstraints);
         addDriverButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_AddDriver"));
 
@@ -149,13 +156,13 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(addConnectionButton, gridBagConstraints);
         addConnectionButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_AddConnection"));
 
@@ -166,7 +173,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jLabel1, gridBagConstraints);
         jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_Connection"));
 
@@ -177,7 +184,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_jndiName"));
 
@@ -194,22 +201,44 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
         add(databaseName, gridBagConstraints);
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(serviceLocatorPanel, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(createResourcesCheckBox, org.openide.util.NbBundle.getBundle(SelectDatabasePanel.class).getString("LBL_CreateServerResources"));
+        createResourcesCheckBox.setToolTipText(org.openide.util.NbBundle.getBundle(SelectDatabasePanel.class).getString("ToolTip_CreateServerResources"));
+        createResourcesCheckBox.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        createResourcesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        createResourcesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createResourcesCheckBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
+        add(createResourcesCheckBox, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void createResourcesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createResourcesCheckBoxActionPerformed
+        FoldersListSettings.getDefault().setAgreedCreateServerResources(createResourcesCheckBox.isSelected());
+    }//GEN-LAST:event_createResourcesCheckBoxActionPerformed
 
     private void databaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseNameActionPerformed
         // TODO add your handling code here:
@@ -230,6 +259,7 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private javax.swing.JButton addConnectionButton;
     private javax.swing.JButton addDriverButton;
     private javax.swing.JComboBox connectionCombo;
+    private javax.swing.JCheckBox createResourcesCheckBox;
     private javax.swing.JTextField databaseName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
