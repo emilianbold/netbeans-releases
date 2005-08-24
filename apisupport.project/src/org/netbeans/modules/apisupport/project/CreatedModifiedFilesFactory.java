@@ -211,7 +211,7 @@ public final class CreatedModifiedFilesFactory {
         }
     }
     
-    public static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map/*<String,String>*/ tokens) throws IOException {
+    private static void copyAndSubstituteTokens(URL content, FileLock lock, FileObject targetFO, Map/*<String,String>*/ tokens) throws IOException {
         PrintWriter pw = new PrintWriter(targetFO.getOutputStream(lock));
         BufferedReader br = new BufferedReader(new InputStreamReader(content.openStream()));
         try {
