@@ -82,14 +82,14 @@ public class EntityChildren extends Children.Keys implements PropertyChangeListe
     protected Node[] createNodes(Object key) {
         if (LOCAL_KEY.equals(key)) {
             Children c = new MethodChildren(controller, model, controller.getLocalInterfaces(), true, ddFile);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c);
+            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
             n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (REMOTE_KEY.equals(key)) {
             Children c = new MethodChildren(controller, model, controller.getRemoteInterfaces(), false, ddFile);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c);
+            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
             n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
             return new Node[] { n };

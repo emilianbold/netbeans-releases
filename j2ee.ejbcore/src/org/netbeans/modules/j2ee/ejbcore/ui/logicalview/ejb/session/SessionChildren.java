@@ -74,14 +74,14 @@ public class SessionChildren extends Children.Keys implements PropertyChangeList
     protected Node[] createNodes(Object key) {
         if (LOCAL_KEY.equals(key)) {
             Children c = new MethodChildren(controller, controller.getLocalInterfaces(), true);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c);
+            MethodsNode n = new MethodsNode(model, jar, srcPath, c, true);
             n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/LocalMethodContainerIcon");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_LocalMethods"));
             return new Node[] { n };
         }
         if (REMOTE_KEY.equals(key)) {
             Children c = new MethodChildren(controller, controller.getRemoteInterfaces(), false);
-            MethodsNode n = new MethodsNode(model, jar, srcPath, c);
+            MethodsNode n = new MethodsNode(model, jar, srcPath, c, false);
             n.setIconBase("org/netbeans/modules/j2ee/ejbcore/resources/RemoteMethodContainerIcon");
             n.setDisplayName(NbBundle.getMessage(EjbViewController.class, "LBL_RemoteMethods"));
             return new Node[] { n };

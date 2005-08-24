@@ -65,10 +65,6 @@ public class MethodChildren extends ComponentMethodModel {
         return mvs;
     }
 
-    public boolean isLocal() {
-        return local;
-    }
-    
     private class EntityStrategy implements ComponentMethodViewStrategy {
         
         public void deleteImplMethod(Method me, JavaClass implClass, Collection interfaces) throws java.io.IOException {

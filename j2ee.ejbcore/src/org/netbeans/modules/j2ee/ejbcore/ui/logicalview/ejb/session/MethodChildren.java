@@ -53,10 +53,6 @@ public class MethodChildren extends ComponentMethodModel {
         return mvs;
     }
 
-    public boolean isLocal() {
-        return local;
-    }
-    
     private class SessionStrategy implements ComponentMethodViewStrategy {
         
         public void deleteImplMethod(Method me, JavaClass implClass, Collection interfaces) {
