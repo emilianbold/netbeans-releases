@@ -86,7 +86,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         attributeModel = new AddMBeanAttributeTableModel();
         attributeTable = new AddAttributeTable(attributeModel,this);
         attributeTable.setName("attributeTable"); // NOI18N
-        attributeTable.setBorder(new javax.swing.border.EtchedBorder());
+        //attributeTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(attributeTable);
         attributeTable.getSelectionModel().addListSelectionListener(this);
         attrTableLabel.setLabelFor(attributeTable);

@@ -87,7 +87,7 @@ public class AddOperationsPanel extends javax.swing.JPanel
         operationModel = new AddMBeanOperationTableModel();
         operationTable = new AddOperationTable(this,operationModel,this);
         operationTable.setName("operationTable"); // NOI18N
-        operationTable.setBorder(new javax.swing.border.EtchedBorder());
+        //operationTable.setBorder(new javax.swing.border.EtchedBorder());
         jScrollPane1.setViewportView(operationTable);
         operationTable.getSelectionModel().addListSelectionListener(this);
         opTableLabel.setLabelFor(operationTable);
