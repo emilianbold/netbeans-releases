@@ -14,11 +14,20 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.Image;
-import javax.swing.Action;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.actions.EditAction;
-import org.openide.cookies.EditCookie;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
+import org.netbeans.modules.apisupport.project.SuiteProvider;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.spi.project.SubprojectProvider;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
@@ -27,50 +36,88 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
-
-// XXX is there some way to hook into Check/Validate XML action
-// so that layer-specific errors can be reported too?
-// (e.g. duplicated folders...)
-
-// XXX maybe rather display raw FS as a subnode, and another subnode for FS in system FS context?
 
 /**
- * Displays view of layer.
+ * Displays two views of a layer.
  * @author Jesse Glick
  */
 public final class LayerNode extends FilterNode {
     
-    private final DataObject layerXML;
-    
     public LayerNode(LayerUtils.LayerHandle handle) {
-        super(getRootNode(handle));
-        try {
-            layerXML = DataObject.find(handle.getLayerFile());
-        } catch (DataObjectNotFoundException e) {
-            throw new AssertionError(e);
-        }
-        handle.setAutosave(true);
+        super(getDataNode(handle), new LayerChildren(handle));
     }
     
-    private static Node getRootNode(LayerUtils.LayerHandle handle) {
+    private static Node getDataNode(LayerUtils.LayerHandle handle) {
         FileObject layer = handle.getLayerFile();
-        FileSystem fs = badge(handle.layer(), createClasspath(layer), layer);
         try {
-            return DataObject.find(fs.getRoot()).getNodeDelegate();
+            return DataObject.find(layer).getNodeDelegate();
         } catch (DataObjectNotFoundException e) {
             assert false : e;
             return Node.EMPTY;
         }
     }
     
+    private static final class LayerChildren extends Children.Keys {
+        
+        private static final Object KEY_RAW = "raw"; // NOI18N
+        private static final Object KEY_CONTEXTUALIZED = "contextualized"; // NOI18N
+        
+        private final LayerUtils.LayerHandle handle;
+        private ClassPath cp;
+        private NbModuleProject p;
+        
+        public LayerChildren(LayerUtils.LayerHandle handle) {
+            this.handle = handle;
+        }
+        
+        protected void addNotify() {
+            super.addNotify();
+            handle.setAutosave(true);
+            setKeys(new Object[] {KEY_RAW, KEY_CONTEXTUALIZED});
+            FileObject layer = handle.getLayerFile();
+            p = (NbModuleProject) FileOwnerQuery.getOwner(layer);
+            assert p != null : layer;
+            try {
+                cp = createClasspath(p);
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        
+        protected void removeNotify() {
+            setKeys(Collections.EMPTY_SET);
+            cp = null;
+            p = null;
+            super.removeNotify();
+        }
+        
+        protected Node[] createNodes(Object key) {
+            try {
+                if (key == KEY_RAW) {
+                    FileSystem fs = badge(handle.layer(), cp, handle.getLayerFile(), "<this layer>"); // XXX I18N
+                    return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
+                } else if (key == KEY_CONTEXTUALIZED) {
+                    FileSystem fs = badge(LayerUtils.getEffectiveSystemFilesystem(p), cp, handle.getLayerFile(), "<this layer in context>"); // XXX I18N
+                    return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
+                } else {
+                    throw new AssertionError(key);
+                }
+            } catch (IOException e) {
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                return new Node[0];
+            }
+        }
+        
+    }
+    
     /**
      * Add badging support to the plain layer.
      */
-    private static FileSystem badge(final FileSystem base, final ClassPath cp, final FileObject layer) {
+    private static FileSystem badge(final FileSystem base, final ClassPath cp, final FileObject layer, final String rootLabel) {
         class BadgingMergedFileSystem extends MultiFileSystem {
             private final BadgingSupport status;
             public BadgingMergedFileSystem() {
@@ -86,7 +133,18 @@ public final class LayerNode extends FilterNode {
                 // XXX loc/branding suffix?
             }
             public FileSystem.Status getStatus() {
-                return status;
+                return new FileSystem.Status() {
+                    public String annotateName(String name, Set files) {
+                        if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
+                            return rootLabel;
+                        } else {
+                            return status.annotateName(name, files);
+                        }
+                    }
+                    public Image annotateIcon(Image icon, int iconType, Set files) {
+                        return status.annotateIcon(icon, iconType, files);
+                    }
+                };
             }
             public String getDisplayName() {
                 return FileUtil.getFileDisplayName(layer);
@@ -104,65 +162,35 @@ public final class LayerNode extends FilterNode {
          */
     }
     
-    public String getName() {
-        return layerXML.getPrimaryFile().toString();
-    }
-    
     public String getDisplayName() {
         return NbBundle.getMessage(LayerNode.class, "LayerNode_label");
     }
     
-    public Node.Cookie getCookie(Class type) {
-        if (type == EditCookie.class) {
-            return layerXML.getCookie(type);
-        }
-        return super.getCookie(type);
-    }
-
-    public Action[] getActions(boolean context) {
-        Action[] orig = super.getActions(context);
-        Action[] nue = new Action[orig.length + 2];
-        nue[0] = SystemAction.get(EditAction.class);
-        // XXX cannot add FileSystemAction directly, as it has the wrong DataObject... I think
-        // Really want *some* actions to apply to the XML file, others (New, Reorder, ...) to the root folder
-        // Should we resurrect the old UI of having a special "<root folder>" subnode? kind of ugly
-        // XXX should also Check XML and Validate XML after a separator!
-        System.arraycopy(orig, 0, nue, 2, orig.length);
-        return nue;
-    }
-
-    public Action getPreferredAction() {
-        return SystemAction.get(EditAction.class);
-    }
-
-    public Image getIcon(int type) {
-        // XXX refire changes too, in case a badge appears or disappears
-        return layerXML.getNodeDelegate().getIcon(type);
-    }
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
-    }
-
     /**
      * Make a runtime classpath indicative of what is accessible from a sample resource.
      */
-    private static ClassPath createClasspath(FileObject resource) {
-        ClassPath srcCP = ClassPath.getClassPath(resource, ClassPath.SOURCE);
-        if (srcCP == null) {
-            return null;
-        }
-        FileObject[] roots = srcCP.getRoots();
-        ClassPath source = ClassPathSupport.createClassPath(roots);
-        if (roots.length == 1) {
-            // XXX exec cp doesn't work too well in practice. Use LayerUtils.getPlatformJarsFor*Project
-            // when that also supports netbeans.org modules. That will enable us to display proper menu
-            // names etc. for menus defined in some infrastructure module, which is nice.
-            ClassPath execCP = ClassPath.getClassPath(roots[0], ClassPath.EXECUTE);
-            if (execCP != null) {
-                return ClassPathSupport.createProxyClassPath(new ClassPath[] {source, execCP});
+    private static ClassPath createClasspath(NbModuleProject p) throws IOException {
+        NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+        if (type == NbModuleTypeProvider.STANDALONE) {
+            return LayerUtils.createLayerClasspath(Collections.singleton(p), LayerUtils.getPlatformJarsForStandaloneProject(p));
+        } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
+            SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
+            assert suiteProv != null : p;
+            File suiteDir = suiteProv.getSuiteDirectory();
+            if (suiteDir == null || !suiteDir.isDirectory()) {
+                throw new IOException("Could not locate suite for " + p); // NOI18N
             }
+            SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
+            if (suite == null) {
+                throw new IOException("Could not load suite for " + p + " from " + suiteDir); // NOI18N
+            }
+            Set/*<Project>*/ modules = ((SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class)).getSubprojects();
+            return LayerUtils.createLayerClasspath(modules, LayerUtils.getPlatformJarsForSuiteComponentProject(p, suite));
+        } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+            return LayerUtils.createLayerClasspath(LayerUtils.getProjectsForNetBeansOrgProject(p), Collections.EMPTY_SET);
+        } else {
+            throw new AssertionError(type);
         }
-        return source;
     }
 
 }
