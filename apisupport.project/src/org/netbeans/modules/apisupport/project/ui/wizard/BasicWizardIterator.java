@@ -133,12 +133,12 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             return sourceRootGroup;
         }
         
-        protected String getDefaultPackagePath(String fileName) {
+        public String getDefaultPackagePath(String fileName) {
             return getProject().getSourceDirectoryPath() + '/' +
                     getPackageName().replace('.','/') + '/' + fileName;
         }
         
-        protected String copyIconToDefatulPackage(CreatedModifiedFiles cmf, String origIconPath) {
+        public String copyIconToDefatulPackage(CreatedModifiedFiles cmf, String origIconPath) {
             FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
             String relativeIconPath = null;
             if (!FileUtil.isParentOf(getProject().getSourceDirectory(), origIconFO)) {

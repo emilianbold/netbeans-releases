@@ -30,14 +30,12 @@ import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -175,31 +173,11 @@ public class NewLoaderIterator extends BasicWizardIterator {
         replaceTokens.put("@@MIMETYPE@@", mime);//NOI18N
         replaceTokens.put("@@EXTENSIONS@@", formatExtensions(model.isExtensionBased(), model.getExtension(), mime));//NOI18N
         replaceTokens.put("@@NAMESPACES@@", formatNameSpace(model.isExtensionBased(), model.getNamespace(), mime));//NOI18N
-
-        // 0. move icon file if necessary
-        String icon = model.getIconPath();
-        File fil = null;
-        if (icon != null) {
-            fil = new File(icon);
-            if (!fil.exists()) {
-                fil = null;
-            }
-        }
-        if (fil != null) {
-            FileObject fo = FileUtil.toFileObject(fil);
-            String relativeIconPath = null;
-            if (!FileUtil.isParentOf(model.getProject().getSourceDirectory(), fo)) {
-                String iconPath = getRelativePath(model.getProject(), packageName,
-                                                "", fo.getNameExt()); //NOI18N
-                try {
-                    fileChanges.add(fileChanges.createFile(iconPath, fo.getURL()));
-                    relativeIconPath = packageName.replace('.', '/') + "/" + fo.getNameExt();
-                } catch (FileStateInvalidException exc) {
-                    ErrorManager.getDefault().notify(exc);
-                }
-            } else {
-                relativeIconPath = FileUtil.getRelativePath(model.getProject().getSourceDirectory(), fo);
-            }
+        
+        // Copy action icon
+        String origIconPath = model.getIconPath();
+        if (origIconPath != null && new File(origIconPath).exists()) {
+            String relativeIconPath = model.copyIconToDefatulPackage(fileChanges, origIconPath);
             replaceTokens.put("@@IMAGESNIPPET@@", formatImageSnippet(relativeIconPath));//NOI18N
             replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
         } else {
@@ -208,13 +186,11 @@ public class NewLoaderIterator extends BasicWizardIterator {
         }
         
         // 1. create dataloader file
-        String loaderName = getRelativePath(model.getProject(), model.getPackageName(),
-                                            namePrefix, "DataLoader.java"); //NOI18N
+        String loaderName = model.getDefaultPackagePath(namePrefix + "DataLoader.java"); // NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewLoaderIterator.class.getResource("templateDataLoader.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
-        String loaderInfoName = getRelativePath(model.getProject(), model.getPackageName(),
-                                            namePrefix, "DataLoaderBeanInfo.java"); //NOI18N
+        String loaderInfoName = model.getDefaultPackagePath(namePrefix + "DataLoaderBeanInfo.java"); // NOI18N
         template = NewLoaderIterator.class.getResource("templateDataLoaderBeanInfo.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
@@ -233,14 +209,12 @@ public class NewLoaderIterator extends BasicWizardIterator {
             replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "");//NOI18N
         }
         
-        String doName = getRelativePath(model.getProject(), model.getPackageName(),
-                                            namePrefix, "DataObject.java"); //NOI18N
+        String doName = model.getDefaultPackagePath(namePrefix + "DataObject.java"); // NOI18N
         template = NewLoaderIterator.class.getResource("templateDataObject.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         
         // 3. node file
-        String nodeName = getRelativePath(model.getProject(), model.getPackageName(),
-                                            namePrefix, "DataNode.java"); //NOI18N
+        String nodeName = model.getDefaultPackagePath(namePrefix + "DataNode.java"); // NOI18N
         template = NewLoaderIterator.class.getResource("templateDataNode.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
         
@@ -309,7 +283,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         }
         
         // 6. update/create bundle file
-        String bundlePath = getRelativePath(model.getProject(), model.getPackageName(), "", "Bundle.properties"); //NOI18N
+        String bundlePath = model.getDefaultPackagePath("Bundle.properties"); // NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "LBL_" + namePrefix + "_loader_name",  // NOI18N
                                 NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix))); //NOI18N
         
@@ -386,16 +360,6 @@ public class NewLoaderIterator extends BasicWizardIterator {
                                                      NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix),
                                                      attrs)); //NOI18N
         model.setCreatedModifiedFiles(fileChanges);
-    }
-    
-    private static String getRelativePath(NbModuleProject project, String fullyQualifiedPackageName,
-                                          String prefix, String postfix) {
-        StringBuffer sb = new StringBuffer();
-        
-        sb.append(project.getSourceDirectoryPath()).append("/").append(fullyQualifiedPackageName.replace('.','/')) //NOI18N
-                    .append("/").append(prefix).append(postfix);//NOI18N
-        
-        return sb.toString();//NOI18N
     }
     
     private static String formatExtensions(boolean isExtensionBased, String ext, String mime) {
