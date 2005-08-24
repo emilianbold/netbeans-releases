@@ -28,6 +28,8 @@ import java.io.File;
 import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.ActionEvent;
 
 /**
  * Contains all components of the Search History panel.
@@ -39,6 +41,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
     
+    private Action                  searchAction;
     private SearchExecutor          currentSearch;
     private RequestProcessor.Task   currentSearchTask;
     
@@ -54,7 +57,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         this.criteria = criteria;
         explorerManager = new ExplorerManager ();
         initComponents();
+        setupComponents();
         refreshComponents();
+    }
+
+    private void setupComponents() {
+        searchCriteriaPanel.add(criteria);
+        searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {
+            public void actionPerformed(ActionEvent e) {
+                search();
+            }
+        };
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); //NOI18N
+        getActionMap().put("search", searchAction);//NOI18N
+        bSearch.setAction(searchAction);
     }
 
     private ExplorerManager             explorerManager;
@@ -108,12 +124,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         resultsPanel.repaint();
     }
     
-    public void setTopPanel(JComponent panel) {
-        searchCriteriaPanel.removeAll();
-        searchCriteriaPanel.add(panel);
-        revalidate();
-    }
-
     public void setResults(List newResults) {
         setResults(newResults, false);
     }
@@ -332,13 +342,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.weightx = 1.0;
         add(searchCriteriaPanel, gridBagConstraints);
 
-        bSearch.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_Search"));
-        bSearch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                onSearch(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -446,10 +449,6 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private void onViewToggle(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onViewToggle
         refreshComponents();
     }//GEN-LAST:event_onViewToggle
-
-    private void onSearch(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onSearch
-        search();
-    }//GEN-LAST:event_onSearch
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

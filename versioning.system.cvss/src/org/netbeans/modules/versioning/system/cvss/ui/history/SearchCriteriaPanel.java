@@ -78,6 +78,15 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         tfUsername.setText(username);
     }
     
+    public void addNotify() {
+        super.addNotify();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                tfCommitMessage.requestFocusInWindow();
+            }
+        });
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

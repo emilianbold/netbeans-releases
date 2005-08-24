@@ -55,7 +55,6 @@ public class SearchHistoryTopComponent extends TopComponent {
         if (from != null) scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
         if (to != null) scp.setTo(SearchExecutor.simpleDateFormat.format(to));
         shp = new SearchHistoryPanel(roots, scp);
-        shp.setTopPanel(scp);
         add(shp);
     }
 
