@@ -117,15 +117,14 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         host = getHostFromURI(uriNonSecure);
         adminPortNumber = getPortFromURI(uriNonSecure);
         try {
-            if (userName == null) {
-                this.userName = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
-                        getProperty(InstanceProperties.USERNAME_ATTR);
+            InstanceProperties props = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber); //NOI18N
+            if (userName == null && props != null) {
+                this.userName = props.getProperty(InstanceProperties.USERNAME_ATTR);
             } else {
                 this.userName = userName;
             }
-            if (password == null) {
-                this.password = InstanceProperties.getInstanceProperties("deployer:Sun:AppServer::"+host+":"+adminPortNumber). //NOI18N
-                        getProperty(InstanceProperties.PASSWORD_ATTR);
+            if (password == null && props != null) {
+                this.password = props.getProperty(InstanceProperties.PASSWORD_ATTR);
             } else {
                 this.password = password;
             }
