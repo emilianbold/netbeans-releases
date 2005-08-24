@@ -282,6 +282,9 @@ class LayoutOperations implements LayoutConstants {
             }
         }
         else {
+            if (target.isSequential() && interval.getRawAlignment() != DEFAULT) {
+                layoutModel.setIntervalAlignment(interval, DEFAULT);
+            }
             layoutModel.addInterval(interval, target, index);
         }
         return false;
