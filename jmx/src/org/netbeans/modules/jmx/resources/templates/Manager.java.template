@@ -41,9 +41,7 @@ public class Manager {
      * is called
      */
     public void connect() throws Exception {
-        {0}
-        {1}
-        {2}
+        {0}{1}{2}
 
         //Get the MBeanServerConnection
         mbsc = connector.getMBeanServerConnection();

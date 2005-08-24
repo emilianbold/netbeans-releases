@@ -105,6 +105,7 @@ public class ManagerGenerator
                 String bodyText = mainMethod.getBodyText();
                 MessageFormat form = new MessageFormat(bodyText);
                 String newMethodBody = form.format(sampleTemplate);
+                //setBodyText adds by default a new line
                 mainMethod.setBodyText(newMethodBody);
             }
             //replace the tags in the connect method in the same manner
@@ -153,7 +154,7 @@ public class ManagerGenerator
                         "userName\", \"" +// NOI18N
                         "userPassword" +// NOI18N
                         "\"});\n" +// NOI18N
-                        "*/ \n";// NOI18N
+                        "*/ \n \n";// NOI18N
             } else { //user credential selected
                 String userName = (String)wiz.getProperty(
                         WizardConstants.PROP_MANAGER_USER_NAME);
@@ -165,7 +166,7 @@ public class ManagerGenerator
                     "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
                                 userName + "\", \"" +// NOI18N
                                 userPassword + // NOI18N
-                                "\"});\n";// NOI18N
+                                "\"});\n \n";// NOI18N
             }
         } else // security box unchecked
             connectionTemplate[0] = WizardConstants.EMPTYSTRING;
@@ -177,7 +178,7 @@ public class ManagerGenerator
         connectionTemplate[1] = "//Create JMX Agent URL \n" +// NOI18N
                 "JMXServiceURL url = new JMXServiceURL(\""+// NOI18N
                 (String)wiz.getProperty(
-            WizardConstants.PROP_MANAGER_AGENT_URL) + "\");";// NOI18N
+            WizardConstants.PROP_MANAGER_AGENT_URL) + "\");\n";// NOI18N
     }
     
     private void fillConnector(WizardDescriptor wiz) {
