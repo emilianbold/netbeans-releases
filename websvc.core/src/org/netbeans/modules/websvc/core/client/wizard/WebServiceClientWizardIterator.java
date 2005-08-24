@@ -136,7 +136,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
      * @param project Project to search
      * @return Array of SourceGroup. It is empty if any probelm occurs.
      */
-    private static SourceGroup[] getJavaSourceGroups(Project project) {
+    static SourceGroup[] getJavaSourceGroups(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
         Set testGroups = getTestSourceGroups(project, sourceGroups);
@@ -301,7 +301,8 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         // 2. add jax-rpc library if wscompile isnt present
         SourceGroup[] sgs = getJavaSourceGroups(project);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-        FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");
+
+        FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");  
         if (wscompileFO==null) {
             // add jax-rpc16 if webservice is not on classpath
             ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
@@ -310,7 +311,6 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 pce.addLibrary(jaxrpclib);
             }
         }
-        
         
         // 3. add the service client to the project.
         // " " for note parameter ensures monitor panel has proper room for our notes.
