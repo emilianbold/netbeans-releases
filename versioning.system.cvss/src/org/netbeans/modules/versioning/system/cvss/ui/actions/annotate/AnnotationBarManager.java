@@ -49,4 +49,23 @@ public final class AnnotationBarManager implements SideBarFactory {
         ab.annotate();
         return ab;
     }
+
+    /**
+     * Shows annotations sidebar.
+     */
+    public static void hideAnnotationBar(JTextComponent target) {
+        if (target == null) return;
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        assert ab != null: "#58828 reappeared!"; // NOI18N
+        ab.hideBar();
+    }
+
+    /**
+     * Tests wheteher given editor shows annotations.
+     */
+    public static boolean annotationBarVisible(JTextComponent target) {
+        if (target == null) return false;
+        AnnotationBar ab = (AnnotationBar) target.getClientProperty(BAR_KEY);
+        return ab.getPreferredSize().width > 0;
+    }
 }

@@ -353,9 +353,7 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
         menu.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                annotated = false;
-                revalidate();
-                release();
+                hideBar();
             }
         });
         popupMenu.add(new JSeparator());
@@ -397,6 +395,15 @@ final class AnnotationBar extends JComponent implements FoldHierarchyListener, P
         doc.addDocumentListener(this);
         foldHierarchy.addFoldHierarchyListener(this);
         editorUI.addPropertyChangeListener(this);
+    }
+
+    /**
+     * Hides the annotation bar from user. 
+     */
+    void hideBar() {
+        annotated = false;
+        revalidate();
+        release();
     }
 
     private int getCurrentLine() {
