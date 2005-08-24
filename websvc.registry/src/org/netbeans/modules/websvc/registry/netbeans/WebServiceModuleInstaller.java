@@ -103,6 +103,13 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         "modules/ext/jaxrpc16/saaj-impl.jar",
         "modules/ext/jaxrpc16/xsdlib.jar"
     };
+    
+    private static String JAXRPC_16_XML [] = {
+        "modules/ext/jaxrpc16_xml/dom.jar",
+        "modules/ext/jaxrpc16_xml/sax.jar",
+        "modules/ext/jaxrpc16_xml/xercesImpl.jar",
+        "modules/ext/jaxrpc16_xml/xalan.jar"
+    };
         
     public  void updatesSpecialLoader(ExtensionClassLoader loader) throws Exception {
         try {
@@ -118,6 +125,23 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
 //            File f1 = platform == null ? null : platform.getPlatformRoots() [0];
 //            if(f1 != null && f1.exists()) {
 //                String installRoot = f1.getAbsolutePath();
+                
+                
+                String javaVersion = System.getProperty("java.version"); //NOI18N
+                
+                if (javaVersion!=null && javaVersion.startsWith("1.4")) { //NOI18N
+                    InstalledFileLocator loc = InstalledFileLocator.getDefault();
+                    for(int i = 0; i < JAXRPC_16_XML.length; i++) {
+                        File jarFile = loc.locate(JAXRPC_16_XML[i], "org.netbeans.modules.websvc.jaxrpc16_xml", false); //NOI18N
+                        if (jarFile != null) {
+                            loader.addURL(jarFile);
+                        } else {
+                            //System.out.println("Cannot load jar: " + JAXRPC_16_XML[i]);
+                            return;
+                        }
+                    }
+                }
+                
                 InstalledFileLocator locator = InstalledFileLocator.getDefault();
                 
                 File f = locator.locate("modules/ext/websvcregistry.jar", null, true); // NOI18N
@@ -141,6 +165,17 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
                         System.out.println("Cannot load jar: " + registryRuntimeJars[i]);
                     }
                 }
+                /*
+                String [] registry14Jars = WS_JDK14_PATCH;
+                
+                for(int i = 0; i < registry14Jars.length; i++) {
+                    File jarFile = locator.locate(registry14Jars[i], null, false);
+                    if (jarFile != null) {
+                        loader.addURL(jarFile);
+                    } else {
+                        System.out.println("Cannot load jar: " + registry14Jars[i]);
+                    }
+                }*/
 //            }
         } catch(Exception ex) {
             throw new Exception(ex.getLocalizedMessage(), ex);
