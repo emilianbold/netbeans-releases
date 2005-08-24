@@ -109,7 +109,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
 
         // Copy action icon
         if (origIconPath != null) {
-            String relativeIconPath = copyIconToDefatulPackage(cmf, origIconPath);
+            String relativeIconPath = addCreateIconOperation(cmf, origIconPath);
             replaceTokens.put("@@ICON_RESOURCE@@", '"' + relativeIconPath + '"'); // NOI18N
         } else {
             replaceTokens.put("@@ICON_RESOURCE@@", "null"); // NOI18N

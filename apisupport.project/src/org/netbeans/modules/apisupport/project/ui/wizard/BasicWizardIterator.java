@@ -138,7 +138,16 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
                     getPackageName().replace('.','/') + '/' + fileName;
         }
         
-        public String copyIconToDefatulPackage(CreatedModifiedFiles cmf, String origIconPath) {
+        /**
+         * Conditionally adds an operation to the given {@link
+         * CreatedModifiedFiles}. Result of the operation, after given
+         * CreatedModifiedFiles are run, is copied (into the package) icon
+         * representing given <code>origIconPath</code>. If the origIconPath is
+         * already inside the project's source directory nothing happens.
+         * 
+         * @return path of the icon relative to the project's source directory
+         */
+        public String addCreateIconOperation(CreatedModifiedFiles cmf, String origIconPath) {
             FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
             String relativeIconPath = null;
             if (!FileUtil.isParentOf(getProject().getSourceDirectory(), origIconFO)) {

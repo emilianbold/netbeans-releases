@@ -177,7 +177,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         // Copy action icon
         String origIconPath = model.getIconPath();
         if (origIconPath != null && new File(origIconPath).exists()) {
-            String relativeIconPath = model.copyIconToDefatulPackage(fileChanges, origIconPath);
+            String relativeIconPath = model.addCreateIconOperation(fileChanges, origIconPath);
             replaceTokens.put("@@IMAGESNIPPET@@", formatImageSnippet(relativeIconPath));//NOI18N
             replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
         } else {
