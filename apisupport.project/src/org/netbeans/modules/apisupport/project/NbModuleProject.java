@@ -439,10 +439,14 @@ public final class NbModuleProject implements Project {
                 return Collections.singletonMap("module.classpath", path); // NOI18N
             }
             public void addChangeListener(ChangeListener l) {
-                listeners.add(l);
+                synchronized (listeners) {
+                    listeners.add(l);
+                }
             }
             public void removeChangeListener(ChangeListener l) {
-                listeners.remove(l);
+                synchronized (listeners) {
+                    listeners.remove(l);
+                }
             }
             private void maybeFireChange() {
                 String newpath = computeModuleClasspath();
@@ -450,7 +454,10 @@ public final class NbModuleProject implements Project {
                     Util.err.log("module classpath for " + getProjectDirectory() + " changed to " + newpath);
                     path = newpath;
                     ChangeEvent e = new ChangeEvent(this);
-                    Iterator it = listeners.iterator();
+                    Iterator it;
+                    synchronized (listeners) {
+                        it = new HashSet(listeners).iterator();
+                    }
                     while (it.hasNext()) {
                         ((ChangeListener) it.next()).stateChanged(e);
                     }
