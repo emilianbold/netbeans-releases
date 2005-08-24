@@ -49,6 +49,7 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.tax.TreeDocumentRoot;
@@ -396,7 +397,7 @@ public class LayerUtils {
                     }
                 }
                 try {
-                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), true);
+                    fs = new WritableXMLFileSystem(xml.getURL(), cookie = cookieForFile(xml), /*XXX*/null);
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }
@@ -521,10 +522,11 @@ public class LayerUtils {
             NbModuleProject p = (NbModuleProject) project;
             NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
             if (type == NbModuleTypeProvider.STANDALONE) {
-                NbPlatform platform = p.getPlatform();
-                FileSystem platformLayers = getPlatformLayers(platform, null, null);
+                Set/*<File>*/ jars = getPlatformJarsForStandaloneProject(p);
+                FileSystem platformLayers = getPlatformLayers(jars);
                 FileSystem projectLayer = layerForProject(p).layer();
-                return mergeFilesystems(projectLayer, new FileSystem[] {platformLayers});
+                ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
+                return mergeFilesystems(projectLayer, new FileSystem[] {platformLayers}, cp);
             } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
                 SuiteProvider suiteProv = (SuiteProvider) p.getLookup().lookup(SuiteProvider.class);
                 assert suiteProv != null : p;
@@ -550,15 +552,15 @@ public class LayerUtils {
                     }
                     readOnlyLayers.add(handle.layer());
                 }
-                NbPlatform platform = suite.getActivePlatform();
-                PropertyEvaluator eval = suite.getEvaluator();
-                String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
-                String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
-                readOnlyLayers.add(getPlatformLayers(platform, excludedClusters, excludedModules));
+                Set/*<File>*/ jars = getPlatformJarsForSuiteComponentProject(p, suite);
+                readOnlyLayers.add(getPlatformLayers(jars));
                 FileSystem projectLayer = layerForProject(p).layer();
-                return mergeFilesystems(projectLayer, (FileSystem[]) readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]));
+                ClassPath cp = createLayerClasspath(modules, jars);
+                return mergeFilesystems(projectLayer, (FileSystem[]) readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
+            } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
+                throw new AssertionError("XXX not yet implemented");
             } else {
-                throw new IllegalArgumentException(p.toString());
+                throw new AssertionError(type);
             }
         } else if (project instanceof SuiteProject) {
             SuiteProject p = (SuiteProject) project;
@@ -567,12 +569,32 @@ public class LayerUtils {
             throw new IllegalArgumentException(project.toString());
         }
     }
-
-    private static FileSystem getPlatformLayers(NbPlatform platform, String[] excludedClusters, String[] excludedModules) throws IOException {
+    
+    /**
+     * Get the platform JARs associated with a standalone module project.
+     */
+    static Set/*<File>*/ getPlatformJarsForStandaloneProject(NbModuleProject project) {
+        NbPlatform platform = project.getPlatform();
+        return getPlatformJars(platform, null, null);
+    }
+    
+    static Set/*<File>*/ getPlatformJarsForSuiteComponentProject(NbModuleProject project, SuiteProject suite) {
+        NbPlatform platform = suite.getActivePlatform();
+        PropertyEvaluator eval = suite.getEvaluator();
+        String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
+        String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
+        return getPlatformJars(platform, excludedClusters, excludedModules);
+    }
+    
+    /**
+     * Finds all the module JARs in the platform.
+     * Can optionally pass non-null lists of cluster names and module CNBs to exclude, as per suite properties.
+     */
+    private static Set/*<File>*/ getPlatformJars(NbPlatform platform, String[] excludedClusters, String[] excludedModules) {
         Set/*<String>*/ excludedClustersS = (excludedClusters != null) ? new HashSet(Arrays.asList(excludedClusters)) : Collections.EMPTY_SET;
         Set/*<String>*/ excludedModulesS = (excludedModules != null) ? new HashSet(Arrays.asList(excludedModules)) : Collections.EMPTY_SET;
         ModuleEntry[] entries = platform.getModules();
-        List/*<URL>*/ urls = new ArrayList();
+        Set/*<File>*/ jars = new HashSet(entries.length);
         for (int i = 0; i < entries.length; i++) {
             if (excludedClustersS.contains(entries[i].getClusterDirectory().getName())) {
                 continue;
@@ -580,7 +602,19 @@ public class LayerUtils {
             if (excludedModulesS.contains(entries[i].getCodeNameBase())) {
                 continue;
             }
-            File jar = entries[i].getJarLocation();
+            jars.add(entries[i].getJarLocation());
+        }
+        return jars;
+    }
+
+    /**
+     * Constructs a filesystem representing the merged XML layers of the supplied platform module JARs.
+     */
+    private static FileSystem getPlatformLayers(Set/*<File>*/ platformJars) throws IOException {
+        List/*<URL>*/ urls = new ArrayList();
+        Iterator it = platformJars.iterator();
+        while (it.hasNext()) {
+            File jar = (File) it.next();
             ManifestManager mm = ManifestManager.getInstanceFromJAR(jar);
             String layer = mm.getLayer();
             if (layer != null) {
@@ -590,21 +624,62 @@ public class LayerUtils {
         XMLFileSystem fs = new XMLFileSystem();
         try {
             // XXX properly speaking should topo sort by module deps so overrides work, but forget it
+            // XXX nbres: and such URL protocols may not work in platform layers
+            // (cf. org.openide.filesystems.ExternalUtil.findClass)
             fs.setXmlUrls((URL[]) urls.toArray(new URL[urls.size()]));
         } catch (PropertyVetoException ex) {
             assert false : ex;
         }
         return fs;
     }
+    
+    /**
+     * Creates a classpath representing the source roots and platform binary JARs for a project/suite.
+     */
+    static ClassPath createLayerClasspath(Set/*<NbModuleProject>*/ moduleProjects, Set/*<File>*/ platformJars) throws IOException {
+        List/*<URL>*/ roots = new ArrayList();
+        Iterator it = moduleProjects.iterator();
+        while (it.hasNext()) {
+            NbModuleProject p = (NbModuleProject) it.next();
+            FileObject src = p.getSourceDirectory();
+            if (src != null) {
+                roots.add(src.getURL());
+            }
+        }
+        it = platformJars.iterator();
+        while (it.hasNext()) {
+            File jar = (File) it.next();
+            roots.add(FileUtil.getArchiveRoot(jar.toURI().toURL()));
+        }
+        // XXX in principle, could add CP extensions from modules... but probably not necessary
+        return ClassPathSupport.createClassPath((URL[]) roots.toArray(new URL[roots.size()]));
+    }
 
-    private static FileSystem mergeFilesystems(FileSystem writableLayer, FileSystem[] readOnlyLayers) {
+    /**
+     * Create a merged filesystem from one writable layer (may be null) and some read-only layers.
+     * You should also pass a classpath that can be used to look up resource bundles and icons.
+     */
+    private static FileSystem mergeFilesystems(FileSystem writableLayer, FileSystem[] readOnlyLayers, final ClassPath cp) {
         if (writableLayer == null) {
             writableLayer = new XMLFileSystem();
         }
-        FileSystem[] layers = new FileSystem[readOnlyLayers.length + 1];
+        final FileSystem[] layers = new FileSystem[readOnlyLayers.length + 1];
         layers[0] = writableLayer;
         System.arraycopy(readOnlyLayers, 0, layers, 1, readOnlyLayers.length);
-        return new MultiFileSystem(layers);
+        class BadgingMergedFileSystem extends MultiFileSystem {
+            private final BadgingSupport status;
+            public BadgingMergedFileSystem() {
+                super(layers);
+                status = new BadgingSupport(this);
+                status.setClasspath(cp);
+                // XXX listening?
+                // XXX loc/branding suffix?
+            }
+            public FileSystem.Status getStatus() {
+                return status;
+            }
+        }
+        return new BadgingMergedFileSystem();
     }
     
 }

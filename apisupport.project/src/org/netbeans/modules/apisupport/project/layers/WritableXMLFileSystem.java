@@ -107,9 +107,8 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     private String suffix; // for branding/localization like "_f4j_ce_ja"; never null, at worst ""
     private final FileChangeListener fileChangeListener;
     private ClassPath classpath; // OK to be null
-    private final BadgingSupport status;
     
-    public WritableXMLFileSystem(URL location, TreeEditorCookie cookie, boolean badging) {
+    public WritableXMLFileSystem(URL location, TreeEditorCookie cookie, ClassPath classpath) {
         this.attr = this;
         this.change = this;
         this.info = this;
@@ -124,50 +123,25 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
         fileChangeListener = FileUtil.weakFileChangeListener(this, null);
-        if (badging) {
-            status = new BadgingSupport(this);
-            status.addFileStatusListener(new FileStatusListener() {
-                public void annotationChanged(FileStatusEvent ev) {
-                    fireFileStatusChanged(ev);
-                }
-            });
-        } else {
-            status = null;
-        }
         cookie.addPropertyChangeListener(WeakListeners.propertyChange(this, cookie));
         setLocation(location);
-    }
-    
-    public FileSystem.Status getStatus() {
-        return status != null ? status : super.getStatus();
+        setClasspath(classpath);
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
         throw new NotSerializableException("WritableXMLFileSystem is not persistent");
     }
     
-    public void setLocation(URL location) {
+    private void setLocation(URL location) {
         String u = location.toExternalForm();
         if (u.endsWith("/")) {
             throw new IllegalArgumentException(u);
         }
         this.location = location;
-        if (status != null) {
-            Matcher m = Pattern.compile("(.*/)?[^_/.]+(_[^/.]+)?(\\.[^/]+)?").matcher(u);
-            assert m.matches() : u;
-            suffix = m.group(2);
-            if (suffix == null) {
-                suffix = "";
-            }
-            status.setSuffix(suffix);
-        }
     }
     
-    public void setClasspath(ClassPath classpath) {
+    private void setClasspath(ClassPath classpath) {
         this.classpath = classpath;
-        if (status != null) {
-            status.setClasspath(classpath);
-        }
     }
     
     public String getDisplayName() {
@@ -584,12 +558,16 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     public Object readAttribute(String name, String attrName) {
         if (attrName.equals("WritableXMLFileSystem.cp")) { // NOI18N
             // Special access for MiscPropEds, so it knows what classpath to work with.
-            // XXX should probably use some extension interface?
             return classpath;
         }
         TreeElement el = findElement(name);
         if (el == null) {
             return null;
+        }
+        boolean literal = false;
+        if (attrName.startsWith("literal:")) { // NOI18N
+            attrName = attrName.substring("literal:".length()); // NOI18N
+            literal = true;
         }
         Iterator it = el.getChildNodes(TreeElement.class).iterator();
         while (it.hasNext()) {
@@ -630,6 +608,16 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                     return Boolean.valueOf(attr.getValue());
                 } else if ((attr = sub.getAttribute("urlvalue")) != null) { // NOI18N
                     return new URL(attr.getValue());
+                } else if ((attr = sub.getAttribute("newvalue")) != null) { // NOI18N
+                    String clazz = attr.getValue();
+                    if (literal) {
+                        return "new:" + clazz; // NOI18N
+                    } // else XXX
+                } else if ((attr = sub.getAttribute("methodvalue")) != null) { // NOI18N
+                    String clazz = attr.getValue();
+                    if (literal) {
+                        return "method:" + clazz; // NOI18N
+                    } // else XXX
                 }
             } catch (Exception e) {
                 // MalformedURLException, etc.

@@ -24,9 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.apisupport.project.Util;
 import org.openide.ErrorManager;
+import org.openide.awt.Actions;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -37,18 +41,20 @@ import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.util.RequestProcessor;
 
 /**
  * Handles addition of badges to a filesystem a la system filesystem.
  * Specifically interprets SystemFileSystem.localizingBundle and
  * SystemFileSystem.icon (and SystemFileSystem.icon32).
- * Largely copied from org.netbeans.core.projects.SystemFileSystem.
+ * Also tries to provide display labels for InstanceDataObject's.
+ * Parts copied from org.netbeans.core.projects.SystemFileSystem.
  * @author Jesse Glick
  */
 final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     
-    /** for branding/localization like "_f4j_ce_ja"; never null, at worst "" */
+    /** for branding/localization like "_f4j_ce_ja"; never null, but may be "" */
     private String suffix = "";
     /** classpath in which to look up resources; may be null but then nothing will be found... */
     private ClassPath classpath;
@@ -114,7 +120,14 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                             ufo.getParent().removeFileChangeListener(fileChangeListener);
                             ufo.getParent().addFileChangeListener(fileChangeListener);
                         }
-                        if (val != null) return val;
+                        if (val != null) {
+                            if (fo.getPath().startsWith("Menu/")) { // NOI18N
+                                // Special-case menu folders to trim the mnemonics, since they are ugly.
+                                return Actions.cutAmpersand(val);
+                            } else {
+                                return val;
+                            }
+                        }
                         // if null, fine--normal for key to not be found
                     } finally {
                         is.close();
@@ -122,11 +135,54 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                 } catch (IOException ioe) {
                     // For debugging; SFS will rather notify a problem separately...
                     Util.err.notify(ErrorManager.INFORMATIONAL, ioe);
-                    return name + " <no such bundle: " + bundleName + ">";
+                    return name + " <no such bundle: " + bundleName + ">"; // XXX I18N
                 }
+            }
+            if (fo.hasExt("instance")) { // NOI18N
+                return getInstanceLabel(fo);
             }
         }
         return name;
+    }
+    
+    private static String getInstanceLabel(FileObject fo) {
+        try {
+            // First try to load it in current IDE, as this handles most platform cases OK.
+            InstanceCookie ic = (InstanceCookie) DataObject.find(fo).getCookie(InstanceCookie.class);
+            if (ic != null) {
+                Object o = ic.instanceCreate();
+                if (o instanceof Action) {
+                    String name = (String) ((Action) o).getValue(Action.NAME);
+                    if (name != null) {
+                        return Actions.cutAmpersand(name);
+                    } else {
+                        return o.toString();
+                    }
+                } else if (o instanceof JSeparator) {
+                    return "<separator>"; // XXX I18N
+                } else {
+                    return o.toString();
+                }
+            }
+        } catch (IOException e) {
+            // ignore, OK
+        } catch (ClassNotFoundException e) {
+            // ignore, OK
+        }
+        // OK, probably a developed module, so take a guess.
+        String clazz = (String) fo.getAttribute("instanceClass"); // NOI18N
+        if (clazz == null) {
+            clazz = fo.getName().replace('-', '.');
+        }
+        String instanceCreate = (String) fo.getAttribute("literal:instanceCreate"); // NOI18N
+        if (instanceCreate != null && instanceCreate.startsWith("new:")) { // NOI18N
+            clazz = instanceCreate.substring("new:".length()); // NOI18N
+        } else if (instanceCreate != null && instanceCreate.startsWith("method:")) { // NOI18N
+            String factoryDisplayLabel = instanceCreate.substring(instanceCreate.lastIndexOf('.', instanceCreate.lastIndexOf('.') - 1) + 1);
+            return "<instance from " + factoryDisplayLabel + ">"; // XXX I18N
+        }
+        String clazzDisplayLabel = clazz.substring(clazz.lastIndexOf('.') + 1);
+        return "<instance of " + clazzDisplayLabel + ">"; // XXX I18N
     }
     
     public Image annotateIcon(Image icon, int type, Set files) {
@@ -205,5 +261,5 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
         });
     }
-    
+
 }

@@ -14,7 +14,9 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.io.File;
+import java.util.Collections;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
@@ -23,6 +25,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * Test writing changes to layers.
@@ -65,6 +68,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 "    <file name=\"foo\"/>\n" +
                 "</filesystem>\n";
         assertEquals("right contents too", xml, TestBase.slurp(layerXML));
+        // XXX test that nbres: file contents work
     }
     
     public void testLayerAutoSave() throws Exception {
@@ -119,7 +123,6 @@ public class LayerUtilsTest extends LayerTestBase {
     public void testSystemFilesystemSuiteComponentProject() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
         SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
-        SuiteProject suiteProject = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -167,9 +170,58 @@ public class LayerUtilsTest extends LayerTestBase {
         assertEquals("new layer stored", xml, TestBase.slurp(layerXML));
     }
     
+    public void testSystemFilesystemLocalizedNames() throws Exception {
+        File suiteDir = new File(getWorkDir(), "testSuite");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
+        File module1Dir = new File(suiteDir, "testModule1");
+        NbModuleProjectGenerator.createSuiteComponentModule(
+                module1Dir,
+                "test.module1",
+                "module1",
+                "test/module1/resources/Bundle.properties",
+                "test/module1/resources/layer.xml",
+                suiteDir);
+        NbModuleProject module1 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module1Dir));
+        CreatedModifiedFiles cmf = new CreatedModifiedFiles(module1);
+        cmf.add(cmf.createLayerEntry("foo", null, null, "Foo", null));
+        cmf.run();
+        File module2Dir = new File(suiteDir, "testModule2");
+        NbModuleProjectGenerator.createSuiteComponentModule(
+                module2Dir,
+                "test.module2",
+                "module2",
+                "test/module2/resources/Bundle.properties",
+                "test/module2/resources/layer.xml",
+                suiteDir);
+        NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
+        cmf = new CreatedModifiedFiles(module2);
+        cmf.add(cmf.createLayerEntry("bar", null, null, "Bar", null));
+        cmf.add(cmf.createLayerEntry("test-module2-MyAction.instance", null, null, null, null));
+        cmf.add(cmf.createLayerEntry("test-module2-some-action.instance", null, null, null, Collections.singletonMap("instanceClass", "test.module2.SomeAction")));
+        cmf.add(cmf.createLayerEntry("test-module2-another-action.instance", null, null, null, Collections.singletonMap("instanceCreate", "newvalue:test.module2.AnotherAction")));
+        cmf.add(cmf.createLayerEntry("test-module2-factory-action.instance", null, null, null, Collections.singletonMap("instanceCreate", "methodvalue:test.module2.FactoryAction.create")));
+        cmf.add(cmf.createLayerEntry("sep-42.instance", null, null, null, Collections.singletonMap("instanceClass", "javax.swing.JSeparator")));
+        cmf.run();
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
+        assertDisplayName(fs, "right display name for platform file", "Menu/Window/SelectDocumentNode", "Select Document in");
+        assertDisplayName(fs, "label for file in suite", "foo", "Foo");
+        assertDisplayName(fs, "label for file in this project", "bar", "Bar");
+        assertDisplayName(fs, "right display name for well-known action", "Menu/File/org-openide-actions-SaveAction.instance", "Save");
+        assertDisplayName(fs, "label for simple instance", "test-module2-MyAction.instance", "<instance of MyAction>");
+        assertDisplayName(fs, "label for instanceClass", "test-module2-some-action.instance", "<instance of SomeAction>");
+        assertDisplayName(fs, "label for newvalue instanceCreate", "test-module2-another-action.instance", "<instance of AnotherAction>");
+        assertDisplayName(fs, "label for methodvalue instanceCreate", "test-module2-factory-action.instance", "<instance from FactoryAction.create>");
+        assertDisplayName(fs, "label for menu separator", "sep-42.instance", "<separator>");
+    }
+    
     // XXX testClusterAndModuleExclusions
     // XXX testSystemFilesystemSuiteProject
     // XXX testSystemFilesystemNetBeansOrgProject
-    // XXX testSystemFilesystemLocalizedNames
+
+    private static void assertDisplayName(FileSystem fs, String message, String path, String label) throws Exception {
+        FileObject file = fs.findResource(path);
+        assertNotNull("found " + path, file);
+        assertEquals(message, label, DataObject.find(file).getNodeDelegate().getDisplayName());
+    }
     
 }

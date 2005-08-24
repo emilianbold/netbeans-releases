@@ -98,6 +98,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         x = fs.findResource("x");
         assertNotNull(x);
         assertEquals("more stuff", TestBase.slurp(x));
+        // XXX check that using a nbres: or nbresloc: URL protocol works here too (if we specify a classpath)
     }
     
     public void testSimpleAttributeReads() throws Exception {
@@ -121,7 +122,14 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
     }
     
     public void testCodeAttributeReads() throws Exception {
-        // XXX test method, new, serial
+        FileSystem fs = new Layer("<file name='x'><attr name='a' stringvalue='v'/><attr name='b' newvalue='some.Class'/> " +
+                "<attr name='c' methodvalue='some.Class.m'/></file>").read();
+        FileObject x = fs.findResource("x");
+        assertEquals("v", x.getAttribute("literal:a"));
+        assertEquals("new:some.Class", x.getAttribute("literal:b"));
+        assertEquals("method:some.Class.m", x.getAttribute("literal:c"));
+        // XXX serial:blahblahblah
+        // XXX test actually loading method, new, serial as interpreted objects with a classpath
     }
     
     public void testCreateNewFolder() throws Exception {
@@ -599,7 +607,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
          */
         public WritableXMLFileSystem read() throws Exception {
             cookie = LayerUtils.cookieForFile(f);
-            return new WritableXMLFileSystem(f.getURL(), cookie, false);
+            return new WritableXMLFileSystem(f.getURL(), cookie, null);
         }
         /**
          * Write the filesystem to the layer and retrieve the new contents.
