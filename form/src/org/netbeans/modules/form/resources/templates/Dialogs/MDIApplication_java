@@ -41,7 +41,6 @@ public class MDIApplication extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        getContentPane().add(desktopPane, java.awt.BorderLayout.CENTER);
 
         fileMenu.setText("File");
         openMenuItem.setText("Open");
@@ -77,6 +76,16 @@ public class MDIApplication extends javax.swing.JFrame {
         menuBar.add(helpMenu);
         setJMenuBar(menuBar);
 
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(desktopPane)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(desktopPane)
+        );
         pack();
     }
     // </editor-fold>//GEN-END:initComponents
@@ -97,21 +106,21 @@ public class MDIApplication extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem cutMenuItem;
-    private javax.swing.JMenuItem pasteMenuItem;
     private javax.swing.JMenuItem aboutMenuItem;
-    private javax.swing.JMenuItem deleteMenuItem;
     private javax.swing.JMenuItem contentMenuItem;
-    private javax.swing.JMenuItem saveAsMenuItem;
-    private javax.swing.JMenuItem saveMenuItem;
-    private javax.swing.JMenu helpMenu;
-    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenuItem copyMenuItem;
+    private javax.swing.JMenuItem cutMenuItem;
+    private javax.swing.JMenuItem deleteMenuItem;
+    private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitMenuItem;
-    private javax.swing.JMenuItem copyMenuItem;
-    private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenu helpMenu;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem openMenuItem;
+    private javax.swing.JMenuItem pasteMenuItem;
+    private javax.swing.JMenuItem saveAsMenuItem;
+    private javax.swing.JMenuItem saveMenuItem;
     // End of variables declaration//GEN-END:variables
 
 }
