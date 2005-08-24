@@ -134,7 +134,7 @@ Microsystems, Inc. All Rights Reserved.
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
         
-    <target name="run-standalone" depends="build-launchers" >
+    <target name="run-standalone" depends="build-launchers,build" >
         <pathconvert property="run.platform.clusters" >
             <path>
                 <dirset refid="platform.clusters" />
