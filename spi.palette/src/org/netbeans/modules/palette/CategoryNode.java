@@ -22,6 +22,8 @@ import org.openide.NotifyDescriptor;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -64,6 +66,24 @@ class CategoryNode extends FilterNode {
     }
     
     // -------
+
+    public String getDisplayName() {
+
+        String retValue = super.getDisplayName();
+        if( null != retValue && retValue.indexOf( "->" ) > 0 ) {
+            DataShadow shadow = (DataShadow)getCookie( DataShadow.class );
+            if( null != shadow ) {
+                DataObject dobj = shadow.getOriginal();
+                if( null != dobj ) {
+                    Node origNode = dobj.getNodeDelegate();
+                    if( null != origNode && null != origNode.getDisplayName() ) {
+                        retValue = origNode.getDisplayName();
+                    }
+                }
+            }
+        }
+        return retValue;
+    }
 
     public void setName(String name) {
         setName(name, true);
