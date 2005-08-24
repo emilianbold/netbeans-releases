@@ -140,12 +140,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 }
                 return funcTestExecute;
             }
-        } else if (file == project.getManifestFile() && type.equals(ClassPath.EXECUTE)) {
-            // We supply a path for manifest.mf consisting of the module plus its deps.
-            if (execute == null) {
-                execute = ClassPathFactory.createClassPath(createExecuteClasspath());
-            }
-            return execute;
         } else if (classesDir != null && (classesDir.equals(file) || FileUtil.isParentOf(classesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {
                 try {

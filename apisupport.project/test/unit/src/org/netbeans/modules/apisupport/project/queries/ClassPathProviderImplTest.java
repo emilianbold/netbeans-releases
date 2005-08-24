@@ -119,9 +119,6 @@ public class ClassPathProviderImplTest extends TestBase {
         // #48099: need to include build/classes here too
         expectedRoots.add(urlForDir("ant/build/classes"));
         assertEquals("right EXECUTE classpath (COMPILE plus classes)", expectedRoots, urlsOfCp(cp));
-        // Used by apisupport module:
-        cp = ClassPath.getClassPath(nbroot.getFileObject("ant/manifest.mf"), ClassPath.EXECUTE);
-        assertEquals("same EXECUTE classpath for manifest.mf", expectedRoots, urlsOfCp(cp));
         cp = ClassPath.getClassPath(src, ClassPath.SOURCE);
         assertNotNull("have a SOURCE classpath", cp);
         assertEquals("right SOURCE classpath", Collections.singleton(src), new HashSet(Arrays.asList(cp.getRoots())));
