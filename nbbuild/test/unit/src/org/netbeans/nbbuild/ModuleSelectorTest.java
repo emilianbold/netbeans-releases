@@ -72,6 +72,35 @@ public class ModuleSelectorTest extends NbTestCase {
         assertFalse("Refused", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
     }
     
+    public void testCanShowOnlyExcludedModules() throws Exception {
+        Parameter p = new Parameter();
+        p.setName("excluded");
+        p.setValue("true");
+        Parameter p2 = new Parameter();
+        p2.setName("excludeModules");
+        p2.setValue("org.my.module");
+        selector.setParameters(new Parameter[] { p, p2 });
+        
+        Manifest m = ModuleDependenciesTest.createManifest ();
+        m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
+        File aModule = generateJar(new String[0], m);
+        assertTrue("Now we are accepting only excluded modules", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
+    }
+    
+    public void testIsSelectedForNotAModuleIsStillFalseEvenWeAcceptOnlyExcludedModules() throws IOException {
+        Parameter p = new Parameter();
+        p.setName("excluded");
+        p.setValue("true");
+        Parameter p2 = new Parameter();
+        p2.setName("excludeModules");
+        p2.setValue("org.my.module");
+        selector.setParameters(new Parameter[] { p, p2 });
+        
+        
+        File noModule = generateJar(new String[0], ModuleDependenciesTest.createManifest ());
+        assertFalse("Not acceptable", selector.isSelected(getWorkDir(), noModule.toString(), noModule));
+    }
+    
     public void testCanExcludeACluster() throws Exception {
         Parameter p = new Parameter();
         p.setName("excludeClusters");

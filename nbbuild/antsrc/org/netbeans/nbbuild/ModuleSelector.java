@@ -38,6 +38,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
     private HashSet excludeModules;
     private HashSet excludeClusters;
     private HashMap/*<String,String*/ fileToOwningModule;
+    private boolean acceptExcluded;
     
     /** Creates a new instance of ModuleSelector */
     public ModuleSelector() {
@@ -45,10 +46,24 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
 
     public boolean isSelected(File dir, String filename, File file) throws BuildException {
         validate();
+     
+        Boolean check = checkSelected(dir, filename, file);
+        if (check == null) {
+            return false;
+        }
         
+        if (acceptExcluded) {
+            log("Reverting the accepted state", Project.MSG_VERBOSE);
+            return !check.booleanValue();
+        } else {
+            return check.booleanValue();
+        }
+    }
+    
+    private Boolean checkSelected(File dir, String filename, File file) throws BuildException {
         if (file.isDirectory()) {
             log("Skipping directory: " + file, Project.MSG_VERBOSE);
-            return false;
+            return null;
         }
         
         String module = null;
@@ -72,7 +87,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         for(;;) {
             if (excludeClusters.contains(p.getName())) {
                 log("Excluded cluster: " + p.getName() + " for " + file, Project.MSG_VERBOSE);
-                return false;
+                return null;
             }
             
             if (module == null && fileToOwningModule != null) {
@@ -88,7 +103,7 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         
         if (module == null) {
             log("No module in: " + file, Project.MSG_VERBOSE);
-            return false;
+            return null;
         }
         int slash = module.indexOf('/');
         if (slash >= 0) {
@@ -97,11 +112,11 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
         
         if (excludeModules.contains(module)) {
             log("Excluded module: " + file, Project.MSG_VERBOSE);
-            return false;
+            return Boolean.FALSE;
         }
 
         log("Accepted file: " + file, Project.MSG_VERBOSE);
-        return true;
+        return Boolean.TRUE;
     }
 
     public void verifySettings() {
@@ -126,6 +141,11 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
             if ("excludeClusters".equals(arr[i].getName())) {
                 parse(arr[i].getValue(), excludeClusters);
                 log("Will excludeClusters: " + excludeClusters, Project.MSG_VERBOSE);
+                continue;
+            }
+            if ("excluded".equals(arr[i].getName())) {
+                acceptExcluded = Boolean.valueOf(arr[i].getValue()).booleanValue();
+                log("Will acceptExcluded: " + acceptExcluded, Project.MSG_VERBOSE);
                 continue;
             }
             if ("updateTrackingFiles".equals(arr[i].getName())) {
@@ -187,7 +207,9 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                     module = module.replace('-', '.');
 
                     try {
-                        p.log("Parsing " + where, Project.MSG_VERBOSE);
+                        if (p != null) {
+                            p.log("Parsing " + where, Project.MSG_VERBOSE);
+                        }
                         parser.parse(where, this);
                     } catch (SAXException ex) {
                         throw new BuildException("Wrong file " + where, ex);
