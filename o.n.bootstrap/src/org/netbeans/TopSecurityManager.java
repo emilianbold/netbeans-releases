@@ -462,8 +462,9 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             javax.swing.TransferHandler.getCutAction ().actionPerformed (
                 new java.awt.event.ActionEvent (source, 0, "")
             );
-            if (! (CLIPBOARD_FORBIDDEN.get () instanceof TopSecurityManager) ) {
-                System.err.println("Cannot install our clipboard to swing components, TopSecurityManager is not the security manager"); // NOI18N
+            Object forb = CLIPBOARD_FORBIDDEN.get ();
+            if (! (forb instanceof TopSecurityManager) ) {
+                System.err.println("Cannot install our clipboard to swing components, TopSecurityManager is not the security manager: " + forb); // NOI18N
                 return;
             }
 
