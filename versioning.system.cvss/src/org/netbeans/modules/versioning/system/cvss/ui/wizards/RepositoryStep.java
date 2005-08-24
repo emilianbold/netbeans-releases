@@ -412,13 +412,13 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private void updateLabel() {
         String cvsRoot = selectedCvsRoot();
         if (cvsRoot.startsWith(":pserver:")) { // NOI18N
-            repositoryPanel.descLabel.setText("( :pserver:username@hostname:/repository_path )");  // NOI18N
+            repositoryPanel.descLabel.setText("(:pserver:username@hostname:/repository_path)");  // NOI18N
         } else if (cvsRoot.startsWith(":local:")) { // NOI18N
-            repositoryPanel.descLabel.setText("( :local:/repository_path )");  // NOI18N
+            repositoryPanel.descLabel.setText("(:local:/repository_path)");  // NOI18N
         } else if (cvsRoot.startsWith(":fork:")) { // NOI18N
-            repositoryPanel.descLabel.setText("( :fork:/repository_path )");  // NOI18N
+            repositoryPanel.descLabel.setText("(:fork:/repository_path)");  // NOI18N
         } else if (cvsRoot.startsWith(":ext:")) { // NOI18N
-            repositoryPanel.descLabel.setText("( :ext:username@hostname:/repository_path )");  // NOI18N
+            repositoryPanel.descLabel.setText("(:ext:username@hostname:/repository_path)");  // NOI18N
         } else {
             repositoryPanel.descLabel.setText(NbBundle.getMessage(CheckoutWizard.class, "BK1014"));
         }

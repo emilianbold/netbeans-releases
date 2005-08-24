@@ -48,7 +48,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         add(headerLabel, gridBagConstraints);
 
         rootsLabel.setLabelFor(rootComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(rootsLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0002"));
+        org.openide.awt.Mnemonics.setLocalizedText(rootsLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0002"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -79,7 +79,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         add(descLabel, gridBagConstraints);
 
         pPaswordLabel.setLabelFor(passwordTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(pPaswordLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/wizards/Bundle").getString("BK0003"));
+        org.openide.awt.Mnemonics.setLocalizedText(pPaswordLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK0003"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 3);
@@ -110,6 +110,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
         add(internalSshRadioButton, gridBagConstraints);
 
+        extPasswordLabel5.setLabelFor(extPasswordField);
         org.openide.awt.Mnemonics.setLocalizedText(extPasswordLabel5, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1011"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -149,6 +150,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
         add(extSshRadioButton, gridBagConstraints);
 
+        extCommandLabel.setLabelFor(extCommandTextField);
         org.openide.awt.Mnemonics.setLocalizedText(extCommandLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK1013"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
