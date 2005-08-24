@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
             <and>
                 <available file="${install}/bin" type="dir"/>
                 <not>
-                    <istrue value="${run.without.ide.clusters}"/>
+                    <isset property="branding.token"/>
                 </not>
             </and>
         </condition>
