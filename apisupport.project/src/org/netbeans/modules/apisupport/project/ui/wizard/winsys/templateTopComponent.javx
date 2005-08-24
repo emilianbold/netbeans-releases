@@ -1,0 +1,86 @@
+
+package @@PACKAGENAME@@;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+
+
+
+
+/**
+ * <p>Top component which displays something.</p>
+ *
+ *
+ * @author machine generated
+ */
+
+final class @@TEMPLATENAME@@TopComponent extends TopComponent  {
+
+    static final long serialVersionUID = 4248268996665315735L;
+
+    private static @@TEMPLATENAME@@TopComponent instance;
+    /** holds currently scheduled/running task for set of activated node */
+    private RequestProcessor.Task nodeSetterTask;
+    private final Object NODE_SETTER_LOCK = new Object();
+    
+    private TopComponent paletteSource;
+    
+    /** Creates new PaletteTopComponent */
+    private @@TEMPLATENAME@@TopComponent() {
+        setName(NbBundle.getMessage(getClass(), "CTL_@@TEMPLATENAME@@TopComponent"));  // NOI18N
+        setToolTipText(NbBundle.getMessage(getClass(), "HINT_@@TEMPLATENAME@@TopComponent"));
+        setIcon(Utilities.loadImage("@@ICONPATH@@")); // NOI18N
+
+//TODO Here comes the component's content         
+//        setLayout(new BorderLayout());
+//            
+    }
+
+    
+
+    /** Gets default instance. Don't use directly, it reserved for '.settings' file only,
+     * i.e. deserialization routines, otherwise you can get non-deserialized instance. */
+    public static synchronized @@TEMPLATENAME@@TopComponent getDefault() {
+        if(instance == null) {
+            instance = new @@TEMPLATENAME@@TopComponent();
+        }
+        return instance;
+    }
+    
+    /** Overriden to explicitely set persistence type of @@TEMPLATENAME@@TopComponent
+     * to PERSISTENCE_ALWAYS */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+    
+    public void componentOpened() {
+        //TODO add custom code on component opening.
+    }
+    
+    public void componentClosed() {
+        //TODO add custom code on component closing.
+    }
+
+    /** replaces this in object stream */
+    public Object writeReplace() {
+        return new ResolvableHelper();
+    }
+    
+    protected String preferredID() {
+        return "@@TEMPLATENAME@@TopComponent";
+    }
+    
+    
+    final static class ResolvableHelper implements java.io.Serializable {
+        static final long serialVersionUID = 7424646018839457788L;
+        public Object readResolve() {
+            return @@TEMPLATENAME@@TopComponent.getDefault();
+        }
+    }
+}

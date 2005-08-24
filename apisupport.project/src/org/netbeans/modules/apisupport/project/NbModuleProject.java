@@ -594,6 +594,16 @@ public final class NbModuleProject implements Project {
         }
     }
     
+    public String getSpecVersion() {
+        //TODO shall we check for illegal cases like "none-defined" or "both-defined" here?
+        String manVersion = getManifest().getMainAttributes().getValue("OpenIDE-Module-Specification-Version"); //NOI18N
+        if (manVersion != null) {
+            return manVersion;
+        }
+        String base = evaluator().getProperty("spec.version.base"); //NOI18N
+        return base;
+    }
+    
     /**
      * Slash-separated path inside netbeans.org CVS, or null for external modules.
      */

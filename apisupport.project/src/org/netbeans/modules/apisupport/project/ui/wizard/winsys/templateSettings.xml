@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="@@MODULENAME@@" spec="@@SPECVERSION@@"/>
+    <instanceof class="java.awt.MenuContainer"/>
+    <instanceof class="@@PACKAGENAME@@.@@TEMPLATENAME@@TopComponent"/>
+    <instanceof class="java.lang.Object"/>
+    <instanceof class="org.openide.windows.TopComponent"/>
+    <instanceof class="java.awt.Container"/>
+    <instanceof class="java.io.Serializable"/>
+    <instanceof class="javax.swing.JComponent"/>
+    <instanceof class="java.awt.Component"/>
+    <instanceof class="java.io.Externalizable"/>
+    <instance class="@@PACKAGENAME@@.@@TEMPLATENAME@@TopComponent" method="getDefault"/>
+</settings>

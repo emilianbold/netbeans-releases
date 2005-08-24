@@ -12,36 +12,27 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -163,120 +154,111 @@ public class NewTCIterator extends BasicWizardIterator {
     public static void generateFileChanges(DataModel model) {
         CreatedModifiedFiles fileChanges = new CreatedModifiedFiles(model.getProject());
         NbModuleProject project = model.getProject();
-//        final String category = model.getCategory();
-//        final String displayName = model.getDisplayName();
-//        final String name = model.getName();
-//        final String packageName = model.getPackageName();
-//        
-//        HashMap replaceTokens = new HashMap();
-//        replaceTokens.put("@@CATEGORY@@", category);//NOI18N
-//        replaceTokens.put("@@DISPLAYNAME@@", displayName);//NOI18N
-//        replaceTokens.put("@@TEMPLATENAME@@", name);//NOI18N
-//        replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
-//        
-//        
-//        // 1. create project description file
-//        final String descName = getRelativePath(project, packageName,
-//                name, "Description.html"); //NOI18N
-//        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-//        URL template = NewTCIterator.class.getResource("templateDescription.html");//NOI18N
-//        fileChanges.add(fileChanges.createFileWithSubstitutions(descName, template, replaceTokens));
-//        
-//        // 2. update project dependencies
-//        ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
-//        try {
-//            SortedSet set = manager.getDirectDependencies(project.getPlatform());
-//            if (set != null) {
-//                Iterator it = set.iterator();
-//                boolean filesystems = false;
-//                boolean loaders = false;
-//                boolean dialogs = false;
-//                boolean util = false;
-//                boolean projectui = false;
-//                boolean projectapi = false;
-//                boolean awt = false;
-//                while (it.hasNext()) {
-//                    ModuleDependency dep = (ModuleDependency)it.next();
-//                    if ("org.openide.filesystems".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        filesystems = true;
-//                    }
-//                    if ("org.openide.loaders".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        loaders = true;
-//                    }
-//                    if ("org.openide.dialogs".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        dialogs = true;
-//                    }
-//                    if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        util = true;
-//                    }
-//                    if ("org.netbeans.modules.projectuiapi".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        projectui = true;
-//                    }
-//                    if ("org.netbeans.modules.projectapi".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        projectapi = true;
-//                    }
-//                    if ("org.openide.awt".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
-//                        // awt is here because of org.openide.awt.Mnemonics
-//                        awt = true;
-//                    }
-//                }
-//                if (!filesystems) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.openide.filesystems", -1, null, true)); //NOI18N
-//                }
-//                if (!loaders) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.openide.loaders", -1, null, true)); //NOI18N
-//                }
-//                if (!dialogs) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.openide.dialogs", -1, null, true)); //NOI18N
-//                }
-//                if (!util) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
-//                }
-//                if (!projectui) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.projectuiapi", -1, null, true)); //NOI18N
-//                }
-//                if (!projectapi) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.netbeans.modules.projectapi", -1, null, true)); //NOI18N
-//                }
-//                if (!awt) {
-//                    fileChanges.add(fileChanges.addModuleDependency("org.openide.awt", -1, null, true)); //NOI18N
-//                }
-//            }
-//        } catch (IOException e) {
-//            ErrorManager.getDefault().notify(e);
-//        }
-//        
-//        
-//        // 3. create sample template
-//        FileObject xml = LayerUtils.layerForProject(project).getLayerFile();
-//        FileObject parent = xml != null ? xml.getParent() : null;
-//        // XXX this is not fully accurate since if two ops would both create the same file,
-//        // really the second one would automatically generate a uniquified name... but close enough!
-//        Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip"));
-//        fileChanges.add(fileChanges.layerModifications(new CreateProjectZipOperation(project, model.getTemplate(),
-//                name, packageName), 
-//                externalFiles));
-//        fileChanges.add(fileChanges.bundleKeyDefaultBundle("Templates/Project/Other/" + name +  "Project.zip", displayName));
-//        
-//        // x. generate java classes
-//        final String iteratorName = getRelativePath(project, packageName,
-//                name, "WizardIterator.java"); //NOI18N
-//        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-//        template = NewTCIterator.class.getResource("templateWizardIterator.javx");//NOI18N
-//        fileChanges.add(fileChanges.createFileWithSubstitutions(iteratorName, template, replaceTokens));
-//        final String panelName = getRelativePath(project, packageName,
-//                name, "WizardPanel.java"); //NOI18N
-//        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-//        template = NewTCIterator.class.getResource("templateWizardPanel.javx");//NOI18N
-//        fileChanges.add(fileChanges.createFileWithSubstitutions(panelName, template, replaceTokens));
-//        
-//        final String panelVisName = getRelativePath(project, packageName,
-//                name, "PanelVisual.java"); //NOI18N
-//        // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
-//        template = NewTCIterator.class.getResource("templatePanelVisual.javx");//NOI18N
-//        fileChanges.add(fileChanges.createFileWithSubstitutions(panelVisName, template, replaceTokens));
-//        
-//        
+        final String name = model.getName();
+        final String packageName = model.getPackageName();
+        final String mode = model.getMode();
+        
+        HashMap replaceTokens = new HashMap();
+        replaceTokens.put("@@TEMPLATENAME@@", name);//NOI18N
+        replaceTokens.put("@@PACKAGENAME@@", packageName);//NOI18N
+        replaceTokens.put("@@MODE@@", mode); //NOI18N
+        replaceTokens.put("@@OPENED@@", model.isOpened() ? "true" : "false"); //NOI18N
+
+        // 0. move icon file if necessary
+        String icon = model.getIcon();
+        File fil = null;
+        if (icon != null) {
+            fil = new File(icon);
+            if (!fil.exists()) {
+                fil = null;
+            }
+        }
+        if (fil != null) {
+            FileObject fo = FileUtil.toFileObject(fil);
+            String relativeIconPath = null;
+            if (!FileUtil.isParentOf(model.getProject().getSourceDirectory(), fo)) {
+                String iconPath = getRelativePath(model.getProject(), packageName, 
+                                                "", fo.getNameExt()); //NOI18N
+                try {
+                    fileChanges.add(fileChanges.createFile(iconPath, fo.getURL()));
+                    relativeIconPath = packageName.replace('.', '/') + "/" + fo.getNameExt();
+                } catch (FileStateInvalidException exc) {
+                    ErrorManager.getDefault().notify(exc);
+                }
+            } else {
+                relativeIconPath = FileUtil.getRelativePath(model.getProject().getSourceDirectory(), fo);
+            }
+            replaceTokens.put("@@ICONPATH@@", relativeIconPath);//NOI18N
+        } else {
+            replaceTokens.put("@@ICONPATH@@", "SET/PATH/TO/ICON/HERE"); //NOI18N
+        }
+        
+        
+        // 2. update project dependencies
+        ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
+        replaceTokens.put("@@MODULENAME@@", project.getCodeNameBase());
+        //TODO how to figure the currect specification version for module?
+        replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion());
+        try {
+            SortedSet set = manager.getDirectDependencies(project.getPlatform());
+            if (set != null) {
+                Iterator it = set.iterator();
+                boolean windows = false;
+                boolean util = false;
+                while (it.hasNext()) {
+                    ModuleDependency dep = (ModuleDependency)it.next();
+                    if ("org.openide.windows".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        windows = true;
+                    }
+                    if ("org.openide.util".equals(dep.getModuleEntry().getCodeNameBase())) { //NOI18N
+                        util = true;
+                    }
+                }
+                if (!windows) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.windows", -1, null, true)); //NOI18N
+                }
+                if (!util) {
+                    fileChanges.add(fileChanges.addModuleDependency("org.openide.util", -1, null, true)); //NOI18N
+                }
+            }
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        
+        // x. generate java classes
+        final String tcName = getRelativePath(project, packageName,
+                name, "TopComponent.java"); //NOI18N
+        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        URL template = NewTCIterator.class.getResource("templateTopComponent.javx");//NOI18N
+        fileChanges.add(fileChanges.createFileWithSubstitutions(tcName, template, replaceTokens));
+        final String actionName = getRelativePath(project, packageName,
+                name, "Action.java"); //NOI18N
+        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        template = NewTCIterator.class.getResource("templateAction.javx");//NOI18N
+        fileChanges.add(fileChanges.createFileWithSubstitutions(actionName, template, replaceTokens));
+        
+        final String settingsName = name + "TopComponent.settings"; //NOI18N
+        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        template = NewTCIterator.class.getResource("templateSettings.xml");//NOI18N
+        fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null));
+        
+        final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
+        // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
+        template = NewTCIterator.class.getResource("templateWstcref.xml");//NOI18N
+        fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, 
+                             template, replaceTokens, null, null));
+        
+        fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName),
+                                                       Collections.EMPTY_SET));
+        String bundlePath = getRelativePath(model.getProject(), packageName, "", "Bundle.properties"); //NOI18N
+        fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
+                                NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateActionName", name))); //NOI18N
+        
+        fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "TopComponent",  // NOI18N
+                                NbBundle.getMessage(NewTCIterator.class, "LBL_TemplateTCName", name))); //NOI18N
+        fileChanges.add(fileChanges.bundleKey(bundlePath, "HINT_" + name + "TopComponent",  // NOI18N
+                                NbBundle.getMessage(NewTCIterator.class, "HINT_TemplateTCName", name))); //NOI18N
+        
         model.setCreatedModifiedFiles(fileChanges);
     }
     
@@ -290,45 +272,30 @@ public class NewTCIterator extends BasicWizardIterator {
         return sb.toString();//NOI18N
     }
     
-// 
-//    static class CreateProjectZipOperation implements CreatedModifiedFiles.LayerOperation {
-//        private NbModuleProject project;
-//        private String name;
-//        private String packageName;
-//        private URL content;
-//        private Project templateProject;
-//        
-//        public CreateProjectZipOperation(NbModuleProject project, Project template,
-//                                         String name, String packageName) {
-//            this.project = project;
-//            this.packageName = packageName;
-//            this.name = name;
-//            templateProject = template;
-//        }
-//        
-//        public void run(FileSystem layer) throws IOException {
-//            FileObject folder = layer.getRoot().getFileObject("Templates/Project/Other");// NOI18N
-//            if (folder == null) {
-//                folder = FileUtil.createFolder(layer.getRoot(), "Templates/Project/Other"); // NOI18N
-//            }
-//            FileObject file = folder.createData(name + "Project", "zip"); // NOI18N
-//            FileLock lock = file.lock();
-//            try {
-//                createProjectZip(file.getOutputStream(lock), templateProject);
-//            } catch (IOException exc) {
-//                exc.printStackTrace();
-//            } finally {
-//                lock.releaseLock();
-//            }
-//            file.setAttribute("template", Boolean.TRUE); // NOI18N
-//            file.setAttribute("SystemFileSystem.localizingBundle", packageName + ".Bundle");
-//            URL descURL = new URL("nbresloc:/" + packageName.replace('.', '/') + "/" + name + "Description.html");
-//            file.setAttribute("instantiatingWizardURL", descURL);
-//            URL locUrl = new URL("nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif");
-//            file.setAttribute("SystemFileSystem.icon",  locUrl);
-//            
-//            file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + "." + name + "WizardIterator.createIterator");
-//        }
-//    }
+ 
+    static class CreateActionEntryOperation implements CreatedModifiedFiles.LayerOperation {
+        private String name;
+        private String packageName;
+        
+        public CreateActionEntryOperation(String actionname, String packageName) {
+            this.packageName = packageName;
+            this.name = actionname;
+        }
+        
+        public void run(FileSystem layer) throws IOException {
+            FileObject folder = layer.getRoot().getFileObject("Actions/Window");// NOI18N
+            if (folder == null) {
+                folder = FileUtil.createFolder(layer.getRoot(), "Actions/Window"); // NOI18N
+            }
+            String instance = packageName.replace('.','-') + "-" + name;
+            FileObject file = folder.createData(instance, "instance"); // NOI18N
+            folder = layer.getRoot().getFileObject("Menu/Window");// NOI18N
+            if (folder == null) {
+                folder = FileUtil.createFolder(layer.getRoot(), "Menu/Window"); // NOI18N
+            }
+            file = folder.createData(name, "shadow"); // NOI18N
+            file.setAttribute("originalFile", "Actions/Window/" + instance + ".instance");
+        }
+    }
     
 }

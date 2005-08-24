@@ -1,0 +1,48 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package @@PACKAGENAME@@;
+
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
+/** The action which shows @@TEMPLATENAME@@ component.
+*
+* @author machine generated
+*/
+public class @@TEMPLATENAME@@Action extends AbstractAction {
+
+    public @@TEMPLATENAME@@Action() {
+        putValue(NAME, NbBundle.getMessage(getClass(), "CTL_@@TEMPLATENAME@@Action") );
+        putValue(SMALL_ICON, new ImageIcon(
+            Utilities.loadImage("@@ICONPATH@@"))); // NOI18N
+    }
+
+
+    public void actionPerformed(ActionEvent evt) {
+        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent"); // NOI18N
+        if( null == win ) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
+                "Can not find @@TEMPLATENAME@@ component." )); // NOI18N
+            return;
+        }
+        win.open();
+        win.requestActive();
+    }
+}
