@@ -7,27 +7,44 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.filesystems;
 
-import org.openide.util.NbBundle;
-import org.xml.sax.*;
-
-import java.beans.*;
-
-import java.io.*;
-
-import java.lang.ref.*;
-import java.lang.reflect.*;
-
-import java.net.*;
-
-import java.util.*;
-
+import java.beans.PropertyVetoException;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Stack;
 import javax.xml.parsers.SAXParserFactory;
-
+import org.openide.util.NbBundle;
+import org.xml.sax.AttributeList;
+import org.xml.sax.HandlerBase;
+import org.xml.sax.InputSource;
+import org.xml.sax.Parser;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /** XML-based filesystem.
  * <PRE>
@@ -208,7 +225,6 @@ public final class XMLFileSystem extends AbstractFileSystem {
      * @param urls array of definitions (in xml form) of XMLFileSystem
      * @throws IOException if the file is not valid
      * @throws PropertyVetoException if the change is not allowed by a listener
-     * @deprecated experimental method. Nobody should rely on this method yet.
      * @since 1.14
      */
     public void setXmlUrls(URL[] urls) throws IOException, PropertyVetoException {
