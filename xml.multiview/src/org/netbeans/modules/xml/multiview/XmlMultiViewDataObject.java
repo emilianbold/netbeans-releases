@@ -282,8 +282,24 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
 
         public synchronized void saveData(FileLock dataLock) {
+            FileObject file = getPrimaryFile();
+            if (fileTime == file.lastModified().getTime()) {
+                return;
+            }
+
             try {
-                getEditorSupport().saveDocument(dataLock);
+                XmlMultiViewEditorSupport editorSupport = getEditorSupport();
+                if (editorSupport.getDocument() == null) {
+                    OutputStream outputStream = editorSupport.getXmlEnv().getFileOutputStream();
+                    try {
+                        outputStream.write(buffer);
+                    } finally {
+                        outputStream.close();
+                    }
+                } else {
+                    getEditorSupport().saveDocument(dataLock);
+                }
+                fileTime = file.lastModified().getTime();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }

@@ -152,7 +152,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
         FileLock dataLock = ((XmlMultiViewDataObject) getDataObject()).waitForLock();
         try {
-            saveDocument(dataLock);
+            ((XmlMultiViewDataObject) getDataObject()).getDataCache().saveData(dataLock);
         } finally {
             dataLock.releaseLock();
         }
@@ -338,6 +338,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             } else {
                 return dataCache.createOutputStream();
             }
+        }
+
+        public boolean isModified() {
+            return super.isModified();
         }
     }
 
