@@ -30,6 +30,7 @@ import org.netbeans.editor.ext.AbstractFormatLayer;
 import org.netbeans.editor.ext.FormatSupport;
 import org.netbeans.editor.ext.FormatWriter;
 import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
+import org.netbeans.editor.ext.html.dtd.DTD;
 import org.openide.ErrorManager;
 
 /**
@@ -162,7 +163,7 @@ public class HTMLFormatter extends ExtFormatter {
                                                             }
                                                             
                                                             //reformat only when there isn't any unformattable tag
-                                                            if ((unformattableJustFound || unformattable == null) && token != null && 
+                                                            if ((unformattableJustFound || unformattable == null) && token != null &&
                                                                     token.getTokenContextPath().contains(HTMLTokenContext.contextPath)){
                                                                 changeRowIndent(doc, rowOffset, indentation);
                                                                 int htmlindent = Utilities.getRowIndent(doc, rowOffset);
@@ -247,21 +248,32 @@ public class HTMLFormatter extends ExtFormatter {
                     } else {
                         //found an open tag => auto include close tag
                         String tagname = token.getImage();
-                        int[] match = sup.findMatchingBlock(token.getOffset(), false);
-                        if((match != null && match[0] < dotPos) || match == null) {
-                            //there isn't a _real_ matching tag => autocomplete
-                            //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
-                            if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name
-                                doc.atomicLock();
-                                try {
-                                    doc.insertString( dotPos, "</"+tagname+">" , null);
-                                } catch( BadLocationException exc ) {
-                                    //do nothing
-                                } finally {
-                                    doc.atomicUnlock();
+                        
+                        //check if the tag has optional end
+                        //in the case there isn't any DTD information disable the autocomplete
+                        //do the same if the tag has no entry in the DTD
+                        DTD dtd = sup.getDTD();
+                        if(dtd != null) {
+                            DTD.Element tag = dtd.getElement( tagname.toUpperCase());
+                            if(tag != null && !tag.hasOptionalEnd()) {
+                                //required end => autocomplete
+                                int[] match = sup.findMatchingBlock(token.getOffset(), false);
+                                if((match != null && match[0] < dotPos) || match == null) {
+                                    //there isn't a _real_ matching tag => autocomplete
+                                    //note: the test for match index is necessary since the '<'  in <tag> matches the '>' character on the end of the tag.
+                                    if(VALID_TAG_NAME.matcher(tagname).matches()) { //check the tag name
+                                        doc.atomicLock();
+                                        try {
+                                            doc.insertString( dotPos, "</"+tagname+">" , null);
+                                        } catch( BadLocationException exc ) {
+                                            //do nothing
+                                        } finally {
+                                            doc.atomicUnlock();
+                                        }
+                                        //return cursor back
+                                        target.setCaretPosition(dotPos);
+                                    }
                                 }
-                                //return cursor back
-                                target.setCaretPosition(dotPos);
                             }
                         }
                     }

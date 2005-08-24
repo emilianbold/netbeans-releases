@@ -158,8 +158,7 @@ public class Registry {
 
     /** The method for storing an item into the map as a weak reference */
     private static void putWeak( String identifier, DTD dtd ) {
-        System.out.println("not putting to DTD cache: identifier");
-        //dtdMap.put( identifier, new WeakReference( dtd ) );
+        dtdMap.put( identifier, new WeakReference( dtd ) );
     }
 
 
