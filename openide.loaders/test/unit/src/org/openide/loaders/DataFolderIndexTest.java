@@ -10,20 +10,20 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.loaders;
 
 import java.io.IOException;
 import java.util.Arrays;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
-
-import org.netbeans.junit.*;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
 
 /**
  * Tests Index cookio of DataFolder (when uses DataFilter).
@@ -94,6 +94,22 @@ public class DataFolderIndexTest extends NbTestCase {
         testMatchingIndexes (df, df.getNodeDelegate ());
     }
     
+    public void testIndexCookieOfferedOnlyWhenAppropriate() throws Exception {
+        Node n = df.getNodeDelegate();
+        assertNotNull("have an index cookie on SFS", n.getLookup().lookup(Index.class));
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        n = DataFolder.findFolder(lfs.getRoot()).getNodeDelegate();
+        assertNull("have no index cookie on a local folder", n.getLookup().lookup(Index.class));
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject x = fs.getRoot().createFolder("x");
+        FileObject y = fs.getRoot().createFolder("y");
+        y.setAttribute("DataFolder.Index.reorderable", Boolean.TRUE);
+        n = DataFolder.findFolder(x).getNodeDelegate();
+        assertNull("have no index cookie on a random folder in a random FS", n.getLookup().lookup(Index.class));
+        n = DataFolder.findFolder(y).getNodeDelegate();
+        assertNotNull("do have index cookie if magic attr is set", n.getLookup().lookup(Index.class));
+    }
     
     private void testMatchingIndexes (DataFolder f, Node n) {
         Node [] arr = n.getChildren ().getNodes (true);

@@ -1134,8 +1134,14 @@ implements Serializable, DataObject.Container {
             if (clazz == org.openide.nodes.Index.class || clazz == Index.class) {
                 //#33130 - enable IndexCookie only on SystemFileSystem
                 // (also on apisupport layers...)
-                if (getPrimaryFile().canWrite() && FileUtil.toFile(getPrimaryFile()) == null) {
-                    return new Index(DataFolder.this, this);
+                try {
+                    if (DataFolder.this.getPrimaryFile().getFileSystem() == 
+                                Repository.getDefault().getDefaultFileSystem() ||
+                            Boolean.TRUE.equals(DataFolder.this.getPrimaryFile().getAttribute("DataFolder.Index.reorderable"))) { // NOI18N
+                        return new Index (DataFolder.this, this);
+                    }
+                } catch (FileStateInvalidException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
             return super.getCookie (clazz);

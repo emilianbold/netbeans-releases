@@ -230,12 +230,16 @@ final class FolderOrder extends Object implements Comparator {
                 }
                 buf.append (filenames[i]);
             }
+
+            // Read *before* setting EA_ORDER, since org.netbeans.modules.apisupport.project.layers.WritableXMLFileSystem
+            // will kill off the partials when it gets that:
+            Set/*<String>*/ p = ignorePartials ? readPartials() : null;
+            
             folder.setAttribute (DataFolder.EA_ORDER, buf.toString ());
 
             if (ignorePartials) {
                 // Reverse any existing partial orders among files explicitly
                 // mentioned in the order.
-                Set p = readPartials ();
                 if (! p.isEmpty ()) {
                     Set f = new HashSet (); // Set<String> for filenames
                     it = order.keySet ().iterator ();

@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -77,8 +78,6 @@ import org.openide.util.TopologicalSortException;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-// XXX use doc.getRootEventManager().setFirePolicy(TreeEventManager.FIRE_{LATER,NOW})
-
 /**
  * A filesystem which is based on a TAX document and implements
  * the same syntax as XMLFileSystem, from which inspiration is taken.
@@ -88,8 +87,7 @@ import org.openide.util.WeakListeners;
  * according to DTD "-//NetBeans//DTD Filesystem 1.0//EN" (or 1.1 is OK).
  * When it is changed via FileSystems API, it will fire TAX
  * events. Not intended to be efficient or terribly robust, since it
- * is development-time only. Also displays annotations just like SystemFileSystem
- * does, more or less, to help test localized file names.
+ * is development-time only.
  * @author Jesse Glick
  */
 final class WritableXMLFileSystem extends AbstractFileSystem
@@ -560,6 +558,9 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             // Special access for MiscPropEds, so it knows what classpath to work with.
             return classpath;
         }
+        if (attrName.equals("DataFolder.Index.reorderable")) { // NOI18N
+            return Boolean.TRUE;
+        }
         TreeElement el = findElement(name);
         if (el == null) {
             return null;
@@ -762,27 +763,57 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     
     private final Set orderAbsorbers = new HashSet(); // Set<String>
     public void writeAttribute(String name, String attrName, Object v) throws IOException {
-        if (v == null) {
+        //System.err.println("wA: " + name + " " + attrName + " " + v/* + " orderAbsorbers=" + orderAbsorbers*/);
+        if (v != null && v.getClass().getName().equals("org.openide.filesystems.MultiFileObject$VoidValue")) { // NOI18N
+            // XXX is this legitimate? Definitely not pretty. But needed for testOpenideFolderOrder to pass.
+            v = null;
+        }
+        if (v == null && attrName.indexOf('/') != -1) {
             String mebbeOrder = name + '/' + attrName; // NOI18N
             if (orderAbsorbers.remove(mebbeOrder)) {
+                //System.err.println("  absorbed");
                 return; // see below
+            }
+            // Was not absorbed; we really needed to cancel this ordering.
+            v = Boolean.FALSE;
+        }
+        if (name.indexOf('/') == -1) {
+            // Cancel this hack - something else has happened.
+            Iterator it = orderAbsorbers.iterator();
+            while (it.hasNext()) {
+                String n = (String) it.next();
+                if (n.startsWith(name + '/')) {
+                    it.remove();
+                }
             }
         }
         if (attrName.equals("OpenIDE-Folder-Order") && (v instanceof String)) { // NOI18N
             // This is a special case. We do not want to store a fully fixed order in a layer.
             // Rather, compute some reasonable orderings from it.
-            StringTokenizer tok = new StringTokenizer((String) v, "/"); // NOI18N
-            if (tok.hasMoreTokens()) {
-                String prev = tok.nextToken();
-                while (tok.hasMoreTokens()) {
-                    String next = tok.nextToken();
-                    writeAttribute(name, prev + '/' + next, Boolean.TRUE); // NOI18N
-                    // DataFolder tries to cancel these orders immediately after writing!
-                    // Don't let it.
-                    orderAbsorbers.add(name + '/' + prev + '/' + next); // NOI18N
+            java.util.List/*<String>*/ order = Collections.list(new StringTokenizer((String) v, "/")); // NOI18N
+            if (!order.isEmpty()) {
+                // XXX this is not really right. We just cannot know which attrs were already defined
+                // in the merged FS from other layers. So this will fail to store needed attrs sometimes.
+                // But better that than storing too many.
+                Set/*<String>*/ myOwn = new HashSet(Arrays.asList(children(name)));
+                Iterator it = order.iterator();
+                String prev = (String) it.next();
+                while (it.hasNext()) {
+                    String next = (String) it.next();
+                    if (myOwn.contains(prev) || myOwn.contains(next)) {
+                        writeAttribute(name, prev + '/' + next, Boolean.TRUE); // NOI18N
+                    }
                     prev = next;
                 }
             }
+            // FolderOrder.write tries to cancel old orders immediately after writing!
+            // Don't let it. We don't know exactly what they might be, but we can guess.
+            for (int i = 0; i < order.size() - 1; i++) {
+                for (int j = i + 1; j < order.size(); j++) {
+                    orderAbsorbers.add(name + '/' + (String) order.get(i) + '/' + (String) order.get(j));
+                }
+            }
+            //System.err.println("orderAbsorbers=" + orderAbsorbers);
             return;
         }
         TreeElement el = findElement(name);

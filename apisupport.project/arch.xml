@@ -546,9 +546,17 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="exec-component">
-  <p>
-   No.
-  </p>
+     <api name="DataFolder.Index.reorderable" type="import" category="friend" group="property">
+         Claims that layer filesystems are reorderable so that <code>DataFolder</code> will give them an <code>Index</code>.
+     </api>
+     <api name="OpenIDE-Folder-Order" type="import" category="friend" group="property">
+         Specially interprets requests from <code>FolderOrder</code> to reorder layer folders.
+     </api>
+     <api name="MultiFileObject.VoidValue" type="import" category="private" group="property">
+         Specially interprets requests from <code>MultiFileSystem</code> to store null attribute values.
+         Otherwise would be serializing special quasi-nulls into the XML layer, which is unacceptable
+         (and anyway not what folder ordering semantics requires, in a development-time context).
+     </api>
  </answer>
 
 

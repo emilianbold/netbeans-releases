@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Task;
@@ -310,6 +311,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
         assertEquals("cannot delete attr twice",
                 "    <file name=\"x\"/>\n",
                 l.write());
+        /* Now this stores x/y=false instead... OK?
         fs.getRoot().createData("y");
         fs.getRoot().setAttribute("x/y", Boolean.TRUE);
         fs.getRoot().setAttribute("x/y", null);
@@ -317,6 +319,7 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "    <file name=\"x\"/>\n" +
                 "    <file name=\"y\"/>\n",
                 l.write());
+         */
     }
     
     public void testCodeAttributeWrites() throws Exception {
@@ -386,6 +389,50 @@ public class WritableXMLFileSystemTest extends LayerTestBase {
                 "    <file name=\"main\"/>\n",
                 l.write());
         // XXX probably need even more sophisticated tests to really cover WXMLFS.resort!
+        l = new Layer("");
+        fs = l.read();
+        FileUtil.createData(fs.getRoot(), "f/two");
+        FileSystem ro = FileUtil.createMemoryFileSystem();
+        f = ro.getRoot().createFolder("f");
+        f.createData("one");
+        f.setAttribute("one/three", Boolean.TRUE);
+        f.createData("three");
+        f.createData("four");
+        f.setAttribute("three/four", Boolean.TRUE);
+        FileSystem merge = new MultiFileSystem(new FileSystem[] {fs, ro});
+        DataObject one = DataObject.find(merge.findResource("f/one"));
+        DataObject two = DataObject.find(merge.findResource("f/two"));
+        DataObject three = DataObject.find(merge.findResource("f/three"));
+        DataObject four = DataObject.find(merge.findResource("f/four"));
+        DataFolder.findFolder(merge.findResource("f")).setOrder(new DataObject[] {one, two, three, four});
+        assertEquals("correct insertion of new file into existing folder",
+                "    <folder name=\"f\">\n" +
+                "        <attr name=\"one/two\" boolvalue=\"true\"/>\n" +
+                "        <file name=\"two\"/>\n" +
+                "        <attr name=\"two/three\" boolvalue=\"true\"/>\n" +
+                "    </folder>\n",
+                l.write());
+        l = new Layer("");
+        fs = l.read();
+        FileUtil.createData(fs.getRoot(), "f/two");
+        merge = new MultiFileSystem(new FileSystem[] {fs, ro});
+        assertEquals(Boolean.TRUE, merge.findResource("f").getAttribute("one/three"));
+        one = DataObject.find(merge.findResource("f/one"));
+        two = DataObject.find(merge.findResource("f/two"));
+        three = DataObject.find(merge.findResource("f/three"));
+        four = DataObject.find(merge.findResource("f/four"));
+        DataFolder.findFolder(merge.findResource("f")).setOrder(new DataObject[] {four, three, two, one});
+        assertEquals("correct insertion of new file into existing folder w/ override of old order",
+                "    <folder name=\"f\">\n" +
+                "        <attr name=\"three/two\" boolvalue=\"true\"/>\n" +
+                "        <file name=\"two\"/>\n" +
+                "        <attr name=\"two/one\" boolvalue=\"true\"/>\n" +
+                //XXX cannot get this to work: "        <attr name=\"four/three\" boolvalue=\"true\"/>\n" +
+                "        <attr name=\"three/four\" boolvalue=\"false\"/>\n" +
+                "        <attr name=\"one/three\" boolvalue=\"false\"/>\n" +
+                "    </folder>\n",
+                l.write());
+        // XXX but inserting new item in a new position *twice* does not work... sigh... can it be fixed?
     }
     
     public void testDeleteFileOrFolder() throws Exception {
