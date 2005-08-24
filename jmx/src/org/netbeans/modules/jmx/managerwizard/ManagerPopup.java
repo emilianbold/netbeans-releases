@@ -27,6 +27,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import org.openide.util.NbBundle;
@@ -42,7 +44,6 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     FocusListener {
     
     private ResourceBundle bundle;
-    //private JTextField urlField;
     private JButton okJButton;
     private JPanel panel;
     
@@ -50,8 +51,6 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
      * Creates new form ManagerPopup 
      */
     public ManagerPopup(JPanel ancestorPanel) {
-        //super((java.awt.Dialog)ancestorPanel.getTopLevelAncestor()); 
-        //this.urlField = urlField;
         this.panel = ancestorPanel;
         bundle = NbBundle.getBundle(ManagerPopup.class);
         initComponents();
@@ -88,18 +87,11 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         setName("ManagerPopup");// NOI18N
         
-        /*if (urlField.getText().equals(WizardConstants.EMPTYSTRING))
-            updateURLPathWithHostAndPort();
-        else
-            parseURL(urlField.getText());
-         */
         String urlText = getPanel().getJmxURLJTextField().getText();
         if (urlText.equals(WizardConstants.EMPTYSTRING))
             updateURLPathWithHostAndPort();
         else
             parseURL();
-        
-        //protocolJComboBox.requestFocus();
         
         addListeners();
         
@@ -120,7 +112,6 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         // create and display the dialog:
         String title = bundle.getString("LBL_RMIAgentURL_Popup"); // NOI18N
-        //btnOK.setEnabled(isAcceptable());
         
         Object returned = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor(
@@ -151,10 +142,26 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     private void addListeners() {
         rmiHostJTextField.getDocument().addDocumentListener(this);
         rmiPortJTextField.getDocument().addDocumentListener(this); 
-        //rmiHostJTextField.addFocusListener(new TextFieldFocusListener());
-        //rmiPortJTextField.addFocusListener(new TextFieldFocusListener());
         rmiHostJTextField.addFocusListener(this);
         rmiPortJTextField.addFocusListener(this);
+        
+        rmiPortJTextField.addKeyListener(new KeyListener() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (!(Character.isDigit(c) ||
+                        c == KeyEvent.VK_BACK_SPACE ||
+                        c == KeyEvent.VK_DELETE)) {
+                    getToolkit().beep();
+                    e.consume();
+                }
+            }
+            
+            public void keyPressed(KeyEvent e) {
+            }
+            
+            public void keyReleased(KeyEvent e) {
+            }
+        });
         
         okJButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -193,21 +200,20 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         if (doc != null) {
             try {
-               String txt = doc.getText(0, doc.getLength());
-               isRmi = txt.equals(bundle.getString("TXT_protocol"));// NOI18N
+                String txt = doc.getText(0, doc.getLength());
+                isRmi = txt.equals(bundle.getString("TXT_protocol"));// NOI18N
             } catch (javax.swing.text.BadLocationException e) {
                 e.printStackTrace();
             }
         } else {
-           isRmi = protocolJComboBox.getSelectedItem().equals(bundle.getString("TXT_protocol"));// NOI18N
+            isRmi = protocolJComboBox.getSelectedItem().equals(bundle.getString("TXT_protocol"));// NOI18N
         }
-             
+        
         if (isRmi) {
             urlJTextField.setText(bundle.getString("TXT_JNDIRMI") + // NOI18N
                     getHostFieldText()+":"+getPortFieldText()+// NOI18N
                     bundle.getString("TXT_JMXRMI"));// NOI18N
-        }
-        else {
+        } else {
             urlJTextField.setText(WizardConstants.EMPTYSTRING);
         }
         urlJTextField.setEditable(!isRmi);
@@ -233,7 +239,7 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         getPanel().getJmxURLJTextField().setText(bundle.getString("TXT_SERVICEJMX") + protocol +// NOI18N
                 "://" + rmiHostJTextField.getText() +  completePort +// NOI18N
-                suffix);// NOI18N
+                suffix);
         
         // save host, port and suffix for future needs
         getPanel().setProtocol((String)protocolJComboBox.getSelectedItem());
@@ -283,7 +289,7 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
     
     private void parseURL() {
         
-        protocolJComboBox.setSelectedItem(getPanel().getProtocol());  
+        protocolJComboBox.setSelectedItem(getPanel().getProtocol());
         rmiHostJTextField.setText(getPanel().getHost());
         rmiPortJTextField.setText(getPanel().getPort());
         
@@ -291,7 +297,7 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
             urlJTextField.setEditable(true);
         
         if (!getPanel().getSuffix().equals(WizardConstants.EMPTYSTRING))
-            urlJTextField.setText(getPanel().getSuffix());// NOI18N  
+            urlJTextField.setText(getPanel().getSuffix());// NOI18N
     }
     
     // regular expression which matches rmi protocol with jndi suffix
