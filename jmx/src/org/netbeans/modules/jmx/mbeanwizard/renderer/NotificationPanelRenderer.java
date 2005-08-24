@@ -77,6 +77,10 @@ public class NotificationPanelRenderer extends  DefaultTableCellRenderer {
         }
         text.setText(notifTypeString);
         
+        // makes visual line selection possible
+        if (row == table.getSelectedRow())
+            text.setBackground(table.getSelectionBackground());
+        
         return comp;
     }
     

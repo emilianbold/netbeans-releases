@@ -85,8 +85,12 @@ public class ComboBoxRenderer extends  DefaultTableCellRenderer {
             comp.setEditable(isEditable);
             
             // makes visual line selection possible
-            if (row == table.getSelectedRow()) 
+            if (row == table.getSelectedRow()) {
+                // set editable false to have the good look when selected
+                comp.setEditable(false);
                 comp.setBackground(table.getSelectionBackground());
+            }
+            
             return comp;
 	}
 

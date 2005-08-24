@@ -251,7 +251,7 @@ public class OperationTable extends JTable {
         
         if (column == 1) {
             JComboBox retTypeBox = WizardHelpers.instanciateRetTypeJComboBox(); 
-            return new ComboBoxRenderer(retTypeBox);
+            return new ComboBoxRenderer(retTypeBox,true,true);
         } else {
             if (column == 2) {
                 JTextField paramField = new JTextField();
