@@ -100,7 +100,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
         }
 
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/resources/DDDataIcon.gif"); //NOI18N
+            return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
         }
 
         public String preferredID() {
