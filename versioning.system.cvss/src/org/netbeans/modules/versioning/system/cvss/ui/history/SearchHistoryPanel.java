@@ -30,21 +30,24 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Contains all components of the Search History panel.
  *
  * @author Maros Sandor
  */
-class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener {
+class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, ActionListener {
 
     private final File[]                roots;
     private final SearchCriteriaPanel   criteria;
     
+    private Divider                 divider;
     private Action                  searchAction;
     private SearchExecutor          currentSearch;
     private RequestProcessor.Task   currentSearchTask;
-    
+
+    private boolean                 criteriaVisible;
     private boolean                 searchInProgress;
     private List                    results;
     private List                    dispResults;
@@ -55,6 +58,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
         this.criteria = criteria;
+        criteriaVisible = true;
         explorerManager = new ExplorerManager ();
         initComponents();
         setupComponents();
@@ -62,6 +66,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private void setupComponents() {
+        remove(jPanel1);
+
+        divider = new Divider(this);
+        java.awt.GridBagConstraints gridBagConstraints;
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(divider, gridBagConstraints);
+
         searchCriteriaPanel.add(criteria);
         searchAction = new AbstractAction(NbBundle.getMessage(SearchHistoryPanel.class,  "CTL_Search")) {
             public void actionPerformed(ActionEvent e) {
@@ -71,6 +86,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); //NOI18N
         getActionMap().put("search", searchAction);//NOI18N
         bSearch.setAction(searchAction);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getID() == Divider.DIVIDER_CLICKED) {
+            criteriaVisible = !criteriaVisible;
+            refreshComponents();
+        }
     }
 
     private ExplorerManager             explorerManager;
@@ -120,8 +142,14 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
                 resultsPanel.add(diffView.getComponent());
             }
         }
-        resultsPanel.revalidate();        
+
+        divider.setArrowDirection(criteriaVisible ? Divider.DOWN : Divider.UP);
+        searchCriteriaPanel.setVisible(criteriaVisible);
+        bSearch.setVisible(criteriaVisible);
+        resultsPanel.revalidate();
+        revalidate();
         resultsPanel.repaint();
+        repaint();
     }
     
     public void setResults(List newResults) {
@@ -318,9 +346,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        jPanel1 = new javax.swing.JPanel();
         searchCriteriaPanel = new javax.swing.JPanel();
         bSearch = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         tbSummary = new javax.swing.JToggleButton();
         tbDiff = new javax.swing.JToggleButton();
         bNext = new javax.swing.JButton();
@@ -331,11 +359,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 0, 8)));
+        jPanel1.setPreferredSize(new java.awt.Dimension(10, 6));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        add(jPanel1, gridBagConstraints);
+
         searchCriteriaPanel.setLayout(new java.awt.BorderLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
@@ -344,18 +381,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(bSearch, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        add(jSeparator1, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        add(bSearch, gridBagConstraints);
 
         buttonGroup1.add(tbSummary);
         tbSummary.setSelected(true);
@@ -456,7 +485,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private javax.swing.JButton bPrev;
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JPanel resultsPanel;
     private javax.swing.JPanel searchCriteriaPanel;
