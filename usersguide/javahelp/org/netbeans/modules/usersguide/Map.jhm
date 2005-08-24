@@ -474,20 +474,39 @@ the Options window:-->
 <!--Find Usages dialog:-->
 <mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findUsages-CSH.html" /> 
 <!--Rename-->
-<!--displays Refactor Code for Renamed File(s) dialog box after in-place rename of file-->
+<!--displays Rename Class or Rename Package dialog box after in-place rename of class or package-->
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/renameClass.html" />  
 <!--these four display Rename dialog box when you choose Refactor | Rename on a Projects/Files node or on code element in Source Editor-->
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Method" url="refactor/renameField.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Field" url="refactor/renameField.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaClass" url="refactor/renameClass.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaPackage" url="refactor/renameClass.html" />
-<!--Move Multiple Classes:-->
+<!--Move Multiple Classes dialog box - either from Move Classes command or after manual move-->
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassesUI" url="refactor/moveClass.html" />  
 <!--Move Single Class:-->
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/moveClass.html" /> 
 <mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/encapsulateField.html" /> 
 <!--Change Method Parameters: -->
 <mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/changeParameters.html" /> 
+<!--Extract Method: -->
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractMethodRefactoringUI" url="tbd.html" /> 
+<!--Extract Interface dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractInterfaceRefactoringUI" url="tbd.html" /> 
+<!--Extract Super Class dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractSuperClassRefactoringUI" url="tbd.html" /> 
+<!--Safely Delete dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.SafeDeleteUI" url="tbd.html" /> 
+<!--Pull Up dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.PullUpRefactoringUI" url="tbd.html" /> 
+<!--Push Down dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.PushDownRefactoringUI" url="tbd.html" /> 
+<!--Convert Anonymous Class to Inner dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.AnonymousToInnerRefactoringUI" url="tbd.html" /> 
+<!--Use Supertype Where Possible dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.UseSuperTypeRefactoringUI" url="tbd.html" /> 
+<!--Move Inner to Outer Level dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.InnerToOuterRefactoringUI" url="tbd.html" /> 
+
 <!--Preview Refactoring window: -->
 <mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/previewWindow.html" /> 
 
