@@ -791,7 +791,7 @@ public class LayoutDesigner implements LayoutConstants {
                     }
                 }
                 int x = region.positions[HORIZONTAL][TRAILING] - region.size(HORIZONTAL) / 4  - (badge.getWidth(null) / 2);
-                int y = region.positions[VERTICAL][LEADING] - (badge.getHeight(null));;
+                int y = region.positions[VERTICAL][LEADING] - (badge.getHeight(null));
                 g.drawImage(badge, x, y, null);
             }
         } else {
