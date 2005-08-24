@@ -369,70 +369,38 @@ public final class DocumentModel {
     }
     
     private void updateModel() throws DocumentModelException {
-        long start_time = System.currentTimeMillis(); //measure generation time
-        
-        //create a new transaction
-        modelUpdateTransaction = createTransaction();
-        DocumentChange[] changes = changesWatcher.getDocumentChanges();
-        
-        //clear all elements with an empty body
-        checkForClearedElements();
-        
+        //the entire model update is done under model writeLock
+        writeLock();
         try {
-            //let the model provider to decide what has changed and what to regenerate
-            provider.updateModel(modelUpdateTransaction, this, changes);
-            //commit all changes => update the model and fire events
-            modelUpdateTransaction.commit();
+            //create a new transaction
+            modelUpdateTransaction = createTransaction();
+            DocumentChange[] changes = changesWatcher.getDocumentChanges();
             
-            //clear document changes cache -> if the transaction has been cancelled
-            //the cache is not cleared so next time the changes will be taken into account.
-            changesWatcher.clearChanges();
+            //clear all elements with an empty body
+            checkForClearedElements();
             
-        }catch(DocumentModelException e) {
-            if(debug) System.err.println("[DocumentModelUpdate] " + e.getMessage());
-        }catch(DocumentModelTransactionCancelledException dmcte) {
-            if(debug) System.out.println("[document model] update transaction cancelled.");
-        }
-        
-//        synchronized (modelUpdateLock) {
-        modelUpdateTransaction = null; //states that the model update has already finished
-//            modelUpdateLock.notifyAll();
-//        }
-        
-        if(debug) DocumentModelUtils.dumpElementStructure(getRootElement());
-        if(debug) debugElements();
-        
-        if(debug) System.out.println("[DocumentModel] generated in " + (System.currentTimeMillis() - start_time) + " millis.");
-        
-        //test model consistency -> generate entirely new model and compare it with the incrementally update one
-        if(consistency_check) {
-//            System.out.println(CONST_CHECK_MSG + " generating new model");
-            DocumentModel checkModel = new DocumentModel(doc, provider);
-//            System.out.println(CONST_CHECK_MSG + " model created");
-            if(!checkModel.elements.equals(elements)) {
-                System.out.println(CONST_CHECK_MSG + " CHECK FAILED!");
-                //print the elements in a table
-                Iterator i1 = elements.iterator();
-                Iterator i2 = checkModel.elements.iterator();
-                StringBuffer buf = new StringBuffer();
-                while(i1.hasNext() || i2.hasNext()) {
-                    if(i1.hasNext()) buf.append(i1.next());
-                    if(i2.hasNext()) buf.append("\t\t" + i2.next());
-                    buf.append("\n");
-                }
+            try {
+                //let the model provider to decide what has changed and what to regenerate
+                provider.updateModel(modelUpdateTransaction, this, changes);
+                //commit all changes => update the model and fire events
+                modelUpdateTransaction.commit();
                 
-                System.out.println("Elements <original model>\t\t<test model>:\n");
-                System.out.println(buf.toString());
+                //clear document changes cache -> if the transaction has been cancelled
+                //the cache is not cleared so next time the changes will be taken into account.
+                changesWatcher.clearChanges();
                 
-                System.out.println("\n\nOriginal DocumentModel\n========================\n");
-                DocumentModelUtils.dumpElementStructure(getRootElement());
-                System.out.println("Test DocumentModel\n========================\n");
-                DocumentModelUtils.dumpElementStructure(checkModel.getRootElement());
-            } else
-                System.out.println(CONST_CHECK_MSG + " model is OK");
+            }catch(DocumentModelException e) {
+                if(debug) System.err.println("[DocumentModelUpdate] " + e.getMessage());
+            }catch(DocumentModelTransactionCancelledException dmcte) {
+                if(debug) System.out.println("[document model] update transaction cancelled.");
+            }
             
-            checkModel.dispose();
-            checkModel = null;
+            modelUpdateTransaction = null; //states that the model update has already finished
+            
+            if(debug) DocumentModelUtils.dumpElementStructure(getRootElement());
+            
+        }finally{
+            writeUnlock();
         }
         
     }
@@ -442,12 +410,17 @@ public final class DocumentModel {
      * manually after each elements change. This allows me to resort elements after a document change to
      * keep correct he eleements order. */
     private void resortElements() {
-        //Collections.sort(elements, ELEMENTS_COMPARATOR);
-        ArrayList list = new ArrayList(elements);
-        elements.clear();
-        Iterator i = list.iterator();
-        while(i.hasNext()) {
-            elements.add(i.next());
+        //the resort hase to lock the model for access since it modifies the elements order
+        writeLock();
+        try {
+            ArrayList list = new ArrayList(elements);
+            elements.clear();
+            Iterator i = list.iterator();
+            while(i.hasNext()) {
+                elements.add(i.next());
+            }
+        } finally {
+            writeUnlock();
         }
     }
     
@@ -771,39 +744,33 @@ public final class DocumentModel {
             //test if the transaction has been cancelled and if co throw TransactionCancelledException
             if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
             
-            writeLock();
-            try {
-                //XXX not an ideal algorithm :-)
-                //first remove all elements
-                if(debug) System.out.println("\n# commiting REMOVEs");
-                Iterator mods = modifications.iterator();
-                while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                    if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) removeDE(dmm.de);
-                }
-                //then add all new elements
-                //it is better to add the elements from roots to leafs
-                if(debug) System.out.println("\n# commiting ADDs");
-                mods = modifications.iterator();
-                TreeSet sortedAdds = new TreeSet(ELEMENTS_COMPARATOR);
-                while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                    if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
-                }
-                Iterator addsIterator = sortedAdds.iterator();
-                while(addsIterator.hasNext()) {
-                    addDE((DocumentElement)addsIterator.next());
-                }
-                
-                if(debug) System.out.println("\n# commiting UPDATESs");
-                mods = modifications.iterator();
-                while(mods.hasNext()) {
-                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                    if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDE(dmm.de);
-                }
-                
-            }finally{
-                writeUnlock();
+            //XXX not an ideal algorithm :-)
+            //first remove all elements
+            if(debug) System.out.println("\n# commiting REMOVEs");
+            Iterator mods = modifications.iterator();
+            while(mods.hasNext()) {
+                DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) removeDE(dmm.de);
+            }
+            //then add all new elements
+            //it is better to add the elements from roots to leafs
+            if(debug) System.out.println("\n# commiting ADDs");
+            mods = modifications.iterator();
+            TreeSet sortedAdds = new TreeSet(ELEMENTS_COMPARATOR);
+            while(mods.hasNext()) {
+                DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
+            }
+            Iterator addsIterator = sortedAdds.iterator();
+            while(addsIterator.hasNext()) {
+                addDE((DocumentElement)addsIterator.next());
+            }
+            
+            if(debug) System.out.println("\n# commiting UPDATESs");
+            mods = modifications.iterator();
+            while(mods.hasNext()) {
+                DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDE(dmm.de);
             }
             
             if(debug) System.out.println("# commit finished\n");
