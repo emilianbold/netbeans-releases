@@ -13,9 +13,12 @@
 
 package gui.menu;
 
+import gui.Utilities;
+
 import org.netbeans.performance.test.guitracker.ActionTracker;
 
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.EditorOperator;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -37,6 +40,8 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     
     private JMenuOperator testedMenu;
     
+    private EditorOperator editor;
+
     /** Creates a new instance of MainMenu */
     public MainMenu(String testName) {
         super(testName);
@@ -60,6 +65,8 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         suite.addTest(new MainMenu("testFileMenu", "File main menu"));
         suite.addTest(new MainMenu("testEditMenu", "Edit main menu"));
         suite.addTest(new MainMenu("testViewMenu", "View main menu"));
+        suite.addTest(new MainMenu("testGoToMenu", "GoTo main menu"));
+        suite.addTest(new MainMenu("testSourceMenu", "Source main menu"));
         suite.addTest(new MainMenu("testBuildMenu", "Build main menu"));
         suite.addTest(new MainMenu("testRunMenu", "Debug main menu"));
         suite.addTest(new MainMenu("testRefactoringMenu", "Refactoring main menu"));
@@ -75,27 +82,35 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
     }
     
     public void testEditMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/Edit");
+        testMenuWithJava("org.netbeans.core.Bundle","Menu/Edit");
     }
     
     public void testViewMenu(){
-        testMenu("org.netbeans.core.Bundle","Menu/View");
+        testMenuWithJava("org.netbeans.core.Bundle","Menu/View");
+    }
+    
+    public void testGoToMenu(){
+        testMenuWithJava("org.netbeans.core.Bundle","Menu/GoTo");
+    }
+    
+    public void testSourceMenu(){
+        testMenuWithJava("org.netbeans.core.Bundle","Menu/Source");
     }
     
     public void testBuildMenu(){
-        testMenu("org.netbeans.modules.project.ui.Bundle","Menu/BuildProject");
+        testMenuWithJava("org.netbeans.modules.project.ui.Bundle","Menu/BuildProject");
     }
     
     public void testRunMenu(){
-        testMenu("org.netbeans.modules.project.ui.Bundle","Menu/RunProject");
+        testMenuWithJava("org.netbeans.modules.project.ui.Bundle","Menu/RunProject");
     }
     
     public void testRefactoringMenu(){
-        testMenu("org.netbeans.modules.refactoring.ui.Bundle","LBL_Action");
+        testMenuWithJava("org.netbeans.modules.refactoring.ui.Bundle","LBL_Action");
     }
     
     public void testVersioningMenu(){
-        testMenu("org.netbeans.modules.versioning.system.cvss.Bundle","Menu/CVS");
+        testMenuWithJava("org.netbeans.modules.versioning.system.cvss.Bundle","Menu/CVS");
     }
     
     public void testWindowMenu(){
@@ -112,6 +127,13 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         doMeasurement();
     }
     
+    protected void testMenuWithJava(String bundle, String menu) {
+        if(editor == null) {
+            editor = Utilities.openJavaFile();
+            waitNoEvent(5000);
+        }
+        testMenu(bundle, menu);
+    }
     
     protected void testMenu(String bundle, String menu) {
         menuPath = org.netbeans.jellytools.Bundle.getStringTrimmed(bundle,menu);
@@ -126,6 +148,13 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
         return testedMenu;
     }
 
+    public void close() {
+        super.close();
+        
+        if(editor != null)
+            editor.close();
+    }
+    
     /**
      * Prepare method have to contain everything that needs to be done prior to
      * repeated invocation of test.
@@ -140,7 +169,8 @@ public class MainMenu extends org.netbeans.performance.test.utilities.Performanc
      * @param args arguments from command line
      */
     public static void main(String[] args) {
-        junit.textui.TestRunner.run(new MainMenu("testVersioningMenu"));
+        junit.textui.TestRunner.run(new MainMenu("testGoToMenu"));
+        junit.textui.TestRunner.run(new MainMenu("testSourceMenu"));
     }
     
 }

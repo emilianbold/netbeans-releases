@@ -36,7 +36,7 @@ public class MeasureDialogs  {
  
         suite.addTest(new ModuleManager("measureTime", "Module Manager dialog open"));
         suite.addTest(new ServerManager("measureTime", "Server Manager dialog open"));
-        suite.addTest(new TemplateManager("measureTime", "Server Manager dialog open"));
+        suite.addTest(new TemplateManager("measureTime", "Template Manager dialog open"));
         
         suite.addTest(new Options("measureTime", "Options dialog open"));
  
