@@ -239,6 +239,7 @@ public class LayerUtils {
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private boolean saving;
         public CookieImpl(FileObject f) {
+            //System.err.println("new CookieImpl for " + f);
             this.f = f;
             f.addFileChangeListener(FileUtil.weakFileChangeListener(this, f));
         }
@@ -257,6 +258,7 @@ public class LayerUtils {
         public TreeDocumentRoot openDocumentRoot() throws IOException, TreeException {
             if (root == null) {
                 try {
+                    //System.err.println("openDocumentRoot: really opening");
                     boolean oldDirty = dirty;
                     int oldStatus = getStatus();
                     root = new XMLParsingSupport().parse(new InputSource(f.getURL().toExternalForm()));
@@ -274,6 +276,7 @@ public class LayerUtils {
                 }
                 ((TreeObject) root).addPropertyChangeListener(new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
+                        //System.err.println("tree modified");
                         modified();
                     }
                 });
@@ -290,6 +293,7 @@ public class LayerUtils {
             pcs.removePropertyChangeListener(listener);
         }
         private void modified() {
+            //System.err.println("modified(): dirty=" + dirty + " in " + Thread.currentThread().getName() + " for " + this);
             if (!dirty) {
                 dirty = true;
                 pcs.firePropertyChange(PROP_DIRTY, false, true);
@@ -299,11 +303,13 @@ public class LayerUtils {
             return dirty;
         }
         public synchronized void save() throws IOException {
+            //System.err.println("save(): dirty=" + dirty + " in " + Thread.currentThread().getName() + " for " + this);
             if (root == null || !dirty) {
                 return;
             }
             assert !saving;
             saving = true;
+            //System.err.println("saving");
             try {
                 FileLock lock = f.lock();
                 try {
@@ -320,6 +326,7 @@ public class LayerUtils {
                 }
             } finally {
                 saving = false;
+                //System.err.println("!saving in " + Thread.currentThread().getName() + " for " + this);
             }
             dirty = false;
             pcs.firePropertyChange(PROP_DIRTY, true, false);
@@ -343,6 +350,7 @@ public class LayerUtils {
             assert false;
         }
         private synchronized void changed() {
+            //System.err.println("changed on disk; saving=" + saving + " in " + Thread.currentThread().getName() + " for " + this);
             if (saving) {
                 return;
             }
@@ -368,6 +376,7 @@ public class LayerUtils {
         private boolean autosave;
         
         LayerHandle(NbModuleProject project) {
+            //System.err.println("new LayerHandle for " + project);
             this.project = project;
         }
         
@@ -377,7 +386,7 @@ public class LayerUtils {
          * Just call {@link #save} when you are done so the modified XML document is saved
          * (or the user can save it explicitly if you don't).
          */
-        public FileSystem layer() {
+        public synchronized FileSystem layer() {
             if (fs == null) {
                 FileObject xml = getLayerFile();
                 if (xml == null) {
@@ -402,27 +411,11 @@ public class LayerUtils {
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }
-                fs.addFileChangeListener(new FileChangeListener() {
-                    public void fileAttributeChanged(FileAttributeEvent fe) {
-                        changed();
-                    }
-                    public void fileChanged(FileEvent fe) {
-                        changed();
-                    }
-                    public void fileDataCreated(FileEvent fe) {
-                        changed();
-                    }
-                    public void fileDeleted(FileEvent fe) {
-                        changed();
-                    }
-                    public void fileFolderCreated(FileEvent fe) {
-                        changed();
-                    }
-                    public void fileRenamed(FileRenameEvent fe) {
-                        changed();
-                    }
-                    private void changed() {
-                        if (autosave) {
+                cookie.addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        //System.err.println("changed in mem");
+                        if (autosave && SavableTreeEditorCookie.PROP_DIRTY.equals(evt.getPropertyName())) {
+                            //System.err.println("  will save...");
                             try {
                                 save();
                             } catch (IOException e) {

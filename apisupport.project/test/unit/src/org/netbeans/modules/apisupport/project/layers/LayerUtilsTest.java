@@ -76,7 +76,7 @@ public class LayerUtilsTest extends LayerTestBase {
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
         FileSystem fs = handle.layer();
         handle.setAutosave(true);
-        fs.getRoot().createData("foo");
+        FileObject foo = fs.getRoot().createData("foo");
         FileObject layerXML = handle.getLayerFile();
         String xml =
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -85,6 +85,16 @@ public class LayerUtilsTest extends LayerTestBase {
                 "    <file name=\"foo\"/>\n" +
                 "</filesystem>\n";
         assertEquals("saved automatically", xml, TestBase.slurp(layerXML));
+        foo.setAttribute("a", Boolean.TRUE);
+        xml =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE filesystem PUBLIC \"-//NetBeans//DTD Filesystem 1.1//EN\" \"http://www.netbeans.org/dtds/filesystem-1_1.dtd\">\n" +
+                "<filesystem>\n" +
+                "    <file name=\"foo\">\n" +
+                "        <attr name=\"a\" boolvalue=\"true\"/>\n" +
+                "    </file>\n" +
+                "</filesystem>\n";
+        assertEquals("saved automatically from an attribute change too", xml, TestBase.slurp(layerXML));
     }
     
     // XXX testInitiallyInvalidLayer
