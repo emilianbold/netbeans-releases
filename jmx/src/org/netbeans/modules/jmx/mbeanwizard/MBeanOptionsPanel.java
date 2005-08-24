@@ -379,6 +379,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
 
         browseButton.setText("jButton1");
         browseButton.setEnabled(false);
+        browseButton.setName("browseButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         classSelectionJPanel.add(browseButton, gridBagConstraints);
