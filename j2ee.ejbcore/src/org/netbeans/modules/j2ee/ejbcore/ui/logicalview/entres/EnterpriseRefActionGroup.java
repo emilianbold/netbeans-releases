@@ -42,7 +42,7 @@ public class EnterpriseRefActionGroup extends NodeAction implements Presenter.Po
             SystemAction.get(CallEjbAction.class),
             SystemAction.get(UseDatabaseAction.class),
             SystemAction.get(SendJMSMessageAction.class),
-//            SystemAction.get(SendEmailAction.class)
+            SystemAction.get(SendEmailAction.class)
         };
     }
     
