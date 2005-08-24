@@ -147,7 +147,9 @@ public class AnnotationsAction extends AbstractSystemAction {
             EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
             if (ec != null) {
                 JEditorPane[] panes = ec.getOpenedPanes();
-                return panes[0];
+                if (panes != null && panes.length > 0) {
+                    return panes[0];
+                }
             }
         }
         return null;
