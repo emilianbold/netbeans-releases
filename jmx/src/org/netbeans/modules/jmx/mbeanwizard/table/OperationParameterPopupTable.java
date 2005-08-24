@@ -147,7 +147,7 @@ public class OperationParameterPopupTable extends JTable {
             JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
             Object o = getModel().getValueAt(row,column);
             typeBox.setSelectedItem(o);
-            return new ComboBoxRenderer(typeBox);
+            return new ComboBoxRenderer(typeBox,true,true);
         }
         
         return super.getCellRenderer(row,column);
