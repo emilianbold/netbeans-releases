@@ -652,6 +652,16 @@ public class ListView extends JScrollPane implements Externalizable {
             setupSearch();
         }
 
+        public void addNotify() {
+            super.addNotify();
+            ViewTooltips.register(this);
+        }
+        
+        public void removeNotify() {
+            super.removeNotify();
+            ViewTooltips.unregister(this);
+        }        
+
         protected void processFocusEvent(FocusEvent fe) {
             super.processFocusEvent(fe);
             repaintSelection();

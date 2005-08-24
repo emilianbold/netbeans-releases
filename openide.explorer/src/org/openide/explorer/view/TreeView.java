@@ -12,6 +12,8 @@
  */
 package org.openide.explorer.view;
 
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
@@ -1435,6 +1437,16 @@ public abstract class TreeView extends JScrollPane {
             }
 
             setupSearch();
+        }
+
+        public void addNotify() {
+            super.addNotify();
+            ViewTooltips.register(this);
+        }
+        
+        public void removeNotify() {
+            super.removeNotify();
+            ViewTooltips.unregister(this);
         }
 
         public void updateUI() {

@@ -359,6 +359,12 @@ class HtmlLabelUI extends LabelUI {
                 bg = Color.WHITE;
             }
         }
+        if (fg == null) {
+            fg = UIManager.getColor("textText");
+            if (fg == null) {
+                fg = Color.BLACK;
+            }
+        }
 
         if (Color.BLACK.equals(fg) && Color.WHITE.equals(fg)) {
             return fg;
