@@ -61,6 +61,8 @@ public final class UIUtils {
 
      public static final Map getHints() {
         //XXX should do this in update() in the UI instead
+        //Note for this method we do NOT want only text antialiasing - we 
+        //want antialiased curves.
         if (hintsMap == null) {
             hintsMap = new HashMap();
             hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -71,7 +73,9 @@ public final class UIUtils {
     
     public static final void configureRenderingHints (Graphics g) {
         if (noAntialias) return;
-        ((Graphics2D)g).addRenderingHints(getHints());
+        Graphics2D g2d = (Graphics2D) g;
+        
+        g2d.addRenderingHints(getHints());
     }
 
     public static Image loadImage (String s) {

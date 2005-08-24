@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -180,15 +180,16 @@ public class BaseOptions extends OptionSupport {
     private static final boolean debugFormat
     = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
     
-    private static final Map textAntialiasingHintsMap = new HashMap();
+    private static final Map textAntialiasingHintsMap;
     static {
-        // Commented due to issue 59273
-        // textAntialiasingHintsMap.put(RenderingHints.KEY_ANTIALIASING,
-        //     RenderingHints.VALUE_ANTIALIAS_ON);
-        textAntialiasingHintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
-            RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        // textAntialiasingHintsMap.put(RenderingHints.KEY_FRACTIONALMETRICS,
-        //     RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
+        Map defaultHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
+                "awt.font.desktophints")); //NOI18N        
+        textAntialiasingHintsMap = defaultHints == null ? (Map) new HashMap() : 
+            defaultHints;
+        if (defaultHints == null) {
+            textAntialiasingHintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        }
     }
 
     
@@ -1138,6 +1139,9 @@ public class BaseOptions extends OptionSupport {
         if (val != null) {
             return val.booleanValue();
         } else {
+            //XXX this prop is not used anymore, but anyway, I believe
+            //it should have been swing.aatext - I've never seen
+            //javax.aatext.  -Tim
             // #56234: Check -Djavax.aatext=true
             if (Boolean.getBoolean("javax.aatext")) {
                 return true;
@@ -1148,9 +1152,21 @@ public class BaseOptions extends OptionSupport {
                     // On OSX, default to true
                     return true;
                 } else {
-                    return false;
+                    return isSystemAntialias();
                 }
             }
+        }
+    }
+    
+    private static boolean isSystemAntialias() {
+        Map systemHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
+                "awt.font.desktophints")); //NOI18N
+        if (systemHints != null) {
+            Object o = systemHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
+            boolean result = o != null && !RenderingHints.VALUE_ANTIALIAS_OFF.equals(o);
+            return result;
+        } else {
+            return false;
         }
     }
     

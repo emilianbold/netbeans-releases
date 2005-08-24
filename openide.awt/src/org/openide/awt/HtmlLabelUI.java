@@ -160,11 +160,15 @@ class HtmlLabelUI extends LabelUI {
     }
 
     static final Map getHints() {
+        //XXX We REALLY need to put this in a graphics utils lib
         if (hintsMap == null) {
-            hintsMap = new HashMap();
-            hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            //Thanks to Phil Race for making this possible
+            hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
+            if (hintsMap == null) {
+                hintsMap = new HashMap();
+                hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            }
         }
-
         return hintsMap;
     }
 
