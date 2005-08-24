@@ -123,13 +123,21 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <code-name-base>org.openidex.util</code-name-base>
-                    <build-prerequisite/>
+                    <build-prerequisite/> 
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>3.3</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>                      
+                <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>          
             </module-dependencies>
             <public-packages>
                 <!-- friend API - used by Utilities/Project -->

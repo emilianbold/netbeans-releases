@@ -18,8 +18,11 @@ package org.netbeans.modules.search;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
@@ -74,6 +77,11 @@ final class SearchTask implements Runnable {
     
     /** Runs the search task. */
     public void run() {
+        
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"));
+        progressHandle.start();
+        
         /* Start the actual search: */
         ensureResultModelExists();
         if (searchGroup == null) {
@@ -98,6 +106,8 @@ final class SearchTask implements Runnable {
             resultModel.searchException(ex);
         }
         finished = true;
+        
+        progressHandle.finish();
     }
 
     /**
