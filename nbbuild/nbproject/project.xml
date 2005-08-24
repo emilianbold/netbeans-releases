@@ -273,6 +273,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../libs/commons_logging</project>
                 <project>../libs/j2eeeditor</project>
                 <project>../libs/jsch</project>
+                <project>../libs/swing-layout</project>
                 <project>../libs/xerces</project>
                 <project>../mdr/jmi</project>
                 <project>../mdr/mdrapi</project>

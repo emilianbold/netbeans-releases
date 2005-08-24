@@ -816,7 +816,7 @@ public class FormEditor {
             // [TODO maybe we should check if the library isn't there already]
             ClassSource cs = new ClassSource("org.jdesktop.layout.*", // class name actually not needed // NOI18N
                                              new String[] { ClassSource.LIBRARY_SOURCE },
-                                             new String[] { "layoutext" }); // NOI18N
+                                             new String[] { "swing-layout" }); // NOI18N
             return ClassPathUtils.updateProject(formDataObject.getFormFile(), cs);
         }
         catch (IOException ex) {

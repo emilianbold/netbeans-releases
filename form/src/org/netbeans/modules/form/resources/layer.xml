@@ -17,7 +17,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="absolutelayout.xml" url="absolutelayout.xml"/>
-            <file name="layoutext.xml" url="layoutext.xml"/>
         </folder>
     </folder>
 

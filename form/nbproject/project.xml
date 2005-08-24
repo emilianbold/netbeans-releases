@@ -233,6 +233,14 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.jdesktop.layout</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages>
                 <!-- XXX temporary: for use from i18n-form until it uses impl deps -->
@@ -241,10 +249,6 @@ Microsystems, Inc. All Rights Reserved.
             <class-path-extension>
                 <runtime-relative-path>ext/AbsoluteLayout.jar</runtime-relative-path>
                 <binary-origin>release/modules/ext/AbsoluteLayout.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/swing-layout.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/swing-layout.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
