@@ -125,7 +125,12 @@ public class CreateModuleXML extends Task {
                     Manifest m = jar.getManifest();
                     Attributes attr = m.getMainAttributes();
                     String codename = attr.getValue("OpenIDE-Module");
-                    if (codename == null) throw new BuildException("Missing manifest tag \"OpenIDE-Module\". File " + module + " is not a module.");
+                    if (codename == null) {
+                        throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
+                    }
+                    if (codename.endsWith(" ")) { // #62887
+                        throw new BuildException("Illegal trailing space in OpenIDE-Module value from " + module, getLocation());
+                    }
                     int idx = codename.lastIndexOf('/');
                     String codenamebase;
                     int rel;
@@ -134,11 +139,7 @@ public class CreateModuleXML extends Task {
                         rel = -1;
                     } else {
                         codenamebase = codename.substring(0, idx);
-                        try {
-                            rel = Integer.parseInt(codename.substring(idx + 1).trim());
-                        } catch (NumberFormatException nfe) {
-                            throw new BuildException("Unable to parse integer number of release from module codename string \""+codename+"\". Check module's manifest key \"OpenIDE-Module:\" for trailing spaces.",nfe,getLocation());
-                        } 
+                        rel = Integer.parseInt(codename.substring(idx + 1));
                     }
                     File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                     if (xml.exists()) {
