@@ -208,6 +208,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../diff</project>
                 <project>../editor</project>
                 <project>../editor/bookmarks</project>
+                <project>../editor/codetemplates</project>
                 <project>../editor/completion</project>
                 <project>../editor/errorstripe</project>
                 <project>../editor/errorstripe/api</project>
