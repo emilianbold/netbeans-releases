@@ -28,6 +28,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
@@ -121,7 +122,11 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     
     private void addElementsRecursivelly(Vector changes, DocumentElement de) {
         //add myself
-        if(!de.equals(model.getRootElement())) changes.add(new DocumentModelChangeInfo(de, DocumentModelChangeInfo.ELEMENT_ADDED));
+        try {
+            if(!de.equals(model.getRootElement()) && !isOneLineElement(de)) changes.add(new DocumentModelChangeInfo(de, DocumentModelChangeInfo.ELEMENT_ADDED));
+        }catch(BadLocationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
         //add my children
         Iterator children = de.getChildren().iterator();
         while(children.hasNext()) {
@@ -131,27 +136,88 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     }
     
     public void documentElementAdded(DocumentElement de) {
-        //add all containers except root element
-        if(!de.equals(model.getRootElement())) changes.add(new DocumentModelChangeInfo(de, DocumentModelChangeInfo.ELEMENT_ADDED));
-        restartTimer();
+        checkElement2FoldConsistency(de);
     }
     
     public void documentElementRemoved(DocumentElement de) {
         if(!de.equals(model.getRootElement())) changes.add(new DocumentModelChangeInfo(de, DocumentModelChangeInfo.ELEMENT_REMOVED));
+        checkElement2FoldConsistency(de);
         restartTimer();
     }
     
     public void documentElementChanged(DocumentElement de) {
-        //XXX we need to handle this - when a fold is changed from 
-        //one-line to more-lines we have to add it or remove (in the opposite 
-        //situation)
+        checkElement2FoldConsistency(de);
+    }
+    
+    public void checkElement2FoldConsistency(DocumentElement de) {
+        //get leaf element for the changed position (got from the changed element)
+        //this is has to be done since I need to recursivelly check all element's
+        //ancestor, which cannot be done if the element was removed (in such situation
+        //I cannot get parent).
+        DocumentElement tested = model.getLeafElementForOffset(de.getStartOffset());
+        boolean restartTimer = false;
+        do {
+            //do not check root element
+            if(tested.equals(model.getRootElement())) break ;
+            
+            //check consistency of this
+            try {
+                Fold existingFold = getFold(getOperation().getHierarchy(), tested);
+                boolean oneLineElement = isOneLineElement(tested);
+                if(existingFold != null && oneLineElement) {
+                    //there is already a fold for the element,
+                    //but the element was changed so now its end and start offsets
+                    //are on the same line => remove the fold
+                    changes.add(new DocumentModelChangeInfo(tested, DocumentModelChangeInfo.ELEMENT_REMOVED));
+                    restartTimer = true;
+                }
+                if(existingFold == null && !oneLineElement) {
+                    //there wasn't any fold for the element because its start == end,
+                    //now the situation changed => add a fold
+                    changes.add(new DocumentModelChangeInfo(tested, DocumentModelChangeInfo.ELEMENT_ADDED));
+                    restartTimer = true;
+                }
+                if(existingFold != null && !oneLineElement) {
+                    //there is already a fold, test if the fold corresponds to the element
+                    //in the case of xml tag check also the element&fold name
+                    if(getFoldTypeForElement(tested) != existingFold.getType()
+                        || !existingFold.getDescription().equals(tested.getName())) {
+                        //recreate the fold -- looks silly but works - there is no check for type and name in the updateFolds() method
+                        changes.add(new DocumentModelChangeInfo(tested, DocumentModelChangeInfo.ELEMENT_REMOVED));
+                        changes.add(new DocumentModelChangeInfo(tested, DocumentModelChangeInfo.ELEMENT_ADDED));
+                    }
+                }
+                
+            }catch(BadLocationException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            
+            tested = tested.getParentElement(); //switch to parent
+        } while(tested != null);
         
+        if(restartTimer) restartTimer(); //restart if necessary
+    }
+    
+    private FoldType getFoldTypeForElement(DocumentElement de) {
+        //create folds of appropriate type
+        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
+        || de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
+            return  XmlFoldTypes.TAG;
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+            return XmlFoldTypes.PI;
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+            return XmlFoldTypes.DOCTYPE;
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_COMMENT)) {
+            return XmlFoldTypes.COMMENT;
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+            return XmlFoldTypes.CDATA;
+        }
+        return null;
     }
     
     public void documentElementAttributesChanged(DocumentElement de) {
-        ;
+        //do not handle
     }
-    
     
     private void restartTimer() {
         //test whether the FoldManager.release() was called.
@@ -193,15 +259,15 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                     while(changesItr.hasNext()) {
                         DocumentModelChangeInfo chi = (DocumentModelChangeInfo)changesItr.next();
                         DocumentElement de = chi.getDocumentElement();
-                        if(chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_ADDED 
+                        if(chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_ADDED
                                 && de.getStartOffset() < de.getEndOffset()
                                 && !de.getType().equals(XMLDocumentModelProvider.XML_CONTENT)) {
                             String foldName = "";
-                            FoldType type = XmlFoldTypes.TEXT; //fold of this type should not be ever used 
+                            FoldType type = XmlFoldTypes.TEXT; //fold of this type should not be ever used
                             
-                            //create folds of appropriate type 
-                            if(de.getType().equals(XMLDocumentModelProvider.XML_TAG) 
-                                    || de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
+                            //create folds of appropriate type
+                            if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
+                            || de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
                                 foldName = "<"+de.getName()+">";
                                 type = XmlFoldTypes.TAG;
                             } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
@@ -225,19 +291,10 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
                         } else if (chi.getChangeType() == DocumentModelChangeInfo.ELEMENT_REMOVED) {
                             if(debug) System.out.println("[XML folding] about to remove fold for " + chi.getDocumentElement());
                             //find appropriate fold for the document element
-                            //XXX this is very uneffective - I need a method like
-                            //FoldUtilitites.getFold(int startOffset, int endOffset);
-                            Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold()).iterator();
-                            while(allFolds.hasNext()) {
-                                Fold f = (Fold)allFolds.next();
-                                if(debug) System.out.println("testing fold " + f);
-                                if((f.getStartOffset()) == de.getStartOffset() &&
-                                        (f.getEndOffset()-1) == de.getEndOffset()) {
-                                    //remove the fold
-                                    if(debug) System.out.println("[XML folding] removing fold " + chi.getDocumentElement());
-                                    getOperation().removeFromHierarchy(f, fhTran);
-                                    break; //there should be only one fold for document element
-                                }
+                            Fold existingFold = getFold(fh, de);
+                            if(existingFold != null) {
+                                if(debug) System.out.println("[XML folding] removing fold " + chi.getDocumentElement());
+                                getOperation().removeFromHierarchy(existingFold, fhTran);
                             }
                         }
                     }
@@ -256,6 +313,25 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
         changes.clear();
     }
     
+    private Fold getFold(FoldHierarchy fh, DocumentElement de) {
+        int startOffset = de.getStartOffset();
+        int endOffset = de.getEndOffset();
+        Iterator allFolds = FoldUtilities.findRecursive(fh.getRootFold()).iterator();
+        while(allFolds.hasNext()) {
+            Fold f = (Fold)allFolds.next();
+            if(debug) System.out.println("testing fold " + f);
+            if((f.getStartOffset()) == startOffset &&
+                    (f.getEndOffset()-1) == endOffset) {
+                return f;
+            }
+        }
+        return null;
+    }
+    
+    private boolean isOneLineElement(DocumentElement de) throws BadLocationException {
+        BaseDocument bdoc = (BaseDocument)de.getDocument();
+        return Utilities.getLineOffset(bdoc, de.getStartOffset()) == Utilities.getLineOffset(bdoc, de.getEndOffset());
+    }
     
 //    private int getSetting(String settingName){
 //        JTextComponent tc = getOperation().getHierarchy().getComponent();
