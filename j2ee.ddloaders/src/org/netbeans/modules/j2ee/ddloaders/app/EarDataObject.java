@@ -50,7 +50,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.ddloaders.common.DD2beansDataObject;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+
 
 /** Represents a DD object in the Repository.
  *
@@ -119,8 +119,8 @@ public class EarDataObject extends DD2beansDataObject
             sources.addChangeListener (this);
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (int i = 0; i < groups.length; i++) {
-                EjbJarImplementation jarImpl = (EjbJarImplementation) project.getLookup().lookup(EjbJarImplementation.class);
-                if (jarImpl.getDeploymentDescriptor() != null) {
+                org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
+                if ((ejbModule != null) && (ejbModule.getDeploymentDescriptor() != null)) {
                     try {
                         FileObject fo = groups [i].getRootFolder ();
                         srcRootList.add (groups [i].getRootFolder ());

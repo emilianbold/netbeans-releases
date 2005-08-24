@@ -25,6 +25,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 import org.openide.actions.FindAction;
@@ -56,7 +57,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
-import org.netbeans.modules.j2ee.common.ui.*;
+
 
 class ArchiveViews {
         
@@ -130,7 +131,7 @@ class ArchiveViews {
             } else if (key == KEY_DOC_BASE) {
                 n = new DocBaseNode (getFolder(EarProjectProperties.META_INF));
             } else if (key == KEY_SETUP_DIR) {
-                n = new ServerResourceNode(project);
+                n = J2eeProjectView.createServerResourcesNode(project);
             }
             return n == null ? new Node[0] : new Node[] {n};
         }

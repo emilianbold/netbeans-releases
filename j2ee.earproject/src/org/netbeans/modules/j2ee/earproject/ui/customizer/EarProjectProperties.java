@@ -35,7 +35,7 @@ import org.netbeans.api.java.platform.Specification;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.earproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -552,7 +552,7 @@ public class EarProjectProperties {
         for (int i = 0; i < moduleProjects.length; i++) {
             AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType(
                     moduleProjects[i],
-                    J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE); //the artifact type is the some for both ejb and war projects
+                    EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE); //the artifact type is the some for both ejb and war projects
             if (null != artifacts)
                 artifactList.addAll(Arrays.asList(artifacts));
             

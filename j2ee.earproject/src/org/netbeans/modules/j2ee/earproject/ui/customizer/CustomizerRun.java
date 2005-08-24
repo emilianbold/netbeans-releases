@@ -26,10 +26,8 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.ArchiveCustomizerPanel;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualPropertySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-//import org.netbeans.modules.j2ee.common.ui.customizer.VisualArchiveIncludesSupport;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.VisualClasspathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-//import org.netbeans.modules.j2ee.common.ui.customizer.CustomizerGeneral;
 
 public class CustomizerRun extends JPanel implements ArchiveCustomizerPanel, HelpCtx.Provider {
     

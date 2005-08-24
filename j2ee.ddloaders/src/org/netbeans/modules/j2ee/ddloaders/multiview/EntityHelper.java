@@ -15,12 +15,12 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddCmpFieldAction;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddFinderMethodAction;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSelectMethodAction;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.ui.CallEjb;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddFinderMethodAction;
+import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action.AddSelectMethodAction;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityGenerator;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.JavaClass;
@@ -67,7 +67,7 @@ public class EntityHelper extends EntityAndSessionHelper {
             assert beanClass != null;
             entityMethodController.registerClassForSave(beanClass);
             Method prototype = JMIUtils.createMethod(beanClass);
-            prototype.setName(Utils.getMethodName(fieldName, get));
+            prototype.setName(EntityMethodController.getMethodName(fieldName, get));
             if (get) {
                 prototype.setType(type);
             } else {
@@ -294,7 +294,7 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public void addCmpField() {
-            new AddCmpFieldAction().addCmpField(getBeanClass(), ejbJarFile);
+            CallEjb.addCmpField(getBeanClass(), ejbJarFile);
             modelUpdatedFromUI();
         }
 
@@ -372,21 +372,12 @@ public class EntityHelper extends EntityAndSessionHelper {
         }
 
         public void addFinderMethod() {
-            new AddFinderMethodAction(null) {
-                protected void performAction(Node[] activatedNodes) {
-                    super.performAction(activatedNodes);
-                }
-            }.performAction(new Node[]{createEntityNode()});
+            CallEjb.addFinderMethod(getBeanClass());
             modelUpdatedFromUI();
         }
 
         public void addSelectMethod() {
-            new AddSelectMethodAction(null) {
-                protected void performAction(Node[] activatedNodes) {
-                    super.performAction(activatedNodes);
-                }
-            }.performAction(new Node[]{createEntityNode()});
-            modelUpdatedFromUI();
+            CallEjb.addSelectMethod(getBeanClass());
         }
 
         public int getFinderMethodCount() {

@@ -13,6 +13,7 @@
 package org.netbeans.modules.j2ee.api.ejbjar;
 
 import java.util.Iterator;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.EjbJarAccessor;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
 import org.openide.filesystems.FileObject;
@@ -73,9 +74,22 @@ public final class EjbJar {
         return null;
     }
 
+    /** Find EjbJar(s) for all ejb modules within a given project.
+     * @return an array of EjbJar instance (empty array if no instance are found).
+     */
+    public static EjbJar [] getEjbJars (Project project) {
+        EjbJarsInProject providers = (EjbJarsInProject) project.getLookup().lookup(EjbJarsInProject.class);
+        if (providers != null) {
+            EjbJar jars [] = providers.getEjbJars();
+            if (jars != null) {
+                return jars;
+            }
+        }
+        return new EjbJar[] {};
+    }
     
     /** J2EE platform version - one of the constants 
-     * defined in {@link org.netbeans.modules.j2ee.api.common.J2eeProjectConstants}.
+     * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
      * @return J2EE platform version
      */
     public String getJ2eePlatformVersion () {

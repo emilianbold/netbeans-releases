@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.j2ee.earproject.ui;
 
-import org.netbeans.modules.j2ee.common.ui.*;
-
 /**
  *
  * @author  vkraemer

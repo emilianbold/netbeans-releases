@@ -32,7 +32,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.UpdateHelper;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.openide.util.NbBundle;

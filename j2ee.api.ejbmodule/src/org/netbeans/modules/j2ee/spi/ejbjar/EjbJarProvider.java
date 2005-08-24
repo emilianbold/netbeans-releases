@@ -19,7 +19,7 @@ import org.openide.filesystems.FileObject;
 /**
  * Provider interface for webmodules.
  * <p>
- * The <code>org.netbeans.modules.web.webapi</code> module registers an
+ * The <code>org.netbeans.modules.j2ee.ejbapi</code> module registers an
  * implementation of this interface to global lookup which looks for the
  * project which owns a file (if any) and checks its lookup for this interface,
  * and if it finds an instance, delegates to it. Therefore it is not normally

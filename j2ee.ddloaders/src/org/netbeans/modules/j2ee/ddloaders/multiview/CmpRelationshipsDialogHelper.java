@@ -20,7 +20,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
 import org.netbeans.modules.j2ee.common.JMIUtils;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Type;

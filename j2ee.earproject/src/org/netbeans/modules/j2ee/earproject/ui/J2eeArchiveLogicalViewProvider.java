@@ -41,7 +41,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 
 import org.netbeans.modules.j2ee.earproject.UpdateHelper;
 import org.openide.loaders.DataFolder;
@@ -55,7 +55,6 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
-import org.netbeans.modules.j2ee.common.ui.*;
 
 /**
  * Support for creating logical views.
@@ -252,7 +251,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     null,
                     ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null ), // NOI18N
                     ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null ), // NOI18N
-                    ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
+                    ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
                     null,
                     CommonProjectActions.setAsMainProjectAction(),
                     CommonProjectActions.openSubprojectsAction(),

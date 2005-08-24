@@ -52,20 +52,11 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.ejbjarproject</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -262,7 +253,7 @@ Microsystems, Inc. All Rights Reserved.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <implementation-version/>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>

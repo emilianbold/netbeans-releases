@@ -25,7 +25,7 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.w3c.dom.Document;
@@ -52,8 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
@@ -61,7 +60,7 @@ import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import java.lang.reflect.Modifier;
-import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 
 /**
  *
@@ -144,10 +143,10 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     public  void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName) {
         //add service endpoint entry to ejb-jar.xml
         DDProvider provider = DDProvider.getDefault();
-        EjbJarImplementation ejbJarImpl = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0];
         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = null;
         try {
-            ejbJar = provider.getDDRoot(ejbJarImpl.getDeploymentDescriptor());
+            ejbJar = provider.getDDRoot(ejbJarModule.getDeploymentDescriptor());
         }
         catch(java.io.IOException e) {
             //FIX-ME: handle this
@@ -178,7 +177,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         beans.addSession(s);
         try {
             // This also saves server specific configuration, if necessary.
-            ejbJar.write(ejbJarImpl.getDeploymentDescriptor());
+            ejbJar.write(ejbJarModule.getDeploymentDescriptor());
         }
         catch(java.io.IOException e) {
             //FIX-ME: handle this
@@ -345,7 +344,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
     
     public void removeServiceEntry(String linkName) {
         //remove ejb  entry in ejb-jar.xml
-        EjbJarImplementation ejbJarImpl = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
+        org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project)[0];
         EjbJar ejbJar = getEjbJar();
         EnterpriseBeans beans = ejbJar.getEnterpriseBeans();
         Session[] sessionBeans = beans.getSession();
@@ -359,7 +358,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             }
         }
         try {
-            ejbJar.write(ejbJarImpl.getDeploymentDescriptor());
+            ejbJar.write(ejbJarModule.getDeploymentDescriptor());
         }
         catch(java.io.IOException e) {
             NotifyDescriptor ndd =
@@ -610,7 +609,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             JavaModel.setClassPath(pkg);
-            JavaClass clazz = JMIUtils.findClass(implBeanClass);
+            JavaClass clazz = Utils.findClass(implBeanClass);
             //remove java.rmi.Remote interface
             for (Iterator it = clazz.getInterfaces().iterator(); it.hasNext();) {
                JavaClass interfaceJavaClass = (JavaClass) it.next();
@@ -620,13 +619,13 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             }
             
             //add javax.ejb.SessionBean interface
-            JavaClass session = JMIUtils.findClass("javax.ejb.SessionBean");
+            JavaClass session = Utils.findClass("javax.ejb.SessionBean");
             clazz.getInterfaces().add(session);
 
             JavaModelPackage jmp = (JavaModelPackage) clazz.refImmediatePackage();
             
             //add javax.ejb.SessionContext field
-            JavaClass sessionCtx = JMIUtils.findClass("javax.ejb.SessionContext");
+            JavaClass sessionCtx = Utils.findClass("javax.ejb.SessionContext");
             Field field = jmp.getField().createField();
             field.setType(sessionCtx);
             field.setName("context");
@@ -643,7 +642,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
                     0,
                     false);
             sessionCtxMethod.getParameters().add(ctxParam);
-            sessionCtxMethod.setType(JMIUtils.resolveType("void"));
+            sessionCtxMethod.setType(Utils.resolveType("void"));
             sessionCtxMethod.setModifiers(Modifier.PUBLIC);
             sessionCtxMethod.setBodyText("context = aContext;");
             clazz.getContents().add(sessionCtxMethod);
@@ -651,28 +650,28 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl, WebServ
             //add ejbActivate method
             Method ejbActivateMethod = jmp.getMethod().createMethod();
             ejbActivateMethod.setName("ejbActivate");
-            ejbActivateMethod.setType(JMIUtils.resolveType("void"));
+            ejbActivateMethod.setType(Utils.resolveType("void"));
             ejbActivateMethod.setModifiers(Modifier.PUBLIC);
             clazz.getContents().add(ejbActivateMethod);
             
             //add ejbPassivate method
             Method ejbPassivateMethod = jmp.getMethod().createMethod();
             ejbPassivateMethod.setName("ejbPassivate");
-            ejbPassivateMethod.setType(JMIUtils.resolveType("void"));
+            ejbPassivateMethod.setType(Utils.resolveType("void"));
             ejbPassivateMethod.setModifiers(Modifier.PUBLIC);
             clazz.getContents().add(ejbPassivateMethod);
             
             //add ejbRemove method
             Method ejbRemoveMethod = jmp.getMethod().createMethod();
             ejbRemoveMethod.setName("ejbRemove");
-            ejbRemoveMethod.setType(JMIUtils.resolveType("void"));
+            ejbRemoveMethod.setType(Utils.resolveType("void"));
             ejbRemoveMethod.setModifiers(Modifier.PUBLIC);
             clazz.getContents().add(ejbRemoveMethod);
             
             //add ejbCreate method
             Method ejbCreateMethod = jmp.getMethod().createMethod();
             ejbCreateMethod.setName("ejbCreate");
-            ejbCreateMethod.setType(JMIUtils.resolveType("void"));
+            ejbCreateMethod.setType(Utils.resolveType("void"));
             ejbCreateMethod.setModifiers(Modifier.PUBLIC);
             clazz.getContents().add(ejbCreateMethod);
         } finally {

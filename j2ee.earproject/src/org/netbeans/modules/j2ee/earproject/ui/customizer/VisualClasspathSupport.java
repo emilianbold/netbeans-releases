@@ -41,7 +41,7 @@ import java.io.File;
 import java.util.*;
 import java.util.List;
 
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 /** Handles adding, removing, editing and reordering of classpath.
@@ -393,7 +393,7 @@ public final class VisualClasspathSupport {
                 // XXX this is hardcoded
                 AntArtifact artifacts[] = AntArtifactChooser.showDialog(master,
                     new String[] { 
-                        J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE,
+                        EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE,
                         WebProjectConstants.ARTIFACT_TYPE_WAR_EAR_ARCHIVE,
                         JavaProjectConstants.ARTIFACT_TYPE_JAR });
                 if ( artifacts != null ) {

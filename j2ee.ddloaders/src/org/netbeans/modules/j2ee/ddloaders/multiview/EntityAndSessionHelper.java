@@ -17,10 +17,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EjbGenerationUtil;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.shared.AbstractMethodController;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.AbstractMethodController;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.openide.filesystems.FileObject;
 
@@ -30,6 +29,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.openide.nodes.Node;
 
 /**
  * @author pfiala
@@ -195,7 +195,7 @@ public abstract class EntityAndSessionHelper implements PropertyChangeListener, 
         return abstractMethodController.getBeanInterface(false, false);
     }
 
-    protected EntityNode createEntityNode() {
+    protected Node createEntityNode() {
         return Utils.createEntityNode(ejbJarFile, sourceClassPath, (Entity) ejb);
     }
 

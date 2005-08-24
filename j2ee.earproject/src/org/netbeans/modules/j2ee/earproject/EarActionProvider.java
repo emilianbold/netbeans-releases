@@ -38,7 +38,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 
 import org.openide.filesystems.FileUtil;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -63,7 +63,7 @@ public class EarActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_RUN, 
         COMMAND_DEBUG, 
-        J2eeProjectConstants.COMMAND_REDEPLOY,
+        EjbProjectConstants.COMMAND_REDEPLOY,
         COMMAND_VERIFY,
         COMMAND_DELETE
     };
@@ -92,7 +92,7 @@ public class EarActionProvider implements ActionProvider {
             commands.put(COMMAND_REBUILD, new String[] {"clean", "dist"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
-            commands.put(J2eeProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
+            commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run-deploy"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
@@ -152,7 +152,7 @@ public class EarActionProvider implements ActionProvider {
         String[] targetNames = (String[])commands.get(command);
         
         //EXECUTION PART
-        if (command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
+        if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
                 return null;
             }
@@ -171,7 +171,7 @@ public class EarActionProvider implements ActionProvider {
                     return null;
                 }
             }
-            if (command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
+            if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N

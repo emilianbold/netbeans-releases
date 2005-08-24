@@ -89,14 +89,8 @@ Microsystems, Inc. All Rights Reserved.
                     <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -322,7 +316,10 @@ Microsystems, Inc. All Rights Reserved.
 
                 <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
             </extra-compilation-unit>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.j2ee.earproject</friend>
+                <package>org.netbeans.modules.web.project.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

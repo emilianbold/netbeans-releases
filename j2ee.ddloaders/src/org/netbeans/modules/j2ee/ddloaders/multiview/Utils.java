@@ -27,9 +27,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.JMIUtils;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.ui.nodes.SourceNodes;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -208,7 +207,7 @@ public class Utils {
         return classPath.findResource(packageToPath(className) + ".java");
     }
 
-    public static EntityNode createEntityNode(FileObject ejbJarFile, ClassPath classPath, Entity entity) {
+    public static Node createEntityNode(FileObject ejbJarFile, ClassPath classPath, Entity entity) {
         //todo:
         //classPath = getSourceClassPath(ejbJarFile);
         EjbJar ejbJar;
@@ -218,7 +217,7 @@ public class Utils {
             notifyError(e);
             return null;
         }
-        return new EntityNode(entity, ejbJar, classPath, ejbJarFile);
+        return J2eeProjectView.getEjbNodesFactory().createEntityNode (entity, ejbJar, classPath, ejbJarFile);
     }
 
     public static ClassPath getSourceClassPath(FileObject ejbJarFile) {
@@ -312,10 +311,6 @@ public class Utils {
         Lookup lookup = createClassRefactoringLookup(fullClassName);
         final Action action = RefactoringActionsFactory.moveClassAction().createContextAwareInstance(lookup);
         action.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
-    }
-
-    public static String getMethodName(String fieldName, boolean get) {
-        return EntityMethodController.getMethodName(fieldName, get);
     }
 
     public static void renameMethod(Method method, String name) {

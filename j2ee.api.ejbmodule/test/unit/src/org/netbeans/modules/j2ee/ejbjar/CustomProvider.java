@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ejbjar;
 
 import java.util.HashMap;
-import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.common.EjbProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.*;
 import org.netbeans.modules.j2ee.spi.ejbjar.*;
 import org.openide.filesystems.FileObject;
@@ -34,7 +34,7 @@ public class CustomProvider implements EjbJarProvider {
         if (file.getExt ().equals ("foo")) {
             EjbJar em  = (EjbJar) cache.get (file.getParent ());
             if (em == null) {
-                em = EjbJarFactory.createEjbJar (new EM (file.getParent (), J2eeProjectConstants.J2EE_14_LEVEL));
+                em = EjbJarFactory.createEjbJar (new EM (file.getParent (), EjbProjectConstants.J2EE_14_LEVEL));
                 cache.put (file.getParent (), em);
             }
             return em;

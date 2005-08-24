@@ -241,6 +241,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../j2ee/debug</project>
                 <project>../j2ee/earproject</project>
                 <project>../j2ee/ejbapi</project>
+                <project>../j2ee/ejbcore</project>
                 <project>../j2ee/ejbfreeform</project>
                 <project>../j2ee/ejbjarproject</project>
                 <project>../j2ee/genericserver</project>

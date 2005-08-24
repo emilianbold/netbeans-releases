@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.j2ee.common;
 
-import org.netbeans.modules.j2ee.common.Transaction;
+
 
 /**
  * @author pfiala

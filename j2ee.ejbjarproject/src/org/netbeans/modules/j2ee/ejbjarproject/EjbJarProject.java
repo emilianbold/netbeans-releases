@@ -31,7 +31,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
@@ -41,6 +41,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbEnterpriseReferenceContainerSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -230,7 +231,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         return eval;
     }
 
-    ReferenceHelper getReferenceHelper () {
+    public ReferenceHelper getReferenceHelper () {
         return this.refHelper;
     }
     
@@ -267,8 +268,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 helper.createCacheDirectoryProvider(),
                 new ProjectWebServicesSupportProvider(),
                 spp,
-                new EnterpriseReferenceContainerImpl(this, helper),
-                new ProjectEjbJarProvider(),
+                EjbEnterpriseReferenceContainerSupport.createEnterpriseReferenceContainer(this, helper),
+                new ProjectEjbJarProvider(this),
                 ejbModule, //implements J2eeModuleProvider
                 new EjbJarActionProvider( this, helper, refHelper ),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
@@ -796,8 +797,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
-                helper.createSimpleAntArtifact(J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_JAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
-                helper.createSimpleAntArtifact(J2eeProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, "dist.ear.jar", helper.getStandardPropertyEvaluator(), "dist-ear", "clean-ear") // NOI18N
+                helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_EJBJAR, "dist.jar", helper.getStandardPropertyEvaluator(), "dist", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(EjbProjectConstants.ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE, "dist.ear.jar", helper.getStandardPropertyEvaluator(), "dist-ear", "clean-ear") // NOI18N
             };
         }
     }

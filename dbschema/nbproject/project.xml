@@ -116,7 +116,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.dbschema.migration.archiver.serializer</package>
                 <package>org.netbeans.modules.dbschema.nodes</package>
                 <package>org.netbeans.modules.dbschema.util</package>
-                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
             </friend-packages>
         </data>

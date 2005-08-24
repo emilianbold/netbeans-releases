@@ -1,6 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2ee.common/1
-X-Comment: j2ee/earproject depends on lots of code in here. If you add a dependency or change the interface increment the impl version number.
-OpenIDE-Module-Implementation-Version: 2
+OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/common/Bundle.properties
 

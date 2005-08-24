@@ -57,7 +57,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.lookup.Lookups;
 
 
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 
@@ -263,7 +263,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_RUN, bundle.getString( "LBL_RunAction_Name" ), null )); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_DEBUG, bundle.getString( "LBL_DebugAction_Name" ), null )); // NOI18N
-            actions.add(ProjectSensitiveActions.projectCommandAction( J2eeProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
+            actions.add(ProjectSensitiveActions.projectCommandAction( EjbProjectConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null )); // NOI18N
             actions.add(null);
             actions.add(CommonProjectActions.setAsMainProjectAction());
             actions.add(CommonProjectActions.openSubprojectsAction());

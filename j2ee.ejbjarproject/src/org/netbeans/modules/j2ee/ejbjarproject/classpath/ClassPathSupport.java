@@ -49,8 +49,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 public class ClassPathSupport {
     
     public final static String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
-    // AB: I'm not sure this is used at all in the EJB project
-    public final static String ELEMENT_ADDITIONAL_LIBRARIES = "ejb-module-additional-libraries"; // NOI18N
     
     private static final String ATTR_FILES = "files"; //NOI18N
     private static final String ATTR_DIRS = "dirs"; //NOI18N

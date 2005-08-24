@@ -1,7 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.web.project
-X-Comment: The j2ee/earproject depends on the WebProjectGenerator.createProject method. If you add a dependency or change the interface increment the impl version number.
-OpenIDE-Module-Implementation-Version: 2
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Layer: org/netbeans/modules/web/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/project/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/project/WebProjectModule.class

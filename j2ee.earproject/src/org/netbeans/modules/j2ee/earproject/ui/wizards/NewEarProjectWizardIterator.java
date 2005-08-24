@@ -49,8 +49,8 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectType;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
-import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.openide.ErrorManager;
 
 /**
@@ -135,13 +135,13 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.Instantiati
         EarProjectProperties epp = new EarProjectProperties((EarProject) p, refHelper, new EarProjectType());
         if (null != warName) {
             File webAppDir = new File(dirF, name+"-war"); // NOI18N
-            h = WebProjectGenerator.createProject(FileUtil.normalizeFile(webAppDir),
+            h = WebProjectUtilities.createProject(FileUtil.normalizeFile(webAppDir),
                     warName,
                     serverInstanceID,
-                    WebProjectGenerator.SRC_STRUCT_BLUEPRINTS,
+                    WebProjectUtilities.SRC_STRUCT_BLUEPRINTS,
                     j2eeLevel, "/"+warName); //NOI18N
             if (platformName != null || sourceLevel != null) {
-                WebProjectGenerator.setPlatform(h, platformName, sourceLevel);
+                WebProjectUtilities.setPlatform(h, platformName, sourceLevel);
             }
             FileObject dir2 = FileUtil.toFileObject(FileUtil.normalizeFile(webAppDir));
             p = ProjectManager.getDefault().findProject(dir2);

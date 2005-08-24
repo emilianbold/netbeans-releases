@@ -14,8 +14,8 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.j2ee.common.ui.nodes.FieldCustomizer;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.netbeans.modules.j2ee.common.JMIUtils;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -256,8 +256,8 @@ public class CmpFieldHelper {
         }
         Method getterMethod = entityHelper.getGetterMethod(fieldName);
         Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-        String getterName = Utils.getMethodName(newName, true);
-        String setterName = Utils.getMethodName(newName, false);
+        String getterName = EntityMethodController.getMethodName(newName, true);
+        String setterName = EntityMethodController.getMethodName(newName, false);
         prepareRename(refactoringSession, getterMethod, getterName);
         prepareRename(refactoringSession, setterMethod, setterName);
         prepareRename(refactoringSession, getLocalGetter(), getterName);

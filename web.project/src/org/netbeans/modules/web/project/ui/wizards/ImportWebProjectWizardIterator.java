@@ -52,7 +52,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
-import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -133,7 +133,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         String buildfile = getBuildfile();
         
-        AntProjectHelper h = WebProjectGenerator.importProject (dirF, name, wmFO, sourceFolders, testFolders, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
+        AntProjectHelper h = WebProjectUtilities.importProject (dirF, name, wmFO, sourceFolders, testFolders, docBase, libFolder, j2eeLevel, serverInstanceID, buildfile);
         
         FileObject dir = FileUtil.toFileObject(dirF);
         Project earProject = (Project) wiz.getProperty(WizardProperties.EAR_APPLICATION);
@@ -160,7 +160,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
         if (platformName != null || sourceLevel != null) {
-            WebProjectGenerator.setPlatform(h, platformName, sourceLevel);
+            WebProjectUtilities.setPlatform(h, platformName, sourceLevel);
         }
         
         return Collections.singleton(DataObject.find(dir));

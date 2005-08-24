@@ -39,7 +39,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 
 
@@ -72,7 +72,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
         String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         
-        AntProjectHelper h = WebProjectGenerator.createProject(dirF, name, servInstID, sourceStructure, j2eeLevel, contextPath);
+        AntProjectHelper h = WebProjectUtilities.createProject(dirF, name, servInstID, sourceStructure, j2eeLevel, contextPath);
         try {
             FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
             FileObject indexJSPFo = getIndexJSPFO(webRoot, "index"); //NOI18N
@@ -105,7 +105,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.Instantiati
         String platformName = (String)wiz.getProperty(WizardProperties.JAVA_PLATFORM);
         String sourceLevel = (String)wiz.getProperty(WizardProperties.SOURCE_LEVEL);
         if (platformName != null || sourceLevel != null) {
-            WebProjectGenerator.setPlatform(h, platformName, sourceLevel);
+            WebProjectUtilities.setPlatform(h, platformName, sourceLevel);
         }
         
         // save last project location

@@ -56,7 +56,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -369,9 +368,9 @@ public class EjbJarProjectProperties {
         String newJ2eeVersion = J2eePlatformUiSupport.getSpecVersion(J2EE_PLATFORM_MODEL.getSelectedItem());
         if (oldJ2eeVersion != null && newJ2eeVersion != null) {
             if (oldJ2eeVersion.equals(J2EE_1_3) && newJ2eeVersion.equals(J2EE_1_4)) {
-                EjbJarImplementation ejbJarImplementation = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
-                if (ejbJarImplementation != null) {
-                    FileObject ddFo = ejbJarImplementation.getDeploymentDescriptor();
+                org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbJarModules[] = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJars(project);
+                if (ejbJarModules.length > 0) {
+                    FileObject ddFo = ejbJarModules[0].getDeploymentDescriptor();
                     if (ddFo != null) {
                         EjbJar ddRoot = DDProvider.getDefault().getDDRoot(ddFo);
                         if (ddRoot != null) {

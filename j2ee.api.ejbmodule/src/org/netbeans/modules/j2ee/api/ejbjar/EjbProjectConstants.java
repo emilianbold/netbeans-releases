@@ -20,9 +20,10 @@ package org.netbeans.modules.j2ee.api.ejbjar;
  *
  */
 
-//TO-DO: This class is not used in ejb project anymore and should be removed. It was replaced by org.netbeans.modules.j2ee.common.J2eeProjectConstants.
-
 public class EjbProjectConstants {
+    
+    public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
+    public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
     
     private EjbProjectConstants() {
     }
@@ -33,14 +34,13 @@ public class EjbProjectConstants {
     public static final String ARTIFACT_TYPE_EJBJAR = "j2ee_archive"; //NOI18N
 
     /**
-     * Constant representing an ejb jar artifact to be packaged as a part of an ear archive.
-     */
-    public static final String ARTIFACT_TYPE_EJBJAR_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
-    
-    /**
      * Standard command for redeploying an ejb module project.
      * @see ActionProvider
      */
     public static final String COMMAND_REDEPLOY = "redeploy" ; //NOI18N
     
+    /**
+     * Constant representing an j2ee jar artifact to be packaged as a part of an ear archive.
+     */
+    public static final String ARTIFACT_TYPE_J2EE_MODULE_IN_EAR_ARCHIVE = "j2ee_ear_archive"; //NOI18N
 }

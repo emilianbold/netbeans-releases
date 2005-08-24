@@ -23,7 +23,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModuleContainer;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -259,9 +259,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
 
     private void srcStructComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_srcStructComboBoxActionPerformed
         switch (srcStructComboBox.getSelectedIndex()) {
-            case 0: sourceStructure = WebProjectGenerator.SRC_STRUCT_BLUEPRINTS;
+            case 0: sourceStructure = WebProjectUtilities.SRC_STRUCT_BLUEPRINTS;
                     break;
-            case 1: sourceStructure = WebProjectGenerator.SRC_STRUCT_JAKARTA;
+            case 1: sourceStructure = WebProjectUtilities.SRC_STRUCT_JAKARTA;
         }
     }//GEN-LAST:event_srcStructComboBoxActionPerformed
 

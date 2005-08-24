@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.java.hints</friend>
-                <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.kjava.editor</friend>
                 <package>org.netbeans.modules.editor.hints.spi</package>
             </friend-packages>

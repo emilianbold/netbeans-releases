@@ -21,14 +21,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.ejb.*;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
 import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.shared.DDEditorNavigator;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
+import org.netbeans.modules.j2ee.common.DDEditorNavigator;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
@@ -116,10 +116,8 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         }
         if (groups != null) {
             for (int i = 0; i < groups.length; i++) {
-                EjbJarImplementation jarImpl = (EjbJarImplementation) project.getLookup().lookup(
-                        EjbJarImplementation.class);
-
-                if ((jarImpl != null) && (jarImpl.getDeploymentDescriptor() != null)) {
+                org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(groups[i].getRootFolder());
+                if ((ejbModule != null) && (ejbModule.getDeploymentDescriptor() != null)) {
                     try {
                         FileObject fo = groups[i].getRootFolder();
                         srcRootList.add(groups[i].getRootFolder());

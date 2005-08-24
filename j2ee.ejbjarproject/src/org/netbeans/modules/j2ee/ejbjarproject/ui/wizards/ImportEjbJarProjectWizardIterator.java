@@ -33,7 +33,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 

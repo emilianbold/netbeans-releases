@@ -14,85 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
-        <attr name="JSP_Servlet/J2EE" boolvalue="true"/>
-        <folder name="J2EE">
-         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
-         <attr name="Session/Entity" boolvalue="true"/>
-         <attr name="Entity/RelatedCMP" boolvalue="true"/>
-         <attr name="RelatedCMP/Message" boolvalue="true"/>
-         <attr name="Message/ServiceLocator.java" boolvalue="true"/>
-         <file name="Session">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionEJBWizard.create" />
-         <attr name="templateCategory" stringvalue="ejb-types"/>
-         <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/SessionEJB.html"/>
-         <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.Bundle"/>
-         <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/session/SessionNodeIcon.gif"/>
-            
-        </file>
-        <file name="Message">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.mdb.MessageEJBWizard" />
-         <attr name="templateCategory" stringvalue="ejb-types"/>
-         <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/MessageEJB.html"/>
-         <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.mdb.Bundle"/>
-         <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/mdb/MessageNodeIcon.gif"/>
-            
-        </file>
-        <file name="RelatedCMP">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.cmp.RelatedCMPWizard.create" />
-         <attr name="templateCategory" stringvalue="ejb-types"/>
-         <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/CMPDatabase.html"/>
-         <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.cmp.Bundle"/>
-         <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
-            
-        </file>
-         <file name="Entity">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityEJBWizard.create" />
-         <attr name="templateCategory" stringvalue="ejb-types"/>
-         <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EntityEJB.html"/>
-         <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.Bundle"/>
-         <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
-            
-        </file>
-        <attr name="ServiceLocator.java/CachingServiceLocator.java" boolvalue="true"/>
-        <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.ServiceLocatorWizard" />
-         <attr name="templateCategory" stringvalue="j2ee-types"/>
-         <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/CachingServiceLocator.html"/>
-         <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.Bundle"/>
-        </file>
-        <file name="ServiceLocator.java" url="ServiceLocator.template">
-         <attr name="template" boolvalue="true"/>
-         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.ServiceLocatorWizard" />
-         <attr name="templateCategory" stringvalue="j2ee-types"/>
-         <attr name="templateWizardURL"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ServiceLocator.html"/>
-         <attr name="SystemFileSystem.localizingBundle"
-                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.Bundle"/>
-        </file>
-        </folder>
-    
         <folder name="Project">
-            <attr name="Web/J2EE" boolvalue="true"/>
-
             <folder name="J2EE">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjar.html"/>
@@ -118,37 +40,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-java">
-                <folder name="Popup">
-                   <attr name="generate-goto-popup/org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance" boolvalue="true"/> 
-                   <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>        
-                   <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-entres-EnterpriseRefActionGroup.instance" boolvalue="true"/>        
-                   <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-entres-EnterpriseRefActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>        
-                   <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance"/>
-                   <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-entres-EnterpriseRefActionGroup.instance"/>
-                </folder>
-                <folder name="Hints">
-                    <file name="org-netbeans-modules-j2ee-ejbjarproject-hints-EjbHintsProvider.instance"/>
-                </folder>
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-j2ee-ejbjarproject-completion-EnterpriseResourcesCompletionProvider.instance"/>                    
-                </folder>
-            </folder>
-        </folder>
-    </folder> 
-    
-    <folder name="NodeFactories">
-       <folder name="java">
-          <folder name="explorer">
-             <file name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview.ejb.session.BeanClassFactory.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.session.BeanClassFactory.getDefault"/>
-             </file>
-          </folder>
-       </folder>
-    </folder> 
 
     <folder name="org-netbeans-modules-j2ee-ejbjarproject">
         <file name="ejb-jar-2.0.xml" url="ejb-jar-2.0.xml"/>

@@ -13,9 +13,9 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.session.methodcontroller.SessionMethodController;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.SessionMethodController;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 
 /**
  * @author pfiala

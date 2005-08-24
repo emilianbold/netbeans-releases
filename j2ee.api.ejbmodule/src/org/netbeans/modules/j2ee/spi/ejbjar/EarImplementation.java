@@ -23,7 +23,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 public interface EarImplementation {
     
     /** J2EE platform version - one of the constants 
-     * defined in {@link org.netbeans.modules.j2ee.api.common.J2eeProjectConstants}.
+     * defined in {@link org.netbeans.modules.j2ee.api.common.EjbProjectConstants}.
      * @return J2EE platform version
      */
     String getJ2eePlatformVersion ();

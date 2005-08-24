@@ -14,7 +14,6 @@ package org.netbeans.modules.j2ee.earproject.ui;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.j2ee.common.ui.*;
 
 
 public class FoldersListSettings extends SystemOption {

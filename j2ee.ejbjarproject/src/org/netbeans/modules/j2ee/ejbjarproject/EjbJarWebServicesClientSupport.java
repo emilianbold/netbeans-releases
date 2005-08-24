@@ -27,11 +27,11 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.PortComponentRef;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.ServiceRef;
-import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.websvc.api.client.ClientStubDescriptor;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
@@ -61,8 +61,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
-import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
@@ -70,7 +68,6 @@ import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import java.lang.reflect.Modifier;
-import org.netbeans.modules.j2ee.common.JMIUtils;
 
 /**
  *
@@ -527,7 +524,7 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     public List/*StubDescriptor*/ getStubDescriptors() {
         ArrayList stubs = new ArrayList(2);
         String version = project.getEjbModule().getJ2eePlatformVersion();
-        if(J2eeProjectConstants.J2EE_14_LEVEL.equals(version)) {
+        if(EjbProjectConstants.J2EE_14_LEVEL.equals(version)) {
             stubs.add(jsr109ClientStub);
         }
         stubs.add(jaxrpcClientStub);

@@ -280,7 +280,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         return eval;
     }
     
-    ReferenceHelper getReferenceHelper () {
+    public ReferenceHelper getReferenceHelper () {
         return this.refHelper;
     }
 

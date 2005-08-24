@@ -40,9 +40,8 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
 
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
-
-
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.javacore.JMManager;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -63,7 +62,7 @@ class EjbJarActionProvider implements ActionProvider {
         COMMAND_RUN, 
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
-        J2eeProjectConstants.COMMAND_REDEPLOY,
+        EjbProjectConstants.COMMAND_REDEPLOY,
         JavaProjectConstants.COMMAND_JAVADOC, 
         COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
@@ -92,7 +91,7 @@ class EjbJarActionProvider implements ActionProvider {
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_RUN_SINGLE, new String[] {"run-main"}); // NOI18N
-        commands.put(J2eeProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
+        commands.put(EjbProjectConstants.COMMAND_REDEPLOY, new String[] {"run"}); // NOI18N
         commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
         commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
         commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
@@ -180,7 +179,7 @@ class EjbJarActionProvider implements ActionProvider {
             } else {
                 return null;
             }
-        } else if (command.equals (COMMAND_RUN) || command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
+        } else if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer ()) {
                 return null;
             }
@@ -198,7 +197,7 @@ class EjbJarActionProvider implements ActionProvider {
                     return null;
                 }
             }
-            if (command.equals (J2eeProjectConstants.COMMAND_REDEPLOY)) {
+            if (command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) {
                 p.setProperty("forceRedeploy", "true"); //NOI18N
             } else {
                 p.setProperty("forceRedeploy", "false"); //NOI18N

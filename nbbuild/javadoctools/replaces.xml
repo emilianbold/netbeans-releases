@@ -93,3 +93,5 @@ Microsystems, Inc. All Rights Reserved.
 <replacefilter token="@org-netbeans-modules-editor-mimelookup@" value="${javadoc.docs.org-netbeans-modules-editor-mimelookup}"/>
 <replacefilter token="@org-netbeans-modules-editor-util@" value="${javadoc.docs.org-netbeans-modules-editor-util}"/>
 <replacefilter token="@org-netbeans-modules-editor-lib@" value="${javadoc.docs.org-netbeans-modules-editor-lib}"/>
+<replacefilter token="@org-netbeans-modules-j2ee-ejbjarproject@" value="${javadoc.docs.org-netbeans-modules-j2ee-ejbjarproject}"/>
+<replacefilter token="@org-netbeans-modules-j2ee-ejbcore@" value="${javadoc.docs.org-netbeans-modules-j2ee-ejbcore}"/>

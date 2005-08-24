@@ -31,14 +31,14 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.common.J2eeProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
-import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -113,7 +113,7 @@ public class EarProjectGenerator {
         // IDE at all times. Those assumptions don't hold up in the 
         FileObject tfo = Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-j2ee-earproject/ear-1.4.xml");
         if (null != tfo) {
-            if (J2eeProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel)) 
+            if (EjbProjectConstants.J2EE_14_LEVEL.equals(j2eeLevel)) 
                 FileUtil.copyFile(tfo, webInfFO, "application"); //NOI18N
         
             ((EarProject)p).getAppModule().getConfigSupport ().createInitialConfiguration();
@@ -245,11 +245,11 @@ public class EarProjectGenerator {
                     srcFolders = new File[] { FileUtil.toFile(javaRoot)};
                 }
                 if (null != webDotXml) {
-                    subProjHelper = WebProjectGenerator.importProject(subProjDir,
+                    subProjHelper = WebProjectUtilities.importProject(subProjDir,
                         subprojectRoot.getName(), subprojectRoot, srcFolders, new File[0],
                         subprojectRoot.getFileObject("web"), null, j2eeLevel, serverInstanceID, "build.xml");
                     if (platformName != null || sourceLevel != null) {
-                        WebProjectGenerator.setPlatform(subProjHelper, platformName, sourceLevel);
+                        WebProjectUtilities.setPlatform(subProjHelper, platformName, sourceLevel);
                     }
                 }
 

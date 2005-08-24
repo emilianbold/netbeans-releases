@@ -39,8 +39,6 @@ public class FoldersListSettings extends SystemOption {
     
     private static final String AGREED_SET_SOURCE_LEVEL_14 = "agreeSetSourceLevel14"; // NOI18N
 
-    private static final String AGREED_DELETE_EJB_GENERATED_SOURCES = "agreeDeleteEJBGeneratedSources"; // NOI18N
-
     public String displayName() {
         return NbBundle.getMessage (FoldersListSettings.class, "TXT_EjbJarProjectFolderList"); //NOI18N
     }
@@ -144,12 +142,4 @@ public class FoldersListSettings extends SystemOption {
         this.putProperty(AGREED_SET_SOURCE_LEVEL_14, Boolean.valueOf(agreed), true);
     }
 
-    public boolean isAgreedDeleteEJBGeneratedSources() {
-        Boolean b = (Boolean)getProperty(AGREED_DELETE_EJB_GENERATED_SOURCES);
-        return b == null ? false : b.booleanValue();
-    }
-    
-    public void setAgreedDeleteEJBGeneratedSources(boolean agreed) {
-        this.putProperty(AGREED_DELETE_EJB_GENERATED_SOURCES, Boolean.valueOf(agreed), true);
-    }
 }

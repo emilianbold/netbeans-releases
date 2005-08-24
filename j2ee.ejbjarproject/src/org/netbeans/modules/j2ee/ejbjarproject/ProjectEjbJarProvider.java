@@ -16,13 +16,21 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.ejbcore.spi.ProjectPropertiesSupport;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class ProjectEjbJarProvider implements EjbJarProvider {
+public class ProjectEjbJarProvider implements EjbJarProvider, EjbJarsInProject, ProjectPropertiesSupport {
     
-    public ProjectEjbJarProvider () {
+    private EjbJarProject project;
+    
+    public ProjectEjbJarProvider (EjbJarProject project) {
+        this.project = project;
     }
     
     public EjbJar findEjbJar (FileObject file) {
@@ -49,6 +57,34 @@ public class ProjectEjbJarProvider implements EjbJarProvider {
             }
         }
         return null;
+    }
+
+    public EjbJar[] getEjbJars() {
+        return new EjbJar [] {project.getAPIEjbJar()};
+    }
+
+    public void disableSunCmpMappingExclusion() {
+        EjbJarProject ejbProject = (EjbJarProject) project;
+        PropertyHelper ph = ejbProject.getPropertyHelper();
+        
+        String metaInfExcludes = ph.getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.META_INF_EXCLUDES);
+        if (metaInfExcludes == null) {
+            return;
+        }
+        String[] tokens = metaInfExcludes.split(" |,");
+        StringBuffer newMetaInfExcludes = new StringBuffer();
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].equals("sun-cmp-mappings.xml") || tokens[i].equals("")) // NOI18N
+            {
+                continue;
+            }
+
+            newMetaInfExcludes.append(tokens[i]);
+            if (i < tokens.length - 1) {
+                newMetaInfExcludes.append(" "); // NOI18N
+            }
+        }
+        ph.saveProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.META_INF_EXCLUDES, newMetaInfExcludes.toString());
     }
     
 }

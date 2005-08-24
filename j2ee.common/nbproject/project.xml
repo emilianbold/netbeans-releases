@@ -77,10 +77,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.ant.browsetask</code-name-base>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.java.project</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -89,21 +85,7 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.junit</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -197,27 +179,23 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                   <code-name-base>org.netbeans.modules.java.editor</code-name-base>
-                   <build-prerequisite/>
-                   <compile-dependency/>
-                   <run-dependency>
-                       <release-version>1</release-version>
-                   </run-dependency>
-               </dependency>            
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
+                    <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
+                        <specification-version>1.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.websvc.dev</friend>
+                <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.j2ee.ddloaders</friend>
+                <friend>org.netbeans.modules.j2ee.ejbcore</friend>
 		<package>org.netbeans.modules.j2ee.common</package>
-		<package>org.netbeans.modules.j2ee.common.ui</package>
                 <package>org.netbeans.modules.j2ee.common.ui.nodes</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>
