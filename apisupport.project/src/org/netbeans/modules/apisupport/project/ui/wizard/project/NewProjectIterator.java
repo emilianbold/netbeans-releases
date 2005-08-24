@@ -253,9 +253,10 @@ public class NewProjectIterator extends BasicWizardIterator {
         // really the second one would automatically generate a uniquified name... but close enough!
         Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip"));
         fileChanges.add(fileChanges.layerModifications(new CreateProjectZipOperation(project, model.getTemplate(),
-                name, packageName), 
-                externalFiles));
-        fileChanges.add(fileChanges.bundleKeyDefaultBundle("Templates/Project/Other/" + name +  "Project.zip", displayName));
+                name, packageName, category), 
+                externalFiles
+                ));
+        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName));
         
         // x. generate java classes
         final String iteratorName = getRelativePath(project, packageName,
@@ -351,19 +352,21 @@ public class NewProjectIterator extends BasicWizardIterator {
         private String packageName;
         private URL content;
         private Project templateProject;
+        private String category;
         
         public CreateProjectZipOperation(NbModuleProject project, Project template,
-                                         String name, String packageName) {
+                                         String name, String packageName, String category) {
             this.project = project;
             this.packageName = packageName;
             this.name = name;
+            this.category = category;
             templateProject = template;
         }
         
         public void run(FileSystem layer) throws IOException {
-            FileObject folder = layer.getRoot().getFileObject("Templates/Project/Other");// NOI18N
+            FileObject folder = layer.getRoot().getFileObject(category);// NOI18N
             if (folder == null) {
-                folder = FileUtil.createFolder(layer.getRoot(), "Templates/Project/Other"); // NOI18N
+                folder = FileUtil.createFolder(layer.getRoot(), category); // NOI18N
             }
             FileObject file = folder.createData(name + "Project", "zip"); // NOI18N
             FileLock lock = file.lock();

@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
+import java.io.IOException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -28,6 +29,7 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils.LayerHandle;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -82,10 +84,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         data.setName(txtName.getText().trim());
         data.setDisplayName(txtDisplayName.getText().trim());
         Object item = comCategory.getSelectedItem();
-        if (item != null) {
-            data.setCategory(comCategory.getSelectedItem().toString());
+        if (item != null && item instanceof CategoryWrapper) {
+            data.setCategory(((CategoryWrapper)item).getCategoryPath());
         } else {
-            data.setCategory("");
+            data.setCategory("Templates/Project/Other"); //NOI18N
         }
         NewProjectIterator.generateFileChanges(data);
         CreatedModifiedFiles fls = data.getCreatedModifiedFiles();
@@ -114,12 +116,16 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void loadCombo() {
-        LayerHandle handle = LayerUtils.layerForProject(data.getProject());
-        FileSystem fs = handle.layer();
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        FileObject fo = fs.getRoot().getFileObject("Templates/Project"); //NOI18N
-        if (fo != null) {
-            addCategoryToModel(model, null, fo);
+        try {
+            FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
+            FileObject fo = fs.getRoot().getFileObject("Templates/Project"); //NOI18N
+            if (fo != null) {
+                addCategoryToModel(model, null, fo);
+            }
+        } catch (IOException exc) {
+            //TODO fallback to hardwired values?
+            ErrorManager.getDefault().notify(exc);
         }
         comCategory.setModel(model);
     }
@@ -353,6 +359,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         public CategoryWrapper(FileObject fil, CategoryWrapper parent) {
             this(fil);
             this.parent = parent;
+        }
+        
+        public String getCategoryPath() {
+            return fo.getPath();
         }
         
         public String toString() {
