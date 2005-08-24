@@ -1,0 +1,12 @@
+/**
+   Block comment. 
+ */
+public class JavaExample {
+    
+    public String method (
+        int param1,
+        String param2
+    ) {
+        return "String " + '-' + 1.2);
+    }
+}
