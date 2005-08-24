@@ -838,8 +838,12 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 attr.addAttribute("urlvalue", ((URL) v).toExternalForm()); // NOI18N
             } else if (v instanceof Boolean) {
                 attr.addAttribute("boolvalue", v.toString());
+            } else if (v instanceof Character) {
+                attr.addAttribute("charvalue", v.toString());
+            } else if (v instanceof Integer) {
+                attr.addAttribute("intvalue", v.toString());
             } else if (v != null) {
-                throw new UnsupportedOperationException("XXX");
+                throw new UnsupportedOperationException("XXX: " + v);
             }
             if (v != null && existingAttr == null) {
                 appendWithIndent(el, attr);
