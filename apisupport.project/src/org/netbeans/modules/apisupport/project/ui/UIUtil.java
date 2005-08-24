@@ -14,6 +14,10 @@
 package org.netbeans.modules.apisupport.project.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
@@ -23,9 +27,14 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * UI related utility methods for the module.
@@ -130,12 +139,52 @@ public final class UIUtil {
         if (relPaths.length > 0) {
             for (int i = 0; i < relPaths.length; i++) {
                 if (i > 0) {
-                    sb.append("\n");//NOI18N
+                    sb.append('\n');
                 }
                 sb.append(relPaths[i]);
             }
         }
         return sb.toString();
+    }
+    
+    public static ComboBoxModel createLayerPresenterComboModel(Project project, String sfsRoot) {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        try {
+            FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
+            FileObject root = sfs.getRoot().getFileObject(sfsRoot);
+            if (root != null) {
+                for (Enumeration subFolders = root.getFolders(true); subFolders.hasMoreElements(); ) {
+                    LayerFolderPresenter layerFolder = new LayerFolderPresenter(
+                            (FileObject) subFolders.nextElement(), root);
+                    model.addElement(layerFolder);
+                }
+            }
+        } catch (IOException exc) {
+            ErrorManager.getDefault().notify(exc);
+        }
+        return model;
+    }
+    
+    public static class LayerFolderPresenter {
+        
+        private String description;
+        private String folderPath;
+        
+        public LayerFolderPresenter(FileObject folder, FileObject root) {
+            int rootPathLength = root.getPath().length();
+            this.folderPath = folder.getPath();
+            // XXX localization (consider/utilize following line)
+//            Object str = folder.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+            this.description = folderPath.substring(rootPathLength + 1).replaceAll("/", " | "); // NOI18N
+        }
+        
+        public String getCategoryPath() {
+            return folderPath;
+        }
+        
+        public String toString() {
+            return description;
+        }
     }
     
     private static final class IconFilter extends FileFilter {

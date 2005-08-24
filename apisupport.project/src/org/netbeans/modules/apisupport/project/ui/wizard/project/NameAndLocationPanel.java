@@ -14,8 +14,6 @@
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
 
 import java.awt.Color;
-import java.io.IOException;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
@@ -24,14 +22,10 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 
 /**
  * The second panel in project template wizard.
@@ -82,8 +76,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         data.setName(txtName.getText().trim());
         data.setDisplayName(txtDisplayName.getText().trim());
         Object item = comCategory.getSelectedItem();
-        if (item != null && item instanceof CategoryWrapper) {
-            data.setCategory(((CategoryWrapper)item).getCategoryPath());
+        if (item != null && item instanceof UIUtil.LayerFolderPresenter) {
+            data.setCategory(((UIUtil.LayerFolderPresenter) item).getCategoryPath());
         } else {
             data.setCategory("Templates/Project/Other"); //NOI18N
         }
@@ -114,34 +108,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void loadCombo() {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        try {
-            FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
-            FileObject fo = fs.getRoot().getFileObject("Templates/Project"); //NOI18N
-            if (fo != null) {
-                addCategoryToModel(model, null, fo);
-            }
-        } catch (IOException exc) {
-            //TODO fallback to hardwired values?
-            ErrorManager.getDefault().notify(exc);
-        }
-        comCategory.setModel(model);
-    }
-    
-    private void addCategoryToModel(DefaultComboBoxModel model, CategoryWrapper parent, FileObject current) {
-        FileObject[] fos = current.getChildren();
-        for (int i = 0; i < fos.length; i++) {
-            if (fos[i].isFolder()) {
-                CategoryWrapper wrapper;
-                if (parent == null) {
-                    wrapper = new CategoryWrapper(fos[i]);
-                } else {
-                    wrapper = new CategoryWrapper(fos[i], parent);
-                }
-                model.addElement(wrapper);
-                addCategoryToModel(model, wrapper, fos[i]);
-            }
-        }
+        comCategory.setModel(UIUtil.createLayerPresenterComboModel(
+                data.getProject(), "Templates/Project")); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -338,44 +306,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
                 sb.append(relPaths[i]);
             }
         }
-        
         return sb.toString();
-    }
-    
-    private class CategoryWrapper {
-        private FileObject fo;
-        private String path;
-        private CategoryWrapper parent;
-        
-        public CategoryWrapper(FileObject fil) {
-            fo = fil;
-        }
-        
-        public CategoryWrapper(FileObject fil, CategoryWrapper parent) {
-            this(fil);
-            this.parent = parent;
-        }
-        
-        public String getCategoryPath() {
-            return fo.getPath();
-        }
-        
-        public String toString() {
-            String toRet = "";
-            if (parent != null) {
-                toRet = parent.toString() + " | "; // NOI18N
-            }
-            if (path == null) {
-                Object str = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
-                if (str != null) {
-                    //TODO
-                    toRet = toRet + fo.getNameExt();
-                } else {
-                    toRet = toRet + fo.getNameExt();
-                }
-            }
-            return toRet;
-        }
     }
     
 }
