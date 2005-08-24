@@ -808,6 +808,8 @@ public class Evaluator implements JavaParserVisitor {
                 Assert.error(node, "callException", e, ctx);
             } catch (InvocationException e) {
                 Assert.error(node, "calleeException", e, ctx);
+            } catch (UnsupportedOperationException e) {
+                Assert.error(node, "calleeException", e, ctx);
             }
             finally {
                 try {
@@ -847,6 +849,8 @@ public class Evaluator implements JavaParserVisitor {
                 Assert.error(node, "calleeException", e, ctx);
             } catch (IllegalArgumentException e) {
                 Assert.error(node, "callException", e, ctx);
+            } catch (UnsupportedOperationException e) {
+                Assert.error(node, "calleeException", e, ctx);
             }
             finally {
                 try {
@@ -1560,6 +1564,10 @@ public class Evaluator implements JavaParserVisitor {
         } catch (InvocationException iex) {
             InvalidExpressionException ieex = new InvalidExpressionException (iex);
             ieex.initCause(iex);
+            throw ieex;
+        } catch (UnsupportedOperationException uoex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
+            ieex.initCause(uoex);
             throw ieex;
         }
     }
