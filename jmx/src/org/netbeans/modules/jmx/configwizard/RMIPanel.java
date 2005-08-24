@@ -857,7 +857,7 @@ public class RMIPanel extends javax.swing.JPanel {
         public void readSettings (Object settings) 
         {
             wiz = (WizardDescriptor) settings;
-
+            
             // store project location to detect existing mbeans 
             String location = (String)wiz.getProperty(WizardConstants.PROP_PROJECT_LOCATION);
             projectLocation = location + File.separatorChar + WizardConstants.SRC_DIR; 

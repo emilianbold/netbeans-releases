@@ -88,7 +88,7 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
         this.wizard = wiz;
 
         String[] steps = initSteps(false);
-        
+
         wiz.putProperty("setAsMain", false);// NOI18N
 
         try {
@@ -122,18 +122,6 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
     /**
      * WizardIntegration method :
      * Called when integrating this wizard within a higher level wizard.
-     * @param wiz <CODE>WizardDescriptor</CODE> a wizard
-     * @return <CODE>String[]</CODE> step names
-     */
-    public String[] initializeSteps(WizardDescriptor wiz)
-    {
-        this.wizard = (TemplateWizard) wiz;
-        return initSteps(true);
-    }
-
-    /**
-     * WizardIntegration method :
-     * Called when integrating this wizard within a higher level wizard.
      * @param steps Panels list to use
      * @param panelOffset number of the first panel of this wizard
      */
@@ -150,6 +138,7 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
         managerPanel = JavaTemplates.createPackageChooser(project,
                                                         managerSrcGroups,
                                                         managerOptionsPanel);
+        managerPanel.getComponent().setName(bundle.getString("LBL_Manager"));// NOI18N
         initializeComponent(steps,panelOffset + 0,
                 (JComponent)managerPanel.getComponent());
         agentURLPanel = new AgentURLPanel.AgentURLWizardPanel();
@@ -165,7 +154,7 @@ public class JMXManagerIterator implements TemplateWizard.Iterator {
     private void initializeComponent(String[] steps, int panelOffset,JComponent jc) 
     {
         jc.putClientProperty("WizardPanel_contentData", steps);// NOI18N
-        jc.putClientProperty("WizardPanel_contentSelectedIndex", panelOffset);// NOI18N
+        jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(panelOffset));// NOI18N
     }
     
     public void uninitialize(TemplateWizard wiz)
