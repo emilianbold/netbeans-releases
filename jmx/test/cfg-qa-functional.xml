@@ -36,13 +36,15 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/managerwizard/CreateManagerProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/managerwizard/ConstructManager.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
+                <include name="org/netbeans/modules/jmx/test/junitwizard/CreateJUnitProject.class"/>
+                <include name="org/netbeans/modules/jmx/test/junitwizard/JUnitStandAloneWizardTests.class"/>
+                <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/CreateActionsProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/MBeanRegistTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/AddMBeanAttributesTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/AddMBeanOperationsTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/ImplNotifEmitterTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/CreateJUnitTests.class"/>
-                <include name="org/netbeans/modules/jmx/test/actions/CreateMBeanTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/actions/RegisterMBeansTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/jconsole/JConsole.class"/>
