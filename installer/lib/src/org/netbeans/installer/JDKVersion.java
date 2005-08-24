@@ -247,7 +247,10 @@ public class JDKVersion {
     public static String getVersionString(String jdkPath) {
 	File jvmFile = new File(jdkPath + File.separator + "bin" + File.separator + Util.getJVMName()); //NOI18N
 	RunCommand runCommand = new RunCommand();
-	runCommand.execute(jvmFile.getAbsolutePath() + " -version");  //NOI18N
+        String [] cmdArr = new String[2];
+        cmdArr[0] = jvmFile.getAbsolutePath();
+        cmdArr[1] = "-version";
+	runCommand.execute(cmdArr);
         runCommand.waitFor();
 	String line = runCommand.getErrorLine();
 	if (line == null) {

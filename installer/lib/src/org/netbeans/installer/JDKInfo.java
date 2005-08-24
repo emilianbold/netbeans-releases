@@ -149,7 +149,10 @@ public class JDKInfo {
                 }
                 
                 RunCommand runCommand = new RunCommand();
-                runCommand.execute(jvmFile.getAbsolutePath() + " -version");
+                String [] cmdArr = new String[2];
+                cmdArr[0] = jvmFile.getAbsolutePath();
+                cmdArr[1] = "-version";
+                runCommand.execute(cmdArr);
                 runCommand.waitFor();
                 String line = runCommand.getErrorLine();
                 

@@ -74,6 +74,21 @@ public class RunCommand {
         }
     }
     
+    /**
+     * @see java.lang.Runtime.exec(String[])
+     */
+    public void execute(String[] cmdArray) {
+        cmdString = Util.arrayToString(cmdArray, " ");
+        try {
+            thisProcess = runTime.exec(cmdArray);
+            //initIOStreams();
+            //System.out.println("process = " + thisProcess);
+        } catch (Exception ex) {
+            System.out.println(ex.getLocalizedMessage());
+            ex.printStackTrace();
+        }
+    }
+    
     /* @see java.lang.Runtime.exec(String[],String[],File)
      */
     public void execute(String[] cmdArray, String[] envp, File dir){
