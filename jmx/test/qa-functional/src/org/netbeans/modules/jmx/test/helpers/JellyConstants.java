@@ -224,6 +224,7 @@ public class JellyConstants {
    public static final String DOUBLE_TYPE_FULL = "java.lang.Double";
    public static final String VOID_TYPE = "void";
    public static final String LIST_TYPE_FULL = "java.util.List";
+   public static final String SET_TYPE_FULL = "java.util.Set";
    
    //============== Access ============================//
    public static final String RO = "ReadOnly";
@@ -326,14 +327,39 @@ public class JellyConstants {
    
    //project
    public static final String MBEAN_DEFAULT_NAME = "NewJMXClass";
+   public static final String MBEAN_DEFAULT_NAME_WITH_SUFFIX = "NewJMXClassMBean.java";
+   public static final String DYN_MBEAN_SUFFIX = "NewJMXClassDynamicSupport.java";
    
-   //step 1
+   //warning messages and/or error messages
    public static final String WARN_STEP1 = "Warning: As of JDK 1.4," +
                 " it is highly recommended that you do NOT place Java classes" +
                 " in the default package.";
+   public static final String WARN_STEP2 = "Specify a class to wrap.";
+   public static final String WARN_STEP2_BIS = "The specified class does not exist.";
+   public static final String WARN_STEP3 = "Two or more attributes have the same name.";
+   public static final String WARN_STEP4 = "Two or more operations have the same name and parameter types.";
+   
+   //step 1
    public static final String PKG_NAME = "uitestPackage";
    
    //step 2
    public static final String BROWSE_BTN = "browseButton";
    public static final String DEF_DESCR = "NewJMXClass Description";
+   public static final String TEST_CLASS = "test.class";
+   public static final String REAL_TEST_CLASS = "java.lang.String";
+   public static final String A_STRING = "./..\"\"ffgP";
+   
+   //step3
+   public static final String A1_NAME = "count/.er";
+   public static final String A2_NAME = "counter2";
+   public static final String A3_NAME = "counter2";
+   public static final String A4_NAME = "counter3";
+   
+   public static final String A1_DESC = "desc0";
+   public static final String A2_DESC = "desc1";
+   public static final String A3_DESC = "desc2";
+   public static final String A4_DESC = "desc3";
+   
+   public static final String ATTR_DEF_NAME = "NewAttribute";
+   public static final int ATTR_NAME_COL = 0;
 }
