@@ -67,6 +67,8 @@ public class AddNotifAction extends CookieAction {
         if (dob != null) fo = dob.getPrimaryFile();
         rc = JavaModel.getResource(fo);
         JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
+        if (foClass == null)
+            return false;
         boolean isMBean = Introspector.testCompliance(foClass);
         boolean isNotifBroadCaster = Introspector.isNotifBroadCaster(foClass);
         

@@ -68,7 +68,8 @@ public class RegisterMBeanAction extends CookieAction {
         if (dob != null) fo = dob.getPrimaryFile();
         rc = JavaModel.getResource(fo);
         JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
-        
+        if (foClass == null)
+            return false;
         boolean isAgent = Introspector.isGeneratedAgent(foClass);
         
         return isAgent;

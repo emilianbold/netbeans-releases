@@ -51,7 +51,8 @@ Microsystems, Inc. All Rights Reserved.
                                                
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>
-            <file name="JUnitTest.java" url="">
+            
+            <file name="JUnitTest.java" url="resources/templates/MBeanTest.java.template">
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" 
                       stringvalue="org.netbeans.modules.jmx.Bundle"/>

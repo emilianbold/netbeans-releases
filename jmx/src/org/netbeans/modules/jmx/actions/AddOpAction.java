@@ -68,6 +68,8 @@ public class AddOpAction extends CookieAction {
         if (dob != null) fo = dob.getPrimaryFile();
         rc = JavaModel.getResource(fo);
         JavaClass foClass = WizardHelpers.getJavaClass(rc,fo.getName());
+        if (foClass == null)
+            return false;
         boolean isMBean = Introspector.isStandard(foClass);
         
         return isMBean;

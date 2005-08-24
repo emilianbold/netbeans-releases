@@ -156,7 +156,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                 String operationName = oper.getName();
                 //for this operation, get all his parameter types concat
                 String operationParameter = (String)
-                oper.getSimpleSignature();
+                oper.getFullSimpleSignature();
                 String operation = operationName.concat(operationParameter);
                 operations.add(operation);
             }

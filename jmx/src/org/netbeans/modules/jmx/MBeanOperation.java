@@ -57,9 +57,10 @@ public class MBeanOperation implements Comparable {
         int i = 0;
         for (Iterator<Parameter> it = params.iterator(); it.hasNext();) {
             Parameter param = it.next();
+            String typeName = param.isVarArg() ? param.getType().getName() + "..." : param.getType().getName(); // NOI18N
             paramArray.add(
                     new MBeanOperationParameter("param"+ i, // NOI18N
-                        param.getType().getName(), ""));// NOI18N
+                        typeName, ""));// NOI18N
             i++;
         }
         this.parameters = paramArray;
@@ -274,6 +275,27 @@ public class MBeanOperation implements Comparable {
         String paramString = "";// NOI18N
         for(int i = 0; i < parameters.size(); i++) {
             paramType = parameters.get(i).getParamType();
+            paramString += paramType;
+            
+            if (i < parameters.size() -1){
+                paramString += ",";// NOI18N
+            }
+        }
+        return paramString;
+    }
+    
+    /**
+     * Returns a string concat of all parameter types for the 
+     * current operation
+     * Each type is seperated form the next one by ","
+     * @return String the concat string of parameter types
+     */
+    public String getFullSimpleSignature() {
+        String paramType = "";// NOI18N
+        String paramString = "";// NOI18N
+        for(int i = 0; i < parameters.size(); i++) {
+            paramType = WizardHelpers.getFullTypeName(
+                    parameters.get(i).getParamType());
             paramString += paramType;
             
             if (i < parameters.size() -1){

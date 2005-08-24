@@ -984,7 +984,7 @@ public class WizardHelpers
             return false;
         
         File file = new File(locationPath + File.separatorChar + name);
-
+        
         if (file.exists())
             return true; 
         else 
