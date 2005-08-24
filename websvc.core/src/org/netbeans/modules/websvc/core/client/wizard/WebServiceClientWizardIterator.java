@@ -302,7 +302,28 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         SourceGroup[] sgs = getJavaSourceGroups(project);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
 
-        FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");  
+        if (clientSupport.getDeploymentDescriptor()==null) { // testing java project type
+            // test for the platform
+            String javaVersion = System.getProperty("java.version"); //NOI18N   
+            if (javaVersion!=null && javaVersion.startsWith("1.4")) { //NOI18N
+                FileObject documentRangeFO = classPath.findResource("org/w3c/dom/ranges/DocumentRange.class"); //NOI18N
+                FileObject saxParserFO = classPath.findResource("com/sun/org/apache/xerces/internal/jaxp/SAXParserFactoryImpl.class"); //NOI18N
+                if (documentRangeFO == null || saxParserFO == null) {
+                    ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
+                    Library jaxrpclib_ext = LibraryManager.getDefault().getLibrary("jaxrpc16_xml"); //NOI18N
+                    if ((pce!=null) && (jaxrpclib_ext != null)) {
+                        pce.addLibrary(jaxrpclib_ext);
+                    } else {
+                        String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_CannotAddXMLLibrary"); // NOI18N
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                        return result;
+                    }
+                }
+            }
+        }
+
+        FileObject wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class");
         if (wscompileFO==null) {
             // add jax-rpc16 if webservice is not on classpath
             ProjectClassPathExtender pce = (ProjectClassPathExtender)project.getLookup().lookup(ProjectClassPathExtender.class);
