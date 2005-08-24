@@ -69,6 +69,20 @@
         </folder>
     </folder>
 
+    <!-- editors -->
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="Popup">
+                    <file name="GoToOppositeAction.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.GoToOppositeAction"/>
+                    </file>
+                    <attr name="GoToOppositeAction.instance/generate-goto-popup" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
     <!-- actions -->
     <folder name="Actions">
         <folder name="JUnitTests">

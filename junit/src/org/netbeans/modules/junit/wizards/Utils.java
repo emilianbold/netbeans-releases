@@ -391,16 +391,71 @@ public final class Utils {
     public Object[] getTestTargets(SourceGroup sourceGroup,
                                    final boolean sourceGroupsOnly) {
         
-        /* .) get URLs of target SourceGroup's roots: */
-        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(
-                                       sourceGroup.getRootFolder());
-        if (rootURLs.length == 0) {
+        /* .) find test root folders: */
+        final FileObject[] testFolders
+                    = getTestFoldersRaw(sourceGroup.getRootFolder());
+        
+        if (testFolders.length == 0) {
             return new Object[0];
         }
         
-        /* .) convert the URLs to FileObjects: */
+        /* .) find SourceGroups corresponding to the FileObjects: */
+        final Object[] targets = new Object[testFolders.length];
+        int targetIndex = 0;
+        for (int i = 0; i < targets.length; i++) {
+            final FileObject testFolder = testFolders[i];
+            if (testFolder == null) {
+                continue;
+            }
+            Object srcGroup = foldersToSourceGroupsMap.get(testFolder);
+            targets[i] = (srcGroup != null)
+                         ? srcGroup
+                         : sourceGroupsOnly ? null : testFolder;
+        }
+        return TestUtil.skipNulls(targets, new Object[0]);
+    }
+    
+    /**
+     * Returns an array of test folders corresponding to the given source
+     * folder - may contain <code>null</code>s.
+     *
+     * @param  srcFolder  <code>FileObject</code> representing source code root,
+     *                    for which test root folders should be found
+     * @return  array of <code>FileObject</code>s representing test root
+     *          folders, possibly with superfluous <code>null</code> elements
+     * @see  #getSourceFoldersRaw
+     */
+    public FileObject[] getTestFoldersRaw(FileObject srcFolder) {
+        return getFileObjects(UnitTestForSourceQuery.findUnitTests(srcFolder));
+    }
+    
+    /**
+     * Returns an array of source folders corresponding to the given test
+     * folder - may contain <code>null</code>s.
+     *
+     * @param  srcFolder  <code>FileObject</code> representing source code root,
+     *                    for which source root folders should be found
+     * @return  array of <code>FileObject</code>s representing source root
+     *          folders, possibly with superfluous <code>null</code> elements
+     * @see  #getTestFoldersRaw
+     */
+    public FileObject[] getSourceFoldersRaw(FileObject testFolder) {
+        return getFileObjects(UnitTestForSourceQuery.findSources(testFolder));
+    }
+    
+    /**
+     * Returns <code>FileObject</code>s represented by the given URLs.
+     *
+     * @param  rootURLs  URLs representing <code>FileObject</code>s
+     * @return  array of <code>FileObject</code>s representing source root
+     *          folders, possibly with superfluous <code>null</code> elements
+     */
+    private FileObject[] getFileObjects(final URL[] rootURLs) {
+        if (rootURLs.length == 0) {
+            return new FileObject[0];
+        }
+        
         FileObject[] sourceRoots = new FileObject[rootURLs.length];
-        int count = 0;
         for (int i = 0; i < rootURLs.length; i++) {
             if ((sourceRoots[i] = URLMapper.findFileObject(rootURLs[i]))
                     == null) {
@@ -414,8 +469,8 @@ public final class Utils {
                 }
                 continue;
             }
-            Project testRootOwner = FileOwnerQuery.getOwner(sourceRoots[i]);
-            if (!project.equals(testRootOwner)) {
+            Project sourceRootOwner = FileOwnerQuery.getOwner(sourceRoots[i]);
+            if (!project.equals(sourceRootOwner)) {
                 sourceRoots[i] = null;
                 
                 int severity = ErrorManager.INFORMATIONAL;
@@ -425,30 +480,47 @@ public final class Utils {
                         new IllegalStateException(
                             "Malformed project: Found test root (" +    //NOI18N
                                 rootURLs[i] + ')' + ' ' +
-                                (testRootOwner == null
+                                (sourceRootOwner == null
                                         ? "does not belong to any"      //NOI18N
                                         : "belongs to a different") +   //NOI18N
                                 " project."));                          //NOI18N
                 }
                 continue;
             }
-            count++;
+        }
+        return sourceRoots;
+    }
+
+    /**
+     */
+    public static FileObject[] skipNulls(final FileObject[] fileObjs) {
+        if (fileObjs.length == 0) {
+            return fileObjs;
         }
         
-        /* .) find SourceGroups corresponding to the FileObjects: */
-        final Object[] targets = new Object[count];
-        int targetIndex = 0;
-        for (int i = 0; i < sourceRoots.length; i++) {
-            final FileObject sourceRoot = sourceRoots[i];
-            if (sourceRoot == null) {
-                continue;
+        int nullsCount = 0;;
+        for (int i = 0; i < fileObjs.length; i++) {
+            if (fileObjs[i] == null) {
+                nullsCount++;
             }
-            Object srcGroup = foldersToSourceGroupsMap.get(sourceRoot);
-            targets[targetIndex++] = (srcGroup != null)
-                                     ? srcGroup
-                                     : sourceGroupsOnly ? null : sourceRoot;
         }
-        return TestUtil.skipNulls(targets, new Object [0]);
+        
+        if (nullsCount == 0) {
+            return fileObjs;
+        }
+        
+        final FileObject[] fileObjsNew
+                = new FileObject[fileObjs.length - nullsCount];
+        int index = 0, indexNew = 0;
+        while (nullsCount > 0) {
+            FileObject fileObj = fileObjs[index++];
+            if (fileObj != null) {
+                fileObjsNew[indexNew++] = fileObj;
+            } else {
+                nullsCount--;
+            }
+        }
+        return fileObjsNew;
     }
 
     /**
