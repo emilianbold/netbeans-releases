@@ -26,6 +26,20 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
+                <folder name="x-ant+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="x-dd-servlet2.4">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+            <folder name="application">
+                <folder name="xslt+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="x-schema+xml">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>
