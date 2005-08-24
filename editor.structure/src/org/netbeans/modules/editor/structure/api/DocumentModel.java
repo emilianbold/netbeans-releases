@@ -1054,8 +1054,22 @@ public final class DocumentModel {
         }
         
         public String toString() {
-            return "Change["+getChangeStart().getOffset() + "-" + (getChangeStart().getOffset() + getChangeLength())+ "-" + (type == INSERT ? "INSERT" : "REMOVE") + "]";
+            return "Change["+getChangeStart().getOffset() + "-" + (getChangeStart().getOffset() + getChangeLength())+ "-" + (type == INSERT ? "INSERT" : "REMOVE") + "] text: " + getChangeText();
         }
+        
+        private String getChangeText() {
+            try {
+                String text = getDocument().getText(getChangeStart().getOffset(), getChangeLength());
+                if(type == INSERT) return text;
+                else if(type == REMOVE) return "[cannot provide removed text]; the text on remove offset: " + text;
+                
+                assert false : "Wrong document change type!";
+            }catch(BadLocationException e) {
+                return "BadLocationException thrown: " + e.getMessage();
+            }
+            return null; //why do I need this???? :-)
+        }
+        
     }
     
 //root document element - always present in the model - even in an empty one
