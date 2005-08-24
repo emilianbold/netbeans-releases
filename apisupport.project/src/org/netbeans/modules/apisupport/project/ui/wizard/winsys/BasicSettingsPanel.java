@@ -12,18 +12,15 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.ButtonGroup;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  * the first panel in TopComponent wizard
@@ -55,19 +52,19 @@ public class BasicSettingsPanel extends BasicWizardIterator.Panel {
 //        attachDocumentListeners();
 //        checkValidity();
 //    }
-//    
+//
 //    public void removeNotify() {
 //        // prevent checking when the panel is not "active"
 //        removeDocumentListeners();
 //        super.removeNotify();
 //    }
-//    
+//
 //    private void attachDocumentListeners() {
 //        if (!listenersAttached) {
 //            listenersAttached = true;
 //        }
 //    }
-//    
+//
 //    private void removeDocumentListeners() {
 //        if (listenersAttached) {
 //            listenersAttached = false;
@@ -76,18 +73,33 @@ public class BasicSettingsPanel extends BasicWizardIterator.Panel {
     
     private void setupCombo() {
         //TODO get dynamically from layers??
-        String[] modes = new String[] {
-            "editor",
-            "explorer",
-            "commonpalette",
-            "output",
-            "debugger",
-            "properties",
-            "navigator",
-            "bottomSlidingSide",
-            "leftSlidingSide",
-            "rightSlidingSide"
-        };
+        String[] modes = null;
+        try {
+            FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
+            FileObject foRoot = fs.getRoot().getFileObject("Windows2/Modes"); //NOI18N
+            FileObject[] fos = foRoot.getChildren();
+            Collection col = new ArrayList();
+            for (int i=0; i < fos.length; i++) {
+               if (fos[i].isData() && "wsmode".equals(fos[i].getExt())) { //NOI18N
+                   col.add(fos[i].getName());
+               } 
+            }
+            modes = (String[])col.toArray(new String[col.size()]);
+        } catch (IOException exc) {
+            modes = new String[] {
+                "editor", //NOI18N
+                "explorer",//NOI18N
+                "commonpalette",//NOI18N
+                "output",//NOI18N
+                "debugger",//NOI18N
+                "properties",//NOI18N
+                "navigator",//NOI18N
+                "bottomSlidingSide",//NOI18N
+                "leftSlidingSide",//NOI18N
+                "rightSlidingSide"//NOI18N
+            };
+        }
+        
         comMode.setModel(new DefaultComboBoxModel(modes));
     }
     
@@ -101,7 +113,7 @@ public class BasicSettingsPanel extends BasicWizardIterator.Panel {
         if (data.getMode() != null) {
             comMode.setSelectedItem(data.getMode());
         } else {
-            comMode.setSelectedItem("output");
+            comMode.setSelectedItem("output");//NOI18N
         }
         checkValidity();
     }
