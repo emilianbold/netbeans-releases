@@ -347,6 +347,7 @@ then
     then
         # Run full suite for one module.
         $testantcmd -f $sources/$testedmodule/test/build.xml -Dxtest.fail.on.failure=true runtests
+        # XXX failures do not seem to result in non-zero exit code here
         other_status=$?
         browse $sources/$testedmodule/test/results/index.html
     fi
