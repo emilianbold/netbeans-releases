@@ -56,9 +56,31 @@ public class JConsole extends JellyTestCase {
       MainWindowOperator mainWindow = MainWindowOperator.getDefault();
       // push "Open" toolbar button in "System" toolbar
       mainWindow.getToolbarButton(mainWindow.getToolbar("Management"), "Start JConsole Management Console").push();
-      OutputTabOperator oto = new OutputTabOperator("JConsole");
+      
+      OutputTabOperator oto = null;
+      int maxToWait = 10;
+      while(maxToWait > 0) {
+        try{
+            oto = new OutputTabOperator("JConsole");
+            break;
+        }catch(Exception e) {
+            System.out.println("Output tab not yet displayed " + e.toString());
+            maxToWait--;
+        }
+      }
       System.out.println("*********************** WAITING FOR TEXT JConsole started ************");
-      oto.waitText("JConsole started");
+      
+      maxToWait = 10;      
+      while(maxToWait > 0) {
+        try{
+            oto.waitText("JConsole started");
+            break;
+        }catch(Exception e){
+              System.out.println("JConsole not started, will wait again");
+              maxToWait--;
+        }
+      }
+      
       RuntimeTabOperator rto = new RuntimeTabOperator();
       
       Node node = new Node(rto.getRootNode(), "Processes|JConsole");

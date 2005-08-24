@@ -37,7 +37,7 @@ import org.netbeans.jemmy.operators.JMenuBarOperator;
  * @author jfdenise
  */
 public class J2SEProject extends JellyTestCase {
-    private static String PROJECT_NAME="SampleProjectToTestJ2SEProjectIntegration";
+    private static String PROJECT_NAME="JMXTESTSampleProjectToTestJ2SEProjectIntegration";
     private static String ORIGINAL_TMP_FILE;
     
     static {
