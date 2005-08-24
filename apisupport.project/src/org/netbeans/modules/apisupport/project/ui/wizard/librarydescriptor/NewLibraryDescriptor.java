@@ -28,8 +28,9 @@ import org.openide.WizardDescriptor;
  * @author Radek Matous
  */
 public class NewLibraryDescriptor extends BasicWizardIterator {
+    
     private static final long serialVersionUID = 1L;
-    NewLibraryDescriptor.DataModel data = null;    
+    NewLibraryDescriptor.DataModel data;
     
     public static NewLibraryDescriptor createIterator() {
         return new NewLibraryDescriptor();
@@ -57,15 +58,15 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
         super.uninitialize(wiz);
         data = null;
     }
-
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-        private Library library = null;
-        private String packageName = null;
-        private String libraryName = null;
-        private String libraryDisplayName = null;        
+
+        private Library library;
+        private String libraryName;
+        private String libraryDisplayName;
         
         private CreatedModifiedFiles files;
+        
         /** Creates a new instance of NewLibraryDescriptorData */
         DataModel(WizardDescriptor wiz) {
             super(wiz);
@@ -79,15 +80,7 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
             this.library = library;
         }
 
-        public String getPackageName() {
-            return packageName;
-        }
-
-        public void setPackageName(String packageName) {
-            this.packageName = packageName;
-        }
-
-        public CreatedModifiedFiles getCreatedModifiedFiles() {            
+        public CreatedModifiedFiles getCreatedModifiedFiles() {
             return files;
         }
 
@@ -111,5 +104,5 @@ public class NewLibraryDescriptor extends BasicWizardIterator {
             this.libraryDisplayName = libraryDisplayName;
         }
 
-    }    
+    }
 }

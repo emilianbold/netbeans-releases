@@ -66,7 +66,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected void storeToDataModel() {
-        refreshBaseData();
+        storeBaseData();
         data.setDisplayName(displayName.getText());
     }
     
@@ -75,15 +75,15 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     }
     
     private void updateData() {
-        refreshBaseData();
+        storeBaseData();
         CreatedModifiedFiles files = data.getCreatedModifiedFiles();
         createdFiles.setText(UIUtil.generateTextAreaContent(files.getCreatedPaths()));
         modifiedFiles.setText(UIUtil.generateTextAreaContent(files.getModifiedPaths()));
         checkValidity();
     }
     
-    /** className, packageName */
-    private void refreshBaseData() {
+    /** Data needed to compute CMF. ClassName, packageName, icon. */
+    private void storeBaseData() {
         data.setClassName(getClassName());
         data.setPackageName(packageName.getEditor().getItem().toString());
         data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
@@ -146,7 +146,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(classNameTxt, gridBagConstraints);
 
         className.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_SampleClassName"));
@@ -156,7 +156,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(className, gridBagConstraints);
 
         displayNameTxt.setLabelFor(displayName);
@@ -165,7 +165,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 12);
         add(displayNameTxt, gridBagConstraints);
 
         displayName.setText(org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "CTL_EnterLabel"));
@@ -175,7 +175,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(displayName, gridBagConstraints);
 
         iconTxt.setLabelFor(icon);
@@ -184,7 +184,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(iconTxt, gridBagConstraints);
 
         icon.setEditable(false);
@@ -194,6 +194,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(icon, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(iconButton, org.openide.util.NbBundle.getMessage(NameIconLocationPanel.class, "LBL_Icon_Browse"));
@@ -206,7 +207,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(iconButton, gridBagConstraints);
 
         projectTxt.setLabelFor(project);

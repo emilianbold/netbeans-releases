@@ -14,6 +14,7 @@
 package org.netbeans.modules.apisupport.project.ui.wizard;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -22,10 +23,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,6 +87,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         
         private NbModuleProject project;
         private SourceGroup sourceRootGroup;
+        private String packageName;
         
         /** Creates a new instance of NewFileDescriptorData */
         public BasicDataModel(WizardDescriptor wiz) {
@@ -103,6 +109,14 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             return project;
         }
         
+        public String getPackageName() {
+            return packageName;
+        }
+        
+        public void setPackageName(String packageName) {
+            this.packageName = packageName;
+        }
+        
         public SourceGroup getSourceRootGroup() {
             if (sourceRootGroup == null) {
                 FileObject tempSrcRoot = getProject().getSourceDirectory();
@@ -118,6 +132,29 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             }
             return sourceRootGroup;
         }
+        
+        protected String getDefaultPackagePath(String fileName) {
+            return getProject().getSourceDirectoryPath() + '/' +
+                    getPackageName().replace('.','/') + '/' + fileName;
+        }
+        
+        protected String copyIconToDefatulPackage(CreatedModifiedFiles cmf, String origIconPath) {
+            FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
+            String relativeIconPath = null;
+            if (!FileUtil.isParentOf(getProject().getSourceDirectory(), origIconFO)) {
+                String iconPath = getDefaultPackagePath(origIconFO.getNameExt());
+                try {
+                    cmf.add(cmf.createFile(iconPath, origIconFO.getURL()));
+                    relativeIconPath = getPackageName().replace('.', '/') + '/' + origIconFO.getNameExt();
+                } catch (FileStateInvalidException exc) {
+                    Util.err.notify(exc);
+                }
+            } else {
+                relativeIconPath = FileUtil.getRelativePath(getProject().getSourceDirectory(), origIconFO);
+            }
+            return relativeIconPath;
+        }
+        
     }
     
     public void initialize(WizardDescriptor wiz) {
@@ -161,7 +198,6 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
     public void uninitialize(WizardDescriptor wiz) {
         wizardPanels = null;
     }
-    
     
     public String name() {
         return ((BasicWizardIterator.PrivateWizardPanel)

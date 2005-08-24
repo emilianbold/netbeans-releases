@@ -13,17 +13,13 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
-import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Data model used across the <em>New Action Wizard</em>.
@@ -74,29 +70,27 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private String className;
     private String displayName;
     private String origIconPath;
-    private String packageName;
-
     
     DataModel(WizardDescriptor wiz) {
         super(wiz);
     }
     
     private void regenerate() {
-        String fqClassName = packageName + '.' + className; // NOI18N
-        String dashedPkgName = packageName.replace('.', '-'); // NOI18N
-        String dashedFqClassName = dashedPkgName + "-" + className; // NOI18N
+        String fqClassName = getPackageName() + '.' + className;
+        String dashedPkgName = getPackageName().replace('.', '-');
+        String dashedFqClassName = dashedPkgName + '-' + className;
         String shadow = dashedFqClassName + ".shadow"; // NOI18N
         
         cmf = new CreatedModifiedFiles(getProject());
         
         // Create CallableSystemAction from template
         String actionPath = getDefaultPackagePath(className + ".java"); // NOI18N
-        // XXX use nbresloc URL protocol rather than NewActionIterator.class.getResource(...):
-        URL template = NewActionIterator.class.getResource(alwaysEnabled
+        // XXX use nbresloc URL protocol rather than DataModel.class.getResource(...):
+        URL template = DataModel.class.getResource(alwaysEnabled
                 ? "callableSystemAction.javx" : "cookieAction.javx"); // NOI18N
         Map replaceTokens = new HashMap();
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
-        replaceTokens.put("@@PACKAGE_NAME@@", packageName); // NOI18N
+        replaceTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
         replaceTokens.put("@@DISPLAY_NAME@@", displayName); // NOI18N
         replaceTokens.put("@@MODE@@", getSelectionMode()); // NOI18N
         if (!alwaysEnabled) {
@@ -111,27 +105,15 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             }
             replaceTokens.put("@@COOKIE_CLASSES_BLOCK@@", cookieSB.toString()); // NOI18N
         }
-        
+        cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
+
+        // Copy action icon
         if (origIconPath != null) {
-            FileObject origIconFO = FileUtil.toFileObject(new File(origIconPath));
-            String relativeIconPath = null;
-            if (!FileUtil.isParentOf(getProject().getSourceDirectory(), origIconFO)) {
-                String iconPath = getDefaultPackagePath(origIconFO.getNameExt());
-                try {
-                    cmf.add(cmf.createFile(iconPath, origIconFO.getURL()));
-                    relativeIconPath = packageName.replace('.', '/') + '/' + origIconFO.getNameExt();
-                } catch (FileStateInvalidException exc) {
-                    Util.err.notify(exc);
-                    relativeIconPath = "null"; // NOI18N
-                }
-            } else {
-                relativeIconPath = FileUtil.getRelativePath(getProject().getSourceDirectory(), origIconFO);
-            }
+            String relativeIconPath = copyIconToDefatulPackage(cmf, origIconPath);
             replaceTokens.put("@@ICON_RESOURCE@@", '"' + relativeIconPath + '"'); // NOI18N
         } else {
             replaceTokens.put("@@ICON_RESOURCE@@", "null"); // NOI18N
         }
-        cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
         
         // add layer entry about the action
         String instanceFullPath = "Actions/" + category + "/" // NOI18N
@@ -211,11 +193,6 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
     }
     
-    private String getDefaultPackagePath(String fileName) {
-        return getProject().getSourceDirectoryPath() + '/' +
-                packageName.replace('.','/') + '/' + fileName;
-    }
-    
     /**
      * Just a helper convenient mehtod for cleaner code. If either
      * <em>before</em> or <em>after</em> is <code>null</code>, nothing will be
@@ -288,9 +265,9 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.origIconPath = origIconPath;
     }
     
-    void setPackageName(String pkg) {
+    public void setPackageName(String pkg) {
+        super.setPackageName(pkg);
         reset();
-        this.packageName = pkg;
     }
     
     void setGlobalMenuItemEnabled(boolean globalMenuItemEnabled) {

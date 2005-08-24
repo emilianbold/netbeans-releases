@@ -25,7 +25,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.layers.LayerUtils.LayerHandle;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -34,23 +33,22 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
-
-
 /**
- * the second panel in project template wizard.
+ * The second panel in project template wizard.
  *
  * @author Milos Kleint
  */
 final class NameAndLocationPanel extends BasicWizardIterator.Panel {
+
     private NewProjectIterator.DataModel data;
-    FileSystem fs;
+
     /** Creates new NameAndLocationPanel */
     public NameAndLocationPanel(WizardDescriptor setting, NewProjectIterator.DataModel data) {
         super(setting);
         this.data = data;
         initComponents();
         Color lblBgr = UIManager.getColor("Label.background"); // NOI18N
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle"));
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_ProjectWizardTitle")); // NOI18N
         modifiedFilesValue.setBackground(lblBgr);
         createdFilesValue.setBackground(lblBgr);
         modifiedFilesValue.setEditable(false);
@@ -107,7 +105,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_NameLocation_Title");
+        return getMessage("LBL_NameLocation_Title"); // NOI18N
     }
     
     private void checkValidity() {
@@ -145,8 +143,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             }
         }
     }
-    
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -213,7 +209,6 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(lblCategory, gridBagConstraints);
 
-        comCategory.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -338,7 +333,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         if (relPaths.length > 0) {
             for (int i = 0; i < relPaths.length; i++) {
                 if (i > 0) {
-                    sb.append("\n");//NOI18N
+                    sb.append('\n');
                 }
                 sb.append(relPaths[i]);
             }
@@ -368,10 +363,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         public String toString() {
             String toRet = "";
             if (parent != null) {
-                toRet = parent.toString() + " | ";
+                toRet = parent.toString() + " | "; // NOI18N
             }
             if (path == null) {
-                Object str = fo.getAttribute("SystemFileSystem.localizingBundle");
+                Object str = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
                 if (str != null) {
                     //TODO
                     toRet = toRet + fo.getNameExt();
@@ -382,6 +377,5 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             return toRet;
         }
     }
-    
     
 }

@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.project;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,15 +44,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
-
 /**
- * Wizard for creating new project templates
+ * Wizard for creating new project templates.
  *
  * @author Milos Kleint
  */
 public class NewProjectIterator extends BasicWizardIterator {
+    
     private static final long serialVersionUID = 1L;
-    NewProjectIterator.DataModel data = null;
+    private NewProjectIterator.DataModel data = null;
     
     public static NewProjectIterator createIterator() {
         return new NewProjectIterator();
@@ -87,9 +88,8 @@ public class NewProjectIterator extends BasicWizardIterator {
         data = null;
     }
     
-    
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-        private String packageName;
+        
         private Project template;
         private String name;
         private String displayName;
@@ -107,14 +107,6 @@ public class NewProjectIterator extends BasicWizardIterator {
         
         public void setCreatedModifiedFiles(CreatedModifiedFiles files) {
             this.setFiles(files);
-        }
-        
-        public String getPackageName() {
-            return packageName;
-        }
-        
-        public void setPackageName(String packageName) {
-            this.packageName = packageName;
         }
         
         public Project getTemplate() {
@@ -253,7 +245,7 @@ public class NewProjectIterator extends BasicWizardIterator {
         // really the second one would automatically generate a uniquified name... but close enough!
         Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip"));
         fileChanges.add(fileChanges.layerModifications(new CreateProjectZipOperation(project, model.getTemplate(),
-                name, packageName, category), 
+                name, packageName, category),
                 externalFiles
                 ));
         fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName));
@@ -347,16 +339,14 @@ public class NewProjectIterator extends BasicWizardIterator {
     }
     
     static class CreateProjectZipOperation implements CreatedModifiedFiles.LayerOperation {
-        private NbModuleProject project;
+        
         private String name;
         private String packageName;
-        private URL content;
         private Project templateProject;
         private String category;
         
         public CreateProjectZipOperation(NbModuleProject project, Project template,
                                          String name, String packageName, String category) {
-            this.project = project;
             this.packageName = packageName;
             this.name = name;
             this.category = category;

@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.loader;
+
 import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +51,9 @@ import org.openide.xml.XMLUtil;
  * @author Milos Kleint
  */
 public class NewLoaderIterator extends BasicWizardIterator {
+
     private static final long serialVersionUID = 1L;
-    NewLoaderIterator.DataModel data = null;    
+    private NewLoaderIterator.DataModel data;
     
     public static NewLoaderIterator createIterator() {
         return new NewLoaderIterator();
@@ -60,7 +62,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
     public Set instantiate() throws IOException {
         assert data != null;
         CreatedModifiedFiles fileOperations = data.getCreatedModifiedFiles();
-        if (fileOperations != null) {   
+        if (fileOperations != null) {
             fileOperations.run();
         }
         String[] paths = fileOperations.getCreatedPaths();
@@ -89,13 +91,13 @@ public class NewLoaderIterator extends BasicWizardIterator {
 
     
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-        private String packageName = null;
-        private String prefix = null;
-        private String iconPath = null;
-        private String mimeType = null;
+
+        private String prefix;
+        private String iconPath;
+        private String mimeType;
         private boolean extensionBased = true;
-        private String extension = null;
-        private String namespace = null;
+        private String extension;
+        private String namespace;
         
         private CreatedModifiedFiles files;
         
@@ -103,15 +105,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
             super(wiz);
         }
 
-        public String getPackageName() {
-            return packageName;
-        }
-
-        public void setPackageName(String packageName) {
-            this.packageName = packageName;
-        }
-
-        public CreatedModifiedFiles getCreatedModifiedFiles() {            
+        public CreatedModifiedFiles getCreatedModifiedFiles() {
             return files;
         }
 
@@ -195,7 +189,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
             FileObject fo = FileUtil.toFileObject(fil);
             String relativeIconPath = null;
             if (!FileUtil.isParentOf(model.getProject().getSourceDirectory(), fo)) {
-                String iconPath = getRelativePath(model.getProject(), packageName, 
+                String iconPath = getRelativePath(model.getProject(), packageName,
                                                 "", fo.getNameExt()); //NOI18N
                 try {
                     fileChanges.add(fileChanges.createFile(iconPath, fo.getURL()));
@@ -214,19 +208,19 @@ public class NewLoaderIterator extends BasicWizardIterator {
         }
         
         // 1. create dataloader file
-        String loaderName = getRelativePath(model.getProject(), model.getPackageName(), 
+        String loaderName = getRelativePath(model.getProject(), model.getPackageName(),
                                             namePrefix, "DataLoader.java"); //NOI18N
         // XXX use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         URL template = NewLoaderIterator.class.getResource("templateDataLoader.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderName, template, replaceTokens));
-        String loaderInfoName = getRelativePath(model.getProject(), model.getPackageName(), 
+        String loaderInfoName = getRelativePath(model.getProject(), model.getPackageName(),
                                             namePrefix, "DataLoaderBeanInfo.java"); //NOI18N
         template = NewLoaderIterator.class.getResource("templateDataLoaderBeanInfo.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(loaderInfoName, template, replaceTokens));
         
         // 2. dataobject file
         final boolean isEditable = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.+-])*)", //NOI18N
-                                               mime); 
+                                               mime);
         if (isEditable) {
             StringBuffer editorBuf = new StringBuffer();
             editorBuf.append("        CookieSet cookies = getCookieSet();\n");//NOI18N
@@ -239,13 +233,13 @@ public class NewLoaderIterator extends BasicWizardIterator {
             replaceTokens.put("@@EDITOR_SUPPORT_IMPORT@@", "");//NOI18N
         }
         
-        String doName = getRelativePath(model.getProject(), model.getPackageName(), 
+        String doName = getRelativePath(model.getProject(), model.getPackageName(),
                                             namePrefix, "DataObject.java"); //NOI18N
         template = NewLoaderIterator.class.getResource("templateDataObject.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(doName, template, replaceTokens));
         
         // 3. node file
-        String nodeName = getRelativePath(model.getProject(), model.getPackageName(), 
+        String nodeName = getRelativePath(model.getProject(), model.getPackageName(),
                                             namePrefix, "DataNode.java"); //NOI18N
         template = NewLoaderIterator.class.getResource("templateDataNode.javx");//NOI18N
         fileChanges.add(fileChanges.createFileWithSubstitutions(nodeName, template, replaceTokens));
@@ -254,9 +248,9 @@ public class NewLoaderIterator extends BasicWizardIterator {
         template = NewLoaderIterator.class.getResource("templateresolver.xml");//NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Services/MIMEResolver/" + namePrefix + "resolver.xml", //NOI18N
                                                      template,
-                                                     replaceTokens, 
+                                                     replaceTokens,
                                                      NbBundle.getMessage(NewLoaderIterator.class, "LBL_LoaderName", namePrefix),//NOI18N
-                                                     null)); 
+                                                     null));
         
         //5. update project.xml with dependencies
         ProjectXMLManager manager = new ProjectXMLManager(model.getProject().getHelper());
@@ -321,7 +315,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         
         // 7. register manifest entry
         boolean isXml = Pattern.matches("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)", //NOI18N
-                                               mime); 
+                                               mime);
         String installBefore = null;
         if (isXml) {
             installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject"; //NOI18N
@@ -388,13 +382,13 @@ public class NewLoaderIterator extends BasicWizardIterator {
         attrs.put("template", Boolean.TRUE);
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
                                                      template,
-                                                     replaceTokens, 
-                                                     NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix), 
+                                                     replaceTokens,
+                                                     NbBundle.getMessage(NewLoaderIterator.class, "LBL_fileTemplateName", namePrefix),
                                                      attrs)); //NOI18N
         model.setCreatedModifiedFiles(fileChanges);
     }
     
-    private static String getRelativePath(NbModuleProject project, String fullyQualifiedPackageName, 
+    private static String getRelativePath(NbModuleProject project, String fullyQualifiedPackageName,
                                           String prefix, String postfix) {
         StringBuffer sb = new StringBuffer();
         
@@ -422,7 +416,6 @@ public class NewLoaderIterator extends BasicWizardIterator {
     }
     
     private static String getFirstExtension(String ext) {
-        StringBuffer buff = new StringBuffer();
         StringTokenizer tokens = new StringTokenizer(ext," ,");
         String element = "someextension"; // NOI18N
         if (tokens.hasMoreTokens()) {
@@ -457,7 +450,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         // XXX Utilities is unconditionally imported
             return "return null;\n"; //NOI18N
         }
-        StringBuffer buff = new StringBuffer(); 
+        StringBuffer buff = new StringBuffer();
         buff.append("        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {\n"); //NOI18N
         buff.append("            return Utilities.loadImage(\""); //NOI18N
         buff.append(path).append("\");\n"); //NOI18N
@@ -467,3 +460,4 @@ public class NewLoaderIterator extends BasicWizardIterator {
     }
     
 }
+

@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.winsys;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -34,15 +35,15 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-
 /**
- * Wizard for creating new project templates
+ * Wizard for creating new TopComponent.
  *
  * @author Milos Kleint
  */
 public class NewTCIterator extends BasicWizardIterator {
+
     private static final long serialVersionUID = 1L;
-    NewTCIterator.DataModel data = null;
+    private NewTCIterator.DataModel data;
     
     public static NewTCIterator createIterator() {
         return new NewTCIterator();
@@ -78,14 +79,12 @@ public class NewTCIterator extends BasicWizardIterator {
         data = null;
     }
     
-    
     static final class DataModel extends BasicWizardIterator.BasicDataModel {
-        private String packageName;
+        
         private String name;
         private String icon;
         private String mode;
         private boolean opened = false;
-        
         
         private CreatedModifiedFiles files;
         
@@ -99,14 +98,6 @@ public class NewTCIterator extends BasicWizardIterator {
         
         public void setCreatedModifiedFiles(CreatedModifiedFiles files) {
             this.setFiles(files);
-        }
-        
-        public String getPackageName() {
-            return packageName;
-        }
-        
-        public void setPackageName(String packageName) {
-            this.packageName = packageName;
         }
         
         public String getName() {
@@ -272,7 +263,6 @@ public class NewTCIterator extends BasicWizardIterator {
         return sb.toString();//NOI18N
     }
     
- 
     static class CreateActionEntryOperation implements CreatedModifiedFiles.LayerOperation {
         private String name;
         private String packageName;
