@@ -72,7 +72,7 @@ public class XMLNavigatorPanel implements NavigatorPanel {
     }
     
     public void panelActivated(Lookup context) {
-        selection = context.lookup(new Lookup.Template(XMLDataObject.class));
+        selection = context.lookup(new Lookup.Template(DataObject.class));
         selection.addLookupListener(selectionListener);
         selectionListener.resultChanged(null);
     }

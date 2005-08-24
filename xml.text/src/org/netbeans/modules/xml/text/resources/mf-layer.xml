@@ -22,8 +22,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Navigator">
         <folder name="Panels">
-            <folder name="xml">
-                <folder name="navigator">
+            <folder name="text">
+                <folder name="xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>
