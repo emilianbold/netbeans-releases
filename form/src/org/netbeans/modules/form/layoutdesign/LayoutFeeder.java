@@ -798,8 +798,8 @@ class LayoutFeeder implements LayoutConstants {
                     continue;
                 }
             }
-            if (originalGap == null && startsWithGap(toAdd, i))
-                continue; // the adding interval is a group starting with a gap
+            if (startsWithGap(toAdd, i))
+                continue; // adding a group starting with a gap (likely extracted in mergeParallelGroups)
 
             boolean aligned;
             if (iDesc1.alignment < 0) { // no specific alignment - decide based on distance
