@@ -4,7 +4,7 @@
  * Created on <current Date and Time>
  */
 
-package managerfunctionaltest;
+package jmxtestmanagerfunctionaltest;
 
 import java.util.Iterator;
 import java.util.Map;
