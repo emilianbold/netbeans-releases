@@ -21,24 +21,24 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.Transferable;
 import java.awt.dnd.Autoscroll;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragSourceAdapter;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.BeanInfo;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -50,6 +50,8 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.basic.BasicListUI;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
+import org.netbeans.modules.palette.Utils;
+import org.openide.util.Utilities;
 
 /**
  * Specialized JList for palette items (content of a palette category) - having
@@ -73,6 +75,7 @@ public class CategoryList extends JList implements Autoscroll {
     private int iconSize = BASIC_ICONSIZE;
     
     private Category category;
+    private PalettePanel palettePanel;
 
     private static WeakReference rendererRef;
     
@@ -83,14 +86,23 @@ public class CategoryList extends JList implements Autoscroll {
     /**
      * Constructor.
      */
-    CategoryList( Category category ) {
+    CategoryList( Category category, PalettePanel palettePanel ) {
         this.category = category;
+        this.palettePanel = palettePanel;
         setBackground(panelBackgroundColor);
         setBorder (new EmptyBorder (0, 0, 0, 0));
         setVisibleRowCount (0);
         setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         setCellRenderer (getItemRenderer ());
         setLayoutOrientation( HORIZONTAL_WRAP );
+
+        InputMap inputMap = getInputMap(JComponent.WHEN_FOCUSED);
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0, false ), "defaultAction" );
+        inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK, false ), "popup" );
+
+        ActionMap map = getActionMap();
+        map.put( "defaultAction", new DefaultAction( this ) );
+        map.put( "popup", new PopupAction( this ) );
     }
 
     Item getItemAt( int index ) {
@@ -341,7 +353,8 @@ public class CategoryList extends JList implements Autoscroll {
                     if( selIndex >= 0 ) {
                         list.setSelectedIndex( selIndex );
                         Item item = (Item)list.getModel().getElementAt( selIndex );
-                        item.invokePreferredAction( e, "doubleclick" );
+                        ActionEvent ae = new ActionEvent( e.getSource(), e.getID(), "doubleclick", e.getWhen(), e.getModifiers() );
+                        item.invokePreferredAction( ae );
                         e.consume();
                     }
                 }
@@ -401,6 +414,48 @@ public class CategoryList extends JList implements Autoscroll {
             int index = locationToIndex (list, p);
             return index >= 0 && getCellBounds (list, index, index).contains (p) ?
                     index : -1;
+        }
+    }
+    
+    private static class DefaultAction extends AbstractAction {
+        private CategoryList list;
+        public DefaultAction( CategoryList list ) {
+            this.list = list;
+        }
+
+        public void actionPerformed( ActionEvent e ) {
+            Item item = list.getItemAt( list.getSelectedIndex() );
+            item.invokePreferredAction( e );
+        }
+
+        public boolean isEnabled() {
+            return list.isEnabled() && list.getSelectedIndex() >= 0;
+        }
+    }
+    
+    private static class PopupAction extends AbstractAction {
+        private CategoryList list;
+        public PopupAction( CategoryList list ) {
+            this.list = list;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int posX = 0;
+            int posY = 0;
+            Item item = list.getItemAt( list.getSelectedIndex() );
+            if( null != item ) {
+                Rectangle rect = list.getCellBounds( list.getSelectedIndex(), list.getSelectedIndex() );
+                posX = rect.x;
+                posY = rect.y + rect.height;
+            }
+            Action[] actions = null == item ? list.category.getActions() : item.getActions();
+            JPopupMenu popup = Utilities.actionsToPopup( actions, list );
+            Utils.addCustomizationMenuItems( popup, list.palettePanel.getController(), list.palettePanel.getSettings() );
+            popup.show( list.getParent(), posX, posY );
+        }
+
+        public boolean isEnabled() {
+            return list.isEnabled();
         }
     }
 }

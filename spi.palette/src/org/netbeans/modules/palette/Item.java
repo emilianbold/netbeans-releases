@@ -16,6 +16,7 @@ package org.netbeans.modules.palette;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.io.IOException;
 import javax.swing.Action;
@@ -44,7 +45,7 @@ public interface Item {
     /**
      * Invoked when user double-clicks the item or hits enter key.
      */
-    void invokePreferredAction( InputEvent e, String command );
+    void invokePreferredAction( ActionEvent e );
     
     /**
      * @return Lookup that hold object(s) that palette clients are looking for

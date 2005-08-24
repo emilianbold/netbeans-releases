@@ -73,7 +73,7 @@ class CategoryDescriptor implements CategoryListener {
         GridBagConstraints gbc = new GridBagConstraints (0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets (1, 0, 0, 0), 0, 0);
         wholePanel.add (categoryButton, gbc);
 
-        itemsList = new CategoryList( category );
+        itemsList = new CategoryList( category, palettePanel );
         itemsList.setModel (itemsListModel = new DefaultListModel ());
         itemsList.setShowNames(palettePanel.getSettings().getShowItemNames());
         itemsList.setIconSize(palettePanel.getSettings().getIconSize());

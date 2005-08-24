@@ -16,12 +16,8 @@ package org.netbeans.modules.palette;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
 import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.modules.palette.Item;
-import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.spi.palette.PaletteActions;
 import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.nodes.*;
@@ -65,11 +61,10 @@ public class DefaultItem implements Item {
         return itemNode.getDisplayName();
     }
 
-    public void invokePreferredAction( InputEvent e, String command ) {
+    public void invokePreferredAction( ActionEvent e ) {
         Action action = itemNode.getPreferredAction();
         if( null != action && action.isEnabled() ) {
-            ActionEvent ae = new ActionEvent( e.getSource(), e.getID(), command, e.getModifiers() );
-            action.actionPerformed( ae );
+            action.actionPerformed( e );
         }
     }
 
