@@ -214,9 +214,19 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "label for menu separator", "sep-42.instance", "<separator>");
     }
     
+    public void testSystemFilesystemNetBeansOrgProject() throws Exception {
+        FileObject nbroot = FileUtil.toFileObject(new File(System.getProperty("test.nbroot")));
+        NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("beans"));
+        FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(p);
+        assertDisplayName(fs, "right display name for netbeans.org standard file", "Menu/Window/SelectDocumentNode", "Select Document in");
+        assertNull("not loading files from extra modules", fs.findResource("Templates/Documents/docbook-article.xml"));
+        p = (NbModuleProject) ProjectManager.getDefault().findProject(nbroot.getFileObject("contrib/docbook"));
+        fs = LayerUtils.getEffectiveSystemFilesystem(p);
+        assertDisplayName(fs, "right display name for file from extra module", "Templates/Documents/docbook-article.xml", "DocBook Article");
+    }
+    
     // XXX testClusterAndModuleExclusions
     // XXX testSystemFilesystemSuiteProject
-    // XXX testSystemFilesystemNetBeansOrgProject
 
     private static void assertDisplayName(FileSystem fs, String message, String path, String label) throws Exception {
         FileObject file = fs.findResource(path);

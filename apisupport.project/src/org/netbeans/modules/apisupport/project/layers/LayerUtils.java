@@ -46,6 +46,7 @@ import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.modules.xml.tax.parser.XMLParsingSupport;
@@ -297,7 +298,7 @@ public class LayerUtils {
         public boolean isDirty() {
             return dirty;
         }
-        public void save() throws IOException {
+        public synchronized void save() throws IOException {
             if (root == null || !dirty) {
                 return;
             }
@@ -341,7 +342,7 @@ public class LayerUtils {
         public void fileDataCreated(FileEvent fe) {
             assert false;
         }
-        private void changed() {
+        private synchronized void changed() {
             if (saving) {
                 return;
             }
@@ -502,9 +503,10 @@ public class LayerUtils {
      * <li><p>For a suite component module project, the filesystem will include all XML
      * layers from non-excluded platform modules, plus the XML layers for modules in the
      * suite, with this module's layer being writable.</p></li>
-     * <li><p>For a netbeans.org module, currently this method is unsupported, as it is
-     * unclear what the scope should be - layers from experimental modules should not
-     * be visible to layers from standard modules, but how to differentiate? By cluster?</p></li>
+     * <li><p>For a netbeans.org module, the filesystem will include all XML layers
+     * from all netbeans.org modules that are not in the <code>extra</code> cluster,
+     * plus the layer from this module (if it is in the <code>extra</code> cluster,
+     * with this module's layer always writable.</p></li>
      * </ol>
      * <p>Does not currently attempt to cache the result,
      * though that could be attempted later as needed.</p>
@@ -521,10 +523,10 @@ public class LayerUtils {
         if (project instanceof NbModuleProject) {
             NbModuleProject p = (NbModuleProject) project;
             NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
+            FileSystem projectLayer = layerForProject(p).layer();
             if (type == NbModuleTypeProvider.STANDALONE) {
                 Set/*<File>*/ jars = getPlatformJarsForStandaloneProject(p);
                 FileSystem platformLayers = getPlatformLayers(jars);
-                FileSystem projectLayer = layerForProject(p).layer();
                 ClassPath cp = createLayerClasspath(Collections.singleton(p), jars);
                 return mergeFilesystems(projectLayer, new FileSystem[] {platformLayers}, cp);
             } else if (type == NbModuleTypeProvider.SUITE_COMPONENT) {
@@ -554,11 +556,37 @@ public class LayerUtils {
                 }
                 Set/*<File>*/ jars = getPlatformJarsForSuiteComponentProject(p, suite);
                 readOnlyLayers.add(getPlatformLayers(jars));
-                FileSystem projectLayer = layerForProject(p).layer();
                 ClassPath cp = createLayerClasspath(modules, jars);
                 return mergeFilesystems(projectLayer, (FileSystem[]) readOnlyLayers.toArray(new FileSystem[readOnlyLayers.size()]), cp);
             } else if (type == NbModuleTypeProvider.NETBEANS_ORG) {
-                throw new AssertionError("XXX not yet implemented");
+                Set/*<NbModuleProject>*/ projects = getProjectsForNetBeansOrgProject(p);
+                List/*<URL>*/ otherLayerURLs = new ArrayList();
+                Iterator it = projects.iterator();
+                while (it.hasNext()) {
+                    NbModuleProject p2 = (NbModuleProject) it.next();
+                    ManifestManager mm = ManifestManager.getInstance(p2.getManifest(), false);
+                    String layer = mm.getLayer();
+                    if (layer == null) {
+                        continue;
+                    }
+                    FileObject src = p2.getSourceDirectory();
+                    if (src == null) {
+                        continue;
+                    }
+                    FileObject layerXml = src.getFileObject(layer);
+                    if (layerXml == null) {
+                        continue;
+                    }
+                    otherLayerURLs.add(layerXml.getURL());
+                }
+                XMLFileSystem xfs = new XMLFileSystem();
+                try {
+                    xfs.setXmlUrls((URL[]) otherLayerURLs.toArray(new URL[otherLayerURLs.size()]));
+                } catch (PropertyVetoException ex) {
+                    assert false : ex;
+                }
+                ClassPath cp = createLayerClasspath(projects, Collections.EMPTY_SET);
+                return mergeFilesystems(projectLayer, new FileSystem[] {xfs}, cp);
             } else {
                 throw new AssertionError(type);
             }
@@ -584,6 +612,29 @@ public class LayerUtils {
         String[] excludedClusters = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_CLUSTERS_PROPERTY);
         String[] excludedModules = SuiteProperties.getArrayProperty(eval, SuiteProperties.DISABLED_MODULES_PROPERTY);
         return getPlatformJars(platform, excludedClusters, excludedModules);
+    }
+    
+    static Set/*<NbModuleProject>*/ getProjectsForNetBeansOrgProject(NbModuleProject project) throws IOException {
+        ModuleList list = project.getModuleList();
+        ModuleEntry myself = list.getEntry(project.getCodeNameBase());
+        assert myself != null : project;
+        Set/*<NbModuleProject>*/ projects = new HashSet();
+        projects.add(project);
+        Iterator it = list.getAllEntries().iterator();
+        while (it.hasNext()) {
+            ModuleEntry other = (ModuleEntry) it.next();
+            if (other.getClusterDirectory().getName().equals("extra")) { // NOI18N
+                continue;
+            }
+            File root = other.getSourceLocation();
+            assert root != null : other;
+            NbModuleProject p2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(root));
+            if (p2 == null) {
+                continue;
+            }
+            projects.add(p2);
+        }
+        return projects;
     }
     
     /**
