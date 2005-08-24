@@ -13,11 +13,21 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.lang.IllegalStateException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,8 +46,12 @@ public class BasicBrandingModel {
     private BrandingSupport.BundleKey mainWindowTitleNoProject = null;
     private BrandingSupport.BundleKey currentVersion = null;
     
+    private BrandingSupport.BrandedFile icon = null;
+    
     public static final String NAME_PROPERTY = "app.name";//NOI18N
     public static final String TITLE_PROPERTY = "app.title";//NOI18N
+    public static final String ICON_LOCATION_PROPERTY = "app.icon";//NOI18N
+    
     public static final String BRANDING_TOKEN_PROPERTY = "branding.token";//NOI18N
     
     /** Creates a new instance of ApplicationDetails */
@@ -78,20 +92,60 @@ public class BasicBrandingModel {
         currentVersion.setValue(title+ " {0}");//NOI18N
     }
     
+    public URL getIconSource() {
+        return icon.getBrandingSource();
+    }
+    
+    public void setIconSource(final File file) {
+        try {
+            icon.setBrandingSource(file);
+        } catch (MalformedURLException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+    
+    public String getIconLocation() {
+        File prj = FileUtil.toFile(suiteProps.getProject().getProjectDirectory());
+        String relativePath = PropertyUtils.relativizeFile(prj ,icon.getFileLocation());
+        
+        return relativePath;
+    }
     
     public void store() throws IOException {
         if (brandingEnabled) {
             suiteProps.setProperty(NAME_PROPERTY, getName());
             suiteProps.setProperty(TITLE_PROPERTY, getTitle());
-            suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");
+            suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");//NOI18N
+            suiteProps.setProperty(ICON_LOCATION_PROPERTY, getIconLocation());
             
             getBranding().brandBundleKey(productInformation);
             getBranding().brandBundleKey(mainWindowTitle);
             getBranding().brandBundleKey(mainWindowTitleNoProject);
             getBranding().brandBundleKey(currentVersion);
+            
+            getBranding().brandFile(icon, getScaleAndStoreIconTask());
+            
         } else {
             suiteProps.removeProperty(BRANDING_TOKEN_PROPERTY);
         }
+    }
+    
+    private Runnable getScaleAndStoreIconTask() throws IOException {
+        return new Runnable() {
+            public void run() {
+                BufferedImage bi = new BufferedImage(48,48,BufferedImage.TYPE_INT_RGB);//NOI18N
+                Graphics2D g2 = bi.createGraphics();
+                ImageIcon image = new ImageIcon(icon.getBrandingSource());
+                //image.p
+                g2.drawImage(image.getImage(),0, 0, 48, 48, Color.LIGHT_GRAY,null);//NOI18N
+                g2.dispose();
+                try {
+                    ImageIO.write(bi,"png",icon.getFileLocation());//NOI18N
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            }
+        };
     }
     
     private BrandingSupport getBranding() {
@@ -167,5 +221,13 @@ public class BasicBrandingModel {
                 "org/netbeans/core/startup/Bundle.properties",
                 "currentVersion");//NOI18N
         assert currentVersion != null;
+        
+        icon = getBranding().getBrandedFile(
+                "org.netbeans.core.startup",
+                "org/netbeans/core/startup/frame48.gif");
+        assert icon != null;
+        
+        
+        
     }
 }

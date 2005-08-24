@@ -84,6 +84,13 @@ public class BrandingSupportTest extends TestBase {
         assertEquals(0,instance.getBrandedFiles().size());
         BrandingSupport.BrandedFile bFile =
                 instance.getBrandedFile("org.netbeans.core.startup","org/netbeans/core/startup/splash.gif");
+        
+        BrandingSupport.BrandedFile bFile2 =
+                instance.getBrandedFile("org.netbeans.core.startup","org/netbeans/core/startup/splash.gif");
+        
+        assertEquals(bFile2, bFile);
+        assertEquals(bFile2.getBrandingSource(), bFile.getBrandingSource());
+        
         assertNotNull(bFile);
         assertEquals(0,instance.getBrandedFiles().size());
         assertFalse(instance.isBranded(bFile));
@@ -100,6 +107,10 @@ public class BrandingSupportTest extends TestBase {
         
         assertEquals(1,instance.getBrandedFiles().size());
         assertTrue(instance.isBranded(bFile));
+        assertEquals(bFile2, bFile);
+        assertFalse(bFile2.getBrandingSource().equals(bFile.getBrandingSource()));
+
+        
         
     }
     

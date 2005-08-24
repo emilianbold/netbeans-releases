@@ -174,18 +174,20 @@ public final class BrandingSupport {
             retval = new BrandedFile(moduleEntry, entryPath);
             for (Iterator it = getBrandedFiles().iterator();it.hasNext() ;) {
                 BrandedFile bFile = (BrandedFile)it.next();
+                
                 if (retval.equals(bFile)) {
                     retval = bFile;
-                }
+                    
+                } 
             }
         } catch (MalformedURLException ex) {
             retval = null;
         }
         return retval;
     }
-
-    public BundleKey getBundleKey(final String moduleCodeNameBase, 
-            final String bundleEntry,final String key) {        
+    
+    public BundleKey getBundleKey(final String moduleCodeNameBase,
+            final String bundleEntry,final String key) {
         Set keys = new HashSet();
         keys.add(key);
         keys = getBundleKeys(moduleCodeNameBase,bundleEntry, keys);
@@ -233,19 +235,19 @@ public final class BrandingSupport {
     public void brandFile(final BrandedFile bFile) throws IOException {
         if (!bFile.isModified()) return;
         
-        File target = new File(getModuleEntryDirectory(bFile.getModuleEntry()),bFile.getEntryPath());
+        File target = bFile.getFileLocation();
         if (!target.exists()) {
             target.getParentFile().mkdirs();
             target.createNewFile();
         }
-
+        
         assert target.exists();
-                
+        
         InputStream is = null;
         OutputStream os = null;
         try {
             is = bFile.getBrandingSource().openStream();
-            os = new FileOutputStream(target);        
+            os = new FileOutputStream(target);
             FileUtil.copy(is, os);
         } finally {
             if (is != null) {
@@ -257,9 +259,16 @@ public final class BrandingSupport {
             }
             
             brandedFiles.add(bFile);
-        }                
+        }
     }
 
+    public void brandFile(final BrandedFile bFile, final Runnable saveTask) throws IOException {
+        if (!bFile.isModified()) return;
+
+        saveTask.run();
+        brandedFiles.add(bFile);        
+    }
+    
     public void brandBundleKey(final BundleKey bundleKey) throws IOException {
         Set keys = new HashSet();
         keys.add(bundleKey);
@@ -385,7 +394,7 @@ public final class BrandingSupport {
             final File file) throws IOException {
         
         String entryPath = PropertyUtils.relativizeFile(getModuleEntryDirectory(mEntry),file);
-        BrandedFile bf = new BrandedFile(mEntry, entryPath);
+        BrandedFile bf = new BrandedFile(mEntry, file.toURI().toURL(), entryPath);
         brandedFiles.add(bf);
     }
     
@@ -520,17 +529,26 @@ public final class BrandingSupport {
         }
     }
     
-    public final class BrandedFile {
+    public class BrandedFile {
         private final ModuleEntry moduleEntry;
         private final String entryPath;
         private URL brandingSource;
         private boolean modified = false;
         
         private BrandedFile(final ModuleEntry moduleEntry, final String entry) throws MalformedURLException {
+            this(moduleEntry, null, entry);
+        }
+        
+        private BrandedFile(final ModuleEntry moduleEntry, final URL source, final String entry) throws MalformedURLException {
             this.moduleEntry = moduleEntry;
             this.entryPath = entry;
-            brandingSource = moduleEntry.getJarLocation().toURI().toURL();
-            brandingSource =  new URL("jar:" + brandingSource + "!/" + entryPath); // NOI18N
+            if (source == null) {
+                brandingSource = moduleEntry.getJarLocation().toURI().toURL();
+                brandingSource =  new URL("jar:" + brandingSource + "!/" + entryPath); // NOI18N
+            } else {
+                brandingSource = source;
+            }
+            
         }
         
         public ModuleEntry getModuleEntry() {
@@ -539,6 +557,10 @@ public final class BrandingSupport {
         
         public String getEntryPath() {
             return entryPath;
+        }
+        
+        public File getFileLocation() {
+            return new File(getModuleEntryDirectory(getModuleEntry()), getEntryPath());
         }
         
         public URL getBrandingSource()  {
@@ -565,11 +587,12 @@ public final class BrandingSupport {
             
             if (obj instanceof BrandedFile) {
                 BrandedFile bFile = (BrandedFile)obj;
-                 retval = getModuleEntry().equals(bFile.getModuleEntry()) 
-                 && getBrandingSource().equals(bFile.getBrandingSource());
+                retval = getModuleEntry().equals(bFile.getModuleEntry())
+                && getFileLocation().equals(bFile.getFileLocation());
             }
             
+            //if ()
             return  retval;
         }
-    }
+    }    
 }
