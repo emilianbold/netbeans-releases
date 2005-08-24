@@ -65,25 +65,18 @@ public class CreateEmptyMBean extends JellyTestCase {
         
         MBean standardMBean = createEmptyStandardMBean();
         wizardExecution(standardMBean);  
-        //TODO Diff between generated and master files
     }
     
     public void constructTest5MBean() {
         
         MBean extendedMBean = createEmptyExtendedStandardMBean();
         wizardExecution(extendedMBean);
-        
-        //TODO Diff between generated and master files
-        
     }
     
     public void constructTest9MBean() {
         
         MBean dynamicMBean = createEmptyDynamicMBean();
         wizardExecution(dynamicMBean);
-        
-        //TODO Diff between generated and master files
-        
     }
     
     /****************************************************************************/
