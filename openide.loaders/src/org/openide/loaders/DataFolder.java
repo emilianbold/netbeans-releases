@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,30 +15,52 @@ package org.openide.loaders;
 
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
-import java.beans.*;
+import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.File;
-import java.lang.ref.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import org.openide.DialogDisplayer;
-
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.datatransfer.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
+import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.nodes.NodeTransfer;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
-import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.datatransfer.NewType;
 
 /** A folder containing data objects.
 * Is actually itself a data object, whose primary (and only) file object
@@ -1111,13 +1133,9 @@ implements Serializable, DataObject.Container {
         public Node.Cookie getCookie (Class clazz) {
             if (clazz == org.openide.nodes.Index.class || clazz == Index.class) {
                 //#33130 - enable IndexCookie only on SystemFileSystem
-                try {
-                    if (DataFolder.this.getPrimaryFile().getFileSystem() == 
-                            Repository.getDefault().getDefaultFileSystem()) {
-                        return new Index (DataFolder.this, this);
-                    }
-                } catch (FileStateInvalidException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                // (also on apisupport layers...)
+                if (getPrimaryFile().canWrite() && FileUtil.toFile(getPrimaryFile()) == null) {
+                    return new Index(DataFolder.this, this);
                 }
             }
             return super.getCookie (clazz);
