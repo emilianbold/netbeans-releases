@@ -27,11 +27,12 @@ import java.util.Collections;
 import java.util.Set;
 import java.awt.Component;
 import javax.swing.JComponent;
-import javax.swing.ProgressMonitor;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.jmi.javamodel.JavaClass;
@@ -334,20 +335,18 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
         }
         
         // 3. add the service client to the project.
-        // " " for note parameter ensures monitor panel has proper room for our notes.
-        final ProgressMonitor monitor = new ProgressMonitor(WindowManager.getDefault().getMainWindow(), 
-            NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"), " ", 0, 100); // NOI18N
-        monitor.setMillisToPopup(0);
-        monitor.setMillisToDecideToPopup(0);
-        monitor.setProgress(1);
+        // Use Progress API to display generator messages.
 
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(
+                NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizCreateClient"));
+        handle.start(100);
         final ClientBuilder builder = new ClientBuilder(project, clientSupport, sourceWsdlFile, packageName, sourceUrl, stubDescriptor);
         final FileObject sourceWsdlFileTmp = sourceWsdlFile;
         
         org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    builder.generate(monitor);
+                    builder.generate(handle);
 
                     if(sourceWsdlDownload != null) {
                         // we used a temp file, delete it now.
@@ -364,12 +363,12 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                         }
                     }
                     
-                    builder.updateMonitor(monitor, NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizDone"), 99); // NOI18N
+                    handle.progress(NbBundle.getMessage(WebServiceClientWizardIterator.class, "MSG_WizDone"),99);
                 } finally {
-                    builder.updateMonitor(monitor, null, 100);
+                    handle.finish();
                 }
             }
-        },500);
+        });
         
         return result;
     }
