@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo file="master.jnlp"><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
 <jnlp spec='1.0+' codebase='$$$$codebase'>
   <information>
-      <title>Your Application</title>
+      <title>$${app.title}</title>
       <vendor>You</vendor>
       <description>Your Application</description>
   </information>
@@ -201,8 +201,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application">
+        <condition property="run.javaws" value="${java.home}/javaws/javaws" >
+            <available file="${java.home}/javaws/javaws" />
+        </condition>
+        <property name="run.javaws" value="javaws" />
         <property name="run.args" value=""/>
-        <exec executable="javaws">
+        <exec executable="${run.javaws}">
             <arg path="${build.jnlp.local.dir}/master.jnlp"/>
             <env key="JAVAWS_VM_ARGS" value="${run.args}"/>
         </exec>
