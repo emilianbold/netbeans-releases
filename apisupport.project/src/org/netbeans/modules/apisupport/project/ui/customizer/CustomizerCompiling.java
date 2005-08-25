@@ -18,7 +18,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerCompiling extends NbPropertyPanel {
+final class CustomizerCompiling extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerCompiling */
     CustomizerCompiling(final SingleModuleProperties props) {
@@ -27,7 +27,7 @@ final class CustomizerCompiling extends NbPropertyPanel {
         refresh();
     }
     
-    protected void refresh() {
+    void refresh() {
         debug.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEBUG));
         deprecation.setSelected(getBooleanProperty(SingleModuleProperties.BUILD_COMPILER_DEPRECATION));
     }

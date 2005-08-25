@@ -19,12 +19,12 @@ import javax.swing.JPanel;
 
 /**
  * Provides common support for a <em>standard</em> panels in the NetBeans module
- * customizer.
+ * and suite customizers.
  *
  * @author Martin Krauskopf
  */
 abstract class NbPropertyPanel extends JPanel implements
-        ComponentFactory.StoragePanel, PropertyChangeListener {
+        BasicCustomizer.LazyStorage, PropertyChangeListener {
     
     /** Property whether <code>this</code> panel is valid. */
     static final String VALID_PROPERTY = "isPanelValid"; // NOI18N
@@ -32,7 +32,7 @@ abstract class NbPropertyPanel extends JPanel implements
     /** Property for error message of this panel. */
     static final String ERROR_MESSAGE_PROPERTY = "errorMessage"; // NOI18N
     
-    protected SingleModuleProperties props;
+    protected ModuleProperties props;
     
     /** Whether this panel is valid or not. */
     private boolean valid;
@@ -41,7 +41,7 @@ abstract class NbPropertyPanel extends JPanel implements
     private String errMessage;
     
     /** Creates new NbPropertyPanel */
-    NbPropertyPanel(final SingleModuleProperties props) {
+    NbPropertyPanel(final ModuleProperties props) {
         this.valid = true; // panel is valid by default
         this.props = props;
         initComponents();
@@ -49,14 +49,9 @@ abstract class NbPropertyPanel extends JPanel implements
     }
     
     /**
-     * This method is called whenever {@link SingleModuleProperties} are
-     * refreshed.
+     * This method is called whenever {@link ModuleProperties} are refreshed.
      */
-    protected abstract void refresh();
-    
-    SingleModuleProperties getProperties() {
-        return props;
-    }
+    abstract void refresh();
     
     String getProperty(String key) {
         return props.getProperty(key);
@@ -103,7 +98,7 @@ abstract class NbPropertyPanel extends JPanel implements
     public void store() { /* empty implementation */ }
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (SingleModuleProperties.PROPERTIES_REFRESHED == evt.getPropertyName()) {
+        if (ModuleProperties.PROPERTIES_REFRESHED == evt.getPropertyName()) {
             refresh();
         }
     }
@@ -129,5 +124,23 @@ abstract class NbPropertyPanel extends JPanel implements
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
+    
+    abstract static class Single extends NbPropertyPanel {
+        Single(final SingleModuleProperties props) {
+            super(props);
+        }
+        SingleModuleProperties getProperties() {
+            return (SingleModuleProperties) props;
+        }
+    }
+    
+    abstract static class Suite extends NbPropertyPanel {
+        Suite(final SuiteProperties props) {
+            super(props);
+        }
+        SuiteProperties getProperties() {
+            return (SuiteProperties) props;
+        }
+    }
     
 }

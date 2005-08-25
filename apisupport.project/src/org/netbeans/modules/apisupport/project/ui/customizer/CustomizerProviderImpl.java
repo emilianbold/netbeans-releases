@@ -13,142 +13,23 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
 /**
  * Adding ability for a NetBeans modules to provide a GUI customizer.
  *
- * @author mkrauskopf
+ * @author Martin Krauskopf
  */
-public final class CustomizerProviderImpl implements CustomizerProvider, PropertyChangeListener {
-    
-    public static final ErrorManager err = ErrorManager.getDefault().getInstance(
-            "org.netbeans.modules.apisupport.project.ui.customizer"); // NOI18N
-    
-    static final String LAST_SELECTED_PANEL = "lastSelectedPanel"; // NOI18N
-    
-    private final Project project;
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
-    private final LocalizedBundleInfo bundleInfo;
-    
-    private final Map/*<ProjectCustomizer.Category, JPanel>*/ panels = new HashMap();
-    
-    private SingleModuleProperties moduleProps;
-    
-    private ProjectCustomizer.Category categories[];
-    private ProjectCustomizer.CategoryComponentProvider panelProvider;
-    
-    /** Keeps reference to a dialog for this customizer. */
-    private Dialog dialog;
-    
-    private Component lastSelectedPanel;
-
-    public CustomizerProviderImpl(Project project, AntProjectHelper helper,
-            PropertyEvaluator evaluator, LocalizedBundleInfo bundleInfo) {
-        this.project = project;
-        this.helper = helper;
-        this.evaluator = evaluator;
-        this.bundleInfo = bundleInfo;
-    }
-    
-    /** Show customizer with the first category selected. */
-    public void showCustomizer() {
-        showCustomizer(null);
-    }
-    
-    /** Show customizer with preselected category. */
-    public void showCustomizer(String preselectedCategory) {
-        showCustomizer(preselectedCategory, null);
-    }
-    
-    /** Show customizer with preselected category and subcategory. */
-    public void showCustomizer(String preselectedCategory, String preselectedSubCategory) {
-        if (dialog != null) {
-            dialog.setVisible(true);
-            return;
-        } else {
-            Lookup lookup = project.getLookup();
-            SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
-            NbModuleTypeProvider nmtp = (NbModuleTypeProvider) lookup.lookup(NbModuleTypeProvider.class);
-            if (moduleProps == null) { // first initialization
-                moduleProps = new SingleModuleProperties(helper, evaluator,
-                        sp, nmtp.getModuleType(), bundleInfo);
-                init();
-            }
-            moduleProps.refresh(nmtp.getModuleType(), sp);
-            OptionListener listener = new OptionListener();
-            if (preselectedCategory == null) {
-                preselectedCategory = findLastSelectedCategory();
-            }
-            dialog = ProjectCustomizer.createCustomizerDialog(categories,
-                    panelProvider, preselectedCategory, listener,
-                    new HelpCtx(CustomizerProviderImpl.class));
-            dialog.addWindowListener(listener);
-            dialog.setTitle(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizerTitle",
-                    ProjectUtils.getInformation(project).getDisplayName()));
-            dialog.setVisible(true);
-            if (preselectedCategory != null && preselectedSubCategory != null) {
-                for (int i = 0; i < categories.length; i++) {
-                    if (preselectedCategory.equals(categories[i].getName())) {
-                        JComponent component = panelProvider.create(categories[i]);
-                        if (component instanceof SubCategoryProvider) {
-                            ((SubCategoryProvider)component).showSubCategory(
-                                    preselectedSubCategory);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    
-    private String findLastSelectedCategory() {
-        String preselectedCategory = null;
-        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            Component panel = (Component) entry.getValue();
-            if (panel == lastSelectedPanel) {
-                preselectedCategory = ((ProjectCustomizer.Category) entry.getKey()).getName();
-                break;
-            }
-        }
-        return preselectedCategory;
-    }
-    
-    static interface SubCategoryProvider {
-        public void showSubCategory(String name);
-    }
+public final class CustomizerProviderImpl extends BasicCustomizer {
     
     // Programmatic names of categories
     private static final String CATEGORY_SOURCES = "Sources"; // NOI18N
@@ -161,152 +42,71 @@ public final class CustomizerProviderImpl implements CustomizerProvider, Propert
     private static final String CATEGORY_PACKAGING = "Packaging"; // NOI18N
     private static final String CATEGORY_DOCUMENTING = "Documenting"; // NOI18N
     
+    private final AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
+    private final LocalizedBundleInfo bundleInfo;
+    
+    private SingleModuleProperties moduleProps;
+    
+    public CustomizerProviderImpl(final Project project, final AntProjectHelper helper,
+            final PropertyEvaluator evaluator, final LocalizedBundleInfo bundleInfo) {
+        super(project);
+        this.helper = helper;
+        this.evaluator = evaluator;
+        this.bundleInfo = bundleInfo;
+    }
+    
+    void storeProperties() throws IOException {
+        moduleProps.storeProperties();
+    }
+    
+    protected void prepareData() {
+        Lookup lookup = getProject().getLookup();
+        SuiteProvider sp = (SuiteProvider) lookup.lookup(SuiteProvider.class);
+        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) lookup.lookup(NbModuleTypeProvider.class);
+        if (moduleProps == null) { // first initialization
+            moduleProps = new SingleModuleProperties(helper, evaluator,
+                    sp, nmtp.getModuleType(), bundleInfo);
+            init();
+        }
+        moduleProps.refresh(nmtp.getModuleType(), sp);
+    }
+    
     private void init() {
-        ResourceBundle bundle = NbBundle.getBundle(CustomizerProviderImpl.class);
+        ProjectCustomizer.Category sources = createCategory(CATEGORY_SOURCES, "LBL_ConfigSources"); // NOI18N
+        ProjectCustomizer.Category libraries = createCategory(CATEGORY_LIBRARIES, "LBL_ConfigLibraries"); // NOI18N
+        ProjectCustomizer.Category display = createCategory(CATEGORY_DISPLAY, "LBL_ConfigDisplay"); // NOI18N
+        ProjectCustomizer.Category versioning = createCategory(CATEGORY_VERSIONING, "LBL_ConfigVersioning"); // NOI18N
+        ProjectCustomizer.Category compiling = createCategory(CATEGORY_COMPILING, "LBL_ConfigCompiling"); // NOI18N
+        ProjectCustomizer.Category packaging = createCategory(CATEGORY_PACKAGING, "LBL_ConfigPackaging"); // NOI18N
+        ProjectCustomizer.Category documenting = createCategory(CATEGORY_DOCUMENTING, "LBL_ConfigDocumenting"); // NOI18N
         
-        ProjectCustomizer.Category sources = createCategory(CATEGORY_SOURCES,
-                bundle.getString("LBL_ConfigSources")); // NOI18N
-        ProjectCustomizer.Category display = createCategory(CATEGORY_DISPLAY,
-                bundle.getString("LBL_ConfigDisplay")); // NOI18N
-        ProjectCustomizer.Category libraries = createCategory(CATEGORY_LIBRARIES,
-                bundle.getString("LBL_ConfigLibraries")); // NOI18N
-        ProjectCustomizer.Category versioning = createCategory(CATEGORY_VERSIONING,
-                bundle.getString("LBL_ConfigVersioning")); // NOI18N
-
-        ProjectCustomizer.Category compiling = createCategory(CATEGORY_COMPILING,
-                bundle.getString("LBL_ConfigCompiling")); // NOI18N
-        ProjectCustomizer.Category packaging = createCategory(CATEGORY_PACKAGING,
-                bundle.getString("LBL_ConfigPackaging")); // NOI18N
-        ProjectCustomizer.Category documenting = createCategory(CATEGORY_DOCUMENTING,
-                bundle.getString("LBL_ConfigDocumenting")); // NOI18N
-        ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
-                CATEGORY_BUILD,
-                bundle.getString( "LBL_ConfigBuild" ), // NOI18N
-                null,
-                new ProjectCustomizer.Category[] {compiling, packaging, documenting}
-        );
-
-        
-        categories = new ProjectCustomizer.Category[] {
-            sources, libraries, display, versioning, build
-        };
-        
-        // sources customizer
-        panels.put(sources, new CustomizerSources(moduleProps));
-        
-        // display customizer
-        panels.put(display, new CustomizerDisplay(moduleProps));
-        
-        // libraries customizer
-        panels.put(libraries, new CustomizerLibraries(moduleProps));
-        
-        // versioning customizer
+        // XXX this is a little clumsy (will be replaced by some general mechanism, now it is rather a demo)
+        // (servers just for checking if category is valid during first invocation)
         CustomizerVersioning versioningPanel = new CustomizerVersioning(moduleProps);
         versioning.setValid(versioningPanel.isCustomizerValid());
-        panels.put(versioning, versioningPanel);
         
-        // compiling customizer
-        panels.put(compiling, new CustomizerCompiling(moduleProps));
+        ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
+                CATEGORY_BUILD,
+                NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_ConfigBuild"),
+                null,
+                new ProjectCustomizer.Category[] { compiling, packaging, documenting }
+        );
         
-        // packaging customizer
-        panels.put(packaging, new CustomizerPackaging(moduleProps));
+        setCategories(new ProjectCustomizer.Category[] {
+            sources, libraries, display, versioning, build
+        });
         
-        // documenting customizer
-        panels.put(documenting, new CustomizerDocumenting(moduleProps));
+        createPanel(sources, new CustomizerSources(moduleProps));
+        createPanel(libraries, new CustomizerLibraries(moduleProps));
+        createPanel(display, new CustomizerDisplay(moduleProps));
+        createPanel(versioning, new CustomizerVersioning(moduleProps));
+        createPanel(compiling, new CustomizerCompiling(moduleProps));
+        createPanel(packaging, new CustomizerPackaging(moduleProps));
+        createPanel(documenting, new CustomizerDocumenting(moduleProps));
         
-        panelProvider = new ProjectCustomizer.CategoryComponentProvider() {
-            public JComponent create(ProjectCustomizer.Category category) {
-                JComponent panel = (JComponent) panels.get(category);
-                return panel == null ? new JPanel() : panel;
-            }
-        };
-        
-        for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
-            ((Component) it.next()).addPropertyChangeListener(this);
-        }
+        listenToPanels();
     }
     
-    /** Creates a category without subcategories. */
-    private ProjectCustomizer.Category createCategory(
-            String progName, String displayName) {
-        return ProjectCustomizer.Category.create(
-                progName, displayName, null, null);
-    }
-    
-    /** Listens to the actions on the Customizer's option buttons */
-    public void propertyChange(PropertyChangeEvent evt) {
-        String propertyName = evt.getPropertyName();
-        if (propertyName == NbPropertyPanel.VALID_PROPERTY) {
-            findCategory(evt.getSource()).setValid(((Boolean) evt.getNewValue()).booleanValue());
-        } else if (propertyName == NbPropertyPanel.ERROR_MESSAGE_PROPERTY) {
-            findCategory(evt.getSource()).setErrorMessage((String) evt.getNewValue());
-        } else if (propertyName == CustomizerProviderImpl.LAST_SELECTED_PANEL) {
-            lastSelectedPanel = (Component) evt.getSource();
-        }
-    }
-    
-    private ProjectCustomizer.Category findCategory(Object panel) {
-        for (Iterator it = panels.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            if (panel.equals(entry.getValue())) {
-                return (ProjectCustomizer.Category) entry.getKey();
-            }
-        }
-        throw new IllegalArgumentException(panel + " panel is not known in this customizer"); // NOI18N
-    }
-    
-    private class OptionListener extends WindowAdapter implements ActionListener {
-        
-        // Listening to OK button ----------------------------------------------
-        public void actionPerformed(ActionEvent e) {
-            // Store the properties into project
-            for (Iterator it = panels.values().iterator(); it.hasNext(); ) {
-                Object panel = (Object) it.next();
-                if (panel instanceof ComponentFactory.StoragePanel) {
-                    ((ComponentFactory.StoragePanel) panel).store();
-                }
-            }
-            save();
-            
-            // Close & dispose the dialog
-            if (dialog != null) {
-                dialog.setVisible(false);
-                dialog.dispose();
-            }
-        }
-        
-        // remove dialog for this customizer's project
-        public void windowClosed(WindowEvent e) {
-            dialog = null;
-        }
-        
-        public void windowClosing(WindowEvent e) {
-            // Dispose the dialog otherwise the
-            // {@link WindowAdapter#windowClosed} may not be called
-            if (dialog != null) {
-                dialog.setVisible(false);
-                dialog.dispose();
-            }
-        }
-    }
-    
-    public void save() {
-        try {
-            // Store properties
-            Boolean result = (Boolean) ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-                public Object run() throws IOException {
-                    moduleProps.storeProperties();
-                    return Boolean.TRUE;
-                }
-            });
-            // and save the project
-            if (result == Boolean.TRUE) {
-                ProjectManager.getDefault().saveProject(project);
-            }
-        } catch (MutexException e) {
-            ErrorManager.getDefault().notify((IOException)e.getException());
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-    }
 }
+

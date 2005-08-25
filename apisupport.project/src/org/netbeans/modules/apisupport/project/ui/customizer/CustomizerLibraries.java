@@ -40,7 +40,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkrauskopf
  */
-public class CustomizerLibraries extends NbPropertyPanel {
+public class CustomizerLibraries extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerLibraries */
     public CustomizerLibraries(final SingleModuleProperties props) {
@@ -68,7 +68,7 @@ public class CustomizerLibraries extends NbPropertyPanel {
         });
     }
     
-    protected void refresh() {
+    void refresh() {
         platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.setEnabled(getProperties().isStandalone());
         updateEnabled();

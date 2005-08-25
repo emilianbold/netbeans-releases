@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -31,6 +33,8 @@ import org.openide.filesystems.FileUtil;
  */
 abstract class ModuleProperties {
     
+    public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
+    
     // Helpers for storing and retrieving real values currently stored on the disk
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
@@ -40,6 +44,8 @@ abstract class ModuleProperties {
     
     /** Represent module's private properties (nbproject/private/private.properties). */
     private EditableProperties privateProperties;
+    
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
     /** Creates a new instance of ModuleProperties */
     ModuleProperties(AntProjectHelper helper, PropertyEvaluator evaluator) {
@@ -178,4 +184,22 @@ abstract class ModuleProperties {
         helper.putProperties(
                 NbModuleProjectGenerator.PLATFORM_PROPERTIES_PATH, props);
     }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pchl) {
+        changeSupport.addPropertyChangeListener(pchl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pchl) {
+        changeSupport.removePropertyChangeListener(pchl);
+    }
+    
+    protected void firePropertyChange(String propName, Object oldValue, Object newValue) {
+        changeSupport.firePropertyChange(propName, oldValue, newValue);
+    }
+    
+    protected void firePropertiesRefreshed() {
+        firePropertyChange(PROPERTIES_REFRESHED, null, null);
+    }
+    
 }
+

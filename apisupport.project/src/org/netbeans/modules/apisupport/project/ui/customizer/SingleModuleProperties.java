@@ -13,8 +13,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
@@ -130,11 +128,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     private FriendListModel friendListModel;
     private RequiredTokenListModel requiredTokensListModel;
     
-    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
-    
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
-    public static final String PROPERTIES_REFRESHED = "propertiesRefreshed"; // NOI18N
     
     /**
      * Creates a new instance of SingleModuleProperties
@@ -143,11 +138,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             SuiteProvider sp, NbModuleTypeProvider.NbModuleType moduleType,
             LocalizedBundleInfo bundleInfo) {
         super(helper, evaluator);
-        this.suiteProvider = sp;
         this.bundleInfo = bundleInfo;
-        this.moduleType = moduleType;
-        this.changeSupport = new PropertyChangeSupport(this);
-        this.refresh(moduleType, sp);
+        refresh(moduleType, sp);
     }
     
     protected void refresh(NbModuleTypeProvider.NbModuleType moduleType,
@@ -178,7 +170,7 @@ public final class SingleModuleProperties extends ModuleProperties {
                 ErrorManager.getDefault().notify(ioe);
             }
         }
-        firePropertyChange(PROPERTIES_REFRESHED, null, null);
+        firePropertiesRefreshed();
     }
     
     /** i.e. whether the bundle can be stored/reload etc. */
@@ -481,18 +473,6 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (isStandalone()) {
             ModuleProperties.storePlatform(getHelper(), platform);
         }
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener pchl) {
-        changeSupport.addPropertyChangeListener(pchl);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener pchl) {
-        changeSupport.removePropertyChangeListener(pchl);
-    }
-    
-    private void firePropertyChange(String propName, Object oldValue, Object newValue) {
-        changeSupport.firePropertyChange(propName, oldValue, newValue);
     }
     
     /**

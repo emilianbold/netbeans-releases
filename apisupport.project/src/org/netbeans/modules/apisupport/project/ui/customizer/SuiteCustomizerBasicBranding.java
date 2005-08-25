@@ -12,13 +12,12 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
-import java.awt.Dimension;
+
 import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
@@ -27,25 +26,22 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.ErrorManager;
 
-
 /**
  * Represents <em>Basic branding parameters</em> panel in Suite customizer.
  *
  * @author Radek Matous
  */
-public class SuiteCustomizerBasicBranding extends JPanel
-        implements ComponentFactory.StoragePanel {
+final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     
-    private SuiteProperties suiteProps  = null;
     private BasicBrandingModel brandingModel;
     
     /**
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps) {
-        this.suiteProps = suiteProps;
+        super(suiteProps);
         initComponents();
-        brandingModel = new BasicBrandingModel(suiteProps);
+        brandingModel = new BasicBrandingModel(getProperties());
         
         DocumentListener nameListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
@@ -69,6 +65,10 @@ public class SuiteCustomizerBasicBranding extends JPanel
         
         ((ImagePreview)iconPreview).setImage(new ImageIcon(brandingModel.getIconSource()));
         iconLocation.setText(brandingModel.getIconLocation());
+    }
+    
+    void refresh() {
+        // TODO
     }
     
     public void store() {

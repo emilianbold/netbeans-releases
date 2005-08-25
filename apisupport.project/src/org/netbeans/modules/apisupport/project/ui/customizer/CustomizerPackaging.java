@@ -21,7 +21,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerPackaging extends NbPropertyPanel {
+final class CustomizerPackaging extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerPackaging */
     CustomizerPackaging(final SingleModuleProperties props) {
@@ -30,7 +30,7 @@ final class CustomizerPackaging extends NbPropertyPanel {
         refresh();
     }
     
-    protected void refresh() {
+    void refresh() {
         UIUtil.setText(jarFileValue, getProperties().getJarFile());
         needsRestart.setSelected(getBooleanProperty(SingleModuleProperties.NBM_NEEDS_RESTART));
         isGlobal.setSelected(getBooleanProperty(SingleModuleProperties.NBM_IS_GLOBAL));

@@ -20,7 +20,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
  *
  * @author mkrauskopf
  */
-final class CustomizerSources extends NbPropertyPanel {
+final class CustomizerSources extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerSources */
     CustomizerSources(final SingleModuleProperties props) {
@@ -29,7 +29,7 @@ final class CustomizerSources extends NbPropertyPanel {
         refresh();
     }
     
-    protected void refresh() {
+    void refresh() {
         if (getProperties().getSuiteDirectory() == null) {
             moduleSuite.setVisible(false);
             moduleSuiteValue.setVisible(false);

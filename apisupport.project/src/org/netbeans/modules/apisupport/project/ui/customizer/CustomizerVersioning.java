@@ -37,7 +37,8 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-final class CustomizerVersioning extends NbPropertyPanel implements PropertyChangeListener, CustomizerProviderImpl.SubCategoryProvider {
+final class CustomizerVersioning extends NbPropertyPanel.Single
+        implements PropertyChangeListener, BasicCustomizer.SubCategoryProvider {
     
     private static final int CHECKBOX_WIDTH = new JCheckBox().getWidth();
     
@@ -52,19 +53,19 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
         attachListeners();
     }
     
-    protected void refresh() {
-        UIUtil.setText(majorRelVerValue, props.getMajorReleaseVersion());
-        UIUtil.setText(tokensValue, props.getProvidedTokens());
-        String specVersion = props.getSpecificationVersion();
+    void refresh() {
+        UIUtil.setText(majorRelVerValue, getProperties().getMajorReleaseVersion());
+        UIUtil.setText(tokensValue, getProperties().getProvidedTokens());
+        String specVersion = getProperties().getSpecificationVersion();
         if (null == specVersion || "".equals(specVersion)) { // NOI18N
             appendImpl.setSelected(true);
             UIUtil.setText(specificationVerValue, getProperty(SingleModuleProperties.SPEC_VERSION_BASE));
         } else {
             UIUtil.setText(specificationVerValue, specVersion);
         }
-        UIUtil.setText(implVerValue, props.getImplementationVersion());
-        friendsList.setModel(props.getFriendListModel());
-        UIUtil.setText(cnbValue, props.getCodeNameBase());
+        UIUtil.setText(implVerValue, getProperties().getImplementationVersion());
+        friendsList.setModel(getProperties().getFriendListModel());
+        UIUtil.setText(cnbValue, getProperties().getCodeNameBase());
         regularMod.setSelected(true);
         autoloadMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD));
         eagerMod.setSelected(getBooleanProperty(SingleModuleProperties.IS_EAGER));
@@ -126,7 +127,7 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
     }
     
     private void initPublicPackageTable() {
-        publicPkgsTable.setModel(props.getPublicPackagesModel());
+        publicPkgsTable.setModel(getProperties().getPublicPackagesModel());
         publicPkgsTable.getColumnModel().getColumn(0).setMaxWidth(CHECKBOX_WIDTH + 20);
         publicPkgsTable.setRowHeight(publicPkgsTable.getFontMetrics(publicPkgsTable.getFont()).getHeight() +
                 (2 * publicPkgsTable.getRowMargin()));
@@ -170,17 +171,17 @@ final class CustomizerVersioning extends NbPropertyPanel implements PropertyChan
     }
     
     public void store() {
-        props.setMajorReleaseVersion(majorRelVerValue.getText().trim());
+        getProperties().setMajorReleaseVersion(majorRelVerValue.getText().trim());
         String specVer = specificationVerValue.getText().trim();
         if (appendImpl.isSelected()) {
-            props.setSpecificationVersion(""); // NOI18N
+            getProperties().setSpecificationVersion(""); // NOI18N
             setProperty(SingleModuleProperties.SPEC_VERSION_BASE, specVer);
         } else {
-            props.setSpecificationVersion(specVer);
+            getProperties().setSpecificationVersion(specVer);
             setProperty(SingleModuleProperties.SPEC_VERSION_BASE, ""); // NOI18N
         }
-        props.setImplementationVersion(implVerValue.getText().trim());
-        props.setProvidedTokens(tokensValue.getText().trim());
+        getProperties().setImplementationVersion(implVerValue.getText().trim());
+        getProperties().setProvidedTokens(tokensValue.getText().trim());
         setBooleanProperty(SingleModuleProperties.IS_AUTOLOAD, autoloadMod.isSelected());
         setBooleanProperty(SingleModuleProperties.IS_EAGER, eagerMod.isSelected());
     }

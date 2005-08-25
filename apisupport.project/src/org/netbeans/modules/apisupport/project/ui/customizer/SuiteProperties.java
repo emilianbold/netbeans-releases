@@ -41,7 +41,7 @@ public final class SuiteProperties extends ModuleProperties {
     private Project project;
     
     /** Represent original set of sub-modules. */
-    private final Set/*<Project>*/ origSubModules;
+    private Set/*<Project>*/ origSubModules;
     
     /** Represent currently set set of sub-modules. */
     private Set/*<Project>*/ subModules;
@@ -63,13 +63,19 @@ public final class SuiteProperties extends ModuleProperties {
             PropertyEvaluator evaluator, Set/*<Project>*/ subModules) {
         super(helper, evaluator);
         this.project = project;
-        this.origSubModules = Collections.unmodifiableSet(subModules);
-        this.subModules = subModules;
+        refresh(subModules);
         // XXX similar to SuiteProject.getActivePlatform:
         platform = NbPlatform.getPlatformByID(
                 evaluator.getProperty("nbplatform.active")); // NOI18N
         this.disabledModules = getArrayProperty(evaluator, DISABLED_MODULES_PROPERTY);
         this.disabledClusters = getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY);
+    }
+    
+    void refresh(Set/*<Project>*/ subModules) {
+        this.origSubModules = Collections.unmodifiableSet(subModules);
+        this.subModules = subModules;
+        this.moduleListModel = null;
+        firePropertiesRefreshed();
     }
     
     Project getProject() {
@@ -178,3 +184,4 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
 }
+

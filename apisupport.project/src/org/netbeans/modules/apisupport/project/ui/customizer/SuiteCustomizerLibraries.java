@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -40,19 +39,16 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Krauskopf
  */
-public class SuiteCustomizerLibraries extends JPanel
-        implements ComponentFactory.StoragePanel {
-    
-    private SuiteProperties suiteProps;
+final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
     
     /**
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps) {
-        this.suiteProps = suiteProps;
+        super(suiteProps);
         initComponents();
         platformValue.setSelectedItem(suiteProps.getActivePlatform());
-        moduleList.setModel(suiteProps.getModulesListModel());
+        refresh();
         moduleList.setCellRenderer(ComponentFactory.getModuleCellRenderer());
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
@@ -61,6 +57,11 @@ public class SuiteCustomizerLibraries extends JPanel
                 }
             }
         });
+        suiteProps.addPropertyChangeListener(this);
+    }
+    
+    void refresh() {
+        moduleList.setModel(getProperties().getModulesListModel());
     }
     
     private void updateEnabled() {
@@ -69,7 +70,7 @@ public class SuiteCustomizerLibraries extends JPanel
     }
     
     public void store() {
-        suiteProps.setActivePlatform((NbPlatform) platformValue.getSelectedItem());
+        getProperties().setActivePlatform((NbPlatform) platformValue.getSelectedItem());
     }
     
     private ComponentFactory.SuiteSubModulesListModel getModuleListModel() {
@@ -226,7 +227,7 @@ public class SuiteCustomizerLibraries extends JPanel
                         ProjectUtils.getInformation(project).getDisplayName(),
                         getSuiteProjectName(project),
                         getSuiteProjectDirectory(project),
-                        suiteProps.getProjectDisplayName(),
+                        getProperties().getProjectDisplayName(),
                     };
                     NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(SuiteCustomizerLibraries.class,
@@ -270,7 +271,7 @@ public class SuiteCustomizerLibraries extends JPanel
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
         NbPlatformCustomizer.showCustomizer();
         platformValue.setModel(new org.netbeans.modules.apisupport.project.ui.platform.ComponentFactory.NbPlatformListModel()); // refresh
-        platformValue.setSelectedItem(suiteProps.getActivePlatform());
+        platformValue.setSelectedItem(getProperties().getActivePlatform());
         platformValue.requestFocus();
     }//GEN-LAST:event_managePlatforms
     

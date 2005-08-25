@@ -23,8 +23,7 @@ import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
  *
  * @author mkrauskopf
  */
-final class CustomizerDisplay extends NbPropertyPanel implements
-        ComponentFactory.StoragePanel {
+final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private boolean disabled;
     
@@ -35,7 +34,7 @@ final class CustomizerDisplay extends NbPropertyPanel implements
         refresh();
     }
     
-    protected  void refresh() {
+    void refresh() {
         this.disabled = getBundle() == null;
         if (disabled) {
             nameValue.setEnabled(false);
