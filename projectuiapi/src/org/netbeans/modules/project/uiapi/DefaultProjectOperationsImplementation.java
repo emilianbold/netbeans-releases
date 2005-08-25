@@ -392,7 +392,7 @@ public final class DefaultProjectOperationsImplementation {
                 FileObject toCopy = (FileObject) i.next();
                 File       toCopyFile = FileUtil.toFile(toCopy);
                 
-                toCopy.delete();
+                doDelete(project, toCopy);
             }
             
             if (projectDirectory.getChildren().length == 0) {
@@ -436,6 +436,31 @@ public final class DefaultProjectOperationsImplementation {
         } else {
             assert from.isData();
             FileObject target = FileUtil.copyFile(from, toParent, from.getName(), from.getExt());
+        }
+    }
+    
+    private static boolean doDelete(Project original, FileObject toDelete) throws IOException {
+        if (!original.getProjectDirectory().equals(FileOwnerQuery.getOwner(toDelete).getProjectDirectory())) {
+            return false;
+        }
+        
+        if (toDelete.isFolder()) {
+            FileObject[] kids = toDelete.getChildren();
+            boolean delete = true;
+            
+            for (int i = 0; i < kids.length; i++) {
+                delete &= doDelete(original, kids[i]);
+            }
+            
+            if (delete) {
+                toDelete.delete();
+            }
+            
+            return delete;
+        } else {
+            assert toDelete.isData();
+            toDelete.delete();
+            return true;
         }
     }
     
