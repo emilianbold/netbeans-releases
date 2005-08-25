@@ -112,8 +112,10 @@ public class PatchAction extends NodeAction {
                     try {
                         fileDiffs = Patch.parse(new InputStreamReader(new FileInputStream(patch), PATCHING_IO_ENCODING));
                     } catch (IOException ioex) {
-                        ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
-                            NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage())));
+                        ErrorManager.getDefault().annotate(ioex,
+                            NbBundle.getMessage(PatchAction.class, "EXC_PatchParsingFailed", ioex.getLocalizedMessage()));
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
+                        ErrorManager.getDefault().notify(ErrorManager.USER, ioex);
                         return ;
                     }
                     int numDiffs = 0;

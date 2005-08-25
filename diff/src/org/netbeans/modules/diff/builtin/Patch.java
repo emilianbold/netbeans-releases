@@ -480,7 +480,9 @@ public class Patch extends Reader {
             try {
                 readUnifiedNums(line, UNIFIED_MARK.length(), intervals);
             } catch (NumberFormatException nfex) {
-                throw new IOException(nfex.getLocalizedMessage());
+                IOException ioex = new IOException("Can not parse: " + line);
+                ioex.initCause(nfex);
+                throw ioex;
             }
             line = fillUnidifChanges(intervals, br, diffs);
         } while (line != null);
