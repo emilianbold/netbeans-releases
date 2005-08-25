@@ -20,6 +20,7 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.AbstractAction;
@@ -44,6 +45,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -51,10 +53,9 @@ import org.openide.windows.WindowManager;
 
 public class OptionsWindowAction extends AbstractAction {
 
-    private DialogDescriptor descriptor;
-    private OptionsPanel    optionsPanel;
-    private Dialog          dialog;
-    private int             index = -1;
+    private WeakReference       optionsPanel;
+    private WeakReference       dialog;
+    private int                 index = -1;
     
     
     public OptionsWindowAction () {
@@ -70,30 +71,30 @@ public class OptionsWindowAction extends AbstractAction {
 
     public void actionPerformed (ActionEvent evt) {     
         Object source = evt.getSource ();
+        System.out.println(evt);
         if (source == DialogDescriptor.OK_OPTION) {
-            optionsPanel.save ();
-            index = optionsPanel.getCurrentIndex ();
-            dialog.setVisible (false);
+            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
+            Dialog d = (Dialog) dialog.get ();
+            op.save ();
+            index = op.getCurrentIndex ();
+            d.setVisible (false);
             dialog = null;
-            optionsPanel = null;
-            descriptor = null;
         } else
         if (evt.getActionCommand ().equals ("Classic")) {
-            if (optionsPanel == null) return;
-            optionsPanel.cancel ();
-            index = optionsPanel.getCurrentIndex ();
-            optionsPanel = null;
-            dialog.setVisible (false);
-            descriptor = null;
+            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
+            Dialog d = (Dialog) dialog.get ();
+            op.cancel ();
+            index = op.getCurrentIndex ();
+            d.setVisible (false);
             dialog = null;
             try {
                 ClassLoader cl = (ClassLoader) Lookup.getDefault ().lookup (ClassLoader.class);
                 Class clz = cl.loadClass ("org.netbeans.core.actions.OptionsAction");
-                SystemAction a = (SystemAction) SystemAction.findObject (clz, true);
-                clz.getMethod ("putValue", new Class [] {String.class, Object.class}).
-                    invoke (a, new Object [] {"additionalActionName", loc ("Modern")});
-                clz.getMethod ("putValue", new Class [] {String.class, Object.class}).
-                    invoke (a, new Object [] {"additionalActionListener", 
+                CallableSystemAction a = (CallableSystemAction) SystemAction.
+                    findObject (clz, true);
+                a.putValue ("additionalActionName", loc ("Modern"));
+                a.putValue (
+                    "additionalActionListener", 
                     new ActionListener () {
                         public void actionPerformed (ActionEvent e) {
                             RequestProcessor.getDefault ().post (new Runnable () {
@@ -104,8 +105,24 @@ public class OptionsWindowAction extends AbstractAction {
                             });
                         }
                     }
-                });
-                clz.getMethod ("performAction", new Class [0]).invoke (a, new Object [0]);
+                );
+                a.performAction ();
+//                clz.getMethod ("putValue", new Class [] {String.class, Object.class}).
+//                    invoke (a, new Object [] {"additionalActionName", loc ("Modern")});
+//                clz.getMethod ("putValue", new Class [] {String.class, Object.class}).
+//                    invoke (a, new Object [] {"additionalActionListener", 
+//                    new ActionListener () {
+//                        public void actionPerformed (ActionEvent e) {
+//                            RequestProcessor.getDefault ().post (new Runnable () {
+//                                public void run () {
+//                                    OptionsWindowAction.this.actionPerformed 
+//                                        (new ActionEvent (this, 0, "Open"));
+//                                }
+//                            });
+//                        }
+//                    }
+//                });
+//                clz.getMethod ("performAction", new Class [0]).invoke (a, new Object [0]);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -113,24 +130,34 @@ public class OptionsWindowAction extends AbstractAction {
 //        if (evt.getActionCommand ().equals ("Apply")) {
 //            optionsPanel.save ();
 //            optionsPanel = null;
-//            descriptor = null;
 //        } else
         if (source == DialogDescriptor.CANCEL_OPTION) {
-            if (optionsPanel == null) return;
-            optionsPanel.cancel ();
-            index = optionsPanel.getCurrentIndex ();
-            optionsPanel = null;
-            dialog.setVisible (false);
+            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
+            Dialog d = (Dialog) dialog.get ();
+            op.cancel ();
+            index = op.getCurrentIndex ();
+            d.setVisible (false);
             dialog = null;
-            descriptor = null;
         } else {
 //            JButton bApply = (JButton) loc (new JButton (), "Apply");
 //            bApply.setActionCommand ("Classic");                      //NOI18N
+            Dialog d = dialog == null ? null : (Dialog) dialog.get ();
+            if (d != null) {
+                d.setVisible (true);
+                d.toFront ();
+                return;
+            }
             JButton bClassic = (JButton) loc (new JButton (), "Classic");
             bClassic.setActionCommand ("Classic");                      //NOI18N
+            OptionsPanel op = optionsPanel == null ? 
+                null : (OptionsPanel) optionsPanel.get ();
+            if (op == null) {
+                op = new OptionsPanel ();
+                optionsPanel = new WeakReference (op);
+            }
             
-            descriptor = new DialogDescriptor (
-                optionsPanel = new OptionsPanel (),
+            DialogDescriptor descriptor = new DialogDescriptor (
+                op,
                 "Options",
                 false,
                 new Object[] {
@@ -142,10 +169,11 @@ public class OptionsWindowAction extends AbstractAction {
                 DialogDescriptor.DEFAULT_ALIGN, null, this
             );
             if (index >= 0)
-                optionsPanel.setCurrentIndex (index);
+                op.setCurrentIndex (index);
             descriptor.setAdditionalOptions (new Object[] {bClassic});
-            dialog = DialogDisplayer.getDefault ().createDialog (descriptor);
-            dialog.setVisible (true);
+            d = DialogDisplayer.getDefault ().createDialog (descriptor);
+            d.setVisible (true);
+            dialog = new WeakReference (d);
         }
     }
     
