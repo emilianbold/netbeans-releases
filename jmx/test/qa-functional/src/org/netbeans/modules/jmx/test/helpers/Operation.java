@@ -40,6 +40,16 @@ public class Operation {
         this.operationComment = operationComment;
     }
     
+    public Operation(String operationName, String operationReturnType,
+            String operationComment) {
+        
+        this.operationName = operationName;
+        this.operationReturnType = operationReturnType;
+        this.operationParameters = null;
+        this.operationExceptions = null;
+        this.operationComment = operationComment;
+    }
+    
     /**
      * Method which returns the name of the operation
      * @return operationName the name of the operation
@@ -47,6 +57,15 @@ public class Operation {
      */
     public String getOperationName() {
         return operationName;
+    }
+    
+    /**
+     * Method which sets the name of the operation
+     * @param operationName the name of the operation
+     *
+     */
+    public void setOperationName(String operationName) {
+        this.operationName = operationName;
     }
     
     /**

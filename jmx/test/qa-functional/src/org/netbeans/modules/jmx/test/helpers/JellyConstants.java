@@ -115,6 +115,7 @@ public class JellyConstants {
    public static final String PARAM_POP_TBL = "ParamPopupTable";
    public static final String PARAM_ADD_BTN = "methAddParamButton";
    public static final String ADD_PARAM_BTN = "addParamJButton";
+   public static final String REM_PARAM_BTN = "remParamJButton";
    
    public static final String EXCEP_POP_TBL = "ExcepPopupTable";
    public static final String EXCEP_ADD_BTN = "methAddExcepJButton";
@@ -325,6 +326,14 @@ public class JellyConstants {
    
    /********************** UI tests *******************************************/
    
+   //numbers
+   public static final int MINUS_ONE = -1;
+   public static final int ZERO = 0;
+   public static final int ONE = 1;
+   public static final int TWO = 2;
+   public static final int THREE = 3;
+   public static final int FOUR = 4;
+   
    //project
    public static final String MBEAN_DEFAULT_NAME = "NewJMXClass";
    public static final String MBEAN_DEFAULT_NAME_WITH_SUFFIX = "NewJMXClassMBean.java";
@@ -349,17 +358,61 @@ public class JellyConstants {
    public static final String REAL_TEST_CLASS = "java.lang.String";
    public static final String A_STRING = "./..\"\"ffgP";
    
-   //step3
+   //step 3
    public static final String A1_NAME = "count/.er";
    public static final String A2_NAME = "counter2";
    public static final String A3_NAME = "counter2";
    public static final String A4_NAME = "counter3";
+   public static final String A4_NAME_BIS = "counter4";
+   public static final String A5_PREFIX = "c";
+   public static final String A5_PREFIX_MAJ = "C";
+   public static final String A5_NAME = "count./er5";
+   
    
    public static final String A1_DESC = "desc0";
    public static final String A2_DESC = "desc1";
    public static final String A3_DESC = "desc2";
    public static final String A4_DESC = "desc3";
+   public static final String A5_DESC = "desc4";
+   
+   // observed attribute names
+   public static final String COUNTER = "Counter";
+   public static final String COUNTER2 = "Counter2";
+   public static final String COUNTER3 = "Counter3";
+   public static final String COUNTER4 = "Counter4";
+   public static final String COUNTER5 = "Counter5";
+   
    
    public static final String ATTR_DEF_NAME = "NewAttribute";
    public static final int ATTR_NAME_COL = 0;
+   public static final int ATTR_TYPE_COL = 1;
+   public static final int ATTR_ACCESS_COL = 2;
+   public static final int ATTR_DESCR_COL = 3;
+   
+   //step 4
+   public static final String OPER_DEF_NAME = "newOperation";
+   public static final int OPER_NAME_COL = 0;
+   public static final int OPER_TYPE_COL = 1;
+   public static final int OPER_DESCR_COL = 4;
+   
+   public static final String O1_NAME = "initCount./er";
+   public static final String O1_NAME_FULL = "initCounter";
+   public static final String O2_NAME = "initCounter2";
+   public static final String O3_NAME = "initCounter3";
+   public static final String O4_NAME = "initCounter4";
+   
+   //param popup
+   public static final String EDIT_PARAMETERS = "Edit Parameters";
+   public static final String PARAM_DEF_NAME = "parameter";
+   public static final String P_SUFFIX = "param";
+   
+   public static final int PARAM_NAME_COL = 0;
+   public static final int PARAM_TYPE_COL = 1;
+   public static final int PARAM_DESC_COL = 2;
+   
+   public static final String P1_NAME = "param/.0";
+   public static final String P1_NAME_FULL = "param0";
+   public static final String P2_NAME = "param1";
+   public static final String P3_NAME = "param2";
+   public static final String P4_NAME = "param3";
 }
