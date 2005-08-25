@@ -63,6 +63,7 @@ class CategoryNode extends FilterNode {
             if (catName instanceof String)
                 setName((String)catName, false);
         }
+        content.add( this );
     }
     
     // -------

@@ -17,8 +17,11 @@ package org.netbeans.modules.palette.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.dnd.Autoscroll;
@@ -51,6 +54,7 @@ import javax.swing.plaf.basic.BasicListUI;
 import org.netbeans.modules.palette.Category;
 import org.netbeans.modules.palette.Item;
 import org.netbeans.modules.palette.Utils;
+import org.openide.nodes.Node;
 import org.openide.util.Utilities;
 
 /**
@@ -96,13 +100,28 @@ public class CategoryList extends JList implements Autoscroll {
         setCellRenderer (getItemRenderer ());
         setLayoutOrientation( HORIZONTAL_WRAP );
 
+        initActions();
+    }
+    
+    private void initActions() {
         InputMap inputMap = getInputMap(JComponent.WHEN_FOCUSED);
         inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ENTER, 0, false ), "defaultAction" );
         inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK, false ), "popup" );
 
         ActionMap map = getActionMap();
         map.put( "defaultAction", new DefaultAction( this ) );
-        map.put( "popup", new PopupAction( this ) );
+        map.put( "popup", new PopupAction() );
+        map.put( "selectPreviousRow", new MoveFocusAction( map.get( "selectPreviousRow" ), false ) );
+        map.put( "selectNextRow", new MoveFocusAction( map.get( "selectNextRow" ), true ) );
+        map.put( "selectPreviousColumn", new MoveFocusAction( new ChangeColumnAction( map.get( "selectPreviousColumn" ), false ), false ) );
+        map.put( "selectNextColumn", new MoveFocusAction( new ChangeColumnAction( map.get( "selectNextColumn" ), true ), true ) );
+        Node categoryNode = (Node)category.getLookup().lookup( Node.class );
+        if( null != categoryNode )
+            map.put( "paste", new Utils.PasteItemAction( categoryNode ) );
+        else
+            map.remove( "paste" );
+        map.put( "copy", new CutCopyAction( true ) );
+        map.put( "cut", new CutCopyAction( false ) );
     }
 
     Item getItemAt( int index ) {
@@ -305,7 +324,25 @@ public class CategoryList extends JList implements Autoscroll {
 
         return support;
     }
-    
+
+    /**
+     * Take focus from CategoryButton, i.e. select the first or the last item in the list
+     */
+    void takeFocusFrom( Component c ) {
+        int indexToSelect = -1;
+        if( c.getParent() != getParent() ) {
+            //this is not 'our' CategoryButton so we'll assume it's the one below this category list
+            indexToSelect = getModel().getSize()-1;
+        } else if( getModel().getSize() > 0 ) {
+            indexToSelect = 0;
+        }
+        requestFocus();
+        setSelectedIndex( indexToSelect );
+        if( indexToSelect >= 0 ) {
+            ensureIndexIsVisible( indexToSelect );
+        }
+    }
+
     
     // ---------
     // list UI
@@ -433,29 +470,120 @@ public class CategoryList extends JList implements Autoscroll {
         }
     }
     
-    private static class PopupAction extends AbstractAction {
-        private CategoryList list;
-        public PopupAction( CategoryList list ) {
-            this.list = list;
-        }
+    private class PopupAction extends AbstractAction {
 
         public void actionPerformed(ActionEvent e) {
             int posX = 0;
             int posY = 0;
-            Item item = list.getItemAt( list.getSelectedIndex() );
+            Item item = getItemAt( getSelectedIndex() );
             if( null != item ) {
-                Rectangle rect = list.getCellBounds( list.getSelectedIndex(), list.getSelectedIndex() );
+                Rectangle rect = getCellBounds( getSelectedIndex(), getSelectedIndex() );
                 posX = rect.x;
                 posY = rect.y + rect.height;
             }
-            Action[] actions = null == item ? list.category.getActions() : item.getActions();
-            JPopupMenu popup = Utilities.actionsToPopup( actions, list );
-            Utils.addCustomizationMenuItems( popup, list.palettePanel.getController(), list.palettePanel.getSettings() );
-            popup.show( list.getParent(), posX, posY );
+            Action[] actions = null == item ? category.getActions() : item.getActions();
+            JPopupMenu popup = Utilities.actionsToPopup( actions, CategoryList.this );
+            Utils.addCustomizationMenuItems( popup, palettePanel.getController(), palettePanel.getSettings() );
+            popup.show( getParent(), posX, posY );
         }
 
         public boolean isEnabled() {
-            return list.isEnabled();
+            return CategoryList.this.isEnabled();
+        }
+    }
+    
+    private class MoveFocusAction extends AbstractAction {
+        private Action defaultAction;
+        private boolean focusNext;
+                
+        public MoveFocusAction( Action defaultAction, boolean focusNext ) {
+            this.defaultAction = defaultAction;
+            this.focusNext = focusNext;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int selIndexBefore = getSelectedIndex();
+            defaultAction.actionPerformed( e );
+            int selIndexCurrent = getSelectedIndex();
+            if( selIndexBefore != selIndexCurrent )
+                return;
+            
+            if( focusNext && 0 == selIndexCurrent )
+                return;
+            
+            KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+            Container container = kfm.getCurrentFocusCycleRoot();
+            FocusTraversalPolicy policy = container.getFocusTraversalPolicy();
+            if( null == policy )
+                policy = kfm.getDefaultFocusTraversalPolicy();
+            Component next = focusNext ? policy.getComponentAfter( container, CategoryList.this )
+                                      : policy.getComponentBefore( container, CategoryList.this );
+            if( null != next && next instanceof CategoryButton ) {
+                clearSelection();
+                next.requestFocus();
+                ((CategoryButton)next).scrollRectToVisible( next.getBounds() );
+            }
+        }
+    }
+    
+    private class ChangeColumnAction extends AbstractAction {
+        private Action defaultAction;
+        private boolean selectNext;
+                
+        public ChangeColumnAction( Action defaultAction, boolean selectNext ) {
+            this.defaultAction = defaultAction;
+            this.selectNext = selectNext;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            int selIndexBefore = getSelectedIndex();
+            defaultAction.actionPerformed( e );
+            int selIndexCurrent = getSelectedIndex();
+            if( (selectNext && selIndexBefore < selIndexCurrent)
+                ||
+                (!selectNext && selIndexBefore > selIndexCurrent) )
+                return;
+            
+            if( selectNext ) {
+                if( selIndexCurrent == selIndexBefore+1 )
+                    selIndexCurrent++;
+                if( selIndexCurrent < getModel().getSize()-1 ) {
+                    setSelectedIndex( selIndexCurrent+1 );
+                    scrollRectToVisible( getCellBounds( selIndexCurrent+1, selIndexCurrent+1 ) );
+                }
+            } else {
+                if( selIndexCurrent > 0 ) {
+                    setSelectedIndex( selIndexCurrent-1 );
+                    scrollRectToVisible( getCellBounds( selIndexCurrent-1, selIndexCurrent-1 ) );
+                }
+            }
+        }
+    }
+    
+    private class CutCopyAction extends AbstractAction {
+        private boolean doCopy;
+        public CutCopyAction( boolean doCopy ) {
+            this.doCopy = doCopy;
+        }
+
+        public void actionPerformed( ActionEvent e ) {
+            Item item = getItemAt( getSelectedIndex() );
+            if( null == item )
+                return;
+            Node itemNode = (Node)item.getLookup().lookup( Node.class );
+            if( null == itemNode )
+                return;
+            Action performer;
+            if( doCopy )
+                performer = new Utils.CopyItemAction( itemNode );
+            else
+                performer = new Utils.CutItemAction( itemNode );
+            if( performer.isEnabled() )
+                performer.actionPerformed( e );
+        }
+
+        public boolean isEnabled() {
+            return getSelectedIndex() >= 0;
         }
     }
 }

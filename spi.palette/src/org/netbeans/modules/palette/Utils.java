@@ -344,7 +344,7 @@ public final class Utils {
     /**
      * An action to create a new palette item from clipboard contents.
      */
-    static class PasteItemAction extends AbstractAction {
+    public static class PasteItemAction extends AbstractAction {
         private Node categoryNode;
         
         public PasteItemAction(Node categoryNode) {
@@ -389,7 +389,7 @@ public final class Utils {
     /**
      * An action to cut a palette item to clipboard.
      */
-    static class CutItemAction extends AbstractAction {
+    public static class CutItemAction extends AbstractAction {
         private Node itemNode;
         
         public CutItemAction(Node itemNode) {
@@ -415,7 +415,7 @@ public final class Utils {
     /**
      * An action to copy palette item to clipboard.
      */
-    static class CopyItemAction extends AbstractAction {
+    public static class CopyItemAction extends AbstractAction {
         private Node itemNode;
         
         public CopyItemAction(Node itemNode) {

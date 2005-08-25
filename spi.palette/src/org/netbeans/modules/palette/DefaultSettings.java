@@ -277,7 +277,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         }
     }
     
-    private void store() {
+    private synchronized void store() {
         long startTime = System.currentTimeMillis();
         Node root = (Node)model.getRoot().lookup( Node.class );
         assert null != root;

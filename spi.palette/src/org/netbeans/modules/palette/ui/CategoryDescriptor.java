@@ -85,6 +85,7 @@ class CategoryDescriptor implements CategoryListener {
         });
         gbc = new GridBagConstraints (0, 1, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets (0, 0, 0, 0), 0, 0);
         wholePanel.add (itemsList, gbc);
+        wholePanel.setFocusTraversalPolicy( new MyFocusTraversal( this ) );
         doSetOpened( settings.isExpanded( category ) );
     }
 
@@ -227,5 +228,40 @@ class CategoryDescriptor implements CategoryListener {
     
     CategoryButton getButton() {
         return categoryButton;
+    }
+
+    private static class MyFocusTraversal extends FocusTraversalPolicy {
+        private CategoryDescriptor descriptor;
+        public MyFocusTraversal( CategoryDescriptor descriptor ) {
+            this.descriptor = descriptor;
+        }
+        
+        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
+            if( focusCycleRoot == descriptor.wholePanel && aComponent == descriptor.categoryButton )
+                return descriptor.itemsList;
+            return null;
+        }
+
+        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
+            if( focusCycleRoot == descriptor.wholePanel && aComponent == descriptor.itemsList )
+                return descriptor.categoryButton;
+            return null;
+        }
+
+        public Component getLastComponent(Container focusCycleRoot) {
+            if( focusCycleRoot == descriptor.wholePanel )
+                return descriptor.itemsList;
+            return null;
+        }
+
+        public Component getFirstComponent(Container focusCycleRoot) {
+            if( focusCycleRoot == descriptor.wholePanel )
+                return descriptor.categoryButton;
+            return null;
+        }
+
+        public Component getDefaultComponent(Container focusCycleRoot) {
+            return getFirstComponent( focusCycleRoot );
+        }
     }
 }
