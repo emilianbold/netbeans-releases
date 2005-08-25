@@ -13,23 +13,35 @@
 
 package org.netbeans.modules.j2ee.earproject;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
+import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EarProjectOperations implements DeleteOperationImplementation {
+public class EarProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private EarProject project;
     
@@ -85,5 +97,31 @@ public class EarProjectOperations implements DeleteOperationImplementation {
     public void notifyDeleted() throws IOException {
         project.getAntProjectHelper().notifyDeleted();
     }
+   
+    public void notifyCopying() {
+        //nothing.
+    }
     
+    public void notifyCopied(Project original, File originalPath, String nueName) {
+        if (project == original) { //TODO: this is illegal
+            //do nothing for the original project.
+            return ;
+        }
+        
+        project.setName(nueName);
+    }
+    
+    public void notifyMoving() throws IOException {
+        notifyDeleting();
+    }
+    
+    public void notifyMoved(Project original, File originalPath, String nueName) {
+        if (project == original) { //TODO: this is illegal
+            //do nothing for the original project.
+            return ;
+        }
+        
+        project.setName(nueName);
+    }
+        
 }

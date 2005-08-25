@@ -52,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.xml.XMLUtil;
@@ -183,7 +184,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         public ArchiveLogicalViewRootNode() {
             super( new ArchiveViews.LogicalViewChildren( project, helper.getAntProjectHelper(), evaluator ), createLookup( project, helper.getAntProjectHelper() ) ); 
             setIconBase( getIconBase() + "projectIcon" ); // NOI18N
-            setName( ProjectUtils.getInformation( project ).getDisplayName() );            
+            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks(helper.getAntProjectHelper(), resolver)) {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
@@ -202,7 +203,11 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         }
 
         public boolean canRename() {
-            return false;
+            return true;
+        }
+        
+        public void setName(String s) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
         
         public Image getIcon(int type) {
@@ -257,6 +262,9 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     CommonProjectActions.openSubprojectsAction(),
                     CommonProjectActions.closeProjectAction(),
                     null,
+                    CommonProjectActions.renameProjectAction(),
+                    CommonProjectActions.moveProjectAction(),
+                    CommonProjectActions.copyProjectAction(),
                     CommonProjectActions.deleteProjectAction(),
                     null,
                     SystemAction.get( org.openide.actions.FindAction.class ),
