@@ -70,7 +70,7 @@ public final class SuiteProject implements Project {
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
             new OpenedHook(),
-            helper.createSharabilityQuery(eval, new String[0], new String[/*XXX anything?*/0]),
+            helper.createSharabilityQuery(eval, new String[0], new String[] {"build", "dist"}), // NOI18N
             new SuiteSubprojectProviderImpl(this, helper, eval),
             new SuiteProviderImpl(),
             new SuiteActions(this),
@@ -146,6 +146,7 @@ public final class SuiteProject implements Project {
             Element nameEl = Util.findElement(helper.getPrimaryConfigurationData(true), "name", SuiteProjectType.NAMESPACE_SHARED); // NOI18N
             String text = (nameEl != null) ? Util.findText(nameEl) : null;
             return (text != null) ? text : "???"; // NOI18N
+            // XXX consider using <name> for getName() always, but try to use ${app.title} if set for getDisplayName()
         }
 
         public Icon getIcon() {
