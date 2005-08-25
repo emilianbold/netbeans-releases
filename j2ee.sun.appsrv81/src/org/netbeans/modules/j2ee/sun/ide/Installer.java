@@ -64,8 +64,6 @@ public class Installer extends org.openide.modules.ModuleInstall {
             loader.addURL(f);
             f = new File(installRoot+"/lib/appserv-cmp.jar");
             loader.addURL(f);
-            /*f = new File(installRoot+"/lib/appserv-assemblytool.jar");
-            loader.addURL(f);*/
             f = new File(installRoot+"/lib/commons-logging.jar");
             loader.addURL(f);
             f = new File(installRoot+"/lib/admin-cli.jar");
@@ -76,8 +74,7 @@ public class Installer extends org.openide.modules.ModuleInstall {
             loader.addURL(f);
             f = new File(installRoot+"/lib/install/applications/jmsra/imqjmsra.jar");
             loader.addURL(f);
-            f = new File(installRoot+"/lib/admin-cli.jar");
-            loader.addURL(f);
+
             //for AS 8.1: no more endorsed dir!!!
             f = new File(installRoot+"/lib/xercesImpl.jar");
             loader.addURL(f);
