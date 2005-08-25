@@ -61,29 +61,47 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
         String mbeanIntfName = mbeanName + WizardConstants.MBEAN_ITF_SUFFIX;
         DataFolder mbeanFolder = mbean.getDataFolder();
         DataObject intfDObj = null;
+        Resource intfRc = null;
+        
+        boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             DataObject intfTemplate = getInterfaceTemplate();
             intfDObj = intfTemplate.createFromTemplate( 
                     mbeanFolder, mbeanIntfName );
             FileObject intfFile = intfDObj.getPrimaryFile();
-            Resource intfRc = JavaModel.getResource(intfFile);
+            intfRc = JavaModel.getResource(intfFile);
             JavaClass mbeanIntf = WizardHelpers.getJavaClass(intfRc,mbeanIntfName);
             
-            addNeededImport(mbean, intfRc);
+            if (!mbean.getPackageName().equals("")) // NOI18N
+                addNeededImport(mbean, intfRc);
             updateDescription(mbean,mbeanIntf);
             List attrList = mbean.getAttributes();
             MBeanAttribute[] attributes = (MBeanAttribute[]) 
                     attrList.toArray(new MBeanAttribute[attrList.size()]);
-            updateAttributes(mbeanIntf, attributes);
+            updateAttributesInIntf(mbeanIntf, attributes);
             List opList = mbean.getOperations();
             MBeanOperation[] operations = (MBeanOperation[]) 
                     opList.toArray(new MBeanOperation[opList.size()]);
-            updateOperations(mbeanIntf, operations);
+            updateOperationsInIntf(mbeanIntf, operations);
             
             createdFile = intfFile;
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
         } finally {
-            JavaModel.getJavaRepository().endTrans();
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        
+        rollback = false;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            if ((intfRc != null) && (mbean.getPackageName().equals(""))) // NOI18N
+                addNeededImport(mbean, intfRc);
+        } catch (Exception e) {
+            rollback = true;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
         }
         return createdFile;
     }
@@ -110,23 +128,39 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
     public void updateAttributes(JavaClass mbeanIntf, MBeanAttribute[] attributes)
            throws java.io.IOException, Exception
     {
+        boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             // add methods declaration in mbean interface
-            addManagementImport(mbeanIntf.getResource());
-            for (int i = 0; i < attributes.length; i++) {
-                if (attributes[i].getTypeName().equals(
-                        WizardConstants.DATE_OBJ_NAME))
-                    addImport(mbeanIntf.getResource(),WizardConstants.DATE_OBJ_FULLNAME);
-            }
-            for (int i = 0; i < attributes.length; i++) {
-                if (attributes[i].isReadable())
-                    addGetAttrMethodDecl(mbeanIntf, attributes[i]);
-                if (attributes[i].isWritable())
-                    addSetAttrMethodDecl(mbeanIntf, attributes[i]);
-            }
+            if (!WizardHelpers.getPackageName(mbeanIntf.getName()).equals("")) // NOI18N
+                addNeededImport(attributes, mbeanIntf.getResource());
+            updateAttributesInIntf(mbeanIntf,attributes);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
         } finally {
-            JavaModel.getJavaRepository().endTrans();
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        
+        rollback = false;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            if (WizardHelpers.getPackageName(mbeanIntf.getName()).equals("")) // NOI18N
+                addNeededImport(attributes, mbeanIntf.getResource());
+        } catch (Exception e) {
+            rollback = true;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+    }
+    
+    private void updateAttributesInIntf(JavaClass mbeanIntf, MBeanAttribute[] attributes)
+    throws java.io.IOException, Exception {
+        for (int i = 0; i < attributes.length; i++) {
+            if (attributes[i].isReadable())
+                addGetAttrMethodDecl(mbeanIntf, attributes[i]);
+            if (attributes[i].isWritable())
+                addSetAttrMethodDecl(mbeanIntf, attributes[i]);
         }
     }
     
@@ -187,26 +221,36 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
     public void updateOperations(JavaClass mbeanIntf, MBeanOperation[] operations)
            throws java.io.IOException, Exception
     {
+        boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             // add methods declaration in MBean interface
-            addManagementImport(mbeanIntf.getResource());
-            for (int i = 0; i < operations.length; i++) {
-                if (operations[i].getReturnTypeName().equals(
-                        WizardConstants.DATE_OBJ_NAME))
-                    addImport(mbeanIntf.getResource(),WizardConstants.DATE_OBJ_FULLNAME);
-                for (int j = 0; j < operations[i].getParametersSize(); j++) {
-                    MBeanOperationParameter param = operations[i].getParameter(j);
-                    if (param.getParamType().equals(
-                        WizardConstants.DATE_OBJ_NAME))
-                        addImport(mbeanIntf.getResource(),WizardConstants.DATE_OBJ_FULLNAME);
-                }
-            }
-            for (int i = 0; i < operations.length; i++) {
-                addOpMethod(mbeanIntf, operations[i], true);
-            }
+            if (!WizardHelpers.getPackageName(mbeanIntf.getName()).equals("")) // NOI18N
+                addNeededImport(operations, mbeanIntf.getResource());
+            updateOperationsInIntf(mbeanIntf,operations);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
         } finally {
-            JavaModel.getJavaRepository().endTrans();
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        
+        rollback = false;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            if (WizardHelpers.getPackageName(mbeanIntf.getName()).equals("")) // NOI18N
+                addNeededImport(operations, mbeanIntf.getResource());
+        } catch (Exception e) {
+            rollback = true;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+    }
+    
+    private void updateOperationsInIntf(JavaClass mbeanIntf, MBeanOperation[] operations)
+    throws java.io.IOException, Exception {
+        for (int i = 0; i < operations.length; i++) {
+            addOpMethod(mbeanIntf, operations[i], true);
         }
     }
     
