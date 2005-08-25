@@ -917,7 +917,7 @@ public class WebAppProxy implements WebApp {
         if (webApp!=null) {
             DataObject dataObject = DataObject.find(fo);
             if (dataObject instanceof DDProviderDataObject) {
-                ((DDProviderDataObject) dataObject).writeModel();
+                ((DDProviderDataObject) dataObject).writeModel(webApp);
             } else {
                 FileLock lock = fo.lock();
                 try {

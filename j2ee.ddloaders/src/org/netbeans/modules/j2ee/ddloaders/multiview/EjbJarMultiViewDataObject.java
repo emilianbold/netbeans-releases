@@ -21,7 +21,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.ejb.*;
 import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
@@ -52,7 +52,6 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -387,24 +386,15 @@ public class EjbJarMultiViewDataObject extends DDMultiViewDataObject
         ejbJar.addPropertyChangeListener(ejbJarChangeListener);
     }
 
-    /**
-     * Update text document from data model. Called when something is changed in visual editor.
-     */
-    protected String generateDocumentFromModel() {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            if (ejbJar == null) {
+    protected RootInterface getDDModel() {
+        if (ejbJar == null) {
+            try {
                 parseDocument();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
-            ejbJar.write(out);
-            out.close();
-            return out.toString("UTF8"); //NOI18N
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        } catch (IllegalStateException e) {
-            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
         }
-        return out.toString();
+        return ejbJar;
     }
 
     public boolean isDocumentParseable() {

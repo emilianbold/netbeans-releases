@@ -472,8 +472,12 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             }
         }
 
-        protected void updateDataFromModel(final FileLock lock, final boolean modify) {
-            final Document doc = getDocument();
+        protected Object getModel() {
+            return getDocument();
+        }
+
+        protected void updateDataFromModel(Object model, final FileLock lock, final boolean modify) {
+            final Document doc = (Document) model;
             if (doc == null) {
                 byte[] data = new byte[0];
                 try {
@@ -486,7 +490,8 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 doc.render(new Runnable() {
                     public void run() {
                         try {
-                            dObj.getDataCache().setData(lock, doc.getText(0, doc.getLength()).getBytes(), modify);
+                            byte[] data = doc.getText(0, doc.getLength()).getBytes();
+                            dObj.getDataCache().setData(lock, data, modify);
                         } catch (BadLocationException e) {
                             // impossible
                         } catch (IOException e) {

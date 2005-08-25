@@ -7,6 +7,7 @@ import org.openide.ErrorManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
@@ -25,8 +26,8 @@ public class BookDataObject extends XmlMultiViewDataObject {
     private static final int TYPE_TOOLBAR = 0;
     private static final int TYPE_TREEPANEL = 1;
     Book book;
-    
-    /** Creates a new instance of BookDataObject */  
+
+    /** Creates a new instance of BookDataObject */
     public BookDataObject (FileObject pf, BookDataLoader loader) throws DataObjectExistsException {
         super (pf, loader);
         modelSynchronizer = new ModelSynchronizer(this);
@@ -61,27 +62,12 @@ public class BookDataObject extends XmlMultiViewDataObject {
             }
         }
     }
-    
+
     public Book getBook() throws IOException {
         if (book==null) book = Book.createGraph(FileUtil.toFile(getPrimaryFile()));
         return book;
     }
 
-    /** Update text document from data model. Called when something is changed in visual editor.
-    */
-    protected String generateDocumentFromModel() {
-        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-        try {
-            getBook().write(out);
-            out.close();
-            return out.toString("UTF8"); //NOI18N
-        }
-        catch (IOException e) {
-            org.openide.ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        }
-	return out.toString ();
-    }
-    
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[]{new DesignView(this,TYPE_TOOLBAR),new DesignView(this,TYPE_TREEPANEL)};
     }
@@ -107,7 +93,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
             return "book_multiview_design"+String.valueOf(type);
         }
     }
-    
+
     /** Enable to focus specific object in Multiview Editor
      *  The default implementation opens the XML View
      */
@@ -136,7 +122,7 @@ public class BookDataObject extends XmlMultiViewDataObject {
     public ToolBarMultiViewElement getActiveMultiViewElement0() {
         return (ToolBarMultiViewElement)super.getActiveMultiViewElement();
     }
-    
+
     public void modelUpdatedFromUI() {
         modelSynchronizer.requestUpdateData();
     }
@@ -151,16 +137,31 @@ public class BookDataObject extends XmlMultiViewDataObject {
             return true;
         }
 
-        protected void updateDataFromModel(FileLock lock, boolean modify) {
+        protected void updateDataFromModel(Object model, FileLock lock, boolean modify) {
+            if (model == null) {
+                return;
+            }
             try {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                ((Book) model).write(out);
+                out.close();
                 OutputStream outputStream = getDataCache().createOutputStream(lock, modify);
                 try {
-                    outputStream.write(generateDocumentFromModel().getBytes());
+                    outputStream.write(out.toByteArray());
                 } finally {
                     outputStream.close();
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+
+        protected Object getModel() {
+            try {
+                return getBook();
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+                return null;
             }
         }
 

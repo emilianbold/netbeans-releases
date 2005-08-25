@@ -202,7 +202,7 @@ public class DDEditorTest extends NbTestCase {
         final FileObject fo = FileUtil.toFileObject(getDDFile());
         WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
         webApp.getContextParam()[0].setParamValue(CAR_AUDI);
-        dObj.writeModel();
+        webApp.write(fo);
 
         compareGoldenFile("ReplaceParamValue2.pass");
     }

@@ -35,6 +35,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ddloaders.web.event.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
@@ -144,6 +145,7 @@ public class DDDataObject extends  DDMultiViewDataObject
             try {
                 webApp = createWebApp();
             } catch (IOException ex) {
+                ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
         return webApp;
@@ -240,24 +242,8 @@ public class DDDataObject extends  DDMultiViewDataObject
         }
     }
 
-    /** Create document from the Node. This method is called after Node (Node properties)is changed.
-     * The document is generated from data modul (isDocumentGenerable=true)
-    */
-    protected String generateDocumentFromModel() {
-        //System.out.println("Generating document - generate....");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        try {
-            getWebApp().write(out);
-            out.close();
-            return out.toString("UTF8"); //NOI18N
-        }
-        catch (IOException e) {
-            ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-        }
-        catch (IllegalStateException e){
-            ErrorManager.getDefault ().notify(org.openide.ErrorManager.INFORMATIONAL, e);
-    }
-    return out.toString ();
+    protected RootInterface getDDModel() {
+        return getWebApp();
     }
 
     public boolean isDocumentParseable() {
@@ -590,7 +576,7 @@ public class DDDataObject extends  DDMultiViewDataObject
             }
         }
         try {
-            writeModel();
+            writeModel(getWebApp());
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }

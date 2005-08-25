@@ -13,6 +13,7 @@
 package org.netbeans.modules.j2ee.dd.impl.common;
 
 import org.openide.filesystems.FileLock;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
 import java.io.InputStream;
 import java.io.IOException;
@@ -35,13 +36,15 @@ public interface DDProviderDataObject {
 
     /**
      * Writes data from model to the cache and saves the data if needed.
+     * @param model
      * @param dataLock
      */
-    void writeModel(FileLock dataLock);
+    void writeModel(RootInterface model, FileLock dataLock);
 
     /**
      * Obtains data lock, writes data from model to the cache and saves the data if needed.
      * Finally releases the lock.
+     * @param model
      */
-    void writeModel() throws IOException;
+    void writeModel(RootInterface model) throws IOException;
 }

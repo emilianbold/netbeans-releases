@@ -336,7 +336,7 @@ public class EjbJarProxy implements EjbJar {
         if (ejbJar != null) {
             DataObject dataObject = DataObject.find(fo);
             if (dataObject instanceof DDProviderDataObject) {
-                ((DDProviderDataObject) dataObject).writeModel();
+                ((DDProviderDataObject) dataObject).writeModel(ejbJar);
             } else {
                 FileLock lock = fo.lock();
                 try {

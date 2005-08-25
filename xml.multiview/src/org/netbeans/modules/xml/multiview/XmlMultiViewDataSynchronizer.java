@@ -145,11 +145,19 @@ public abstract class XmlMultiViewDataSynchronizer {
 
     /**
      * Updates data from model.
+     * @param model a model
      * @param lock a lock of the data cache
      * @param modify indicator whether property <i>modified</i> of the data object
      * should change after update or not
      */
-    protected abstract void updateDataFromModel(FileLock lock, boolean modify);
+    protected abstract void updateDataFromModel(Object model, FileLock lock, boolean modify);
+
+    /**
+     * Returns model of the synchronizer
+     * @return the model
+     */
+    protected abstract Object getModel();
+
 
     /**
      * Reloads model from data.
@@ -208,7 +216,7 @@ public abstract class XmlMultiViewDataSynchronizer {
      * should change after update or not
      */
     public void updateData(FileLock dataLock, boolean modify) {
-        updateDataFromModel(dataLock, modify);
+        updateDataFromModel(getModel(), dataLock, modify);
         timeStamp = dataCache.getTimeStamp();
     }
 

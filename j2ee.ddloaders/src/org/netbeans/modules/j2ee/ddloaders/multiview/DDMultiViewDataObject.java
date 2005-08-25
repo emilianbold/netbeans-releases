@@ -13,6 +13,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.impl.common.DDProviderDataObject;
+import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.common.TransactionSupport;
 import org.netbeans.modules.j2ee.common.Transaction;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
@@ -28,6 +29,7 @@ import org.openide.util.NbBundle;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Date;
 import java.lang.ref.WeakReference;
 
@@ -51,7 +53,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         modelSynchronizer.requestUpdateData();
     }
 
-    public XmlMultiViewDataSynchronizer getModelSynchronizer() {
+    public ModelSynchronizer getModelSynchronizer() {
         return modelSynchronizer;
     }
 
@@ -71,7 +73,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         return getDataCache().createInputStream();
     }
 
-    public void writeModel() throws IOException {
+    public void writeModel(RootInterface model) throws IOException {
         if (transactionReference != null && transactionReference.get() != null) {
             return;
         }
@@ -81,15 +83,20 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         }
         try {
             if (((ModelSynchronizer) getModelSynchronizer()).mayUpdateData(true)) {
-                writeModel(dataLock);
+                writeModel(model, dataLock);
             }
         } finally {
             dataLock.releaseLock();
         }
     }
 
-    public void writeModel(FileLock dataLock) {
-        getModelSynchronizer().updateData(dataLock, false);
+    public void writeModel(RootInterface model, FileLock dataLock) {
+        ModelSynchronizer synchronizer = getModelSynchronizer();
+        if (model == synchronizer.getModel()) {
+            synchronizer.updateData(dataLock, false);
+        } else {
+            synchronizer.updateDataFromModel(model, dataLock, false);
+        }
     }
 
     public FileLock getDataLock() {
@@ -119,8 +126,27 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
 
     /**
      * Update text document from data model. Called when something is changed in visual editor.
+     * @param model
      */
-    protected abstract String generateDocumentFromModel();
+    protected String generateDocumentFromModel(RootInterface model) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            model.write(out);
+            out.close();
+            return out.toString("UTF8"); //NOI18N
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+        } catch (IllegalStateException e) {
+            ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+        }
+        return out.toString ();
+    }
+
+    /**
+     * Returns model of the deployment descriptor
+     * @return the model
+     */
+    protected abstract RootInterface getDDModel();
 
     /**
      * Returns true if xml file is parseable(data model can be created),
@@ -195,13 +221,17 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
             }
         }
 
-        protected void updateDataFromModel(FileLock lock, boolean modify) {
-            String newDocument = generateDocumentFromModel();
+        protected void updateDataFromModel(Object model, FileLock lock, boolean modify) {
+            String newDocument = generateDocumentFromModel((RootInterface) model);
             try {
                 getDataCache().setData(lock, newDocument.getBytes(), modify);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
+        }
+
+        protected Object getModel() {
+            return getDDModel();
         }
 
         protected void reloadModelFromData() {
