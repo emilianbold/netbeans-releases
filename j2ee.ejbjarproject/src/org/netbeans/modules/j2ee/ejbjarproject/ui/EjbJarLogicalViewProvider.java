@@ -60,6 +60,7 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
 /**
  * Support for creating logical views.
@@ -197,7 +198,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         public WebLogicalViewRootNode() {
             super( new LogicalViewChildren( project, updateHelper, evaluator, resolver ), createLookup( project ) ); 
             setIconBase( "org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon" ); // NOI18N
-            setName( ProjectUtils.getInformation( project ).getDisplayName() );            
+            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks()) {
                 broken = true;
             }
@@ -240,7 +241,11 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         }
 
         public boolean canRename() {
-            return false;
+            return true;
+        }
+        
+        public void setName(String s) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
         
         // Private methods -------------------------------------------------    
@@ -269,6 +274,9 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(CommonProjectActions.openSubprojectsAction());
             actions.add(CommonProjectActions.closeProjectAction());
             actions.add(null);
+            actions.add(CommonProjectActions.renameProjectAction());
+            actions.add(CommonProjectActions.moveProjectAction());
+            actions.add(CommonProjectActions.copyProjectAction());
             actions.add(CommonProjectActions.deleteProjectAction());
             actions.add(null);
             actions.add(SystemAction.get( org.openide.actions.FindAction.class ));

@@ -421,6 +421,31 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         });
     }
 
+    /** Store configured project name. */
+    public void setName(final String name) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = helper.getPrimaryConfigurationData(true);
+                // XXX replace by XMLUtil when that has findElement, findText, etc.
+                NodeList nl = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                Element nameEl;
+                if (nl.getLength() == 1) {
+                    nameEl = (Element) nl.item(0);
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+                }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                helper.putPrimaryConfigurationData(data, true);
+                return null;
+            }
+        });
+    }
+
     private void updateProjectXML () throws IOException {
         Element element = aux.getConfigurationFragment("data","http://www.netbeans.org/ns/EjbJar-project/1",true);    //NOI18N
         if (element != null) {
