@@ -21,8 +21,8 @@ Microsystems, Inc. All Rights Reserved.
 <jnlp spec='1.0+' codebase='$$$$codebase'>
   <information>
       <title>$${app.title}</title>
-      <vendor>You</vendor>
-      <description>Your Application</description>
+      <vendor>$${app.title} vendor</vendor>
+      <description>$${app.name} application</description>
   </information>
   <security><all-permissions/></security>
   <resources>
@@ -195,6 +195,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
                 <replacestring from="@RESOURCES@" to="${jnlp.resources}"/>
+                <replacestring from="$${app.name}" to="${app.name}"/>
+                <replacestring from="$${app.title}" to="${app.title}"/>
             </filterchain>
         </copy>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>

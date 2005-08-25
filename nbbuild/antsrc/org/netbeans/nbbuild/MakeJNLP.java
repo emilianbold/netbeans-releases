@@ -287,17 +287,17 @@ public class MakeJNLP extends Task {
             if (!e.canRead()) {
                 throw new BuildException("Cannot read extension " + e + " referenced from " + f);
             }
+            String n = e.getName();
+            if (n.endsWith(".jar")) {
+                n = n.substring(0, n.length() - 4);
+            }
+            
             if (isSigned (e)) {
                 Copy copy = (Copy)getProject().createTask("copy");
                 copy.setFile(e);
                 File t = new File(target, e.getName());
                 copy.setTofile(t);
                 copy.execute();
-                
-                String n = e.getName();
-                if (n.endsWith(".jar")) {
-                    n = n.substring(0, n.length() - 4);
-                }
                 
                 String  extJnlpName = dashcnb + "-ext-" + n + ".jnlp";
                 File jnlp = new File(target, extJnlpName);
@@ -319,10 +319,12 @@ public class MakeJNLP extends Task {
                 
                 fileWriter.write("    <extension name='" + e.getName() + "' href='" + extJnlpName + "'/>\n");
             } else {
-                fileWriter.write("    <jar href='" + s + "'/>\n");
+                File ext = new File(target, e.getName());
+                
+                fileWriter.write("    <jar href='" + e.getName() + "'/>\n");
 
                 getSignTask().setJar(e);
-                getSignTask().setSignedjar(new File(target, e.getName()));
+                getSignTask().setSignedjar(ext);
                 getSignTask().execute();
             }
         }

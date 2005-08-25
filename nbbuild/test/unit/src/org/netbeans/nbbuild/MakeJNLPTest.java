@@ -201,9 +201,13 @@ public class MakeJNLPTest extends NbTestCase {
         File jnlp = new File(output, "aaa-my-module.jnlp");
         String res = ModuleDependenciesTest.readFile (jnlp);
 
-        int first = res.indexOf("jar href");
-        if (first < 0 || res.indexOf("jar href", first + 1) < 0) {
-            fail ("There should be two jar references in the file: " + res);
+        
+        Matcher m = Pattern.compile("<jar href='(.*)' */>").matcher(res);
+        for (int x = 0; x < 2; x++) {
+            assertTrue("Matches at least one" + "(" + x + ")", m.find());
+            assertEquals("Found a group" + "(" + x + ")", m.groupCount(), 1);
+            File f = new File (jnlp.getParentFile(), m.group(1));
+            assertTrue("The file " + f + " exists" + "(" + x + ")", f.exists());
         }
         
     }
@@ -286,7 +290,7 @@ public class MakeJNLPTest extends NbTestCase {
         props.put("OpenIDE-Module-Short-Description", "Lets you build external plug-in modules from sources.");
         props.put("OpenIDE-Module-Long-Description", "XXX");
         
-        File simpleJar = generateJar (new String[0], m, props);
+        File simpleJar = generateJar (null, new String[0], m, props);
 
         File parent = simpleJar.getParentFile ();
         File output = new File(parent, "output");
@@ -450,17 +454,14 @@ public class MakeJNLPTest extends NbTestCase {
     private File doClassPathModuleCheck(String script) throws Exception {
         Manifest m;
 
-        File extJar = generateJar (new String[0], ModuleDependenciesTest.createManifest());
+        File extJar = generateJar ("modules/ext", new String[0], ModuleDependenciesTest.createManifest(), null);
         
         m = ModuleDependenciesTest.createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "aaa.my.module/3");
-        m.getMainAttributes ().putValue ("Class-Path", extJar.getName());
-        File simpleJar = generateJar (new String[0], m);
+        m.getMainAttributes ().putValue ("Class-Path", "ext/" + extJar.getName());
+        File simpleJar = generateJar ("modules", new String[0], m, null);
 
         File parent = simpleJar.getParentFile ();
-        
-        assertEquals("Both modules in the same dir", parent, extJar.getParentFile());
-        
         
         File output = new File(parent, "output");
         File ks = genereteKeystore("jnlp", "netbeans-test");
@@ -481,8 +482,12 @@ public class MakeJNLPTest extends NbTestCase {
     }
     
     
-    private final File createNewJarFile () throws IOException {
-        File dir = new File(this.getWorkDir(), "modules");
+    private final File createNewJarFile (String prefix) throws IOException {
+        if (prefix == null) {
+            prefix = "modules";
+        }
+        
+        File dir = new File(this.getWorkDir(), prefix);
         dir.mkdirs();
         
         int i = 0;
@@ -493,11 +498,11 @@ public class MakeJNLPTest extends NbTestCase {
     }
     
     protected final File generateJar (String[] content, Manifest manifest) throws IOException {
-        return generateJar(content, manifest, null);
+        return generateJar(null, content, manifest, null);
     }
     
-    protected final File generateJar (String[] content, Manifest manifest, Properties props) throws IOException {
-        File f = createNewJarFile ();
+    protected final File generateJar (String prefix, String[] content, Manifest manifest, Properties props) throws IOException {
+        File f = createNewJarFile (prefix);
         
         if (props != null) {
             manifest.getMainAttributes().putValue("OpenIDE-Module-Localizing-Bundle", "some/fake/prop/name/Bundle.properties");
