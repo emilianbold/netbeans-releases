@@ -654,11 +654,11 @@ public class JavaKit extends NbEditorKit {
         public JMenuItem getPopupMenuItem(final JTextComponent target) {
             String menuText = NbBundle.getBundle(JavaKit.class).getString("generate-goto-popup"); //NOI18N
             JMenu jm = new JMenu(menuText);
-            addAction(target, jm, ExtKit.gotoSourceAction);
-            addAction(target, jm, ExtKit.gotoDeclarationAction);
-            addAction(target, jm, gotoSuperImplementationAction);
-            addAction(target, jm, ExtKit.gotoAction);
-            addAction(target, jm, JavaFastOpenAction.getInstance());
+            //addAction(target, jm, ExtKit.gotoSourceAction);
+            //addAction(target, jm, ExtKit.gotoDeclarationAction);
+            //addAction(target, jm, gotoSuperImplementationAction);
+            //addAction(target, jm, ExtKit.gotoAction);
+            //addAction(target, jm, JavaFastOpenAction.getInstance());
             return jm;
         }
     

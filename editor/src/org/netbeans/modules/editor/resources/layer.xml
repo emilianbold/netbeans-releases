@@ -158,7 +158,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Editors">
         <folder name="Popup">
             <file name="org-netbeans-modules-editor-NbSelectInPopupAction.instance"/>
-            <attr name="generate-goto-popup/org-netbeans-modules-editor-NbSelectInPopupAction.instance" boolvalue="true"/>
             <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/format" boolvalue="true"/>
             <attr name="org-netbeans-modules-editor-NbSelectInPopupAction.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
             <file name="org-openide-actions-CutAction.instance"/>
