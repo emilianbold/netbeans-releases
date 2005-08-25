@@ -20,18 +20,13 @@ Microsystems, Inc. All Rights Reserved.
         </condition>
         <property name="test.user.dir" location="build/testuserdir"/>
         <property name="install" location="${netbeans.dest.dir}"/>
-        <condition property="platform.is.complete.app">
-            <and>
-                <available file="${install}/bin" type="dir"/>
-                <not>
-                    <isset property="branding.token"/>
-                </not>
-            </and>
-        </condition>
         <property name="run.args.common" value="--userdir ${test.user.dir} -J-Dnetbeans.logger.console=true -J-ea"/>
+        <!-- In case run from a suite module, to get app.name and/or branding.token: -->
+        <property file="${suite.dir}/nbproject/private/private.properties"/>
+        <property file="${suite.dir}/nbproject/project.properties"/>
     </target>
 
-    <target name="-prepare-as-app" depends="-init" if="platform.is.complete.app">
+    <target name="-prepare-as-app" depends="-init" unless="app.name">
         <property name="run.app.exe" value="bin\nb.exe"/>
         <property name="run.app.sh" value="bin/netbeans"/>
         <property name="run.exe" location="${install}\${run.app.exe}"/>
@@ -41,12 +36,40 @@ Microsystems, Inc. All Rights Reserved.
         <property name="run.args.prepared" value=""/>
     </target>
 
-    <target name="-prepare-as-platform" depends="-init" unless="platform.is.complete.app">
+    <target name="-prepare-as-platform" depends="-init" if="app.name">
+        <!-- XXX a bunch of stuff copied from suite.xml#build-launchers; would be better to factor this out somewhere? -->
+        <pathconvert property="zip.platform.update.tracking">
+            <path>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="**/update_tracking/*.xml"/>
+                </fileset>
+            </path>
+        </pathconvert>
+        <pathconvert property="zip.platform.clusters.duplicates" pathsep=",">
+            <path>
+                <fileset dir="${netbeans.dest.dir}">
+                    <selector>
+                        <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                            <param name="excludeModules" value="${disabled.modules}"/>
+                            <param name="excludeClusters" value="${disabled.clusters}"/>
+                            <param name="updateTrackingFiles" value="${zip.platform.update.tracking}"/>
+                        </custom>
+                    </selector>
+                </fileset>
+            </path>
+            <mapper type="regexp" from="^\Q${netbeans.dest.dir}\E[/\\]([^/\\]+)" to="\1"/>
+        </pathconvert>
+        <pathconvert property="run.platform.clusters">
+            <path>
+                <dirset dir="${netbeans.dest.dir}" includes="${zip.platform.clusters.duplicates}"/>
+                <pathelement location="${cluster}"/>
+            </path>
+        </pathconvert>
         <property name="platform.cluster" location="${install}/platform6"/> <!-- XXX better to avoid hardcoding -->
         <property name="run.exe" location="${platform.cluster}\lib\nbexec.exe"/>
         <property name="run.sh" location="${platform.cluster}/lib/nbexec"/>
         <property name="branding.token" value="-"/> <!-- fallback value if not set -->
-        <property name="run.args.prepared" value="--branding ${branding.token} --clusters ${cluster}"/>
+        <property name="run.args.prepared" value="--branding ${branding.token} --clusters ${run.platform.clusters}"/>
     </target>
 
     <target name="run" depends="-prepare-as-app,-prepare-as-platform">

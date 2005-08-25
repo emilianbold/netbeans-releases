@@ -500,6 +500,7 @@ copy unmodified to the output cluster.
 
 run.app.exe - "bin\nb.exe"; name of Windows launcher to start (inside
 ${netbeans.dest.dir}) if trying to run the application for interactive testing.
+Only relevant if ${app.name} is unset.
 
 run.app.sh - "bin/netbeans"; same but for Unix (and Mac OS X).
 
@@ -573,7 +574,7 @@ unit tests.
 
 To support builds of JNLP based applications (described at 
 http://installer.netbeans.org/docs/jnlpInstaller.html) additional may be used 
-or redefined in jnlp related targets:
+or redefined in JNLP-related targets:
 
 jnlp.servlet.jar - must point to jnlp-servlet.jar as provided by JDK 1.5 in
   the directory sample/jnlp/servlet/jnlp-servlet.jar if one wants to build 
@@ -604,6 +605,8 @@ jnlp.verify.excludes - the default implementation of "jnlp" task in common.xml
   referenced from the JNLP file. Sometimes not all of them need to be, for
   them you can put their full names (relative to your cluster root) into this
   property and separate them by comma.
+
+[XXX some of the above should be listed in "Suite Properties"]
 
 
 TARGETS AVAILABLE FOR OVERRIDING IN YOUR build.xml
@@ -693,6 +696,9 @@ SUITE PROPERTIES
 
 Some properties are shared with module projects, such as ${cluster}.
 
+app.name - filename of application launchers to create, suite name to create,
+etc.
+
 branding.dir (default "${suite.dir}/branding") - directory containing branding
 overrides.
 
@@ -724,8 +730,6 @@ will be packed into
     ${cluster}/modules/locale/org-netbeans-modules-x_foo.jar!/org/netbeans/modules/x/resources/Bundle_foo.properties
 
 run - start application for testing.
-
-run-standalone - executes your suite as if it has its own launcher, only with selected clusters and modules
 
 debug - like run, but run in the JPDA debugger. (Only available from inside the
 IDE.)

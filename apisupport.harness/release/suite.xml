@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="-taskdefs" unless="harness.taskdefs.done">
         <dirname property="harness.dir" file="${suite.file}"/>
+        <echo level="verbose">Using build harness in ${harness.dir}</echo>
         <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
         <property name="harness.taskdefs.done" value="true"/>
     </target>
@@ -32,89 +33,91 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/config/Modules"/>
         <createmodulexml xmldir="${cluster}/config/Modules">
             <hidden dir="${netbeans.dest.dir}">
-                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
-                    <param name="excludeModules" value="${disabled.modules}" />
-                    <param name="excluded" value="true" />
+                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                    <param name="excludeModules" value="${disabled.modules}"/>
+                    <param name="excluded" value="true"/>
                 </custom>
             </hidden>
         </createmodulexml>
     </target>
     
     
-    <target name="build-launchers" depends="-init" >
-        <pathconvert property="zip.platform.update.tracking" >
-            <path >
-                <fileset dir="${netbeans.dest.dir}" >
-                    <include name="**/update_tracking/*.xml" />
+    <target name="build-launchers" depends="-init">
+        <fail unless="app.name">Must have set at least an application name ('app.name')</fail>
+        
+        <pathconvert property="zip.platform.update.tracking">
+            <path>
+                <fileset dir="${netbeans.dest.dir}">
+                    <include name="**/update_tracking/*.xml"/>
                 </fileset>
             </path>
         </pathconvert>
 
-        <selector id="zip.platform.included.files" >
-            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
-                <param name="excludeModules" value="${disabled.modules}" />
-                <param name="excludeClusters" value="${disabled.clusters}" />
-                <param name="updateTrackingFiles" value="${zip.platform.update.tracking}" />
+        <selector id="zip.platform.included.files">
+            <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                <param name="excludeModules" value="${disabled.modules}"/>
+                <param name="excludeClusters" value="${disabled.clusters}"/>
+                <param name="updateTrackingFiles" value="${zip.platform.update.tracking}"/>
             </custom>
         </selector>
         
-        <pathconvert property="zip.platform.clusters.duplicates" pathsep="," >
+        <pathconvert property="zip.platform.clusters.duplicates" pathsep=",">
             <path>
-                <fileset dir="${netbeans.dest.dir}" >
-                    <selector refid="zip.platform.included.files" />
+                <fileset dir="${netbeans.dest.dir}">
+                    <selector refid="zip.platform.included.files"/>
                 </fileset>
             </path>
-            <mapper type="regexp" from="^${netbeans.dest.dir}/([^/]*)" to="\1"/>
+            <mapper type="regexp" from="^\Q${netbeans.dest.dir}\E[/\\]([^/\\]+)" to="\1"/>
         </pathconvert>
         
-        <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}" />
+        <dirset dir="${netbeans.dest.dir}" id="platform.clusters" includes="${zip.platform.clusters.duplicates}"/>
         
-        <pathconvert property="zip.platform.clusters" pathsep="${line.separator}" >
+        <pathconvert property="zip.platform.clusters" pathsep="${line.separator}">
             <path>
-                <dirset refid="platform.clusters" />
+                <dirset refid="platform.clusters"/>
             </path>
-            <mapper type="regexp" from="^${netbeans.dest.dir}/([^/]*)" to="\1"/>
+            <mapper type="regexp" from="^\Q${netbeans.dest.dir}\E[/\\]([^/\\]+)" to="\1"/>
         </pathconvert>
+        <echo level="verbose">Included platform clusters: ${zip.platform.clusters}</echo>
 
-        <property name="build.launcher.dir" location="build/launcher" />
+        <property name="build.launcher.dir" location="build/launcher"/>
         
-        <mkdir dir="${build.launcher.dir}/etc" />
-        <mkdir dir="${build.launcher.dir}/bin" />
+        <mkdir dir="${build.launcher.dir}/etc"/>
+        <mkdir dir="${build.launcher.dir}/bin"/>
 
-        <copy file="${harness.dir}/launchers/app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" />
-        <copy file="${harness.dir}/launchers/app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}w.exe" />
-        <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}" />
-        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf" />
-        <echo message="${zip.platform.clusters}" file="${build.launcher.dir}/etc/${app.name}.clusters" />
-        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true" />
-        <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true" />
-        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true" />
+        <copy file="${harness.dir}/launchers/app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe"/>
+        <copy file="${harness.dir}/launchers/app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}w.exe"/>
+        <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
+        <copy file="${harness.dir}/etc/app.conf" tofile="${build.launcher.dir}/etc/${app.name}.conf"/>
+        <echo message="${zip.platform.clusters}" file="${build.launcher.dir}/etc/${app.name}.clusters"/>
+        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+        <echo message="${app.name}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
+        <echo message="${line.separator}" file="${build.launcher.dir}/etc/${app.name}.clusters" append="true"/>
         
     </target>
     
-    <target name="build-zip" depends="build, build-launchers" description="Builds zip distribution of the suite and selected modules from the platform" >
-        <property name="disabled.modules" value="" />
-        <property name="disabled.clusters" value="" />
-        <property name="app.name" value="nbbasedapp" />
+    <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
+        <property name="disabled.modules" value=""/>
+        <property name="disabled.clusters" value=""/>
         
-        <mkdir dir="dist" />
-        <zip destfile="dist/${app.name}.zip" >
-            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="bin" />
-            <zipfileset dir="${build.launcher.dir}/etc/" prefix="etc" />
-            <zipfileset dir="${netbeans.dest.dir}" filemode="755" >
-                <include name="**/lib/nbexec*" />
+        <mkdir dir="dist"/>
+        <zip destfile="dist/${app.name}.zip">
+            <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="bin"/>
+            <zipfileset dir="${build.launcher.dir}/etc/" prefix="etc"/>
+            <zipfileset dir="${netbeans.dest.dir}" filemode="755">
+                <include name="**/lib/nbexec*"/>
             </zipfileset>
                 
-            <zipfileset dir="${netbeans.dest.dir}" >
+            <zipfileset dir="${netbeans.dest.dir}">
                 <and>
                     <not>
-                        <filename name="**/lib/nbexec*" />
+                        <filename name="**/lib/nbexec*"/>
                     </not>
-                    <selector refid="zip.platform.included.files" />
+                    <selector refid="zip.platform.included.files"/>
                 </and>
             </zipfileset>
             
-            <zipfileset dir="${cluster}" prefix="${app.name}/" />
+            <zipfileset dir="${cluster}" prefix="${app.name}/"/>
             
         </zip>
     </target>
@@ -122,6 +125,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="clean" depends="-init" description="Clean all modules in the suite.">
         <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
         <delete dir="build" failonerror="false"/>
+        <delete dir="dist" failonerror="false"/>
     </target>
 
     <target name="branding" depends="-init" if="branding.token">
@@ -130,37 +134,23 @@ Microsystems, Inc. All Rights Reserved.
         <branding cluster="${cluster}" overrides="${branding.dir}" token="${branding.token}"/>
     </target>
 
-    <target name="run" depends="build" >
+    <target name="run" depends="build" description="Runs this suite in place.">
         <ant antfile="${harness.dir}/run.xml" target="run"/>
     </target>
         
-    <target name="run-standalone" depends="build-launchers,build" >
-        <pathconvert property="run.platform.clusters" >
-            <path>
-                <dirset refid="platform.clusters" />
-                <pathelement location="${cluster}" />
-            </path>
-        </pathconvert>
-        
-        <ant antfile="${harness.dir}/run.xml" target="run">
-            <property name="run.args.prepared" value="--clusters ${run.platform.clusters}"/>
-            <property name="run.without.ide.clusters" value="true" />
-        </ant>
-    </target>
-    
-    <target name="debug" depends="build" >
+    <target name="debug" depends="build" description="Runs this suite in place in the debugger.">
         <ant antfile="${harness.dir}/run.xml" target="debug"/>
     </target>
     
-    <target name="build-jnlp" depends="build" description="Packages this suite as JNLP application" >
+    <target name="build-jnlp" depends="build" description="Packages this suite as a JNLP application.">
         <ant antfile="${harness.dir}/jnlp.xml" target="build"/>
     </target>
     
-    <target name="run-jnlp" depends="build" description="Executes this suite as JNLP application" >
+    <target name="run-jnlp" depends="build" description="Runs this suite as a JNLP application.">
         <ant antfile="${harness.dir}/jnlp.xml" target="run"/>
     </target>
     
-    <target name="debug-jnlp" depends="build" description="Executes this suite as JNLP application under debugger" >
+    <target name="debug-jnlp" depends="build" description="Runs this suite as a JNLP application in the debugger.">
         <ant antfile="${harness.dir}/jnlp.xml" target="debug"/>
     </target>
     

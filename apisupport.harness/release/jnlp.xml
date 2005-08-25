@@ -13,25 +13,12 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="suite-jnlp" basedir=".">
 
-    <!--
-    <target name="-taskdefs" unless="harness.taskdefs.done">
-        <dirname property="harness.dir" file="${suite.file}"/>
-        <taskdef classpath="${harness.dir}/tasks.jar" resource="org/netbeans/nbbuild/taskdefs.properties"/>
-        <property name="harness.taskdefs.done" value="true"/>
+    <target name="-check-for-master.jnlp">
+        <available file="master.jnlp" property="master.jnlp.exists"/>
     </target>
-    
-    <target name="-init" depends="-taskdefs">
-        <property file="nbproject/private/private.properties"/>
-        <property file="nbproject/project.properties"/>
-        <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.sorted"/>
-        <property name="cluster" location="build/cluster"/>
-        <echo level="verbose">Suite in ${basedir} with target platform ${netbeans.dest.dir}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
-    </target>
-    -->
-    
-    <target name="jnlp-init-generate-master" >
-        <echo file="master.jnlp" ><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
-<jnlp spec='1.0+' codebase='$$$$codebase' >
+    <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
+        <echo file="master.jnlp"><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
+<jnlp spec='1.0+' codebase='$$$$codebase'>
   <information>
       <title>Your Application</title>
       <vendor>You</vendor>
@@ -46,43 +33,36 @@ Microsystems, Inc. All Rights Reserved.
 ]]></echo>
     </target>
     
-    <target name="jnlp-init" >
-        <fail message="To build JNLP version of NetBeans you need to place master.jnlp in your suite directory. You can use NetBeans IDE to generate one or call 'jnlp-init-generate-master' target" >
-            <condition>
-                <not>
-                    <available file="master.jnlp" />
-                </not>
-            </condition>
-        </fail>
+    <target name="jnlp-init" depends="jnlp-init-generate-master">
         
-        <property name="jnlp.dest.dir" location="build/jnlp" />
-        <property name="jnlp.master.dir" location="build/tmp/master-jnlp" />
-        <mkdir dir="${jnlp.master.dir}" />
+        <property name="jnlp.dest.dir" location="build/jnlp"/>
+        <property name="jnlp.master.dir" location="build/tmp/master-jnlp"/>
+        <mkdir dir="${jnlp.master.dir}"/>
         
-        <property name="disabled.modules" value="" />
-        <property name="disabled.clusters" value="" />
-        <property name="app.name" value="nbbasedapp" />
+        <property name="disabled.modules" value=""/>
+        <property name="disabled.clusters" value=""/>
+        <property name="app.name" value="nbbasedapp"/>
         
-        <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}" >
+        <fileset id="jnlp.included.modules" dir="${netbeans.dest.dir}">
             <and>
-                <filename name="**/*.jar" />
-                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector" >
-                    <param name="excludeModules" value="${disabled.modules}" />
-                    <param name="excludeClusters" value="${disabled.clusters}" />
+                <filename name="**/*.jar"/>
+                <custom classpath="${harness.dir}/tasks.jar" classname="org.netbeans.nbbuild.ModuleSelector">
+                    <param name="excludeModules" value="${disabled.modules}"/>
+                    <param name="excludeClusters" value="${disabled.clusters}"/>
                 </custom>
             </and>
         </fileset>
     </target>
 
-    <property name="jnlp.signjar.keystore" location="build/default.keystore" />
-    <property name="jnlp.signjar.alias" value="jnlp" />
-    <property name="jnlp.signjar.password" value="netbeans" />
-    <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}" />
-    <target name="jnlp-generate-keystore" depends="jnlp-init" unless="jnlp.signjar.keystore.exists" >
-        <property name="jnlp.signjar.vendor" value="CN=A NetBeans Friend, OU=NetBeans, O=netbeans.org, C=US" />
+    <property name="jnlp.signjar.keystore" location="build/default.keystore"/>
+    <property name="jnlp.signjar.alias" value="jnlp"/>
+    <property name="jnlp.signjar.password" value="netbeans"/>
+    <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
+    <target name="jnlp-generate-keystore" depends="jnlp-init" unless="jnlp.signjar.keystore.exists">
+        <property name="jnlp.signjar.vendor" value="CN=A NetBeans Friend, OU=NetBeans, O=netbeans.org, C=US"/>
         
-        <mkdir dir="${jnlp.signjar.keystore}/../" />
-        <echo message="Going to create default keystore in ${jnlp.signjar.keystore}" />
+        <mkdir dir="${jnlp.signjar.keystore}/../"/>
+        <echo message="Going to create default keystore in ${jnlp.signjar.keystore}"/>
         <genkey 
             alias="${jnlp.signjar.alias}"
             keystore="${jnlp.signjar.keystore}"
@@ -91,11 +71,11 @@ Microsystems, Inc. All Rights Reserved.
         />
     </target>
 
-    <target name="jnlp-generate-platform" depends="jnlp-generate-platform-repository,jnlp-generate-platform-master" />
+    <target name="jnlp-generate-platform" depends="jnlp-generate-platform-repository,jnlp-generate-platform-master"/>
     
-    <target name="jnlp-generate-platform-repository" depends="jnlp-generate-keystore,jnlp-init" unless="jnlp.platform.codebase" >
-        <property name="jnlp.platform.codebase" value="netbeans/" />
-        <mkdir dir="${jnlp.dest.dir}/netbeans" />
+    <target name="jnlp-generate-platform-repository" depends="jnlp-generate-keystore,jnlp-init" unless="jnlp.platform.codebase">
+        <property name="jnlp.platform.codebase" value="netbeans/"/>
+        <mkdir dir="${jnlp.dest.dir}/netbeans"/>
         
         <makejnlp 
             alias="${jnlp.signjar.alias}" 
@@ -103,16 +83,16 @@ Microsystems, Inc. All Rights Reserved.
             storepass="${jnlp.signjar.password}"
             dir="${jnlp.dest.dir}/netbeans/"
         >
-            <modules refid="jnlp.included.modules" />
+            <modules refid="jnlp.included.modules"/>
         </makejnlp>
     </target>
     
-    <target name="jnlp-generate-platform-master" depends="jnlp-generate-platform-repository" >
+    <target name="jnlp-generate-platform-master" depends="jnlp-generate-platform-repository">
         <makemasterjnlp 
             dir="${jnlp.master.dir}"
             codebase="${jnlp.platform.codebase}"
         >
-            <modules refid="jnlp.included.modules" />
+            <modules refid="jnlp.included.modules"/>
         </makemasterjnlp>
     </target>
     
@@ -120,16 +100,16 @@ Microsystems, Inc. All Rights Reserved.
             depends="build-jnlp-nowar"
             description="Build JNLP files and signed JARs for all modules in the suite."
     >
-        <property name="jnlp.servlet.jar" location="${java.home}/../sample/jnlp/servlet/jnlp-servlet.jar" />
-        <fail message="Point -Djnlp.servlet.jar to your jnlp-servlet.jar, usually in $$JDKHOME/sample/jnlp/servlet/jnlp-servlet.jar" >
+        <property name="jnlp.servlet.jar" location="${java.home}/../sample/jnlp/servlet/jnlp-servlet.jar"/>
+        <fail message="Point -Djnlp.servlet.jar to your jnlp-servlet.jar, usually in $$JDKHOME/sample/jnlp/servlet/jnlp-servlet.jar">
             <condition>
                 <not>
-                    <available file="${jnlp.servlet.jar}" />
+                    <available file="${jnlp.servlet.jar}"/>
                 </not>
             </condition>
         </fail>
         
-        <echo file="build/tmp/web.xml" ><![CDATA[
+        <echo file="build/tmp/web.xml"><![CDATA[
 <web-app>
  <servlet>
     <servlet-name>JnlpDownloadServlet</servlet-name>
@@ -141,52 +121,53 @@ Microsystems, Inc. All Rights Reserved.
  </servlet-mapping>
 </web-app>         
 ]]></echo>
-        <war basedir="${jnlp.dest.dir}" destfile="dist/${app.name}.war" webxml="build/tmp/web.xml" >
-            <zipfileset dir="${jnlp.servlet.jar}/.." file="${jnlp.servlet.jar}" prefix="WEB-INF/lib" />
+        <mkdir dir="dist"/>
+        <war basedir="${jnlp.dest.dir}" destfile="dist/${app.name}.war" webxml="build/tmp/web.xml">
+            <zipfileset dir="${jnlp.servlet.jar}/.." file="${jnlp.servlet.jar}" prefix="WEB-INF/lib"/>
         </war>
     </target>
 
-    <target name="build-jnlp-local" depends="build-jnlp-nowar" >
-        <property name="build.jnlp.local.dir" location="dist/jnlp/local" />
-        <mkdir dir="${build.jnlp.local.dir}" />
-        <mkdir dir="${build.jnlp.local.dir}/netbeans/" />
-        <mkdir dir="${build.jnlp.local.dir}/app/" />
+    <target name="build-jnlp-local" depends="build-jnlp-nowar">
+        <property name="build.jnlp.local.dir" location="dist/jnlp/local"/>
+        <mkdir dir="${build.jnlp.local.dir}"/>
+        <mkdir dir="${build.jnlp.local.dir}/netbeans/"/>
+        <mkdir dir="${build.jnlp.local.dir}/app/"/>
         
-        <copy todir="${build.jnlp.local.dir}" >
-            <fileset dir="build/jnlp" >
-                <include name="*" />
+        <copy todir="${build.jnlp.local.dir}">
+            <fileset dir="build/jnlp">
+                <include name="*"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}" />
+                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}"/>
             </filterchain>
         </copy>
-        <copy todir="${build.jnlp.local.dir}/netbeans/" >
-            <fileset dir="build/jnlp/netbeans" >
-                <include name="*" />
+        <copy todir="${build.jnlp.local.dir}/netbeans/">
+            <fileset dir="build/jnlp/netbeans">
+                <include name="*"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/" />
+                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/"/>
             </filterchain>
         </copy>
-        <copy todir="${build.jnlp.local.dir}/app/" >
-            <fileset dir="build/jnlp/app" >
-                <include name="*" />
+        <copy todir="${build.jnlp.local.dir}/app/">
+            <fileset dir="build/jnlp/app">
+                <include name="*"/>
             </fileset>
             <filterchain>
-                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/" />
+                <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/"/>
             </filterchain>
         </copy>
     </target>
     
-    <target name="build-jnlp-nowar" depends="jnlp-init,jnlp-generate-keystore,jnlp-generate-platform" >
-        <mkdir dir="${jnlp.dest.dir}/app" />
+    <target name="build-jnlp-nowar" depends="jnlp-init,jnlp-generate-keystore,jnlp-generate-platform">
+        <mkdir dir="${jnlp.dest.dir}/app"/>
         <subant target="jnlp" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false">
-            <property name="jnlp.dest.dir" value="${jnlp.dest.dir}/app" />
-            <property name="jnlp.master.dir" value="${jnlp.master.dir}" />
-            <property name="jnlp.master.codebase" value="app/" />
-            <property name="jnlp.signjar.alias" value="${jnlp.signjar.alias}" />
-            <property name="jnlp.signjar.keystore" location="${jnlp.signjar.keystore}" />
-            <property name="jnlp.signjar.password" value="${jnlp.signjar.password}" />
+            <property name="jnlp.dest.dir" value="${jnlp.dest.dir}/app"/>
+            <property name="jnlp.master.dir" value="${jnlp.master.dir}"/>
+            <property name="jnlp.master.codebase" value="app/"/>
+            <property name="jnlp.signjar.alias" value="${jnlp.signjar.alias}"/>
+            <property name="jnlp.signjar.keystore" location="${jnlp.signjar.keystore}"/>
+            <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>
         </subant>
 
         
@@ -198,36 +179,36 @@ Microsystems, Inc. All Rights Reserved.
             signedjar="${jnlp.dest.dir}/startup.jar" 
         />
         
-        <echo file="${jnlp.master.dir}/resources.xml" ><![CDATA[
-    <j2se version="1.4+" />
-    <jar href='startup.jar' />
-    <property name='netbeans.user' value='$${user.home}/.${app.name}' />
+        <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
+    <j2se version="1.4+"/>
+    <jar href='startup.jar'/>
+    <property name='netbeans.user' value='$${user.home}/.${app.name}'/>
 ]]></echo>
-        <concat append="true" destfile="${jnlp.master.dir}/resources.xml" >
-            <fileset dir="${jnlp.master.dir}" >
-                <include name="*.ref" />
+        <concat append="true" destfile="${jnlp.master.dir}/resources.xml">
+            <fileset dir="${jnlp.master.dir}">
+                <include name="*.ref"/>
             </fileset>
         </concat>
         
-        <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml" />
+        <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml"/>
         
-        <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp" >
+        <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
-                <replacestring from="@RESOURCES@" to="${jnlp.resources}" />
+                <replacestring from="@RESOURCES@" to="${jnlp.resources}"/>
             </filterchain>
         </copy>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>
     </target>
     
-    <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application" >
-        <property name="run.args" value="" />
-        <exec executable="javaws" >
-            <arg path="${build.jnlp.local.dir}/master.jnlp" />
-            <env key="JAVAWS_VM_ARGS" value="${run.args}" />
+    <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application">
+        <property name="run.args" value=""/>
+        <exec executable="javaws">
+            <arg path="${build.jnlp.local.dir}/master.jnlp"/>
+            <env key="JAVAWS_VM_ARGS" value="${run.args}"/>
         </exec>
     </target>
     
-    <target name="debug" depends="build-jnlp-local" description="Executes this suite as JNLP application under debugger" >
+    <target name="debug" depends="build-jnlp-local" description="Executes this suite as JNLP application under debugger">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbjpdastart name="NetBeans" addressproperty="debug.port" transport="dt_socket">
             <classpath>
