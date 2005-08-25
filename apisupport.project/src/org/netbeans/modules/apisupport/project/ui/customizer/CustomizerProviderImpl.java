@@ -68,8 +68,9 @@ public final class CustomizerProviderImpl extends BasicCustomizer {
             moduleProps = new SingleModuleProperties(helper, evaluator,
                     sp, nmtp.getModuleType(), bundleInfo);
             init();
+        } else {
+            moduleProps.refresh(nmtp.getModuleType(), sp);
         }
-        moduleProps.refresh(nmtp.getModuleType(), sp);
     }
     
     private void init() {

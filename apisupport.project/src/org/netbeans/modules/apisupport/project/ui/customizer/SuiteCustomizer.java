@@ -59,8 +59,9 @@ public final class SuiteCustomizer extends BasicCustomizer {
         if (suiteProps == null) { // first initialization
             suiteProps = new SuiteProperties(getProject(), helper, evaluator, subModules);
             init();
+        } else {
+            suiteProps.refresh(subModules);
         }
-        suiteProps.refresh(subModules);
     }
     
     private void init() {
