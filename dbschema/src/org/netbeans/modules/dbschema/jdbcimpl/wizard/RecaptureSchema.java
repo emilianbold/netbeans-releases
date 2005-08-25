@@ -35,7 +35,6 @@ public class RecaptureSchema {
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.dbschema.recapture.debug");
 
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
-    ResourceBundle bundleDB = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     private DBSchemaWizardData data; 
     private Node dbSchemaNode;

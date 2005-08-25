@@ -32,7 +32,6 @@ import org.netbeans.modules.dbschema.jdbcimpl.*;
 public class CaptureSchema {
 
     ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
-    ResourceBundle bundleDB = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     private final String defaultName = bundle.getString("DefaultSchemaName"); //NOI18N
     private DBSchemaWizardData data;

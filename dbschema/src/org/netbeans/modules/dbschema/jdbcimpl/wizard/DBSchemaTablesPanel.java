@@ -28,7 +28,6 @@ import javax.swing.event.*;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 
 import org.netbeans.modules.dbschema.jdbcimpl.DDLBridge;
 import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
@@ -36,7 +35,6 @@ import org.netbeans.modules.dbschema.jdbcimpl.ConnectionProvider;
 public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
 
     private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
-    private final ResourceBundle bundleDB = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     private LinkedList tables;
     private LinkedList views;
@@ -44,8 +42,6 @@ public class DBSchemaTablesPanel extends JPanel implements ListDataListener {
     private String schema;
 
     private DatabaseConnection dbconnOld;
-
-    private ConnectionDialog dlg = null;
 
     private DBSchemaWizardData data;
 

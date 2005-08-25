@@ -41,7 +41,6 @@ public class DBSchemaConnectionPanel extends JPanel implements ListDataListener 
     private ArrayList list;
     private DBSchemaWizardData data;
     private Node dbNode;
-    private String waitNode = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("WaitNode"); //NOI18N
     private Node[] drvNodes;
 
     /** Creates new form DBSchemaConnectionpanel */
