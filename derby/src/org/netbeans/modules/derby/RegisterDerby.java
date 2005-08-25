@@ -42,6 +42,7 @@ import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -266,9 +267,10 @@ public class RegisterDerby implements DatabaseRuntime {
         try {
             ExecSupport ee= new ExecSupport();
             ee.setStringToLookFor("" + getPort());
-            String java = FileUtil.toFile(getJavaPlatform().findTool("java")).getAbsolutePath();
-            if (java == null)
+            FileObject javaFO = getJavaPlatform().findTool("java");
+            if (javaFO == null)
                 throw new Exception (NbBundle.getMessage(RegisterDerby.class, "EXC_JavaExecutableNotFound"));
+            String java = FileUtil.toFile(javaFO).getAbsolutePath();
             
             // create the derby.properties file
             createDerbyPropertiesFile();
