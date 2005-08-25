@@ -10,16 +10,18 @@
       <tocitem text="IDE Basics">
           <tocitem text="Working with CVS-Lite">
               <tocitem text="About CVS-Lite" target="cvs-lite_about" />
+              <tocitem text="CVS-Lite Workflow Overview" target="cvs-lite_overview" /> 
               <tocitem text="Working with CVS-Lite in the IDE" target="cvs-lite_workingwith" /> 
               <tocitem text="Using CVS-Lite with IDE Projects" target="cvs-lite_projects" /> 
-              <tocitem text="CVS-Lite Workflow Overview" target="cvs-lite_overview" /> 
-              <tocitem text="CVS-Lite Tasks: Quick Reference" target="cvs-lite_quickref" /> 
+
               <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" /> 
               <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
               <tocitem text="Comparing File Revisions" target="cvs-lite_diff" /> 
               <tocitem text="Merging File Revisions" target="cvs-lite_merge" /> 
               <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
-              <tocitem text="Setting Up CVS-Lite" target="cvs-lite_setup" /> 
-          </tocitem>
+              <tocitem text="Setting Up CVS-Lite" target="cvs-lite_setup" />
+
+              <tocitem text="CVS-Lite Tasks: Quick Reference" target="cvs-lite_quickref" /> 
+              </tocitem>
       </tocitem>
 </toc>
