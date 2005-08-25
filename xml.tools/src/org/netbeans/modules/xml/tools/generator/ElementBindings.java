@@ -14,7 +14,6 @@ package org.netbeans.modules.xml.tools.generator;
 
 import java.util.*;
 
-import org.openide.src.*;
 
 /**
  * Holds binding: element => {handler type, method name, parslet}.

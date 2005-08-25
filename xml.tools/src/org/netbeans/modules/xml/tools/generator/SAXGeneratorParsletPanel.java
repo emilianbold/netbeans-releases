@@ -16,7 +16,8 @@ import java.awt.*;
 import java.util.*;
 import java.beans.*;
 
-import org.openide.src.*;
+import org.openide.src.Type;
+import org.openide.src.Identifier;
 import org.openide.util.*;
 
 import javax.swing.*;
