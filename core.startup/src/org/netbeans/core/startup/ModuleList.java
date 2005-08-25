@@ -300,7 +300,7 @@ final class ModuleList {
                 // We are going to try to turn it on...
                 status.pendingInstall = false;
                 Module m = status.module;
-                if (m.isEnabled() || m.isFixed() || m.isAutoload() || m.isEager()) throw new IllegalStateException();
+                if (m.isEnabled() || m.isAutoload() || m.isEager()) throw new IllegalStateException();
                 maybeEnable.add(m);
             }
         }
@@ -1103,7 +1103,7 @@ final class ModuleList {
             Iterator it = mgr.getModules().iterator();
             while (it.hasNext()) {
                 Module m = (Module)it.next();
-                if (m.isFixed()) {
+                if (m.isFixed() || m.getAllJars().isEmpty()) {
                     // No way, we don't manage these.
                     continue;
                 }

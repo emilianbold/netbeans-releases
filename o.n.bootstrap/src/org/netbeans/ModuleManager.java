@@ -56,6 +56,7 @@ public final class ModuleManager {
     private final Map providersOf = new HashMap(25); // Map<String,Set<Module>>
     
     private final ModuleInstaller installer;
+    private ModuleFactory moduleFactory;
     
     private SystemClassLoader classLoader;
     private List classLoaderPatches; // List<File|JarFile>
@@ -96,6 +97,11 @@ public final class ModuleManager {
         }
         classLoader = new SystemClassLoader(classLoaderPatches, new ClassLoader[] {installer.getClass ().getClassLoader()}, Collections.EMPTY_SET);
         updateContextClassLoaders(classLoader, true);
+        
+        moduleFactory = (ModuleFactory)Lookup.getDefault().lookup(ModuleFactory.class);
+        if (moduleFactory == null) {
+            moduleFactory = new ModuleFactory();
+        }
     }
     
     /** Access for ManifestSection. 
@@ -307,6 +313,9 @@ public final class ModuleManager {
                 parents.add(m.getClassLoader());
             }
         }
+        if (moduleFactory.removeBaseClassLoader()) {
+            parents.remove(base);
+        }
         ClassLoader[] parentCLs = (ClassLoader[])parents.toArray(new ClassLoader[parents.size()]);
         SystemClassLoader nue;
         try {
@@ -416,6 +425,9 @@ public final class ModuleManager {
         }
         
         public String toString() {
+            if (debugme == null) {
+                return "SystemClassLoader";
+            }
             return debugme.toString();
         }
         
@@ -458,7 +470,8 @@ public final class ModuleManager {
     public Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException, DuplicateException {
         assertWritable();
         ev.log(Events.START_CREATE_REGULAR_MODULE, jar);
-        Module m = new Module(this, ev, jar.getAbsoluteFile(), history, reloadable, autoload, eager);
+        Module m = moduleFactory.create(jar.getAbsoluteFile(), 
+                        history, reloadable, autoload, eager, this, ev);
         ev.log(Events.FINISH_CREATE_REGULAR_MODULE, jar);
         subCreate(m);
         if (m.isEager()) {
@@ -491,7 +504,7 @@ public final class ModuleManager {
         assertWritable();
         if (mani == null || loader == null) throw new IllegalArgumentException("null manifest or loader"); // NOI18N
         ev.log(Events.START_CREATE_BOOT_MODULE, history);
-        Module m = new Module(this, ev, mani, history, loader);
+        Module m = moduleFactory.createFixed(mani, history, loader, this, ev);
         ev.log(Events.FINISH_CREATE_BOOT_MODULE, history);
         subCreate(m);
         return m;
@@ -507,12 +520,12 @@ public final class ModuleManager {
         return installer.refineProvides (m);
     }
     /** Used by Module to communicate with the ModuleInstaller re. classloader. */
-    void refineClassLoader(Module m, List parents) {
+    public void refineClassLoader(Module m, List parents) {
         // #27853:
         installer.refineClassLoader(m, parents);
     }
     /** Use by OneModuleClassLoader to communicate with the ModuleInstaller re. masking. */
-    boolean shouldDelegateResource(Module m, Module parent, String pkg) {
+    public boolean shouldDelegateResource(Module m, Module parent, String pkg) {
         // Cf. #19621:
         Module.PackageExport[] exports = (parent == null) ? null : parent.getPublicPackages();
         if (exports != null) {
@@ -566,7 +579,7 @@ public final class ModuleManager {
         // The installer can perform additional checks:
         return installer.shouldDelegateResource(m, parent, pkg);
     }
-    boolean isSpecialResource(String pkg) {
+    public boolean isSpecialResource(String pkg) {
         return installer.isSpecialResource(pkg);
     }
     // Again, access from Module to ModuleInstaller:
@@ -858,8 +871,19 @@ public final class ModuleManager {
                 Util.err.log("enable: adding to system classloader");
                 List nueclassloaders = new ArrayList(toEnable.size());
                 Iterator teIt = toEnable.iterator();
-                while (teIt.hasNext()) {
-                    nueclassloaders.add(((Module)teIt.next()).getClassLoader());
+                if (moduleFactory.removeBaseClassLoader()) {
+                    ClassLoader base = ModuleManager.class.getClassLoader();
+                    nueclassloaders.add(moduleFactory.getClasspathDelegateClassLoader(this, base));
+                    while (teIt.hasNext()) {
+                        ClassLoader c1 = ((Module)teIt.next()).getClassLoader();
+                        if (c1 != base) {
+                            nueclassloaders.add(c1);
+                        }
+                    }
+                } else {
+                    while (teIt.hasNext()) {
+                        nueclassloaders.add(((Module)teIt.next()).getClassLoader());
+                    }
                 }
                 classLoader.append((ClassLoader[])(nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
             } else {
@@ -992,7 +1016,7 @@ public final class ModuleManager {
             if (m.isAutoload()) throw new IllegalArgumentException("Cannot simulate enabling an autoload: " + m); // NOI18N
             if (m.isEager()) throw new IllegalArgumentException("Cannot simulate enabling an eager module: " + m); // NOI18N
             if (m.isEnabled()) throw new IllegalArgumentException("Already enabled: " + m); // NOI18N
-            if (!m.isValid()) throw new IllegalArgumentException("Not managed by me: " + m + " in " + m.getJarFile()); // NOI18N
+            if (!m.isValid()) throw new IllegalArgumentException("Not managed by me: " + m + " in " + m); // NOI18N
             maybeAddToEnableList(willEnable, modules, m, true);
         }
         // XXX clumsy but should work:
@@ -1535,5 +1559,4 @@ public final class ModuleManager {
         installer.close(modules);
         return true;
     }
-    
 }

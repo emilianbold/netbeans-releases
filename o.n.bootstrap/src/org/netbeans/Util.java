@@ -302,16 +302,22 @@ public abstract class Util {
         }
     }
 
-    /** Interface to permit a couple of methods in ClassLoader to be made public. */
-    interface PackageAccessibleClassLoader {
+    /**
+     * Interface to permit a couple of methods in ClassLoader to be made public. 
+     * @since 2.1
+     */
+    public interface PackageAccessibleClassLoader {
         /** @see ClassLoader#getPackage */
         Package getPackageAccessibly (String name);
         /** @see ClassLoader#getPackages */
         Package[] getPackagesAccessibly ();
     }
 
-    /** Interface for a classloader to declare that it comes from a module. */
-    interface ModuleProvider {
+    /** 
+     * Interface for a classloader to declare that it comes from a module. 
+     * @since 2.1
+     */
+    public interface ModuleProvider {
         Module getModule();
     }
     

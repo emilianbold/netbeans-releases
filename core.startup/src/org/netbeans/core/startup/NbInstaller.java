@@ -912,7 +912,10 @@ final class NbInstaller extends ModuleInstaller {
             if ("org/openide/util/".equals (pkg)) return true; // NOI18N
         }
 
-        
+        // IBM's stuff goes here for now:
+        if (pkg.startsWith("org/omg/CORBA/")) return true; // NOI18N
+        if (pkg.startsWith("com/ibm/ejs/util/")) return true; // NOI18N
+        if (pkg.startsWith("javax/rmi/CORBA/")) return true; // NOI18N
         
         // Some classes like DOMError are only in xerces.jar, not in JDK:
         if (pkg.equals("org/w3c/dom/")) return true; // NOI18N
@@ -1338,6 +1341,7 @@ final class NbInstaller extends ModuleInstaller {
         while (it.hasNext()) {
             Module m = (Module)it.next();
             if (m.isFixed()) continue;
+            if (m.getJarFile() == null) continue;
             File jar = m.getJarFile();
             // Note: extension JARs not checked.
             try {

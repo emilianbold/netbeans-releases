@@ -18,6 +18,7 @@ import java.net.URL;
 import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import org.openide.util.Lookup;
 
 /**
  * A class loader that has multiple parents and uses them for loading
@@ -95,11 +96,15 @@ public class ProxyClassLoader extends ClassLoader {
         for (int i = 0; i < nueparents.length; i++) {
             if (nueparents[i] == null) throw new IllegalArgumentException("null parent"); // NOI18N
         }
-        
-        parents = coalesceAppend(parents, nueparents);
+        ModuleFactory moduleFactory = (ModuleFactory)Lookup.getDefault().lookup(ModuleFactory.class);
+        if (moduleFactory != null && moduleFactory.removeBaseClassLoader()) {
+            // this hack is here to prevent having the application classloader
+            // as parent to all module classloaders.
+            parents = coalesceAppend(new ClassLoader[0], nueparents);
+        } else {
+            parents = coalesceAppend(parents, nueparents);
+        }
     }
-
-    
     
     /** Try to destroy this classloader.
      * Subsequent attempts to use it will log an error (at most one though).
@@ -536,7 +541,8 @@ public class ProxyClassLoader extends ClassLoader {
         for (int i = 0; i < parents.length; i++) {
 	    ClassLoader par = parents[i];
             if (!shouldDelegateResource(pkg, par)) continue;
-	    if (par instanceof ProxyClassLoader) {
+	    if ((par instanceof ProxyClassLoader) && 
+                ((ProxyClassLoader)par).shouldBeCheckedAsParentProxyClassLoader()) {
                 ProxyClassLoader pcl = (ProxyClassLoader)par;
 		Class c = pcl.fullFindClass(name, fileName, pkg);
                 // pcl might have have c in its already-loaded classes even though
@@ -546,16 +552,18 @@ public class ProxyClassLoader extends ClassLoader {
 	    } else {
                 // The following is an optimization, it should not affect semantics:
                 boolean skip = false;
-                if (name.startsWith("org.netbeans.") || // NOI18N
-                        name.startsWith("org.openide.") || // NOI18N
-                        name.endsWith(".Bundle") || // NOI18N
-                        name.endsWith("BeanInfo") || // NOI18N
-                        name.endsWith("Editor")) { // NOI18N
-                    if (par.getResource(fileName) == null) {
-                        // We would just throw CNFE anyway, don't bother!
-                        // Avg. (over ten runs after primer, w/ netbeans.close):
-                        // before: 13.87s after: 13.40s saved: 1.3%
-                        skip = true;
+                if (optimizeNBLoading()) {
+                    if (name.startsWith("org.netbeans.") || // NOI18N
+                            name.startsWith("org.openide.") || // NOI18N
+                            name.endsWith(".Bundle") || // NOI18N
+                            name.endsWith("BeanInfo") || // NOI18N
+                            name.endsWith("Editor")) { // NOI18N
+                        if (par.getResource(fileName) == null) {
+                            // We would just throw CNFE anyway, don't bother!
+                            // Avg. (over ten runs after primer, w/ netbeans.close):
+                            // before: 13.87s after: 13.40s saved: 1.3%
+                            skip = true;
+                        }
                     }
                 }
                 if (!skip) {
@@ -584,6 +592,21 @@ public class ProxyClassLoader extends ClassLoader {
         for (int i = 0; i < pkgs.length; i++) {
             all.put(pkgs[i].getName(), pkgs[i]);
         }
+    }
+    
+    /**
+     * See loadInOrder(...). Can be overriden by special classloaders
+     * (see project installer/jnlp/modules).
+     */
+    protected boolean shouldBeCheckedAsParentProxyClassLoader() {
+        return true;
+    }
+
+    /**
+     * Allows turning off the optimilazation in loadInOrder(...).
+     */
+    protected boolean optimizeNBLoading() {
+        return true;
     }
     
     /** Test whether a given resource name is something that any JAR might

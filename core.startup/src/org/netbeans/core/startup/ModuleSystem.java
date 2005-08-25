@@ -26,6 +26,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.net.URL;
 import java.net.MalformedURLException;
+import org.openide.util.Lookup;
 
 /** Controller of the IDE's whole module system.
  * Contains higher-level convenience methods to
@@ -284,15 +285,17 @@ public final class ModuleSystem {
             Iterator it = mgr.getModules().iterator();
             while (it.hasNext()) {
                 Module m = (Module)it.next();
-                if (jar.equals(m.getJarFile())) {
-                    // Hah, found it.
-                    if (! m.isReloadable()) {
-                        m.setReloadable(true);
+                if (m.getJarFile() != null) {
+                    if (jar.equals(m.getJarFile())) {
+                        // Hah, found it.
+                        if (! m.isReloadable()) {
+                            m.setReloadable(true);
+                        }
+                        turnOffModule(m, toReenable);
+                        mgr.reload(m);
+                        tm = m;
+                        break;
                     }
-                    turnOffModule(m, toReenable);
-                    mgr.reload(m);
-                    tm = m;
-                    break;
                 }
             }
             if (tm == null) {
@@ -303,7 +306,7 @@ public final class ModuleSystem {
                     tm = mgr.create(jar, new ModuleHistory(jar.getAbsolutePath()), true, false, false);
                 } catch (DuplicateException dupe) {
                     Module old = dupe.getOldModule();
-                    System.err.println("Replacing old module in " + old.getJarFile()); // NOI18N
+                    System.err.println("Replacing old module in " + old); // NOI18N
                     turnOffModule(old, toReenable);
                     mgr.delete(old);
                     try {
@@ -317,9 +320,9 @@ public final class ModuleSystem {
                 }
             }
             // Try to turn on the test module. It might throw InvalidExc < IOExc.
-            System.err.println("Enabling " + tm.getJarFile() + "..."); // NOI18N
+            System.err.println("Enabling " + tm + "..."); // NOI18N
             if (!mgr.simulateEnable(Collections.singleton(tm)).contains(tm)) {
-                throw new IOException("Cannot enable " + tm.getJarFile() + "; problems: " + tm.getProblems());
+                throw new IOException("Cannot enable " + tm + "; problems: " + tm.getProblems());
             }
             mgr.enable(tm);
             // OK, so far so good; also try to turn on any other modules if
@@ -367,7 +370,7 @@ public final class ModuleSystem {
             }
         }
         try {
-            System.err.println("Disabling " + m.getJarFile() + "..."); // NOI18N
+            System.err.println("Disabling " + m + "..."); // NOI18N
             // Don't mention the others, they will be mentioned later anyway.
             mgr.disable(toReenable);
         } finally {
@@ -401,5 +404,5 @@ public final class ModuleSystem {
         QuietEvents() {}
         protected void logged(String message, Object[] args) {}
     }
-    
+
 }

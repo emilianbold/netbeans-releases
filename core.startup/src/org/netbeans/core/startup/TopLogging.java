@@ -33,7 +33,7 @@ public class TopLogging
 
     private static final boolean disabledConsole = ! Boolean.getBoolean("netbeans.logger.console"); // NOI18N
 
-    private final PrintStream logPrintStream;
+    private PrintStream logPrintStream;
 
     private static TopLogging topLogging;
     
@@ -51,6 +51,29 @@ public class TopLogging
      */
     TopLogging (String logDir) throws IOException  {
         topLogging = this;
+
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
+        java.util.Date date = new java.util.Date();
+        if (logDir == null) {
+            // no demultiplexing -- everything goes just to stderr.
+            logPrintStream = System.err;
+            logPrintStream.println("-------------------------------------------------------------------------------"); // NOI18N
+            logPrintStream.println(">Log Session: "+df.format (date)); // NOI18N
+            logPrintStream.println(">System Info: "); // NOI18N
+            try {
+                printSystemInfo(logPrintStream);
+            } catch (Throwable t) {
+                // Serious problems.
+                t.printStackTrace();
+                logPrintStream.flush();
+            }
+            logPrintStream.println("-------------------------------------------------------------------------------"); // NOI18N
+            logPrintStream = new PrintStream(new OutputStream() {
+                public void write(int b) { /* intentionally empty */ }
+            });
+            return;
+        }
+        OutputStream log = null;
         
         File logFileDir = new File (logDir);
         if (! logFileDir.exists () && ! logFileDir.mkdirs ()) {
@@ -61,9 +84,7 @@ public class TopLogging
             throw new IOException ("Cannot write to file"); // NOI18N
         }
 
-        OutputStream log = new BufferedOutputStream(new FileOutputStream(logFile.getAbsolutePath(), true));
-        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL, Locale.ENGLISH);
-        java.util.Date date = new java.util.Date();
+        log = new BufferedOutputStream(new FileOutputStream(logFile.getAbsolutePath(), true));
 
         final PrintStream stderr = System.err;
         logPrintStream = new PrintStream(new StreamDemultiplexor(stderr, log), false, "UTF-8"); // NOI18N
@@ -214,7 +235,7 @@ public class TopLogging
         private static final int FLUSH_DELAY = Integer.getInteger("netbeans.logger.flush.delay", 15000).intValue(); // NOI18N
 
         private final OutputStream stderr;
-        private final OutputStream log;
+        private OutputStream log;
 
         StreamDemultiplexor(PrintStream stderr, OutputStream log) {
             this.stderr = stderr;
