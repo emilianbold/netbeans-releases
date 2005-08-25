@@ -17,13 +17,13 @@ Microsystems, Inc. All Rights Reserved.
         <available file="master.jnlp" property="master.jnlp.exists"/>
     </target>
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
-        <echo file="master.jnlp"><![CDATA[<?xml version='1.0' encoding='UTF-8'?>
-<jnlp spec='1.0+' codebase='$$$$codebase'>
+        <echo file="master.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="$$$$codebase">
   <information>
       <title>$${app.title}</title>
       <vendor>$${app.title} vendor</vendor>
       <description>$${app.name} application</description>
-      <icon href="$${app.icon}" />
+      <icon href="$${app.icon}"/>
   </information>
   <security><all-permissions/></security>
   <resources>
@@ -141,7 +141,7 @@ $${jnlp.resources}
             <fileset dir="build/jnlp">
                 <include name="*.jnlp"/>
             </fileset>
-            <filterchain >
+            <filterchain>
                 <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}"/>
             </filterchain>
         </copy>
@@ -179,7 +179,7 @@ $${jnlp.resources}
             <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>
         </subant>
 
-        <mkdir dir="${jnlp.dest.dir}/branding" />
+        <mkdir dir="${jnlp.dest.dir}/branding"/>
         <copy todir="${jnlp.dest.dir}/branding" flatten="true">
             <fileset dir="${cluster}">
                 <include name="**/locale/*.jar"/>
@@ -212,13 +212,13 @@ $${jnlp.resources}
                     <include name="*_${branding.token}.jar"/>
                 </fileset>
             </path>
-            <mapper type="regexp" from="^.*[/\\]([^/\\]+\.jar)" to="    &lt;jar href='branding/\1'/&gt;"/>
+            <mapper type="regexp" from="^.*[/\\]([^/\\]+\.jar)" to='    &lt;jar href="branding/\1"/&gt;'/>
         </pathconvert>
         
         <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
     <j2se version="1.4+"/>
-    <jar href='startup.jar'/>
-    <property name='netbeans.user' value='$${user.home}/.${app.name}'/>
+    <jar href="startup.jar"/>
+    <property name="netbeans.user" value="$${user.home}/.${app.name}"/>
     ${jnlp.branding.jars}
 ]]></echo>
         <concat append="true" destfile="${jnlp.master.dir}/resources.xml">
@@ -229,7 +229,7 @@ $${jnlp.resources}
         
         <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml"/>
         
-        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false" />
+        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false"/>
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
                 <replacestring from="$${jnlp.resources}" to="${jnlp.resources}"/>
@@ -243,10 +243,10 @@ $${jnlp.resources}
     </target>
     
     <target name="run" depends="build-jnlp-local" description="Executes this suite as JNLP application">
-        <condition property="run.javaws" value="${java.home}/javaws/javaws" >
-            <available file="${java.home}/javaws/javaws" />
+        <condition property="run.javaws" value="${java.home}/javaws/javaws">
+            <available file="${java.home}/javaws/javaws"/>
         </condition>
-        <property name="run.javaws" value="javaws" />
+        <property name="run.javaws" value="javaws"/>
         <property name="run.args" value=""/>
         <exec executable="${run.javaws}">
             <arg path="${build.jnlp.local.dir}/master.jnlp"/>
