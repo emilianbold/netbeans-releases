@@ -45,7 +45,7 @@ public class GetCleanAction extends AbstractSystemAction {
                 ~FileInformation.STATUS_VERSIONED_UPTODATE;
     }
     
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         int res = JOptionPane.showConfirmDialog(
                 null, 
                 NbBundle.getMessage(GetCleanAction.class, "CTL_RevertModifications_Prompt"),

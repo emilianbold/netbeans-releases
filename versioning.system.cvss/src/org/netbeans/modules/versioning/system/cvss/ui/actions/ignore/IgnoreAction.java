@@ -76,7 +76,7 @@ public class IgnoreAction extends AbstractSystemAction {
         return getActionStatus() != UNDEFINED;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         int actionStatus = getActionStatus();
         if (actionStatus == IGNORING) {
             CvsVersioningSystem.getInstance().setIgnored(Utils.getCurrentContext().getFiles());

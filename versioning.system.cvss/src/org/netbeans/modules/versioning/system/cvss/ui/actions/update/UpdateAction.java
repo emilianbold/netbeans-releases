@@ -38,7 +38,7 @@ public class UpdateAction extends AbstractSystemAction {
         return FileInformation.STATUS_IN_REPOSITORY;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
 
         File [][] flatRecursive = Utils.splitFlatOthers(getFilesToProcess());
         if (flatRecursive[0].length > 0) {

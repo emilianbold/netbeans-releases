@@ -52,7 +52,7 @@ public class BranchAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         File [] roots = getFilesToProcess();
 
         String title = MessageFormat.format(NbBundle.getBundle(BranchAction.class).getString("CTL_BranchDialog_Title"),

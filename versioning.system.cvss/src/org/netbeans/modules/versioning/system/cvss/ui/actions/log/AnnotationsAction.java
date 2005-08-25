@@ -63,7 +63,7 @@ public class AnnotationsAction extends AbstractSystemAction {
         return 0;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         if (visible()) {
             JEditorPane pane = activatedEditorPane();
             AnnotationBarManager.hideAnnotationBar(pane);

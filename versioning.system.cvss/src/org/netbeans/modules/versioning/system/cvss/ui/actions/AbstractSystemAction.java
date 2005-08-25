@@ -22,6 +22,7 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Actions;
+import org.openide.LifecycleManager;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
@@ -31,6 +32,7 @@ import javax.swing.*;
 import java.text.MessageFormat;
 import java.io.File;
 import java.util.MissingResourceException;
+import java.awt.event.ActionEvent;
 
 /**
  * Base for all context-sensitive CVS actions.
@@ -49,6 +51,18 @@ public abstract class AbstractSystemAction extends SystemAction implements Dynam
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
+
+    /**
+     * Synchronizes memory modificatios with disk and calls
+     * {@link  #performCvsAction}.
+     */
+    public final void actionPerformed(ActionEvent ev) {
+        // TODO try to save files in invocation context only
+        LifecycleManager.getDefault().saveAll();
+        performCvsAction(ev);
+    }
+
+    protected abstract void performCvsAction(ActionEvent e);
 
     public JComponent[] getMenuPresenters() {
         return new JComponent[] { new Actions.MenuItem(this, true) };

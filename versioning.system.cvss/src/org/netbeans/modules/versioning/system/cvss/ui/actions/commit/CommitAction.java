@@ -184,7 +184,7 @@ public class CommitAction extends AbstractSystemAction {
         commit.setEnabled(true);
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         File [] roots = getFilesToProcess();
         invokeCommit(getContextDisplayName(), roots);
     }

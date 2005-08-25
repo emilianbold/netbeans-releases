@@ -50,7 +50,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         File [] roots = getFilesToProcess();
 
         UpdateCommand cmd = new UpdateCommand();

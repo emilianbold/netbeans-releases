@@ -36,7 +36,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
 
     public static final int LOCALLY_DELETABLE_MASK = FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         File [] files = getContext().getFiles();
         int res = JOptionPane.showConfirmDialog(
                 null,

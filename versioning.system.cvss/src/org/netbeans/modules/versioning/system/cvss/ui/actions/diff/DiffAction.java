@@ -69,7 +69,7 @@ public class DiffAction extends AbstractSystemAction {
         return (File[]) modifiedFiles.toArray(new File[modifiedFiles.size()]);
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         Context context = getContext();
         DiffExecutor executor = new DiffExecutor(context, getContextDisplayName());
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();

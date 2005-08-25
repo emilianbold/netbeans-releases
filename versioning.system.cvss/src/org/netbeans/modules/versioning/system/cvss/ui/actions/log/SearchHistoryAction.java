@@ -41,7 +41,7 @@ public class SearchHistoryAction extends AbstractSystemAction  {
         return FileInformation.STATUS_IN_REPOSITORY;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName());
         openHistory(getContext(), title);
     }

@@ -38,7 +38,7 @@ public class StatusAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         Context ctx = Utils.getCurrentContext();
         CvsSynchronizeTopComponent stc = CvsSynchronizeTopComponent.getInstance();
         stc.setContentTitle(getContextDisplayName());

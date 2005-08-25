@@ -52,7 +52,7 @@ public class MergeBranchAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         File [] roots = getFilesToProcess();
 
         String title = MessageFormat.format(NbBundle.getBundle(MergeBranchAction.class).getString("CTL_MergeBranchDialog_Title"), 

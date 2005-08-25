@@ -80,36 +80,6 @@ public class DiffStreamSource extends StreamSource {
         init();        
         if (revision == null || remoteFile == null) return null;
         if (binary) return new StringReader("[Binary File " + getTitle() + "]");
-        if (revision == Setup.REVISION_CURRENT) {
-
-            // TODO make diff line.separator insensitive
-            // it causes problem when diffing document content (always '\n')
-            // and disk files (commonly using platform separator).
-            if ("\n".equals(System.getProperty("line.separator"))) {  // NOI18N
-                // take it from editor if opened
-                FileObject fo = FileUtil.toFileObject(remoteFile);
-                if (fo != null) {
-                    try {
-                        DataObject dobj = DataObject.find(fo);
-                        FileObject primary = dobj.getPrimaryFile();
-                        FileObject remote = FileUtil.toFileObject(remoteFile);
-                        if (primary.equals(remote)) {  // here we assume that Document belongs to primary file
-                            EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                            if (editorCookie != null) {
-                                Document doc = editorCookie.getDocument();
-                                if (doc != null) {
-                                    DocumentInputSource inputSource = new DocumentInputSource(doc);
-                                    return inputSource.getCharacterStream();
-                                }
-                            }
-                        }
-                    } catch (IOException ex) {
-                        // ignore missing dataobject
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
-                }
-            }
-        }
         return new FileReader(remoteFile);
     }
 

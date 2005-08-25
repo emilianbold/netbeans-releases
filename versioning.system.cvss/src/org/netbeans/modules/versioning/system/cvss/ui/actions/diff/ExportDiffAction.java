@@ -88,7 +88,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         return super.isEnabled() && Lookup.getDefault().lookup(DiffProvider.class) != null;
     }
 
-    public void actionPerformed(ActionEvent ev) {
+    public void performCvsAction(ActionEvent ev) {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Export Diff Patch");
         chooser.setMultiSelectionEnabled(false);
