@@ -299,14 +299,10 @@ public class Utils {
      * @return true if the second parameter represents the same file as the first parameter OR is its descendant (child)
      */ 
     public static boolean isParentOrEqual(File parent, File file) {
-        String parentPath = parent.getAbsolutePath();
-        String filePath = file.getAbsolutePath();
-        assert parentPath.equals(FileUtil.normalizeFile(parent).getAbsolutePath());
-        assert filePath.equals(FileUtil.normalizeFile(file).getAbsolutePath());
-        return filePath.startsWith(parentPath) && (
-                filePath.length() == parentPath.length() || 
-                filePath.charAt(parentPath.length()) == File.separatorChar || 
-                parentPath.endsWith(File.separator));
+        for (; file != null; file = file.getParentFile()) {
+            if (file.equals(parent)) return true;
+        }
+        return false;
     }
 
     /**
