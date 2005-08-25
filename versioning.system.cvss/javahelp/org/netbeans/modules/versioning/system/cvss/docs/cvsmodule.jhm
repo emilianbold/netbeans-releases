@@ -25,4 +25,30 @@
 	<mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />
 
 	<mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />
+        
+<!-- CSH topics -->
+
+	<mapID target="cvs-lite_chkout_wizard_p1" url="cvsmodule/csh/cvs-lite_chkout_wizard_p1.html" />
+	<mapID target="cvs-lite_chkout_wizard_p2" url="cvsmodule/csh/cvs-lite_chkout_wizard_p2.html" />
+
+	<mapID target="cvs-lite_editroot_dialog" url="cvsmodule/csh/cvs-lite_editroot_dialog.html" />
+	<mapID target="cvs-lite_proxy_dialog" url="cvsmodule/csh/cvs-lite_proxy_dialog.html" />
+	<mapID target="cvs-lite_chkoutmodules_dialog" url="cvsmodule/csh/cvs-lite_chkoutmodules_dialog.html" />
+	<mapID target="cvs-lite_browsemodules_dialog" url="cvsmodule/csh/cvs-lite_browsemodules_dialog.html" />
+	<mapID target="cvs-lite_chkoutcomplete_dialog" url="cvsmodule/csh/cvs-lite_chkoutcomplete_dialog.html" />
+
+        <mapID target="cvs-lite_import_wizard_p1" url="cvsmodule/csh/cvs-lite_import_wizard_p1.html" />
+        <mapID target="cvs-lite_import_wizard_p2" url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
+        <mapID target="cvs-lite_cvsroot_dialog" url="cvsmodule/csh/cvs-lite_cvsroot_dialog.html" />
+        <mapID target="cvs-lite_importfolder_dialog" url="cvsmodule/csh/cvs-lite_importfolder_dialog.html" />
+
+        <mapID target="cvs-lite_versioning_window" url="cvsmodule/csh/cvs-lite_versioning_window.html" />
+        <mapID target="cvs-lite_diff_viewer" url="cvsmodule/csh/cvs-lite_diff_viewer.html" />
+        <mapID target="cvs-lite_commit_dialog" url="cvsmodule/csh/cvs-lite_commit_dialog.html" />
+
+        <mapID target="cvs-lite_branch_dialog" url="cvsmodule/csh/cvs-lite_branch_dialog.html" />
+        <mapID target="cvs-lite_switchbranch_dialog" url="cvsmodule/csh/cvs-lite_switchbranch_dialog.html" />
+        <mapID target="cvs-lite_mergebranch_dialog" url="cvsmodule/csh/cvs-lite_mergebranch_dialog.html" />
+        <mapID target="cvs-lite_history_viewer" url="cvsmodule/csh/cvs-lite_history_viewer.html" />
+
 </map>
