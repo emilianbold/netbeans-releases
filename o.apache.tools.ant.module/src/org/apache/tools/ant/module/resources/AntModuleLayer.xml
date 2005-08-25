@@ -157,5 +157,12 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
+    <folder name="OptionsDialog">
+        <folder name="Advanced">
+            <file name="Ant.instance">
+                <attr name="instanceClass" stringvalue="org.apache.tools.ant.module.AntOption"/>
+            </file>
+        </folder>
+   </folder>
 
 </filesystem>
