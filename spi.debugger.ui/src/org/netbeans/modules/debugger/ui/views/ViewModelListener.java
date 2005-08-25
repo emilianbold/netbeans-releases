@@ -51,6 +51,26 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private String          viewType;
     private JComponent      view;
     
+    // <RAVE>
+    // Store the propertiesHelpID to pass to the Model object that is
+    // used in generating the nodes for the view
+    private String propertiesHelpID = null;
+    
+    ViewModelListener(
+        String viewType,
+        JComponent view,
+        String propertiesHelpID
+    ) {
+        this.viewType = viewType;
+        this.view = view;
+        this.propertiesHelpID = propertiesHelpID;
+        DebuggerManager.getDebuggerManager ().addDebuggerListener (
+            DebuggerManager.PROP_CURRENT_ENGINE,
+            this
+        );
+        updateModel ();        
+    }
+    // </RAVE>
     
     ViewModelListener (
         String viewType,
@@ -142,10 +162,22 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         models.add(columnModels);
         models.add(mm);
         
+        // <RAVE>
+        // Store the propertiesHelpID in the tree model to be retrieved later
+        // by the TreeModelNode objects
+        // Models.setModelsToView (
+        //    view,
+        //    Models.createCompoundModel (models)
+        // );
+        // ====
+        Models.CompoundModel newModel = Models.createCompoundModel (models, propertiesHelpID);
+
         Models.setModelsToView (
-            view, 
-            Models.createCompoundModel (models)
+            view,
+            newModel
         );
+        // </RAVE>
+
     }
 
     
