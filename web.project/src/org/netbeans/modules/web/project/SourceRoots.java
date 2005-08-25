@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.MessageFormat;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -58,8 +59,8 @@ public final class SourceRoots {
     public static final String PROP_ROOT_PROPERTIES = "rootProperties";    //NOI18N
     public static final String PROP_ROOTS = "roots";   //NOI18N
 
-    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir");
-    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
+    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(WebProjectUtilities.class, "NAME_src.dir");
+    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(WebProjectUtilities.class, "NAME_test.src.dir");
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;

@@ -42,6 +42,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser.ArtifactItem;
+import org.netbeans.modules.web.project.ui.customizer.WebClassPathUi;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -593,7 +594,7 @@ final class LibrariesNode extends AbstractNode {
                 DialogDescriptor.CANCEL_OPTION
             };
             ((JButton)options[0]).setEnabled(false);
-            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (LibrariesNode.class,"AD_AddLibrary"));
+            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
             LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], Collections.EMPTY_SET);
             DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
                     true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
@@ -651,7 +652,7 @@ final class LibrariesNode extends AbstractNode {
             chooser.setMultiSelectionEnabled( true );
             chooser.setDialogTitle( NbBundle.getMessage( LibrariesNode.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
             FileFilter fileFilter = new SimpleFileFilter (
-                    NbBundle.getMessage( LibrariesNode.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
+                    NbBundle.getMessage( WebClassPathUi.class, "LBL_ZipJarFolderFilter" ),                  // NOI18N
                     new String[] {"ZIP","JAR"} );   // NOI18N
             chooser.setFileFilter(fileFilter);
             chooser.setAcceptAllFileFilterUsed( false );
