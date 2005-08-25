@@ -156,7 +156,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
 
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, "Copying the project:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Renaming_Project", new Object[] {}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
