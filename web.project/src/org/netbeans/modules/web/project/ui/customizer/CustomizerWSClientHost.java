@@ -122,7 +122,7 @@ public class CustomizerWSClientHost extends javax.swing.JPanel implements Proper
     public void propertyChange(PropertyChangeEvent evt) {
 //        System.out.println("WSClientCustomizer: propertyChange - " + evt.getPropertyName());
         
-        WsCompileEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileEditorSupport.FeatureDescriptor) evt.getNewValue();
+        WsCompileClientEditorSupport.FeatureDescriptor newFeatureDesc = (WsCompileClientEditorSupport.FeatureDescriptor) evt.getNewValue();
         String propertyName = "wscompile.client." + newFeatureDesc.getServiceName() + ".features";
         webProperties.putAdditionalProperty(propertyName, newFeatureDesc.getFeatures());
     }
