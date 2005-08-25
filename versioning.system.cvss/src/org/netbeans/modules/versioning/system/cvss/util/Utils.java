@@ -338,7 +338,8 @@ public class Utils {
             return stickyInfo;
         }
         if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-            if ((file = file.getParentFile()) == null) return null;
+            file = file.getParentFile();
+            if (file == null) return null;
             int status = CvsVersioningSystem.getInstance().getStatusCache().getStatus(file).getStatus();
             if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
                 String stickyTag = CvsVersioningSystem.getInstance().getAdminHandler().getStickyTagForDirectory(file);
@@ -346,7 +347,7 @@ public class Utils {
             } else if (status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                 return null;
             }
-            return getSticky(file.getParentFile());
+            return getSticky(file);
         }
         return null;
     }
