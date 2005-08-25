@@ -174,6 +174,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         Mnemonics.setLocalizedText(standardMBeanRadioButton,
                      bundle.getString("LBL_RegisterStandardMBean")); // NOI18N
         mbeanClassTextArea.setText(bundle.getString("LBL_MBean_Class_Info")); // NOI18N
+        javaClassTextArea.setText(bundle.getString("LBL_Java_Class_Info")); // NOI18N
         Mnemonics.setLocalizedText(mbeanClassLabel,
                      bundle.getString("LBL_MBean_Class")); // NOI18N
         Mnemonics.setLocalizedText(classNameLabel,
@@ -328,6 +329,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         constructorLabel.setEnabled(!standardMBean);
         constructorComboBox.setEnabled(!standardMBean);
         // update state of StandardMBean use case
+        javaClassTextArea.setEnabled(standardMBean);
         classNameLabel.setEnabled(standardMBean);
         classNameTextField.setEnabled(standardMBean);
         browseButton.setEnabled(standardMBean);
@@ -502,6 +504,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         mbeanClassTextArea = new javax.swing.JTextArea();
         mbeanClassTextField = new javax.swing.JTextField();
         mbeanBrowseButton = new javax.swing.JButton();
+        javaClassTextArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -532,7 +535,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         stateLabel.setPreferredSize(new java.awt.Dimension(150, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -543,7 +546,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         classNameTextField.setName("classNameTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -553,7 +556,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         classNameLabel.setLabelFor(classNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(classNameLabel, gridBagConstraints);
@@ -602,7 +605,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         stdMBObjectNameLabel.setLabelFor(stdMBObjectNameTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(stdMBObjectNameLabel, gridBagConstraints);
@@ -610,7 +613,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         stdMBObjectNameTextField.setName("stdMBObjectNameTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -621,7 +624,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         interfaceLabel.setLabelFor(interfaceComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(interfaceLabel, gridBagConstraints);
@@ -631,7 +634,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         interfaceComboBox.setPreferredSize(new java.awt.Dimension(270, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -661,7 +664,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         stdMBConstructorLabel.setLabelFor(stdMBConstructorComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
         northPanel.add(stdMBConstructorLabel, gridBagConstraints);
@@ -669,7 +672,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         stdMBConstructorComboBox.setName("stdMBConstructorComboBox");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -681,7 +684,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         browseButton.setName("browseButton");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
@@ -720,6 +723,19 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
         northPanel.add(mbeanBrowseButton, gridBagConstraints);
 
+        javaClassTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        javaClassTextArea.setEditable(false);
+        javaClassTextArea.setDisabledTextColor(javax.swing.UIManager.getDefaults().getColor("Label.disabledForeground"));
+        javaClassTextArea.setFocusable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 34, 0, 11);
+        northPanel.add(javaClassTextArea, gridBagConstraints);
+
         add(northPanel, java.awt.BorderLayout.NORTH);
 
     }
@@ -743,6 +759,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     private javax.swing.JLabel constructorLabel;
     private javax.swing.JComboBox interfaceComboBox;
     private javax.swing.JLabel interfaceLabel;
+    private javax.swing.JTextArea javaClassTextArea;
     private javax.swing.JButton mbeanBrowseButton;
     private javax.swing.JLabel mbeanClassLabel;
     private javax.swing.JTextArea mbeanClassTextArea;
