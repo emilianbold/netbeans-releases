@@ -34,7 +34,7 @@ public class JMXAgent {
         // Instantiate Anagrams MBean
         mbean =
             new AnagramsStats();
-        ObjectName mbeanName = new ObjectName (":type=AnagramsStats");
+        ObjectName mbeanName = new ObjectName ("anagrams.toy.com:type=AnagramsStats");
         //Register the Anagrams MBean
         getMBeanServer().registerMBean(mbean, mbeanName);
     }
