@@ -210,7 +210,8 @@ public class AddAttributesPanel extends javax.swing.JPanel
     
     public void valueChanged(ListSelectionEvent e) {
         int firstEditable = attributeModel.getFirstEditable();
-        if ((attributeTable.getSelectedRow() < firstEditable) &&
+        if ((attributeTable.getSelectedRow() != -1) &&
+                (attributeTable.getSelectedRow() < firstEditable) &&
                 (attributeModel.getRowCount() > firstEditable))
                 attributeTable.setRowSelectionInterval(firstEditable, firstEditable);
     }
