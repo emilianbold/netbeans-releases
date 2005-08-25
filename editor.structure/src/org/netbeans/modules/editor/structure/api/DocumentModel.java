@@ -79,6 +79,10 @@ import org.openide.util.RequestProcessor;
  * DocumentElements cannot cross. There cannot be two elements with the same
  * boundaries.
  *
+ * <br>
+ * <b>Threading: Do not access the document model's element under the document writeLock()!!!</b>
+ * This may cause a deadlock if you do a document change, do not do writeUnlock() and access the model.
+ * In such case the model needs to resort it's elements which is done under document readLock().
  *
  *@author Marek Fukala
  *@version 1.0
@@ -92,7 +96,7 @@ public final class DocumentModel {
     private static final int MODEL_UPDATE_TIMEOUT = 500; //milliseconds
     
     //a Document instance which the model is build upon.
-    private Document doc;
+    private BaseDocument doc;
     private DocumentModelProvider provider;
     
     private DocumentChangesWatcher changesWatcher;
@@ -110,6 +114,11 @@ public final class DocumentModel {
     private DocumentModel.DocumentModelModificationTransaction modelUpdateTransaction = null;
 //    private Object modelUpdateLock = new Object();
     
+    //a semaphore signalling the state of synchronization between document and the elements
+    //this is always se to true when the document is changed and is set back to false
+    //when the elements are resorted.
+    private boolean documentDirty = true;
+    
     //model synchronization
     private int numReaders = 0;
     private int numWriters = 0;
@@ -122,7 +131,7 @@ public final class DocumentModel {
     private static final int ELEMENT_CHANGED = 3;
     
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
-        this.doc = doc;
+        this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
         this.provider = provider;
         
         //init RP & RP task
@@ -199,7 +208,6 @@ public final class DocumentModel {
         return rootElement;
     }
     
-    
     /** Adds an instance of DocumentModelListener to the model.*/
     public void addDocumentModelListener(DocumentModelListener dml) {
         dmListeners.add(dml);
@@ -217,17 +225,22 @@ public final class DocumentModel {
      * @return true if the ancestor element is an ancestor of the descendant element.
      */
     public boolean isDescendantOf(DocumentElement ancestor, DocumentElement descendant) {
-        if(ancestor == descendant) {
-            if(debug) System.out.println("ERROR in " + ancestor);
-            debugElements();
-            throw new IllegalArgumentException("ancestor == descendant!!!");
+        readLock();
+        try {
+            if(ancestor == descendant) {
+                if(debug) System.out.println("ERROR in " + ancestor);
+                debugElements();
+                throw new IllegalArgumentException("ancestor == descendant!!!");
+            }
+            //there cannot normally by two elements with the same start or end offsets (boundaries)
+            //the only exception where startoffset and endoffset can be the some is root elements =>
+            if(ancestor == getRootElement()) return true;
+            
+            return ((ancestor.getStartOffset() < descendant.getStartOffset()) &&
+                    (ancestor.getEndOffset() > descendant.getEndOffset()));
+        }finally{
+            readUnlock();
         }
-        //there cannot normally by two elements with the same start or end offsets (boundaries)
-        //the only exception where startoffset and endoffset can be the some is root elements =>
-        if(ancestor == getRootElement()) return true;
-        
-        return ((ancestor.getStartOffset() < descendant.getStartOffset()) &&
-                (ancestor.getEndOffset() > descendant.getEndOffset()));
     }
     
     /** Returns a leaf element from the hierarchy which contains the
@@ -240,7 +253,7 @@ public final class DocumentModel {
     public DocumentElement getLeafElementForOffset(int offset) {
         readLock();
         try{
-            Iterator itr = elements.iterator();
+            Iterator itr = getElementsSet().iterator();
             DocumentElement leaf = null;
             while(itr.hasNext()) {
                 DocumentElement de = (DocumentElement)itr.next();
@@ -268,11 +281,16 @@ public final class DocumentModel {
     }
     
     // ---- private methods -----
+    private synchronized TreeSet getElementsSet() {
+        if(documentDirty) resortElements();
+        return elements;
+    }
+    
     /** Returns a DocumentElement instance if there is such one with given boundaries. */
     DocumentElement getDocumentElement(int startOffset, int endOffset) throws BadLocationException {
         readLock();
         try {
-            Iterator itr = elements.iterator();
+            Iterator itr = getElementsSet().iterator();
             while(itr.hasNext()) {
                 DocumentElement de = (DocumentElement)itr.next();
                 if(de.getStartOffset() == startOffset &&
@@ -295,7 +313,7 @@ public final class DocumentModel {
         readLock();
         try {
             ArrayList found = new ArrayList();
-            Iterator itr = elements.iterator();
+            Iterator itr = getElementsSet().iterator();
             while(itr.hasNext()) {
                 DocumentElement de = (DocumentElement)itr.next();
                 
@@ -315,12 +333,6 @@ public final class DocumentModel {
     
     private DocumentModel.DocumentModelModificationTransaction createTransaction() {
         return new DocumentModelModificationTransaction();
-    }
-    
-    private void dispose() {
-        getDocument().removeDocumentListener(changesWatcher);
-        requestProcessor.stop();
-        requestProcessor = null;
     }
     
     //generate elements for the entire document
@@ -369,40 +381,32 @@ public final class DocumentModel {
     }
     
     private void updateModel() throws DocumentModelException {
-        //the entire model update is done under model writeLock
-        writeLock();
+        //create a new transaction
+        modelUpdateTransaction = createTransaction();
+        DocumentChange[] changes = changesWatcher.getDocumentChanges();
+        
+        //clear all elements with an empty body
+        checkForClearedElements();
+        
         try {
-            //create a new transaction
-            modelUpdateTransaction = createTransaction();
-            DocumentChange[] changes = changesWatcher.getDocumentChanges();
+            //let the model provider to decide what has changed and what to regenerate
+            provider.updateModel(modelUpdateTransaction, this, changes);
+            //commit all changes => update the model and fire events
+            modelUpdateTransaction.commit();
             
-            //clear all elements with an empty body
-            checkForClearedElements();
+            //clear document changes cache -> if the transaction has been cancelled
+            //the cache is not cleared so next time the changes will be taken into account.
+            changesWatcher.clearChanges();
             
-            try {
-                //let the model provider to decide what has changed and what to regenerate
-                provider.updateModel(modelUpdateTransaction, this, changes);
-                //commit all changes => update the model and fire events
-                modelUpdateTransaction.commit();
-                
-                //clear document changes cache -> if the transaction has been cancelled
-                //the cache is not cleared so next time the changes will be taken into account.
-                changesWatcher.clearChanges();
-                
-            }catch(DocumentModelException e) {
-                if(debug) System.err.println("[DocumentModelUpdate] " + e.getMessage());
-            }catch(DocumentModelTransactionCancelledException dmcte) {
-                if(debug) System.out.println("[document model] update transaction cancelled.");
-            }
-            
-            modelUpdateTransaction = null; //states that the model update has already finished
-            
-            if(debug) DocumentModelUtils.dumpElementStructure(getRootElement());
-            
-        }finally{
-            writeUnlock();
+        }catch(DocumentModelException e) {
+            if(debug) System.err.println("[DocumentModelUpdate] " + e.getMessage());
+        }catch(DocumentModelTransactionCancelledException dmcte) {
+            if(debug) System.out.println("[document model] update transaction cancelled.");
         }
         
+        modelUpdateTransaction = null; //states that the model update has already finished
+        
+        if(debug) DocumentModelUtils.dumpElementStructure(getRootElement());
     }
     
     
@@ -410,18 +414,25 @@ public final class DocumentModel {
      * manually after each elements change. This allows me to resort elements after a document change to
      * keep correct he eleements order. */
     private void resortElements() {
-        //the resort hase to lock the model for access since it modifies the elements order
-        writeLock();
+        //the resort has to lock the model for access since it modifies the elements order
+        //and the document for modifications
+        doc.readLock();
         try {
-            ArrayList list = new ArrayList(elements);
-            elements.clear();
-            Iterator i = list.iterator();
-            while(i.hasNext()) {
-                elements.add(i.next());
+            writeLock();
+            try {
+                ArrayList list = new ArrayList(elements);
+                elements.clear();
+                Iterator i = list.iterator();
+                while(i.hasNext()) {
+                    elements.add(i.next());
+                }
+            } finally {
+                writeUnlock();
             }
-        } finally {
-            writeUnlock();
+        }finally {
+            doc.readUnlock();
         }
+        documentDirty = false;
     }
     
     private void addRootElement() {
@@ -444,7 +455,7 @@ public final class DocumentModel {
         try {
             //test whether the element has been removed - in such a case anyone can still have a reference to it
             //but the element is not held in the document structure elements list
-            if(!elements.contains(de)) {
+            if(!getElementsSet().contains(de)) {
                 if(debug) System.err.println("Warning: DocumentModel.getChildren(...) called for " + de + " which has already been removed!");
                 return Collections.EMPTY_LIST;
             }
@@ -455,7 +466,7 @@ public final class DocumentModel {
             
             ArrayList children = new ArrayList();
             //get all elements with startOffset >= de.getStartOffset()
-            SortedSet tail = elements.tailSet(de);
+            SortedSet tail = getElementsSet().tailSet(de);
             //List tail = tailList(elements, de);
             
             Iterator pchi = tail.iterator();
@@ -506,13 +517,13 @@ public final class DocumentModel {
     DocumentElement getParent(DocumentElement de) {
         readLock();
         try {
-            if(!elements.contains(de)) {
+            if(!getElementsSet().contains(de)) {
                 debugElements();
                 throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
             }
             
             //get all elements with startOffset <= de.getStartOffset()
-            SortedSet head = elements.headSet(de);
+            SortedSet head = getElementsSet().headSet(de);
             //List head = headList(elements, de);
             
             if(head.isEmpty()) return null; //this should happen only for root element
@@ -556,12 +567,12 @@ public final class DocumentModel {
     /** removes all elements with empty body. It is currently needed to call this before
      * model update in an implementations of this class since otherwise the getChildren() method
      * fails!!!!.
-     * XXX this should be solved somehow better! */
+     * XXX this should be solved somehow better! 
+     * 
+     * Note: runs only under model.writeLock()
+     */
     private void checkForClearedElements() {
-        if(debug) System.out.println("checking cleared elements:");
-        if(debug) debugElements();
-        
-        Iterator i = elements.iterator();
+        Iterator i = getElementsSet().iterator();
         DocumentModel.DocumentModelModificationTransaction tran = createTransaction();
         try {
             while(i.hasNext()) {
@@ -635,7 +646,7 @@ public final class DocumentModel {
     //-------------------------------------
     private void debugElements() {
         System.out.println("DEBUG ELEMENTS:");
-        Iterator i = elements.iterator();
+        Iterator i = getElementsSet().iterator();
         while(i.hasNext()) {
             System.out.println(i.next());
         }
@@ -741,38 +752,43 @@ public final class DocumentModel {
         }
         
         private void commit() throws DocumentModelTransactionCancelledException {
-            //test if the transaction has been cancelled and if co throw TransactionCancelledException
-            if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
-            
-            //XXX not an ideal algorithm :-)
-            //first remove all elements
-            if(debug) System.out.println("\n# commiting REMOVEs");
-            Iterator mods = modifications.iterator();
-            while(mods.hasNext()) {
-                DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) removeDE(dmm.de);
+            writeLock();
+            try {
+                //test if the transaction has been cancelled and if co throw TransactionCancelledException
+                if(transactionCancelled) throw new DocumentModelTransactionCancelledException();
+                
+                //XXX not an ideal algorithm :-)
+                //first remove all elements
+                if(debug) System.out.println("\n# commiting REMOVEs");
+                Iterator mods = modifications.iterator();
+                while(mods.hasNext()) {
+                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) removeDE(dmm.de);
+                }
+                //then add all new elements
+                //it is better to add the elements from roots to leafs
+                if(debug) System.out.println("\n# commiting ADDs");
+                mods = modifications.iterator();
+                TreeSet sortedAdds = new TreeSet(ELEMENTS_COMPARATOR);
+                while(mods.hasNext()) {
+                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
+                }
+                Iterator addsIterator = sortedAdds.iterator();
+                while(addsIterator.hasNext()) {
+                    addDE((DocumentElement)addsIterator.next());
+                }
+                
+                if(debug) System.out.println("\n# commiting UPDATESs");
+                mods = modifications.iterator();
+                while(mods.hasNext()) {
+                    DocumentModelModification dmm = (DocumentModelModification)mods.next();
+                    if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDE(dmm.de);
+                }
+                
+            } finally {
+                writeUnlock();
             }
-            //then add all new elements
-            //it is better to add the elements from roots to leafs
-            if(debug) System.out.println("\n# commiting ADDs");
-            mods = modifications.iterator();
-            TreeSet sortedAdds = new TreeSet(ELEMENTS_COMPARATOR);
-            while(mods.hasNext()) {
-                DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
-            }
-            Iterator addsIterator = sortedAdds.iterator();
-            while(addsIterator.hasNext()) {
-                addDE((DocumentElement)addsIterator.next());
-            }
-            
-            if(debug) System.out.println("\n# commiting UPDATESs");
-            mods = modifications.iterator();
-            while(mods.hasNext()) {
-                DocumentModelModification dmm = (DocumentModelModification)mods.next();
-                if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDE(dmm.de);
-            }
-            
             if(debug) System.out.println("# commit finished\n");
             
         }
@@ -790,7 +806,7 @@ public final class DocumentModel {
             //there cannot be two elements with the some boundaries ->
             //this is ensured by using a set and proper DocumentElement.equals() implementation
             
-            if(elements.add(de)) {
+            if(getElementsSet().add(de)) {
                 /* events firing:
                  * If the added element has a children, we have to fire remove event
                  * to their previous parents (it is the added element's parent)
@@ -840,7 +856,7 @@ public final class DocumentModel {
                 parent = getRootElement();
             }
             
-            elements.remove(de);
+            getElementsSet().remove(de);
             
             //fire events for all affected children
             while(childrenIterator.hasNext()) {
@@ -946,9 +962,11 @@ public final class DocumentModel {
             documentChanged(documentEvent);
         }
         
+        //assumption: this method contains no locking AFAIK
         private void documentChanged(DocumentEvent documentEvent) {
-            //XXX hack - resort elements
-            resortElements();
+            //indicate that the synchronization between document content and the element may be broken
+            //not used by the model logic itself but by the "resortElements" method.
+            documentDirty = true;
             
             try {
                 //test whether a new text was inserted before or after the root element boundaries (positions)

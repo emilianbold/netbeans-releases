@@ -650,8 +650,10 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <answer id="exec-threading">
         <p>
-             The model is locked for reading during its modifications. 
-             There are no other threading issues.
+            The model is locked for reading during its modifications. <br/>
+            <b>!!! Do not access the document model's element under the document writeLock()!!!</b>. 
+            This may cause a deadlock if you do a document change, do not do writeUnlock() and access the model.
+            In such case the model needs to resort it's elements which is done under document readLock().
         </p>
     </answer>
 
