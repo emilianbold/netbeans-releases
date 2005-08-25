@@ -190,19 +190,23 @@ public final class RootWizard implements ActionListener, DocumentListener {
     }
 
     /**
-     * Propagates configuration changes (after heavy validation check)
+     * Propagates configuration changes
      * from UI into {@link org.netbeans.modules.versioning.system.cvss.settings.CvsRootSettings}.
      *
+     * @param validate on true only valid values are commited
      * @return <code>null</codE> on successfull commit otherwise error message.
      */
-    public String commit() {
-        repositoryStep.prepareValidation();
-        repositoryStep.validateBeforeNext();
-        if (repositoryStep.isValid()) {
-            repositoryStep.storeValidValues();
-            return null;
+    public String commit(boolean validate) {
+        if (validate) {
+            repositoryStep.prepareValidation();
+            repositoryStep.validateBeforeNext();
+            if (repositoryStep.isValid() == false) {
+                return repositoryStep.getErrorMessage();
+            }
         }
-        return repositoryStep.getErrorMessage();
+        repositoryStep.storeValidValues();
+        return null;
+
     }
 
     /** Return result of light-weight validation.*/

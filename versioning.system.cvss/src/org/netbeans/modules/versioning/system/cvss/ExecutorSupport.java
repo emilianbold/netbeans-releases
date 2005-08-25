@@ -33,6 +33,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.TaskListener;
 
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import java.util.*;
 import java.util.List;
 import java.io.IOException;
@@ -276,7 +278,7 @@ public abstract class ExecutorSupport implements CVSListener  {
             return false;
         }
 
-        RootWizard rootWizard = RootWizard.configureRoot(root.toString());
+        final RootWizard rootWizard = RootWizard.configureRoot(root.toString());
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
@@ -303,7 +305,9 @@ public abstract class ExecutorSupport implements CVSListener  {
         panel.add(label, BorderLayout.NORTH);
         panel.add(rootWizard.getPanel(), BorderLayout.CENTER);
 
-        String ok = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Ok");
+        String okMsg = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Ok");
+        final JButton ok = new JButton(okMsg);
+        ok.setEnabled(rootWizard.isValid());
         String cancel = NbBundle.getMessage(ExecutorSupport.class, "CTL_Password_Action_Cancel");
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel, 
@@ -318,19 +322,20 @@ public abstract class ExecutorSupport implements CVSListener  {
                     }
                 }); 
         descriptor.setClosingOptions(null);
-
+        rootWizard.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                ok.setEnabled(rootWizard.isValid());
+            }
+        });
 
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, initialCause);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
+
         boolean retry = false;
         if (descriptor.getValue() == ok) {
-            if (rootWizard.isValid()) {
-                rootWizard.commit();
-                dialog.hide();
-                dialog.dispose();
-                retry = true;
-            }
+            rootWizard.commit(false);
+            retry = true;
         }
         return retry;
     }
