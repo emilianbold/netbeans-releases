@@ -428,6 +428,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "XML",                  // NOI18N
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
+            "web-service-clients",  // NOI18N
             // "servlet-types",     // NOI18N
             // "web-types",         // NOI18N
             "junit",                // NOI18N
@@ -446,6 +447,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
+            "web-service-clients",  // NOI18N
             // "web-types",         // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
