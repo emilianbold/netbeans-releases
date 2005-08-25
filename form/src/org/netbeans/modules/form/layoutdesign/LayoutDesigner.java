@@ -256,7 +256,9 @@ public class LayoutDesigner implements LayoutConstants {
             if (firstResizingSpace) {
                 leadingSpace += space.positions[dimension][LEADING];
                 firstResizingSpace = false;
-                imposeCurrentGapSize(interval.getSubInterval(0), leadingSpace, dimension);
+                if (dirty) {
+                    imposeCurrentGapSize(interval.getSubInterval(0), leadingSpace, dimension);
+                }
             }
             first = false;
         }
@@ -2898,7 +2900,7 @@ public class LayoutDesigner implements LayoutConstants {
 
     private void imposeCurrentGapSize(LayoutInterval gap, int currentSize, int dimension) {
         int pad = -1;
-        int min = gap.getPreferredSize();
+        int min = gap.getMinimumSize();
         int pref = gap.getPreferredSize();
         if (pref == NOT_EXPLICITLY_DEFINED) {
             pad = LayoutUtils.getSizeOfDefaultGap(gap, visualMapper);
