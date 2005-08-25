@@ -19,9 +19,9 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test for UnitTestForSourceQuery
@@ -36,34 +36,35 @@ public class UnitTestForSourceQueryImplTest extends TestBase {
     public void testFindUnitTest() throws Exception {
         URL[] testRoots = UnitTestForSourceQuery.findUnitTests(nbroot);
         assertEquals("Test root for non project folder should be null", Collections.EMPTY_LIST, Arrays.asList(testRoots));
-        FileObject srcRoot = nbroot.getFileObject("apisupport/project/");
+        FileObject srcRoot = nbroot.getFileObject("apisupport/project");
         testRoots = UnitTestForSourceQuery.findUnitTests(srcRoot);
         assertEquals("Test root for project should be null", Collections.EMPTY_LIST, Arrays.asList(testRoots));
-        srcRoot = nbroot.getFileObject("apisupport/project/test/unit/src/");
+        srcRoot = nbroot.getFileObject("apisupport/project/test/unit/src");
         testRoots = UnitTestForSourceQuery.findUnitTests(srcRoot);
         assertEquals("Test root for tests should be null", Collections.EMPTY_LIST, Arrays.asList(testRoots));
-        srcRoot = nbroot.getFileObject("apisupport/project/src/");
+        srcRoot = nbroot.getFileObject("apisupport/project/src");
         testRoots = UnitTestForSourceQuery.findUnitTests(srcRoot);
         assertEquals("Test root defined", 1, testRoots.length);
         assertTrue("Test root exists", new File(URI.create(testRoots[0].toExternalForm())).exists());
-        assertEquals("Test root", URLMapper.findFileObject(testRoots[0]), nbroot.getFileObject("apisupport/project/test/unit/src/"));
-        //XXX: Add test for module which has no tests, dangerous tests may be created
+        assertEquals("Test root", URLMapper.findFileObject(testRoots[0]), nbroot.getFileObject("apisupport/project/test/unit/src"));
+        assertEquals("No tests for this project", Collections.EMPTY_LIST, Arrays.asList(UnitTestForSourceQuery.findUnitTests(nbroot.getFileObject("openide/windows/src"))));
     }
 
     public void testFindSource() {
         URL[] srcRoots = UnitTestForSourceQuery.findSources(nbroot);
         assertEquals("Source root for non project folder should be null", Collections.EMPTY_LIST, Arrays.asList(srcRoots));
-        FileObject testRoot = nbroot.getFileObject("apisupport/project/");
+        FileObject testRoot = nbroot.getFileObject("apisupport/project");
         srcRoots = UnitTestForSourceQuery.findSources(testRoot);
         assertEquals("Source root for project should be null", Collections.EMPTY_LIST, Arrays.asList(srcRoots));
-        testRoot = nbroot.getFileObject("apisupport/project/src/");
+        testRoot = nbroot.getFileObject("apisupport/project/src");
         srcRoots = UnitTestForSourceQuery.findSources(testRoot);
         assertEquals("Source root for sources should be null", Collections.EMPTY_LIST, Arrays.asList(srcRoots));
-        testRoot = nbroot.getFileObject("apisupport/project/test/unit/src/");
+        assertEquals("No sources for this project's sources", Collections.EMPTY_LIST, Arrays.asList(UnitTestForSourceQuery.findSources(nbroot.getFileObject("openide/windows/src"))));
+        testRoot = nbroot.getFileObject("apisupport/project/test/unit/src");
         srcRoots = UnitTestForSourceQuery.findSources(testRoot);
         assertEquals("Source root defined", 1, srcRoots.length);
         assertTrue("Source root exists", new File(URI.create(srcRoots[0].toExternalForm())).exists());
-        assertEquals("Source root", URLMapper.findFileObject(srcRoots[0]), nbroot.getFileObject("apisupport/project/src/"));
+        assertEquals("Source root", URLMapper.findFileObject(srcRoots[0]), nbroot.getFileObject("apisupport/project/src"));
     }        
     
 }

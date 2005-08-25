@@ -18,10 +18,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.apisupport.project.*;
 
 public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
 
@@ -48,7 +48,7 @@ public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourc
         String val = project.evaluator().getProperty(from);
         assert val != null : "No value for " + from + " in " + project;
         FileObject fromRoot = helper.resolveFileObject(val);
-        if (!fromRoot.equals(file)) {
+        if (!file.equals(fromRoot)) {
             return null;
         }
         val = project.evaluator().getProperty(to);
