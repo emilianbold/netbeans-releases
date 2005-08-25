@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -66,8 +66,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private HandleLayer handleLayer;
     private NonVisualTray nonVisualTray;
     private FormToolBar formToolBar;
-    private AlignmentPalette alignmentPalette;
-
+    
     // in-place editing
     private InPlaceEditLayer textEditLayer;
     private FormProperty editedProperty;
@@ -85,7 +84,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private VisualReplicator replicator;
     private LayoutDesigner layoutDesigner;
     private List designerActions;
-
+    private List resizabilityActions;
+    
+    private JToggleButton[] resizabilityButtons;
+            
     private int designerMode;
     static final int MODE_SELECT = 0;
     static final int MODE_CONNECT = 1;
@@ -233,7 +235,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return formToolBar;
     }
 
-    LayoutDesigner getLayoutDesigner() {
+    public LayoutDesigner getLayoutDesigner() {
         return layoutDesigner;
     }
     
@@ -305,7 +307,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 if (getLayoutDesigner().updateCurrentState()) {
                     formModel.fireFormChanged(); // hack: to regenerate code once again
                 }
-                updateAlignmentPalette();
+                updateResizabilityActions();
                 componentLayer.repaint();
             }
         });
@@ -417,6 +419,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return bounds;
     }
 
+    
     // -------
     // designer mode
 
@@ -433,7 +436,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             clearSelection();
 
         handleLayer.endDragging(null);
-        updateAlignmentPalette();
+        updateResizabilityActions();
     }
 
     int getDesignerMode() {
@@ -593,8 +596,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     void selectionChanged() {
-        updateAlignmentPalette();
         updateDesignerActions();
+        updateResizabilityActions();
     }
 
     void repaintSelection() {
@@ -621,45 +624,46 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
-    private void updateAlignmentPalette() {
-        if (alignmentPalette == null) {
-            Rectangle hBounds = handleLayer.getBounds();
-            // Handle layer not laid out yet - will be notified later again
-            if (hBounds.width == 0) return;
-            alignmentPalette = new AlignmentPalette();
-            handleLayer.add(alignmentPalette);
-            Dimension size = alignmentPalette.getPreferredSize();
-            alignmentPalette.setBounds(hBounds.x + hBounds.width - size.width - 10,
-                hBounds.y + hBounds.height - size.height - 10, size.width, size.height);
-            handleLayer.addComponentListener(new ComponentAdapter() {
-                public void componentResized(ComponentEvent e) {
-                    // Ensure that the alignmentPalette is within the bounds of the handleLayer
-                    Rectangle bounds = alignmentPalette.getBounds();
-                    Dimension dim = handleLayer.getSize();
-                    int gap = dim.width - bounds.x - bounds.width;
-                    if (gap < 0) {
-                        alignmentPalette.setLocation(bounds.x + gap, bounds.y);
-                        bounds = alignmentPalette.getBounds();
-                    }
-                    if (bounds.x < 0) {
-                        alignmentPalette.setLocation(0, bounds.y);
-                        bounds = alignmentPalette.getBounds();
-                    }
-                    gap = dim.height - bounds.y - bounds.height;
-                    if (gap < 0) {
-                        alignmentPalette.setLocation(bounds.x, bounds.y + gap);
-                        bounds = alignmentPalette.getBounds();
-                    }
-                    if (bounds.y < 0) {
-                        alignmentPalette.setLocation(bounds.x, 0);
-                    }
-                }
-            });
-        }
-        alignmentPalette.updateState();
-        alignmentPalette.setVisible(getDesignerMode() == MODE_SELECT);
+    void setResizabilityButtons(JToggleButton[] buttons) {
+        this.resizabilityButtons = buttons;
+    }
+    
+    JToggleButton[] getResizabilityButtons() {
+        return resizabilityButtons;
     }
 
+    private void updateResizabilityActions() {
+        Collection componentIds = componentIds();
+        LayoutModel layoutModel = getFormModel().getLayoutModel();
+        LayoutDesigner layoutDesigner = getLayoutDesigner();
+        Iterator iter = componentIds.iterator();
+        boolean matchAlignment[] = new boolean[4];
+        boolean cannotChangeTo[] = new boolean[4];
+        boolean resizable[] = new boolean[2];
+        boolean nonResizable[] = new boolean[2];
+        while (iter.hasNext()) {
+            String id = (String)iter.next();
+            LayoutComponent comp = layoutModel.getLayoutComponent(id);
+            for (int i=0; i<2; i++) {
+                if (layoutDesigner.isComponentResizing(comp,
+                        (i == 0) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL)) {
+                    resizable[i] = true;
+                } else {
+                    nonResizable[i] = true;
+                }
+            }
+        }
+        for (int i=0; i<2; i++) {
+            boolean match;
+            boolean miss;
+            match = resizable[i];
+            miss = nonResizable[i];
+            getResizabilityButtons()[i].setEnabled(match || miss);
+            getResizabilityButtons()[i].setSelected(!miss && match);
+//                getResizabilityButtons()[i].setPaintDisabledIcon(match && miss);
+        }
+    }
+    
     /** Finds out what component follows after currently selected component
      * when TAB (forward true) or Shift+TAB (forward false) is pressed. 
      * @return the next or previous component for selection
@@ -808,6 +812,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING));
         }
         return designerActions;
+    }
+    
+    Collection getResizabilityActions() {
+        if (resizabilityActions == null) {
+            resizabilityActions = new LinkedList();
+            resizabilityActions.add(new ResizabilityAction(LayoutConstants.HORIZONTAL));
+            resizabilityActions.add(new ResizabilityAction(LayoutConstants.VERTICAL));
+        }
+        return resizabilityActions;
     }
     
     /**
@@ -1424,6 +1437,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     // --------
 
+    private Collection componentIds() {
+        List componentIds = new LinkedList();
+        List selectedComps = getSelectedLayoutComponents();
+        Iterator iter = selectedComps.iterator();
+        while (iter.hasNext()) {
+            RADVisualComponent visualComp = (RADVisualComponent)iter.next();
+            if ((visualComp.getParentContainer() != null)
+            && (visualComp.getParentLayoutSupport() == null))
+                componentIds.add(visualComp.getId());
+        }
+        return componentIds;
+    }
+    
     // Listener on FormModel - ensures updating of designer view.
     private class FormListener implements FormModelListener, Runnable {
 
@@ -1632,105 +1658,36 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             return alignment;
         }
         
-    }
-    
+    }    
     /**
-     * Alignment Palette.
-     *
-     * @author Jan Stola
+     * Action that aligns selected components in the specified direction.
      */
-    public class AlignmentPalette extends JPanel implements ActionListener {
-        private static final int AP_WIDTH = 46;
-        private static final int AP_HEIGHT = 31;
-        private static final int AP_BORDER = 8;
-        private static final int AP_TITLE = 6;
-        private AlignmentButton[] buttons;
-
-        public AlignmentPalette() {
-            setLayout(null);
-            setOpaque(false);
-            setCursor(Cursor.getDefaultCursor());
-            setPreferredSize(new Dimension(AP_WIDTH + 1, AP_TITLE + AP_HEIGHT + 1));
-            buttons = new AlignmentButton[6];
-            addButton(buttons[0] = new AlignmentButton(SwingConstants.LEFT));
-            addButton(buttons[1] = new AlignmentButton(SwingConstants.RIGHT));
-            addButton(buttons[2] = new AlignmentButton(SwingConstants.TOP));
-            addButton(buttons[3] = new AlignmentButton(SwingConstants.BOTTOM));
-            addButton(buttons[4] = new AlignmentButton(true));
-            addButton(buttons[5] = new AlignmentButton(false));
-            JLabel title = new JLabel();
-            title.setBounds(AP_BORDER/2, 0, AP_WIDTH - AP_BORDER, AP_TITLE + 1);
-            title.setOpaque(true);
-            title.setBackground(new Color(216, 226, 231));
-            title.setBorder(BorderFactory.createLineBorder(new Color(125, 155, 184)));
-            add(title);
-            MouseInputAdapter listener = createListener();
-            title.addMouseListener(listener);
-            title.addMouseMotionListener(listener);
-        }
-
-        private void addButton(AlignmentButton button) {
-            add(button);
-            button.addActionListener(this);
+    private class ResizabilityAction extends AbstractAction {
+        // PENDING change to icons provided by Dusan
+        private static final String ICON_BASE = "org/netbeans/modules/form/resources/resize_"; // NOI18N
+        /** Dimension of resizability. */
+        private int dimension;
+        
+        /**
+         * Creates action that changes the resizability of the component.
+         *
+         * @param dimension dimension of the resizability
+         */
+        ResizabilityAction(int dimension) {
+            this.dimension = dimension;
+            String code = (dimension == LayoutConstants.HORIZONTAL) ? "h" : "v";
+            String iconResource = ICON_BASE + code + ".gif"; // NOI18N
+            putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(iconResource)));
+            putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_ResizeButton_" + code)); // NOI18N
+            setEnabled(false);
         }
         
-        void updateState() {
-            Collection componentIds = componentIds();
-            LayoutModel layoutModel = getFormModel().getLayoutModel();
-            LayoutDesigner layoutDesigner = getLayoutDesigner();
-            Iterator iter = componentIds.iterator();
-            boolean matchAlignment[] = new boolean[4];
-            boolean cannotChangeTo[] = new boolean[4];
-            boolean resizable[] = new boolean[2];
-            boolean nonResizable[] = new boolean[2];
-            while (iter.hasNext()) {
-                String id = (String)iter.next();
-                LayoutComponent comp = layoutModel.getLayoutComponent(id);
-                int[][] alignment = new int[][] {
-                    layoutDesigner.getAdjustableComponentAlignment(comp, LayoutConstants.HORIZONTAL),
-                    layoutDesigner.getAdjustableComponentAlignment(comp, LayoutConstants.VERTICAL)};
-                for (int i=0; i<4; i++) {
-                    if ((alignment[i/2][1] & (1 << i%2)) == 0) { // the alignment cannot be changed
-                        cannotChangeTo[i] = true;
-                    }
-                    if (alignment[i/2][0] != -1) { 
-                        matchAlignment[i] = matchAlignment[i] || (alignment[i/2][0] == i%2);
-                    }
-                }
-                for (int i=4; i<6; i++) {
-                    if (layoutDesigner.isComponentResizing(comp,
-                        (i == 4) ? LayoutConstants.HORIZONTAL : LayoutConstants.VERTICAL)) {
-                        resizable[i-4] = true;
-                    } else {
-                        nonResizable[i-4] = true;
-                    }
-                }
-            }
-            for (int i=0; i<6; i++) {
-                boolean match;
-                boolean miss;
-                if (i < 4) {
-                    match = matchAlignment[i];
-                    miss = matchAlignment[2*(i/2) + 1 - i%2];
-                } else {
-                    match = resizable[i-4];
-                    miss = nonResizable[i-4];
-                }
-                buttons[i].setEnabled((match || miss) && ((i > 3) || !cannotChangeTo[i]));
-                buttons[i].setSelected(!miss && match);
-                buttons[i].setPaintDisabledIcon(match && miss);
-            }
-        }
-        
+        /**
+         * Performs the resizability change of selected components.
+         *
+         * @param e event that invoked the action.
+         */
         public void actionPerformed(ActionEvent e) {
-            int index = Arrays.asList(buttons).indexOf(e.getSource());
-            assert (index != -1);
-            AbstractButton button = (AbstractButton)e.getSource();
-            if (!button.isSelected() && (index < 4)) {
-                // Alignment buttons should not be unselected
-                button.setSelected(true);
-                return;
-            }
             FormModel formModel = getFormModel();
             LayoutModel layoutModel = formModel.getLayoutModel();
             Object layoutUndoMark = layoutModel.getChangeMark();
@@ -1742,22 +1699,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             while (iter.hasNext()) {
                 String compId = (String)iter.next();
                 LayoutComponent layoutComp = layoutModel.getLayoutComponent(compId);
-                boolean changed = false;
-                if (index < 4) {
-                    int[] alignment = layoutDesigner.getAdjustableComponentAlignment(layoutComp, index/2);
-                    if (((alignment[1] & (1 << index%2)) != 0) && (alignment[0] != index%2)) {
-                        layoutDesigner.adjustComponentAlignment(layoutComp, index/2, index%2);
-                        changed = true;
-                    }
-                } else {
-                    boolean resizing = button.isSelected();
-                    int dimension = (index-4)%2;
-                    if (layoutDesigner.isComponentResizing(layoutComp, dimension) != resizing) {
-                        layoutDesigner.setComponentResizing(layoutComp, dimension, resizing);
-                        changed = true;
-                    }
-                }
-                if (changed) {
+                boolean resizing = (getResizabilityButtons()[dimension]).isSelected();
+                if (layoutDesigner.isComponentResizing(layoutComp, dimension) != resizing) {
+                    layoutDesigner.setComponentResizing(layoutComp, dimension, resizing);
                     RADVisualComponent comp = (RADVisualComponent)formModel.getMetaComponent(compId);
                     containers.add(comp.getParentContainer());
                 }
@@ -1769,157 +1713,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                 formModel.addUndoableEdit(ue);
             }
-        }
-        
-        private Collection componentIds() {
-            List componentIds = new LinkedList();
-            List selectedComps = getSelectedLayoutComponents();
-            Iterator iter = selectedComps.iterator();
-            while (iter.hasNext()) {
-                RADVisualComponent visualComp = (RADVisualComponent)iter.next();
-                if ((visualComp.getParentContainer() != null)
-                    && (visualComp.getParentLayoutSupport() == null))
-                componentIds.add(visualComp.getId());
-            }
-            return componentIds;
-        }
-
-        private MouseInputAdapter createListener() {
-            return new MouseInputAdapter() {
-                private Point lastPoint;
-
-                public void mousePressed(MouseEvent e) {
-                    lastPoint = pointFromComponentToHandleLayer(e.getPoint(), (Component)e.getSource());
-                }
-
-                public void mouseReleased(MouseEvent e) {
-                    lastPoint = null;
-                }
-
-                public void mouseDragged(MouseEvent e) {
-                    Point p = pointFromComponentToHandleLayer(e.getPoint(), (Component)e.getSource());
-                    Point shift = new Point(p.x-lastPoint.x, p.y-lastPoint.y);
-                    Rectangle bounds = AlignmentPalette.this.getBounds();
-                    if (new Rectangle(0, 0, handleLayer.getWidth(), handleLayer.getHeight()).contains(
-                        new Rectangle(bounds.x + shift.x, bounds.y + shift.y, bounds.width, bounds.height))) {
-                        bounds.translate(p.x-lastPoint.x, p.y-lastPoint.y);
-                        AlignmentPalette.this.setBounds(bounds);
-                        lastPoint = p;
-                    }
-                }
-            };
-        }
-
-        private class AlignmentButton extends JToggleButton {
-            private Area border;
-            private Area boundary;
-            private Area arrow;
-            private boolean paintDisabledIcon;
-
-            public AlignmentButton(boolean horizontal) {
-                setBorder(null);
-                setBounds(AP_BORDER + 15*(horizontal ? 0 : 1), AP_BORDER + AP_TITLE, 15, 15);
-                border = new Area(new Rectangle(0, 0, 15, 15));
-                char code = (horizontal ? 'h' : 'v');
-                setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/form/resources/spring_" // NOI18N
-                    + code + ".gif"))); // NOI18N
-                setToolTipText(NbBundle.getMessage(FormDesigner.class, "CTL_ResizeButton_" + code)); // NOI18N
-            }
-
-            public AlignmentButton(int alignment) {
-                setBorder(null);
-                setOpaque(false);
-                int[] x = null;
-                int[] y = null;
-                char code = ' ';
-                switch (alignment) {
-                    case SwingConstants.TOP:
-                        setBounds(0, AP_TITLE, AP_WIDTH+1, AP_BORDER+1);
-                        x = new int[] {0, AP_WIDTH, AP_WIDTH - AP_BORDER, AP_BORDER};
-                        y = new int[] {0, 0, AP_BORDER, AP_BORDER};
-                        arrow = new Area(new Polygon(new int[] {6, 0, 3}, new int[] {4, 4, 1}, 3));
-                        code = 'u';
-                        break;
-                    case SwingConstants.BOTTOM:
-                        setBounds(0, AP_TITLE + AP_HEIGHT - AP_BORDER, AP_WIDTH+1, AP_BORDER+1);
-                        x = new int[] {0, AP_WIDTH, AP_WIDTH - AP_BORDER, AP_BORDER};
-                        y = new int[] {AP_HEIGHT, AP_HEIGHT, AP_HEIGHT - AP_BORDER, AP_HEIGHT - AP_BORDER};
-                        arrow = new Area(new Polygon(new int[] {0, 6, 3}, new int[] {2, 2, 5}, 3));
-                        code = 'd';
-                        break;
-                    case SwingConstants.LEFT:                    
-                        setBounds(0, AP_TITLE, AP_BORDER+1, AP_HEIGHT+1);
-                        x = new int[] {0, 0, AP_BORDER, AP_BORDER};
-                        y = new int[] {0, AP_HEIGHT, AP_HEIGHT - AP_BORDER, AP_BORDER};
-                        arrow = new Area(new Polygon(new int[] {4, 4, 1}, new int[] {5, -1, 2}, 3));
-                        code = 'l';
-                        break;
-                    case SwingConstants.RIGHT:
-                        setBounds(AP_WIDTH - AP_BORDER, AP_TITLE, AP_BORDER+1, AP_HEIGHT+1);
-                        x = new int[] {AP_WIDTH, AP_WIDTH, AP_WIDTH - AP_BORDER, AP_WIDTH - AP_BORDER};
-                        y = new int[] {0, AP_HEIGHT, AP_HEIGHT - AP_BORDER, AP_BORDER};
-                        arrow = new Area(new Polygon(new int[] {2, 2, 5}, new int[] {5, -1, 2}, 3));
-                        code = 'r';
-                        break;
-                    default: assert false;
-                }
-                setToolTipText(NbBundle.getMessage(FormDesigner.class, "CTL_AlignmentButton_" + code)); // NOI18N
-                Shape s1 = new RoundRectangle2D.Double(0, AP_TITLE, AP_WIDTH, AP_HEIGHT, 2*AP_BORDER, 2*AP_BORDER);
-                Shape s2 = new Polygon(x, y, 4);                
-                Area a = new Area(s2);
-                a.transform(AffineTransform.getTranslateInstance(0, AP_TITLE));
-                border = new Area(s1);
-                boundary = new Area(s1);
-                border.intersect(a);
-                Point loc = getLocation();
-                AffineTransform tr = AffineTransform.getTranslateInstance(-loc.x, -loc.y);
-                border.transform(tr);
-                boundary.transform(tr);
-                Dimension dim = getSize();
-                arrow.transform(AffineTransform.getTranslateInstance(dim.width/2-3, dim.height/2-3));
-            }
-            
-            protected void setPaintDisabledIcon(boolean paintDisabledIcon) {
-                this.paintDisabledIcon = paintDisabledIcon;
-            }
-
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D)g;
-                ButtonModel model = getModel();
-                if (model.isSelected() || (model.isArmed() && model.isPressed())) {
-                    g2.setColor(new Color(216, 226, 231));
-                } else {
-                    g2.setColor(new Color(241, 241, 241));
-                }
-                g2.fill(border);
-                g.setColor(new Color(173, 192, 206));
-                g2.draw(border);
-                if (boundary != null) {
-                    g.setColor(new Color(125, 155, 184));
-                    g2.draw(boundary);
-                }
-                Icon icon = getIcon();
-                if (icon != null) {
-                    if (paintDisabledIcon || !model.isEnabled()) {
-                        icon = getDisabledIcon();
-                    }
-                    icon.paintIcon(null, g, (getWidth() - icon.getIconWidth())/2, (getHeight() - icon.getIconHeight())/2);
-                }
-                if (arrow != null) {
-                    if (model.isEnabled() && !paintDisabledIcon) {
-                        g.setColor(new Color(31, 82, 127));
-                    } else {
-                        g.setColor(Color.lightGray);
-                    }
-                    g2.fill(arrow);
-                    g2.draw(arrow);
-                }
-            }
-
-            public boolean contains(int x, int y) {
-                return (border == null) ? true : border.contains(x, y);
-            }
-        }
-    }
-    
+        }   
+    }    
 }

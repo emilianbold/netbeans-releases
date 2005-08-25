@@ -120,6 +120,8 @@ class FormToolBar extends JToolBar {
         separator1.setOrientation(JSeparator.VERTICAL);
         JToolBar.Separator separator2 = new JToolBar.Separator();
         separator2.setOrientation(JSeparator.VERTICAL);
+        JToolBar.Separator separator3 = new JToolBar.Separator();
+        separator3.setOrientation(JSeparator.VERTICAL);
 
         TestAction testAction = (TestAction) SystemAction.get(TestAction.class);
         JButton testButton = (JButton) testAction.getToolbarPresenter();
@@ -156,8 +158,11 @@ class FormToolBar extends JToolBar {
         add(Box.createHorizontalStrut(4));
         add(separator2);
         add(Box.createHorizontalStrut(4));
-
         installDesignerActions();
+        add(Box.createHorizontalStrut(4));
+        add(separator3);
+        add(Box.createHorizontalStrut(4));
+        installResizabilityActions();
 
         // Add "addLabel" at the end of the toolbar
         add(Box.createHorizontalGlue());
@@ -176,9 +181,25 @@ class FormToolBar extends JToolBar {
             Action action = (Action)iter.next();
             JButton button = add(action);
             initButton(button);
-        }        
+        }
     }
 
+    void installResizabilityActions() {
+        Collection actions = formDesigner.getResizabilityActions();
+        Iterator iter = actions.iterator();
+        JToggleButton[] resButtons = new JToggleButton[2];
+        for (int i=0; i < actions.size(); i++) {
+            Action action = (Action)iter.next();
+            JToggleButton button = new JToggleButton();
+            button.setAction(action);
+            initButton(button);
+            resButtons[i] = button;
+            add(button);
+            add(Box.createHorizontalStrut(2));        
+        }
+        formDesigner.setResizabilityButtons(resButtons);
+    }
+    
     // --------
     
     private void initButton(AbstractButton button) {
