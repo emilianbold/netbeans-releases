@@ -46,6 +46,8 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
     }
      */
     
+    private final String actionName = NbBundle.getMessage(ManagementAllAction.class, "LBL_ManagementAction"); // NOI18N 
+    
     protected int mode() {
         return MODE_EXACTLY_ONE;    
     }
@@ -59,7 +61,7 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
     }
     
     public String getName () {
-        return NbBundle.getMessage (ManagementAllAction.class, "LBL_ManagementAction"); // NOI18N 
+        return actionName;
     }
 
     public HelpCtx getHelpCtx () {
@@ -97,7 +99,7 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
     }
     
     protected boolean enable (Node[] nodes) {
-        if (!super.enable(nodes)) return false;
+        /*if (!super.enable(nodes)) return false;
         if (nodes.length == 0) return false;
         
         DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
@@ -108,7 +110,8 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
         
         boolean isAgent = Introspector.isGeneratedAgent(foClass);
         boolean isMBean = Introspector.testCompliance(foClass);
-        return isAgent || isMBean;
+        return isAgent || isMBean;*/
+        return true;
     }
 
     /**
