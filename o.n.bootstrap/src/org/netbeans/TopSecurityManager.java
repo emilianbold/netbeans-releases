@@ -455,6 +455,8 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
      */
     public static void makeSwingUseSpecialClipboard (java.awt.datatransfer.Clipboard clip) {
         try {
+            assert System.getSecurityManager() instanceof TopSecurityManager : "Our manager has to be active: " + System.getSecurityManager(); // NOI18N
+            
             javax.swing.JComponent source = new javax.swing.JPanel ();
             CLIPBOARD_FORBIDDEN.set (clip);
             javax.swing.TransferHandler.getPasteAction ().actionPerformed (
