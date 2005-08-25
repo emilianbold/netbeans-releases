@@ -18,8 +18,8 @@ import java.io.InputStreamReader;
 import java.io.File;
 import java.util.*;
 import java.io.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.openide.ErrorManager;
-import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.*;
 /** Connects the output stream of a file to the IDE output window.
@@ -32,16 +32,16 @@ public class LogViewerSupport extends Thread {
     BufferedReader    ins;
     InputOutput io;
     File fileName;
-    String ioName;
+    String url;
     /** Connects a given process to the output window. Returns immediately, but threads are started that
      * copy streams of the process to/from the output window.
      * @param process process whose streams to connect to the output window
-     * @param ioName name of the output window tab to use
+     * @param url deployment manager URL
      */
-    public LogViewerSupport(final File fileName, final String ioName) {
+    public LogViewerSupport(final File fileName, final String url) {
         
         this.fileName=fileName;
-        this.ioName = ioName;
+        this.url = url;
     }
     
     
@@ -124,7 +124,7 @@ public class LogViewerSupport extends Thread {
     
     public void showLogViewer() throws IOException{
         shouldStop = false;
-        io = IOProvider.getDefault().getIO(ioName, false);
+        io = UISupport.getServerIO(url);
         io.getOut().reset();
         io.select();
         filestream = new FileInputStream(fileName);

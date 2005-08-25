@@ -66,7 +66,7 @@ public class ViewLogAction extends CookieAction {
                 // XXX the dm props has the domain directory....
                 //File f = new File(installRoot+"/domains/"+domain+"/logs/server.log");
                 File f = new File(domainRoot+File.separator+domain+"/logs/server.log");
-                LogViewerSupport p = new LogViewerSupport( f ,sdm.getHost()+":"+sdm.getPort());
+                LogViewerSupport p = new LogViewerSupport(f , dmProps.getUrl());
                 p.showLogViewer();
             }
             catch (Exception e){

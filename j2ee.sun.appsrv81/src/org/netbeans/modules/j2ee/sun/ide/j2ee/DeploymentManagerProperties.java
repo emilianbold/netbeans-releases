@@ -236,6 +236,13 @@ public class DeploymentManagerProperties {
         return instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
     }
     
+    public String getUrl() {
+        if (instanceProperties == null) {
+            return null;
+        }
+        return instanceProperties.getProperty(InstanceProperties.URL_ATTR);
+    }
+    
     public InstanceProperties getInstanceProperties () {
         return instanceProperties;
     }
