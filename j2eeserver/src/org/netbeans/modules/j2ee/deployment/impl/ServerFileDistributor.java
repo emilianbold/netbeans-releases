@@ -24,7 +24,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
-import javax.enterprise.deploy.spi.status.*;
+import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
+import org.netbeans.modules.j2ee.deployment.config.DeployableObjectImpl;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
@@ -38,7 +40,7 @@ public class ServerFileDistributor extends ServerProgress {
     ServerInstance instance;
     DeploymentTarget dtarget;
     IncrementalDeployment incremental;
-    DeploymentPlanSplitter splitter;
+//    DeploymentPlanSplitter splitter;
     
     // valued by RootedEntry's
     Iterator rootModuleFiles;
@@ -53,7 +55,7 @@ public class ServerFileDistributor extends ServerProgress {
         this.instance = instance;
         this.dtarget = dtarget;
         incremental = instance.getIncrementalDeployment ();
-        splitter =  instance.getServer().getDeploymentPlanSplitter();
+//        splitter =  instance.getServer().getDeploymentPlanSplitter();
         
         //init contents
         try {
@@ -255,13 +257,6 @@ public class ServerFileDistributor extends ServerProgress {
                 paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
                 if (! paths[n].exists() || paths[n].lastModified() < configFile.lastModified())
                     mc.record(rPaths[n]);
-            }
-            
-            if (mc.serverDescriptorChanged()) {
-                DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
-                DeploymentConfiguration config = dcp.getDeploymentConfiguration();
-                DeployableObject deployable = dcp.getDeployableObject(moduleUrl);
-                splitter.writeDeploymentPlanFiles(config, deployable, paths);
             }
             
             return mc;

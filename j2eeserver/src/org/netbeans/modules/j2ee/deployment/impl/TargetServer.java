@@ -87,11 +87,6 @@ public class TargetServer {
             if (contentFO != null) {
                 currentContentDir = FileUtil.toFile(contentFO);
             }
-
-            // Note: configuration is not DO so will not be saved automatically on execute
-            DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
-            if (dcp != null)
-                dcp.saveOnDemand();
         
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
@@ -147,8 +142,9 @@ public class TargetServer {
     
     private boolean checkServiceImplementations() {
         String missing = null;
-        if (instance.getServer().getDeploymentPlanSplitter() == null)
-            missing = DeploymentPlanSplitter.class.getName();
+        if (instance.getServer().getConfigurationSupport() == null) {
+            missing = ConfigurationSupport.class.getName();
+        }
         
         if (missing != null) {
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_MissingServiceImplementations", missing);

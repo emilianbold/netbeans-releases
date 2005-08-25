@@ -40,11 +40,11 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
                 </file>
-                <file name="TomcatPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.ConfigurationSupportImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
+
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
                         <file name="META-INF\context.xml"/>
@@ -73,10 +73,9 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformFactory"/>
                 </file>
-                <file name="TomcatPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.ConfigurationSupportImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">

@@ -29,11 +29,6 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.ide.GSOptionalDeploymentManagerFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
-                <file name="AppServerPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.genericserver.ide.GSDeploymentPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.genericserver.ide.GSDeploymentPlanSplitter"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
-                </file>
             </folder>
         </folder>
     </folder>

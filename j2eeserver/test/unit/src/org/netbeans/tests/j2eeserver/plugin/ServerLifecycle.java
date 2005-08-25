@@ -20,6 +20,7 @@ import javax.enterprise.deploy.shared.CommandType;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.tests.j2eeserver.plugin.jsr88.*;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 /**
  *

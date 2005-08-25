@@ -65,7 +65,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         
         if (moduleProvider instanceof J2eeAppProvider) {
             J2eeAppProvider ear = (J2eeAppProvider) moduleProvider;
-            J2eeModuleProvider clientProvider = ConfigurationStorage.getChildModuleProvider(ear, clientName);
+            J2eeModuleProvider clientProvider = getChildModuleProvider(ear, clientName);
             if (clientProvider != null)
                 clientModule = clientProvider.getJ2eeModule();
             else {
@@ -92,6 +92,26 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         } else {
             return null;
         }
+    }
+    
+    private J2eeModuleProvider getChildModuleProvider(J2eeModuleProvider jmp, String uri) {
+        if (uri == null)
+            return null;
+        J2eeModuleProvider child = null;
+        if (jmp instanceof J2eeAppProvider) {
+            J2eeAppProvider jap = (J2eeAppProvider) jmp;
+            child = jap.getChildModuleProvider(uri);
+            if (child == null) {
+                String root = "/" ; // NOI18N
+                if (uri.startsWith(root)) {
+                    uri = uri.substring(1);
+                } else {
+                    uri = root + uri;
+                }
+                child = jap.getChildModuleProvider(uri);
+            }
+        }
+        return child;
     }
     
     private TargetModule getTargetModule() {
@@ -211,7 +231,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
     
     public DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
-        return getConfigSupportImpl ().getStorage ();
+        return getConfigSupportImpl ();
     }
     
     public J2eeModuleProvider.ConfigSupport getConfigSupport () {

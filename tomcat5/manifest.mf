@@ -4,3 +4,6 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/tomcat5/resources/Bundle.
 OpenIDE-Module-Layer: org/netbeans/modules/tomcat5/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.4
 
+Name: org/netbeans/modules/tomcat5/loader/ContextDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject

@@ -47,7 +47,6 @@ public abstract class J2eeModuleProvider {
     private ConfigSupportImpl confSupp;
     List listeners = new ArrayList();
     private ConfigFilesListener configFilesListener = null;
-    private DDFilesListener ddFilesListener = null;
     
     public J2eeModuleProvider () {
         il = new IL ();
@@ -63,9 +62,6 @@ public abstract class J2eeModuleProvider {
     public final ConfigSupport getConfigSupport () {
         if (confSupp == null) {
             confSupp = new ConfigSupportImpl (this);
-        }
-        if (ddFilesListener == null) {
-            ddFilesListener = new DDFilesListener(this);
         }
 	return confSupp;
     }
@@ -299,17 +295,18 @@ public abstract class J2eeModuleProvider {
             if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                 String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
                 if (oldCtxPath == null || oldCtxPath.equals("")) { //NOI18N
-                    oldCtxPath = "/"+this.getDeploymentName(); //NOI18N
+                    oldCtxPath = "/" + getDeploymentName(); //NOI18N
                 }
+                ConfigSupportImpl oldConSupp = confSupp;
                 confSupp = null;
-                String ctx = getConfigSupportImpl().getWebContextRoot ();
-                if (ctx == null || ctx.equals ("")) { //NOI18N
-                    getConfigSupportImpl().setWebContextRoot(oldCtxPath);
-                }
+                getConfigSupportImpl().ensureConfigurationReady();
+                getConfigSupportImpl().setWebContextRoot(oldCtxPath);
+                oldConSupp.dispose();
             } else {
-                J2eeModuleProvider.this.confSupp = null;
-                ServerString newServerString = new ServerString(newServer);
-                ConfigSupportImpl.createInitialConfiguration(this, newServerString);
+                ConfigSupportImpl oldConSupp = confSupp;
+                confSupp = null;
+                getConfigSupportImpl().ensureConfigurationReady();
+                oldConSupp.dispose();
             }
         }
     }
@@ -382,14 +379,17 @@ public abstract class J2eeModuleProvider {
                 if (J2eeModule.WAR.equals(getJ2eeModule().getModuleType())) {
                     String oldCtxPath = getConfigSupportImpl().getWebContextRoot();
                     oldCtxPath = "/"+J2eeModuleProvider.this.getDeploymentName(); //NOI18N
+                    confSupp.dispose();
                     J2eeModuleProvider.this.confSupp = null;
+                    getConfigSupportImpl().ensureConfigurationReady();
                     String ctx = getConfigSupportImpl().getWebContextRoot ();
                     if (ctx == null || ctx.equals ("")) { //NOI18N
                         getConfigSupportImpl().setWebContextRoot(oldCtxPath);
                     }
                 } else {
+                    confSupp.dispose();
                     J2eeModuleProvider.this.confSupp = null;
-                    ConfigSupportImpl.createInitialConfiguration(J2eeModuleProvider.this, newInstance);
+                    getConfigSupportImpl().ensureConfigurationReady();
                 }
             }
         }

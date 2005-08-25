@@ -80,6 +80,43 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="serverConfigurationRedesign">
+            <api name="j2eeserver"/>
+            <summary>
+            The common server specific deployment descriptor data loader has been
+            removed from the j2eeserver. The plugins are no longer required to 
+            use the DConfigBean based model.
+            </summary>
+            <version major="1" minor="8"/>
+            <date day="22" month="8" year="2005"/>
+            <author login="sherold"/>
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+            <description>
+                <p>
+                The common server specific deployment descriptor data loader has
+                been removed. Each plugin should now register its own data loader, 
+                if needed. The j2eeserver does no longer control saving of the
+                server specific deployment descriptors, it is plugin responsibility
+                now. With the removal of the common data loader, the plugins are 
+                no longer required to use the DConfigBean based model.
+                </p>
+                <p>
+                Plugins should implement the ConfigurationSupport abstract class 
+                in order to provide support for their server specific deployment
+                descriptors.
+                </p>
+                <p>
+                Removed: DConfigBeanProperties, DConfigBeanUIFactory, DeploymentPlanSplitter.
+                Modified: ConfigurationSupport interface was modified and turned into 
+                an abstract class.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanProperties"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DConfigBeanUIFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="DeploymentPlanSplitter"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="ConfigurationSupport"/>
+            <issue number="56032"/>
+        </change>
         <change id="J2eeModule-UISupport">
             <api name="j2eeserver"/>
             <summary>ServerManager and UISupport classes added. Added method supportsStartDebugging() 

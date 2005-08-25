@@ -11,27 +11,15 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.j2ee.jboss4;
-
-
-import java.io.FileInputStream;
-import java.util.jar.JarFile;
-import org.netbeans.modules.j2ee.deployment.plugins.api.J2eePlatformImpl;
-import org.netbeans.modules.j2ee.jboss4.ide.JBDeploymentStatus;
+import org.netbeans.modules.j2ee.jboss4.config.WarDeploymentConfiguration;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import org.netbeans.modules.j2ee.jboss4.ide.JBLogWriter;
-import org.netbeans.modules.j2ee.jboss4.ide.ui.JBInstantiatingIterator;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Locale;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
@@ -40,13 +28,8 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
-import org.openide.ErrorManager;
-
-import org.w3c.dom.*;
+import org.netbeans.modules.j2ee.jboss4.config.EarDeploymentConfiguration;
+import org.netbeans.modules.j2ee.jboss4.config.EjbDeploymentConfiguration;
 
 /**
  *
@@ -122,7 +105,16 @@ public class JBDeploymentManager implements DeploymentManager {
     }
     
     public DeploymentConfiguration createConfiguration(DeployableObject deployableObject) throws InvalidModuleException {
-        return new JBDeploymentConfiguration(deployableObject);
+        ModuleType type = deployableObject.getType();
+        if (type == ModuleType.WAR) {
+            return new WarDeploymentConfiguration(deployableObject);
+        } else if (type == ModuleType.EAR) {
+            return new EarDeploymentConfiguration(deployableObject);
+        } else if (type == ModuleType.EJB) {
+            return new EjbDeploymentConfiguration(deployableObject);
+        } else {
+            throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
+        }
     }
     
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) throws UnsupportedOperationException, IllegalStateException {

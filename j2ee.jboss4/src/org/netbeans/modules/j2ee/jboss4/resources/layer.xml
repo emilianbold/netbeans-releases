@@ -30,13 +30,10 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.ide.JBOptionalDeploymentManagerFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
-                                
-                 <file name="JBPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.jboss4.config.JBPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.config.JBPlanSplitter"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.jboss4.config.ConfigurationSupportImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
-                
                 
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
@@ -46,7 +43,7 @@
 			<file name="META-INF\jboss.xml"/>
                     </folder>
 		    <folder name="EAR">
-			<file name="META-INF\jboss.xml"/>
+			<file name="META-INF\jboss-app.xml"/>
                     </folder>
                 </folder>
                 

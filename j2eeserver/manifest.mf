@@ -4,8 +4,3 @@ OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/deployment/impl/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/deployment/impl/Install.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/deployment/impl/Bundle.properties
-
-Name: org/netbeans/modules/j2ee/deployment/config/ConfigDataLoader.class
-OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
-

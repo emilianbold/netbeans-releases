@@ -200,17 +200,6 @@ public class Server implements Node.Cookie {
         return null;
     }
     
-    public DeploymentPlanSplitter getDeploymentPlanSplitter() {
-        DeploymentPlanSplitter o = (DeploymentPlanSplitter) lkp.lookup (DeploymentPlanSplitter.class);
-        if (o != null) {
-            return o;
-        } else {
-            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, DeploymentPlanSplitter.class);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
-            return null;
-        }
-    }
-    
     public RegistryNodeProvider getNodeProvider() {
         if (nodeProvider != null)
             return nodeProvider;
@@ -240,19 +229,19 @@ public class Server implements Node.Cookie {
         return o;
     }
     
-    /** returns DConfigBeanUIFactory or null it is not provided by the plugin */
-    public DConfigBeanUIFactory getDConfigBeanUIFactory () {
-        DConfigBeanUIFactory o = (DConfigBeanUIFactory) lkp.lookup (DConfigBeanUIFactory.class);
-        return o;
-    }
+//    /** returns DConfigBeanUIFactory or null it is not provided by the plugin */
+//    public DConfigBeanUIFactory getDConfigBeanUIFactory () {
+//        DConfigBeanUIFactory o = (DConfigBeanUIFactory) lkp.lookup (DConfigBeanUIFactory.class);
+//        return o;
+//    }
     
-    public DConfigBeanProperties getDConfigBeanProperties(DConfigBean bean) {
-        DConfigBeanUIFactory beanUIFactory = getDConfigBeanUIFactory();
-        if (beanUIFactory == null) return null;
-        return beanUIFactory.getUICustomization(bean);
-    }
+//    public DConfigBeanProperties getDConfigBeanProperties(DConfigBean bean) {
+//        DConfigBeanUIFactory beanUIFactory = getDConfigBeanUIFactory();
+//        if (beanUIFactory == null) return null;
+//        return beanUIFactory.getUICustomization(bean);
+//    }
     
-    public ConfigurationSupport geConfigurationSupport() {
+    public ConfigurationSupport getConfigurationSupport() {
         ConfigurationSupport cs = (ConfigurationSupport) lkp.lookup (ConfigurationSupport.class);
         return cs;
     }

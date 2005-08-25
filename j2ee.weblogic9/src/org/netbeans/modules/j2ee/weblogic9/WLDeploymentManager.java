@@ -14,24 +14,20 @@ package org.netbeans.modules.j2ee.weblogic9;
 
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import javax.enterprise.deploy.model.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.*;
-import javax.enterprise.deploy.spi.factories.*;
 import javax.enterprise.deploy.spi.status.*;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentConfiguration;
-
-import org.openide.*;
-import org.openide.util.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.modules.j2ee.weblogic9.config.EarDeploymentConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.config.EjbDeploymentConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.config.WarDeploymentConfiguration;
 
 import org.netbeans.modules.j2ee.weblogic9.util.WLDebug;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+
 
 /**
  * Main class of the deployment process. This serves a a wrapper for the 
@@ -162,7 +158,16 @@ public class WLDeploymentManager implements DeploymentManager {
      */
     public DeploymentConfiguration createConfiguration(
         DeployableObject deployableObject) throws InvalidModuleException {
-        return new WLDeploymentConfiguration(deployableObject);
+        ModuleType type = deployableObject.getType();
+        if (type == ModuleType.WAR) {
+            return new WarDeploymentConfiguration(deployableObject);
+        } else if (type == ModuleType.EAR) {
+            return new EarDeploymentConfiguration(deployableObject);
+        } else if (type == ModuleType.EJB) {
+            return new EjbDeploymentConfiguration(deployableObject);
+        } else {
+            throw new InvalidModuleException("Unsupported module type: " + type.toString()); // NOI18N
+        }
     }
     
     /**

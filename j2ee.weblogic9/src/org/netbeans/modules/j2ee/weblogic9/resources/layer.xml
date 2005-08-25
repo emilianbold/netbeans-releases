@@ -76,11 +76,9 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.optional.WLOptionalDeploymentManagerFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
                 </file>
-                
-                <file name="WLPlanSplitter.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.weblogic9.config.WLPlanSplitter"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.config.WLPlanSplitter"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.weblogic9.config.ConfigurationSupportImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/>
                 </file>
                 
                 <!--
