@@ -67,7 +67,7 @@ public class RegisterAction extends NodeAction implements WizardConstants{
     }
     
     protected String iconResource() {
-        return "org/netbeans/modules/j2ee/sun/ide/resources/RegisterConnPoolActionIcon.gif"; //NOI18N
+        return "org/netbeans/modules/j2ee/sun/ide/resources/AddInstanceActionIcon.gif"; //NOI18N
     }
     
     public HelpCtx getHelpCtx() {

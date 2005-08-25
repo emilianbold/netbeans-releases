@@ -1,3 +1,4 @@
+package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 /*
  *                 Sun Public License Notice
  *
@@ -16,17 +17,18 @@
  * Created on September 17, 2003, 11:54 AM
  */
 
-package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
-
 import java.io.PrintWriter;
 import java.io.OutputStreamWriter;
 import java.io.File;
 import java.io.FileInputStream;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Vector;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 
 import javax.management.Attribute;
 import javax.management.ObjectName;
@@ -68,6 +70,8 @@ import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
  */
 public class ResourceUtils implements WizardConstants{
     
+    static final ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
+    
     /** Creates a new instance of ResourceUtils */
     public ResourceUtils() {
     }
@@ -79,6 +83,246 @@ public class ResourceUtils implements WizardConstants{
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); 
         }
     } 
+    
+    public static void register(JdbcConnectionPool resource, ServerInterface mejb, boolean update) throws Exception{
+        AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+        PropertyElement[] props = resource.getPropertyElement();
+        Properties propsList = ResourceUtils.getProperties(props);
+        Object[] params = new Object[]{attrList, propsList, null};
+        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateCP"); //NOI18N
+        if(update){
+            String resourceName = resource.getName();
+            if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcConnectionPool)){
+                createResource(operName, params, mejb);
+            }
+        }else
+            createResource(operName, params, mejb);
+    }
+    
+    public static void register(JdbcResource resource, ServerInterface mejb, boolean update) throws Exception{
+        AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+        PropertyElement[] props = resource.getPropertyElement();
+        Properties propsList = ResourceUtils.getProperties(props);
+        Object[] params = new Object[]{attrList, propsList, null};
+        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateDS"); //NOI18N
+        if(update){
+            String resourceName = resource.getJndiName();
+            if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJdbcResource)){
+                createResource(operName, params, mejb);
+            }
+        }else
+            createResource(operName, params, mejb);
+    }
+       
+     public static void register(PersistenceManagerFactoryResource resource, ServerInterface mejb, boolean update) throws Exception{
+         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+         PropertyElement[] props = resource.getPropertyElement();
+         Properties propsList = ResourceUtils.getProperties(props);
+         Object[] params = new Object[]{attrList, propsList, null};
+         String operName = NbBundle.getMessage(ListServerInstances.class, "CreatePMF"); //NOI18N
+         if(update){
+             String resourceName = resource.getJndiName();
+             if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetPMFResource)){
+                 createResource(operName, params, mejb);
+             }
+         }else
+             createResource(operName, params, mejb);
+     }
+     
+     public static void register(MailResource resource, ServerInterface mejb, boolean update) throws Exception{
+         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+         PropertyElement[] props = resource.getPropertyElement();
+         Properties propsList = ResourceUtils.getProperties(props);
+         Object[] params = new Object[]{attrList, propsList, null};
+         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateMail"); //NOI18N
+         if(update){
+             String resourceName = resource.getJndiName();
+             if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetMailResource)){
+                 createResource(operName, params, mejb);
+             }
+         }else
+             createResource(operName, params, mejb);
+     }
+     
+     public static void register(JmsResource resource, ServerInterface mejb, boolean update) throws Exception{
+         AttributeList attrList = ResourceUtils.getResourceAttributes(resource);
+         PropertyElement[] props = resource.getPropertyElement();
+         Properties propsList = ResourceUtils.getProperties(props);
+         Object[] params = new Object[]{attrList, propsList, null};
+         String operName = NbBundle.getMessage(ListServerInstances.class, "CreateJMS"); //NOI18N
+         if(update){
+             String resourceName = resource.getJndiName();
+             if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJmsResource)){
+                 createResource(operName, params, mejb);
+             }
+         }else
+             createResource(operName, params, mejb);
+     }
+    
+     private static boolean isResourceUpdated(String resourceName, ServerInterface mejb, AttributeList attrList, Properties props, String operName ){  
+        boolean isResUpdated = false;
+        try{
+            ObjectName objName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            ObjectName[] resourceObjects = null;
+            if(operName.equals(WizardConstants.__GetPMFResource) || operName.equals(WizardConstants.__GetJmsResource)){
+                String[] signature = new String[]{"java.lang.String"};  //NOI18N
+                Object[] params = new Object[]{null};
+                resourceObjects = (ObjectName[])  mejb.invoke(objName, operName, params, signature);
+            }else{
+                resourceObjects = (ObjectName[])  mejb.invoke(objName, operName, null, null);
+            }
+            if(resourceObjects != null){
+                ObjectName resOnServer = null;
+                if(operName.equals(WizardConstants.__GetJdbcConnectionPool))
+                    resOnServer = getResourceDeployed(resourceObjects, resourceName, false);
+                else
+                    resOnServer = getResourceDeployed(resourceObjects, resourceName, true);
+                if(resOnServer != null){
+                    isResUpdated = true;
+                    updateResourceAttributes(resOnServer, attrList, mejb);
+                    updateResourceProperties(resOnServer, props, mejb);
+                }
+            }//Returned value is null for JMS.
+        }catch(Exception ex){
+            String errorMsg = MessageFormat.format(bundle.getString("Err_ResourceUpdate"), new Object[]{resourceName}); //NOI18N
+            System.out.println(errorMsg);
+        }
+        return isResUpdated;
+    }    
+    
+    private static ObjectName getResourceDeployed(ObjectName[] resourceObjects, String resourceName, boolean useJndi){
+        for(int i=0; i<resourceObjects.length; i++){
+            ObjectName resObj = resourceObjects[i];
+            String jndiName = null;
+            if(useJndi)
+                jndiName = resObj.getKeyProperty(WizardConstants.__JndiName);
+            else
+                jndiName = resObj.getKeyProperty(WizardConstants.__Name);
+            
+            if(jndiName.equals(resourceName)){
+                return resObj;
+            }
+        }
+        return null;
+    }
+    
+    public static void updateResourceAttributes(ObjectName objName, AttributeList attrList, ServerInterface mejb) throws Exception {
+         try{
+             Map attributeInfos = getResourceAttributeNames(objName, mejb);
+             String[] attrNames = (String[]) attributeInfos.keySet().toArray(new String[attributeInfos.size()]);
+             
+             //Attributes from server
+             AttributeList existAttrList = mejb.getAttributes(objName, attrNames);
+             for(int i=0; i<existAttrList.size(); i++){
+                Attribute existAttr = (Attribute)existAttrList.get(i);
+                String existAttrName = existAttr.getName();
+                for(int j=0; j<attrList.size(); j++){
+                    Attribute resAttr = (Attribute)attrList.get(j);
+                    String resAttrName = resAttr.getName();
+                    if(existAttrName.equals(resAttrName)){
+                        if(resAttr.getValue() == null && existAttr.getValue() != null) { 
+                            mejb.setAttribute(objName, resAttr);
+                        }else if(existAttr.getValue() == null) { //NOI18N
+                            if((resAttr.getValue() != null) && (! resAttr.getValue().toString().equals("")))
+                                mejb.setAttribute(objName, resAttr);
+                        }else{    
+                            if(! resAttr.getValue().toString().equals(existAttr.getValue().toString())){
+                                mejb.setAttribute(objName, resAttr);
+                            }
+                        }
+                    }//if
+                }//loop through project's resource Attributes
+             }
+         }catch(Exception ex){
+             throw new Exception(ex.getLocalizedMessage());
+         }
+     }
+    public static void updateResourceProperties(ObjectName objName, Properties props, ServerInterface mejb) throws Exception {
+         try{
+             String[] signature = new String[]{"javax.management.Attribute"};  //NOI18N
+             Object[] params = null;
+             //Get Extra Properties From Server
+             AttributeList attrList = (AttributeList)mejb.invoke(objName, WizardConstants.__GetProperties, null, null);             
+             for(int i=0; i<attrList.size(); i++){
+                 Attribute oldAttr = (Attribute)attrList.get(i);
+                 String oldAttrName = oldAttr.getName();
+                 if(props.containsKey(oldAttrName)){
+                     if(oldAttr.getValue() != null){
+                         String oldAttrValue = oldAttr.getValue().toString();
+                         if(! props.getProperty(oldAttrName).equals(oldAttrValue)){
+                             Attribute attr = new Attribute(oldAttrName, props.getProperty(oldAttrName));
+                             params = new Object[]{attr};
+                             mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                         }
+                     }else{//Server extra property value not null
+                         if(props.getProperty(oldAttrName) != null){
+                             Attribute attr = new Attribute(oldAttrName, props.getProperty(oldAttrName));
+                             params = new Object[]{attr};
+                             mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                         }
+                     }
+                 }else{
+                     //Modifies extra properties does not contain this property
+                     //Remove from server resource
+                     Attribute removeAttr = new Attribute(oldAttrName, null);
+                     params = new Object[]{removeAttr};
+                     mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                 }
+             }//loop through server extra properties
+             addNewExtraProperties(objName, props, attrList, mejb);
+         }catch(Exception ex){
+             throw new Exception(ex.getLocalizedMessage());
+         }
+     }
+     
+     private static Map getResourceAttributeNames(ObjectName objName, ServerInterface mejb) throws Exception {
+         try{
+             Map attributeInfos = new java.util.HashMap();
+             javax.management.MBeanInfo info = mejb.getMBeanInfo(objName);
+             javax.management.MBeanAttributeInfo[] attrs = info.getAttributes();
+             for (int i=0; i<attrs.length; i++) {
+                 if(attrs[i] != null){
+                     attributeInfos.put(attrs[i].getName(), attrs[i]);
+                 }
+             }
+             return attributeInfos;
+         }catch(Exception ex){
+             throw new Exception(ex.getLocalizedMessage());
+         }
+     }
+     
+     private static void addNewExtraProperties(ObjectName objName, Properties props, AttributeList attrList, ServerInterface mejb) throws Exception {
+         try{
+             String[] signature = new String[]{"javax.management.Attribute"};  //NOI18N
+             Object[] params = null;
+             if(props.size() > attrList.size()){
+                 java.util.Enumeration listProps = props.propertyNames();
+                 while(listProps.hasMoreElements()){
+                     String propName = listProps.nextElement().toString();
+                     if(! attrList.contains(propName)){
+                         Attribute attr = new Attribute(propName, props.getProperty(propName));
+                         params = new Object[]{attr};
+                         mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                     }
+                 }//while
+             }
+         }catch(Exception ex){
+             throw new Exception(ex.getLocalizedMessage());
+         }
+     }
+     
+    
+    
+    static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
+    public static void createResource(String operName, Object[] params, ServerInterface mejb) throws Exception{
+        try{
+            ObjectName objName = new ObjectName(MAP_RESOURCES);
+            String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
+            mejb.invoke(objName, operName, params, signature);
+        }catch(Exception ex){
+            throw new Exception(ex.getLocalizedMessage());
+        }
+    }
     
     public static AttributeList getResourceAttributes(JdbcConnectionPool connPool){
         AttributeList attrs = new AttributeList();

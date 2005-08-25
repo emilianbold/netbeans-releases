@@ -1,3 +1,4 @@
+package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
 /*
  *                 Sun Public License Notice
  *
@@ -10,8 +11,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
-
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JButton;
@@ -29,6 +28,7 @@ import java.awt.GridBagConstraints;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -183,17 +183,18 @@ public class ListServerInstances extends JPanel implements WizardConstants{
             msgArea.setText(bundle.getString("Msg_RegDS")); //NOI18N
             setTopManagerStatus(bundle.getString( "Msg_RegDS"));//NOI18N
             Resources res = getResourceGraph(resourceObj);
+            ServerInterface mejb = getManagementObject(serverNm);
             if(res != null){
                 if(resType.equals(__JdbcConnectionPool)){
-                    registerConnectionPool(res, serverNm);
+                    ResourceUtils.register(res.getJdbcConnectionPool(0), mejb, false);  
                 }else if(resType.equals(__JdbcResource)){
-                    registerDataSource(res, serverNm);
+                    ResourceUtils.register(res.getJdbcResource(0), mejb, false); 
                 }else if(resType.equals(__PersistenceManagerFactoryResource)){
-                    registerPersistenceManager(res, serverNm);
+                    ResourceUtils.register(res.getPersistenceManagerFactoryResource(0), mejb, false);
                 }else if(resType.equals(__MailResource)){
-                    registerMailSession(res, serverNm);
+                    ResourceUtils.register(res.getMailResource(0), mejb, false);
                 }else if(resType.equals(__JmsResource)){
-                    registerJMS(res, serverNm);
+                    ResourceUtils.register(res.getJmsResource(0), mejb, false);
                 }
                 setTopManagerStatus(bundle.getString( "Msg_RegDone"));//NOI18N
                 msgArea.setText(bundle.getString( "Msg_RegDone")); //NOI18N
@@ -205,47 +206,7 @@ public class ListServerInstances extends JPanel implements WizardConstants{
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
     }
-    
-    public void registerConnectionPool(Resources res, String serverName) throws Exception{
-        PropertyElement[] props = res.getJdbcConnectionPool(0).getPropertyElement();
-        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getJdbcConnectionPool(0)), ResourceUtils.getProperties(props), null};  
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateCP"); //NOI18N
-        
-        createResource(operName, params, getManagementObject(serverName));
-    }
-    
-    public void registerDataSource(Resources res, String serverName) throws Exception{
-        PropertyElement[] props = res.getJdbcResource(0).getPropertyElement();
-        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getJdbcResource(0)), ResourceUtils.getProperties(props), null};   
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateDS"); //NOI18N
-        
-        createResource(operName, params, getManagementObject(serverName));
-    }
-    
-    public void registerPersistenceManager(Resources res, String serverName) throws Exception{       
-        PropertyElement[] props = res.getPersistenceManagerFactoryResource(0).getPropertyElement();
-        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getPersistenceManagerFactoryResource(0)), ResourceUtils.getProperties(props), null};   
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreatePMF"); //NOI18N
-        
-        createResource(operName, params, getManagementObject(serverName));
-    }
-    
-    public void registerMailSession(Resources res, String serverName) throws Exception{
-        PropertyElement[] props = res.getMailResource(0).getPropertyElement();
-        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getMailResource(0)), ResourceUtils.getProperties(props), null};   
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateMail"); //NOI18N
-        
-        createResource(operName, params, getManagementObject(serverName));
-    }
-    
-    public void registerJMS(Resources res, String serverName) throws Exception{
-        PropertyElement[] props = res.getJmsResource(0).getPropertyElement();
-        Object[] params = new Object[]{ResourceUtils.getResourceAttributes(res.getJmsResource(0)), ResourceUtils.getProperties(props), null};   
-        String operName = NbBundle.getMessage(ListServerInstances.class, "CreateJMS"); //NOI18N
-        
-        createResource(operName, params, getManagementObject(serverName));
-    }
-    
+       
     private void setTopManagerStatus(String msg){
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(msg);
     }
@@ -260,25 +221,14 @@ public class ListServerInstances extends JPanel implements WizardConstants{
         ServerInterface mejb = eightDM.getManagement(); 
         return mejb;
     }
-    
-    static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
-    private void createResource(String operName, Object[] params, ServerInterface mejb) throws Exception{
-        try{
-            ObjectName objName = new ObjectName(MAP_RESOURCES);
-            String[] signature = new String[]{"javax.management.AttributeList", "java.util.Properties", "java.lang.String"};  //NOI18N
-            mejb.invoke(objName, operName, params, signature);
-        }catch(Exception ex){
-            throw new Exception(ex.getLocalizedMessage());
-        }
-    }
-    
+        
     private void showInvalidServerError(){
         NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Msg_invalid_server"), NotifyDescriptor.INFORMATION_MESSAGE);
         d.setTitle(bundle.getString("Title_invalid_server"));
         DialogDisplayer.getDefault().notify(d);
         setTopManagerStatus(bundle.getString("Msg_invalid_server"));//NOI18N
     }
-    
+        
     private JButton applyButton;
     private JButton closeButton;
     private JTextArea msgArea;

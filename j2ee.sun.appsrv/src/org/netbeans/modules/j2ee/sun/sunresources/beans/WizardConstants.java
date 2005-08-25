@@ -165,4 +165,14 @@ public interface WizardConstants {
     public static final String __FirstStepChoose = "Choose ...";
     //Resource Folder
     public static final String __SunResourceFolder = "setup";
+    
+    //Operations for getting resourceproperties
+    public static final String __GetJdbcResource = "getJdbcResource";
+    public static final String __GetJdbcConnectionPool = "getJdbcConnectionPool";
+    public static final String __GetMailResource = "getMailResource";
+    public static final String __GetJmsResource = "getJmsResource";
+    public static final String __GetPMFResource = "getPersistenceManagerFactoryResource";
+    public static final String __GetProperties = "getProperties";
+    public static final String __SetProperty = "setProperty";
+    public static final String MAP_RESOURCES = "com.sun.appserv:type=resources,category=config";//NOI18N
 }

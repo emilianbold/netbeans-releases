@@ -1,11 +1,20 @@
 /*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+/*
  * BaseResourceNode.java
  *
  * Created on August 18, 2005, 9:30 AM
  *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
  */
 
 package org.netbeans.modules.j2ee.sun.ide.sunresources.beans;
