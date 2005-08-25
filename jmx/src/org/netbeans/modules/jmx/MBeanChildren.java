@@ -49,13 +49,18 @@ public class MBeanChildren extends JavaChildren {
             if (primaryFile.isFolder()) {
                 newNode = new FilterNode(originalNode, new MBeanChildren(originalNode));
             } else if (primaryFile.getMIMEType().equals(JAVA_MIME_TYPE)) {
+                boolean accepted  = true;
+                try {
                 DataObject dob = (DataObject) originalNode.getCookie(DataObject.class);
                 FileObject fo = null;
                 if (dob != null) fo = dob.getPrimaryFile();
                 JavaClass foClass = WizardHelpers.getJavaClass(
                         JavaModel.getResource(fo),fo.getName());
-                boolean accepted = Introspector.testCompliance(foClass)&&
+                accepted = Introspector.testCompliance(foClass)&&
                         Introspector.checkCreation(foClass);
+                } catch (Exception e) {
+                    accepted  = false;
+                }
                 if (!accepted)
                     newNode = null;
                 else {
