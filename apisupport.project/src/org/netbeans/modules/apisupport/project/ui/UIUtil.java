@@ -15,7 +15,11 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.Collator;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -153,10 +157,14 @@ public final class UIUtil {
             FileSystem sfs = LayerUtils.getEffectiveSystemFilesystem(project);
             FileObject root = sfs.getRoot().getFileObject(sfsRoot);
             if (root != null) {
+                Collection items = new TreeSet();
                 for (Enumeration subFolders = root.getFolders(true); subFolders.hasMoreElements(); ) {
                     LayerFolderPresenter layerFolder = new LayerFolderPresenter(
                             (FileObject) subFolders.nextElement(), root);
-                    model.addElement(layerFolder);
+                    items.add(layerFolder);
+                }
+                for (Iterator it = items.iterator(); it.hasNext(); ) {
+                    model.addElement(it.next());
                 }
             }
         } catch (IOException exc) {
@@ -165,7 +173,7 @@ public final class UIUtil {
         return model;
     }
     
-    public static class LayerFolderPresenter {
+    public static class LayerFolderPresenter implements Comparable {
         
         private String description;
         private String folderPath;
@@ -173,8 +181,10 @@ public final class UIUtil {
         public LayerFolderPresenter(FileObject folder, FileObject root) {
             int rootPathLength = root.getPath().length();
             this.folderPath = folder.getPath();
-            // XXX localization (consider/utilize following line)
-//            Object str = folder.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+            // XXX localization (consider/utilize following lines)
+//            jglick suggests: DataObject.find(folder).getNodeDelegate().getDisplayName()
+//            or if that is problematic for any reason,
+//            fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.singleton(fo))
             this.description = folderPath.substring(rootPathLength + 1).replaceAll("/", " | "); // NOI18N
         }
         
@@ -185,6 +195,12 @@ public final class UIUtil {
         public String toString() {
             return description;
         }
+        
+        public int compareTo(Object o) {
+            return Collator.getInstance().compare(description,
+                    ((LayerFolderPresenter) o).description);
+        }
+        
     }
     
     private static final class IconFilter extends FileFilter {
