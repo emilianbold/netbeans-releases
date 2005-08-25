@@ -282,11 +282,18 @@ public class ServerChooserVisual extends javax.swing.JPanel {
             while (iter.hasNext()) {
                 Server server = (Server)iter.next();
                 OptionalDeploymentManagerFactory factory = server.getOptionalFactory();
-                if (factory != null && factory.getAddInstanceIterator() != null)
-                    servers.add(new ServerAdapter(server));
+                if (factory != null && factory.getAddInstanceIterator() != null) {
+                    ServerAdapter serverAdapter = new ServerAdapter(server);
+                    servers.add(serverAdapter);
+                    if ("J2EE".equals(server.getShortName())) { // NOI18N
+                        selected = serverAdapter;
+                    }
+                }
             }
             Collections.sort(servers);
-            selected = (servers.size() > 0) ? (ServerAdapter)servers.get(0) : null;
+            if (selected == null) {
+                selected = (servers.size() > 0) ? (ServerAdapter)servers.get(0) : null;
+            }
         }
         
         public Object getElementAt(int index) {
