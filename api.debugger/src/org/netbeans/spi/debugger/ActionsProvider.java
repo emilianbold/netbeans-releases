@@ -14,6 +14,7 @@
 package org.netbeans.spi.debugger;
 
 import java.util.Set;
+import org.openide.util.RequestProcessor;
 
 /**
  * Represents implementation of one or more actions. 
@@ -57,5 +58,29 @@ public abstract class ActionsProvider {
      * @param l removed listener.
      */
     public abstract void removeActionsProviderListener (ActionsProviderListener l);
+    
+    /**
+     * Post the action and let it process asynchronously.
+     * The default implementation just delegates to {@link #doAction}
+     * in a separate thread and returns immediately.
+     *
+     * @param action The action to post
+     * @param actionPerformedNotifier run this notifier after the action is
+     *        done.
+     * @since 1.5
+     */
+    public void postAction (final Object action,
+                            final Runnable actionPerformedNotifier) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    doAction(action);
+                } finally {
+                    actionPerformedNotifier.run();
+                }
+            }
+        });
+    }
+    
 }
 

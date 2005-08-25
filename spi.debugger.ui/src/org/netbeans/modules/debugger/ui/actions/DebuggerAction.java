@@ -39,9 +39,8 @@ public abstract class DebuggerAction extends AbstractAction {
     public abstract Object getAction ();
     
     public void actionPerformed (ActionEvent evt) {
-        getCurrentActionsManager ().doAction (
-                getAction ()
-            );
+        // Post the action asynchronously, since we're on AWT
+        getCurrentActionsManager().postAction(getAction());
     }
         
     private static ActionsManager getCurrentActionsManager () {

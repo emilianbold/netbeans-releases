@@ -155,6 +155,26 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="DebuggerCoreAPI"/>
+        <summary>Debugger actions can be posted asynchronously.</summary>
+        <version major="1" minor="5"/>
+        <date day="24" month="8" year="2005"/>
+        <author login="mentlicher"/>
+        <compatibility>
+            <p>
+                Compatile change.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                Added methods:
+                <code>ActionsManager.postAction(Object)</code>, 
+                <code>ActionsProvider.postAction(Object, Runnable)</code>,
+                These can be used to call and implement asynchronous actions.
+            </p>
+        </description>
+    </change>
 
 </changes>
 

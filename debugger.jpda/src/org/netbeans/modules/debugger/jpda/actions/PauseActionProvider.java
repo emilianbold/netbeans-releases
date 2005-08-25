@@ -61,10 +61,26 @@ implements Runnable {
 
     public void doAction (Object action) {
         doingAction = true;
+        try {
+            ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
+        } finally {
+            doingAction = false;
+        }
+    }
+    
+    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+        doingAction = true;
         doLazyAction(new Runnable() {
             public void run() {
-                ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
-                doingAction = false;
+                try {
+                    ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
+                } finally {
+                    try {
+                        actionPerformedNotifier.run();
+                    } finally {
+                        doingAction = false;
+                    }
+                }
             }
         });
     }

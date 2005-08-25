@@ -89,44 +89,57 @@ implements Executor {
     }
     
     public void doAction (final Object action) {
+        runAction(action);
+    }
+    
+    public void postAction(final Object action,
+                           final Runnable actionPerformedNotifier) {
         doLazyAction(new Runnable() {
             public void run() {
-                synchronized (getDebuggerImpl ().LOCK) {
-                    //S ystem.out.println("\nStepAction.doAction");
-                    try {
-                        // 1) init info about current state & remove old
-                        //    requests in the current thread
-                        ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
-                            getCurrentThread ()).getThreadReference ();
-                        removeStepRequests (tr);
-
-                        // 2) create new step request
-                        VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
-                        if (vm == null) return ; // There's nothing to do without the VM.
-                        stepRequest = vm.eventRequestManager ().createStepRequest (
-                                tr,
-                                StepRequest.STEP_LINE,
-                                getJDIAction (action)
-                            );
-                        stepRequest.addCountFilter (1);
-                        getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
-                        stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
-                        stepRequest.enable ();
-                        if (verbose)
-                            System.out.println("JDI Request: " + stepRequest);
-
-                        // 3) resume JVM
-                        getDebuggerImpl ().resume ();
-                    } catch (VMDisconnectedException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.USER,
-                            ErrorManager.getDefault().annotate(e,
-                                NbBundle.getMessage(StepActionProvider.class,
-                                    "VMDisconnected")));
-                    }   
-                    //S ystem.out.println("/nStepAction.doAction end");
+                try {
+                    runAction(action);
+                } finally {
+                    actionPerformedNotifier.run();
                 }
             }
         });
+    }
+    
+    public void runAction(final Object action) {
+        synchronized (getDebuggerImpl ().LOCK) {
+            //S ystem.out.println("\nStepAction.doAction");
+            try {
+                // 1) init info about current state & remove old
+                //    requests in the current thread
+                ThreadReference tr = ((JPDAThreadImpl) getDebuggerImpl ().
+                    getCurrentThread ()).getThreadReference ();
+                removeStepRequests (tr);
+
+                // 2) create new step request
+                VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
+                if (vm == null) return ; // There's nothing to do without the VM.
+                stepRequest = vm.eventRequestManager ().createStepRequest (
+                        tr,
+                        StepRequest.STEP_LINE,
+                        getJDIAction (action)
+                    );
+                stepRequest.addCountFilter (1);
+                getDebuggerImpl ().getOperator ().register (stepRequest, StepActionProvider.this);
+                stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
+                stepRequest.enable ();
+                if (verbose)
+                    System.out.println("JDI Request: " + stepRequest);
+
+                // 3) resume JVM
+                getDebuggerImpl ().resume ();
+            } catch (VMDisconnectedException e) {
+                ErrorManager.getDefault().notify(ErrorManager.USER,
+                    ErrorManager.getDefault().annotate(e,
+                        NbBundle.getMessage(StepActionProvider.class,
+                            "VMDisconnected")));
+            }   
+            //S ystem.out.println("/nStepAction.doAction end");
+        }
     }
     
     protected void checkEnabled (int debuggerState) {

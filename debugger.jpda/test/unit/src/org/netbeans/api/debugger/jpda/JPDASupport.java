@@ -172,6 +172,23 @@ public class JPDASupport implements DebuggerManagerListener {
         waitState (JPDADebugger.STATE_STOPPED);
     }
 
+    public void stepAsynch (final Object actionAsynch, final ActionsManagerListener al) {
+        if (jpdaDebugger.getState () != JPDADebugger.STATE_STOPPED)
+            throw new IllegalStateException ();
+        debuggerEngine.getActionsManager().addActionsManagerListener(
+                new ActionsManagerListener() {
+                    public void actionPerformed(Object action) {
+                        if (action != actionAsynch) return ;
+                        al.actionPerformed(action);
+                        debuggerEngine.getActionsManager().removeActionsManagerListener(this);
+                    }
+                    public void actionStateChanged(Object action, boolean enabled) {
+                    }
+                }
+        );
+        debuggerEngine.getActionsManager ().postAction (actionAsynch);
+    }
+
     public void doFinish () {
         if (jpdaDebugger == null) return;
         debuggerEngine.getActionsManager ().

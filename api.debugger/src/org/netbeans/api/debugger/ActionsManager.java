@@ -19,6 +19,7 @@ import java.util.*;
 
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
+import org.openide.util.Task;
 
 /** 
  * Manages some set of actions. Loads some set of ActionProviders registerred 
@@ -131,8 +132,77 @@ public final class ActionsManager {
         }
         doiingDo = false;
         if (destroy) destroyIn ();
-    }    
+    }
     
+    /**
+     * Post action on this DebbuggerEngine.
+     * This method does not block till the action is done,
+     * if {@link #canPostAsynchronously} returns true.
+     * Otherwise it behaves like {@link #doAction}.
+     * The returned taks, or
+     * {@link ActionsManagerListener} can be used to
+     * be notified when the action is done.
+     *
+     * @param action action constant (default set of constanct are defined
+     *    in this class with ACTION_ prefix)
+     *
+     * @return a task, that can be checked for whether the action finished
+     *         or not.
+     *
+     * @since 1.5
+     */
+    public final Task postAction(final Object action) {
+        doiingDo = true;
+        ArrayList l;
+        synchronized (actionProvidersLock) {
+            if (actionProviders == null) initActionImpls ();
+            l = (ArrayList) actionProviders.get (action);
+            if (l != null) {
+                l = (ArrayList) l.clone ();
+            }
+        }
+        boolean posted = false;
+        final AsynchActionTask task = new AsynchActionTask();
+        if (l != null) {
+            int i, k = l.size ();
+            List postedActions = new ArrayList(k);
+            for (i = 0; i < k; i++) {
+                ActionsProvider ap = (ActionsProvider) l.get (i);
+                if (ap.isEnabled (action)) {
+                    postedActions.add(ap);
+                    posted = true;
+                }
+            }
+            if (posted) {
+                final int[] count = new int[] { 0 };
+                Runnable notifier = new Runnable() {
+                    public void run() {
+                        synchronized (count) {
+                            if (--count[0] == 0) {
+                                task.actionDone();
+                                fireActionDone (action);
+                                doiingDo = false;
+                                if (destroy) destroyIn ();
+                            }
+                        }
+                    }
+                };
+                count[0] = k = postedActions.size();
+                for (i = 0; i < k; i++) {
+                    ((ActionsProvider) postedActions.get (i)).postAction (
+                            action, notifier
+                    );
+                }
+            }
+        }
+        if (!posted) {
+            doiingDo = false;
+            if (destroy) destroyIn ();
+            task.actionDone();
+        }
+        return task;
+    }
+                                                                                
     /**
      * Returns true if given action can be performed on this DebuggerEngine.
      * 
@@ -362,6 +432,12 @@ public final class ActionsManager {
 
     
     // innerclasses ............................................................
+    
+    private static class AsynchActionTask extends Task {
+        void actionDone() {
+            notifyFinished();
+        }
+    }
     
     class MyActionListener implements ActionsProviderListener {
         public void actionStateChange (Object action, boolean enabled) {

@@ -60,10 +60,26 @@ implements Runnable {
     
     public void doAction (Object action) {
         doingAction = true;
+        try {
+            getDebuggerImpl ().resume ();
+        } finally {
+            doingAction = false;
+        }
+    }
+    
+    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+        doingAction = true;
         doLazyAction(new Runnable() {
             public void run() {
-                getDebuggerImpl ().resume ();
-                doingAction = false;
+                try {
+                    getDebuggerImpl ().resume ();
+                } finally {
+                    try {
+                        actionPerformedNotifier.run();
+                    } finally {
+                        doingAction = false;
+                    }
+                }
             }
         });
     }

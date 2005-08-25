@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
  * @author  Jan Jancura
  */
 public class StepIntoActionProvider extends JPDADebuggerActionProvider 
-implements Executor, Runnable, PropertyChangeListener {
+implements Executor, PropertyChangeListener {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
     private static final boolean ssverbose = 
@@ -86,10 +86,22 @@ implements Executor, Runnable, PropertyChangeListener {
     }
     
     public void doAction (Object action) {
-        doLazyAction(this);
+        runAction();
     }
     
-    public void run() {
+    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+        doLazyAction(new Runnable() {
+            public void run() {
+                try {
+                    runAction();
+                } finally {
+                    actionPerformedNotifier.run();
+                }
+            }
+        });
+    }
+    
+    public void runAction() {
         synchronized (getDebuggerImpl ().LOCK) {
             if (ssverbose)
                 System.out.println("\nSS:  STEP INTO !!! *************");
