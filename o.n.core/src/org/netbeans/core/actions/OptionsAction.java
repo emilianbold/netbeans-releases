@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -41,10 +42,12 @@ import javax.swing.border.Border;
 import javax.swing.table.JTableHeader;
 import org.netbeans.core.NbMainExplorer;
 import org.netbeans.core.NbPlaces;
+import org.netbeans.core.NbTopManager;
 import org.netbeans.core.projects.SettingChildren;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
@@ -61,6 +64,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.windows.TopComponent;
@@ -102,6 +106,25 @@ public class OptionsAction extends CallableSystemAction {
                         DialogDescriptor.DEFAULT_ALIGN,
                         getHelpCtx (),
                         null);
+                    
+                    // HACK: switch back to new options dialog hack
+                    String name = (String) OptionsAction.this.getValue 
+                        ("additionalActionName");
+                    if (name != null) {
+                        ActionListener actionListener = (ActionListener) 
+                            OptionsAction.this.getValue ("additionalActionListener");
+                        JButton additionalButton = new JButton ();
+                        Mnemonics.setLocalizedText (additionalButton, name);
+                        additionalButton.addActionListener (new ActionListener () {
+                            public void actionPerformed (ActionEvent e) {
+                                Dialog dialog = (Dialog) dialogWRef.get ();
+                                dialog.setVisible (false);
+                            }
+                        });
+                        additionalButton.addActionListener (actionListener);
+                        dd.setAdditionalOptions (new Object[] {additionalButton});
+                    }
+                    // end of HACK
 
                     // #37673
                     optionPanel.setDialogDescriptor(dd);
@@ -115,7 +138,7 @@ public class OptionsAction extends CallableSystemAction {
                 
                 StatusDisplayer.getDefault().setStatusText(""); // NOI18N
             }
-        });
+        }); // EQ.iL
     }
     
     protected boolean asynchronous() {
