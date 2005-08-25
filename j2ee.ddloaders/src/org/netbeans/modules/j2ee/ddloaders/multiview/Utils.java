@@ -323,6 +323,9 @@ public class Utils {
         String name = ejb.getDefaultDisplayName();
         if (name == null) {
             name = ejb.getEjbName();
+            if (name == null) {
+                name = " ";  // NOI18N
+            }
         }
         return name;
     }
