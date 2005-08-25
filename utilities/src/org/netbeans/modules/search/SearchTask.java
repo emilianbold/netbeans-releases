@@ -22,6 +22,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
@@ -34,7 +35,7 @@ import org.openidex.search.SearchType;
  * @author  Peter Zavadsky
  * @author  Marian Petras
  */
-final class SearchTask implements Runnable {
+final class SearchTask implements Runnable, Cancellable {
 
     /** nodes to search */
     private final Node[] nodes;
@@ -79,7 +80,7 @@ final class SearchTask implements Runnable {
     public void run() {
         
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
-                NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"));
+                NbBundle.getMessage(ResultView.class,"TEXT_SEARCHING___"), this);
         progressHandle.start();
         
         /* Start the actual search: */
@@ -173,6 +174,18 @@ final class SearchTask implements Runnable {
         }
     }
     
+    /** 
+     * Cancel processing of the task. 
+     *
+     * @return true if the task was succesfully cancelled, false if job
+     *         can't be cancelled for some reason
+     * @see org.openide.util.Cancellable#cancel
+     */
+    public boolean cancel() {
+        stop();
+        return true;
+    }
+
     /**
      * Returns value of attribute <code>notifyWhenFinished</code>.
      *
