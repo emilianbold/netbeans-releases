@@ -71,11 +71,22 @@ public class OptionsWindowAction extends AbstractAction {
 
     public void actionPerformed (ActionEvent evt) {     
         Object source = evt.getSource ();
-        System.out.println(evt);
         if (source == DialogDescriptor.OK_OPTION) {
             OptionsPanel op = (OptionsPanel) optionsPanel.get ();
             Dialog d = (Dialog) dialog.get ();
             op.save ();
+            index = op.getCurrentIndex ();
+            d.setVisible (false);
+            dialog = null;
+        } else
+//        if (evt.getActionCommand ().equals ("Apply")) {
+//            optionsPanel.save ();
+//            optionsPanel = null;
+//        } else
+        if (source == DialogDescriptor.CANCEL_OPTION) {
+            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
+            Dialog d = (Dialog) dialog.get ();
+            op.cancel ();
             index = op.getCurrentIndex ();
             d.setVisible (false);
             dialog = null;
@@ -107,37 +118,9 @@ public class OptionsWindowAction extends AbstractAction {
                     }
                 );
                 a.performAction ();
-//                clz.getMethod ("putValue", new Class [] {String.class, Object.class}).
-//                    invoke (a, new Object [] {"additionalActionName", loc ("Modern")});
-//                clz.getMethod ("putValue", new Class [] {String.class, Object.class}).
-//                    invoke (a, new Object [] {"additionalActionListener", 
-//                    new ActionListener () {
-//                        public void actionPerformed (ActionEvent e) {
-//                            RequestProcessor.getDefault ().post (new Runnable () {
-//                                public void run () {
-//                                    OptionsWindowAction.this.actionPerformed 
-//                                        (new ActionEvent (this, 0, "Open"));
-//                                }
-//                            });
-//                        }
-//                    }
-//                });
-//                clz.getMethod ("performAction", new Class [0]).invoke (a, new Object [0]);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else
-//        if (evt.getActionCommand ().equals ("Apply")) {
-//            optionsPanel.save ();
-//            optionsPanel = null;
-//        } else
-        if (source == DialogDescriptor.CANCEL_OPTION) {
-            OptionsPanel op = (OptionsPanel) optionsPanel.get ();
-            Dialog d = (Dialog) dialog.get ();
-            op.cancel ();
-            index = op.getCurrentIndex ();
-            d.setVisible (false);
-            dialog = null;
         } else {
 //            JButton bApply = (JButton) loc (new JButton (), "Apply");
 //            bApply.setActionCommand ("Classic");                      //NOI18N
