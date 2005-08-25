@@ -53,7 +53,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
         modelSynchronizer.requestUpdateData();
     }
 
-    public ModelSynchronizer getModelSynchronizer() {
+    public XmlMultiViewDataSynchronizer getModelSynchronizer() {
         return modelSynchronizer;
     }
 
@@ -91,7 +91,7 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     public void writeModel(RootInterface model, FileLock dataLock) {
-        ModelSynchronizer synchronizer = getModelSynchronizer();
+        ModelSynchronizer synchronizer = (ModelSynchronizer) getModelSynchronizer();
         if (model == synchronizer.getModel()) {
             synchronizer.updateData(dataLock, false);
         } else {
