@@ -243,7 +243,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 12);
         add(jScrollPane1, gridBagConstraints);
 
         buttonsPanel.setLayout(new java.awt.BorderLayout());
@@ -269,23 +269,23 @@ public class AddAttributesPanel extends javax.swing.JPanel
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 12);
         add(buttonsPanel, gridBagConstraints);
 
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
         stateLabel.setName("stateLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 12);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(stateLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

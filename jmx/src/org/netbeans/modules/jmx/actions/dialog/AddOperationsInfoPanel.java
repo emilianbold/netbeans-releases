@@ -61,7 +61,7 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
         
         infoTextArea.setText(
                 bundle.getString("LBL_OpMethodsAlreadyExist_begin") +  // NOI18N
-                mbeanClassName + ".\n" + // NOI18N
+                mbeanClassName + " " + bundle.getString("LBL_OpMethodsAlreadyExist_begin2") + // NOI18N
                 mbeanClassName + 
                 bundle.getString("LBL_OpMethodsAlreadyExist_middle") + // NOI18N
                 mbeanClassName + " " +  // NOI18N

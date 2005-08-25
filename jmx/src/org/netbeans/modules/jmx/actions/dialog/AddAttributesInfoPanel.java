@@ -60,7 +60,7 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
         
         infoTextArea.setText(
                 bundle.getString("LBL_AttrMethodsAlreadyExist_begin") +  // NOI18N
-                mbeanClassName + ".\n" + // NOI18N
+                mbeanClassName + " " + bundle.getString("LBL_AttrMethodsAlreadyExist_begin2") +  // NOI18N
                 mbeanClassName + 
                 bundle.getString("LBL_AttrMethodsAlreadyExist_middle") + // NOI18N
                 mbeanClassName + " " +  // NOI18N
