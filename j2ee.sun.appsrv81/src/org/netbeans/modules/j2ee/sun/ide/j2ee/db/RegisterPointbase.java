@@ -114,9 +114,19 @@ public class RegisterPointbase implements DatabaseRuntime {
         try{
             unzip(this.getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/j2ee/sun/ide/j2ee/db/pointbasescripts.zip") , new File(dest));
             copyFile(new File(installRoot+"/pointbase/databases/sample.dbn"), new File(dest+"/pointbase/databases/sample.dbn"));
-            copyFile(new File(installRoot+"/pointbase/databases/sample$1.wal"), new File(dest+"/pointbase/databases/sample$1.wal"));
             copyFile(new File(installRoot+"/pointbase/databases/sun-appserv-samples.dbn"), new File(dest+"/pointbase/databases/sun-appserv-samples.dbn"));
-            copyFile(new File(installRoot+"/pointbase/databases/sun-appserv-samples$1.wal"), new File(dest+"/pointbase/databases/sun-appserv-samples$1.wal"));
+            try {
+                copyFile(new File(installRoot+"/pointbase/databases/sample$2.wal"), new File(dest+"/pointbase/databases/sample$2.wal"));
+                copyFile(new File(installRoot+"/pointbase/databases/sun-appserv-samples$2.wal"), new File(dest+"/pointbase/databases/sun-appserv-samples$2.wal"));
+            } catch(java.io.FileNotFoundException e){// UR 1 is different than UR2 there see bug 6309618
+                try {
+                    copyFile(new File(installRoot+"/pointbase/databases/sample$1.wal"), new File(dest+"/pointbase/databases/sample$1.wal"));
+                    copyFile(new File(installRoot+"/pointbase/databases/sun-appserv-samples$1.wal"), new File(dest+"/pointbase/databases/sun-appserv-samples$1.wal"));
+                } catch(java.io.FileNotFoundException ee){
+                    //continue the logic.
+                }
+            }
+        
 
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(dest+"/pointbase/tools/serveroption/pbenv.bat"));
             PrintStream ps = new PrintStream(bos);            
