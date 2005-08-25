@@ -84,6 +84,16 @@ public class TreeModelNode extends AbstractNode {
         this.model = model;
         this.treeModelRoot = treeModelRoot;
         this.object = object;
+        
+        // <RAVE>
+        // Use the modified CompoundModel class's field to set the 
+        // propertiesHelpID for properties sheets if the model's helpID
+        // has been set
+        if (model.getHelpId() != null) {
+            this.setValue("propertiesHelpID", model.getHelpId()); // NOI18N
+        }
+        // </RAVE>
+        
         treeModelRoot.registerNode (object, this); 
         refreshNode ();
         initProperties ();

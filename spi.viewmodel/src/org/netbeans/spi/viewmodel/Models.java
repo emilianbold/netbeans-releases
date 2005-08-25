@@ -118,6 +118,19 @@ public final class Models {
      * @return {@link CompoundModel} encapsulating given list of models
      */
     public static CompoundModel createCompoundModel (List models) {
+        return createCompoundModel(models, null);
+    }
+    
+    /**
+     * Creates one {@link CompoundModel} from given list of models.
+     * 
+     * @param models a list of models
+     * @param propertiesHelpID The help ID, which is set for the properties
+     *        sheets created from this model.
+     * @return {@link CompoundModel} encapsulating given list of models
+     * @since 1.7
+     */
+    public static CompoundModel createCompoundModel (List models, String propertiesHelpID) {
         List treeModels;
         List treeModelFilters;
         List treeExpansionModels;
@@ -242,7 +255,8 @@ public final class Models {
             createCompoundTableModel (
                 new DelegatingTableModel (tableModels),
                 tableModelFilters
-            )
+            ),
+            propertiesHelpID
         );
     }
     
@@ -2093,8 +2107,13 @@ public final class Models {
         private ColumnModel[]   columnModels;
         private TableModel      tableModel;
         private TreeExpansionModel treeExpansionModel;
-
-
+        
+        // <RAVE>
+        // New field, setter/getter for propertiesHelpID, which is used
+        // for property sheet help
+        private String propertiesHelpID = null;
+        // </RAVE>
+        
         // init ....................................................................
 
         /**
@@ -2111,7 +2130,8 @@ public final class Models {
             NodeModel nodeModel, 
             NodeActionsProvider nodeActionsProvider,
             List columnModels,
-            TableModel tableModel
+            TableModel tableModel,
+            String propertiesHelpID
         ) {
             if (treeModel == null) throw new NullPointerException ();
             if (treeModel == null) throw new NullPointerException ();
@@ -2127,8 +2147,20 @@ public final class Models {
             this.columnModels = (ColumnModel[]) columnModels.toArray (
                 new ColumnModel [columnModels.size ()]
             );
+            this.propertiesHelpID = propertiesHelpID;
         }
 
+        // <RAVE>
+        /**
+         * Get a help ID for this model.
+         * @return The help ID defined for the properties sheets,
+         *         or <code>null</code>.
+         * @since 1.7
+         */
+        public String getHelpId() {
+            return propertiesHelpID;
+        }
+        // </RAVE>
 
         // TreeModel ...............................................................
 

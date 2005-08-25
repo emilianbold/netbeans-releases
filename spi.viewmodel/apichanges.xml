@@ -183,6 +183,24 @@ Microsystems, Inc. All Rights Reserved.
         <class package="org.netbeans.spi.viewmodel" name="ModelEvent" />
         <issue number="60499"/>
     </change>
+    <change>
+        <api name="ViewModelAPI"/>
+        <summary>CompoundModel enhanced with a possibility to set help ID.</summary>
+        <version major="1" minor="7"/>
+        <date day="25" month="8" year="2005"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deletion="no" addition="yes" modification="no"/>
+        <description>
+            In order to have a help ID defined for the GUI component that is
+            created from the compound model, it's necessary to be able to set
+            that help ID on the compound model instance.
+            Two methods are added for that purpose:
+            <code>CompoundModel Models.createCompoundModel (List, String)</code>
+            and <code>String CompoundModel.getHelpId()</code>.
+        </description>
+        <class package="org.netbeans.spi.viewmodel" name="Models" />
+        <issue number="62617"/>
+    </change>
     
 
 </changes>
