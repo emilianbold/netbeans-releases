@@ -88,6 +88,9 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
     protected synchronized void loadSettings(boolean propagate){
+        if (base.usesNewOptionsDialog()){
+            return;
+        }
         Document doc = dom;
         Element rootElement = doc.getDocumentElement();
         
@@ -155,6 +158,9 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected synchronized void updateSettings(Map changedProp){
+        if (base.usesNewOptionsDialog()){
+            return;
+        }
         // put changed properties to local map
         properties.putAll(changedProp);
         

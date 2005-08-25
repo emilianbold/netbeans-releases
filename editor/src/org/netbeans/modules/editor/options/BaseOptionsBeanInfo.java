@@ -30,6 +30,7 @@ import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent.KeyBinding;
 
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
 import org.netbeans.editor.BaseCaret;
@@ -186,13 +187,32 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         
         setExpert(EXPERT_PROP_NAMES);
 
-        setHidden(new String[] {
-            BaseOptions.EXPAND_TABS_PROP,
-            BaseOptions.SPACES_PER_TAB_PROP,
-            BaseOptions.OPTIONS_VERSION_PROP,
-            BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
-            BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP
-        });
+        boolean usesNewOptions = false;
+        BaseOptions base = (BaseOptions) SharedClassObject.findObject(getBeanClass());
+        if (base!=null){
+            usesNewOptions = base.usesNewOptionsDialog();
+        }
+        
+        String hidden[] = (usesNewOptions) ?
+                new String[] {
+                    BaseOptions.EXPAND_TABS_PROP,
+                    BaseOptions.SPACES_PER_TAB_PROP,
+                    BaseOptions.OPTIONS_VERSION_PROP,
+                    BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
+                    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP,
+                    BaseOptions.COLORING_MAP_PROP,
+                    BaseOptions.FONT_SIZE_PROP,
+                    BaseOptions.KEY_BINDING_LIST_PROP,
+                } :
+                new String[] {
+                    BaseOptions.EXPAND_TABS_PROP,
+                    BaseOptions.SPACES_PER_TAB_PROP,
+                    BaseOptions.OPTIONS_VERSION_PROP,
+                    BaseOptions.CARET_ITALIC_INSERT_MODE_PROP,
+                    BaseOptions.CARET_ITALIC_OVERWRITE_MODE_PROP
+                } ;
+        
+        setHidden(hidden);
 
     }
 

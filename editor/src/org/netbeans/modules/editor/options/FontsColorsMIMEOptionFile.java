@@ -69,6 +69,9 @@ public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
      protected synchronized void loadSettings(boolean propagate){
+        if (base.usesNewOptionsDialog()){
+            return;
+        }
         Document doc = dom;
         Element rootElement = doc.getDocumentElement();
         

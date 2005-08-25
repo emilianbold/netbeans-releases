@@ -18,6 +18,8 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.io.IOException;
 import java.io.ObjectInput;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +27,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Enumeration;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
 import java.awt.Toolkit;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -45,6 +51,9 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
 import org.netbeans.modules.editor.SimpleIndentEngine;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
+import org.netbeans.modules.editor.settings.storage.api.KeyBindingSettings;
 
 import org.openide.options.SystemOption;
 //import org.openide.util.HelpCtx;
@@ -55,6 +64,8 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import java.io.ObjectOutput;
 import org.openide.nodes.FilterNode;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
@@ -207,6 +218,10 @@ public class BaseOptions extends OptionSupport {
     private transient Map defaultMacrosMap;
     private transient Map defaultKeyBindingsMap;
     private transient MIMEOptionFolder settingsFolder;
+    private transient boolean usingNewOptions = false;
+    private transient FontColorSettings fontColorSettings;    
+    private transient KeyBindingSettings keyBindingsSettings;    
+    private transient LookupListener lookupListener;
     
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
@@ -218,9 +233,32 @@ public class BaseOptions extends OptionSupport {
     
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
+        
         kitClass2Options.put(kitClass, this);
+        if (!BASE.equals(typeName)){
+            EditorSettings es = getEditorSettings();
+            if (es!=null){
+                BaseKit kit = BaseKit.getKit(kitClass);
+                String name = kit.getContentType();
+                usingNewOptions = es.getMimeTypes().contains(name);
+                //System.out.println("Using new options dialog for mimetype:"+name);
+            }
+        }
+    }
+    
+    public boolean usesNewOptionsDialog(){
+        return usingNewOptions;
     }
 
+    protected String getContentType(){
+        BaseKit kit = BaseKit.getKit(getKitClass());
+        return kit.getContentType();
+    }
+    
+    private EditorSettings getEditorSettings(){
+        return (EditorSettings) Lookup.getDefault().lookup(EditorSettings.class);        
+    }
+    
     public static BaseOptions getOptions(Class kitClass) {
         //check also all superclasses whether they are not in the 
         //kitClass2Options map
@@ -651,8 +689,10 @@ public class BaseOptions extends OptionSupport {
     }
     
     private List getKBList(){
-        loadDefaultKeyBindings();
-        loadSettings(KeyBindingsMIMEProcessor.class);
+        if (!usingNewOptions){
+            loadDefaultKeyBindings();
+            loadSettings(KeyBindingsMIMEProcessor.class);
+        } 
         
         Class kitClass = getKitClass();
         Settings.KitAndValue[] kav = getSettingValueHierarchy(SettingsNames.KEY_BINDING_LIST);
@@ -731,8 +771,137 @@ public class BaseOptions extends OptionSupport {
         super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
     }
     
+    static Font toFont (AttributeSet s) {
+        if (s.getAttribute (StyleConstants.FontFamily) == null) return null;
+	int style = 0;
+	if (s.getAttribute (StyleConstants.Bold) != null &&
+            s.getAttribute (StyleConstants.Bold).equals (Boolean.TRUE)
+        )
+	    style += Font.BOLD;
+	if (s.getAttribute (StyleConstants.Italic) != null &&
+            s.getAttribute (StyleConstants.Italic).equals (Boolean.TRUE)
+        )
+	    style += Font.ITALIC;
+	return new Font (
+	    (String) s.getAttribute (StyleConstants.FontFamily), 
+	    style,
+	    ((Integer) s.getAttribute (StyleConstants.FontSize)).intValue ()
+	);
+    }
+    
+    private void updateKeybindingsFromNewOptionsDialogAttributes(){
+        KeyBindingSettings kbs = getKeybindingSettings();
+        if (kbs == null){
+            return;
+        }
+        List newKeybs = new ArrayList();
+        List newOptionDialogKeybs = kbs.getKeyBindings();
+        // convert to editor's MultiKeyBinding
+        for (int i=0; i<newOptionDialogKeybs.size(); i++){
+            org.netbeans.api.editor.settings.MultiKeyBinding mkb = 
+            (org.netbeans.api.editor.settings.MultiKeyBinding) newOptionDialogKeybs.get(i);
+            List lst = mkb.getKeyStrokeList();
+            KeyStroke keys[] = new KeyStroke[lst.size()];
+            lst.toArray(keys);
+            MultiKeyBinding editorMkb = new MultiKeyBinding(keys, mkb.getActionName());
+            newKeybs.add(editorMkb);
+        }
+        super.setSettingValue(SettingsNames.KEY_BINDING_LIST, newKeybs, KEY_BINDING_LIST_PROP);
+    }
+    
+    private void updateColoringsFromNewOptionsDialogAttributes(){
+        Map m = getColoringMap ();
+        m.remove(null);
+        FontColorSettings fcs = getFontColorSettings();
+        if (fcs == null){
+            return;
+        }
+        Iterator it = m.keySet ().iterator ();
+        while (it.hasNext ()) {
+            String category = (String) it.next ();
+	    if (category == null) continue;
+            AttributeSet as = fcs.getTokenFontColors (category);
+	    if (as == null) 
+		as = fcs.getFontColors (category);
+	    if (as == null) {
+		System.out.println("ColorBridge.unknown category " + category);
+                continue;
+	    }
+	    Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
+                toFont (as) : null;
+	    if (category.equals ("default")) { //NOI18N
+		if (font == null) {
+		    System.out.println("ColorBridge null font!!! ");
+		    continue;		
+		}
+		if (as.getAttribute (StyleConstants.Foreground) == null) {
+		    System.out.println("ColorBridge null Foreground!!! ");
+		    continue;		
+		}
+		if (as.getAttribute (StyleConstants.Background) == null) {
+		    System.out.println("ColorBridge null Background!!! ");
+		    continue;		
+		}
+	    }
+            Coloring c = new Coloring (
+                font,
+                Coloring.FONT_MODE_DEFAULT,
+                (Color) as.getAttribute (StyleConstants.Foreground),
+                (Color) as.getAttribute (StyleConstants.Background),
+                (Color) as.getAttribute (StyleConstants.Underline),
+                (Color) as.getAttribute (StyleConstants.StrikeThrough),
+                (Color) as.getAttribute (EditorStyleConstants.WaveUnderlineColor)
+            );
+            m.put (category, c);
+//	    if (category.equals ("java-block-comment"))
+//		System.out.println("  java-block-comment " + as.getAttribute (StyleConstants.Foreground));
+        }
+        m.put(null, getKitClass().getName() ); // add kit class                               
+        setColoringMap (m);
+    }
+
+    private synchronized KeyBindingSettings getKeybindingSettings(){
+        if (keyBindingsSettings == null){
+            String mime = getContentType();
+            MimeLookup lookup = MimeLookup.getMimeLookup(mime);    
+            Lookup.Result result = lookup.lookup(new Lookup.Template(KeyBindingSettings.class));
+            Collection inst = result.allInstances();
+            lookupListener = new LookupListener(){
+                public void resultChanged(LookupEvent ev){
+                    updateKeybindingsFromNewOptionsDialogAttributes();
+                }
+            };
+            result.addLookupListener(lookupListener);
+            if (inst.size() > 0){
+                keyBindingsSettings = (KeyBindingSettings)inst.iterator().next();
+            }
+        }
+        return keyBindingsSettings;
+    }
+    
+    private synchronized FontColorSettings getFontColorSettings(){
+        if (fontColorSettings == null){
+            String mime = getContentType();
+            MimeLookup lookup = MimeLookup.getMimeLookup(mime);    
+            Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
+            Collection inst = result.allInstances();
+            lookupListener = new LookupListener(){
+                public void resultChanged(LookupEvent ev){
+                    updateColoringsFromNewOptionsDialogAttributes();
+                }
+            };
+            result.addLookupListener(lookupListener);
+            if (inst.size() > 0){
+                fontColorSettings = (FontColorSettings)inst.iterator().next();
+            }
+        }
+        return fontColorSettings;
+    }
+    
     public Map getColoringMap() {
-        loadSettings(FontsColorsMIMEProcessor.class);
+        if (!usingNewOptions){
+            loadSettings(FontsColorsMIMEProcessor.class);
+        } 
         Map settingsMap = SettingsUtil.getColoringMap(getKitClass(), false, true); // !!! !evaluateEvaluators
         if (settingsMap == null){
             org.netbeans.editor.Utilities.annotateLoggable(new NullPointerException("settingsMap is null for kit:"+getKitClass())); //NOI18N
@@ -767,7 +936,7 @@ public class BaseOptions extends OptionSupport {
                 //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
             }
             
-            if (saveToXML){
+            if (!usingNewOptions && saveToXML){
                 diffMap = OptionUtilities.getMapDiff(getColoringMap(),coloringMap,false);
                 if (diffMap.size()>0){
                     // settings has changed, write changed settings to XML file
@@ -1444,6 +1613,9 @@ public class BaseOptions extends OptionSupport {
      *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
      */
     private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
+        if (usingNewOptions && processor == FontsColorsMIMEProcessor.class){
+            return;
+        }
         MIMEOptionFile fileX;
         MIMEOptionFolder mimeFolder;
         if (BASE.equals(getTypeName())){
@@ -1519,10 +1691,18 @@ public class BaseOptions extends OptionSupport {
     
     /** Load all available settings from XML files and initialize them */
     protected void loadXMLSettings(){
-        getKeyBindingList();
+        if (usingNewOptions){
+            updateKeybindingsFromNewOptionsDialogAttributes();
+        } else {
+            getKeyBindingList();
+        }
         getAbbrevMap();
         getMacroMap();
-        loadSettings(FontsColorsMIMEProcessor.class);
+        if (usingNewOptions){
+            updateColoringsFromNewOptionsDialogAttributes();
+        } else {
+            loadSettings(FontsColorsMIMEProcessor.class);
+        }
         loadSettings(PropertiesMIMEProcessor.class);
     }
 
