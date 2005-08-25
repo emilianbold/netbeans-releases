@@ -7,23 +7,36 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
-import java.lang.ref.Reference;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.io.*;
-import java.util.*;
-
-import org.xml.sax.SAXParseException;
-
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.WeakHashMap;
+import org.netbeans.core.startup.TopLogging;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXParseException;
 
 /** This is the implementation of the famous exception manager.
 *
@@ -77,19 +90,14 @@ public final class NbErrorManager extends ErrorManager {
     private static final Map map = new WeakHashMap (11);
     
     /** message to print date to */
-    private static final java.text.MessageFormat EXC_HEADER = new java.text.MessageFormat (
+    private static final MessageFormat EXC_HEADER = new MessageFormat(
         "{0}*********** Exception occurred ************ at {1,time,short} on {1,date,medium}", // NOI18N
-        java.util.Locale.ENGLISH
+        Locale.ENGLISH
     );
 
     /** The writer to the log file*/
     private PrintStream logWriter;
     
-   /** assciates each thread with the lastly notified throwable
-    * (Thread, Reference (Throwable))
-    */
-    private static final Map lastException = new WeakHashMap (27);
-
     /** Minimum value of severity to write message to the log file*/
     private final int minLogSeverity;
 
@@ -113,7 +121,7 @@ public final class NbErrorManager extends ErrorManager {
             logWriter = System.err;
         }
         
-        PrintStream pw = org.netbeans.core.startup.TopLogging.getLogOutputStream();
+        PrintStream pw = TopLogging.getLogOutputStream();
         
         synchronized (this) {
             logWriter = pw;
@@ -124,7 +132,7 @@ public final class NbErrorManager extends ErrorManager {
     public synchronized Throwable annotate (
         Throwable t,
         int severity, String message, String localizedMessage,
-        Throwable stackTrace, java.util.Date date
+        Throwable stackTrace, Date date
     ) {
         Object o = map.get (t);
 
@@ -139,9 +147,6 @@ public final class NbErrorManager extends ErrorManager {
         ll.add(0,
             new Ann (severity, message, localizedMessage, stackTrace, date)
         );
-
-        // remember last exception of this thread
-        lastException.put (Thread.currentThread(), new WeakReference (t));
 
         return t;
     }
@@ -162,8 +167,6 @@ public final class NbErrorManager extends ErrorManager {
         }
         l.addAll(0, Arrays.asList(arr));
         
-        lastException.put (Thread.currentThread(), new WeakReference (t));
-
         return t;
     }
 
@@ -236,21 +239,6 @@ public final class NbErrorManager extends ErrorManager {
      */
     Exc createExc(Throwable t, int severity) {
         Annotation[] ann = findAnnotations (t);
-
-        if (ann == null) {
-            // check whether there is another annotation associated with this thread
-            // this could be useful when an exception occures during clean-up and
-            // the previous annotation could be lost
-            Reference r = (Reference)lastException.get (Thread.currentThread ());
-            if (r != null) {
-                Throwable lastT = (Throwable)r.get ();
-                if (lastT != null) {
-                    ann = findAnnotations (lastT);
-                }
-            }
-        }
-        lastException.remove (Thread.currentThread ());
-
         return new Exc (t, severity, ann, findAnnotations0(t, true, new HashSet()));
     }
 
