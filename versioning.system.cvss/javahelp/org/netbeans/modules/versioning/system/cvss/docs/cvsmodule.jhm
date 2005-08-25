@@ -3,20 +3,25 @@
 *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
-<!DOCTYPE map
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
          "http://java.sun.com/products/javahelp/map_2_0.dtd">
+
 <map version="2.0">
 
-<!-- last updated 12Feb04 -->
-
-<!-- 
-help\
-    cvsmodule\
-
-*JavaHelp metadata files*
--->
 	<mapID target="credits" url="credits.html" />
 
-	<mapID target="ctx_cvsmoduleintro" url="cvsmodule/ctx_cvsmoduleintro.html" />
+	<!--<mapID target="ctx_cvsmoduleintro" url="cvsmodule/ctx_cvsmoduleintro.html" />-->
+        
+	<mapID target="cvs-lite_about" url="cvsmodule/cvs-lite_about.html" />
+	<mapID target="cvs-lite_workingwith" url="cvsmodule/cvs-lite_workingwith.html" />
+	<mapID target="cvs-lite_projects" url="cvs-lite_projects.html" />
+	<mapID target="cvs-lite_overview" url="cvsmodule/cvs-lite_overview.html" />
+	<mapID target="cvs-lite_quickref" url="cvsmodule/cvs-lite_quickref.html" />
+	<mapID target="cvs-lite_checkout" url="cvsmodule/cvs-lite_checkout.html" />
+	<mapID target="cvs-lite_commit" url="cvsmodule/cvs-lite_commit.html" />
+	<mapID target="cvs-lite_diff" url="cvsmodule/cvs-lite_diff.html" />
+	<mapID target="cvs-lite_merge" url="cvsmodule/cvs-lite_merge.html" />
+	<mapID target="cvs-lite_mergeresolve" url="cvsmodule/cvs-lite_mergeresolve.html" />
+	<mapID target="cvs-lite_setup" url="cvsmodule/cvs-lite_setup.html" />      
+        
 </map>

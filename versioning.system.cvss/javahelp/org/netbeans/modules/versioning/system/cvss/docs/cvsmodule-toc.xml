@@ -3,14 +3,23 @@
 *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
-<!DOCTYPE toc
-
-  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
-
+<!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-
-    <tocitem text="About CVS Module" target="ctx_cvsmoduleintro" />
-
+      <tocitem text="IDE Basics">
+          <tocitem text="Working with CVS-Lite">
+              <tocitem text="About CVS-Lite" target="cvs-lite_about" />
+              <tocitem text="Working with CVS-Lite in the IDE" target="cvs-lite_workingwith" /> 
+              <tocitem text="Using CVS-Lite with IDE Projects" target="cvs-lite_projects" /> 
+              <tocitem text="CVS-Lite Workflow Overview" target="cvs-lite_overview" /> 
+              <tocitem text="CVS-Lite Tasks: Quick Reference" target="cvs-lite_quickref" /> 
+              <tocitem text="Checking Out Files from a Remote Repository" target="cvs-lite_checkout" /> 
+              <tocitem text="Committing Local Changes to a Remote Repository" target="cvs-lite_commit" /> 
+              <tocitem text="Comparing File Revisions" target="cvs-lite_diff" /> 
+              <tocitem text="Merging File Revisions" target="cvs-lite_merge" /> 
+              <tocitem text="Resolving Merge Conflicts" target="cvs-lite_mergeresolve" /> 
+              <tocitem text="Setting Up CVS-Lite" target="cvs-lite_setup" /> 
+          </tocitem>
+      </tocitem>
 </toc>
