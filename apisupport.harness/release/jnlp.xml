@@ -23,11 +23,15 @@ Microsystems, Inc. All Rights Reserved.
       <title>$${app.title}</title>
       <vendor>$${app.title} vendor</vendor>
       <description>$${app.name} application</description>
+      <icon href="$${app.icon}" />
   </information>
   <security><all-permissions/></security>
   <resources>
-@RESOURCES@
+$${jnlp.resources}
   </resources>
+  <application-desc>
+    <argument>--branding</argument>
+    <argument>$${branding.token}</argument>
   <application-desc/>
 </jnlp>  
 ]]></echo>
@@ -175,6 +179,24 @@ Microsystems, Inc. All Rights Reserved.
             <property name="jnlp.signjar.password" value="${jnlp.signjar.password}"/>
         </subant>
 
+        <mkdir dir="${jnlp.dest.dir}/branding" />
+        <copy todir="${jnlp.dest.dir}/branding" flatten="true">
+            <fileset dir="${cluster}">
+                <include name="**/locale/*.jar"/>
+            </fileset>
+        </copy>
+        
+        <signjar
+            alias="${jnlp.signjar.alias}" 
+            keystore="${jnlp.signjar.keystore}" 
+            storepass="${jnlp.signjar.password}" 
+            signedjar="${jnlp.dest.dir}/app"
+        >
+            <fileset dir="${jnlp.dest.dir}/branding">
+                <include name="*_${branding.token}.jar"/>
+            </fileset>
+        </signjar>
+        
         
         <signjar 
             alias="${jnlp.signjar.alias}" 
@@ -184,10 +206,20 @@ Microsystems, Inc. All Rights Reserved.
             signedjar="${jnlp.dest.dir}/startup.jar" 
         />
         
+        <pathconvert pathsep="${line.separator}" property="jnlp.branding.jars">
+            <path>
+                <fileset dir="${jnlp.dest.dir}/branding">
+                    <include name="*_${branding.token}.jar"/>
+                </fileset>
+            </path>
+            <mapper type="regexp" from="^.*[/\\]([^/\\]+\.jar)" to="    &lt;jar href='branding/\1'/&gt;"/>
+        </pathconvert>
+        
         <echo file="${jnlp.master.dir}/resources.xml"><![CDATA[
     <j2se version="1.4+"/>
     <jar href='startup.jar'/>
     <property name='netbeans.user' value='$${user.home}/.${app.name}'/>
+    ${jnlp.branding.jars}
 ]]></echo>
         <concat append="true" destfile="${jnlp.master.dir}/resources.xml">
             <fileset dir="${jnlp.master.dir}">
@@ -197,11 +229,14 @@ Microsystems, Inc. All Rights Reserved.
         
         <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml"/>
         
+        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" />
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
-                <replacestring from="@RESOURCES@" to="${jnlp.resources}"/>
+                <replacestring from="$${jnlp.resources}" to="${jnlp.resources}"/>
                 <replacestring from="$${app.name}" to="${app.name}"/>
                 <replacestring from="$${app.title}" to="${app.title}"/>
+                <replacestring from="$${app.icon}" to="master.png"/>
+                <replacestring from="$${branding.token}" to="${branding.token}"/>
             </filterchain>
         </copy>
         <echo>Your JNLP file is generated at ${jnlp.dest.dir}/master.jnlp</echo>
