@@ -75,18 +75,20 @@ public class CheckoutExecutor extends ExecutorSupport {
             } else if (CommitInformation.REMOVED.equals(info.getType()) || CommitInformation.TO_ADD.equals(info.getType())) {
                 repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UNKNOWN;
             }
-            cache.refreshCached(info.getFile(), repositoryStatus);
-            refreshedFiles.add(info.getFile());
+            File file = FileUtil.normalizeFile(info.getFile());
+            cache.refreshCached(file, repositoryStatus);
+            refreshedFiles.add(file);
         }
         
         // refresh all command roots
         File [] files = xcmd.getFiles();
         for (int i = 0; i < files.length; i++) {
-            refreshRecursively(files[i]);
-            if (files[i].isFile()) {
-                cache.refreshCached(files[i].getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
+            File file = FileUtil.normalizeFile(files[i]);
+            refreshRecursively(file);
+            if (file.isFile()) {
+                cache.refreshCached(file.getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
-            FileObject fo = FileUtil.toFileObject(files[i]);
+            FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 fo.refresh(true);
             }
