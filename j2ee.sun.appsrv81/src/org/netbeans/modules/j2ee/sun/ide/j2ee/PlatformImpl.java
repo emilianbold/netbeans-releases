@@ -205,6 +205,7 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                 lib.setName(NbBundle.getMessage(PlatformImpl.class, "jaxrpc11")); // NOI18N
 
                 l = new ArrayList();
+                l.add(fileToUrl(new File(root, "lib/appserv-ws.jar")));
                 l.add(fileToUrl(new File(root, JAXRPC_API_JAR)));
                 l.add(fileToUrl(new File(root, JAXRPC_IMPL_JAR)));
                 l.add(fileToUrl(new File(root, COMMON_LOGGING_JAR)));
@@ -284,7 +285,8 @@ public class PlatformImpl extends J2eePlatformImpl implements PropertyChangeList
                     new File(root, "lib/saaj-api.jar"),
                     new File(root, "lib/saaj-impl.jar"),
                     new File(root, "lib/jaxrpc-api.jar"),
-                    new File(root, "lib/jaxrpc-impl.jar")
+                    new File(root, "lib/jaxrpc-impl.jar"),
+                    new File(root, "lib/appserv-ws.jar")// possibly for AS 9
                 };
             }
         }
