@@ -19,6 +19,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.lib.cvsclient.admin.StandardAdminHandler;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -27,10 +28,13 @@ import java.io.IOException;
 
 /**
  * Delete action enabled only for new local files only.
+ * It eliminates <tt>CVS/Entries</tt> scheduling if exists too.
  *
  * @author Petr Kuzel
  */
 public final class DeleteLocalAction extends AbstractSystemAction {
+
+    public static final int LOCALLY_DELETABLE_MASK = FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY;
 
     public void actionPerformed(ActionEvent ev) {
         File [] files = getContext().getFiles();
@@ -43,11 +47,13 @@ public final class DeleteLocalAction extends AbstractSystemAction {
         if (res != JOptionPane.YES_OPTION) return;
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
+            StandardAdminHandler entries = new StandardAdminHandler();
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 FileLock lock = null;
                 try {
                     lock = fo.lock();
+                    entries.removeEntry(file);
                     fo.delete(lock);
                 } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
@@ -63,7 +69,7 @@ public final class DeleteLocalAction extends AbstractSystemAction {
     }
 
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+        return LOCALLY_DELETABLE_MASK;
     }
 
     protected String getBaseName() {

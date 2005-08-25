@@ -298,7 +298,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
             FileInformation info = cache.getStatus(file);
-            if (info.getStatus() != FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+            if ((info.getStatus() & DeleteLocalAction.LOCALLY_DELETABLE_MASK) == 0 ) {
                 allLocallyNew = false;
             }
             if (info.getStatus() != FileInformation.STATUS_VERSIONED_DELETEDLOCALLY && info.getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
