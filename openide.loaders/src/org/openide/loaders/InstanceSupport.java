@@ -7,29 +7,27 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.lang.reflect.*;
-import java.io.*;
-
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
-
-// imports for findHelp:
-import java.beans.*;
-import java.security.PermissionCollection;
-import java.security.Permissions;
-import java.util.PropertyPermission;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Lookup;
 
-// Encapsulates working with classes and optimize it.
 /** An instance cookie implementation that works with files or entries.
 *
 * @author   Jan Jancura, Jaroslav Tulach
@@ -488,7 +486,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     
     /** Creates new NbClassLoader with restricted PermissionCollection
      * that contains only:
-     * java.io.FilePermission("<<ALL FILES>>", "read")
+     * java.io.FilePermission("&lt;&lt;ALL FILES>>", "read")
      * java.util.PropertyPermission("*", "read")
      *
      * @return ClassLoader
