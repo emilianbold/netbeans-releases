@@ -273,9 +273,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
       <!-- build javadoc for unsupported APIs -->
       <for-each startdir=".." target="javadoc" locations="${modules}"/>
-      <taskdef name="simplemerge" classname="org.netbeans.nbbuild.SimpleMerge" classpath="nbantext.jar"/>
-      <simplemerge topdir=".." subdir="javadoc" dest="${netbeans.javadoc.dir}" modules="${fixedmodules}"/>
-      <simplemerge topdir=".." subdir="javadoc" dest="${netbeans.javadoc.dir}" modules="${modules}"/>
       
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-xml" />
       <antcall inheritall="true" inheritrefs="true" target="javadoc-generate-html" />
