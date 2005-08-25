@@ -81,6 +81,8 @@ public abstract class LayerTestBase extends NbTestCase {
         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
             if ("-//NetBeans//DTD Filesystem 1.1//EN".equals(publicId)) {
                 return new InputSource(LayerTestBase.class.getClassLoader().getResource("org/openide/filesystems/filesystem1_1.dtd").toExternalForm());
+            } else if ("-//NetBeans//DTD Filesystem 1.0//EN".equals(publicId)) {
+                return new InputSource(LayerTestBase.class.getClassLoader().getResource("org/openide/filesystems/filesystem.dtd").toExternalForm());
             } else {
                 return null;
             }
