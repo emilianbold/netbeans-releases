@@ -36,8 +36,8 @@ public final class CodeTemplateComparator implements Comparator {
     public int compare(Object o1, Object o2) {
         CodeTemplate t1 = (CodeTemplate)o1;
         CodeTemplate t2 = (CodeTemplate)o2;
-        String n1 = t1.getAbbrevName();
-        String n2 = t2.getAbbrevName();
+        String n1 = t1.getAbbreviation();
+        String n2 = t2.getAbbreviation();
         return ignoreCase ? n1.compareToIgnoreCase(n2) : n1.compareTo(n2);
     }
     

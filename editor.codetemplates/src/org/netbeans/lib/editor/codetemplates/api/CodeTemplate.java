@@ -34,18 +34,18 @@ public final class CodeTemplate {
     
     private final CodeTemplateManagerOperation managerOperation;
     
-    private final String abbrevName;
+    private final String abbreviation;
     
     private final String description;
     
     private final String parametrizedText;
     
     CodeTemplate(CodeTemplateManagerOperation managerOperation,
-    String abbrevName, String description, String parametrizedText) {
+    String abbreviation, String description, String parametrizedText) {
         
         assert (managerOperation != null);
-        if (abbrevName == null) {
-            throw new NullPointerException("abbrevName cannot be null"); // NOI18N
+        if (abbreviation == null) {
+            throw new NullPointerException("abbreviation cannot be null"); // NOI18N
         }
         if (description == null) {
             throw new NullPointerException("description cannot be null"); // NOI18N
@@ -55,7 +55,7 @@ public final class CodeTemplate {
         }
 
         this.managerOperation = managerOperation;
-        this.abbrevName = abbrevName;
+        this.abbreviation = abbreviation;
         this.description = description;
         this.parametrizedText = parametrizedText;
     }
@@ -71,12 +71,12 @@ public final class CodeTemplate {
     }
 
     /**
-     * Get abbreviation name that triggers expansion of this code template.
+     * Get abbreviation that triggers expansion of this code template.
      *
      * @return non-null abbreviation that expands to this template.
      */
-    public String getAbbrevName() {
-        return abbrevName;
+    public String getAbbreviation() {
+        return abbreviation;
     }
 
     /**
@@ -103,7 +103,7 @@ public final class CodeTemplate {
     }
 
     public String toString() {
-        return "abbrev='" + getAbbrevName() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
+        return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
     }
     
 }

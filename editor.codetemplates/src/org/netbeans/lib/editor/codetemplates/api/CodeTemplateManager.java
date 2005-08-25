@@ -127,8 +127,8 @@ public final class CodeTemplateManager {
 
         public CodeTemplate createCodeTemplate(
         CodeTemplateManagerOperation managerOperation,
-        String abbrevName, String description, String parametrizedText) {
-            return new CodeTemplate(managerOperation, abbrevName, description, parametrizedText);
+        String abbreviation, String description, String parametrizedText) {
+            return new CodeTemplate(managerOperation, abbreviation, description, parametrizedText);
         }
         
     }

@@ -97,7 +97,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private Collection/*<CodeTemplateProcessorFactory>*/ processorFactories;
     
-    private Map abbrevName2template;
+    private Map abbrev2template;
     
     private List sortedTemplates;
     
@@ -132,11 +132,11 @@ implements LookupListener, Runnable, SettingsChangeListener {
         return unmodifiableSortedTemplates;
     }
     
-    public CodeTemplate find(String abbrevName) {
-        return (CodeTemplate)abbrevName2template.get(abbrevName);
+    public CodeTemplate find(String abbreviation) {
+        return (CodeTemplate)abbrev2template.get(abbreviation);
     }
     
-    public Collection find(String abbrevNamePrefix, boolean ignoreCase) {
+    public Collection find(String abbrevPrefix, boolean ignoreCase) {
         List result = new ArrayList();
         
         int low = 0;
@@ -144,7 +144,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
 	while (low <= high) {
 	    int mid = (low + high) >> 1;
 	    CodeTemplate t = (CodeTemplate)sortedTemplates.get(mid);
-	    int cmp = compareTextIgnoreCase(t.getAbbrevName(), abbrevNamePrefix);
+	    int cmp = compareTextIgnoreCase(t.getAbbreviation(), abbrevPrefix);
 
 	    if (cmp < 0) {
 		low = mid + 1;
@@ -160,7 +160,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
         int i = low - 1;
         while (i >= 0) {
             CodeTemplate t = (CodeTemplate)sortedTemplates.get(i);
-            int mp = matchPrefix(t.getAbbrevName(), abbrevNamePrefix);
+            int mp = matchPrefix(t.getAbbreviation(), abbrevPrefix);
             if (mp == MATCH_NO) { // not matched
                 break;
             } else if (mp == MATCH_IGNORE_CASE) { // matched when ignoring case
@@ -176,7 +176,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
         i = low;
         while (i < sortedTemplates.size()) {
             CodeTemplate t = (CodeTemplate)sortedTemplates.get(i);
-            int mp = matchPrefix(t.getAbbrevName(), abbrevNamePrefix);
+            int mp = matchPrefix(t.getAbbreviation(), abbrevPrefix);
             if (mp == MATCH_NO) { // not matched
                 break;
             } else if (mp == MATCH_IGNORE_CASE) { // matched when ignoring case
@@ -320,7 +320,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
                 if (abbrevMap != null) {
                     for (Iterator entryIt = abbrevMap.entrySet().iterator(); entryIt.hasNext();) {
                         Map.Entry entry = (Map.Entry)entryIt.next();
-                        String abbrevName = (String)entry.getKey();
+                        String abbreviation = (String)entry.getKey();
                         String abbrevText = (String)entry.getValue();
                         
                         String parametrizedText = abbrevText.replaceAll(
@@ -339,7 +339,7 @@ implements LookupListener, Runnable, SettingsChangeListener {
                         desc = htmlText.toString();
 
                         CodeTemplateDescription ctd = new CodeTemplateDescription(
-                                abbrevName, desc, parametrizedText);
+                                abbreviation, desc, parametrizedText);
                         descriptionsInstances.add(ctd);
                         
                     }
@@ -363,8 +363,8 @@ implements LookupListener, Runnable, SettingsChangeListener {
         // Construct template instances
         for (Iterator it = descriptionsInstances.iterator(); it.hasNext();) {
             CodeTemplateDescription description = (CodeTemplateDescription)it.next();
-            String abbrevName = description.getAbbrevName();
-            codeTemplates.add(api.createCodeTemplate(this, abbrevName,
+            String abbreviation = description.getAbbreviation();
+            codeTemplates.add(api.createCodeTemplate(this, abbreviation,
                     description.getDescription(), description.getParametrizedText()));
         }
         
@@ -372,14 +372,14 @@ implements LookupListener, Runnable, SettingsChangeListener {
     }
     
     private void refreshMaps(List/*<CodeTemplate>*/ codeTemplates) {
-        abbrevName2template = new HashMap(codeTemplates.size());
+        abbrev2template = new HashMap(codeTemplates.size());
         sortedTemplates = new ArrayList(codeTemplates.size());
         unmodifiableSortedTemplates = Collections.unmodifiableList(sortedTemplates);
         // Construct template instances and store them in map and sorted list
         for (Iterator it = codeTemplates.iterator(); it.hasNext();) {
             CodeTemplate template = (CodeTemplate)it.next();
-            String abbrevName = template.getAbbrevName();
-            abbrevName2template.put(abbrevName, template);
+            String abbreviation = template.getAbbreviation();
+            abbrev2template.put(abbreviation, template);
             sortedTemplates.add(template);
         }
         // Sort the templates in case insensitive order

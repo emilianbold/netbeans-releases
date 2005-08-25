@@ -26,7 +26,7 @@ import org.netbeans.api.editor.settings.CodeTemplateDescription;
  */
 public final class CodeTemplateDescription {
     
-    private final String abbrevName;
+    private final String abbreviation;
     
     private final String description;
     
@@ -36,29 +36,29 @@ public final class CodeTemplateDescription {
      * Construct code template description.
      * It can be constructed e.g. from the templates stored in an xml format.
      *
-     * @param abbrevName non-null abbreviation.
+     * @param abbreviation non-null abbreviation.
      * @param description non-null description.
      * @param parametrized non-null parametrized text.
      */
-    public CodeTemplateDescription(String abbrevName, String description, String parametrizedText) {
-        assert (abbrevName != null);
+    public CodeTemplateDescription(String abbreviation, String description, String parametrizedText) {
+        assert (abbreviation != null);
         assert (description != null);
         assert (parametrizedText != null);
-        this.abbrevName = abbrevName;
+        this.abbreviation = abbreviation;
         this.description = description;
         this.parametrizedText = parametrizedText;
     }
     
     /**
-     * Get abbreviation name that triggers expansion of this code template.
+     * Get abbreviation that triggers expansion of this code template.
      * <br>
      * It should be unique among code templates for a single mime-type
      * so that each code template can be expanded individually.
      *
      * @return non-null abbreviation that expands to this template.
      */
-    public String getAbbrevName() {
-        return abbrevName;
+    public String getAbbreviation() {
+        return abbreviation;
     }
 
     /**
@@ -85,7 +85,7 @@ public final class CodeTemplateDescription {
     }
 
     public String toString() {
-        return "abbrev='" + getAbbrevName() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
+        return "abbrev='" + getAbbreviation() + "', parametrizedText='" + getParametrizedText() + "'"; // NOI18N
     }
     
 }

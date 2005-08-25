@@ -92,7 +92,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     
     private String getLeftText() {
         if (leftText == null) {
-            leftText = toHtmlText(codeTemplate.getAbbrevName()) + "  ";
+            leftText = toHtmlText(codeTemplate.getAbbreviation()) + "  ";
         }
         return leftText;
     }
@@ -123,7 +123,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         // Remove the typed part
         Document doc = component.getDocument();
         int caretOffset = component.getCaretPosition();
-        int initMatchLen = getInitialMatchLength(doc, caretOffset, codeTemplate.getAbbrevName());
+        int initMatchLen = getInitialMatchLength(doc, caretOffset, codeTemplate.getAbbreviation());
         if (initMatchLen > 0) {
             // Select the typed prefix so that it gets removed
             //   by code template insertion
@@ -211,7 +211,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         
         private String createText() {
             StringBuffer htmlText = new StringBuffer("<html><b>");
-            htmlText.append(toHtmlText(codeTemplate.getAbbrevName()));
+            htmlText.append(toHtmlText(codeTemplate.getAbbreviation()));
             htmlText.append("</b>&nbsp;&nbsp;&nbsp;");
             // Temporarily - do not append the description
             // htmlText.append(toHtmlText(codeTemplate.getDescription()));

@@ -84,6 +84,7 @@ public final class CodeTemplateInsertRequest {
      * The master parameters can be explored by the code template processor
      * and their default values can be changed as necessary.
      *
+     * @return non-null unmodifiable list of master parameters.
      */
     public List/*<CodeTemplateParameter>*/ getMasterParameters() {
         return handler.getMasterParameters();
@@ -110,6 +111,8 @@ public final class CodeTemplateInsertRequest {
      * Get all the parameters (masters and slaves)
      * present in the code template text in the order as they occur
      * in the parametrized text.
+     *
+     * @return non-null unmodifiable list of all parameters.
      * @see #getMasterParameters()
      */
     public List/*<CodeTemplateParameter>*/ getAllParameters() {
