@@ -220,9 +220,12 @@ public class AddOperationsPanel extends javax.swing.JPanel
     
     public void valueChanged(ListSelectionEvent e) {
         int firstEditable = operationModel.getFirstEditable();
-        if ((operationTable.getSelectedRow() < firstEditable) &&
-                (operationModel.getRowCount() > firstEditable))
-                operationTable.setRowSelectionInterval(firstEditable, firstEditable);
+        if ((operationTable.getSelectedRow() != -1) &&
+                (operationTable.getSelectedRow() < firstEditable))
+            removeButton.setEnabled(false);
+        else if ((operationTable.getSelectedRow() != -1) &&
+                (operationTable.getSelectedRow() >= firstEditable))
+            removeButton.setEnabled(true);
     }
     
     /** This method is called from within the constructor to
@@ -287,7 +290,10 @@ public class AddOperationsPanel extends javax.swing.JPanel
         add(buttonsPanel, gridBagConstraints);
 
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
+        stateLabel.setMaximumSize(new java.awt.Dimension(0, 18));
+        stateLabel.setMinimumSize(new java.awt.Dimension(0, 18));
         stateLabel.setName("stateLabel");
+        stateLabel.setPreferredSize(new java.awt.Dimension(0, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;

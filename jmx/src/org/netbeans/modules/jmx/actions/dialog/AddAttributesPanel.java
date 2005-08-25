@@ -211,9 +211,11 @@ public class AddAttributesPanel extends javax.swing.JPanel
     public void valueChanged(ListSelectionEvent e) {
         int firstEditable = attributeModel.getFirstEditable();
         if ((attributeTable.getSelectedRow() != -1) &&
-                (attributeTable.getSelectedRow() < firstEditable) &&
-                (attributeModel.getRowCount() > firstEditable))
-                attributeTable.setRowSelectionInterval(firstEditable, firstEditable);
+                (attributeTable.getSelectedRow() < firstEditable))
+            removeButton.setEnabled(false);
+        else if ((attributeTable.getSelectedRow() != -1) &&
+                (attributeTable.getSelectedRow() >= firstEditable))
+            removeButton.setEnabled(true);
     }
     
     /** This method is called from within the constructor to
@@ -278,7 +280,10 @@ public class AddAttributesPanel extends javax.swing.JPanel
         add(buttonsPanel, gridBagConstraints);
 
         stateLabel.setForeground(java.awt.SystemColor.activeCaption);
+        stateLabel.setMaximumSize(new java.awt.Dimension(0, 18));
+        stateLabel.setMinimumSize(new java.awt.Dimension(0, 18));
         stateLabel.setName("stateLabel");
+        stateLabel.setPreferredSize(new java.awt.Dimension(0, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
