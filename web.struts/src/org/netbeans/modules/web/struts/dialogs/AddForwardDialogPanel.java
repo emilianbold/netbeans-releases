@@ -250,7 +250,6 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jRadioButtonLocationAction, gridBagConstraints);
 
-        jComboBoxLocationAction.setEditable(true);
         jComboBoxLocationAction.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

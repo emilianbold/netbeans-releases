@@ -284,7 +284,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     dialogPanel = new AddForwardDialogPanel((StrutsConfigDataObject)data);
                 else 
                     dialogPanel = new AddForwardDialogPanel((StrutsConfigDataObject)data, targetActionPath);
-                AddDialog dialog = new AddDialog(dialogPanel,NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddAction"));
+                AddDialog dialog = new AddDialog(dialogPanel,NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddForward"));
                 dialog.disableAdd(); // disable Add button
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
                 d.setVisible(true);
