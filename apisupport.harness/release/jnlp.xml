@@ -135,15 +135,15 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy todir="${build.jnlp.local.dir}">
             <fileset dir="build/jnlp">
-                <include name="*"/>
+                <include name="*.jnlp"/>
             </fileset>
-            <filterchain>
+            <filterchain >
                 <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}"/>
             </filterchain>
         </copy>
         <copy todir="${build.jnlp.local.dir}/netbeans/">
             <fileset dir="build/jnlp/netbeans">
-                <include name="*"/>
+                <include name="*.jnlp"/>
             </fileset>
             <filterchain>
                 <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/netbeans/"/>
@@ -151,11 +151,16 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
         <copy todir="${build.jnlp.local.dir}/app/">
             <fileset dir="build/jnlp/app">
-                <include name="*"/>
+                <include name="*.jnlp"/>
             </fileset>
             <filterchain>
                 <replacestring from="$$$$codebase" to="file:${build.jnlp.local.dir}/app/"/>
             </filterchain>
+        </copy>
+        <copy todir="${build.jnlp.local.dir}">
+            <fileset dir="build/jnlp">
+                <exclude name="**/*.jnlp"/>
+            </fileset>
         </copy>
     </target>
     
