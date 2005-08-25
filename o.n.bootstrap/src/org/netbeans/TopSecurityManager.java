@@ -297,7 +297,11 @@ public class TopSecurityManager extends SecurityManager {
         checkConnect(s, port);
     }
 
+    private static List log = Collections.synchronizedList(new ArrayList());
     public void checkPermission(Permission perm) {
+        if (CLIPBOARD_FORBIDDEN.get () != null) {
+            log.add(new Exception("Perm: " + perm));
+        }
         checkSetSecurityManager(perm);
         
         //
@@ -463,8 +467,15 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
                 new java.awt.event.ActionEvent (source, 0, "")
             );
             Object forb = CLIPBOARD_FORBIDDEN.get ();
+            CLIPBOARD_FORBIDDEN.set(null);
             if (! (forb instanceof TopSecurityManager) ) {
                 System.err.println("Cannot install our clipboard to swing components, TopSecurityManager is not the security manager: " + forb); // NOI18N
+                // debug code to find out what is going on in #59701
+                Object[] exceptions = log.toArray();
+                for (int i = 0; i < exceptions.length; i++) {
+                    Exception e = (Exception)exceptions[i];
+                    e.printStackTrace(System.err);
+                }
                 return;
             }
 
@@ -486,6 +497,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             t.printStackTrace();
         } finally {
             CLIPBOARD_FORBIDDEN.set (null);
+            log.clear();
         }
     }
     
