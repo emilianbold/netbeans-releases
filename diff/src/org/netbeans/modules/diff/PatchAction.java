@@ -155,7 +155,8 @@ public class PatchAction extends NodeAction {
         chooser.setApproveButtonText(NbBundle.getMessage(PatchAction.class, "BTN_Patch"));
         chooser.setApproveButtonMnemonic(NbBundle.getMessage(PatchAction.class, "BTN_Patch_mnc").charAt(0));
         chooser.setApproveButtonToolTipText(NbBundle.getMessage(PatchAction.class, "BTN_Patch_tooltip"));
-        DialogDescriptor descriptor = new DialogDescriptor( chooser, title, true, new Object[0], null, 0, null, null );
+        HelpCtx ctx = new HelpCtx(PatchAction.class.getName());
+        DialogDescriptor descriptor = new DialogDescriptor( chooser, title, true, new Object[0], null, 0, ctx, null );
         final Dialog dialog = DialogDisplayer.getDefault().createDialog( descriptor );
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PatchAction.class, "ACSD_PatchDialog"));
 
