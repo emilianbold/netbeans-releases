@@ -125,7 +125,7 @@ PropertyChangeListener {
                 lookupFirst (null, AbstractDICookie.class);
             if (cookie instanceof AttachingDICookie) {
                 AttachingDICookie c = (AttachingDICookie) cookie;
-                if (c.getHostName () != null)
+                if (c.getHostName () != null) {
                     print (
                         "CTL_Attaching_socket",
 //                        where,
@@ -135,7 +135,7 @@ PropertyChangeListener {
                         },
                         null
                     );
-                else
+                } else if (c.getSharedMemoryName() != null) {
                     print (
                         "CTL_Attaching_shmem",
 //                        where,
@@ -144,6 +144,22 @@ PropertyChangeListener {
                         },
                         null
                     );
+                } else if (c.getArgs().get("pid") != null) {
+                    print (
+                        "CTL_Attaching_pid",
+//                        where,
+                        new String[] {
+                            c.getArgs().get("pid").toString()
+                        },
+                        null
+                    );
+                } else {
+                    print (
+                        "CTL_Attaching",
+                        null,
+                        null
+                    );
+                }
             } else
             if (cookie instanceof ListeningDICookie) {
                 ListeningDICookie c = (ListeningDICookie) cookie;
