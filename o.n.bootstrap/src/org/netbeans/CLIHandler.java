@@ -17,6 +17,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -485,6 +486,15 @@ public abstract class CLIHandler extends Object {
                 enterState(20, block);
                 
                 os.write(arr);
+                os.flush();
+                
+                // if this turns to be slow due to lookup of getLocalHost
+                // address, it can be done asynchronously as nobody needs
+                // the address in the stream if the server is listening
+                byte[] host = InetAddress.getLocalHost().getAddress();
+                for (int all = 0; all < host.length; all++) {
+                    os.write(host[all]);
+                }
                 os.close();
                 
                 int execCode = registerFinishInstallation (new Execute () {
@@ -501,12 +511,16 @@ public abstract class CLIHandler extends Object {
                 }
                 // already exists, try to read
                 byte[] key = null;
+                byte[] serverAddress = null;
                 int port = -1;
                 try {
                     DataInputStream is = new DataInputStream(new FileInputStream(lockFile));
                     port = is.readInt();
                     key = new byte[KEY_LENGTH];
                     is.readFully(key);
+                    byte[] x = new byte[4];
+                    is.readFully(x);
+                    serverAddress = x;
                     is.close();
                 } catch (IOException ex2) {
                     // ok, try to read it once more
@@ -608,7 +622,18 @@ public abstract class CLIHandler extends Object {
                         ex2.printStackTrace();
                         enterState(33, block);
                     }
-                    if (cleanLockFile) {
+                    
+                    boolean isSameHost = false;
+                    if (serverAddress != null) {
+                        try {
+                            isSameHost = Arrays.equals(InetAddress.getLocalHost().getAddress(), serverAddress);
+                        } catch (UnknownHostException ex5) {
+                            // ok, we will not try to connect
+                            enterState(999, block);
+                        }
+                    }
+                    
+                    if (cleanLockFile || isSameHost) {
                         // remove the file and try once more
                         lockFile.delete();
                     } else {
@@ -754,6 +779,13 @@ public abstract class CLIHandler extends Object {
                 try {
                     enterState(65, block);
                     Socket s = socket.accept();
+                    if (socket == null) {
+                        enterState(66, block);
+                        s.getOutputStream().write(REPLY_FAIL);
+                        enterState(67, block);
+                        s.close();
+                        continue;
+                    }
                     
                     // spans new request handler
                     new Server(s, key, block, handlers, failOnUnknownOptions);
