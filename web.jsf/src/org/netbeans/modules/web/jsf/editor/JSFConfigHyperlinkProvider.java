@@ -42,7 +42,7 @@ import org.openide.util.RequestProcessor;
  */
 public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
     
-    static private boolean debug = true;
+    static private boolean debug = false;
     private static Hashtable hyperlinkTable;
     
     private final int JAVA_CLASS = 0;
