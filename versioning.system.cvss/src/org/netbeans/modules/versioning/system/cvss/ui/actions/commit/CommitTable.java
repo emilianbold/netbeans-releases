@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
-import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.util.TableSorter;
@@ -26,8 +25,6 @@ import javax.swing.event.AncestorListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableColumnModel;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseEvent;
 import java.awt.Component;
 import java.util.*;
 
@@ -36,7 +33,7 @@ import java.util.*;
  * 
  * @author Maros Sandor
  */
-class CommitTable implements MouseListener, AncestorListener {
+class CommitTable implements AncestorListener {
 
     private CommitTableModel    tableModel;
     private JTable              table;
@@ -57,7 +54,6 @@ class CommitTable implements MouseListener, AncestorListener {
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        table.addMouseListener(this);
     }
 
     public void ancestorAdded(AncestorEvent event) {
@@ -120,6 +116,7 @@ class CommitTable implements MouseListener, AncestorListener {
     }
     
     void setColumns(String[] cols) {
+        if (Arrays.equals(columns, cols)) return;
         columns = cols;
         tableModel.setColumns(cols);
         setDefaultColumnSizes();
@@ -137,71 +134,10 @@ class CommitTable implements MouseListener, AncestorListener {
         return component;
     }
 
-    private void showPopup(MouseEvent e) {
-        int [] selectedrows = table.getSelectedRows();
-        if (selectedrows.length == 0) {
-            int row = table.rowAtPoint(e.getPoint());
-            if (row == -1) return;
-            table.getSelectionModel().setSelectionInterval(row, row);
-            selectedrows = new int [] { row };
-        }
-
-        List selectedFiles = new ArrayList();
-        ListSelectionModel selectionModel = table.getSelectionModel();
-        int min = selectionModel.getMinSelectionIndex();
-        if (min == -1) {
-            return;            
-        }
-        int max = selectionModel.getMaxSelectionIndex();
-        for (int i = min; i <= max; i++) {
-            if (selectionModel.isSelectedIndex(i)) {
-                int idx = sorter.modelIndex(i);
-                selectedFiles.add(tableModel.getNodeAt(idx).getFile());
-            }
-        }
-        
-        JPopupMenu menu = getPopup();
-//        menu.show(table, e.getX(), e.getY());
-    }
-
-    private JPopupMenu getPopup() {
-        JPopupMenu menu = new JPopupMenu();
-        Action [] actions = Annotator.getActions();
-        for (int i = 0; i < actions.length; i++) {
-            Action action = actions[i];
-            if (action == null) {
-                menu.add(new JSeparator());                
-            } else {
-                JMenuItem item = menu.add(action);
-                Mnemonics.setLocalizedText(item, item.getText());
-            }
-        }
-        return menu;
-    }
-    
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            showPopup(e);
-        }
-    }
-
-    public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger()) {
-            showPopup(e);
-        }
-    }
-
-    public void mouseClicked(MouseEvent e) {
-    }
-
     void dataChanged() {
+        int idx = table.getSelectedRow();
         tableModel.fireTableDataChanged();
+        if (idx != -1) table.getSelectionModel().addSelectionInterval(idx, idx);
     }
 
     TableModel getTableModel() {
