@@ -229,7 +229,7 @@ $${jnlp.resources}
         
         <loadfile property="jnlp.resources" srcfile="${jnlp.master.dir}/resources.xml"/>
         
-        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" />
+        <copy file="${app.icon}" tofile="${jnlp.dest.dir}/master.png" failonerror="false" />
         <copy file="master.jnlp" tofile="${jnlp.dest.dir}/master.jnlp">
             <filterchain>
                 <replacestring from="$${jnlp.resources}" to="${jnlp.resources}"/>
