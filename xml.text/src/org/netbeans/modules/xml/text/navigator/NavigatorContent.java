@@ -87,8 +87,10 @@ public class NavigatorContent extends JPanel   {
                 //get document model for the file
                 try {
                     DocumentModel model = DocumentModel.getDocumentModel(bdoc);
-                    JPanel panel = new NavigatorContentPanel(model);
-                    showUI(panel);
+                    if(model != null) {
+                        JPanel panel = new NavigatorContentPanel(model);
+                        showUI(panel);
+                    }
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
                 }
