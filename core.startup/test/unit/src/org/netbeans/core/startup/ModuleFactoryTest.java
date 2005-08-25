@@ -1,13 +1,14 @@
 /*
- * ModuleFactoryTest.java
- *
- * Created on July 24, 2005, 5:36 PM
- *
- * To change this template, choose Tools | Options and locate the template under
- * the Source Creation and Management node. Right-click the template and choose
- * Open. You can then make changes to the template in the Source Editor.
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Nokia. Portions Copyright 2005 Nokia. All Rights Reserved.
  */
-
 package org.netbeans.core.startup;
 
 import java.io.File;
@@ -36,7 +37,7 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  * These tests verify that the module manager behaves basically the
  * same way with ModuleFactory as without it.
- * @author david
+ * @author David Strupl
  */
 public class ModuleFactoryTest extends ModuleManagerTest {
     
