@@ -70,6 +70,7 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
     
     /** List of system actions to be displayed within this one's submenu. */
     private static final SystemAction[] grouped = new SystemAction[] {
+        /*
                 SystemAction.get(AddAttrAction.class),
                 SystemAction.get(AddOpAction.class),
                 SystemAction.get(AddNotifAction.class),
@@ -77,6 +78,7 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
                 SystemAction.get(GenJUnitTestAction.class),
                 null,
                 SystemAction.get(RegisterMBeanAction.class)
+         */
             };
 
     public JMenuItem getMenuPresenter () {
@@ -99,7 +101,9 @@ public class ManagementAllAction extends CookieAction implements Presenter.Menu,
     }
     
     protected boolean enable (Node[] nodes) {
-        /*if (!super.enable(nodes)) return false;
+        /*
+        if (!super.enable(nodes)) return false;
+
         if (nodes.length == 0) return false;
         
         DataObject dob = (DataObject)nodes[0].getCookie(DataObject.class);
