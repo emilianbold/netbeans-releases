@@ -42,8 +42,6 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.DConfigBeanUIFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.DConfigBeanProperties;
 import org.netbeans.modules.j2ee.sun.share.Constants;
 
 import org.netbeans.modules.j2ee.sun.dd.impl.serverresources.model.Resources;

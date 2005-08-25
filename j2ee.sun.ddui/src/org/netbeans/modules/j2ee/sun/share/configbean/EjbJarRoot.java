@@ -485,7 +485,8 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	public EJBInfoHelper getEJBInfoHelper () {
 		if (ejbInfoHelper == null) {
 			ejbInfoHelper = new EJBDevelopmentInfoHelper(null, 
-				SourceFileMap.findSourceMap(getDDBean()));
+				SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
+                        
 		}
 
 		return ejbInfoHelper;
@@ -515,7 +516,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	getMappingContext(beanGraph, infoHelper);
 
 		MappingConverter mappingConverter = new MappingConverter(
-			infoHelper, SourceFileMap.findSourceMap(getDDBean()));
+			infoHelper, SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
 		Collection newMCEs = null;
 		
 		try {
@@ -544,7 +545,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		if (mappingContext.getModel().getMappingClass(
 				myConversionHelper.getMappedClassName(beanName)) == null) {
 			MappingConverter mappingConverter = new MappingConverter(
-				infoHelper, SourceFileMap.findSourceMap(getDDBean()));
+				infoHelper, SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
 			MappingClassElement newMCE = null;
 			try {
 				newMCE = mappingConverter.toMappingClass(beanName);
@@ -721,7 +722,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		if (beanGraph != null) {
 			if (ejbInfoHelper == null)
 				ejbInfoHelper = new EJBDevelopmentInfoHelper(beanGraph, 
-					SourceFileMap.findSourceMap(getDDBean()));
+					SourceFileMap.findSourceMap(getConfig().getDeployableObject()));
 			// TODO: else load schemas if they are different?
 			// also probably do if mappingContext is already non-null
 			// call intoMappingClasses in utils

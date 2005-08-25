@@ -17,21 +17,16 @@
  */
 
 package org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy;
-import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
-import org.netbeans.modules.j2ee.sun.ide.Installer;
-
-
 import java.io.File;
 
-
+import org.netbeans.modules.j2ee.deployment.plugins.api.IncrementalDeployment;
+import org.netbeans.modules.j2ee.sun.ide.Installer;
 
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
@@ -46,7 +41,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
  * @author  vkraemer
  */
 public class DirectoryDeploymentFacade
-        extends IncrementalDeployment  implements DeploymentPlanSplitter {
+        extends IncrementalDeployment {// implements DeploymentPlanSplitter {
     
     Object inner = null;
       private File[] resourceDirs = null;
@@ -109,33 +104,34 @@ public class DirectoryDeploymentFacade
      * @param targetModuleID The module id
      * @return a single, unique file name.
      */
-    public String[] getDeploymentPlanFileNames(ModuleType type) {
-        String[] s;
-        if (type==null){
-            throw new IllegalArgumentException("invalid null argumment");
-        }
-        else if(type.equals(ModuleType.WAR)){
-            s = new String[] { "WEB-INF/sun-web.xml" };
-        }
-        else if(type.equals(ModuleType.EJB)){
-            s = new String[] { "META-INF/sun-ejb-jar.xml", "META-INF/sun-cmp-mappings.xml" };
-        }
-        else if(type.equals(ModuleType.EAR)){
-            s = new String[] { "META-INF/sun-application.xml" };
-        }
-        else if(type.equals(ModuleType.RAR)){
-            s = new String[] { "META-INF/sun-connector.xml" };
-        }
-        else if(type.equals(ModuleType.CAR)){
-            s = new String[] { "META-INF/sun-client-application.xml" };
-        }
-      
-        else{
-            s = new String[] { ".timestamp" };
-        }
-
-        return s;
-    }    
+// !PW REMOVE DeploymentPlanSplitter
+//    public String[] getDeploymentPlanFileNames(ModuleType type) {
+//        String[] s;
+//        if (type==null){
+//            throw new IllegalArgumentException("invalid null argumment");
+//        }
+//        else if(type.equals(ModuleType.WAR)){
+//            s = new String[] { "WEB-INF/sun-web.xml" };
+//        }
+//        else if(type.equals(ModuleType.EJB)){
+//            s = new String[] { "META-INF/sun-ejb-jar.xml", "META-INF/sun-cmp-mappings.xml" };
+//        }
+//        else if(type.equals(ModuleType.EAR)){
+//            s = new String[] { "META-INF/sun-application.xml" };
+//        }
+//        else if(type.equals(ModuleType.RAR)){
+//            s = new String[] { "META-INF/sun-connector.xml" };
+//        }
+//        else if(type.equals(ModuleType.CAR)){
+//            s = new String[] { "META-INF/sun-client-application.xml" };
+//        }
+//      
+//        else{
+//            s = new String[] { ".timestamp" };
+//        }
+//
+//        return s;
+//    }    
     
     
     public java.io.File getDirectoryForModule(javax.enterprise.deploy.spi.TargetModuleID module) {
@@ -213,36 +209,37 @@ public class DirectoryDeploymentFacade
     
     //for DeploymentPlanSplitter
 
-    public void readDeploymentPlanFiles(DeploymentConfiguration config, DeployableObject mod, File[] files) throws ConfigurationException {
-        //Thread.dumpStack();
-        SunONEDeploymentConfiguration s1dc =
-            (SunONEDeploymentConfiguration) config;
-        
-        int len = getValidatedNumberOfFiles(mod, files);
-        for (int i = 0; i < len; i++)
-            s1dc.addFileToPlanForModule(files[i], mod);
-
-    }
-    
-    public void writeDeploymentPlanFiles(DeploymentConfiguration config, DeployableObject mod, File[] files) throws ConfigurationException {
-        SunONEDeploymentConfiguration s1dc =
-            (SunONEDeploymentConfiguration) config;
-        
-        int len = getValidatedNumberOfFiles(mod, files);
-        //
-        for (int i = 0; i < len; i++) {
-                s1dc.extractFileFromPlanForModule(files[i], mod);
-        }
-    }
-        
-    
-    int getValidatedNumberOfFiles(DeployableObject mod, File[] files) throws ConfigurationException {
-        int len = 0;
-        if (null != files)
-            len = files.length;
-        // POST MS5 -- this should check by module type
-        if (len < 1)
-            throw new ConfigurationException("file list is too short");
-        return len;
-    }    
+// !PW REMOVE DeploymentPlanSplitter
+//    public void readDeploymentPlanFiles(DeploymentConfiguration config, DeployableObject mod, File[] files) throws ConfigurationException {
+//        //Thread.dumpStack();
+//        SunONEDeploymentConfiguration s1dc =
+//            (SunONEDeploymentConfiguration) config;
+//        
+//        int len = getValidatedNumberOfFiles(mod, files);
+//        for (int i = 0; i < len; i++)
+//            s1dc.addFileToPlanForModule(files[i], mod);
+//
+//    }
+//    
+//    public void writeDeploymentPlanFiles(DeploymentConfiguration config, DeployableObject mod, File[] files) throws ConfigurationException {
+//        SunONEDeploymentConfiguration s1dc =
+//            (SunONEDeploymentConfiguration) config;
+//        
+//        int len = getValidatedNumberOfFiles(mod, files);
+//        //
+//        for (int i = 0; i < len; i++) {
+//                s1dc.extractFileFromPlanForModule(files[i], mod);
+//        }
+//    }
+//        
+//    
+//    int getValidatedNumberOfFiles(DeployableObject mod, File[] files) throws ConfigurationException {
+//        int len = 0;
+//        if (null != files)
+//            len = files.length;
+//        // POST MS5 -- this should check by module type
+//        if (len < 1)
+//            throw new ConfigurationException("file list is too short");
+//        return len;
+//    }    
 }

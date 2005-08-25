@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+
+<MIME-resolver>
+
+    <!-- mime type definitions for sun-web.xml (AppServer 7, 7.1, 8.0, and 8.1) -->
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sjsas-servlet2.3">
+            <xml-rule>
+            	<doctype public-id="-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.0 Servlet 2.3//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sjsas-servlet2.31">
+            <xml-rule>
+            	<doctype public-id="-//Sun Microsystems, Inc.//DTD Sun ONE Application Server 7.1 Servlet 2.3//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sjsas-servlet2.4">
+            <xml-rule>
+            	<doctype public-id="-//Sun Microsystems, Inc.//DTD Application Server 8.0 Servlet 2.4//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-dd-sjsas-servlet2.41">
+            <xml-rule>
+            	<doctype public-id="-//Sun Microsystems, Inc.//DTD Application Server 8.1 Servlet 2.4//EN"/>
+            </xml-rule>
+        </resolver>
+    </file>
+
+</MIME-resolver>
