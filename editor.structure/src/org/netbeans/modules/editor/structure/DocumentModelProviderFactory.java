@@ -59,15 +59,15 @@ public class DocumentModelProviderFactory {
                 MimeLookup mimeLookup = MimeLookup.getMimeLookup(mimeType);
                 Collection providers = mimeLookup.lookup(new Lookup.Template(DocumentModelProvider.class)).allInstances();
                 if(providers.size() > 1)
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Only one DocumentModelProvider can be registered for one mimetype!");
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Only one DocumentModelProvider can be registered for one mimetype!");
                 
                 if(providers.size() == 0)
-                    ErrorManager.getDefault().notify(new IllegalStateException("There isn't any DocumentModelProvider registered for " + mimeType + " mimetype!"));
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("There isn't any DocumentModelProvider registered for " + mimeType + " mimetype!"));
                 
                 provider = providers.size() > 0 ? (DocumentModelProvider)providers.iterator().next() : null;
             }
         } else
-            ErrorManager.getDefault().notify(new NullPointerException("mimeType cannot be null!"));
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("mimeType cannot be null!"));
         
         return provider;
     }
