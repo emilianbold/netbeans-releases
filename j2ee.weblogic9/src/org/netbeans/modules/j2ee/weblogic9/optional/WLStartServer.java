@@ -243,7 +243,7 @@ public class WLStartServer extends StartServer {
                 ErrorManager.getDefault().log(ErrorManager.WARNING, "getting reponse from server but cannot create connected deployment manager");
             }
         } catch (UnknownHostException e) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            //#59189 - do nothing if the user entered an incorrect host name or is unreachable assume it is not running
         } catch (IOException e) {
             // do nothing this exception means that the server is 
             // not started
