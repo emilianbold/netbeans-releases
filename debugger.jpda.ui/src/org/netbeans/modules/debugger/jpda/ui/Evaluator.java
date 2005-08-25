@@ -56,6 +56,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -266,7 +267,8 @@ public class Evaluator extends javax.swing.JPanel {
         DialogDescriptor dd = new DialogDescriptor(evaluatorPanel,
                 NbBundle.getMessage(Evaluator.class, "Evaluator.Title"),
                 false, new Object[] { evalStr, watchStr, closeStr },
-                evalStr, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+                evalStr, DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(Evaluator.class.getName()), new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         Object option = e.getSource();
                         if (evalStr.equals(option)) {
