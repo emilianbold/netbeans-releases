@@ -16,6 +16,11 @@ package org.netbeans.modules.jmx.test.helpers;
  */
 public class JellyConstants {
     
+   //tempo modes
+   public static final String NONE = "";
+   public static final String DEBUG = "";
+   public static final String NOMINAL = "";
+    
    //Package 
    public static final String PROJECT_NAME = "JMXTESTMBeanFunctionalTest";
    
@@ -111,7 +116,9 @@ public class JellyConstants {
    public static final String OPER_ADD_BTN = "methAddJButton";
    public static final String OPER_REM_BTN = "methRemoveJButton";
    public static final String OPER_TYPE_BX = "methTypeBox";
-   
+   public static final String OPER_PARAM_TXT = "methParamTextField";
+   public static final String OPER_EXCEP_TXT = "methExcepTextField";
+           
    public static final String PARAM_POP_TBL = "ParamPopupTable";
    public static final String PARAM_ADD_BTN = "methAddParamButton";
    public static final String ADD_PARAM_BTN = "addParamJButton";
@@ -119,6 +126,8 @@ public class JellyConstants {
    
    public static final String EXCEP_POP_TBL = "ExcepPopupTable";
    public static final String EXCEP_ADD_BTN = "methAddExcepJButton";
+   public static final String ADD_EXCEP_BTN = "addExceptionJButton";
+   public static final String REM_EXCEP_BTN = "remExceptionJButton";
    
    public static final String OP_TBL = "operationTable";
    public static final String ADD_OP_BTN = "opAddJButton";
@@ -127,6 +136,7 @@ public class JellyConstants {
    public static final String W_OPER_REM_BTN = "wrapperOpRemoveJButton";
    
    public static final String CLOSE_BTN = "closeJButton";
+   public static final String CANCEL_BTN = "cancelJButton";
    
    //Notification step
    public static final String IMPLNOTIFEMIT_CBX = "implNotifEmitCheckBox";
@@ -139,6 +149,7 @@ public class JellyConstants {
    
    public static final String NT_POP_TBL = "notifPopupTable";
    public static final String NT_ADD_BTN = "notifTypePopupJButton";
+   public static final String NT_TYPE_TXT = "typeTextField";
    public static final String ADD_NT_BTN = "addNotifTypeJButton";
    public static final String NT_CLOSE_BTN = "closeNotifTypeJButton";
 
@@ -393,6 +404,7 @@ public class JellyConstants {
    public static final String OPER_DEF_NAME = "newOperation";
    public static final int OPER_NAME_COL = 0;
    public static final int OPER_TYPE_COL = 1;
+   public static final int OPER_PARAM_COL = 1;
    public static final int OPER_DESCR_COL = 4;
    
    public static final String O1_NAME = "initCount./er";
@@ -415,4 +427,29 @@ public class JellyConstants {
    public static final String P2_NAME = "param1";
    public static final String P3_NAME = "param2";
    public static final String P4_NAME = "param3";
+   
+   public static final String OBS_PARAM3 = "char param2";
+   
+   //exception popup
+   public static final String EDIT_EXCEPTIONS = "Edit Exceptions";
+   public static final String EXCEP_DEF_NAME = "java.lang.Exception";
+   
+   public static final int EXCEP_CLASS_COL = 0;
+   public static final int EXCEP_DESCR_COL = 1;
+   
+   public static final String E1_NAME = "java.lang.IllegalArgumen/tException";
+   public static final String E1_NAME_FULL = "java.lang.IllegalArgumentException";
+   public static final String E3_NAME = "java.lang.IllegalStateException";
+   
+   public static final String OBS_EXCEP3 = "java.lang.IllegalStateException";
+   
+   //step 5
+   public static final String NOTIF_DEF_CLASS = "javax.management.Notification";
+   public static final String NOTIF_OTHER_CLASS = "javax.management.AttributeChangeNotification";
+   public static final String NOTIF_USER_CLASS = "com.foo.bar.UserNotification";
+   public static final String NOTIF_DEF_DESCR = "NewNotification Description";
+   public static final String NOTIF_TYPE = "ATTRIBUTE_CHANGE";
+   public static final int NOTIF_CLASS_COL = 0;
+   public static final int NOTIF_DESCR_COL = 1;
+   public static final int NOTIF_TYPE_COL = 2;
 }
