@@ -71,7 +71,8 @@ class CategoryNode extends FilterNode {
     public String getDisplayName() {
 
         String retValue = super.getDisplayName();
-        if( null != retValue && retValue.indexOf( "->" ) > 0 ) {
+        // XXX poor impl; should not depend on org.openide.loaders.Bundle#FMT_shadowName:
+        if( null != retValue && retValue.indexOf("\u2192") > 0 ) {
             DataShadow shadow = (DataShadow)getCookie( DataShadow.class );
             if( null != shadow ) {
                 DataObject dobj = shadow.getOriginal();
