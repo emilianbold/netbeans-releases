@@ -288,6 +288,7 @@
       <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
       <tocitem text="Using the Call Stack" target="debug.callstack"/>
       <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
+      <tocitem text="Evaluating an Expression" target="debug.expression"/>
     </tocitem>
   </tocitem>
 

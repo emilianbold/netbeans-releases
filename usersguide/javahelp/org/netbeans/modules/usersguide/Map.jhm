@@ -245,6 +245,7 @@ the Options window:-->
 <mapID target="debug.source" url="debug/debug_source.html" />
 <mapID target="debug.step" url="debug/debug_step.html" />
 <mapID target="debug.remote" url="debug/debug_remote.html" /> 
+<mapID target="debug.expression" url="debug/debug_expression.html" /> 
 
 <!-- Javadoc IDs :-->
 
