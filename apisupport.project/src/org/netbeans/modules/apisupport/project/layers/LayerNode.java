@@ -14,9 +14,11 @@
 package org.netbeans.modules.apisupport.project.layers;
 
 import java.awt.Image;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -40,7 +42,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
+import org.openide.xml.XMLUtil;
 
 /**
  * Displays two views of a layer.
@@ -70,6 +74,7 @@ public final class LayerNode extends FilterNode {
         private final LayerUtils.LayerHandle handle;
         private ClassPath cp;
         private NbModuleProject p;
+        private FileSystem sfs;
         
         public LayerChildren(LayerUtils.LayerHandle handle) {
             this.handle = handle;
@@ -78,7 +83,7 @@ public final class LayerNode extends FilterNode {
         protected void addNotify() {
             super.addNotify();
             handle.setAutosave(true);
-            setKeys(new Object[] {KEY_RAW, KEY_CONTEXTUALIZED});
+            setKeys(new Object[] {KEY_RAW});
             FileObject layer = handle.getLayerFile();
             p = (NbModuleProject) FileOwnerQuery.getOwner(layer);
             assert p != null : layer;
@@ -87,22 +92,37 @@ public final class LayerNode extends FilterNode {
             } catch (IOException e) {
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    try {
+                        // XXX progress API here?
+                        FileSystem _sfs = LayerUtils.getEffectiveSystemFilesystem(p);
+                        if (cp != null) { // has not been removeNotify()d yet
+                            sfs = _sfs;
+                            setKeys(new Object[] {KEY_RAW, KEY_CONTEXTUALIZED});
+                        }
+                    } catch (IOException e) {
+                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                }
+            });
         }
         
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
             cp = null;
             p = null;
+            sfs = null;
             super.removeNotify();
         }
         
         protected Node[] createNodes(Object key) {
             try {
                 if (key == KEY_RAW) {
-                    FileSystem fs = badge(handle.layer(false), cp, handle.getLayerFile(), "<this layer>"); // XXX I18N
+                    FileSystem fs = badge(handle.layer(false), cp, handle.getLayerFile(), "<this layer>", null); // XXX I18N
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 } else if (key == KEY_CONTEXTUALIZED) {
-                    FileSystem fs = badge(LayerUtils.getEffectiveSystemFilesystem(p), cp, handle.getLayerFile(), "<this layer in context>"); // XXX I18N
+                    FileSystem fs = badge(sfs, cp, handle.getLayerFile(), "<this layer in context>", handle.layer(false)); // XXX I18N
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 } else {
                     throw new AssertionError(key);
@@ -118,7 +138,7 @@ public final class LayerNode extends FilterNode {
     /**
      * Add badging support to the plain layer.
      */
-    private static FileSystem badge(final FileSystem base, final ClassPath cp, final FileObject layer, final String rootLabel) {
+    private static FileSystem badge(final FileSystem base, final ClassPath cp, final FileObject layer, final String rootLabel, final FileSystem highlighted) {
         class BadgingMergedFileSystem extends MultiFileSystem {
             private final BadgingSupport status;
             public BadgingMergedFileSystem() {
@@ -133,13 +153,40 @@ public final class LayerNode extends FilterNode {
                 // XXX loc/branding suffix?
             }
             public FileSystem.Status getStatus() {
-                return new FileSystem.Status() {
-                    public String annotateName(String name, Set files) {
+                return new FileSystem.HtmlStatus() {
+                    public String annotateNameHtml(String name, Set files) {
+                        String nonHtmlLabel = status.annotateName(name, files);
                         if (files.size() == 1 && ((FileObject) files.iterator().next()).isRoot()) {
-                            return rootLabel;
-                        } else {
-                            return status.annotateName(name, files);
+                            nonHtmlLabel = rootLabel;
                         }
+                        String htmlLabel;
+                        try {
+                            htmlLabel = XMLUtil.toElementContent(nonHtmlLabel);
+                        } catch (CharConversionException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                            htmlLabel = nonHtmlLabel;
+                        }
+                        if (highlighted != null) {
+                            // Boldface resources which do come from this project.
+                            boolean local = false;
+                            Iterator it = files.iterator();
+                            while (it.hasNext()) {
+                                FileObject f = (FileObject) it.next();
+                                if (!f.isRoot() && highlighted.findResource(f.getPath()) != null) {
+                                    local = true;
+                                    break;
+                                }
+                            }
+                            if (local) {
+                                htmlLabel = "<b>" + htmlLabel + "</b>"; // NOI18N
+                            }
+                        }
+                        return htmlLabel;
+                    }
+                    public String annotateName(String name, Set files) {
+                        // Complex to explain why this is even called, but it is.
+                        // Weird b/c hacks in the way DataNode.getHtmlDisplayName works.
+                        return name;
                     }
                     public Image annotateIcon(Image icon, int iconType, Set files) {
                         return status.annotateIcon(icon, iconType, files);
@@ -197,5 +244,5 @@ public final class LayerNode extends FilterNode {
             throw new AssertionError(type);
         }
     }
-
+    
 }
