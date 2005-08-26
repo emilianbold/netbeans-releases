@@ -62,7 +62,9 @@ public class MessageNode extends AbstractNode implements OpenCookie {
             WeakListeners.propertyChange(nameChangeListener,model));
         content.add(this);
         content.add(controller.getBeanClass());
-        content.add(controller.getBeanDo());
+        if (controller.getBeanDo() != null) {
+            content.add(controller.getBeanDo());
+        }
     }
     
     private void setDisplayName() {

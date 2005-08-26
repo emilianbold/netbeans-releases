@@ -52,7 +52,9 @@ public class MethodsNode extends AbstractNode implements OpenCookie {
         this.srcPath = srcPath;
         this.local = local;
         content.add(this);
-        content.add(controller.getBeanDo());
+        if (controller.getBeanDo() != null) {
+            content.add(controller.getBeanDo());
+        }
     }
     
     public Action[] getActions(boolean context) {
