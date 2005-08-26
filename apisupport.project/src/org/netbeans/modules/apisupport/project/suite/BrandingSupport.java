@@ -178,7 +178,7 @@ public final class BrandingSupport {
                 if (retval.equals(bFile)) {
                     retval = bFile;
                     
-                } 
+                }
             }
         } catch (MalformedURLException ex) {
             retval = null;
@@ -259,14 +259,16 @@ public final class BrandingSupport {
             }
             
             brandedFiles.add(bFile);
+            bFile.modified = false;            
         }
     }
-
+    
     public void brandFile(final BrandedFile bFile, final Runnable saveTask) throws IOException {
         if (!bFile.isModified()) return;
-
+        
         saveTask.run();
-        brandedFiles.add(bFile);        
+        brandedFiles.add(bFile);
+        bFile.modified = false;
     }
     
     public void brandBundleKey(final BundleKey bundleKey) throws IOException {
@@ -305,6 +307,7 @@ public final class BrandingSupport {
                 File bundle2 = bKey.getBrandingBundle();
                 if (bundle2.equals(bundle)) {
                     brandedBundleKeys.add(bKey);
+                    bKey.modified = false;
                     brandedModules.add(bKey.getModuleEntry());
                 }
             }
@@ -520,7 +523,7 @@ public final class BrandingSupport {
             return  retval;
         }
         
-        private boolean isModified() {
+        boolean isModified() {
             return modified;
         }
         
@@ -594,5 +597,5 @@ public final class BrandingSupport {
             //if ()
             return  retval;
         }
-    }    
+    }
 }

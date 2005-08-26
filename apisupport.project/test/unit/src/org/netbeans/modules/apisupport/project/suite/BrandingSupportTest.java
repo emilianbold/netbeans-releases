@@ -90,11 +90,14 @@ public class BrandingSupportTest extends TestBase {
         
         assertEquals(bFile2, bFile);
         assertEquals(bFile2.getBrandingSource(), bFile.getBrandingSource());
+        assertFalse(bFile.isModified());        
         
         assertNotNull(bFile);
         assertEquals(0,instance.getBrandedFiles().size());
         assertFalse(instance.isBranded(bFile));
         instance.brandFile(bFile);
+        assertFalse(bFile.isModified());        
+        
         assertFalse(instance.isBranded(bFile));
         assertEquals(0,instance.getBrandedFiles().size());
         
@@ -102,8 +105,12 @@ public class BrandingSupportTest extends TestBase {
         assertEquals(0,instance.getBrandedFiles().size());
         
         bFile.setBrandingSource(newSource);
+        assertTrue(bFile.isModified());        
+        
         assertEquals(0,instance.getBrandedFiles().size());
         instance.brandFile(bFile);
+        assertFalse(bFile.isModified());        
+        
         
         assertEquals(1,instance.getBrandedFiles().size());
         assertTrue(instance.isBranded(bFile));
@@ -164,10 +171,13 @@ public class BrandingSupportTest extends TestBase {
         assertNotNull(instance.getBrandedBundleKeys());
         assertFalse(instance.getBrandedBundleKeys().contains(bKey));
         assertEquals(expectedValue, bKey.getValue());
-        
+        assertFalse(bKey.isModified());        
         
         bKey.setValue("brandedValue");
+        assertTrue(bKey.isModified());                
         instance.brandBundleKeys(bKeys);
+        assertFalse(bKey.isModified());        
+        
         assertTrue(instance.isBranded(bKey));
         assertTrue(instance.isBranded(bKey.getModuleEntry()));
         assertTrue(instance.getBrandingRoot().exists());
@@ -175,6 +185,7 @@ public class BrandingSupportTest extends TestBase {
         assertNotNull(instance.getBrandedBundleKeys());
         assertTrue(instance.getBrandedBundleKeys().contains(bKey));
         assertEquals("brandedValue", bKey.getValue());
+        
     }
     
 }

@@ -56,6 +56,10 @@ public final class SuiteProperties extends ModuleProperties {
     /** boolean variable to remember whether there were some changes */
     private boolean changedDisabledModules, changedDisabledClusters;
     
+    /** keeps all information related to branding*/
+    private final BasicBrandingModel brandingModel;
+    
+    
     /**
      * Creates a new instance of SuiteProperties
      */
@@ -69,6 +73,7 @@ public final class SuiteProperties extends ModuleProperties {
                 evaluator.getProperty("nbplatform.active")); // NOI18N
         this.disabledModules = getArrayProperty(evaluator, DISABLED_MODULES_PROPERTY);
         this.disabledClusters = getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY);
+        brandingModel = new BasicBrandingModel(this);
     }
     
     void refresh(Set/*<Project>*/ subModules) {
@@ -138,6 +143,7 @@ public final class SuiteProperties extends ModuleProperties {
      */
     void storeProperties() throws IOException {
         ModuleProperties.storePlatform(getHelper(), platform);
+        getBrandingModel().store();
         
         // store submodules if they've changed
         SuiteSubModulesListModel model = getModulesListModel();
@@ -161,7 +167,7 @@ public final class SuiteProperties extends ModuleProperties {
             setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
         }
         
-        super.storeProperties();
+        super.storeProperties();        
     }
     
     Set/*<Project>*/ getSubModules() {
@@ -183,5 +189,8 @@ public final class SuiteProperties extends ModuleProperties {
         return moduleListModel;
     }
     
+    BasicBrandingModel getBrandingModel() {
+        return brandingModel;
+    }    
 }
 

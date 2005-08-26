@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.lang.IllegalStateException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.apisupport.project.suite.BrandingSupport;
@@ -35,24 +38,45 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class BasicBrandingModel {
-    private String name;
-    private String title;
-    private boolean brandingEnabled;
     private BrandingSupport branding;
     private SuiteProperties suiteProps;
     
-    private BrandingSupport.BundleKey productInformation = null;
-    private BrandingSupport.BundleKey mainWindowTitle = null;
-    private BrandingSupport.BundleKey mainWindowTitleNoProject = null;
-    private BrandingSupport.BundleKey currentVersion = null;
-    
-    private BrandingSupport.BrandedFile icon = null;
-    
+    /** generated properties*/
     public static final String NAME_PROPERTY = "app.name";//NOI18N
     public static final String TITLE_PROPERTY = "app.title";//NOI18N
     public static final String ICON_LOCATION_PROPERTY = "app.icon";//NOI18N
     
     public static final String BRANDING_TOKEN_PROPERTY = "branding.token";//NOI18N
+    
+    /** for generating property branding.token*/
+    private boolean brandingEnabled;
+    
+    /** for properties (app.name, app.title, app.icon)*/
+    private String name;
+    private String title;
+    private BrandingSupport.BrandedFile icon = null;
+    
+    /** representation of bundle keys depending on app.title */
+    private BrandingSupport.BundleKey productInformation = null;
+    private BrandingSupport.BundleKey mainWindowTitle = null;
+    private BrandingSupport.BundleKey mainWindowTitleNoProject = null;
+    private BrandingSupport.BundleKey currentVersion = null;
+    
+    /** representation of bundle keys for splash section */
+    private BrandingSupport.BundleKey splashWidth = null;
+    private BrandingSupport.BundleKey splashHeight = null;
+    private BrandingSupport.BundleKey splashShowProgressBar = null;
+    private BrandingSupport.BundleKey splashRunningTextBounds = null;
+    private BrandingSupport.BundleKey splashProgressBarBounds = null;
+    private BrandingSupport.BundleKey splashRunningTextFontSize = null;
+    private BrandingSupport.BundleKey splashRunningTextColor = null;
+    private BrandingSupport.BundleKey splashProgressBarColor = null;
+    private BrandingSupport.BundleKey splashProgressBarEdgeColor = null;
+    private BrandingSupport.BundleKey splashProgressBarCornerColor = null;
+    
+    /**all above splash BundleKeys in set*/
+    private Set splashKeys = new HashSet();
+    
     
     /** Creates a new instance of ApplicationDetails */
     public BasicBrandingModel(final SuiteProperties suiteProps) {
@@ -78,6 +102,8 @@ public class BasicBrandingModel {
         }*/
         
         this.name = name;
+        suiteProps.setProperty(NAME_PROPERTY, getName());
+        suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");//NOI18N
     }
     
     public String getTitle() {
@@ -90,18 +116,16 @@ public class BasicBrandingModel {
         mainWindowTitle.setValue(title+ " {0}");//NOI18N
         mainWindowTitleNoProject.setValue(title+ " {0}");//NOI18N
         currentVersion.setValue(title+ " {0}");//NOI18N
+        suiteProps.setProperty(TITLE_PROPERTY, getTitle());
     }
     
     public URL getIconSource() {
         return icon.getBrandingSource();
     }
     
-    public void setIconSource(final File file) {
-        try {
-            icon.setBrandingSource(file);
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+    public void setIconSource(final URL url) {
+        icon.setBrandingSource(url);
+        suiteProps.setProperty(ICON_LOCATION_PROPERTY, getIconLocation());
     }
     
     public String getIconLocation() {
@@ -113,17 +137,13 @@ public class BasicBrandingModel {
     
     public void store() throws IOException {
         if (brandingEnabled) {
-            suiteProps.setProperty(NAME_PROPERTY, getName());
-            suiteProps.setProperty(TITLE_PROPERTY, getTitle());
-            suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");//NOI18N
-            suiteProps.setProperty(ICON_LOCATION_PROPERTY, getIconLocation());
-            
             getBranding().brandBundleKey(productInformation);
             getBranding().brandBundleKey(mainWindowTitle);
             getBranding().brandBundleKey(mainWindowTitleNoProject);
             getBranding().brandBundleKey(currentVersion);
             
             getBranding().brandFile(icon, getScaleAndStoreIconTask());
+            getBranding().brandBundleKeys(splashKeys);
             
         } else {
             suiteProps.removeProperty(BRANDING_TOKEN_PROPERTY);
@@ -165,12 +185,6 @@ public class BasicBrandingModel {
         initName();
         initTitle();
         brandingEnabled = (suiteProps.getProperty(BRANDING_TOKEN_PROPERTY) != null);
-        
-        /*try {
-            store();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }*/
     }
     
     private void initName()  {
@@ -179,7 +193,7 @@ public class BasicBrandingModel {
         }
         
         if (name == null) {
-            name = NbBundle.getBundle(getClass()).getString("APP_DefaultName");
+            name = NbBundle.getBundle(getClass()).getString("APP_DefaultName");//NOI18N
         }
         
         assert name != null;
@@ -190,7 +204,7 @@ public class BasicBrandingModel {
             String initTitle = suiteProps.getProperty(TITLE_PROPERTY);
             
             if (initTitle == null) {
-                initTitle = NbBundle.getBundle(getClass()).getString("APP_Title");
+                initTitle = NbBundle.getBundle(getClass()).getString("APP_Title");//NOI18N
             }
             assert initTitle != null;
             setTitle(initTitle);
@@ -199,35 +213,128 @@ public class BasicBrandingModel {
     
     private void initBundleKeys() {
         productInformation = getBranding().getBundleKey(
-                "org.netbeans.core",
-                "org/netbeans/core/ui/Bundle.properties" ,
+                "org.netbeans.core",//NOI18N
+                "org/netbeans/core/ui/Bundle.properties" ,//NOI18N
                 "LBL_ProductInformation");//NOI18N
         assert productInformation != null;
         
         mainWindowTitle = getBranding().getBundleKey(
-                "org.netbeans.core.windows",
+                "org.netbeans.core.windows",//NOI18N
                 "org/netbeans/core/windows/view/ui/Bundle.properties",
                 "CTL_MainWindow_Title");//NOI18N
         assert mainWindowTitle != null;
         
         mainWindowTitleNoProject = getBranding().getBundleKey(
-                "org.netbeans.core.windows",
-                "org/netbeans/core/windows/view/ui/Bundle.properties",
+                "org.netbeans.core.windows",//NOI18N
+                "org/netbeans/core/windows/view/ui/Bundle.properties",//NOI18N
                 "CTL_MainWindow_Title_No_Project");//NOI18N
         assert mainWindowTitleNoProject != null;
         
         currentVersion = getBranding().getBundleKey(
-                "org.netbeans.core.startup",
-                "org/netbeans/core/startup/Bundle.properties",
+                "org.netbeans.core.startup",//NOI18N
+                "org/netbeans/core/startup/Bundle.properties",//NOI18N
                 "currentVersion");//NOI18N
         assert currentVersion != null;
         
         icon = getBranding().getBrandedFile(
-                "org.netbeans.core.startup",
-                "org/netbeans/core/startup/frame48.gif");
+                "org.netbeans.core.startup",//NOI18N
+                "org/netbeans/core/startup/frame48.gif");//NOI18N
         assert icon != null;
         
+        // init of splash keys
+        splashKeys.clear();
+        splashKeys.add("SPLASH_WIDTH");//NOI18N
+        splashKeys.add("SPLASH_HEIGHT");//NOI18N
+        splashKeys.add("SplashShowProgressBar");//NOI18N
+        splashKeys.add("SplashRunningTextBounds");//NOI18N
+        splashKeys.add("SplashProgressBarBounds");//NOI18N
+        splashKeys.add("SplashRunningTextFontSize");//NOI18N
+        splashKeys.add("SplashRunningTextColor");//NOI18N
+        splashKeys.add("SplashProgressBarColor");//NOI18N
+        splashKeys.add("SplashProgressBarEdgeColor");//NOI18N
+        splashKeys.add("SplashProgressBarCornerColor");//NOI18N
         
+        splashKeys = getBranding().getBundleKeys(
+                "org.netbeans.core.startup",//NOI18N
+                "org/netbeans/core/startup/Bundle.properties",//NOI18N
+                splashKeys);//NOI18N
         
+        assert splashKeys != null;
+        
+        for (Iterator iterator = splashKeys.iterator(); iterator.hasNext();) {
+            BrandingSupport.BundleKey bKey = (BrandingSupport.BundleKey) iterator.next();
+            if (bKey.getKey().equals("SPLASH_WIDTH")) {//NOI18N
+                splashWidth = bKey;
+            } else if (bKey.getKey().equals("SPLASH_HEIGHT")) {//NOI18N
+                splashHeight = bKey;
+            }else if (bKey.getKey().equals("SplashShowProgressBar")) {//NOI18N
+                splashShowProgressBar = bKey;
+            } else if (bKey.getKey().equals("SplashRunningTextBounds")) {//NOI18N
+                splashRunningTextBounds = bKey;
+            } else if (bKey.getKey().equals("SplashProgressBarBounds")) {//NOI18N
+                splashProgressBarBounds = bKey;
+            } else if (bKey.getKey().equals("SplashRunningTextFontSize")) {//NOI18N
+                splashRunningTextFontSize = bKey;
+            } else if (bKey.getKey().equals("SplashRunningTextColor")) {//NOI18N
+                splashRunningTextColor = bKey;
+            } else if (bKey.getKey().equals("SplashProgressBarColor")) {//NOI18N
+                splashProgressBarColor = bKey;
+            } else if (bKey.getKey().equals("SplashProgressBarEdgeColor")) {//NOI18N
+                splashProgressBarEdgeColor = bKey;
+            } else if (bKey.getKey().equals("SplashProgressBarCornerColor")) {//NOI18N
+                splashProgressBarCornerColor = bKey;
+            }
+        }
+        
+        assert splashWidth != null;
+        assert splashHeight != null;
+        assert splashShowProgressBar != null;
+        assert splashRunningTextBounds != null;
+        assert splashProgressBarBounds != null;
+        assert splashRunningTextFontSize != null;
+        assert splashRunningTextColor != null;
+        assert splashProgressBarColor != null;
+        assert splashProgressBarEdgeColor != null;
+        assert splashProgressBarCornerColor != null;
+    }
+    
+    public BrandingSupport.BundleKey getSplashWidth() {
+        return splashWidth;
+    }
+    
+    public BrandingSupport.BundleKey getSplashHeight() {
+        return splashHeight;
+    }
+    
+    public BrandingSupport.BundleKey getSplashShowProgressBar() {
+        return splashShowProgressBar;
+    }
+    
+    public BrandingSupport.BundleKey getSplashRunningTextBounds() {
+        return splashRunningTextBounds;
+    }
+    
+    public BrandingSupport.BundleKey getSplashProgressBarBounds() {
+        return splashProgressBarBounds;
+    }
+    
+    public BrandingSupport.BundleKey getSplashRunningTextFontSize() {
+        return splashRunningTextFontSize;
+    }
+    
+    public BrandingSupport.BundleKey getSplashRunningTextColor() {
+        return splashRunningTextColor;
+    }
+    
+    public BrandingSupport.BundleKey getSplashProgressBarColor() {
+        return splashProgressBarColor;
+    }
+    
+    public BrandingSupport.BundleKey getSplashProgressBarEdgeColor() {
+        return splashProgressBarEdgeColor;
+    }
+    
+    public BrandingSupport.BundleKey getSplashProgressBarCornerColor() {
+        return splashProgressBarCornerColor;
     }
 }

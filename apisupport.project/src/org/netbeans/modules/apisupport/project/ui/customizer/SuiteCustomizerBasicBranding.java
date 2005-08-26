@@ -16,15 +16,17 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ResourceBundle;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Basic branding parameters</em> panel in Suite customizer.
@@ -32,8 +34,7 @@ import org.openide.ErrorManager;
  * @author Radek Matous
  */
 final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
-    
-    private BasicBrandingModel brandingModel;
+    private URL iconSource = null;
     
     /**
      * Creates new form SuiteCustomizerLibraries
@@ -41,45 +42,44 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps) {
         super(suiteProps);
         initComponents();
-        brandingModel = new BasicBrandingModel(getProperties());
         
-        DocumentListener nameListener = new UIUtil.DocumentAdapter() {
+        DocumentListener textFieldChangeListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
-                brandingModel.setName(nameValue.getText());
+                checkValidity();
             }
         };
         
-        DocumentListener titleListener = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                brandingModel.setTitle(titleValue.getText());
-            }
-        };
+        nameValue.getDocument().addDocumentListener(textFieldChangeListener);
+        titleValue.getDocument().addDocumentListener(textFieldChangeListener);
         
-        nameValue.getDocument().addDocumentListener(nameListener);
-        titleValue.getDocument().addDocumentListener(titleListener);
-        
-        nameValue.setText(brandingModel.getName());
-        titleValue.setText(brandingModel.getTitle());
-        buildWithBranding.setSelected(brandingModel.isBrandingEnabled());
-        buildWithBrandingChanged();
-        
-        ((ImagePreview)iconPreview).setImage(new ImageIcon(brandingModel.getIconSource()));
-        iconLocation.setText(brandingModel.getIconLocation());
+        refresh();
+    }
+    
+    
+    private void checkValidity() {
+        //TODO
     }
     
     void refresh() {
-        // TODO
+        buildWithBranding.setSelected(getBrandingModel().isBrandingEnabled());
+        nameValue.setText(getBrandingModel().getName());
+        titleValue.setText(getBrandingModel().getTitle());
+        iconSource = getBrandingModel().getIconSource();
+        ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
+        iconLocation.setText(getBrandingModel().getIconLocation());
+        
+        enableOrDisableComponents();
+        
     }
     
     public void store() {
-        try {
-            brandingModel.store();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
+        getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
+        getBrandingModel().setName(nameValue.getText());
+        getBrandingModel().setTitle(titleValue.getText());
+        getBrandingModel().setIconSource(iconSource);
     }
     
-    private void buildWithBrandingChanged() {
+    private void enableOrDisableComponents() {
         nameValue.setEnabled(buildWithBranding.isSelected());
         titleValue.setEnabled(buildWithBranding.isSelected());
         browse.setEnabled(buildWithBranding.isSelected());
@@ -204,30 +204,21 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     // </editor-fold>//GEN-END:initComponents
     
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-// TODO add your handling code here:
-        JFileChooser jf = new JFileChooser();
-        //TODO: write better filter (check format - not extension, 
-        //also png, jpg, case sensitivity, ...)
-        FileFilter ff = new FileFilter() {
-            public boolean accept(File f) {
-                return (f.isDirectory() || f.getName().endsWith(".gif"));//NOI18N
+        JFileChooser chooser = UIUtil.getIconFileChooser();
+        int ret = chooser.showDialog(this, NbBundle.getMessage(getClass(), "LBL_Select")); // NOI18N
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            File file =  chooser.getSelectedFile();
+            try {
+                iconSource = file.toURI().toURL();
+            } catch (MalformedURLException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-            public String getDescription() {
-                return "gif";//NOI18N
-            }
-        };
-        jf.setFileFilter(ff);
-        jf.showOpenDialog(this);
-        if (jf.getSelectedFile() != null) {
-            brandingModel.setIconSource(jf.getSelectedFile());
-            ((ImagePreview)iconPreview).setImage(new ImageIcon(brandingModel.getIconSource()));
+            ((ImagePreview)iconPreview).setImage(new ImageIcon(iconSource));
         }
-        
     }//GEN-LAST:event_browseActionPerformed
     
     private void buildWithBrandingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildWithBrandingActionPerformed
-        buildWithBrandingChanged();
-        brandingModel.setBrandingEnabled(buildWithBranding.isSelected());
+        enableOrDisableComponents();
     }//GEN-LAST:event_buildWithBrandingActionPerformed
     
     
@@ -281,6 +272,10 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
         private void setImage(ImageIcon image) {
             this.image = image;
             repaint();
-        }        
+        }
+    }
+    
+    private BasicBrandingModel getBrandingModel() {
+        return getProperties().getBrandingModel();
     }
 }
