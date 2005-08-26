@@ -132,6 +132,8 @@ public class Utils {
         }
         JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
         WebModule wm = WebModule.getWebModule (fo);
+        if (wm == null)
+            return null;
         
         String jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
         String contextPath = wm.getContextPath();
