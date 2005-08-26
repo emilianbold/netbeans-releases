@@ -35,6 +35,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.openide.ErrorManager;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -83,84 +84,114 @@ public class StartActionProvider extends ActionsProvider {
         if ( debugger != null && 
              debugger.getVirtualMachine () != null
         ) return;
+        
+        
+        debuggerImpl.setStarting ();
         final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
             lookupFirst (null, AbstractDICookie.class);
-        
-        // TODO: WHY a new Thread? use RequestProcessor instead!
-        Thread startingThread = new Thread (
-            new Runnable () {
-                public void run () {
-                    if (startVerbose)
-                        System.out.println ("\nS StartActionProvider." +
-                            "doAction ().thread"
-                        );
-                    try {
-                        VirtualMachine virtualMachine = cookie.
-                            getVirtualMachine ();
-                        virtualMachine.setDebugTraceMode (jdiTrace);
-                        
-                        final Object startLock = new Object();
-                        Operator o = createOperator (virtualMachine, startLock);
-                        synchronized (startLock) {
-                            if (startVerbose) System.out.println (
-                                    "\nS StartActionProvider.doAction () - " +
-                                    "starting operator thread"
-                                );
-                            o.start ();
-                            if (cookie instanceof ListeningDICookie) 
-                                startLock.wait(1500);
-                        }
-                        debuggerImpl.setRunning (
-                            virtualMachine,
-                            o
-                        );
-                        
-                        // PATCH #46295 JSP breakpoint isn't reached during 
-                        // second debugging
-                        if (cookie instanceof AttachingDICookie) {
-                            synchronized (debuggerImpl.LOCK) {
-                                virtualMachine.resume ();
-                            }
-                        }
-                        // PATCHEND Hanz
-                        
-                        if (startVerbose)
-                            System.out.println ("\nS StartActionProvider." +
-                                "doAction ().thread end: success"
-                            );
-                    } catch (IOException ioex) {
-                        if (startVerbose)
-                            System.out.println ("\nS StartActionProvider." +
-                                "doAction ().thread end: exception " + ioex
-                            );
-                        debuggerImpl.setException (ioex);
-                        ((Session) lookupProvider.lookupFirst 
-                            (null, Session.class)).kill ();
-                    } catch (Exception ex) {
-                        if (startVerbose)
-                            System.out.println ("\nS StartActionProvider." +
-                                "doAction ().thread end: exception " + ex
-                            );
-                        debuggerImpl.setException (ex);
-                        // Notify! Otherwise bugs in the code can not be located!!!
-                        ErrorManager.getDefault().notify(ex);
-                        ((Session) lookupProvider.lookupFirst 
-                            (null, Session.class)).kill ();
-                    }
-                }
-            },
-            "Debugger start"
-        );
+        doStartDebugger(cookie);
         if (startVerbose)
             System.out.println ("\nS StartActionProvider." +
                 "doAction () setStarting"
             );
-        debuggerImpl.setStarting (startingThread);
-        startingThread.start ();
         if (startVerbose)
             System.out.println ("\nS StartActionProvider." +
                 "doAction () end"
             );
+    }
+    
+    public void postAction(Object action, Runnable actionPerformedNotifier) {
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider.doAction ()");
+        JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
+            lookupFirst (null, JPDADebugger.class);
+        if ( debugger != null && 
+             debugger.getVirtualMachine () != null
+        ) return;
+        
+        
+        final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
+            lookupFirst (null, AbstractDICookie.class);
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                debuggerImpl.setStartingThread(Thread.currentThread());
+                try {
+                    doStartDebugger(cookie);
+                } finally {
+                    debuggerImpl.unsetStartingThread();
+                }
+                
+            }
+        });
+        debuggerImpl.setStarting ();
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "doAction () setStarting"
+            );
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "doAction () end"
+            );
+    }
+    
+    private void doStartDebugger(AbstractDICookie cookie) {
+        if (startVerbose)
+            System.out.println ("\nS StartActionProvider." +
+                "doAction ().thread"
+            );
+        try {
+            VirtualMachine virtualMachine = cookie.
+                getVirtualMachine ();
+            virtualMachine.setDebugTraceMode (jdiTrace);
+
+            final Object startLock = new Object();
+            Operator o = createOperator (virtualMachine, startLock);
+            synchronized (startLock) {
+                if (startVerbose) System.out.println (
+                        "\nS StartActionProvider.doAction () - " +
+                        "starting operator thread"
+                    );
+                o.start ();
+                if (cookie instanceof ListeningDICookie) 
+                    startLock.wait(1500);
+            }
+            debuggerImpl.setRunning (
+                virtualMachine,
+                o
+            );
+
+            // PATCH #46295 JSP breakpoint isn't reached during 
+            // second debugging
+            if (cookie instanceof AttachingDICookie) {
+                synchronized (debuggerImpl.LOCK) {
+                    virtualMachine.resume ();
+                }
+            }
+            // PATCHEND Hanz
+
+            if (startVerbose)
+                System.out.println ("\nS StartActionProvider." +
+                    "doAction ().thread end: success"
+                );
+        } catch (IOException ioex) {
+            if (startVerbose)
+                System.out.println ("\nS StartActionProvider." +
+                    "doAction ().thread end: exception " + ioex
+                );
+            debuggerImpl.setException (ioex);
+            ((Session) lookupProvider.lookupFirst 
+                (null, Session.class)).kill ();
+        } catch (Exception ex) {
+            if (startVerbose)
+                System.out.println ("\nS StartActionProvider." +
+                    "doAction ().thread end: exception " + ex
+                );
+            debuggerImpl.setException (ex);
+            // Notify! Otherwise bugs in the code can not be located!!!
+            ErrorManager.getDefault().notify(ex);
+            ((Session) lookupProvider.lookupFirst 
+                (null, Session.class)).kill ();
+        }
     }
 
     public boolean isEnabled (Object action) {

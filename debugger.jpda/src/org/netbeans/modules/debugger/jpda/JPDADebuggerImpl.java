@@ -597,9 +597,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return operator;
     }
 
-    public void setStarting (Thread startingThread) {
-        this.startingThread = startingThread;
+    public void setStarting () {
         setState (STATE_STARTING);
+    }
+    
+    public void setStartingThread (Thread startingThread) {
+        this.startingThread = startingThread;
+    }
+    
+    public void unsetStartingThread() {
+        this.startingThread = null;
     }
 
     public void setRunning (VirtualMachine vm, Operator o) {

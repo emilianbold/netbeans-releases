@@ -42,10 +42,12 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import org.netbeans.api.debugger.DebuggerEngine;
 
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
@@ -54,6 +56,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -287,8 +290,9 @@ Controller, ActionListener {
                         NbBundle.getMessage(ConnectPanel.class, "CTL_connectProgress"));
                 try {
                     progress.start();
+                    DebuggerEngine[] es = null;
                     if (connector instanceof AttachingConnector)
-                        DebuggerManager.getDebuggerManager ().startDebugging (
+                        es = DebuggerManager.getDebuggerManager ().startDebugging (
                             DebuggerInfo.create (
                                 AttachingDICookie.ID,
                                 new Object [] {
@@ -301,7 +305,7 @@ Controller, ActionListener {
                         );
                     else
                     if (connector instanceof ListeningConnector)
-                        DebuggerManager.getDebuggerManager ().startDebugging (
+                        es = DebuggerManager.getDebuggerManager ().startDebugging (
                             DebuggerInfo.create (
                                 ListeningDICookie.ID,
                                 new Object [] {
@@ -312,6 +316,19 @@ Controller, ActionListener {
                                 }
                             )
                         );
+                    if (es != null) {
+                        for (int i = 0; i < es.length; i++) {
+                            JPDADebugger d = (JPDADebugger) es [i].lookupFirst 
+                                (null, JPDADebugger.class);
+                            if (d == null) continue;
+                            try {
+                                d.waitRunning ();
+                            } catch (DebuggerStartException dsex) {
+                                //ErrorManager.getDefault().notify(ErrorManager.USER, dsex);
+                                // Not necessary to notify - message written to debugger console.
+                            }
+                        }
+                    }
                 } finally {
                     progress.finish();
                 }

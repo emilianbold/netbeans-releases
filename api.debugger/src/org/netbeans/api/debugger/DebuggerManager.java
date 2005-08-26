@@ -313,7 +313,7 @@ public final class DebuggerManager {
         
         k = engines.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerEngine) engines.get (i)).getActionsManager ().doAction 
+            ((DebuggerEngine) engines.get (i)).getActionsManager ().postAction 
                 (ActionsManager.ACTION_START);
         }
         
