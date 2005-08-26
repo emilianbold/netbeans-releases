@@ -24,16 +24,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+//import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.WebProjectGenerator;
+//import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.netbeans.modules.web.project.api.WebProjectUtilities;
+import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 
 
 /**
@@ -53,8 +55,11 @@ public class Util {
     public static final String DEFAULT_APPSRV_ID
             = "deployer:Sun:AppServer::localhost:4848";
     
+//    public static final String DEFAULT_SRC_STRUCTURE
+//            = WebProjectGenerator.SRC_STRUCT_BLUEPRINTS;
+    
     public static final String DEFAULT_SRC_STRUCTURE
-            = WebProjectGenerator.SRC_STRUCT_BLUEPRINTS;
+            = WebProjectUtilities.SRC_STRUCT_BLUEPRINTS;
     
     /** Creates a new instance of J2eeProjectSupport */
     private Util() {
@@ -160,7 +165,7 @@ public class Util {
                     if (params == null){
                         params = new String[] {DEFAULT_APPSRV_ID, DEFAULT_SRC_STRUCTURE, DEFAULT_J2EE_LEVEL};
                     }
-                    WebProjectGenerator.createProject(projectDir, name, params[0], params[1], params[2], name);
+                    WebProjectUtilities.createProject(projectDir, name, params[0], params[1], params[2], name);
                     break;
                 case EJB_PROJECT:
                     //params[0] = j2eeLevel

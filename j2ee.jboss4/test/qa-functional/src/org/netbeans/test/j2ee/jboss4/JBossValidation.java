@@ -25,6 +25,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.test.j2ee.lib.Util;
+import org.netbeans.test.j2ee.lib.ProgressOperator;
 import java.awt.event.KeyEvent;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -38,6 +39,10 @@ import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jemmy.operators.*;
 import java.util.*;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.*;
+import org.netbeans.test.j2ee.lib.ProgressOperator;
+import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jellytools.properties.Property;
 
 /**
  *
@@ -48,7 +53,6 @@ public class JBossValidation extends JellyTestCase {
     public static final String PROJECT_NAME = "TestDeployDebugWebApp";
     public static final String EJB_PROJECT_NAME = "ejb";
     public static final String EJB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + EJB_PROJECT_NAME;
-    public static final String JBOSS_PATH = "E:\\Work\\Appservers\\jboss-4.0.1sp1\\jboss-4.0.1sp1";
     public static final String WEB_PROJECT_PATH = System.getProperty("xtest.tmpdir") + File.separator + PROJECT_NAME;
     
     
@@ -66,10 +70,9 @@ public class JBossValidation extends JellyTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new JBossValidation("addDefaultJBoss"));
         suite.addTest(new JBossValidation("redeployWebModule"));
-        suite.addTest(new JBossValidation("stopJBoss"));
-        suite.addTest(new JBossValidation("runDebugWebModule"));
-        suite.addTest(new JBossValidation("stopJBoss"));
         suite.addTest(new JBossValidation("deployEJBModule"));
+        suite.addTest(new JBossValidation("setSwingBrowser"));
+        suite.addTest(new JBossValidation("debugWebModule"));
         suite.addTest(new JBossValidation("stopJBoss"));
         return suite;
     }
@@ -118,66 +121,15 @@ public class JBossValidation extends JellyTestCase {
         addJBoss("all");
     }
     
-    // Starts JBoss server in default mode - working
-    public void startJBoss(){
-        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
-                                   +"|JBoss");
-                
-        serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_StartStopServer"));
-        JFrameOperator status = new JFrameOperator("Server Status");
-        JButtonOperator startStopButton;
-        startStopButton = new JButtonOperator(status,Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_StartServer"));
-        startStopButton.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 300000);
-        try { startStopButton.waitComponentEnabled(); }
-        catch (InterruptedException e) { }
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        startStopButton.push();
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();        
-
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-    }
-    
-    // Starts JBoss server id debug mode - working
-    public void startJBossDebug(){
-        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
-                                   +"|JBoss");
-                
-        serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_StartStopServer"));
-        JFrameOperator status = new JFrameOperator("Server Status");
-        JButtonOperator startStopButton;
-        startStopButton = new JButtonOperator(status,Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_StartDebugServer"));
-        startStopButton.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 300000);
-        try { startStopButton.waitComponentEnabled(); }
-        catch (InterruptedException e) { }
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        startStopButton.push();
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();        
-
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-    }
     
     // Stops running JBoss server - working,test of working server recommended to add
     public void stopJBoss(){
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
         Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
                                    +"|JBoss");        
-        serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_StartStopServer"));
-        JFrameOperator status = new JFrameOperator("Server Status");
-        JButtonOperator startStopButton;
-        startStopButton = new JButtonOperator(status,Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_StopServer"));
-        startStopButton.getTimeouts().setTimeout("ComponentOperator.WaitComponentEnabledTimeout", 300000);
-        try { startStopButton.waitComponentEnabled(); }
-        catch (InterruptedException e) { }
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        startStopButton.push();
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();        
-
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_Stop"));
+        org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished("Stopping JBoss Application Server 4.0",300000);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
     }
     
      public void refreshJBoss(){  
@@ -221,20 +173,7 @@ public class JBossValidation extends JellyTestCase {
         //new ProjectsTabOperator();
     }
      
-    // Deploys web module on JBoss - working
-    public void deployWebModule() {
-        System.err.println(WEB_PROJECT_PATH);
-        Util.openProject(WEB_PROJECT_PATH);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        ProjectsTabOperator projectTab=ProjectsTabOperator.invoke();
-        ProjectRootNode prn = projectTab.getProjectRootNode(PROJECT_NAME);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_RedeployAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        JFrameOperator status = new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","LBL_Deploy_Progress_Monitor"));
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();
-    }  
+   
    
    // Deploys web module on JBoss twice - working 
     public void redeployWebModule() {
@@ -245,15 +184,13 @@ public class JBossValidation extends JellyTestCase {
         ProjectRootNode prn = projectTab.getProjectRootNode(PROJECT_NAME);
         new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
         prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_RedeployAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        JFrameOperator status = new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","LBL_Deploy_Progress_Monitor"));
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+PROJECT_NAME+" (run-deploy)");
+        projectTab=ProjectsTabOperator.invoke();
+        prn = projectTab.getProjectRootNode(PROJECT_NAME);
         prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_RedeployAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 500000);
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+PROJECT_NAME+" (run-deploy)");
     }  
     // Debugs web module on JBoss - working
     public void debugWebModule() {
@@ -263,34 +200,12 @@ public class JBossValidation extends JellyTestCase {
         ProjectsTabOperator projectTab=ProjectsTabOperator.invoke();
         ProjectRootNode prn = projectTab.getProjectRootNode(PROJECT_NAME);
         new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_DebugAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        JFrameOperator status = new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","LBL_Deploy_Progress_Monitor"));
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();
+        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_DebugAction_Name"));
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
+        MainWindowOperator.getDefault().waitStatusText("User program running");
+        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
     }  
     
-    // Deploys web module on JBoss and then debugs it - working partially
-    public void runDebugWebModule() {
-        System.err.println(WEB_PROJECT_PATH);
-        Util.openProject(WEB_PROJECT_PATH);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        ProjectsTabOperator projectTab=ProjectsTabOperator.invoke();
-        ProjectRootNode prn = projectTab.getProjectRootNode(PROJECT_NAME);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_RedeployAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        JFrameOperator status = new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","LBL_Deploy_Progress_Monitor"));
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_DebugAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        JFrameOperator status2 = new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","LBL_Deploy_Progress_Monitor"));
-        status2.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status2.waitClosed();
-        
-    }  
     
     public void deployEJBModule() {
         System.err.println(EJB_PROJECT_PATH);
@@ -300,14 +215,73 @@ public class JBossValidation extends JellyTestCase {
         ProjectRootNode prn = projectTab.getProjectRootNode(EJB_PROJECT_NAME);
         new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
         prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_RedeployAction_Name"));
-        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
-        JFrameOperator status = new JFrameOperator(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle","LBL_Deploy_Progress_Monitor"));
-        status.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 300000);
-        status.waitClosed();
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
+        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (run)");
+        //new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
+        
     }
     
+   // Starts JBoss server in default mode - working
+    public void startJBoss(){
+        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
+        Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
+                                   +"|JBoss");
+                
+        serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "LBL_Start"));
+        org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished("Starting JBoss Application Server 4.0",300000);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+    }
     
+    // Starts JBoss server id debug mode - working
+    public void startJBossDebug(){
+        RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
+        Node serverNode = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
+                                   +"|JBoss");
+                
+        serverNode.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_DebugOutput"));
+       // org.netbeans.test.j2ee.lib.ProgressOperator.waitFinished();
+        new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
+    }
     
+     // Deploys web module on JBoss - working
+    public void deployWebModule() {
+        System.err.println(WEB_PROJECT_PATH);
+        Util.openProject(WEB_PROJECT_PATH);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        ProjectsTabOperator projectTab=ProjectsTabOperator.invoke();
+        ProjectRootNode prn = projectTab.getProjectRootNode(PROJECT_NAME);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.Bundle", "LBL_RedeployAction_Name"));
+        MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 300000);
+        MainWindowOperator.getDefault().waitStatusText("Finished building "+PROJECT_NAME+" (run-deploy)");
+
+    }  
+    
+     // Deploys web module on JBoss and then debugs it - working partially
+    public void runDebugWebModule() {
+        System.err.println(WEB_PROJECT_PATH);
+        Util.openProject(WEB_PROJECT_PATH);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        ProjectsTabOperator projectTab=ProjectsTabOperator.invoke();
+        ProjectRootNode prn = projectTab.getProjectRootNode(PROJECT_NAME);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_RedeployAction_Name"));
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        projectTab=ProjectsTabOperator.invoke();
+        prn = projectTab.getProjectRootNode(PROJECT_NAME);
+        prn.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.Bundle", "LBL_DebugAction_Name"));
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        
+    }  
+    
+    //Sets the web browser to Swing
+    public static void setSwingBrowser() {
+        OptionsOperator optionsOper = OptionsOperator.invoke();
+        new JComboBoxOperator(optionsOper,0).selectItem("Swing HTML Browser");
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+        new JButtonOperator(optionsOper,"OK").push();
+        new org.netbeans.jemmy.EventTool().waitNoEvent(1000);
+    }
    
     
     /** Use for execution inside IDE */
@@ -316,4 +290,5 @@ public class JBossValidation extends JellyTestCase {
         TestRunner.run(suite());
     }
     
+
 }
