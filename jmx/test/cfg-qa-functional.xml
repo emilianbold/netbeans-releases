@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateTwoFeatureMBean.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateAttributeWrapperMBean.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/CreateOperationWrapperMBean.class"/>
-                <include name="org/netbeans/modules/jmx/test/mbeanwizard/UITests.class"/>
+                <!--<include name="org/netbeans/modules/jmx/test/mbeanwizard/UITests.class"/>-->
                 <include name="org/netbeans/modules/jmx/test/helpers/CloseAllDocuments.class"/>
                 <include name="org/netbeans/modules/jmx/test/mbeanwizard/RunUnitMBeanTests.class"/>
                 <include name="org/netbeans/modules/jmx/test/configwizard/ConfigWizardValidation.class"/>
