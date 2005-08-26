@@ -60,6 +60,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.testrunner.mode" value="testsuite"/>        
 
         <property name="xtest.debug.port" value="0"/>
+        <property name="xtest.debug.address" value=""/>
         <property name="xtest.debug.suspend" value="true"/>
         <property name="xtest.enable.assertions" value="true"/>
         
