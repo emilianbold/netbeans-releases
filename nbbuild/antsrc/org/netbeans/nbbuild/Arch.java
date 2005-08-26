@@ -550,7 +550,8 @@ public class Arch extends Task implements ErrorHandler {
             result.append("../"); // URI, so pathsep is /
             f = f.getParentFile();
         }
-        return "${nbroot}/";
+        throw new BuildException("No nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd found for any parent dir of file: " + f);
+        //return "${nbroot}/";
     }
     
     private void generateTemplateFile (String versionOfQuestions, Set missing) throws IOException {
