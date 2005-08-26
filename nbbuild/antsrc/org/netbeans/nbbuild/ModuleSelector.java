@@ -214,6 +214,9 @@ public final class ModuleSelector extends org.apache.tools.ant.types.selectors.B
                     } catch (SAXException ex) {
                         throw new BuildException("Wrong file " + where, ex);
                     }
+                    
+                    // the update tracking file belongs to the moduel as well
+                    files.put(where.getParentFile().getName() + '/' + where.getName(), module);
                 }
             }
         }

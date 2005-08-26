@@ -140,7 +140,7 @@ public class ModuleSelectorTest extends NbTestCase {
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         
-        File trackingFile = new File(getWorkDir(), "org-my-module.xml");
+        File trackingFile = new File(updateTracking, "org-my-module.xml");
         FileWriter w = new FileWriter(trackingFile);
         w.write(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -183,6 +183,7 @@ public class ModuleSelectorTest extends NbTestCase {
         
         assertTrue("module accepted", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
         assertTrue("its file as well", selector.isSelected(getWorkDir(), "ant/bin/ant.bat", new File(aModule.getParent(), "ant/bin/ant.bat")));
+        assertTrue("also the tracking file is accepted", selector.isSelected(getWorkDir(), "update-tracking/" + trackingFile.getName(), trackingFile));
     }
     
     private final File createNewJarFile () throws IOException {
