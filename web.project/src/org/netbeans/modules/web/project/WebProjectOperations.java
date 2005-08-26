@@ -13,25 +13,36 @@
 
 package org.netbeans.modules.web.project;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
+import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class WebProjectOperations implements DeleteOperationImplementation {
+public class WebProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private WebProject project;
     
@@ -114,4 +125,89 @@ public class WebProjectOperations implements DeleteOperationImplementation {
         project.getAntProjectHelper().notifyDeleted();
     }
     
+    public void notifyCopying() {
+        //nothing.
+    }
+    
+    public void notifyCopied(Project original, File originalPath, String nueName) {
+        if (project == original) { //TODO: this is illegal
+            //do nothing for the original project.
+            return ;
+        }
+        
+        project.getReferenceHelper().fixReferences(originalPath);
+        
+        project.setName(nueName);
+    }
+    
+    public void notifyMoving() throws IOException {
+        notifyDeleting();
+    }
+    
+    public void notifyMoved(Project original, File originalPath, String nueName) {
+        if (project == original) { //TODO: this is illegal
+            //do nothing for the original project.
+            return ;
+        }
+        
+        project.setName(nueName);
+        fixExternalSources(originalPath, project.getSourceRoots());
+        fixExternalSources(originalPath, project.getTestSourceRoots());
+    }
+    
+    private void fixExternalSources(final File originalPath, final SourceRoots sr) {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+                public Object run() throws IOException {
+                    File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
+                    String[] srcProps = sr.getRootProperties();
+                    String[] names = sr.getRootNames();
+                    List/*<URL>*/ roots = new ArrayList();
+                    List/*<String>*/ displayNames = new ArrayList();
+                    for (int i = 0; i < srcProps.length; i++) {
+                        String prop = project.evaluator().getProperty(srcProps[i]);
+                        if (prop != null) {
+                            FileObject nueFile = null;
+                            File originalFile = PropertyUtils.resolveFile(originalPath, prop);
+                            
+                            if (isParent(originalPath, originalFile)) {
+                                nueFile = FileUtil.toFileObject(PropertyUtils.resolveFile(projectDirectory, prop));
+                            } else {
+                                nueFile = FileUtil.toFileObject(originalFile);
+                            }
+                            
+                            if (nueFile == null) {
+                                continue;
+                            }
+                            if (FileUtil.isArchiveFile(nueFile)) {
+                                nueFile = FileUtil.getArchiveRoot(nueFile);
+                            }
+                            roots.add(nueFile.getURL());
+                            displayNames.add(sr.getRootDisplayName(names[i], srcProps[i]));
+                        }
+                    }
+                    
+                    sr.putRoots((URL[] ) roots.toArray(new URL[0]), (String[] ) displayNames.toArray(new String[0])); //XXX
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    private static boolean isParent(File folder, File fo) {
+        if (folder.equals(fo))
+            return false;
+        
+        while (fo != null) {
+            if (fo.equals(folder))
+                return true;
+            
+            fo = fo.getParentFile();
+        }
+        
+        return false;
+    }
+
 }

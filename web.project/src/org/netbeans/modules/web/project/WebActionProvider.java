@@ -104,7 +104,10 @@ class WebActionProvider implements ActionProvider {
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
         COMMAND_VERIFY,
-        COMMAND_DELETE
+        COMMAND_DELETE,
+        COMMAND_COPY,
+        COMMAND_MOVE,
+        COMMAND_RENAME
     };
     
     // Project
@@ -156,7 +159,22 @@ class WebActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
+                
+        if (COMMAND_COPY.equals(command)) {
+            DefaultProjectOperations.performDefaultCopyOperation(project);
+            return ;
+        }
         
+        if (COMMAND_MOVE.equals(command)) {
+            DefaultProjectOperations.performDefaultMoveOperation(project);
+            return ;
+        }
+        
+        if (COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            return ;
+        }
+
         Runnable action = new Runnable () {
             public void run () {
                 Properties p = new Properties();

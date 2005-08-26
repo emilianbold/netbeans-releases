@@ -452,6 +452,31 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         });
     }
     
+    /** Store configured project name. */
+    public void setName(final String name) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = helper.getPrimaryConfigurationData(true);
+                // XXX replace by XMLUtil when that has findElement, findText, etc.
+                NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                Element nameEl;
+                if (nl.getLength() == 1) {
+                    nameEl = (Element) nl.item(0);
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
+                }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                helper.putPrimaryConfigurationData(data, true);
+                return null;
+            }
+        });
+    }
+
     public void registerJ2eePlatformListener(final J2eePlatform platform) {
         // listen to classpath changes
         j2eePlatformListener = new PropertyChangeListener() {
