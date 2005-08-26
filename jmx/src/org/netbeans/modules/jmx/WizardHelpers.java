@@ -380,6 +380,8 @@ public class WizardHelpers
     }
     
     public static String getSimpleName(String type) {
+        if (type.endsWith("[]")) //NOI18N
+            return getSimpleName(type.substring(0, type.length() - 2)) + "[]"; //NOI18N
         String resultType = type;
         if (type.equals(WizardConstants.BOOLEAN_OBJ_FULLNAME)) {
             resultType = WizardConstants.BOOLEAN_OBJ_NAME;
@@ -411,6 +413,8 @@ public class WizardHelpers
      * @return <CODE>String</CODE> code to get full type name.
      */
     public static String getFullTypeName(String type) {
+        if (type.endsWith("[]")) //NOI18N
+            return getFullTypeName(type.substring(0, type.length() - 2)) + "[]"; //NOI18N
         String resultType = type;
         if (type.equals(WizardConstants.BOOLEAN_OBJ_NAME)) {
             resultType = WizardConstants.BOOLEAN_OBJ_FULLNAME;
