@@ -372,7 +372,7 @@ public final class LayoutInterval implements LayoutConstants {
 
     // -----
 
-    LayoutInterval getParent() {
+    public LayoutInterval getParent() {
         return parentInterval;
     }
 
