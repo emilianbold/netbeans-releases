@@ -379,6 +379,32 @@ public class WizardHelpers
         return resultType;
     }
     
+    public static String getSimpleName(String type) {
+        String resultType = type;
+        if (type.equals(WizardConstants.BOOLEAN_OBJ_FULLNAME)) {
+            resultType = WizardConstants.BOOLEAN_OBJ_NAME;
+        } else if (type.equals(WizardConstants.BYTE_OBJ_FULLNAME)) {
+            resultType = WizardConstants.BYTE_OBJ_NAME;
+        } else if (type.equals(WizardConstants.CHAR_OBJ_FULLNAME)) {
+            resultType = WizardConstants.CHAR_OBJ_NAME;
+        } else if (type.equals(WizardConstants.INTEGER_OBJ_FULLNAME)) {
+            resultType = WizardConstants.INTEGER_OBJ_NAME;
+        } else if (type.equals(WizardConstants.LONG_OBJ_FULLNAME)) {
+            resultType = WizardConstants.LONG_OBJ_NAME;
+        } else if (type.equals(WizardConstants.DATE_OBJ_FULLNAME)) {
+            resultType = WizardConstants.DATE_OBJ_NAME;
+        } else if (type.equals(WizardConstants.STRING_OBJ_FULLNAME)) {
+            resultType = WizardConstants.STRING_OBJ_NAME;
+        } else if (type.equals(WizardConstants.OBJECTNAME_FULLNAME)) {
+            resultType = WizardConstants.OBJECTNAME_NAME;
+        } else if (type.equals(WizardConstants.FLOAT_OBJ_FULLNAME)) {
+            resultType = WizardConstants.FLOAT_OBJ_NAME;
+        } else if (type.equals(WizardConstants.DOUBLE_OBJ_FULLNAME)) {
+            resultType = WizardConstants.DOUBLE_OBJ_NAME;
+        }
+        return resultType;
+    }
+    
     /**
      * Returns the full type name of the type.
      * @param type <CODE>String</CODE> a type name
