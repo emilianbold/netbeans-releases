@@ -146,7 +146,7 @@
     </tocitem>
       <tocitem text="Using the Word Match Feature" target="editing.wordmatch"/>
       <tocitem text="Using the Jump List" target="editing.jumplist"/>
-      <tocitem text="Managing Import Statements" target="editing.fastimport"/>
+      <tocitem text="Managing Java Import Statements" target="editing.fastimport"/>
     <tocitem text="Synchronizing Source With an Interface" target="java.sync.new-interface" />
     <tocitem text="Overriding and Implementing Methods" target="java.override" />
     <tocitem text="Working With Beans">
