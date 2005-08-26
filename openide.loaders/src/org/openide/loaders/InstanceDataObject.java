@@ -7,29 +7,63 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.Writer;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-
-import org.openide.*;
-import org.openide.cookies.*;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.loaders.*;
+import org.openide.ErrorManager;
+import org.openide.ServiceType;
+import org.openide.actions.DeleteAction;
+import org.openide.cookies.InstanceCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.*;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.Enumerations;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.actions.*;
-import org.openide.nodes.*;
-import java.util.List;
+import org.openide.util.WeakSet;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /** A data object whose only purpose is to supply <code>InstanceCookie</code>.
 * The instances are created by default instantiation; the name of the class
@@ -502,7 +536,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             InstanceDataObject.this.delete();
         }
         protected SystemAction[] createActions() {
-            return new SystemAction[] {SystemAction.get(org.openide.actions.DeleteAction.class)};
+            return new SystemAction[] {SystemAction.get(DeleteAction.class)};
         }
 
     }
@@ -514,9 +548,9 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
      */
     private final class CookieAdjustingFilter extends FilterNode {
         public CookieAdjustingFilter(Node n) {
-            super(n, null, new org.openide.util.lookup.ProxyLookup (new org.openide.util.Lookup[] {
+            super(n, null, new ProxyLookup(new Lookup[] {
                 n.getLookup (),
-                org.openide.util.lookup.Lookups.singleton(InstanceDataObject.this)
+                Lookups.singleton(InstanceDataObject.this),
             }));
         }
         
@@ -664,7 +698,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @exception ClassNotFoundException the class has not been found
     */
     public Class instanceClass ()
-    throws java.io.IOException, ClassNotFoundException {
+    throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();
         if (delegateIC == null) return this.getClass();
         return delegateIC.instanceClass ();
@@ -686,7 +720,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     * @exception ClassNotFoundException the class has not been found
     */
     public Object instanceCreate ()
-    throws java.io.IOException, ClassNotFoundException {
+    throws IOException, ClassNotFoundException {
         InstanceCookie delegateIC = delegateIC ();
         if (delegateIC == null) return this;
         return delegateIC.instanceCreate ();
@@ -1042,7 +1076,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private static final class Ser extends InstanceSupport
     implements Runnable {
         /** the reference to the bean, so it is created just once when used */
-        private java.lang.ref.Reference bean = new java.lang.ref.SoftReference (null);
+        private Reference bean = new SoftReference(null);
         /** last time the bean was read from a file */
         private long saveTime;
 
@@ -1078,7 +1112,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             // first of all try "instanceClass" property of the primary file
             Object attr = fo.getAttribute (EA_INSTANCE_CLASS);
             if (attr instanceof String) {
-                return org.openide.util.Utilities.translate((String) attr);
+                return Utilities.translate((String) attr);
             } else if (attr != null) {
                 err.log(ErrorManager.WARNING,
                     "instanceClass was a " + attr.getClass().getName()); // NOI18N
@@ -1108,7 +1142,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
 
             name = name.replace ('-', '.');
-            name = org.openide.util.Utilities.translate(name);
+            name = Utilities.translate(name);
 
             //System.out.println ("Original: " + getPrimaryFile ().getName () + " new one: " + name); // NOI18N
             return name;
@@ -1118,11 +1152,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         * assignable.
         */
         public Class instanceClass() throws IOException, ClassNotFoundException {
-            Class type = super.instanceClass (customClassLoader);
-
-            updateListOfClasses (type, entry ().getFile ());
-
-            return type;
+            return super.instanceClass (customClassLoader);
         }
 
         /** Uses the cache to answer this question without loading the class itself, if the
@@ -1181,14 +1211,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
 
             // remember the created value
-            bean = new java.lang.ref.SoftReference (o);
+            bean = new SoftReference(o);
             return o;
         }
 
         /** Checks whether the instance was created by this object.
          */
         final boolean creatorOf (Object inst) {
-            java.lang.ref.Reference r = bean;
+            Reference r = bean;
             return r != null && r.get () == inst;
         }
         
@@ -1259,46 +1289,6 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             }
             // means no cache exists
             return null;
-        }
-
-        /** Updates list of classes.
-        * @param type the object to be stored
-        * @param fo file object to store the attribute to
-        */
-        private static void updateListOfClasses (Class type, FileObject fo) {
-            StringBuffer sb = null;
-            HashSet added;
-
-            // check whether all already defined EA_INSTANCE_OF are valid
-            boolean update;
-            Object obj = fo.getAttribute (EA_INSTANCE_OF);
-            if (obj instanceof String) {
-                update = false;
-
-                sb = new StringBuffer (1024);
-                added = new HashSet (101);
-                added.add ("java.lang.Object"); // NOI18N
-                collectType (type, sb, added);
-
-                StringTokenizer tok = new StringTokenizer ((String)obj, ",;:"); // NOI18N
-                while (tok.hasMoreTokens ()) {
-                    if (!added.contains (tok.nextToken ().trim())) {
-                        update = true;
-                        break;
-                    }
-                }
-            } else {
-                // attribute is missing
-                update = false;
-            }
-
-            if (update) {
-                try {
-                    fo.setAttribute (EA_INSTANCE_OF, sb.toString ());
-                } catch (IOException ex) {
-                    // ignore!? probably no reason to report it
-                }
-            }
         }
 
         /** Converts type to string.
@@ -1454,16 +1444,16 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private static void convertorWriteMethod(Object convertor, Writer w, Object inst) throws IOException {
         Throwable e = null;
         try {
-            java.lang.reflect.Method method = convertor.getClass().getMethod(
+            Method method = convertor.getClass().getMethod(
                 "write", // NOI18N
-                new Class[] {java.io.Writer.class, Object.class});
+                new Class[] {Writer.class, Object.class});
             method.setAccessible(true);
             method.invoke(convertor, new Object[] {w, inst});
         } catch (NoSuchMethodException ex) {
             e = ex;
         } catch (IllegalAccessException ex) {
             e = ex;
-        } catch (java.lang.reflect.InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             e = ex.getTargetException();
             if (e instanceof IOException) throw (IOException) e;
         }
@@ -1523,7 +1513,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
     private static void convertorSetInstanceMethod(Object convertor, Object inst, boolean save) throws IOException {
         Exception e = null;
         try {
-            java.lang.reflect.Method method = convertor.getClass().getMethod(
+            Method method = convertor.getClass().getMethod(
                 "setInstance", // NOI18N
                 new Class[] {Object.class, Boolean.TYPE});
             method.setAccessible(true);
@@ -1533,7 +1523,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             e = ex;
         } catch (IllegalAccessException ex) {
             e = ex;
-        } catch (java.lang.reflect.InvocationTargetException ex) {
+        } catch (InvocationTargetException ex) {
             e = ex;
             if (ex.getTargetException() instanceof IOException) {
                 throw (IOException) ex.getTargetException();
@@ -1548,7 +1538,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     /** filenames list of just created files; sync purpose */
     private static final List createdIDOs =
-        java.util.Collections.synchronizedList(new java.util.ArrayList(1));
+        Collections.synchronizedList(new ArrayList(1));
 
     /** helper allowing a Writer to provide context via Lookup.Provider
      */
@@ -1576,7 +1566,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
         public Lookup getLookup() {
             if (lookup == null) {
-                lookup = org.openide.util.lookup.Lookups.singleton(ctx);
+                lookup = Lookups.singleton(ctx);
             }
             return lookup;
         }
@@ -1622,8 +1612,8 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return fo == null? null: fo.getAttribute(attrName);
         }
 
-        public java.util.Enumeration getAttributes() {
-            return fo == null? org.openide.util.Enumerations.empty(): fo.getAttributes();
+        public Enumeration getAttributes() {
+            return fo == null? Enumerations.empty(): fo.getAttributes();
         }
 
         public FileObject[] getChildren() {
@@ -1642,7 +1632,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return parent.getFileSystem();
         }
 
-        public java.io.InputStream getInputStream() throws java.io.FileNotFoundException {
+        public InputStream getInputStream() throws FileNotFoundException {
             throw new UnsupportedOperationException(UNSUPPORTED);
         }
 
@@ -1650,7 +1640,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return name;
         }
 
-        public java.io.OutputStream getOutputStream(FileLock lock) throws java.io.IOException {
+        public OutputStream getOutputStream(FileLock lock) throws IOException {
             throw new UnsupportedOperationException(UNSUPPORTED);
         }
 
@@ -1682,7 +1672,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             return fo == null? false: fo.isValid();
         }
 
-        public java.util.Date lastModified() {
+        public Date lastModified() {
             return fo == null? parent.lastModified(): fo.lastModified();
         }
 
