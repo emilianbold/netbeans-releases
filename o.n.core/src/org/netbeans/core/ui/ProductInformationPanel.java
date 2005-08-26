@@ -74,6 +74,12 @@ public class ProductInformationPanel extends JPanel {
         updateLabelFont(ideInstallValueField, COLOR);
         updateLabelFont(userDirValueLabel, COLOR);
         
+        if (ideInstallValueField.getText().length() == 0) {
+            // Running in JNLP mode. This field is irrelevant.
+            ideInstallLabel.setVisible(false);
+            ideInstallValueField.setVisible(false);
+            // XXX should currentDirValueLabel be hidden too? not much use...
+        }
     }
 
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
