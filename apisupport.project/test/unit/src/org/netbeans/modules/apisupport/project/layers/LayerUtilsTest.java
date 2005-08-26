@@ -50,12 +50,12 @@ public class LayerUtilsTest extends LayerTestBase {
         FileObject layerXML = handle.getLayerFile();
         assertNotNull("layer.xml already exists", layerXML);
         assertEquals("right layer file", expectedLayerXML, layerXML);
-        FileSystem fs = handle.layer();
+        FileSystem fs = handle.layer(true);
         assertEquals("initially empty", 0, fs.getRoot().getChildren().length);
         long initialSize = layerXML.getSize();
         fs.getRoot().createData("foo");
         assertEquals("not saved yet", initialSize, layerXML.getSize());
-        fs = handle.layer();
+        fs = handle.layer(true);
         assertNotNull("still have in-memory mods", fs.findResource("foo"));
         fs.getRoot().createData("bar");
         handle.save();
@@ -74,7 +74,7 @@ public class LayerUtilsTest extends LayerTestBase {
     public void testLayerAutoSave() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module");
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer();
+        FileSystem fs = handle.layer(true);
         handle.setAutosave(true);
         FileObject foo = fs.getRoot().createData("foo");
         FileObject layerXML = handle.getLayerFile();
@@ -143,7 +143,7 @@ public class LayerUtilsTest extends LayerTestBase {
                 suiteDir);
         NbModuleProject module1 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module1Dir));
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(module1);
-        FileUtil.createData(handle.layer().getRoot(), "random/stuff");
+        FileUtil.createData(handle.layer(true).getRoot(), "random/stuff");
         handle.save();
         File module2Dir = new File(suiteDir, "testModule2");
         NbModuleProjectGenerator.createSuiteComponentModule(

@@ -40,6 +40,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Displays two views of a layer.
@@ -98,7 +99,7 @@ public final class LayerNode extends FilterNode {
         protected Node[] createNodes(Object key) {
             try {
                 if (key == KEY_RAW) {
-                    FileSystem fs = badge(handle.layer(), cp, handle.getLayerFile(), "<this layer>"); // XXX I18N
+                    FileSystem fs = badge(handle.layer(false), cp, handle.getLayerFile(), "<this layer>"); // XXX I18N
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 } else if (key == KEY_CONTEXTUALIZED) {
                     FileSystem fs = badge(LayerUtils.getEffectiveSystemFilesystem(p), cp, handle.getLayerFile(), "<this layer in context>"); // XXX I18N
@@ -129,7 +130,6 @@ public final class LayerNode extends FilterNode {
                     }
                 });
                 status.setClasspath(cp);
-                // XXX listening?
                 // XXX loc/branding suffix?
             }
             public FileSystem.Status getStatus() {
@@ -148,6 +148,11 @@ public final class LayerNode extends FilterNode {
             }
             public String getDisplayName() {
                 return FileUtil.getFileDisplayName(layer);
+            }
+            public SystemAction[] getActions(Set/*<FileObject>*/ foSet) {
+                return new SystemAction[] {
+                    SystemAction.get(PickIconAction.class),
+                };
             }
         }
         return new BadgingMergedFileSystem();

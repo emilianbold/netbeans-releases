@@ -475,7 +475,7 @@ public final class CreatedModifiedFilesFactory {
         }
         
         public void run() throws IOException {
-            op.run(cmf.getLayerHandle().layer());
+            op.run(cmf.getLayerHandle().layer(true));
         }
         
         private String layerPrefix() {

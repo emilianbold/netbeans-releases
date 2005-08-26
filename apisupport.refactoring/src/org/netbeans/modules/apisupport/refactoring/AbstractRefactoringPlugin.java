@@ -158,8 +158,10 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
     
     protected final void checkLayer(NbModuleProject project, JavaClass clzz, RefactoringElementsBag refactoringElements) {
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer();
-        checkFileObject(fs.getRoot(), clzz, refactoringElements, handle);
+        FileSystem fs = handle.layer(false);
+        if (fs != null) {
+            checkFileObject(fs.getRoot(), clzz, refactoringElements, handle);
+        }
     }
 
    
@@ -245,14 +247,18 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
 
     protected final void checkLayer(NbModuleProject project, Method method, RefactoringElementsBag refactoringElements) {
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer();
-        checkFileObject(fs.getRoot(), method, null, refactoringElements, handle);
+        FileSystem fs = handle.layer(false);
+        if (fs != null) {
+            checkFileObject(fs.getRoot(), method, null, refactoringElements, handle);
+        }
     }
     
     protected final void checkLayer(NbModuleProject project, Constructor constructor, RefactoringElementsBag refactoringElements) {
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer();
-        checkFileObject(fs.getRoot(), null, constructor, refactoringElements, handle);
+        FileSystem fs = handle.layer(false);
+        if (fs != null) {
+            checkFileObject(fs.getRoot(), null, constructor, refactoringElements, handle);
+        }
     }
     
     private void checkFileObject(FileObject fo, Method method, Constructor constructor, 

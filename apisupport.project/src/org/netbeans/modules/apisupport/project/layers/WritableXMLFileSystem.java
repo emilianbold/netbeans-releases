@@ -558,6 +558,10 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             // Special access for MiscPropEds, so it knows what classpath to work with.
             return classpath;
         }
+        if (attrName.equals("WritableXMLFileSystem.location")) { // NOI18N
+            // Special access for MiscPropEds, so it knows what classpath to work with.
+            return location;
+        }
         if (attrName.equals("DataFolder.Index.reorderable")) { // NOI18N
             return Boolean.TRUE;
         }

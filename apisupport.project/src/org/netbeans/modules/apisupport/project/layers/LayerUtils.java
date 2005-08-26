@@ -385,11 +385,15 @@ public class LayerUtils {
          * You can make whatever Filesystems API calls you like to it.
          * Just call {@link #save} when you are done so the modified XML document is saved
          * (or the user can save it explicitly if you don't).
+         * @param create if true, and there is no layer yet, create it now; if false, just return null
          */
-        public synchronized FileSystem layer() {
+        public synchronized FileSystem layer(boolean create) {
             if (fs == null) {
                 FileObject xml = getLayerFile();
                 if (xml == null) {
+                    if (!create) {
+                        return null;
+                    }
                     try {
                         // Check to see if the manifest entry is already specified.
                         String layerSrcPath = ManifestManager.getInstance(project.getManifest(), false).getLayer();
@@ -516,7 +520,7 @@ public class LayerUtils {
         if (project instanceof NbModuleProject) {
             NbModuleProject p = (NbModuleProject) project;
             NbModuleTypeProvider.NbModuleType type = ((NbModuleTypeProvider) p.getLookup().lookup(NbModuleTypeProvider.class)).getModuleType();
-            FileSystem projectLayer = layerForProject(p).layer();
+            FileSystem projectLayer = layerForProject(p).layer(false);
             if (type == NbModuleTypeProvider.STANDALONE) {
                 Set/*<File>*/ jars = getPlatformJarsForStandaloneProject(p);
                 FileSystem platformLayers = getPlatformLayers(jars);
@@ -542,10 +546,10 @@ public class LayerUtils {
                         continue;
                     }
                     LayerHandle handle = layerForProject(sister);
-                    if (handle.getLayerFile() == null) {
-                        continue;
+                    FileSystem roLayer = handle.layer(false);
+                    if (roLayer != null) {
+                        readOnlyLayers.add(roLayer);
                     }
-                    readOnlyLayers.add(handle.layer());
                 }
                 Set/*<File>*/ jars = getPlatformJarsForSuiteComponentProject(p, suite);
                 readOnlyLayers.add(getPlatformLayers(jars));
