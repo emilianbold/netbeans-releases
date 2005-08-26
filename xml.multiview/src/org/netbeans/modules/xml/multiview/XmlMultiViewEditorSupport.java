@@ -143,6 +143,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     }
 
     public StyledDocument openDocument() throws IOException {
+        dObj.getDataCache().loadData();
         return super.openDocument();
     }
 
@@ -460,6 +461,14 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
         public DocumentSynchronizer(XmlMultiViewDataObject dataObject) {
             super(dataObject, 100);
+            getXmlEnv().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propertyName = evt.getPropertyName();
+                    if (Env.PROP_TIME.equals(propertyName) && getDocument() == null) {
+                        dObj.getDataCache().loadData();
+                    }
+                }
+            });
         }
 
         protected boolean mayUpdateData(boolean allowDialog) {
