@@ -7,25 +7,53 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
+import java.awt.Button;
+import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.beancontext.BeanContextChildSupport;
+import java.io.Externalizable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import org.openide.filesystems.*;
-import org.openide.filesystems.FileSystem; // override java.io.FileSystem
-import org.openide.loaders.*;
-import org.openide.cookies.*;
-import org.openide.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.JButton;
+import org.netbeans.junit.NbTestCase;
+import org.openide.ErrorManager;
+import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
+import org.openide.modules.ModuleInfo;
+import org.openide.options.SystemOption;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
-
-import java.beans.*;
-import java.io.*;
-import java.util.*;
-
-import org.netbeans.junit.*;
 
 /**
  * @author Vita Stejskal, Jesse Glick, Jan Pokorsky
@@ -41,15 +69,9 @@ public class InstanceDataObjectTest extends NbTestCase {
         super (name);
     }
     
-    public static void main (String[] args) throws Exception {
-        junit.textui.TestRunner.run(new NbTestSuite (InstanceDataObjectTest.class));
-    }
-    
-    /** Setups variables.
-     */
     protected void setUp () throws Exception {
         // initialize module layers
-        Lookup.getDefault().lookup(org.openide.modules.ModuleInfo.class);
+        Lookup.getDefault().lookup(ModuleInfo.class);
         
         String fsstruct [] = new String [] {
             "AA/AAA/A1/",
@@ -63,6 +85,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         };
         
         TestUtilHid.destroyLocalFileSystem (getName());
+        clearWorkDir();
         lfs = TestUtilHid.createLocalFileSystem (getWorkDir(), fsstruct);
 
         FileObject bb = lfs.findResource("/BB");
@@ -87,7 +110,7 @@ public class InstanceDataObjectTest extends NbTestCase {
      * changes when its settings file removed, it gets into corruped state otherwise. */
     public void testFiringEventWhenDeleted() throws Exception {
         // Init.
-        org.openide.util.Lookup.getDefault().lookup(org.openide.modules.ModuleInfo.class);
+        Lookup.getDefault().lookup(ModuleInfo.class);
         
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
         FileObject myFolder = root.createFolder("My"); // NOI18N
@@ -99,7 +122,7 @@ public class InstanceDataObjectTest extends NbTestCase {
             null);
         System.err.println("Created instance " + ido);
         
-        class Listener implements java.beans.PropertyChangeListener {
+        class Listener implements PropertyChangeListener {
             private PropertyChangeEvent evt;
             
             private Exception exception;
@@ -137,7 +160,7 @@ public class InstanceDataObjectTest extends NbTestCase {
 //                        l.propertyChange(new PropertyChangeEvent(
 //                            primary, DataObject.PROP_COOKIE, null, null));
                     } catch(IOException ioe) {
-                        org.openide.ErrorManager.getDefault().notify(ioe);
+                        ErrorManager.getDefault().notify(ioe);
                         l.exception = ioe;
                     }
                 };
@@ -218,7 +241,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     /** Test whether instances survive garbage collection.
      */
     public void testSameWithGC () throws Exception {
-        Object ser = new java.awt.Button();
+        Object ser = new Button();
         
         FileObject prim = InstanceDataObject.create (folder, "MyName", ser, null).getPrimaryFile ();
         String name = prim.getName ();
@@ -257,7 +280,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         class Test extends FileChangeAdapter 
         implements FileSystem.AtomicAction {
             
-            private java.awt.Button testSer = new java.awt.Button ();
+            private Button testSer = new Button ();
             
             private FileObject data;
             private InstanceDataObject obj;
@@ -304,7 +327,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     /** Tests whether createFromTemplate works correctly.
     */
     public void testCreateFromTemplateForSettingsFile () throws Exception {
-        Object ser = new java.awt.Button ();
+        Object ser = new Button();
 
         InstanceDataObject obj = InstanceDataObject.create (folder, "SomeName", ser, null);
         obj.setTemplate (true);
@@ -333,7 +356,7 @@ public class InstanceDataObjectTest extends NbTestCase {
     /** Tests whether handleCopy works correctly.
     */
     public void testHandleCopyForSettingsFile () throws Exception {
-        Object ser = new java.awt.Button ();
+        Object ser = new Button();
 
         InstanceDataObject obj = InstanceDataObject.create (folder, null, ser, null);
         
@@ -352,8 +375,8 @@ public class InstanceDataObjectTest extends NbTestCase {
     
     /** Test if the Lookup reflects IDO' cokie changes. */
     public void testLookupRefreshOfInstanceCookieChanges() throws Exception {
-//        Object ser = new java.awt.Button ();
-        Object ser = new java.beans.beancontext.BeanContextChildSupport();
+//        Object ser = new Button();
+        Object ser = new BeanContextChildSupport();
 
         FileObject lookupFO = lfs.findResource("/system/Services/lookupTest");
         FileObject systemFO = lfs.findResource("/system");
@@ -641,30 +664,30 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         private int property;
         
-        private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+        private PropertyChangeSupport propertyChangeSupport =  new PropertyChangeSupport(this);
         
         public Ser (String name) {
             this.name = name;
         }
         
-        public synchronized void readExternal(java.io.ObjectInput objectInput) 
-        throws java.io.IOException, java.lang.ClassNotFoundException {
+        public synchronized void readExternal(ObjectInput objectInput) 
+        throws IOException, ClassNotFoundException {
 //            System.err.println(name + " deserialized");
             deserialized++;
         }
         
-        public synchronized void writeExternal(java.io.ObjectOutput objectOutput) 
-        throws java.io.IOException {
+        public synchronized void writeExternal(ObjectOutput objectOutput) 
+        throws IOException {
 //            System.err.println(name + " serialized");
             serialized++;
         }
         
-        public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+        public void addPropertyChangeListener(PropertyChangeListener l) {
             listenerCount++;
             propertyChangeSupport.addPropertyChangeListener(l);
         }
         
-        public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+        public void removePropertyChangeListener(PropertyChangeListener l) {
             listenerCount--;
             propertyChangeSupport.removePropertyChangeListener(l);
         }
@@ -796,7 +819,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         
         // test non null filename
         String filename = "testCreateSettings";
-        Object obj = new javax.swing.JButton();
+        Object obj = new JButton();
         InstanceDataObject ido = InstanceDataObject.create(folder, filename, obj, null, false);
         assertNotNull("InstanceDataObject.create cannot return null!", ido);
         
@@ -846,10 +869,10 @@ public class InstanceDataObjectTest extends NbTestCase {
         InstanceCookie.Of c = (InstanceCookie.Of)obj.getCookie(InstanceCookie.Of.class);
         assertNotNull ("Cookie found", c);
         
-        assertTrue ("Instance of object", c.instanceOf(java.lang.Object.class));
-        assertTrue ("Not declared to be Serializable", !c.instanceOf (java.io.Serializable.class));
-        assertTrue ("Declared to be also Long", c.instanceOf (java.lang.Long.class));
-        assertTrue ("Nobody knows about it being number", !c.instanceOf (java.lang.Number.class));
+        assertTrue("Instance of object", c.instanceOf(Object.class));
+        assertTrue("Not declared to be Serializable", !c.instanceOf(Serializable.class));
+        assertTrue("Declared to be also Long", c.instanceOf(Long.class));
+        assertTrue("Nobody knows about it being number", !c.instanceOf(Number.class));
         
         assertEquals ("Class is defined to be Number", Number.class, c.instanceClass());
         Object o = c.instanceCreate ();
@@ -862,13 +885,13 @@ public class InstanceDataObjectTest extends NbTestCase {
         DataFolder folder = DataFolder.findFolder(root);
         
         String filename = "testDeleteSettings";
-        javax.swing.JButton obj = new javax.swing.JButton();
+        JButton obj = new JButton();
         InstanceDataObject ido = InstanceDataObject.create(folder, filename, obj, null, false);
         assertNotNull("InstanceDataObject.create cannot return null!", ido);
         
         // test if file object does not remain locked when ido is deleted and
         // the storing is not rescheduled in consequence of the serialization 
-        obj.setForeground(java.awt.Color.black);
+        obj.setForeground(Color.black);
         Thread.sleep(500);
         ido.delete();
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
@@ -1042,7 +1065,7 @@ public class InstanceDataObjectTest extends NbTestCase {
         }
     }
 
-    public static final class Setting extends org.openide.options.SystemOption {
+    public static final class Setting extends SystemOption {
         private static int resetCalled;
         
         protected void reset () {
