@@ -30,7 +30,7 @@ import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.MBeanNotification;
 import org.netbeans.modules.jmx.WizardConstants;
-
+import org.netbeans.modules.jmx.WizardHelpers;
 
 /**
  *
@@ -63,9 +63,11 @@ public class AddNotifGenerator
             boolean genBroadcastDeleg, boolean genSeqNumber)
            throws java.io.IOException, Exception
     {
+        boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            addManagementImport(mbeanRes);
+            if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
+                MBeanFileGenerator.addManagementImport(mbeanRes);
             addNotificationEmitter(mbeanClass);
             addAddNotifListMethod(mbeanClass,genBroadcastDeleg);
             addGetNotifInfoMethod(mbeanClass,notifs);
@@ -75,8 +77,22 @@ public class AddNotifGenerator
                 addGetSeqNumberMethod(mbeanClass);
             addFields(mbeanClass,genBroadcastDeleg,genSeqNumber);
             addNotifTypes(mbeanClass,notifs);
+        }  catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
         } finally {
-            JavaModel.getJavaRepository().endTrans();
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        
+        rollback = false;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
+                MBeanFileGenerator.addManagementImport(mbeanRes);
+        } catch (Exception e) {
+            rollback = true;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
         }
     }
     
@@ -93,7 +109,7 @@ public class AddNotifGenerator
         Parameter listener = pkg.getParameter().createParameter("listener", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "NotificationListener"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "NotificationListener"), // NOI18N
                 0, // dimCount
                 false);
         params.add(listener);
@@ -101,20 +117,20 @@ public class AddNotifGenerator
         Parameter filter = pkg.getParameter().createParameter("filter", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "NotificationFilter"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "NotificationFilter"), // NOI18N
                 0, // dimCount
                 false);
         params.add(filter);
         Parameter handback = pkg.getParameter().createParameter("handback", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "Object"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "Object"), // NOI18N
                 0, // dimCount
                 false);
         params.add(handback);
         
         ArrayList exceptions = new ArrayList();
-        exceptions.add(getTypeRef(pkg, "IllegalArgumentException")); // NOI18N
+        exceptions.add(MBeanFileGenerator.getTypeRef(pkg, "IllegalArgumentException")); // NOI18N
         
         Method method = pkg.getMethod().createMethod(
                 "addNotificationListener", // NOI18N
@@ -183,7 +199,7 @@ public class AddNotifGenerator
                 Collections.EMPTY_LIST, // type params
                 Collections.EMPTY_LIST, // parameters
                 Collections.EMPTY_LIST, // exceptions
-                getTypeRef(pkg, "MBeanNotificationInfo[]"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "MBeanNotificationInfo[]"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -202,13 +218,13 @@ public class AddNotifGenerator
         Parameter listener = pkg.getParameter().createParameter("listener", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "NotificationListener"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "NotificationListener"), // NOI18N
                 0, // dimCount
                 false);
         params.add(listener);
         
         ArrayList exceptions = new ArrayList();
-        exceptions.add(getTypeRef(pkg, "ListenerNotFoundException")); // NOI18N
+        exceptions.add(MBeanFileGenerator.getTypeRef(pkg, "ListenerNotFoundException")); // NOI18N
         
         Method method = pkg.getMethod().createMethod(
                 "removeNotificationListener", // NOI18N
@@ -221,7 +237,7 @@ public class AddNotifGenerator
                 Collections.EMPTY_LIST, // type params
                 params, // parameters
                 exceptions, // exceptions
-                getTypeRef(pkg, "void"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "void"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -240,27 +256,27 @@ public class AddNotifGenerator
         Parameter listener = pkg.getParameter().createParameter("listener", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "NotificationListener"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "NotificationListener"), // NOI18N
                 0, // dimCount
                 false);
         params.add(listener);
         Parameter filter = pkg.getParameter().createParameter("filter", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "NotificationFilter"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "NotificationFilter"), // NOI18N
                 0, // dimCount
                 false);
         params.add(filter);
         Parameter handback = pkg.getParameter().createParameter("handback", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "Object"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "Object"), // NOI18N
                 0, // dimCount
                 false);
         params.add(handback);
         
         ArrayList exceptions = new ArrayList();
-        exceptions.add(getTypeRef(pkg, "ListenerNotFoundException")); // NOI18N
+        exceptions.add(MBeanFileGenerator.getTypeRef(pkg, "ListenerNotFoundException")); // NOI18N
         
         Method method = pkg.getMethod().createMethod(
                 "removeNotificationListener", // NOI18N
@@ -273,7 +289,7 @@ public class AddNotifGenerator
                 Collections.EMPTY_LIST, // type params
                 params, // parameters
                 exceptions, // exceptions
-                getTypeRef(pkg, "void"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "void"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -295,7 +311,7 @@ public class AddNotifGenerator
                 Collections.EMPTY_LIST, // type params
                 Collections.EMPTY_LIST, // parameters
                 Collections.EMPTY_LIST, // exceptions
-                getTypeRef(pkg, "long"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "long"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -338,7 +354,7 @@ public class AddNotifGenerator
                             notifTypeIndex == 0 ? comments : null,
                             null,
                             true,
-                            getTypeRef(pkg, "String"), // NOI18N
+                            MBeanFileGenerator.getTypeRef(pkg, "String"), // NOI18N
                             0,
                             null,
                             "\"" + notifs[i].getNotificationType(j).getNotificationType() + "\""); // NOI18N
@@ -355,39 +371,6 @@ public class AddNotifGenerator
                     "NotificationEmitter", // NOI18N
                     null,
                     Collections.EMPTY_LIST));
-    }
-    
-    private static void addManagementImport(Resource tgtRes){
-        JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
-        
-        // look for the import among all imports in the target file
-        Iterator it = tgtRes.getImports().iterator();
-        boolean found = false;
-        while (it.hasNext()) {
-            Import i = (Import) it.next();
-            if (i.getName().equals("javax.management") && // NOI18N
-                i.isStatic() == false &&
-                i.isOnDemand() == true) { found = true; break;}
-        }
-
-        if (!found) // not found
-            tgtRes.getImports().add(createManagementImport(pkg));
-        
-    }
-    
-    private static Import createManagementImport(JavaModelPackage pkg) {
-        return pkg.getImport().createImport("javax.management",null, false, true); // NOI18N
-    }
-    
-    private static Type getType(JavaModelPackage pkg, String typeName) {
-        return pkg.getType().resolve(typeName);
-    }
-    
-    private static MultipartId getTypeRef(JavaModelPackage pkg, String typeName) {
-        return pkg.getMultipartId().createMultipartId(
-                    typeName,
-                    null,
-                    Collections.EMPTY_LIST);
     }
     
 }

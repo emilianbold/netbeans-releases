@@ -267,6 +267,9 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
             opList.toArray(new MBeanOperation[opList.size()]);
         StringBuffer content = new StringBuffer();
         content.append("\n");// NOI18N
+        if (operations.length > 0) {
+            content.append(METHOD_SIGNATURE_DEF);
+        }
         
         MessageFormat formOperation = 
                 new MessageFormat(OPERATION_CHECK_PATTERN);
