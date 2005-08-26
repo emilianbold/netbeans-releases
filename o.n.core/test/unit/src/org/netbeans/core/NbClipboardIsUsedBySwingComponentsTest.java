@@ -37,10 +37,6 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
         super(name);
     }
     
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbClipboardIsUsedBySwingComponentsTest.class));
-    }
-    
     protected void setUp() throws Exception {
         System.setProperty ("org.openide.util.Lookup", "org.netbeans.core.NbClipboardIsUsedBySwingComponentsTest$Lkp");
         System.setProperty ("netbeans.security.nocheck", "true");
@@ -55,7 +51,12 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
             Object clazz = org.netbeans.TopSecurityManager.class;
             SecurityManager m = new org.netbeans.TopSecurityManager ();
             System.setSecurityManager (m);
+            
+            inMiddleOfSettingUpTheManager();
+            
             org.netbeans.TopSecurityManager.makeSwingUseSpecialClipboard (this.clip);
+        } else {
+            inMiddleOfSettingUpTheManager();
         }
         
         field = new javax.swing.JTextField ();
@@ -137,6 +138,9 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
         } catch (java.awt.datatransfer.UnsupportedFlavorException ex) {
             fail (ex.getMessage ());
         }
+    }
+
+    protected void inMiddleOfSettingUpTheManager() {
     }
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup {

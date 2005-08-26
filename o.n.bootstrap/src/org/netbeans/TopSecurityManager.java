@@ -297,11 +297,7 @@ public class TopSecurityManager extends SecurityManager {
         checkConnect(s, port);
     }
 
-    private static List log = Collections.synchronizedList(new ArrayList());
     public void checkPermission(Permission perm) {
-        if (CLIPBOARD_FORBIDDEN.get () != null) {
-            log.add(new Exception("Perm: " + perm));
-        }
         checkSetSecurityManager(perm);
         
         //
@@ -310,8 +306,16 @@ public class TopSecurityManager extends SecurityManager {
         //
         if (perm instanceof java.awt.AWTPermission) {
             if ("accessClipboard".equals (perm.getName ())) { // NOI18N
-                if (CLIPBOARD_FORBIDDEN.get () != null) {
-                    CLIPBOARD_FORBIDDEN.set (this);
+                ThreadLocal t;
+                synchronized (TopSecurityManager.class) {
+                    t = CLIPBOARD_FORBIDDEN;
+                }
+                if (t == null) {
+                    return;
+                }
+                
+                if (t.get () != null) {
+                    t.set (this);
                     throw new SecurityException ();
                 } else {
                     checkWhetherAccessedFromSwingTransfer ();
@@ -446,7 +450,7 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     // the thread will wait for the system clipboard forever but not the whole
     // IDE.  See also NbClipboard
     
-    private static ThreadLocal CLIPBOARD_FORBIDDEN = new ThreadLocal ();
+    private static ThreadLocal CLIPBOARD_FORBIDDEN;
     
     /** Convinces Swing components that they should use special clipboard
      * and not Toolkit.getSystemClipboard.
@@ -455,10 +459,16 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
      */
     public static void makeSwingUseSpecialClipboard (java.awt.datatransfer.Clipboard clip) {
         try {
-            assert System.getSecurityManager() instanceof TopSecurityManager : "Our manager has to be active: " + System.getSecurityManager(); // NOI18N
+            synchronized (TopSecurityManager.class) {
+                assert System.getSecurityManager() instanceof TopSecurityManager : "Our manager has to be active: " + System.getSecurityManager(); // NOI18N
+                if (CLIPBOARD_FORBIDDEN != null) {
+                    return;
+                }
+                CLIPBOARD_FORBIDDEN = new ThreadLocal();
+                CLIPBOARD_FORBIDDEN.set (clip);
+            }
             
             javax.swing.JComponent source = new javax.swing.JPanel ();
-            CLIPBOARD_FORBIDDEN.set (clip);
             javax.swing.TransferHandler.getPasteAction ().actionPerformed (
                 new java.awt.event.ActionEvent (source, 0, "")
             );
@@ -472,12 +482,6 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             CLIPBOARD_FORBIDDEN.set(null);
             if (! (forb instanceof TopSecurityManager) ) {
                 System.err.println("Cannot install our clipboard to swing components, TopSecurityManager is not the security manager: " + forb); // NOI18N
-                // debug code to find out what is going on in #59701
-                Object[] exceptions = log.toArray();
-                for (int i = 0; i < exceptions.length; i++) {
-                    Exception e = (Exception)exceptions[i];
-                    e.printStackTrace(System.err);
-                }
                 return;
             }
 
@@ -499,7 +503,6 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             t.printStackTrace();
         } finally {
             CLIPBOARD_FORBIDDEN.set (null);
-            log.clear();
         }
     }
     

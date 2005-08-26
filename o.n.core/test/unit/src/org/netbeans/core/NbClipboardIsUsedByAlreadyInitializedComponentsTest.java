@@ -16,6 +16,8 @@ package org.netbeans.core;
 import java.awt.datatransfer.*;
 import java.io.IOException;
 import java.util.*;
+import javax.swing.JComboBox;
+import javax.swing.TransferHandler;
 import org.netbeans.junit.*;
 import junit.textui.TestRunner;
 import org.openide.filesystems.*;
@@ -30,15 +32,21 @@ import org.openide.util.datatransfer.ExClipboard;
  * @see "#40693"
  */
 public class NbClipboardIsUsedByAlreadyInitializedComponentsTest extends NbClipboardIsUsedBySwingComponentsTest {
-    private static final javax.swing.JTextField field = new javax.swing.JTextField ();
+    private javax.swing.JTextField field;
     
     public NbClipboardIsUsedByAlreadyInitializedComponentsTest (String name) {
         super(name);
     }
-    
-    public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(NbClipboardIsUsedByAlreadyInitializedComponentsTest.class));
+
+    protected void inMiddleOfSettingUpTheManager() {
+        assertNotNull("There is a manager already", System.getSecurityManager());
+        // do some strange tricks to initialize the system
+        field = new javax.swing.JTextField ();
+        TransferHandler.getCopyAction();
+        TransferHandler.getCutAction();
+        TransferHandler.getPasteAction();
     }
+    
     /** overrides to return field that exists since begining and was not instantiated
      * after SecurityManager hack is started */
     protected javax.swing.JTextField getField () {
