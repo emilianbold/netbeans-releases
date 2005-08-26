@@ -65,6 +65,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
     public BadgingSupport(FileSystem fs) {
         this.fs = fs;
         fileChangeListener = FileUtil.weakFileChangeListener(this, null);
+        fs.addFileChangeListener(fileChangeListener);
     }
     
     public void setClasspath(ClassPath classpath) {
@@ -244,7 +245,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
         someFileChange(fe);
     }
     public void fileAttributeChanged(FileAttributeEvent fe) {
-        // don't care about attributes on included files...
+        someFileChange(fe);
     }
     public void fileRenamed(FileRenameEvent fe) {
         someFileChange(fe);
