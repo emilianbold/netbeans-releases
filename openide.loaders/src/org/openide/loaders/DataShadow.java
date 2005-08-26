@@ -63,6 +63,7 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.ExTransferable;
+import org.openide.xml.XMLUtil;
 
 /** Default implementation of a shortcut to another data object.
 * Since 1.13 it extends MultiDataObject.
@@ -784,12 +785,26 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             }
             String n = format.format (createArguments ());
             try {
-                // XXX what is this for?! Does nothing! What should be displayed?
-                obj.getPrimaryFile().getFileSystem().getStatus().annotateName(n, obj.files());
+                return obj.getPrimaryFile().getFileSystem().getStatus().annotateName(n, obj.files());
             } catch (FileStateInvalidException fsie) {
                 // ignore
+                return n;
             }
-            return n;
+        }
+        public String getHtmlDisplayName() {
+            if (format == null) {
+                format = new MessageFormat(NbBundle.getBundle(DataShadow.class).getString("FMT_shadowName"));
+            }
+            try {
+                String n = XMLUtil.toElementContent(format.format(createArguments()));
+                FileSystem.Status s = obj.getPrimaryFile().getFileSystem().getStatus();
+                if (s instanceof FileSystem.HtmlStatus) {
+                    return ((FileSystem.HtmlStatus) s).annotateNameHtml(n, obj.files());
+                }
+            } catch (IOException e) {
+                // ignore, OK
+            }
+            return null;
         }
 
         /** Creates arguments for given shadow node */
