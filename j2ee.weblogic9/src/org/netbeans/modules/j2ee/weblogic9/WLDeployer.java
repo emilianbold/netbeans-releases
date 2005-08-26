@@ -146,7 +146,6 @@ public class WLDeployer implements ProgressObject, Runnable {
                 //delay to prevent hitting the old content before reload
                 for (int i = 0; i < 3; i++) {
                     Thread.sleep(1000);
-                    fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 }
                 long start = System.currentTimeMillis();
                 while (System.currentTimeMillis() - start < TIMEOUT) {
