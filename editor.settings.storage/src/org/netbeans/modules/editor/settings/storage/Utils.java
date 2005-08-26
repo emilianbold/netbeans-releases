@@ -57,7 +57,8 @@ public class Utils {
             KeyStroke keyStroke = Utilities.stringToKey (ks);
             //S ystem.out.println("1 " + ks + ">" + keyStroke);
             if (keyStroke == null) {
-                System.out.println("no key stroke for:" + key);
+                if (System.getProperty ("org.netbeans.optionsDialog") != null)
+                    System.out.println("no key stroke for:" + key);
                 continue;
             }
 //            if (key == null)
