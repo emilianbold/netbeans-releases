@@ -115,7 +115,8 @@ public class OperationParameterPopup extends AbstractPopup{
         addJButton.setName("addParamJButton");// NOI18N
         removeJButton.setName("remParamJButton");// NOI18N
         closeJButton.setName("closeJButton");// NOI18N
-        
+        //cancelJButton.setName("cancelJButton");// NOI18N 
+                
         //remove button should first be disabled
         removeJButton.setEnabled(false);
         

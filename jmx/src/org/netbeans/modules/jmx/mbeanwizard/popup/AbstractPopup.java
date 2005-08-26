@@ -46,7 +46,7 @@ public abstract class AbstractPopup extends JDialog implements ActionListener {
     protected JButton addJButton;
     protected JButton removeJButton;
     protected JButton closeJButton;
-    private JButton cancelJButton;
+    protected JButton cancelJButton;
     private int winWidth;
     
     /**
