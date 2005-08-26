@@ -28,6 +28,7 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants;
 import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
+import org.netbeans.modules.form.layoutdesign.LayoutUtils;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
@@ -47,7 +48,7 @@ public class SetAnchoringAction extends NodeAction {
     private JCheckBoxMenuItem[] items;
     
     protected boolean enable(Node[] nodes) {
-        List comps = getSelectedLayoutComponents(nodes);
+        List comps = LayoutUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 0));
     }
     
@@ -89,34 +90,9 @@ public class SetAnchoringAction extends NodeAction {
         return popupMenu;
     }
 
-    private List/*RADComponent*/ getSelectedLayoutComponents(Node[] nodes) {
-        if ((nodes == null) || (nodes.length < 1))
-            return null;
-
-        ArrayList components = new ArrayList();
-        for (int i=0; i<nodes.length; i++) {
-            RADComponentCookie radCookie =
-                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
-            if (radCookie != null) {
-                RADComponent metacomp = radCookie.getRADComponent();
-                if ((metacomp instanceof RADVisualComponent)) {
-                    RADVisualContainer visCont = ((RADVisualComponent)metacomp).getParentContainer();
-                    if ((visCont!= null) && (visCont.getLayoutSupport() == null)) {
-                        components.add(metacomp);
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            }
-        }
-        return components;
-    }
-
     private void createAnchoringSubmenu(JMenu menu) {
         Node[] nodes = getActivatedNodes();
-        List components = getSelectedLayoutComponents(nodes);
+        List components = LayoutUtils.getSelectedLayoutComponents(nodes);
         if ((components == null) || (components.size() < 1)) {
             return;
         }

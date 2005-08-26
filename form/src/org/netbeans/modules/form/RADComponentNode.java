@@ -167,7 +167,9 @@ public class RADComponentNode extends FormNode
                 if (!isContainer || !dedicated) actions.add(null);
                 if (isContainer) actions.add(SystemAction.get(AddAction.class));
 
+                actions.add(SystemAction.get(AlignAction.class));
                 actions.add(SystemAction.get(SetAnchoringAction.class));
+                actions.add(SystemAction.get(SetResizabilityAction.class));
                 actions.add(SystemAction.get(ChooseSameSizeAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(EventsAction.class));

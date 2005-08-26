@@ -14,6 +14,11 @@
 package org.netbeans.modules.form.layoutdesign;
 
 import java.util.*;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RADComponentCookie;
+import org.netbeans.modules.form.RADVisualComponent;
+import org.netbeans.modules.form.RADVisualContainer;
+import org.openide.nodes.Node;
 
 /**
  * This class collects various static methods for examining the layout.
@@ -112,6 +117,31 @@ public class LayoutUtils implements LayoutConstants {
         return null;
     }
 
+    public static List/*RADComponent*/ getSelectedLayoutComponents(Node[] nodes) {
+        if ((nodes == null) || (nodes.length < 1))
+            return null;
+
+        ArrayList components = new ArrayList();
+        for (int i=0; i<nodes.length; i++) {
+            RADComponentCookie radCookie =
+                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
+            if (radCookie != null) {
+                RADComponent metacomp = radCookie.getRADComponent();
+                if ((metacomp instanceof RADVisualComponent)) {
+                    RADVisualContainer visCont = ((RADVisualComponent)metacomp).getParentContainer();
+                    if ((visCont!= null) && (visCont.getLayoutSupport() == null)) {
+                        components.add(metacomp);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+        return components;
+    }
+    
     /**
      * Returns size of the empty space represented by the given layout interval.
      *

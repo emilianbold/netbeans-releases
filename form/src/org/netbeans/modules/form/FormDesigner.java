@@ -628,17 +628,15 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         this.resizabilityButtons = buttons;
     }
     
-    JToggleButton[] getResizabilityButtons() {
+    public JToggleButton[] getResizabilityButtons() {
         return resizabilityButtons;
     }
 
-    private void updateResizabilityActions() {
+    public void updateResizabilityActions() {
         Collection componentIds = componentIds();
         LayoutModel layoutModel = getFormModel().getLayoutModel();
         LayoutDesigner layoutDesigner = getLayoutDesigner();
         Iterator iter = componentIds.iterator();
-        boolean matchAlignment[] = new boolean[4];
-        boolean cannotChangeTo[] = new boolean[4];
         boolean resizable[] = new boolean[2];
         boolean nonResizable[] = new boolean[2];
         while (iter.hasNext()) {
@@ -658,8 +656,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             boolean miss;
             match = resizable[i];
             miss = nonResizable[i];
-            getResizabilityButtons()[i].setEnabled(match || miss);
             getResizabilityButtons()[i].setSelected(!miss && match);
+            ((ResizabilityAction)getResizabilityActions().toArray()[i]).setEnabled(match || miss);
 //                getResizabilityButtons()[i].setPaintDisabledIcon(match && miss);
         }
     }
@@ -801,7 +799,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
      *
      * @return <code>Collection</code> of <code>Action</code> objects.
      */
-    Collection getDesignerActions() {
+    public Collection getDesignerActions() {
         if (designerActions == null) {
             designerActions = new LinkedList();
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING));
@@ -814,7 +812,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return designerActions;
     }
     
-    Collection getResizabilityActions() {
+    public Collection getResizabilityActions() {
         if (resizabilityActions == null) {
             resizabilityActions = new LinkedList();
             resizabilityActions.add(new ResizabilityAction(LayoutConstants.HORIZONTAL));
@@ -1713,6 +1711,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                 formModel.addUndoableEdit(ue);
             }
-        }   
-    }    
+        }
+    }
 }
