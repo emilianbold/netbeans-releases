@@ -104,6 +104,9 @@ public abstract class MBeanFileGenerator {
         boolean objectNameImport = typeIsUsed(mbean, WizardConstants.OBJECTNAME_NAME);
         if (objectNameImport)
             addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
+    }
+    
+    public static void addArraysImport(MBeanDO mbean, Resource mbeanRes) {
         boolean arraysImport = mbean.getType().equals(WizardConstants.MBEAN_DYNAMICMBEAN) &&
                 (mbean.getOperations().size() > 0);
         if (arraysImport)

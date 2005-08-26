@@ -136,8 +136,10 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
             mbeanRc = JavaModel.getResource(mbeanFile);
             mbeanClass = WizardHelpers.getJavaClass(mbeanRc,mbeanName);
             
-            if (!mbean.getPackageName().equals("")) // NOI18N
+            if (!mbean.getPackageName().equals("")) { // NOI18N
+                addArraysImport(mbean, mbeanRc);
                 addNeededImport(mbean, mbeanRc);
+            }
             updateDescription(mbean,mbeanClass);
             updateGetAttr(mbean,mbeanClass);
             updateSetAttr(mbean,mbeanClass);
@@ -160,8 +162,10 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            if ((mbeanRc != null) && (mbean.getPackageName().equals(""))) // NOI18N
+            if ((mbeanRc != null) && (mbean.getPackageName().equals(""))) { // NOI18N
+                addArraysImport(mbean, mbeanRc);
                 addNeededImport(mbean, mbeanRc);
+            }
         } catch (Exception e) {
             rollback = true;
         } finally {
