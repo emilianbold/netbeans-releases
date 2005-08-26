@@ -16,22 +16,25 @@ package org.netbeans.modules.apisupport.refactoring;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.jmi.javamodel.Constructor;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Parameter;
+import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
@@ -163,8 +166,8 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             checkFileObject(fs.getRoot(), clzz, refactoringElements, handle);
         }
     }
-
-   
+    
+    
     private void checkFileObject(FileObject fo, JavaClass clzz, RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
         if (fo.isFolder()) {
             FileObject[] childs = fo.getChildren();
@@ -212,6 +215,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             if ("settings".equals(fo.getExt())) {
                 //TODO check also content of settings files for matches?
             }
+            
             Enumeration en = fo.getAttributes();
             // check just a few specific attributes or iterate all?
             while (en.hasMoreElements()) {
@@ -220,10 +224,9 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                 if (val instanceof String) {
                     String attrValue = (String)val;
                     boolean check = false;
-                    String value = null;
+                    String value = attrValue;
                     if (attrValue.startsWith("new:")) { //NOI18N
                         value = attrValue.substring("new:".length()); //NOI18N
-                        check = true;
                     }
                     if (attrValue.startsWith("method:")) { //NOI18N
                         value = attrValue.substring("method:".length()); //NOI18N
@@ -231,9 +234,11 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                         if (index > 0) {
                             value = value.substring(0, index);
                         }
-                        check = true;
                     }
-                    if (check && value.equals(clzz.getName())) {
+                    String pattern1 = clzz.getName().replaceAll("\\.", "\\."); //NOI18N
+                    String pattern2 = "[a-zA-Z0-9/-]*" + clzz.getName().replaceAll("\\.", "-") + "\\.instance"; //NOI18N
+
+                    if (value.matches(pattern1) || value.matches(pattern2)) {
                         RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, attrKey);
                         if (elem != null) {
                             refactoringElements.add(refactoring, elem);
@@ -244,25 +249,63 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         }
         
     }
-
-    protected final void checkLayer(NbModuleProject project, Method method, RefactoringElementsBag refactoringElements) {
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer(false);
-        if (fs != null) {
-            checkFileObject(fs.getRoot(), method, null, refactoringElements, handle);
+    
+    protected final Problem checkLayer(Method method, RefactoringElementsBag refactoringElements) {
+        Problem problem = null;
+        // do our check just on public static methods..
+        if (! Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) {
+            return problem;
         }
+        // with no parameters or with parameter of type FileObject
+        List params = method.getParameters();
+        if (params.size() > 1) {
+            return problem;
+        }
+        Iterator it = params.iterator();
+        while (it.hasNext()) {
+            Parameter param =(Parameter)it.next();
+            if (! "org.openide.filesystems.FileObject".equals(param.getType().getName())) {
+                return problem;
+            }
+        }
+        Resource res = method.getResource();
+        FileObject fo = JavaModel.getFileObject(res);
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null && project instanceof NbModuleProject) {
+            LayerUtils.LayerHandle handle = LayerUtils.layerForProject((NbModuleProject)project);
+            FileSystem fs = handle.layer(false);
+            if (fs != null) {
+                checkFileObject(fs.getRoot(), method, null, refactoringElements, handle);
+            }
+        }
+        return problem;
     }
     
-    protected final void checkLayer(NbModuleProject project, Constructor constructor, RefactoringElementsBag refactoringElements) {
-        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
-        FileSystem fs = handle.layer(false);
-        if (fs != null) {
-            checkFileObject(fs.getRoot(), null, constructor, refactoringElements, handle);
+    protected final Problem checkLayer(Constructor constructor, RefactoringElementsBag refactoringElements) {
+        Problem problem = null;
+        // just consider public constructors with no params..
+        if (!Modifier.isPublic(constructor.getModifiers())) {
+            return problem;
         }
+        List params = constructor.getParameters();
+        if (params.size() > 0) {
+            return problem;
+        }
+        Resource res = constructor.getResource();
+        FileObject fo = JavaModel.getFileObject(res);
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project != null && project instanceof NbModuleProject) {
+            LayerUtils.LayerHandle handle = LayerUtils.layerForProject((NbModuleProject)project);
+            FileSystem fs = handle.layer(false);
+            if (fs != null) {
+                checkFileObject(fs.getRoot(), null, constructor, refactoringElements, handle);
+            }
+        }
+        return problem;
     }
     
-    private void checkFileObject(FileObject fo, Method method, Constructor constructor, 
-                                 RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
+    private void checkFileObject(FileObject fo, Method method, Constructor constructor,
+            RefactoringElementsBag refactoringElements, LayerUtils.LayerHandle handle) {
         if (fo.isFolder()) {
             FileObject[] childs = fo.getChildren();
             for (int i =0; i < childs.length; i++) {
@@ -288,20 +331,20 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                             clazz = clazz.substring(0, index);
                         }
                         if (methodString != null && methodString.equals(method.getName()) &&
-                            clazz.equals(method.getDeclaringClass().getName())) {
-                           RefactoringElementImplementation elem = createLayerRefactoring(method, handle, fo, attrKey);
-                           if (elem != null) {
-                               refactoringElements.add(refactoring, elem);
-                           }
+                                clazz.equals(method.getDeclaringClass().getName())) {
+                            RefactoringElementImplementation elem = createLayerRefactoring(method, handle, fo, attrKey);
+                            if (elem != null) {
+                                refactoringElements.add(refactoring, elem);
+                            }
                         }
                     }
                     if (constructor != null && attrValue.startsWith("new:")) { //NOI18N
                         String clazz = attrValue.substring("new:".length()); //NOI18N
                         if (clazz.equals(constructor.getDeclaringClass().getName())) {
-                           RefactoringElementImplementation elem = createLayerRefactoring(constructor, handle, fo, attrKey);
-                           if (elem != null) {
-                               refactoringElements.add(refactoring, elem);
-                           }
+                            RefactoringElementImplementation elem = createLayerRefactoring(constructor, handle, fo, attrKey);
+                            if (elem != null) {
+                                refactoringElements.add(refactoring, elem);
+                            }
                         }
                     }
                 }

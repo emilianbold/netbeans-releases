@@ -105,49 +105,12 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             }
             if (refObject instanceof Method) {
                 Method method = (Method)refObject;
-                // do our check just on public static methods..
-                if (! Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers())) {
-                    return problem;
-                }
-                // with no parameters or with parameter of type FileObject
-                List params = method.getParameters();
-                if (params.size() > 1) {
-                    return problem;
-                }
-                Iterator it = params.iterator();
-                while (it.hasNext()) {
-                    Parameter param =(Parameter)it.next();
-                    if (! "org.openide.filesystems.FileObject".equals(param.getType().getName())) {
-                        return problem;
-                    }
-                }
-                Resource res = method.getResource();
-                FileObject fo = JavaModel.getFileObject(res);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null && project instanceof NbModuleProject) {
-                    checkLayer((NbModuleProject)project, method, refactoringElements);
-                }
+                problem = checkLayer(method, refactoringElements);
             }
             if (refObject instanceof Constructor) {
                 Constructor constructor = (Constructor)refObject;
-                // just consider public constructors with no params..
-                if (!Modifier.isPublic(constructor.getModifiers())) {
-                    return problem;
-                }
-                List params = constructor.getParameters();
-                if (params.size() > 0) {
-                    return problem;
-                }
-                Resource res = constructor.getResource();
-                FileObject fo = JavaModel.getFileObject(res);
-                Project project = FileOwnerQuery.getOwner(fo);
-                if (project != null && project instanceof NbModuleProject) {
-                    checkLayer((NbModuleProject)project, constructor, refactoringElements);
-                }
+                problem = checkLayer(constructor, refactoringElements);
             }
-            
-            
-            
             err.log("Gonna return problem: " + problem);
             return problem;
         } finally {
