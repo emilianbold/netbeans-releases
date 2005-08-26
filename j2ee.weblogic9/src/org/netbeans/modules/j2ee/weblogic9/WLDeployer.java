@@ -153,7 +153,6 @@ public class WLDeployer implements ProgressObject, Runnable {
                     if (URLWait.waitForUrlReady(url, 1000)) {
                         break;
                     }
-                    fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
                 }
             }
         }catch(Exception e){
