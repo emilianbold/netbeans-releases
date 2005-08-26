@@ -232,6 +232,7 @@
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->
 	<mapID target="about_wsc" url="webservice/consume/about_wsc.html" />
+	<mapID target="wsc_process" url="webservice/consume/wsc_process.html" />
 	<mapID target="wsc_proxy" url="webservice/consume/wsc_proxy.html" />
 	<mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
 	<mapID target="wsc_test" url="webservice/consume/wsc_test.html" />

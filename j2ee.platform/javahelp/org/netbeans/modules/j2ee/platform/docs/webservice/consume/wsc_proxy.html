@@ -13,7 +13,7 @@ Use is subject to license terms.  *-->
 
 <p>If you want to access a web service, but your system is 
 behind a firewall or you use a proxy server, you need to configure the IDE with your proxy settings.
-For web service clients, setting a proxy can be important in one or more of the following areas:
+For working with web services, setting a proxy can be important in one or more of the following areas:
 
 <ul>
 	<li>When retrieving the WSDL file in the Web Service Client wizard.
@@ -31,7 +31,7 @@ For web service clients, setting a proxy can be important in one or more of the 
  <p><tt>Download failed. I/O exception: (Check the proxy settings.)</tt>
 <p>Do the following to check and set the proxy:
 <ol>
-	<li>Clcik Proxy Settings in the Web Service Client wizard.
+	<li>Click Proxy Settings in the Web Service Client wizard.
 	<li>In the HTTP Proxy Settings window, set the proxy host and port number.</ol>
 <p>The changes take effect when you click OK.
 
@@ -62,8 +62,8 @@ For web service clients, setting a proxy can be important in one or more of the 
 	<li>In the JVMs Properties dialog box, click JVMOptions.
 	<li>Add the following properties:
 	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
-	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i>
-	  <li>Stop and then restart the server for the new proxy settings to take effect.</ol>
+	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i></ol>
+	  Stop and then restart the server for the new proxy settings to take effect.
 <p><b>When deploying a web service client in a Java application</b>
 
 <p>Typically, an error such as the following is returned when the proxy settings

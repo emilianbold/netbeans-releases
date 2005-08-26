@@ -1,0 +1,149 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2005 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Working with Web Service Clients</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Working with Web Service Clients</h2>
+
+The following table shows how to work with web service clients. 
+<table border="0" cellpadding="0" cellspacing="0" summary="The left column contains each
+   process step. The right column contains detail information to accomplish that process."> 
+  
+   <tr valign="top"> 
+    <td align="center"><img src="../../images/circle1.gif" alt="Number one"><br>
+	    <b>Design the web service client</b></td>
+    
+    <td> 
+	    <p>You can consume a web service in a web application or in a Java application. Within a 
+    web application, you can choose to invoke an operation on the web service from a servlet
+     or from a JSP page.<ol>
+        <li>Go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Java 
+          BluePrints Solutions Catalog.</li>
+<li>Read topics under the "Service Oriented Architectures with Web Services" item.</li></ol>
+    </td>
+  </tr>
+ <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"><img src="../../images/circle2.gif" alt="Number two"><br>
+	    <b>Create the web service client</b></td>
+    <td> 
+	    <ol> 
+		    
+		    <li>From the Projects window or Files window, right-click a node
+in the project and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;File/Folder.
+The New File wizard appears. Under Categories, select Web Services. Under File Types, select Web Service Client.
+ Click Next.</li>
+ <li><a href="../consume/wsc_create.html">Create the web service client</a>.</li>
+ <li><a href="../expose/test_ws.html">Test the web service</a> from the IDE.</li></ul>
+	  </ol>
+	  <p>For troubleshooting, see <a href="wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a>.</p>
+      </p>
+    </td>
+  </tr>
+ 
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"><img src="../../images/circle3.gif" alt="Number three"><br>
+   <b>Develop the web service client</b></td>
+    <td> 
+      <ol>
+	      <li>In the Projects window or Files window, double-click the files
+       that you would like to edit.</li>
+       <li>Use the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/editing_about.html">Source Editor</a> to develop the
+       web service client. When you right-click in the Source Editor, you can use the IDE to generate skeleton code for
+       one or more of the following:
+       <ul>
+	       <li><a href="../create/add_ws_operation.html">Add a web service operation</a></li>
+	       <li><a href="../create/add_ws_soap_message.html">Add a SOAP message handler</a></li>
+	       <li><a href="../../ejb/editing/call_ejb.html">Call an EJB</a></li>
+       </ul>
+
+       </li>
+      </ol>
+    </td>
+  </tr>
+
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+ 
+  <tr valign="top"> 
+    <td align="center"> 
+      <img src="../../images/circle4.gif" alt="Number 4"><br>
+      <b>Build the web service client</b>  
+    </td>
+    <td> 
+	    <Ol><li>Do one of the following: 
+	  <ul>
+  <li>If the module within which the web service is implemented
+    is part of a J2EE application, make sure the J2EE application 
+    is set as the main project and choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+    Main Project (F11).</li>
+  <li>If the project is a stand-alone application, or if you want to build the 
+    module without building the other modules in the J2EE application, right-click 
+    the project's node in the Projects window and choose Build Project.</li>
+</ul></li>
+<li>Analyze the result and, if necessary, customize the <tt>wscompile</tt> tool's features,
+depending on your needs, as described in <a href="../consume/wsc_build.html">Building a Web Service Client</a>.</li>
+</ol>
+    </td>
+  </tr>
+  <tr> 
+    <td colspan="2"> 
+      <hr align="center" width="80%">
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td align="center"> 
+	    <img src="../../images/circle5.gif" alt="Number 5"><br>
+      <b>Deploy the web service client</b> </td>
+    <td> 
+	    
+      <p>You can deploy a web service as a stand-alone module or as a part of 
+        a J2EE application.</p>
+      <ol>
+	      <li>Make sure the Sun Java System Application Server is targeted.</li>
+	      <li>Do one of the following:
+	      <ul>
+        <li>To deploy the client as part of a J2EE application, right-click the J2EE application's 
+          J2EE Modules node, choose Add J2EE Module, select the module that contains 
+          the web service client, and click OK.</li>	
+	  <li>To deploy the client as a stand-alone application,
+	  choose Run &gt; Run Main Project or right-click the project and choose 
+	  Run Project.</li></ul>
+      </ol>
+      <p>For troubleshooting, see <a href="wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a> and
+      <a href="../expose/test_ws.html">Testing a Web Service on the Client Side</a>.</p>
+    </td>
+  </tr>
+ 
+  
+</table>
+
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
