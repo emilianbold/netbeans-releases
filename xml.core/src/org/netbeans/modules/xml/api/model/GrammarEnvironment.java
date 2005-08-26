@@ -24,7 +24,6 @@ import org.xml.sax.InputSource;
  * environment.
  *
  * @author  Petr Kuzel
- * @deprecated a draft
  */
 public final class GrammarEnvironment {
 

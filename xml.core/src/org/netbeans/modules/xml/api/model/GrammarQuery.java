@@ -55,7 +55,6 @@ import org.w3c.dom.NodeList;
  * as user usaully types text from document begining.
  *
  * @author  Petr Kuzel
- * @deprecated Experimantal SPI
  */   
 public interface GrammarQuery {
     

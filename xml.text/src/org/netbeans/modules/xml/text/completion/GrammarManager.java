@@ -30,7 +30,6 @@ import org.netbeans.modules.xml.core.lib.Convertors;
 import org.netbeans.modules.xml.api.model.GrammarEnvironment;
 import org.netbeans.modules.xml.api.model.GrammarQuery;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
-import org.netbeans.modules.xml.spi.model.EmptyQuery;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;

@@ -24,7 +24,6 @@ import org.w3c.dom.Node;
  * provider.
  * 
  * @author Petr Kuzel
- * @deprecated Experimental SPI
  */
 public interface HintContext extends Node {
     

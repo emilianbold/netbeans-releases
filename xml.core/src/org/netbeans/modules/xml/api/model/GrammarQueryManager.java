@@ -45,7 +45,6 @@ import org.xml.sax.InputSource;
  * </pre>
  * 
  * @author  Petr Kuzel
- * @deprecated a draft
  */
 public abstract class GrammarQueryManager {
 

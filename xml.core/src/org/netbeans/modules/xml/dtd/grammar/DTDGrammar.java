@@ -30,7 +30,7 @@ import org.netbeans.modules.xml.spi.dom.*;
  *
  * @author  Petr Kuzel
  */
-public class DTDGrammar implements GrammarQuery {
+class DTDGrammar implements GrammarQuery {
     
     // element name keyed
     private Map elementDecls, attrDecls;

@@ -29,7 +29,6 @@ import javax.swing.Icon;
  * As in whole package provide only readonly DOM level 1 implementation. 
  *
  * @author  Petr Kuzel
- * @deprecated Experimental SPI
  * @stereotype description 
  */
 public interface GrammarResult extends Node {
