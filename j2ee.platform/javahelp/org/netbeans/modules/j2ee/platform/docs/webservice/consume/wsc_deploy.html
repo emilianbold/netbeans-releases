@@ -12,13 +12,27 @@
 
 <h2>Deploying a Web Service Client</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>Unless the module (EJB module or web application module) in which the web service 
-  client is implemented is designed to be deployed as a stand-alone module, you 
+
+
+<p>Right-click the project and choose one of the 
+    following: 
+    <ul><li><b>Run Project.</b> Only takes the 
+	    minimal steps needed to run the project. For example, if you only changed one file,
+	    only that file is sent to the server.
+	    </li>
+      <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
+        no matter what changes you made, even if none.</li>
+    </ul>
+  
+
+<p>For web applications, unless project in which the web service 
+  client is implemented is designed to be deployed as a stand-alone application, you 
   should always deploy it by deploying the enterprise application that contains 
   it. If you run the Run Project or Deploy Project commands on an individual module 
   that is part of an enterprise application, the IDE only deploys that module 
   itself. Any changes you have made in the other modules in the project are not 
   propagated to the server.</p>
+
   <p><b>To deploy a client from within an enterprise application project:</b></p>
   <ol>
 	  <li>In the Projects window, <a href="../../web/configure/about_webapp_configure.html">add the web application module</a>
@@ -34,33 +48,18 @@
       </ul>
   </li>
 </ol>
-<p><b>To deploy a client from within a module project:</b></p>
- <ul>
-  <li>Right-click the module project and choose one of the 
-    following: 
-    <ul><li><b>Run Project.</b> Only takes the 
-	    minimal steps needed to run the project. For example, if you only changed one file,
-	    only that file is sent to the server.
-	    </li>
-      <li><b>Deploy Project.</b> Undeploys and then deploys the complete module 
-        no matter what changes you made, even if none.</li>
-    </ul>
-  </li>
-</ul>
-<p><b>To troubleshoot the deployment of a client:</b>
-<p>If error messages such as the following are returned, check your proxy settings.
-<ul><li><tt>org.netbeans.modules.websvc.registry.ui.ReflectionHelper.callMethodWithParams(ReflectionHelper.java:449)</tt>
-<li><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
-</ul>
-<p>Proxy settings that impact the testing and deployment of web services are the following:
-<ul>
-<li><b>Deployment proxy settings.</b> In the Runtime window, start the Sun Java System
-	 Application Server, expand its node, right-click the JVMs node, choose Properties, and
-	  add the following properties to the JVMOptions dialog box:
-	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
-	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i>
-	  <p>Restart the server for the	new proxy settings to take effect.
-	  <li><b>IDE proxy settings.</b> Go to Tools > Setup Wizard and check your proxy settings.</ul>
+
+  
+<p><b>Troubleshooting</b>
+<ol>
+<li><a href="wsc_test.html">Test the web service from the IDE</a> to make sure it is available.
+<li>Check your proxy settings, if error messages such as the following are returned:
+
+<p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt></p>
+
+<p>For details, see <a href="wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a>.</ol>
+
+  
 <table>
   <tr> 
     <th colspan=2 align=left><a name="seealso">See also</a></th>

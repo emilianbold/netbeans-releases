@@ -10,8 +10,22 @@ Use is subject to license terms.  *-->
 <body bgcolor="#FFFFFF">
 <h2>Creating a  Web Service Client</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>A web service can be consumed in a web application, a Java application, or
+a MIDP client (MIDlet). For information on consuming web services 
+in a MIDlet, see the J2ME Mobility documentation.</p>
+
+<p>Before you begin, note that if the WSDL file that you want to use imports schemas, other WSDL files, or both, from the local file system, the web service client will only work
+	if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
+       	folder. If you do not do this,
+	the <a href="../build/about_wscompile.html">Web Service Compiler</a>
+       	will not be able to locate these imported files at the end of the procedure below.
+
+<p><b>To create a web service client:</b>
+	
 <ol>
-<li><a href="../../web/create/about/create_webapps_proj.html">Create a web application project</a>.
+	<li>Create the project to contain the web service client. Depending on how you want to
+        consume the web service, do one of the following:
+	<ul><li><a href="../../web/create/about/create_webapps_proj.html">Create a web application project</a>.
 <table cellpadding="3" cellspacing="0" border="0">
 <tr valign="top"> 
 <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
@@ -20,24 +34,30 @@ Use is subject to license terms.  *-->
 	server for the project. Therefore, take the appropriate steps to 
 	<a href="../create/set_ws_server.html">prepare to develop web services and clients</a>.</td>
 </tr>
-</table>
-If the WSDL file imports schemas, other WSDL files, or both, from the local file system, the web service client will only work
-	if the imported schemas and WSDL files are copied beforehand into the <tt>WEB-INF/wsdl</tt> (or <tt>META-INF/wsdl</tt>)
-       	folder. If you do not do this,
-	the <a href="../build/about_wscompile.html">Web Service Compiler</a>
-       	will not be able to locate these imported files at the end of the procedure below.</li>
-</li>
+</table></li>
+<li><a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_j2se-standapp_wiz.html">Create a Java application project</a>.</li>
+</ul>
 <li>From the Projects window or Files window, right-click a node
-in the web application project and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Service Client. </li>
-<li>Depending on what the provider has distributed, do the following:<ul>
-<li>To generate a client from a running web service, type the web service's URL and 
-specify a package where the client is to be generated.</li>
+in the project and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Service Client. </li>
+<li>Access the WSDL file of the web service that the web service client is to consume.
+ Depending on what the provider has distributed, do the following:<ul>
+	<li>To generate a client from a running web service, type or paste the web service's URL.
+       	If you are behind a corporate firewall, click Proxy Settings and
+	set your proxy host and port number. Click Retrieve WSDL.
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>The WSDL file is successfully downloaded when the IDE fills Local Filename field with
+	the name of a WSDL file, such as <tt>CountCheatService.asmx.wsdl</tt>.</td>
+</tr>
+</table></li>
 <li>To generate a client from a WSDL file
-	 on your local filesystem, browse to the WSDL file and 
- specify a package where the client is to be generated.</li></ul>
-<li>Specify a package name for the generated interfaces that will be used by your 
-user code to access and interact with the web service.</li>
-<li>Specify the web service client type:
+on your local filesystem, click Existing WSDL File and browse to the WSDL file on
+ your local filesystem.</li></ul>
+ <li>Specify a package where the client files are to be generated. When you complete
+  the wizard, you can find the generated client files in the Files window, within the
+   <tt>build</tt> folder.
+   <li>Select the web service client type from the Client Type drop-down:
 <ul><li><b>J2EE Container-generated static stub.</b> 
 This type is based on JSR-109, which enhances JSR-101 by defining the packaging
 of web services into standard J2EE modules, including a new deployment descriptor,
@@ -51,7 +71,17 @@ It also defines a client API to invoke a remote web service and a runtime enviro
 on the server to host a web service. This type is not portable.
 When you choose this type, the IDE generates 
 the stub and other 
-artifacts, packages them in the archive, and deploys them.</li></ul>
+artifacts, packages them in the archive, and deploys them.</li>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>If a web service is consumed in a Java application, no J2EE server
+	 is used. The application runs as a standalone JVM process and its
+	 JVM parameters are set per project. Therefore, the J2EE Container-generated
+  static stub does not apply to Java applications and is not made available in the Client Type
+ drop-down.</td>
+</tr>
+</table></ul>
 </li>
 
 <li>Click Finish.</li>
@@ -59,7 +89,7 @@ artifacts, packages them in the archive, and deploys them.</li></ul>
  
 <p>The IDE creates a node for the web service under the Web Service References node in the Projects window.
 For each web service operation defined in the WSDL file, the IDE creates a sub-node with the 
-operation's name. Right-click an operation node and choose Test Operation to test the operation directly within 
+operation's name. You can right-click an operation node and choose Test Operation to test the operation directly within 
 the IDE, without writing a single line of code. In addition, the IDE does the following:
 <ul><li>Creates a folder, if not already present, named <tt>wsdl</tt> under <tt>web/WEB-INF</tt> to contain the WSDL file.</li>
 <li>Adds a <tt>service-ref</tt> element to the deployment descriptor (the <tt>web.xml</tt> file) for this service.</li>

@@ -10,22 +10,26 @@ Use is subject to license terms.  *-->
 <body bgcolor="#FFFFFF">
 <h2>Calling a Web Service Operation</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>A web service operation can be called from a web application, an EJB module, or
- a MIDP client (MIDlet).</p>
-<b>To call a web service operation:</b>
+<p>A web service operation can be called from a web application, a Java application, or
+a MIDP client (MIDlet). For information on calling a web service operation
+ from a MIDlet, see the J2ME Mobility documentation.</p>
+ <b>To call a web service operation:</b>
 <ol>
 <li><a href="wsc_create.html">Create a web service client</a>.</li>
-<li>If the web service client is deployed from a web application, <a href="../../web/create/servlet/servlet_create.html">create a servlet</a>.</li>
-<li>Right-click anywhere in 
-a class in the Source Editor and choose Web Service Client Resources 
-<img src="../../images/arrow.gif" alt="and choose" >&nbsp;Call Web Service Operation.
-<table cellpadding="3" cellspacing="0" border="0">
-  <tbody><tr valign="top"> 
-    <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-    <td>This command is only enabled when you click within the body of the class (after the class declaration).</td>
-  </tr>
-</tbody></table>
-<li>Expand the nodes and select a web service operation.
+<li>If the web service client is deployed from a web application, you can call the
+web service from servlet or from a JSP page. If the web service client is deployed from
+ a Java application, use a Java source file instead. So, do one of the following:
+ <ul><li>Create a Java source file, such as a <a href="../../web/create/servlet/servlet_create.html">servlet</a></li>
+	 <li>Use the default <tt>index.jsp</tt> file that is created for you when you create
+	  a web application or <a href="../../web/create/jsp/jsp_create.html">create a JSP file</a></li></ul>
+  <li>Open the file in the Source Editor and do one of the following:
+  <ul><li>For servlets, right-click in the method from which you want to call the web service, and choose Web Service Client Resources 
+	  <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Call Web Service Operation.</li>
+	  <li>For JSP files, right-click anywhere in the Source Editor  and choose Web Service Client Resources 
+	  <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Call Web Service Operation.</ul>
+
+  <li>The Select Operation to Invoke dialog box appears.
+   Expand the nodes and select a web service operation.
 <table cellpadding="3" cellspacing="0" border="0">
   <tbody><tr valign="top"> 
     <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
@@ -33,23 +37,20 @@ a class in the Source Editor and choose Web Service Client Resources
   </tr>
 </tbody></table></li>
 <li>Click OK.
-<p>The IDE adds the following to the servlet:
+The IDE adds the following code to the servlet or JSP file:
 <ul>
 <li>A try-catch block containing the method invocation.</li>
-<li>A <tt>get<i>XXX</i></tt> method (where <i>XXX</i> is the name of the web service).</li>
-<li>A <tt>get<i>XXX</i>SEIPort</tt> method (where <i>XXX</i> is the name of the web service).</li>
-<li>Two instance variables to represent the service and the port.</li>
-<li>The necessary import statements.</li></ul>
+<li>A <tt>get<i>XXX</i>()</tt> method (where <i>XXX</i> is the name of the web service).</li>
+<li>A <tt>get<i>XXX</i>Soap()</tt> method (where <i>XXX</i> is the name of the web service).</li></ul>
 <table cellpadding="3" cellspacing="0" border="0">
   <tbody><tr valign="top"> 
     <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
-    <td> Note that the Source Editor underlines the generated code 
-	    as containing errors. This is because the IDE has not generated
+    <td> The Source Editor underlines the generated <tt>get</tt> methods 
+	    in red, as if it contains errors. This is because the IDE has not generated
 	    the classes imported by these methods. After the first time you
-	    build the project the error underlining disappears.</td>
-  </tr>
-</tbody></table>
-</li>
+	    build the project, the red error underlining disappears.</td>
+  </tr></table>
+
 </ol>
 <table>
 <tr>

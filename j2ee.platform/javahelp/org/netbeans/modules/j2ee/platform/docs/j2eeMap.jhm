@@ -232,10 +232,12 @@
 	<!-- End of "Expose" section -->
 	<!-- Start of "Consume" section -->
 	<mapID target="about_wsc" url="webservice/consume/about_wsc.html" />
+	<mapID target="wsc_proxy" url="webservice/consume/wsc_proxy.html" />
 	<mapID target="wsc_build" url="webservice/consume/wsc_build.html" />
 	<mapID target="wsc_test" url="webservice/consume/wsc_test.html" />
 	<mapID target="wsc_create" url="webservice/consume/wsc_create.html" />
 	<mapID target="wsc_call_ws" url="webservice/consume/wsc_call_ws.html" />
+	<mapID target="wsc_secure" url="webservice/consume/wsc_secure.html" />
 	<mapID target="wsc_deploy" url="webservice/consume/wsc_deploy.html" />
 	<!-- End of "Consume" section -->
 	

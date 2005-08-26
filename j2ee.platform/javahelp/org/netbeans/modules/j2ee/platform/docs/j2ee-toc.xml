@@ -277,11 +277,13 @@
 		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
 	 </tocitem>
 	 <tocitem text="Consuming Web Services" >
-		 <tocitem text="About Web Service Clients" target="about_wsc" /> 
+		 <tocitem text="About Web Service Clients" target="about_wsc" />
+		 <tocitem text="Setting a Proxy for Consuming a Web Service" target="wsc_proxy" /> 
 		 <tocitem text="Creating a Web Service Client" target="wsc_create" />
 		 <tocitem text="Testing a Web Service on the Client Side" target="wsc_test" /> 
 		 <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
 		 <tocitem text="Building a Web Service Client" target="wsc_build" />
+		 <tocitem text="Securing a Web Service Client" target="wsc_secure" />
 		 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
 	 </tocitem>
  </tocitem> 
