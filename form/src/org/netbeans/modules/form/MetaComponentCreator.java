@@ -303,7 +303,7 @@ public class MetaComponentCreator {
                 targetCont = null;
             }
             if ((targetCont != null) && (targetCont.getLayoutSupport() == null)) {
-                createAndAddLayoutComponent((RADVisualComponent)newMetaComp, targetCont);
+                createAndAddLayoutComponent((RADVisualComponent)newMetaComp, targetCont, null);
             }
         } else if (targetPlacement == TARGET_OTHER)
             newMetaComp = addOtherComponent(compClass, targetComp);
@@ -311,7 +311,8 @@ public class MetaComponentCreator {
         return newMetaComp;
     }
     
-    private void createAndAddLayoutComponent(RADVisualComponent radComp, RADVisualContainer targetCont) {
+    private void createAndAddLayoutComponent(RADVisualComponent radComp,
+            RADVisualContainer targetCont, LayoutComponent prototype) {
         LayoutModel layoutModel = formModel.getLayoutModel();
         LayoutComponent layoutComp = layoutModel.getLayoutComponent(radComp.getId());
         if (layoutComp == null) {
@@ -320,7 +321,7 @@ public class MetaComponentCreator {
         }
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
         LayoutComponent parent = layoutModel.getLayoutComponent(targetCont.getId());    
-        layoutModel.addNewComponent(layoutComp, parent);
+        layoutModel.addNewComponent(layoutComp, parent, prototype);
         formModel.addUndoableEdit(ue);
     }
 
@@ -368,7 +369,13 @@ public class MetaComponentCreator {
                 LayoutSupportManager layoutSupport = targetCont.getLayoutSupport();
                 if (layoutSupport == null) {
                     constraints = null;
-                    createAndAddLayoutComponent(newVisual, targetCont);
+                    RADComponent parent = sourceComp.getParentComponent();
+                    LayoutComponent source = null;
+                    if ((parent instanceof RADVisualContainer)
+                        && (((RADVisualContainer)parent).getLayoutSupport() == null)) {
+                        source = sourceComp.getFormModel().getLayoutModel().getLayoutComponent(sourceComp.getId());
+                    }
+                    createAndAddLayoutComponent(newVisual, targetCont, source);
                 } else {
                     constraints = layoutSupport.getStoredConstraints(newVisual);
                 }

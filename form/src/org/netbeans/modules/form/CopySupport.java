@@ -246,7 +246,7 @@ class CopySupport {
                                 MetaComponentCreator.shouldBeLayoutContainer((RADVisualComponent)sourceComponent));
                         }
                         resetConstraintProperties = true;
-                        layoutModel.addNewComponent(layoutComponent, parent);
+                        layoutModel.addNewComponent(layoutComponent, parent, null);
                         if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                             sourceForm.addUndoableEdit(ue);
                         }
