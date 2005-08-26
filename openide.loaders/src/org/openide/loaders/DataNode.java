@@ -912,6 +912,21 @@ public class DataNode extends AbstractNode {
             lazyInitialization();
             return obj_files.toArray(a);
         }
+
+        public boolean equals(Object obj) {
+            lazyInitialization();
+            return obj_files.equals(obj);
+        }
+
+        public String toString() {
+            lazyInitialization();
+            return obj_files.toString();
+        }
+
+        public int hashCode() {
+            lazyInitialization();
+            return obj_files.hashCode();
+        }
         
         /** Iterator for FilesSet. It returns the primaryFile first and 
          * then initialize the delegate iterator for secondary files.

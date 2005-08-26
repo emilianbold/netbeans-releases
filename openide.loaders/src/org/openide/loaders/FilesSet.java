@@ -159,6 +159,18 @@ final class FilesSet implements Set {
         return getDelegate().toArray(obj);
     }
 
+    public boolean equals(Object obj) {
+        return getDelegate().equals(obj);
+    }
+
+    public String toString() {
+        return getDelegate().toString();
+    }
+
+    public int hashCode() {
+        return getDelegate().hashCode();
+    }
+
     /** Iterator for FilesSet. It returns the primaryFile first and 
      * then initialize the delegate iterator for secondary files.
      */
