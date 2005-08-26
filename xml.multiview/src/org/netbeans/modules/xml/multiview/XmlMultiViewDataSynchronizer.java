@@ -36,7 +36,33 @@ public abstract class XmlMultiViewDataSynchronizer {
 
     protected final RequestProcessor requestProcessor =
             new RequestProcessor("XmlMultiViewDataSynchronizer RequestProcessor", 1);  // NOI18N
-    private RequestProcessor.Task updateTask;
+    private FileLock updateLock = null;
+
+    private final RequestProcessor.Task updateTask = requestProcessor.create(new Runnable() {
+        public void run() {
+            if (isUpdateLock()) {
+                finishUpdateTask.cancel();
+                updateData(updateLock, true);
+                synchronized (updateTask) {
+                    if (updateTask.getDelay() <= 0) {
+                        finishUpdateTask.schedule(1);
+                    }
+                }
+            }
+        }
+    });
+
+    private final RequestProcessor.Task finishUpdateTask = requestProcessor.create(new Runnable() {
+        public void run() {
+            synchronized (updateTask) {
+                if (isUpdateLock()) {
+                    updateLock.releaseLock();
+                    updateLock = null;
+                }
+            }
+        }
+    });
+
     private final RequestProcessor.Task reloadTask = requestProcessor.create(new Runnable() {
         public void run() {
             reloadModel();
@@ -99,39 +125,23 @@ public abstract class XmlMultiViewDataSynchronizer {
      */
     public final void requestUpdateData() {
         if (reloading == 0) {
-            RequestProcessor.Task updateTask = getUpdateTask();
-            if (updateTask != null) {
-                updateTask.schedule(dataObject.isModified() ? updateDelay : 0);
+            synchronized (updateTask) {
+                finishUpdateTask.cancel();
+                if (!isUpdateLock()) {
+                    try {
+                        updateLock = takeLock();
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                        return;
+                    }
+                }
+                updateTask.schedule(dataObject.isModified() ? updateDelay : 1);
             }
         }
     }
 
-    private synchronized RequestProcessor.Task getUpdateTask() {
-        RequestProcessor.Task task = updateTask;
-        if (task == null) {
-            final FileLock lock;
-            try {
-                lock = takeLock();
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-                return null;
-            }
-            if (lock != null) {
-                task = requestProcessor.create(new Runnable() {
-                    public void run() {
-                        updateData(lock, true);
-                        synchronized (XmlMultiViewDataSynchronizer.this) {
-                            if (updateTask.getDelay() <= 0) {
-                                lock.releaseLock();
-                                updateTask = null;
-                            }
-                        }
-                    }
-                });
-                updateTask = task;
-            }
-        }
-        return task;
+    private boolean isUpdateLock() {
+        return updateLock != null && updateLock.isValid();
     }
 
     /**
