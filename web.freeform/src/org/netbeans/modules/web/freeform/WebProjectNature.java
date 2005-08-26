@@ -175,6 +175,7 @@ public class WebProjectNature implements ProjectNature {
             "java-beans",           // NOI18N
             "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
+            "wsdl",                 // NOI18N
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N

@@ -797,6 +797,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
             "web-types",            // NOI18N
             "web-services",         // NOI18N
             "web-service-clients",  // NOI18N
+            "wsdl",                 // NOI18N
             "j2ee-types",           // NOI18N                    
             "junit",                // NOI18N
             "simple-files"          // NOI18N

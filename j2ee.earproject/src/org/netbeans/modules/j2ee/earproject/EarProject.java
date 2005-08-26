@@ -450,6 +450,7 @@ public final class EarProject implements Project, AntProjectListener, FileChange
         
         private static final String[] TYPES = new String[] { 
             "XML",                  // NOI18N
+            "wsdl",                 // NOI18N
             "simple-files"          // NOI18N
         };
 

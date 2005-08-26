@@ -296,7 +296,7 @@ public class JavaProjectNature implements ProjectNature {
             "ant-script",           // NOI18N
             "ant-task",             // NOI18N
             "servlet-types",        // NOI18N
-            // "web-types",         // NOI18N
+            "wsdl",                 // NOI18N
             "junit",                // NOI18N
             // "MIDP",              // NOI18N
             "simple-files"          // NOI18N
