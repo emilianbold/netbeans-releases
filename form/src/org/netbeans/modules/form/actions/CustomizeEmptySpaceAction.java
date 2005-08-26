@@ -80,8 +80,15 @@ public class CustomizeEmptySpaceAction extends CookieAction {
                 FormModel formModel = metacomp.getFormModel();
                 LayoutModel model = formModel.getLayoutModel();
                 EmptySpaceCustomizer customizer = new EmptySpaceCustomizer(model, metacomp.getId());
-                DialogDescriptor dd = new DialogDescriptor(customizer,
-                    NbBundle.getMessage(CustomizeEmptySpaceAction.class, "TITLE_CustomizeEmptySpace")); // NOI18N
+                DialogDescriptor dd = new DialogDescriptor(
+                    customizer,
+                    NbBundle.getMessage(CustomizeEmptySpaceAction.class, "TITLE_CustomizeEmptySpace"), // NOI18N
+                    true,
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.OK_OPTION,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(getClass().getName()),
+                    null); 
                 Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
                 dialog.show();
                 if (dd.getValue() == DialogDescriptor.OK_OPTION) {
