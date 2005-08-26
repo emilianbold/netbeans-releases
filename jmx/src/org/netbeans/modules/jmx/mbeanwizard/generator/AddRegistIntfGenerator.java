@@ -29,7 +29,7 @@ import org.netbeans.jmi.javamodel.Type;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.jmx.MBeanNotification;
 import org.netbeans.modules.jmx.WizardConstants;
-
+import org.netbeans.modules.jmx.WizardHelpers;
 
 /**
  *
@@ -85,9 +85,12 @@ public class AddRegistIntfGenerator
             boolean keepRefSelected)
            throws java.io.IOException, Exception
     {
+        boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            addManagementImport(mbeanRes);
+            if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
+                MBeanFileGenerator.addManagementImport(mbeanRes);
+          
             addMBeanRegistration(mbeanClass);
             addPreRegisterMethod(mbeanClass,keepRefSelected);
             addPostRegisterMethod(mbeanClass);
@@ -95,8 +98,22 @@ public class AddRegistIntfGenerator
             addPostDeregisterMethod(mbeanClass);
             if (keepRefSelected)
                 addFields(mbeanClass);
+        } catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
         } finally {
-            JavaModel.getJavaRepository().endTrans();
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        
+        rollback = false;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
+                MBeanFileGenerator.addManagementImport(mbeanRes);
+        } catch (Exception e) {
+            rollback = true;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
         }
     }
     
@@ -113,20 +130,20 @@ public class AddRegistIntfGenerator
         Parameter server = pkg.getParameter().createParameter("server", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "MBeanServer"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "MBeanServer"), // NOI18N
                 0, // dimCount
                 false);
         params.add(server);
         Parameter name = pkg.getParameter().createParameter("name", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "ObjectName"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "ObjectName"), // NOI18N
                 0, // dimCount
                 false);
         params.add(name);
         
         ArrayList exceptions = new ArrayList();
-        exceptions.add(getTypeRef(pkg, "Exception")); // NOI18N
+        exceptions.add(MBeanFileGenerator.getTypeRef(pkg, "Exception")); // NOI18N
         
         Method method = pkg.getMethod().createMethod(
                 "preRegister", // NOI18N
@@ -139,7 +156,7 @@ public class AddRegistIntfGenerator
                 Collections.EMPTY_LIST, // type params
                 params, // parameters
                 exceptions, // exceptions
-                getTypeRef(pkg, "ObjectName"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "ObjectName"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -156,7 +173,7 @@ public class AddRegistIntfGenerator
                 "registrationDone", // NOI18N
                 Collections.EMPTY_LIST, // annotations
                 false, // is final
-                getTypeRef(pkg, "Boolean"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "Boolean"), // NOI18N
                 0, // dimCount
                 false);
         params.add(registrationDone);
@@ -172,7 +189,7 @@ public class AddRegistIntfGenerator
                 Collections.EMPTY_LIST, // type params
                 params, // parameters
                 Collections.EMPTY_LIST, // exceptions
-                getTypeRef(pkg, "void"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "void"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -185,7 +202,7 @@ public class AddRegistIntfGenerator
                 "//TODO preDeregister implementation;\n"; // NOI18N
         
         ArrayList exceptions = new ArrayList();
-        exceptions.add(getTypeRef(pkg, "Exception")); // NOI18N
+        exceptions.add(MBeanFileGenerator.getTypeRef(pkg, "Exception")); // NOI18N
         
         Method method = pkg.getMethod().createMethod(
                 "preDeregister", // NOI18N
@@ -198,7 +215,7 @@ public class AddRegistIntfGenerator
                 Collections.EMPTY_LIST, // type params
                 Collections.EMPTY_LIST, // parameters
                 exceptions, // exceptions
-                getTypeRef(pkg, "void"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "void"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -221,7 +238,7 @@ public class AddRegistIntfGenerator
                 Collections.EMPTY_LIST, // type params
                 Collections.EMPTY_LIST, // parameters
                 Collections.EMPTY_LIST, // exceptions
-                getTypeRef(pkg, "void"), // NOI18N
+                MBeanFileGenerator.getTypeRef(pkg, "void"), // NOI18N
                 0);
         tgtClass.getFeatures().add(method);
 
@@ -248,39 +265,6 @@ public class AddRegistIntfGenerator
                     "MBeanRegistration", // NOI18N
                     null,
                     Collections.EMPTY_LIST));
-    }
-    
-    private static void addManagementImport(Resource tgtRes){
-        JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
-        
-        // look for the import among all imports in the target file
-        Iterator it = tgtRes.getImports().iterator();
-        boolean found = false;
-        while (it.hasNext()) {
-            Import i = (Import) it.next();
-            if (i.getName().equals("javax.management") && // NOI18N
-                i.isStatic() == false &&
-                i.isOnDemand() == true) { found = true; break;}
-        }
-
-        if (!found) // not found
-            tgtRes.getImports().add(createManagementImport(pkg));
-        
-    }
-    
-    private static Import createManagementImport(JavaModelPackage pkg) {
-        return pkg.getImport().createImport("javax.management",null, false, true); // NOI18N
-    }
-    
-    private static Type getType(JavaModelPackage pkg, String typeName) {
-        return pkg.getType().resolve(typeName);
-    }
-    
-    private static MultipartId getTypeRef(JavaModelPackage pkg, String typeName) {
-        return pkg.getMultipartId().createMultipartId(
-                    typeName,
-                    null,
-                    Collections.EMPTY_LIST);
     }
     
 }
