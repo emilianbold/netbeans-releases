@@ -197,15 +197,30 @@ public class Main extends Object {
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
     
-            if (cp.isEmpty ()) {
-                return;
+            String value = null;
+            try {
+                if (cp.isEmpty ()) {
+                    value = searchBuildNumber(this.getResources("META-INF/MANIFEST.MF"));
+                } else { 
+                    value = searchBuildNumber(this.findResources("META-INF/MANIFEST.MF"));
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
             
+            if (value == null) {
+                System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Implementation-Version found"); // NOI18N
+            } else {
+                System.setProperty ("netbeans.buildnumber", value); // NOI18N
+            }
+        }
+        
+        /** @param en enumeration of URLs */
+        private static String searchBuildNumber(Enumeration en) {
+            String value = null;
             try {
                 java.util.jar.Manifest mf;
-                String value = null;
                 URL u = null;
-                Enumeration en = this.findResources("META-INF/MANIFEST.MF");
                 while(en.hasMoreElements()) {
                     u = (URL)en.nextElement();
                     InputStream is = u.openStream();
@@ -216,15 +231,10 @@ public class Main extends Object {
                         break;
                     }
                 }
-                if (value == null) {
-                    System.err.println("Cannot set netbeans.buildnumber property no OpenIDE-Module-Implementation-Version found"); // NOI18N
-                } else {
-                    System.setProperty ("netbeans.buildnumber", value); // NOI18N
-                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-            
+            return value;
         }
         
         /** Checks for new JARs in netbeans.user */
