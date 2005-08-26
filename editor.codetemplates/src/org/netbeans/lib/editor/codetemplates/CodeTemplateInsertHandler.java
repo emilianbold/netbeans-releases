@@ -58,14 +58,9 @@ public final class CodeTemplateInsertHandler
 implements DocumentListener, KeyListener {
     
     /**
-     * Maximum number of notifications about the parameter value changes
-     * to the processors to prevent infinite loops caused by changing
-     * parameter's value in reaction to other's parameter change
-     * in a cycle.
-     * <br/>
-     * After reaching this count no more notifications will be done.
+     * Property preventing nested template expanding.
      */
-    private static final int MAX_PARAMETER_CHANGE_NOTIFICATION_COUNT = 10000;
+    private static final Object EDITING_TEMPLATE_DOC_PROPERTY = "processing-code-template";
     
     private final CodeTemplate codeTemplate;
     
@@ -104,6 +99,15 @@ implements DocumentListener, KeyListener {
     private List/*<DrawLayer>*/ drawLayers;
     
     private Document doc;
+    
+    /**
+     * Whether an expanding of a template was requested
+     * when still editing parameters of an outer template.
+     * <br>
+     * It is only permitted to expand the nested abbreviation
+     * without editing of the parameters.
+     */
+    private boolean nestedTemplateExpanding;
     
     /**
      * Parameter implementation for which the value is being explicitly
@@ -236,6 +240,8 @@ implements DocumentListener, KeyListener {
     
     public void insertTemplate() {
         doc = component.getDocument();
+        nestedTemplateExpanding = (Boolean.TRUE.equals(doc.getProperty(
+                EDITING_TEMPLATE_DOC_PROPERTY)));
         
         String completeInsertString = getInsertText();
 
@@ -287,12 +293,6 @@ implements DocumentListener, KeyListener {
                 }
             }
             
-            // Install the post modification document listener to sync regions
-            if (doc instanceof BaseDocument) {
-                ((BaseDocument)doc).setPostModificationDocumentListener(this);
-                updateLastRegionBounds();
-            }
-
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         } finally {
@@ -305,7 +305,15 @@ implements DocumentListener, KeyListener {
     }
     
     public void installActions() {
-        if (editableMasters.size() > 0) {
+        if (!nestedTemplateExpanding && editableMasters.size() > 0) {
+            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.TRUE);
+
+            // Install the post modification document listener to sync regions
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).setPostModificationDocumentListener(this);
+                updateLastRegionBounds();
+            }
+
             componentOrigActionMap = CodeTemplateOverrideAction.installOverrideActionMap(
                     component, this);
 
@@ -317,11 +325,16 @@ implements DocumentListener, KeyListener {
                 drawLayers.add(drawLayer);
                 editorUI.addLayer(drawLayer, CodeTemplateDrawLayer.VISIBILITY);
             }
-            
-            component.addKeyListener(this);
-        }
 
-        tabUpdate();
+            component.addKeyListener(this);
+            tabUpdate();
+
+        } else {
+            // For nested template expanding or when without parameters
+            // just update the caret position and release
+            forceCaretPosition();
+            release();
+        }
     }
     
     public void defaultKeyTypedAction(ActionEvent evt, Action origAction) {
@@ -354,7 +367,7 @@ implements DocumentListener, KeyListener {
     public void enterAction(ActionEvent evt) {
         checkNotifyParameterUpdate();
 
-        getComponent().setCaretPosition(caretPosition.getOffset());
+        forceCaretPosition();
         release();
     }
     
@@ -451,6 +464,10 @@ implements DocumentListener, KeyListener {
     public void keyTyped(KeyEvent e) {
     }
     
+    private void forceCaretPosition() {
+        component.setCaretPosition(caretPosition.getOffset());
+    }
+    
     private void notifyParameterUpdate(CodeTemplateParameter parameter, boolean typingChange) {
         // Notify all processors about parameter's change
         for (Iterator it = processors.iterator(); it.hasNext();) {
@@ -510,8 +527,8 @@ implements DocumentListener, KeyListener {
     
     private void tabUpdate() {
         if (activeMasterIndex == editableMasters.size()) {
-            // Goto caret position
-            component.setCaretPosition(caretPosition.getOffset());
+            // Goto remembered caret position
+            forceCaretPosition();
         } else {
             updateLastRegionBounds();
             SyncDocumentRegion active = getActiveMasterImpl().getRegion();
@@ -539,18 +556,20 @@ implements DocumentListener, KeyListener {
         }
     }
 
-    public void release() {
+    private void release() {
         synchronized (this) {
             if (released) {
                 return;
             }
             this.released = true;
         }
-        if (doc instanceof BaseDocument) {
-            ((BaseDocument)doc).setPostModificationDocumentListener(null);
-        }
 
-        if (editableMasters.size() > 0) {
+        if (!nestedTemplateExpanding && editableMasters.size() > 0) {
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument)doc).setPostModificationDocumentListener(null);
+            }
+            doc.putProperty(EDITING_TEMPLATE_DOC_PROPERTY, Boolean.FALSE);
+
             component.removeKeyListener(this);
 
             // Restore original action map
@@ -567,6 +586,8 @@ implements DocumentListener, KeyListener {
             }
             component.putClientProperty(DrawLayer.TEXT_FRAME_START_POSITION_COMPONENT_PROPERTY, null);
             component.putClientProperty(DrawLayer.TEXT_FRAME_END_POSITION_COMPONENT_PROPERTY, null);
+
+            requestRepaint();
         }
 
         // Notify processors
@@ -575,7 +596,6 @@ implements DocumentListener, KeyListener {
             processor.release();
         }
         
-        requestRepaint();
     }
 
     void syncInsert(DocumentEvent evt) {
@@ -589,7 +609,12 @@ implements DocumentListener, KeyListener {
         ) {
             SyncDocumentRegion region = activeMasterImpl.getRegion();
             if (isManagedInsert(offset)) {
-                region.sync((offset == lastActiveRegionStartOffset) ? insertLength : 0);
+                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE);
+                try {
+                    region.sync((offset == lastActiveRegionStartOffset) ? insertLength : 0);
+                } finally {
+                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE);
+                }
                 activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
                 activeMasterImpl.markUserModified();
                 notifyParameterUpdate(activeMasterImpl.getParameter(), true);
@@ -607,7 +632,12 @@ implements DocumentListener, KeyListener {
         ) {
             SyncDocumentRegion region = activeMasterImpl.getRegion();
             if (isManagedRemove(evt.getOffset(), evt.getLength())) {
-                region.sync(0);
+                doc.putProperty("abbrev-ignore-modification", Boolean.TRUE);
+                try {
+                    region.sync(0);
+                } finally {
+                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE);
+                }
                 activeMasterImpl.setValue(getDocParameterValue(activeMasterImpl), false);
                 activeMasterImpl.markUserModified();
                 notifyParameterUpdate(activeMasterImpl.getParameter(), true);

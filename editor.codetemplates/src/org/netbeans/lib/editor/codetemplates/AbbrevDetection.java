@@ -24,6 +24,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.editor.BaseDocument;
@@ -47,6 +48,15 @@ import org.openide.ErrorManager;
 final class AbbrevDetection implements SettingsChangeListener, DocumentListener,
 PropertyChangeListener, KeyListener {
     
+    /**
+     * Document property which determines whether an ongoing document modification
+     * should be completely ignored by the abbreviation framework.
+     * <br/>
+     * This is useful e.g. for code templates parameter replication.
+     */
+    private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY
+            = "abbrev-ignore-modification";
+    
     private static final AbbrevExpander[] abbrevExpanders = { new CodeTemplateAbbrevExpander() };
     
     public static AbbrevDetection get(JTextComponent component) {
@@ -68,7 +78,7 @@ PropertyChangeListener, KeyListener {
     /**
      * Offset after the last typed character of the collected abbreviation.
      */
-    private int abbrevEndOffset;
+    private Position abbrevEndPosition;
 
     /**
      * Abbreviation characters captured from typing.
@@ -107,22 +117,26 @@ PropertyChangeListener, KeyListener {
     }
     
     public void insertUpdate(DocumentEvent evt) {
-        if (DocumentUtilities.isTypingModification(evt)) {
-            int offset = evt.getOffset();
-            int length = evt.getLength();
-            appendTypedText(offset, length);
-        } else { // not typing modification -> reset abbreviation collecting
-            resetAbbrevChars();
+        if (!isIgnoreModification()) {
+            if (DocumentUtilities.isTypingModification(evt)) {
+                int offset = evt.getOffset();
+                int length = evt.getLength();
+                appendTypedText(offset, length);
+            } else { // not typing modification -> reset abbreviation collecting
+                resetAbbrevChars();
+            }
         }
     }
 
     public void removeUpdate(DocumentEvent evt) {
-        if (DocumentUtilities.isTypingModification(evt)) {
-            int offset = evt.getOffset();
-            int length = evt.getLength();
-            removeAbbrevText(offset, length);
-        } else { // not typing modification -> reset abbreviation collecting
-            resetAbbrevChars();
+        if (!isIgnoreModification()) {
+            if (DocumentUtilities.isTypingModification(evt)) {
+                int offset = evt.getOffset();
+                int length = evt.getLength();
+                removeAbbrevText(offset, length);
+            } else { // not typing modification -> reset abbreviation collecting
+                resetAbbrevChars();
+            }
         }
     }
 
@@ -154,9 +168,13 @@ PropertyChangeListener, KeyListener {
         checkExpansionKeystroke(evt);
     }
     
+    private boolean isIgnoreModification() {
+        return Boolean.TRUE.equals(doc.getProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY));
+    }
+    
     private void checkExpansionKeystroke(KeyEvent evt) {
         KeyStroke expandKeyStroke = AbbrevSettings.getDefaultExpansionKeyStroke();
-        if (component != null) {
+        if (abbrevEndPosition != null && component != null) {
             Document doc = component.getDocument();
             String mimeType = (String)doc.getProperty("mimeType"); // NOI18N
             if (mimeType != null) {
@@ -183,14 +201,18 @@ PropertyChangeListener, KeyListener {
      */
     private void resetAbbrevChars() {
         abbrevChars.setLength(0);
-        abbrevEndOffset = -1;
+        abbrevEndPosition = null;
     }
     
     private void appendTypedText(int offset, int insertLength) {
-        if (offset != abbrevEndOffset) { // does not follow previous insert
+        if (abbrevEndPosition == null
+            || offset + insertLength != abbrevEndPosition.getOffset()
+        ) {
+            // Does not follow previous insert
             resetAbbrevChars();
         }
-        if (abbrevEndOffset == -1) { // starting the new string
+
+        if (abbrevEndPosition == null) { // starting the new string
             try {
                 // Start new accounting if previous char would reset abbrev
                 // i.e. check that not start typing 'u' after existing 'p' which would
@@ -198,13 +220,14 @@ PropertyChangeListener, KeyListener {
                 if (offset == 0
                         || resetAcceptor.accept(doc.getText(offset - 1, 1).charAt(0))
                 ) {
-                    abbrevEndOffset = offset;
+                    abbrevEndPosition = doc.createPosition(offset + insertLength);
                 }
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        if (abbrevEndOffset != -1) {
+
+        if (abbrevEndPosition != null) {
             try {
                 String typedText = doc.getText(offset, insertLength); // typically just one char
                 boolean textAccepted = true;
@@ -221,7 +244,7 @@ PropertyChangeListener, KeyListener {
                 
                 if (textAccepted) {
                     abbrevChars.append(typedText);
-                    abbrevEndOffset += typedText.length();
+                    // abbrevEndPosition should move appropriately
                 } else {
                     resetAbbrevChars();
                 }
@@ -234,10 +257,13 @@ PropertyChangeListener, KeyListener {
     }
     
     private void removeAbbrevText(int offset, int removeLength) {
-        if (abbrevEndOffset != -1) {
-            if (offset + removeLength == abbrevEndOffset) { // removed at end
+        if (abbrevEndPosition != null) {
+            // Abbrev position should already move appropriately
+            if (offset == abbrevEndPosition.getOffset()
+                && abbrevChars.length() >= removeLength
+            ) { // removed at end
                 abbrevChars.setLength(abbrevChars.length() - removeLength);
-                abbrevEndOffset -= removeLength;
+                
             } else {
                 resetAbbrevChars();
             }
@@ -246,6 +272,7 @@ PropertyChangeListener, KeyListener {
 
     public boolean expand() {
         CharSequence abbrevText = getAbbrevText();
+        int abbrevEndOffset = abbrevEndPosition.getOffset();
         for (int i = 0; i < abbrevExpanders.length; i++) {
             if (abbrevExpanders[i].expand(component, 
                     abbrevEndOffset - abbrevText.length(), abbrevText)
