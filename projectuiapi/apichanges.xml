@@ -76,6 +76,20 @@ is the proper place.
 
     <changes>
         
+        <change id="getSetMainProject">
+            <api name="general"/>
+            <summary>Ability to get and set main project</summary>
+            <version major="1" minor="11"/>
+            <date day="26" month="8" year="2005"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                Added <code>getMainProject</code> and <code>setMainProject</code> methods to OpenProjects.
+            </description>
+            <issue number="58461"/>
+        </change>
+        
         <change id="delete-copy-move-support">
             <api name="general"/>
             <summary>Project Delete/Copy/Rename/Move Support Added, Support for Default Project Delete/Copy/Rename/Move Added</summary>

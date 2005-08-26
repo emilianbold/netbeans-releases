@@ -62,4 +62,12 @@ public final class OpenProjectsTrampolineImpl implements OpenProjectsTrampoline,
         }
     }
         
+    public Project getMainProject() {
+        return OpenProjectList.getDefault().getMainProject();
+    }
+    
+    public void setMainProject(Project project) {
+        OpenProjectList.getDefault().setMainProject(project);
+    }
+    
 }

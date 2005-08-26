@@ -213,6 +213,69 @@ public class OpenProjectListTest extends NbTestCase {
         assertFalse("project2 is not in recent projects list", OpenProjectList.getDefault().getRecentProjects().contains(project2));
     }
     
+    public void testMainProject() throws Exception {
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        
+        FileObject p1 = workDir.createFolder("p1");
+        FileObject p1TestProject = p1.createFolder("testproject");
+        
+        Project project1 = ProjectManager.getDefault().findProject(p1);
+        
+        assertNotNull("project1 is recognized", project1);
+        
+        FileObject p2 = workDir.createFolder("p2");
+        FileObject p2TestProject = p2.createFolder("testproject");
+        
+        Project project2 = ProjectManager.getDefault().findProject(p2);
+        
+        assertNotNull("project2 is recognized", project2);
+        
+        FileObject p3 = workDir.createFolder("p3");
+        FileObject p3TestProject = p3.createFolder("testproject");
+        
+        Project project3 = ProjectManager.getDefault().findProject(p3);
+        
+        assertNotNull("project3 is recognized", project3);
+        
+        assertNull("no main project set when OPL is empty", OpenProjectList.getDefault().getMainProject());
+        
+        OpenProjectList.getDefault().open(project1);
+        
+        assertNull("open project does not change main project", OpenProjectList.getDefault().getMainProject());
+        
+        OpenProjectList.getDefault().setMainProject(project1);
+        
+        assertTrue("main project correctly set", OpenProjectList.getDefault().getMainProject() == project1);
+        
+        OpenProjectList.getDefault().open(project2);
+        
+        assertTrue("open project does not change main project", OpenProjectList.getDefault().getMainProject() == project1);
+        
+        OpenProjectList.getDefault().close(new Project[] {project1});
+        
+        assertNull("no main project set when main project is closed", OpenProjectList.getDefault().getMainProject());
+        
+        boolean exceptionThrown = false;
+        
+        try {
+            OpenProjectList.getDefault().setMainProject(project3);
+        } catch (IllegalArgumentException e) {
+            exceptionThrown = true;
+        }
+        
+        assertTrue("IAE thrown when trying to set main project that is not opened", exceptionThrown);
+        
+        //the same for a previously opened project:
+        exceptionThrown = false;
+        
+        try {
+            OpenProjectList.getDefault().setMainProject(project1);
+        } catch (IllegalArgumentException e) {
+            exceptionThrown = true;
+        }
+        
+        assertTrue("IAE thrown when trying to set main project that is not opened", exceptionThrown);
+    }
     // helper code
 
     private static class MySubprojectProvider implements SubprojectProvider {

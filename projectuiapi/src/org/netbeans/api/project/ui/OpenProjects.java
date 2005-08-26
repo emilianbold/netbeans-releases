@@ -102,6 +102,39 @@ public final class OpenProjects {
         trampoline.closeAPI (projects);
     }
 
+    /**Retrieves the current main project set in the IDE.
+     *
+     * <div class="nonnormative">
+     * <p><strong>Warning:</strong> the set of usecases that require invoking this method is
+     * limited. {@link org.netbeans.spi.project.ui.support.MainProjectSensitiveActions} should
+     * be used in favour of this method if possible. In particular, this method should not
+     * be used to let user choose if an action should be run over main or current project.</p>
+     * </div>
+     *
+     * @return the current main project or null if none
+     * @since 1.11
+     */
+    public Project getMainProject() {
+        return trampoline.getMainProject();
+    }
+    
+    /**Sets the main project.
+     *
+     * <div class="nonnormative">
+     * <p><strong>Warning:</strong> the set of usecases that require invoking this method is
+     * very limited and should be generally avoided if possible. In particular, this method
+     * should not be used to set project created by the New Project Wizard as main.</p>
+     * </div>
+     *
+     * @param project project to set as main project (must be open), or
+     *                <code>null</code> to set no project as main.
+     * @throws IllegalArgumentException if the project is not opened.
+     * @since 1.11
+     */
+    public void setMainProject(Project project) throws IllegalArgumentException {
+        trampoline.setMainProject(project);
+    }
+    
     /**
      * Adds a listener to changes in the set of open projects.
      * As this class is a singleton and is not subject to garbage collection,

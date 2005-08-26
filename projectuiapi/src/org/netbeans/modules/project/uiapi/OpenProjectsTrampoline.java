@@ -32,4 +32,8 @@ public interface OpenProjectsTrampoline {
     
     public void removePropertyChangeListenerAPI( PropertyChangeListener listener );
     
+    public Project getMainProject();
+    
+    public void setMainProject(Project project);
+    
 }
