@@ -66,7 +66,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     }
 
     
-    public void testByDefaultAllAreEnabled() throws Exception {
+    public void testByDefaultJustPlatformWithoutAUIsEnabled() throws Exception {
         Node n = customizer.getExplorerManager().getRootContext();
         Node[] clusters = n.getChildren().getNodes();
         
@@ -75,26 +75,37 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         }
         
         for (int i = 0; i < clusters.length; i++) {
-            assertNodeEnabled(clusters[i], true);
+            // only platform shall be partially enabled
+            boolean shallBeEnabled = clusters[i].getName().contains("platform");
+            assertNodeEnabled(clusters[i], shallBeEnabled ? null : Boolean.FALSE);
+            if (!shallBeEnabled) {
+                continue;
+            }
+            
             Node[] modules = clusters[i].getChildren().getNodes();
             if (modules.length == 0) {
                 fail("Expected more modules for cluster: " + clusters[i]);
             }
             
             for (int j = 0; j < modules.length; j++) {
-                assertNodeEnabled(modules[j], true);
+                shallBeEnabled = !modules[j].getName().equals("org.netbeans.modules.autoupdate");
+                assertNodeEnabled(modules[j], Boolean.valueOf(shallBeEnabled));
                 assertEquals("No children", Children.LEAF, modules[j].getChildren());
             }
         }
     }
     
     public void testDisableCluster() throws Exception {
+        enableAllCusters(false);
         doDisableCluster(0, true);
     }
     public void testDisableCluster2() throws Exception {
+        enableAllCusters(false);
         doDisableCluster(1, true);
     }
     public void testDisableTwoClusters() throws Exception {
+        enableAllCusters(false);
+        
         String c1 = doDisableCluster(1, true);
         String c2 = doDisableCluster(2, false);
         HashSet c = new HashSet();
@@ -137,7 +148,11 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     }
     
     
+    
+    
     public void testDisableModule() throws Exception {
+        enableAllCusters(true);
+        
         Node n = customizer.getExplorerManager().getRootContext();
         Node[] clusters = n.getChildren().getNodes();
         if (clusters.length == 0) {
@@ -149,7 +164,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         }
 
         setNodeEnabled(modules[0], false);
-        assertNodeEnabled(modules[0], false);
+        assertNodeEnabled(modules[0], Boolean.FALSE);
         
         customizer.store();
         suite1Props.storeProperties();
@@ -159,19 +174,15 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         assertEquals("It's name is name of the node", modules[0].getName(), xyz[0]);
     }
     
-    private static void assertNodeEnabled(Node n, boolean value) throws Exception {
+    private static void assertNodeEnabled(Node n, Boolean value) throws Exception {
         org.openide.nodes.Node.PropertySet[] arr = n.getPropertySets();
         for (int i = 0; i < arr.length; i++) {
             org.openide.nodes.Node.Property[] x = arr[i].getProperties();
             for (int j = 0; j < x.length; j++) {
                 if (x[j].getName().equals("enabled")) {
                     Object o = x[j].getValue();
-                    if (o instanceof Boolean) {
-                        assertEquals("Node is correctly enabled/disabled: " + n, value, ((Boolean)o).booleanValue());
-                        return;
-                    } else {
-                        fail("This should be boolean: " + o);
-                    }
+                    assertEquals("Node is correctly enabled/disabled: " + n, value, o);
+                    return;
                 }
             }
         }
@@ -189,5 +200,20 @@ public class SuiteCustomizerModuleListTest extends TestBase {
             }
         }
         fail("No enabled property found: " + n);
+    }
+
+    private void enableAllCusters(boolean enableModulesAsWell) throws Exception {
+        Node n = customizer.getExplorerManager().getRootContext();
+        Node[] clusters = n.getChildren().getNodes();
+        
+        for (int i = 0; i < clusters.length; i++) {
+            setNodeEnabled(clusters[i], true);
+            if (enableModulesAsWell) {
+                Node[] modules = clusters[i].getChildren().getNodes();
+                for (int j = 0; j < modules.length; j++) {
+                    setNodeEnabled(modules[j], true);
+                }
+            }
+        }
     }
 }

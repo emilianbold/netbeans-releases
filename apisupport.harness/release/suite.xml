@@ -26,6 +26,9 @@ Microsystems, Inc. All Rights Reserved.
         <sortsuitemodules unsortedmodules="${modules}" sortedmodulesproperty="modules.sorted"/>
         <property name="cluster" location="build/cluster"/>
         <echo level="verbose">Suite in ${basedir} with target platform ${netbeans.dest.dir}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
+        <!-- synchronize with SuiteProject -->
+        <property name="disabled.modules" value="org.netbeans.modules.autoupdate"/>
+        <property name="disabled.clusters" value="nb4.2, enterprise2, ide6, harness"/>
     </target>
 
     <target name="build" depends="-init,branding" description="Build all modules in the suite.">
@@ -97,9 +100,6 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="build-zip" depends="build,build-launchers" description="Builds a ZIP distribution of the suite, launchers, and selected modules from the platform.">
-        <property name="disabled.modules" value=""/>
-        <property name="disabled.clusters" value=""/>
-        
         <mkdir dir="dist"/>
         <zip destfile="dist/${app.name}.zip">
             <zipfileset dir="${build.launcher.dir}/bin/" filemode="755" prefix="bin"/>

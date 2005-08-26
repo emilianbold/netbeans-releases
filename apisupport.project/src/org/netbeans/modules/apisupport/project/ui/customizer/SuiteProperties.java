@@ -24,6 +24,7 @@ import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.Su
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.NbBundle;
 
 /**
  * Provides convenient access to a lot of Suite Module's properties.
@@ -131,7 +132,7 @@ public final class SuiteProperties extends ModuleProperties {
         StringTokenizer tok = new StringTokenizer(s, ","); // NOI18N
         String[] arr = new String[tok.countTokens()];
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = tok.nextToken();
+            arr[i] = tok.nextToken().trim();
         }
         return arr;
     }

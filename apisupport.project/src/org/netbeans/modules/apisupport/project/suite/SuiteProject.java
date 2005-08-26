@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -126,9 +127,15 @@ public final class SuiteProject implements Project {
         }
         baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
         String platformS = baseEval.getProperty("nbplatform.active"); // NOI18N
+        HashMap fixedProps = new HashMap();
         if (platformS != null) {
-            providers.add(PropertyUtils.fixedPropertyProvider(Collections.singletonMap("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"))); // NOI18N
+            fixedProps.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
         }
+        // synchronize with suite.xml
+        fixedProps.put("disabled.clusters", "nb4.2, enterprise2, ide6, harness"); // NOI18N
+        fixedProps.put("disabled.modules", "org.netbeans.modules.autoupdate"); // NOI18N
+        providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
+        
         providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
