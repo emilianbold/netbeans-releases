@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- run the tests -->        
         <jvmTestRunner workDir="${xtest.workdir}/sys"  jdkHome="${jdkhome}" jvmArgs="${xtest.jvm.args} ${xtest.jvm.coverage.args}"
-            enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}"
+            enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugAddress="${xtest.debug.address}" debugSuspend="${xtest.debug.suspend}"
             testMode="${xtest.testrunner.mode}"  timeout="${xtest.timeout}">
             <classpath  refid="_jvmplugin.test.classpath"/>
 
