@@ -56,14 +56,8 @@
 	  rootDir="src"/>
   </target>
   
-  <target name="compile" depends="dd2beans_gen, copy_extra, projectized-common.compile"/>
+  <target name="compile" depends="dd2beans_gen, projectized-common.compile"/>
     
-    <target name="copy_extra">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy file="../external/jmxri.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        
-    </target>
-
   <target name="clean" depends="clean-ddgen-src, projectized-common.clean"/>
 
   <target name="clean-ddgen-check">

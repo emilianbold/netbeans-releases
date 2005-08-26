@@ -148,11 +148,15 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.jmxri</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
-            <class-path-extension>
-                <runtime-relative-path>ext/jmxri.jar</runtime-relative-path>
-                <binary-origin>../../external/jmxri.jar</binary-origin>
-            </class-path-extension>
             <friend-packages>
                 <!-- contributes to Linkageerror issues for javax.management -->
                 <!-- <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend> -->
