@@ -7,36 +7,50 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.actions;
+
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
-
 import javax.swing.JMenuItem;
-
-
-import org.openide.awt.JInlineMenu;
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.windows.TopComponent.Registry;
-import org.openide.windows.WindowManager;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.Presenter;
+import org.openide.awt.JInlineMenu;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Enumerations;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-
+import org.openide.windows.TopComponent.Registry;
+import org.openide.windows.WindowManager;
 
 /** Action that presents standard file system-related actions.
 * Listens until a node representing a {@link DataObject}
@@ -58,7 +72,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         if (lookup != null) {
             c = lookup.lookup (new Lookup.Template (Node.class)).allInstances();
         } else {
-            c = java.util.Collections.EMPTY_LIST;
+            c = Collections.EMPTY_LIST;
         }
         return (Node[])c.toArray(new Node[c.size()]);
     }
@@ -80,14 +94,14 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         if (n != null) {
             for (int i = 0; i < n.length; i++) {
                  DataObject obj = (DataObject)n[i].getCookie (DataObject.class);
-                 while (obj instanceof org.openide.loaders.DataShadow)
-                     obj = ((org.openide.loaders.DataShadow)obj).getOriginal();
+                 while (obj instanceof DataShadow)
+                     obj = ((DataShadow) obj).getOriginal();
                  if (obj != null) {
                      try {
                          FileSystem fs = obj.getPrimaryFile ().getFileSystem ();
                          Set foSet = (Set) fsSet.get (fs);
                          if (foSet == null ) {
-                             fsSet.put (fs, foSet = new FileSystemAction.OrderedSet ());
+                             fsSet.put(fs, foSet = new LinkedHashSet());
                          }
                          foSet.addAll(obj.files ());
                      } catch (FileStateInvalidException ex) {continue;}
@@ -97,12 +111,12 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
              * If this restriction will be considered as right solution, then code of this method can be simplified
              */
             if (fsSet.size () == 0 || fsSet.size() > 1) {
-                return createMenu (org.openide.util.Enumerations.empty(), popUp, lookup);
+                return createMenu(Enumerations.empty(), popUp, lookup);
             }
             
             Iterator entrySetIt = fsSet.entrySet ().iterator();
             LinkedList result = new LinkedList ();
-            Set backSet = new OrderedSet();
+            Set backSet = new LinkedHashSet();
 
             while (entrySetIt.hasNext()) {
                 Map.Entry entry = (Map.Entry)entrySetIt.next();
@@ -125,7 +139,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                     }
                 }                
                 backSet.addAll(backupList);
-                result.addAll (java.util.Arrays.asList (fs.getActions (backSet)));
+                result.addAll(Arrays.asList(fs.getActions (backSet)));
             }
             
             
@@ -144,7 +158,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     *   into the menu if enabled and if not duplicated
     */
     static JMenuItem[] createMenu (Enumeration en, boolean popUp, Lookup lookup) {
-        en = org.openide.util.Enumerations.removeDuplicates (en);
+        en = Enumerations.removeDuplicates (en);
 
         ArrayList items = new ArrayList ();
         while (en.hasMoreElements ()) {
@@ -195,7 +209,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     }
 
     public String getName () {
-        return NbBundle.getMessage(org.openide.loaders.DataObject.class, "ACT_FileSystemAction");
+        return NbBundle.getMessage(DataObject.class, "ACT_FileSystemAction");
     }
 
     public HelpCtx getHelpCtx () {
@@ -206,7 +220,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
     * This action itself does nothing, it only presents other actions.
     * @param ev ignored
     */
-    public void actionPerformed (java.awt.event.ActionEvent e) {
+    public void actionPerformed(ActionEvent e) {
         assert false : "ActionEvt: " + e;
     }
     
@@ -243,7 +257,7 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
                 Registry r = WindowManager.getDefault ().getRegistry ();
 
                 r.addPropertyChangeListener (
-                    org.openide.util.WeakListeners.propertyChange (this, r)
+                    WeakListeners.propertyChange (this, r)
                 );
             }
         }
@@ -307,83 +321,8 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
         }
     }
     
-    /**
-     * The set, that keeps the order of elements in the same order they were added.
-     * Only add of collections of elements is supported in this set. 
-     */
-    private static final class OrderedSet extends AbstractSet {
-        
-        /** Queue of collections of elements. */
-        private LinkedList queue = new LinkedList ();
-        /** Objects stored in this set. */
-        Object[] objects = null;
-        
-        /** Creates a new OrderedSet */
-        public OrderedSet() {
-        }
-        
-        /**
-         * Adds all of the elements in the specified collection to this collection.
-         */
-        public boolean addAll(Collection coll) {
-            queue.add (coll);
-            return true;
-        }
-        
-        
-        private Object[] getObjects() {
-            if (objects == null) {
-                class Coll2Enum implements org.openide.util.Enumerations.Processor {
-                    public Object process (Object obj, java.util.Collection ignore) {
-                        return Collections.enumeration((Collection) obj);
-                    }
-                }
-                Enumeration sequenced = org.openide.util.Enumerations.concat (
-                    org.openide.util.Enumerations.convert (
-                        Collections.enumeration (queue), new Coll2Enum ()
-                    )
-                );
-                Enumeration result = org.openide.util.Enumerations.removeDuplicates (sequenced);
-                ArrayList objectList = new ArrayList();
-                for (int i = 0; result.hasMoreElements(); i++) {
-                    objectList.add(result.nextElement());
-                }
-                objects = objectList.toArray();
-            }
-            return objects;
-        }
-        
-        /**
-         * Returns an iterator over the elements contained in this collection.
-         */
-        public Iterator iterator() {
-            final int size = getObjects().length;
-            return new Iterator() {
-                int i = 0;
-                public boolean hasNext() {
-                    return i < size;
-                }
-                
-                public Object next() { // XXX should throw NoSuchElementException
-                    return objects[i++];
-                }
-                
-                public void remove() {
-                    throw new UnsupportedOperationException("Remove is not supported."); // NOI18N
-                }
-            };
-        }
-        
-        /**
-         * Returns the number of elements in this collection.
-         */
-        public int size() {
-            return getObjects().length;
-        }
-    } // end of OrderedSet
-    
     /** Context aware action implementation. */
-    private static final class DelegateAction extends javax.swing.AbstractAction 
+    private static final class DelegateAction extends AbstractAction 
     implements Presenter.Menu, Presenter.Popup {
         /** lookup to work with */
         private Lookup lookup;
@@ -403,9 +342,10 @@ implements ContextAwareAction, Presenter.Menu, Presenter.Popup {
             return new FileSystemAction.Menu (true, lookup);
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
+        public void actionPerformed(ActionEvent e) {
+            assert false : e;
         }
         
-        
-    } // end of DelegateAction    
+    } // end of DelegateAction
+    
 }
