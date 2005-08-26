@@ -16,7 +16,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import junit.framework.*;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
@@ -26,7 +25,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-
 
 /** Checks the behaviour of enabled module list.
  *
@@ -76,7 +74,7 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         
         for (int i = 0; i < clusters.length; i++) {
             // only platform shall be partially enabled
-            boolean shallBeEnabled = clusters[i].getName().contains("platform");
+            boolean shallBeEnabled = clusters[i].getName().indexOf("platform") != -1;
             assertNodeEnabled(clusters[i], shallBeEnabled ? null : Boolean.FALSE);
             if (!shallBeEnabled) {
                 continue;
