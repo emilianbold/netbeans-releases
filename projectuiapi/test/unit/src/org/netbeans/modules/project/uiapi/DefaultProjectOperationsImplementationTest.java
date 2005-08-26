@@ -22,6 +22,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation.UserInputHandler;
 import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementationTest;
@@ -253,6 +254,23 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         assertTrue(new File(newProject, "lib").isDirectory());
         assertFalse(new File(new File(newProject, "lib"), "proj2").exists());
     }
+
+    public void testMainProjectFlagNotMovedWhenCopying() throws Exception {
+        OpenProjects.getDefault().open(new Project[] {prj}, false);
+        
+        Project main = OpenProjects.getDefault().getMainProject();
+        
+        assertTrue(main == null || !prj.getProjectDirectory().equals(main.getProjectDirectory()));
+        
+        ProgressHandle handle = ProgressHandleFactory.createHandle("test-handle");
+        FileObject oldProject = prj.getProjectDirectory();
+        File       oldProjectFile = FileUtil.toFile(oldProject);
+        FileObject newTarget = oldProject.getParent();
+        
+        DefaultProjectOperationsImplementation.doCopyProject(handle, prj, "projCopy", newTarget);
+        
+        assertTrue(main == null || OpenProjects.getDefault().getMainProject().equals(main.getProjectDirectory()));
+    }
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Move Operation">
@@ -324,6 +342,43 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
 
         assertTrue(new File(new File(oldProjectFile, "lib"), "proj2").exists());
         assertTrue(new File(new File(new File(oldProjectFile, "lib"), "proj2"), "nbproject").exists());
+    }
+    
+    public void testMainProjectFlagMovedForMainProject() throws Exception {
+        OpenProjects.getDefault().open(new Project[] {prj}, false);
+        OpenProjects.getDefault().setMainProject(prj);
+        
+        ProgressHandle handle = ProgressHandleFactory.createHandle("test-handle");
+        FileObject oldProject = prj.getProjectDirectory();
+        File       oldProjectFile = FileUtil.toFile(oldProject);
+        FileObject newTarget = oldProject.getParent();
+        
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        
+        Project newProject = ProjectManager.getDefault().findProject(newTarget.getFileObject("projMove"));
+        
+        assertEquals(OpenProjects.getDefault().getMainProject(), newProject);
+    }
+    
+    public void testMainProjectFlagNotMovedForNonMainProject() throws Exception {
+        OpenProjects.getDefault().open(new Project[] {prj}, false);
+        
+        Project main = OpenProjects.getDefault().getMainProject();
+        
+        assertTrue(main == null || !prj.getProjectDirectory().equals(main.getProjectDirectory()));
+        
+        ProgressHandle handle = ProgressHandleFactory.createHandle("test-handle");
+        FileObject oldProject = prj.getProjectDirectory();
+        File       oldProjectFile = FileUtil.toFile(oldProject);
+        FileObject newTarget = oldProject.getParent();
+        
+        DefaultProjectOperationsImplementation.doMoveProject(handle, prj, "projMove", newTarget);
+        
+        Project newProject = ProjectManager.getDefault().findProject(newTarget.getFileObject("projMove"));
+        
+        main = OpenProjects.getDefault().getMainProject();
+        
+        assertTrue(main == null || !prj.getProjectDirectory().equals(main.getProjectDirectory()));
     }
     //</editor-fold>
 
