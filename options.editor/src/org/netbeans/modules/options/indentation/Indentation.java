@@ -33,7 +33,7 @@ public final class Indentation extends OptionsCategory {
         return NbBundle.getMessage (Indentation.class, key);
     }
  
-    public String getIcon () {
+    public String getIconBase () {
         return "org/netbeans/modules/options/resources/indentation";
     }
     
@@ -49,7 +49,7 @@ public final class Indentation extends OptionsCategory {
         return loc ("CTL_Indentation_Description");
     }
 
-    public JComponent getPane () {
-        return new IndentationPanel ();
+    public PanelController create () {
+        return new IndentationPanelController ();
     }
 }

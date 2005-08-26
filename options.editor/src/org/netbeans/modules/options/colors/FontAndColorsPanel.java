@@ -67,7 +67,7 @@ import org.openide.util.Utilities;
  * @author Jan Jancura
  */
 public class FontAndColorsPanel extends JPanel implements 
-OptionsCategory.Panel, ActionListener {
+ActionListener {
     
     private ColorModel		    colorModel = ColorModel.getDefault ();
     private JComboBox		    cbSchemes;
@@ -148,23 +148,23 @@ OptionsCategory.Panel, ActionListener {
     }
      
     
-    // OptionsCategory.Panel ..................................................
+    // other methods ...........................................................
     
-    public void applyChanges () {
+    void applyChanges () {
         editorPanel.applyChanges ();
         syntaxColoringPanel.applyChanges ();
         annotationsPanel.applyChanges ();
         colorModel.setCurrentScheme (currentScheme);
     }
     
-    public void cancel () {
+    void cancel () {
     }
     
-    public boolean isValid () {
+    boolean dataValid () {
         return true;
     }
     
-    public boolean isChanged () {
+    boolean isChanged () {
         return true;
     }
    
@@ -190,9 +190,6 @@ OptionsCategory.Panel, ActionListener {
             return;
         }
     }
-    
-    
-    // other methods ...........................................................
     
     private static String loc (String key) {
         return NbBundle.getMessage (FontAndColorsPanel.class, key);

@@ -18,12 +18,44 @@ import javax.swing.JComponent;
 
 
 /**
+ * Implementation of this class represents one category (like "Ant" 
+ * or "Form Editor") in Advanced Panel of Options Dialog. It should 
+ * be registerred in layers:
  *
- * @author Administrator
+ * <pre style="background-color: rgb(255, 255, 153);">
+ * &lt;folder name="OptionsDialog"&gt;
+ *     &lt;folder name="Advanced"&gt;
+ *         &lt;file name="FooAdvancedPanel.instance"&gt;
+ *             &lt;attr name="instanceClass" stringvalue="org.foo.FooAdvancedPanel"/&gt;
+ *         &lt;/file&gt;
+ *     &lt;/file&gt;
+ * &lt;/folder&gt;</pre>
+ *
+ * @author Jan Jancura
  */
 public abstract class AdvancedOption {
     
+    /**
+     * Returns name of category used in Advanced Panel of 
+     * Options Dialog.
+     *
+     * @return name of category
+     */
     public abstract String getDisplayName ();
+    
+    /**
+     * Returns tooltip to be used on category name.
+     *
+     * @return tooltip for this category
+     */
     public abstract String getTooltip ();
-    public abstract JComponent getPane ();
+    
+    /**
+     * Returns {@link PanelController} for this category. PanelController 
+     * creates visual component to be used inside of Advanced Panel.
+     *
+     * @return new instance of PanelController for this advanced options 
+     *         category
+     */
+    public abstract OptionsCategory.PanelController create ();
 }

@@ -31,6 +31,7 @@ import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.options.ui.TabbedPanelModel;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsCategory;
+import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -39,7 +40,6 @@ import org.openide.util.Lookup;
 
 
 /**
- * Implementation of one panel in Options Dialog.
  *
  * @author Jan Jancura
  */
@@ -47,6 +47,7 @@ public final class Model extends TabbedPanelModel {
     
     private Map categoryToOption = new HashMap ();
     private Map categoryToPanel = new HashMap ();
+    private Map categoryToController = new HashMap ();
 
     
     public List getCategories () {
@@ -58,12 +59,14 @@ public final class Model extends TabbedPanelModel {
     
     public JComponent getPanel (String category) {
         init ();
-        JComponent p = (JComponent) categoryToPanel.get (category);
-        if (p != null) return p;
+        JComponent panel = (JComponent) categoryToPanel.get (category);
+        if (panel != null) return panel;
         AdvancedOption option = (AdvancedOption) categoryToOption.get (category);
-        p = option.getPane ();
-        categoryToPanel.put (category, p);
-        Border b = p.getBorder ();
+        PanelController controller = option.create ();
+        categoryToController.put (category, controller);
+        panel = controller.getComponent ();
+        categoryToPanel.put (category, panel);
+        Border b = panel.getBorder ();
         if (b != null)
             b = new CompoundBorder (
                 new EmptyBorder (6, 16, 6, 6),
@@ -71,21 +74,41 @@ public final class Model extends TabbedPanelModel {
             );
         else
             b = new EmptyBorder (6, 16, 6, 6);
-        p.setBorder (b);
-        p.setBackground (Color.white);
-        p.setMaximumSize (p.getPreferredSize ());
-        return p;
+        panel.setBorder (b);
+        panel.setBackground (Color.white);
+        panel.setMaximumSize (panel.getPreferredSize ());
+        return panel;
     }
     
     
     // implementation ..........................................................
     
     void applyChanges () {
-        Iterator it = categoryToPanel.values ().iterator ();
-        while (it.hasNext ()) {
-            OptionsCategory.Panel p = (OptionsCategory.Panel) it.next ();
-            p.applyChanges ();
-        }
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            ((PanelController) it.next ()).applyChanges ();
+    }
+    
+    void cancel () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            ((PanelController) it.next ()).cancel ();
+    }
+    
+    boolean isValid () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            if (!((PanelController) it.next ()).isValid ())
+                return false;
+        return true;
+    }
+    
+    boolean isChanged () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            if (((PanelController) it.next ()).isChanged ())
+                return true;
+        return false;
     }
     
     private boolean initialized = false;

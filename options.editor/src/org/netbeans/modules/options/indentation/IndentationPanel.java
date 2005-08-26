@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 public final class IndentationPanel extends JPanel implements 
-OptionsCategory.Panel, ChangeListener, ActionListener {
+ChangeListener, ActionListener {
 
     private JCheckBox       cbExpandTabs = new JCheckBox ();
     private JCheckBox       cbAddStar = new JCheckBox ();
@@ -215,10 +215,7 @@ OptionsCategory.Panel, ChangeListener, ActionListener {
     public void actionPerformed (ActionEvent e) {
         updatePreview ();
     }
-    
-    
-    // OptionsCategory.Panel ..................................................
-    
+
     public void applyChanges () {
     }
     
@@ -232,7 +229,7 @@ OptionsCategory.Panel, ChangeListener, ActionListener {
         model.setSpacesPerTab (originalIndent);
     }
     
-    public boolean isValid () {
+    public boolean dataValid () {
         return true;
     }
     

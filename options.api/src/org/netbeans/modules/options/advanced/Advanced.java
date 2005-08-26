@@ -31,7 +31,7 @@ public final class Advanced extends OptionsCategory {
         return NbBundle.getMessage (Advanced.class, key);
     }
 
-    public String getIcon () {
+    public String getIconBase () {
         return "org/netbeans/modules/options/resources/advanced";
     }
     
@@ -47,7 +47,7 @@ public final class Advanced extends OptionsCategory {
         return loc ("CTL_Advanced_Options_Description");
     }
 
-    public JComponent getPane () {
-        return new AdvancedPanel ();
+    public PanelController create () {
+        return new AdvancedPanelController ();
     }
 }

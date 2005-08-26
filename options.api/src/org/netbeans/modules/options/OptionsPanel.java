@@ -36,6 +36,7 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +62,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.spi.options.OptionsCategory;
+import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarButton;
 import org.openide.awt.ToolbarToggleButton;
@@ -81,23 +83,24 @@ import org.netbeans.modules.options.ui.ShadowBorder;
  */
 public class OptionsPanel extends JPanel {
     
-    //private JList                   jList;
     private JPanel                  pCategories;
     private JPanel                  pOptions;
     private JScrollPane             jScrollPane1;
     private JLabel                  lTitle;
     private JComponent              currentComponent;
-    // list of OptionsCategories.
-    private List                    optionPanels;
+    //                              List (OptionsCategory)
+    private List                    optionCategories;
     private int                     currentCategory = -1;
     private Button[]                buttons;
     private Map                     categoryToPanel = new HashMap ();
+    private Map                     categoryToController = new HashMap ();
         
-    private Color selected = new Color (193, 210, 238);
-    private Color selectedB = new Color (149, 106, 197);
-    private Color highlighted = new Color (224, 232, 246);
-    private Color highlightedB = new Color (152, 180, 226);
-    private Color iconViewBorder = new Color (127, 157, 185);
+    private Color                   selected = new Color (193, 210, 238);
+    private Color                   selectedB = new Color (149, 106, 197);
+    private Color                   highlighted = new Color (224, 232, 246);
+    private Color                   highlightedB = new Color (152, 180, 226);
+    private Color                   iconViewBorder = new Color (127, 157, 185);
+    
     
     private static String loc (String key) {
         return NbBundle.getMessage (OptionsPanel.class, key);
@@ -125,7 +128,7 @@ public class OptionsPanel extends JPanel {
         if (fo != null) {
             Lookup lookup = new FolderLookup (DataFolder.findFolder (fo)).
                 getLookup ();
-            optionPanels = new ArrayList (lookup.lookup (
+            optionCategories = new ArrayList (lookup.lookup (
                 new Lookup.Template (OptionsCategory.class)
             ).allInstances ());
         }
@@ -135,14 +138,16 @@ public class OptionsPanel extends JPanel {
         
         // size of options panel shoud be max of all nested panels
         int maxW = 0, maxH = 0;
-        int i, k = optionPanels.size ();
+        int i, k = optionCategories.size ();
         for (i = 0; i < k; i++) {
-            OptionsCategory ocp = (OptionsCategory) optionPanels.
+            OptionsCategory ocp = (OptionsCategory) optionCategories.
                 get (i);
-            JComponent c = ocp.getPane ();
-            categoryToPanel.put (ocp, c);
-            maxW = Math.max (maxW, c.getPreferredSize ().width);
-            maxH = Math.max (maxH, c.getPreferredSize ().height);
+            PanelController controller = ocp.create ();
+            categoryToController.put (ocp, controller);
+            JComponent component = controller.getComponent ();
+            categoryToPanel.put (ocp, component);
+            maxW = Math.max (maxW, component.getPreferredSize ().width);
+            maxH = Math.max (maxH, component.getPreferredSize ().height);
             //S ystem.out.println (ocp.getCategoryName () + " : " + c.getPreferredSize ());
         }
         pOptions.setPreferredSize (new Dimension (maxW, maxH));
@@ -163,7 +168,7 @@ public class OptionsPanel extends JPanel {
         // icon view
         pCategories = new JPanel (new BorderLayout ());
         JPanel pCategories2 = new JPanel (new GridLayout (
-            optionPanels.size (),
+            optionCategories.size (),
             1, 0, 0
         ));
         pCategories.add ("North", pCategories2);
@@ -171,11 +176,11 @@ public class OptionsPanel extends JPanel {
         pCategories.setBackground (Color.white);
         pCategories2.setBackground (Color.white);
         pCategories2.setBorder (null);
-        k = optionPanels.size ();
+        k = optionCategories.size ();
         buttons = new Button [k];
         for (i = 0; i < k; i++) {
             final OptionsCategory ocp = (OptionsCategory) 
-                optionPanels.get (i);
+                optionCategories.get (i);
             Button b = new Button (ocp, i);
             buttons [i] = b;
             pCategories2.add (b);
@@ -207,14 +212,14 @@ public class OptionsPanel extends JPanel {
             buttons [i].setSelected ();
         currentCategory = i;
         OptionsCategory ocp = (OptionsCategory) 
-            optionPanels.get (i);
+            optionCategories.get (i);
         if (currentComponent != null)
             pOptions.remove (currentComponent);
         pOptions.add (
             "Center",
             currentComponent = (JComponent) categoryToPanel.get (ocp)
         );
-        lTitle.setIcon (new ImageIcon (Utilities.loadImage (ocp.getIcon () + ".png")));
+        lTitle.setIcon (new ImageIcon (Utilities.loadImage (ocp.getIconBase () + ".png")));
         lTitle.setText (ocp.getTitle ());
         invalidate ();
         validate ();
@@ -222,11 +227,15 @@ public class OptionsPanel extends JPanel {
     }
     
     void save () {
-        ((OptionsCategory.Panel) currentComponent).applyChanges ();
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            ((PanelController) it.next ()).applyChanges ();
     }
     
     void cancel () {
-        ((OptionsCategory.Panel) currentComponent).cancel ();
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            ((PanelController) it.next ()).cancel ();
     }
     
     
@@ -238,7 +247,7 @@ public class OptionsPanel extends JPanel {
         
         Button (OptionsCategory ocp, int index) {
             super (
-                new ImageIcon (Utilities.loadImage (ocp.getIcon () + ".png"))
+                new ImageIcon (Utilities.loadImage (ocp.getIconBase () + ".png"))
             );
             this.index = index;
             Mnemonics.setLocalizedText (this, ocp.getCategoryName ());

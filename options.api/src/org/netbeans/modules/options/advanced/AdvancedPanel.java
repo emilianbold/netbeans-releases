@@ -50,8 +50,7 @@ import org.netbeans.modules.options.*;
  *
  * @author Jan Jancura
  */
-public final class AdvancedPanel extends JPanel implements 
-OptionsCategory.Panel {
+public final class AdvancedPanel extends JPanel {
 
     
     private TabbedPanel tabbedPanel;
@@ -96,21 +95,19 @@ OptionsCategory.Panel {
             );
     }
     
-    
-    // OptionsCategory.Panel ..................................................
-    
     public void applyChanges () {
         model.applyChanges ();
     }
     
     public void cancel () {
+        model.cancel ();
     }
     
-    public boolean isValid () {
-        return true;
+    public boolean dataValid () {
+        return model.isValid ();
     }
     
     public boolean isChanged () {
-        return true;
+        return model.isValid ();
     }
 }
