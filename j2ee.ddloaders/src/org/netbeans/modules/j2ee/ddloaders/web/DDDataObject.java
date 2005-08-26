@@ -226,7 +226,7 @@ public class DDDataObject extends  DDMultiViewDataObject
                 if (((WebAppProxy) webApp).getOriginal() != null) {
                     webApp.merge(app, WebApp.MERGE_UPDATE);
                 }
-                ((WebAppProxy) webApp).setOriginal(app);
+                ((WebAppProxy) webApp).setOriginal(app.getOriginal());
             }
             ((WebAppProxy) webApp).setStatus(error != null ? WebApp.STATE_INVALID_PARSABLE : WebApp.STATE_VALID);
             ((WebAppProxy) webApp).setError(error);
