@@ -58,6 +58,7 @@ PropertyChangeListener {
     private IOManager               ioManager;
     private JPDADebugger            debugger;
     private ContextProvider         contextProvider;
+    private Object                  lock = new Object();
 
     
     public BreakpointOutput (ContextProvider contextProvider) {
@@ -80,8 +81,10 @@ PropertyChangeListener {
         DebuggerManager.getDebuggerManager ().removeDebuggerListener
             (DebuggerManager.PROP_BREAKPOINTS, this);
         unhookBreakpoints ();
-        ioManager = null;
-        debugger = null;
+        synchronized (lock) {
+            ioManager = null;
+            debugger = null;
+        }
     }
 
     public String[] getProperties () {
@@ -92,14 +95,18 @@ PropertyChangeListener {
     // JPDABreakpointListener ..................................................
 
     public void breakpointReached (JPDABreakpointEvent event) {
-        if (event.getDebugger () != debugger) return;
+        synchronized (lock) {
+            if (event.getDebugger () != debugger) return;
+        }
         if (event.getConditionResult () == event.CONDITION_FAILED) return;
         if (event.getConditionResult () == event.CONDITION_FALSE) return;
         JPDABreakpoint breakpoint = (JPDABreakpoint) event.getSource ();
         getBreakpointsNodeModel ().setCurrentBreakpoint (breakpoint);
-        if (ioManager == null) {
-            lookupIOManager ();
-            if (ioManager == null) return;
+        synchronized (lock) {
+            if (ioManager == null) {
+                lookupIOManager ();
+                if (ioManager == null) return;
+            }
         }
         String printText = breakpoint.getPrintText ();
         if (printText == null || printText.length  () == 0) return;
@@ -108,7 +115,11 @@ PropertyChangeListener {
         } catch (Throwable e) {
             e.printStackTrace ();
         }
-        ioManager.println (printText, null);
+        synchronized (lock) {
+            if (ioManager != null) {
+                ioManager.println (printText, null);
+            }
+        }
     }
 
     
@@ -135,10 +146,15 @@ PropertyChangeListener {
     // PropertyChangeListener ..................................................
     
     public void propertyChange (PropertyChangeEvent evt) {
-        if ( evt.getPropertyName () == debugger.PROP_STATE &&
-             debugger.getState () == debugger.STATE_RUNNING
-        )
-            getBreakpointsNodeModel ().setCurrentBreakpoint (null);
+        synchronized (lock) {
+            if (debugger == null ||
+                evt.getPropertyName () != debugger.PROP_STATE ||
+                debugger.getState () != debugger.STATE_RUNNING) {
+                
+                return ;
+            }
+        }
+        getBreakpointsNodeModel ().setCurrentBreakpoint (null);
             
     }
 
@@ -205,7 +221,12 @@ PropertyChangeListener {
             String expression = m.group (1);
             String value = "";
             try {
-                value = debugger.evaluate (expression).getValue ();
+                synchronized (lock) {
+                    if (debugger == null) {
+                        return value; // The debugger is gone
+                    }
+                    value = debugger.evaluate (expression).getValue ();
+                }
                 value = backslashEscapePattern.matcher (value).
                     replaceAll ("\\\\\\\\");
                 value = dollarEscapePattern.matcher (value).
@@ -214,10 +235,14 @@ PropertyChangeListener {
                 // expression is invalid or cannot be evaluated
                 String msg = e.getCause () != null ? 
                     e.getCause ().getMessage () : e.getMessage ();
-                ioManager.println (
-                    "Cannot evaluate expression '" + expression + "' : " + msg, 
-                    null
-                );
+                synchronized (lock) {
+                    if (ioManager != null) {
+                        ioManager.println (
+                            "Cannot evaluate expression '" + expression + "' : " + msg, 
+                            null
+                        );
+                    }
+                }
             }
             printText = m.replaceFirst (value);
         }
