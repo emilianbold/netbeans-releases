@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.tomcat5;
 
+import java.util.WeakHashMap;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -35,6 +37,8 @@ public class TomcatFactory implements DeploymentFactory {
     public static final String tomcatUriPrefix = "tomcat:"; // NOI18N
     
     private static TomcatFactory instance;
+    
+    private static final WeakHashMap managerCache = new WeakHashMap();
     
     private static ErrorManager err = ErrorManager.getDefault ().getInstance ("org.netbeans.modules.tomcat5");  // NOI18N
     
@@ -68,22 +72,30 @@ public class TomcatFactory implements DeploymentFactory {
      * @throws DeploymentManagerCreationException
      * @return {@link TomcatManager}
      */    
-    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
+    public synchronized DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
     throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
-            throw new DeploymentManagerCreationException ("Invalid URI:" + uri);
+            throw new DeploymentManagerCreationException ("Invalid URI:" + uri); // NOI18N
         }
-        return new TomcatManager (true, uri.substring (tomcatUriPrefix.length ()), TomcatManager.TOMCAT_50);
+        // Lets reuse the same instance of TomcatManager for each server instance
+        // during the IDE session, j2eeserver does not ensure this. Without it,
+        // however, we could not rely on keeping data in the member variables.
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+        if (ip == null) {
+            throw new DeploymentManagerCreationException("Tomcat instance: " + uri + " is not registered in the IDE."); // NOI18N
+        }
+        TomcatManager tm = (TomcatManager)managerCache.get(ip);
+        if (tm == null) {
+            tm = new TomcatManager(true, uri.substring(tomcatUriPrefix.length()), TomcatManager.TOMCAT_50);
+            managerCache.put(ip, tm);
+        }
+        return tm;
     }
     
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
     throws DeploymentManagerCreationException {
-        if (!handlesURI (uri)) {
-            throw new DeploymentManagerCreationException ("Invalid URI:" + uri);
-        }
-        // PENDING parse to get home and base dirs
-        
-        return new TomcatManager (false, uri.substring (tomcatUriPrefix.length ()), TomcatManager.TOMCAT_50);
+        // no need to distinguish beetween the connected and disconnected DM for Tomcat
+        return getDeploymentManager(uri, null, null);
     }
     
     public String getDisplayName() {
