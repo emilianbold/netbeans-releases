@@ -14,29 +14,42 @@
 package org.netbeans.modules.editor;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.api.FontColorSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
@@ -65,8 +78,12 @@ public class NbEditorUI extends ExtEditorUI {
 
     private boolean attached = false;
     private ChangeListener listener;
-
-
+    private FontColorSettings fontColorSettings;    
+    private FontColorSettings bfontColorSettings;    
+    
+    private LookupListener lookupListener;
+    private static final Map /*<mimeType, map of colorings>*/coloringMap = new HashMap(5);
+    
     /**
      *
      * @deprecated - use {@link attachSystemActionPerformer(String)} instead
@@ -117,6 +134,119 @@ public class NbEditorUI extends ExtEditorUI {
     protected void attachSystemActionPerformer(String editorActionName){
         new NbEditorUI.SystemActionPerformer(editorActionName);
     }
+
+    private String getDocumentContentType(){
+        JTextComponent c = getComponent();
+        if (c == null){
+            return null;
+        }
+        Document doc = c.getDocument();
+        String mimeType = (String) doc.getProperty("mimeType");  //NOI18N
+        if (mimeType == null){
+            return null;
+        }
+        return mimeType;
+    }
+    
+    private synchronized FontColorSettings getFontColorSettings(){
+        if (fontColorSettings == null){
+            final String mimeType = getDocumentContentType();
+            if (mimeType == null){
+                return null;
+            }
+            MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
+            Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
+            Collection inst = result.allInstances();
+            lookupListener = new LookupListener(){
+                public void resultChanged(LookupEvent ev){
+                    synchronized (coloringMap){
+                        coloringMap.remove(mimeType);
+                    }
+                }
+            };
+            result.addLookupListener(lookupListener);
+            if (inst.size() > 0){
+                fontColorSettings = (FontColorSettings)inst.iterator().next();
+            }
+        }
+        return fontColorSettings;
+    }
+
+    
+    private EditorSettings getEditorSettings(){
+        return (EditorSettings) Lookup.getDefault().lookup(EditorSettings.class);        
+    }
+    
+    protected Map createColoringMap(){
+        Map old = super.createColoringMap();
+        FontColorSettings fcs = getFontColorSettings();
+        EditorSettings es = getEditorSettings();
+        String mimeType = getDocumentContentType();
+        if (fcs == null || es == null || mimeType == null){
+            return old;
+        }
+        BaseKit kit = Utilities.getKit(getComponent());
+        String kitMimeType = (kit == null )? null :kit.getContentType();
+        synchronized (coloringMap){
+            Map cm = (Map)coloringMap.get(mimeType);
+            if (cm != null){
+                return cm;
+            }
+            cm = super.createColoringMap();
+            String scheme = es.getCurrentFontColorScheme();
+            Collection col = fcs.getAllFontColors(scheme);
+            Iterator it = col.iterator();
+            AttributeSet defaults = fcs.getTokenFontColors("default"); //NOI18N
+            while (it.hasNext()){
+                AttributeSet as = (AttributeSet) it.next();
+                String name = (String)as.getAttribute(StyleConstants.NameAttribute);
+                if (name == null) {
+                    continue;
+                }
+                
+                as = fcs.getTokenFontColors(name);
+                
+                Color back = (Color)as.getAttribute(StyleConstants.Background);
+                if (back == null){
+                    back = (Color) defaults.getAttribute(StyleConstants.Background);
+                }
+                
+                Color fore = (Color)as.getAttribute(StyleConstants.Foreground);
+                
+                if (fore == null){
+                    fore = (Color) defaults.getAttribute(StyleConstants.Foreground);
+                }
+                
+                Font font = as.getAttribute (StyleConstants.FontFamily) != null ?
+                    toFont (as) : null;
+
+                Coloring coloring = new Coloring(font, fore, back);
+                cm.put(name, coloring);
+            }
+            coloringMap.put(mimeType, cm);
+            return cm;
+            
+        }
+    }
+    
+    static Font toFont (AttributeSet s) {
+        if (s.getAttribute (StyleConstants.FontFamily) == null) return null;
+	int style = 0;
+	if (s.getAttribute (StyleConstants.Bold) != null &&
+            s.getAttribute (StyleConstants.Bold).equals (Boolean.TRUE)
+        )
+	    style += Font.BOLD;
+	if (s.getAttribute (StyleConstants.Italic) != null &&
+            s.getAttribute (StyleConstants.Italic).equals (Boolean.TRUE)
+        )
+	    style += Font.ITALIC;
+	return new Font (
+	    (String) s.getAttribute (StyleConstants.FontFamily), 
+	    style,
+	    ((Integer) s.getAttribute (StyleConstants.FontSize)).intValue ()
+	);
+    }
+    
     
     protected void installUI(JTextComponent c) {
         super.installUI(c);
