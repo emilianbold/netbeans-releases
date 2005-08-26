@@ -75,21 +75,6 @@ Microsystems, Inc. All Rights Reserved.
 
     </folder>
 
-    <folder name="UI">
-
-        <folder name="Services">
-
-            <folder name="Building">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
-                <file name="org-apache-tools-ant-module-AntSettings.shadow">
-                    <attr name="originalFile" stringvalue="Services/org-apache-tools-ant-module-AntSettings.settings"/>
-                </file>
-            </folder> <!-- Building -->
-
-        </folder> <!-- Services -->
-
-    </folder> <!-- UI -->
-
     <!-- Lines marked as erroneous: -->
     <folder name="Editors">
         <folder name="AnnotationTypes">
