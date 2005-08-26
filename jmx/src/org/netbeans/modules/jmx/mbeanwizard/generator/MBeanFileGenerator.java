@@ -13,6 +13,7 @@
 package org.netbeans.modules.jmx.mbeanwizard.generator;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.jmi.javamodel.Import;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
@@ -100,25 +101,60 @@ public abstract class MBeanFileGenerator {
         boolean dateImport = typeIsUsed(mbean, WizardConstants.DATE_OBJ_NAME);
         if (dateImport)
             addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
+        boolean objectNameImport = typeIsUsed(mbean, WizardConstants.OBJECTNAME_NAME);
+        if (objectNameImport)
+            addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
     }
     
-    public static boolean typeIsUsed(MBeanDO mbean, String type) {
-        for (Iterator<MBeanAttribute> it = mbean.getAttributes().iterator(); it.hasNext();) {
-            MBeanAttribute attribute = it.next();
-            if (WizardConstants.DATE_OBJ_NAME.equals(attribute.getTypeName())) 
+    public static void addNeededImport(MBeanAttribute[] attributes, Resource mbeanRes) {
+        boolean dateImport = attrTypeIsUsed(attributes, WizardConstants.DATE_OBJ_NAME);
+        if (dateImport)
+            addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
+        boolean objectNameImport = attrTypeIsUsed(attributes, WizardConstants.OBJECTNAME_NAME);
+        if (objectNameImport)
+            addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
+    }
+    
+    public static void addNeededImport(MBeanOperation[] operations, Resource mbeanRes) {
+        boolean dateImport = opTypeIsUsed(operations, WizardConstants.DATE_OBJ_NAME);
+        if (dateImport)
+            addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
+        boolean objectNameImport = opTypeIsUsed(operations, WizardConstants.OBJECTNAME_NAME);
+        if (objectNameImport)
+            addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
+    }
+    
+    public static boolean attrTypeIsUsed(MBeanAttribute[] attributes, String type) {
+        for (int i = 0; i < attributes.length; i ++) {
+            if (type.equals(attributes[i].getTypeName())) 
                 return true;
         }
-        for (Iterator<MBeanOperation> it = mbean.getOperations().iterator(); it.hasNext();) {
-            MBeanOperation operation = it.next();
-            if (WizardConstants.DATE_OBJ_NAME.equals(operation.getReturnTypeName())) 
+        return false;
+    }
+    
+    public static boolean opTypeIsUsed(MBeanOperation[] operations, String type) {
+        for (int i = 0 ; i < operations.length; i ++) {
+            if (type.equals(operations[i].getReturnTypeName())) 
                 return true;
-            for (int i = 0; i < operation.getParametersSize(); i++) {
-                MBeanOperationParameter param = operation.getParameter(i);
-                if (WizardConstants.DATE_OBJ_NAME.equals(param.getParamType())) 
+            for (int j = 0; j < operations[i].getParametersSize(); j++) {
+                MBeanOperationParameter param = operations[i].getParameter(j);
+                if (type.equals(param.getParamType())) 
                     return true;
             }
         }
         return false;
+    }
+        
+    public static boolean typeIsUsed(MBeanDO mbean, String type) {
+        List attrList = mbean.getAttributes();
+        MBeanAttribute[] attributes = (MBeanAttribute[])
+            attrList.toArray(new MBeanAttribute[attrList.size()]);
+
+        List opList = mbean.getOperations();
+        MBeanOperation[] operations = (MBeanOperation[])
+            opList.toArray(new MBeanOperation[opList.size()]);
+            
+        return attrTypeIsUsed(attributes,type) || opTypeIsUsed(operations,type);
     }
     
     public static void addImport(Resource tgtRes, String fullTypeName){
