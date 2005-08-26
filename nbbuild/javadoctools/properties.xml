@@ -95,3 +95,5 @@ Microsystems, Inc. All Rights Reserved.
 <property name="javadoc.docs.org-netbeans-modules-editor-lib" value="${javadoc.web.root}/org-netbeans-modules-editor-lib"/>
 <property name="javadoc.docs.org-netbeans-modules-j2ee-ejbjarproject" value="${javadoc.web.root}/org-netbeans-modules-j2ee-ejbjarproject"/>
 <property name="javadoc.docs.org-netbeans-modules-j2ee-ejbcore" value="${javadoc.web.root}/org-netbeans-modules-j2ee-ejbcore"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-errorstripe-api" value="${javadoc.web.root}/org-netbeans-modules-editor-errorstripe-api"/>
+<property name="javadoc.docs.org-netbeans-modules-editor-settings" value="${javadoc.web.root}/org-netbeans-modules-editor-settings"/>
