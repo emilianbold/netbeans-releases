@@ -51,6 +51,8 @@ public class SubprojectProviderImplTest extends TestBase {
             "xml/api",
             "core/navigator",
             "openide/explorer",
+            "core/options",
+            "libs/form-layout",
         });
     }
     
