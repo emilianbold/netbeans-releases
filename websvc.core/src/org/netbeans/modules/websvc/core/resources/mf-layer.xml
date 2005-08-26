@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
                     stringvalue="org.netbeans.modules.websvc.wsdl.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon"
                     urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl.gif"/>
+                <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="WSDL_import.template"/>
         </folder>
