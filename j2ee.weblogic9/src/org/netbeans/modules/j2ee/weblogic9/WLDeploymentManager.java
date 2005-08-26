@@ -132,7 +132,7 @@ public class WLDeploymentManager implements DeploymentManager {
             //weblogic jsr88 version
             modifiedLoader();
             try {
-                return dm.distribute(target, file, file2);
+                return new DelegatingProgressObject(dm.distribute(target, file, file2));
             } finally {
                 originalLoader();
             }
@@ -183,7 +183,7 @@ public class WLDeploymentManager implements DeploymentManager {
                     inputStream + ", " + inputStream2 + ")");          // NOI18N
         modifiedLoader();
         try {
-            return dm.redeploy(targetModuleID, inputStream, inputStream2);
+            return new DelegatingProgressObject(dm.redeploy(targetModuleID, inputStream, inputStream2));
         } finally {
             originalLoader();
         }
@@ -201,7 +201,7 @@ public class WLDeploymentManager implements DeploymentManager {
                     inputStream + ", " + inputStream2 + ")");          // NOI18N
         modifiedLoader();
         try {
-            return dm.distribute(target, inputStream, inputStream2);
+            return new DelegatingProgressObject(dm.distribute(target, inputStream, inputStream2));
         } finally {
             originalLoader();
         }
@@ -218,7 +218,7 @@ public class WLDeploymentManager implements DeploymentManager {
             WLDebug.notify("undeploy(" + targetModuleID + ")");        // NOI18N
         modifiedLoader();
         try {
-            return dm.undeploy(targetModuleID);
+            return new DelegatingProgressObject(dm.undeploy(targetModuleID));
         } finally {
             originalLoader();
         }
@@ -236,7 +236,7 @@ public class WLDeploymentManager implements DeploymentManager {
                 
         modifiedLoader();
         try {
-            return dm.stop(targetModuleID);
+            return new DelegatingProgressObject(dm.stop(targetModuleID));
         } finally {
             originalLoader();
         }
@@ -254,7 +254,7 @@ public class WLDeploymentManager implements DeploymentManager {
         
         modifiedLoader();
         try {
-            return dm.start(targetModuleID);
+            return new DelegatingProgressObject(dm.start(targetModuleID));
         } finally {
             originalLoader();
         }
@@ -340,7 +340,7 @@ public class WLDeploymentManager implements DeploymentManager {
         
         modifiedLoader();
         try {
-            return dm.redeploy(targetModuleID, file, file2);
+            return new DelegatingProgressObject(dm.redeploy(targetModuleID, file, file2));
         } finally {
             originalLoader();
         }
@@ -542,4 +542,65 @@ public class WLDeploymentManager implements DeploymentManager {
         }
     }
     
+    static class DelegatingProgressObject implements ProgressObject, ProgressListener {
+        ProgressObject original;
+        private Vector listeners = new Vector();
+        DelegatingProgressObject (ProgressObject original) {
+            this.original = original;
+            original.addProgressListener(this);
+        }
+        
+        public DeploymentStatus getDeploymentStatus() {
+            return original.getDeploymentStatus();
+        }
+
+        public TargetModuleID[] getResultTargetModuleIDs() {
+            return original.getResultTargetModuleIDs();
+        }
+
+        public ClientConfiguration getClientConfiguration(TargetModuleID targetModuleID) {
+            return getClientConfiguration(targetModuleID);
+        }
+
+        public boolean isCancelSupported() {
+            return original.isCancelSupported();
+        }
+
+        public void cancel() throws OperationUnsupportedException {
+            original.cancel();
+        }
+
+        public boolean isStopSupported() {
+            return original.isStopSupported();
+        }
+
+        public void stop() throws OperationUnsupportedException {
+            original.stop();
+        }
+
+        public void addProgressListener(ProgressListener progressListener) {
+            listeners.add(progressListener);
+        }
+
+        public void removeProgressListener(ProgressListener progressListener) {
+            listeners.remove(progressListener);
+        }
+
+        public void handleProgressEvent(ProgressEvent progressEvent) {
+            java.util.Vector targets = null;
+            synchronized (this) {
+                if (listeners != null) {
+                    targets = (java.util.Vector) listeners.clone();
+                }
+            }
+
+            if (targets != null) {
+                for (int i = 0; i < targets.size(); i++) {
+                    ProgressListener target = (ProgressListener)targets.elementAt(i);
+                    target.handleProgressEvent(progressEvent);
+                }
+        }
+        }
+        
+    }
 }
