@@ -116,7 +116,7 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        infoTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("inactiveCaption"));
+        infoTextArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         infoTextArea.setEditable(false);
         infoTextArea.setFont(new java.awt.Font("Arial", 0, 12));
         infoTextArea.setBorder(null);

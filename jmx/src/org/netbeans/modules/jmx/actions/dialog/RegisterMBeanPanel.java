@@ -621,7 +621,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         northPanel.add(browseButton, gridBagConstraints);
 
-        mbeanClassTextField.setName("classNameTextField");
+        mbeanClassTextField.setName("mbeanClassTextField");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;

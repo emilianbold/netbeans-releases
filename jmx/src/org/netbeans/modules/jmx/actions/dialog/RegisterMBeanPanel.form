@@ -188,7 +188,7 @@
         </Component>
         <Component class="javax.swing.JTextField" name="mbeanClassTextField">
           <Properties>
-            <Property name="name" type="java.lang.String" value="classNameTextField"/>
+            <Property name="name" type="java.lang.String" value="mbeanClassTextField"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
