@@ -97,12 +97,29 @@ public abstract class MBeanFileGenerator {
         
     }
     
+    public static boolean hasManagementImport(Resource tgtRes){
+        JavaModelPackage pkg = (JavaModelPackage)tgtRes.refImmediatePackage();
+        
+        // look for the import among all imports in the target file
+        Iterator it = tgtRes.getImports().iterator();
+        boolean found = false;
+        while (it.hasNext()) {
+            Import i = (Import) it.next();
+            if (i.getName().equals("javax.management") && // NOI18N
+                i.isStatic() == false &&
+                i.isOnDemand() == true) { found = true; break;}
+        }
+
+        return found;
+        
+    }
+    
     public static void addNeededImport(MBeanDO mbean, Resource mbeanRes) {
         boolean dateImport = typeIsUsed(mbean, WizardConstants.DATE_OBJ_NAME);
         if (dateImport)
             addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
         boolean objectNameImport = typeIsUsed(mbean, WizardConstants.OBJECTNAME_NAME);
-        if (objectNameImport)
+        if (objectNameImport && !hasManagementImport(mbeanRes))
             addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
     }
     
@@ -118,7 +135,7 @@ public abstract class MBeanFileGenerator {
         if (dateImport)
             addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
         boolean objectNameImport = attrTypeIsUsed(attributes, WizardConstants.OBJECTNAME_NAME);
-        if (objectNameImport)
+        if (objectNameImport && !hasManagementImport(mbeanRes))
             addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
     }
     
@@ -127,7 +144,7 @@ public abstract class MBeanFileGenerator {
         if (dateImport)
             addImport(mbeanRes, WizardConstants.DATE_OBJ_FULLNAME);
         boolean objectNameImport = opTypeIsUsed(operations, WizardConstants.OBJECTNAME_NAME);
-        if (objectNameImport)
+        if (objectNameImport && !hasManagementImport(mbeanRes))
             addImport(mbeanRes, WizardConstants.OBJECTNAME_FULLNAME);
     }
     
