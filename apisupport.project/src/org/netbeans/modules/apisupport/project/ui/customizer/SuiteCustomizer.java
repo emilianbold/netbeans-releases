@@ -74,11 +74,11 @@ public final class SuiteCustomizer extends BasicCustomizer {
                 BUILD,
                 NbBundle.getMessage(SuiteProperties.class, "LBL_Build"),
                 null,
-                new ProjectCustomizer.Category[] { basicBranding }
+                new ProjectCustomizer.Category[] { basicBranding, moduleList }
         );
         
         setCategories(new ProjectCustomizer.Category[] {
-            sources, libraries, moduleList, build
+            sources, libraries, build
         });
         
         createPanel(sources, new SuiteCustomizerSources(suiteProps));
