@@ -13,22 +13,23 @@
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
 
-import javax.swing.JPanel;
-
 /**
  * Represents <em>Sources</em> panel in Suite customizer.
  *
  * @author Martin Krauskopf
  */
-final class SuiteCustomizerSources extends JPanel {
+final class SuiteCustomizerSources extends NbPropertyPanel {
     
     /**
      * Creates new form SuiteCustomizerSources
      */
     SuiteCustomizerSources(final SuiteProperties suiteProps) {
+        super(suiteProps);
         initComponents();
         prjFolderValue.setText(suiteProps.getProjectDirectory());
     }
+    
+    void refresh() { /* not needed */ }
     
     /** This method is called from within the constructor to
      * initialize the form.
