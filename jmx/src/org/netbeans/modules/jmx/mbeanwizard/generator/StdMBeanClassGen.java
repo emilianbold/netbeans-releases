@@ -101,10 +101,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
             mbeanRc = JavaModel.getResource(mbeanFile);
             mbeanClass = WizardHelpers.getJavaClass(mbeanRc,mbeanName);
             
-            if (!mbean.getPackageName().equals("")) { // NOI18N
-                addManagementImport(mbeanRc);
+            if (!mbean.getPackageName().equals("")) // NOI18N
                 addNeededImport(mbean, mbeanRc);
-            }
             updateDescription(mbean,mbeanClass);
             updateMBeanType(mbean,mbeanClass);
             createAttributes(mbeanClass, mbeanRc, mbean);
@@ -121,10 +119,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            if ((mbeanRc != null) && (mbean.getPackageName().equals(""))) { // NOI18N
-                addManagementImport(mbeanRc);
+            if ((mbeanRc != null) && (mbean.getPackageName().equals(""))) // NOI18N
                 addNeededImport(mbean, mbeanRc);
-            }
         } catch (Exception e) {
             rollback = true;
         } finally {
@@ -387,10 +383,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) { // NOI18N
-                addManagementImport(mbeanRes);
+            if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 addNeededImport(attributes, mbeanRes);
-            }
             updateAttributesInClass(mbeanClass,mbeanRes,attributes);
         } catch (Exception e) {
             rollback = true;
@@ -402,10 +396,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) { // NOI18N
-                addManagementImport(mbeanRes);
+            if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 addNeededImport(attributes, mbeanRes);
-            }
         } catch (Exception e) {
             rollback = true;
         } finally {
@@ -528,10 +520,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) { // NOI18N
-                addManagementImport(mbeanRes);
+            if (!WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 addNeededImport(operations, mbeanRes);
-            }
             updateOperationsInClass(mbeanClass, mbeanRes, operations);
         } catch (Exception e) {
             rollback = true;
@@ -543,10 +533,8 @@ public class StdMBeanClassGen extends MBeanFileGenerator {
         rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
-            if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) { // NOI18N
-                addManagementImport(mbeanRes);
+            if (WizardHelpers.getPackageName(mbeanClass.getName()).equals("")) // NOI18N
                 addNeededImport(operations, mbeanRes);
-            }
         } catch (Exception e) {
             rollback = true;
         } finally {
