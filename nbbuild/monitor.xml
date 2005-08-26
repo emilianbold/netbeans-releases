@@ -101,7 +101,6 @@ an exception can be made for your code so you do not get further mail about it.
         <exclude name="**/*_"/>
         <exclude name="**/*_java"/>
         <exclude name="**/*-"/>
-        <exclude name="apisupport/lite/src/org/netbeans/modules/apisupport/lite/resources/*-Bundle.properties"/>
         <exclude name="editor/demosrc/properties-addon/org/netbeans/editor/example/res/template.properties"/>
         <exclude name="**/tojar/"/>
         <exclude name="contrib/docbook/src/org/netbeans/modules/docbook/*-template.xml"/>
