@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="CS-6.shadow">
+        <file name="CS-8.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-palette-ShowPaletteAction.instance"/>
         </file>
     </folder>
