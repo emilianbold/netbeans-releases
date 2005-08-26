@@ -7,31 +7,37 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.run;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
+import javax.swing.AbstractAction;
 import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
@@ -51,6 +57,8 @@ public final class TargetExecutor implements Runnable {
      * @see "#43001"
      */
     private static final Map/*<InputOutput,String>*/ freeTabs = new WeakHashMap();
+    
+    private static final Map/*<ThreadGroup,Runnable>*/ interestingOutputCallbacksByThreadGroup = Collections.synchronizedMap(new WeakHashMap());
     
     private AntProjectCookie pcookie;
     private InputOutput io;
@@ -145,9 +153,6 @@ public final class TargetExecutor implements Runnable {
             if (io == null) {
                 io = IOProvider.getDefault().getIO(displayName, true);
             }
-            // XXX try passing null for displayName; probably no longer need these
-            // processes in displayed Processes list (Stop Building works); but would
-            // prevent them from being stopped during shutdown?
             task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
         WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
@@ -193,17 +198,16 @@ public final class TargetExecutor implements Runnable {
     /** Call execute(), not this method directly!
      */
     synchronized public void run () {
-        Thread thisProcess = null;
+        final Thread[] thisProcess = new Thread[1];
+        final ProgressHandle[] handle = new ProgressHandle[1];
         try {
+            
+        final boolean[] displayed = new boolean[] {AntSettings.getDefault().getAlwaysShowOutput()};
         
         if (outputStream == null) {
-            // Just annoying during normal compilation:
-            //io.setFocusTaken (true);
-            io.setErrVisible (false);
-            // Generally more annoying than helpful:
-            io.setErrSeparated (false);
-            // But want to bring I/O window to front without selecting, if possible:
-            io.select();
+            if (displayed[0]) {
+                io.select();
+            }
         }
         
         if (AntSettings.getDefault ().getSaveAll ()) {
@@ -228,18 +232,59 @@ public final class TargetExecutor implements Runnable {
         // Don't hog the CPU, the build might take a while:
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
         
+        final Runnable interestingOutputCallback = new Runnable() {
+            public void run() {
+                // #58513: display output now.
+                if (!displayed[0]) {
+                    displayed[0] = true;
+                    io.select();
+                }
+            }
+        };
+        
         InputStream in = null;
         if (outputStream == null) { // #43043
             try {
-                in = new ReaderInputStream(io.getIn());
+                in = new ReaderInputStream(io.getIn()) {
+                    // Show the output when an input field is displayed, if it hasn't already.
+                    public int read() throws IOException {
+                        interestingOutputCallback.run();
+                        return super.read();
+                    }
+                    public int read(byte[] b) throws IOException {
+                        interestingOutputCallback.run();
+                        return super.read(b);
+                    }
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        interestingOutputCallback.run();
+                        return super.read(b, off, len);
+                    }
+                    public long skip(long n) throws IOException {
+                        interestingOutputCallback.run();
+                        return super.skip(n);
+                    }
+                };
             } catch (IOException e) {
                 AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         
-        thisProcess = Thread.currentThread();
-        StopBuildingAction.registerProcess(thisProcess, displayName);
-        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName);
+        thisProcess[0] = Thread.currentThread();
+        // #58513: register a progress handle for the task too.
+        handle[0] = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+            public boolean cancel() {
+                stopProcess(thisProcess[0]);
+                return true;
+            }
+        }, new AbstractAction("Open Output Tab") { // XXX I18N
+            public void actionPerformed(ActionEvent e) {
+                io.select();
+            }
+        });
+        handle[0].start();
+        StopBuildingAction.registerProcess(thisProcess[0], displayName);
+        interestingOutputCallbacksByThreadGroup.put(thisProcess[0].getThreadGroup(), interestingOutputCallback);
+        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback);
         
         } finally {
             if (io != null) {
@@ -247,8 +292,11 @@ public final class TargetExecutor implements Runnable {
                     freeTabs.put(io, displayName);
                 }
             }
-            if (thisProcess != null) {
-                StopBuildingAction.unregisterProcess(thisProcess);
+            if (thisProcess[0] != null) {
+                StopBuildingAction.unregisterProcess(thisProcess[0]);
+            }
+            if (handle[0] != null) {
+                handle[0].finish();
             }
         }
     }

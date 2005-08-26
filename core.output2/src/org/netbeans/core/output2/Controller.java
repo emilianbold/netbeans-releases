@@ -1113,7 +1113,7 @@ public class Controller { //XXX public only for debug access to logging code
                 tab.setIO(io);
                 win.setSelectedTab(tab);
                 updateName(win, tab);
-                win.requestVisibleForNewTab();
+                // Undesirable in practice: win.requestVisibleForNewTab();
                 if (log) log ("Reset on " + tab + " tab displayable " + tab.isDisplayable() + " io " + io + " io.out " + io.out());
                 break;
         }

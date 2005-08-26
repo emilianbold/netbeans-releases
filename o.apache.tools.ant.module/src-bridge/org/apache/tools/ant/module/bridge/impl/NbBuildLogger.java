@@ -80,6 +80,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     private final OutputWriter err;
     private final int verbosity;
     private final String displayName;
+    private final Runnable interestingOutputCallback;
     
     private final Map/*<AntLogger,Object>*/ customData = new HashMap();
     
@@ -117,13 +118,14 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
      */
     private Task lastTask = null;
     
-    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName) {
+    public NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName, Runnable interestingOutputCallback) {
         thisSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(this);
         this.origScript = origScript;
         this.out = out;
         this.err = err;
         this.verbosity = verbosity;
         this.displayName = displayName;
+        this.interestingOutputCallback = interestingOutputCallback;
         if (LOGGABLE) {
             ERR.log(EM_LEVEL, "---- Initializing build of " + origScript + " \"" + displayName + "\" at verbosity " + verbosity + " ----");
         }
@@ -590,6 +592,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
                                      message.indexOf("warning") == -1 && 
                                      message.indexOf("stopped") == -1);
                 ow.println(message, listener, important);
+                interestingOutputCallback.run();
             } else {
                 ow.println(message);
             }

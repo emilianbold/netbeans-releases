@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -54,7 +54,6 @@ import org.openide.execution.NbClassPath;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
-
 /**
  * Implementation of one panel in Options Dialog.
  *
@@ -67,6 +66,7 @@ ActionListener {
     private JButton bAntHome = new JButton ();
     private JCheckBox cbSaveFiles = new JCheckBox ();
     private JCheckBox cbReuseOutput = new JCheckBox ();
+    private JCheckBox cbAlwaysShowOutput = new JCheckBox();
     private JComboBox cbVerbosity = new JComboBox ();
     private JButton bProperties = new JButton ();
     private JButton bClasspath = new JButton ();
@@ -89,10 +89,13 @@ ActionListener {
         cbReuseOutput.setBackground (Color.white);
         loc (cbReuseOutput, "Reuse_Output");
         cbReuseOutput.setSelected (settings.getAutoCloseTabs ());
-        cbVerbosity.addItem ("Quiet");
-        cbVerbosity.addItem ("Normal");
-        cbVerbosity.addItem ("Verbose");
-        cbVerbosity.addItem ("Debug");
+        loc(cbAlwaysShowOutput, "Always_Show_Output");
+        cbAlwaysShowOutput.setBackground(Color.white);
+        cbAlwaysShowOutput.setSelected(settings.getAlwaysShowOutput());
+        cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_warn"));
+        cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_info"));
+        cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_verbose"));
+        cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_debug"));
         cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
         loc (bProperties, "Properties_Button");
         bProperties.addActionListener (this);
@@ -109,7 +112,7 @@ ActionListener {
 
             FormLayout layout1 = new FormLayout (
                 "p, 5dlu, p:g, 5dlu, p", // cols
-                "p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p"
+                "p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p"
             );      // rows
             PanelBuilder builder1 = new PanelBuilder (layout1);
             builder1.addLabel (loc ("Ant_Home"),        lc.xy (1, 1), 
@@ -119,8 +122,9 @@ ActionListener {
                                                         lc.xyw (3, 3, 3));
             builder1.add (     cbSaveFiles,             cc.xy (3, 5));
             builder1.add (     cbReuseOutput,           cc.xy (3, 7));
-            builder1.addLabel (loc ("Verbosity"),       lc.xy (1, 9), 
-                              cbVerbosity,              cc.xy (3, 9, "l, d"));   
+            builder1.add (     cbAlwaysShowOutput,      cc.xy (3, 9));
+            builder1.addLabel (loc ("Verbosity"),       lc.xy (1, 11), 
+                              cbVerbosity,              cc.xy (3, 11, "l, d"));   
             builder1.getPanel ().setBackground (Color.white);
             //setBorder (new TitledBorder (loc ("Ant_Settings")));
         builder.add (builder1.getPanel (),              cc.xy (1, 1));
@@ -175,6 +179,7 @@ ActionListener {
         settings.setAntHome (new File (tfAntHome.getText ()));
         settings.setAutoCloseTabs (cbReuseOutput.isSelected ());
         settings.setSaveAll (cbSaveFiles.isSelected ());
+        settings.setAlwaysShowOutput(cbAlwaysShowOutput.isSelected());
         settings.setVerbosity (cbVerbosity.getSelectedIndex () + 1);
         settings.setProperties (properties);
         settings.setExtraClasspath (classpath);
@@ -194,6 +199,11 @@ ActionListener {
     public void actionPerformed (ActionEvent e) {
         Object o = e.getSource ();
         if (o == bAntHome) {
+            // XXX implement!
+            /*
+            if (!f.isDirectory() && new File(new File(f, "lib"), "ant.jar").isFile())
+                then warn: "ERR_not_ant_home"
+             */
         } else
         if (o == bClasspath) {
             PropertyEditor editor = PropertyEditorManager.findEditor 

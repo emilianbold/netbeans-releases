@@ -117,7 +117,7 @@ public class BridgeImpl implements BridgeInterface {
     }
     
     public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err,
-                       Properties properties, int verbosity, String displayName) {
+                       Properties properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
         if (!classpathInitialized) {
             classpathInitialized = true;
             // #46171: Ant expects this path to have itself and whatever else you loaded with it,
@@ -146,7 +146,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName);
+        NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, interestingOutputCallback);
         Vector targs;
         try {
             project = new Project();
@@ -182,7 +182,7 @@ public class BridgeImpl implements BridgeInterface {
             project.addReference("ant.projectHelper", projhelper); // NOI18N
             projhelper.parse(project, buildFile);
             
-            project.setInputHandler(new NbInputHandler());
+            project.setInputHandler(new NbInputHandler(interestingOutputCallback));
             
             if (targets != null) {
                 targs = new Vector(targets);

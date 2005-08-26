@@ -47,6 +47,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_EXTRA_CLASSPATH = "extraClasspath"; // NOI18N
     public static final String PROP_AUTOMATIC_EXTRA_CLASSPATH = "automaticExtraClasspath"; // NOI18N
     public static final String PROP_AUTO_CLOSE_TABS = "autoCloseTabs"; // NOI18N
+    public static final String PROP_ALWAYS_SHOW_OUTPUT = "alwaysShowOutput"; // NOI18N
     
     private static final long serialVersionUID = -4457782585534082966L;
     
@@ -66,6 +67,7 @@ public class AntSettings extends SystemOption implements ChangeListener {
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
         setAutoCloseTabs(true); // #47753
+        setAlwaysShowOutput(false);
     }
 
     public String displayName () {
@@ -243,6 +245,14 @@ public class AntSettings extends SystemOption implements ChangeListener {
     
     public void setAutoCloseTabs(boolean b) {
         putProperty(PROP_AUTO_CLOSE_TABS, Boolean.valueOf(b), true);
+    }
+    
+    public boolean getAlwaysShowOutput() {
+        return ((Boolean) getProperty(PROP_ALWAYS_SHOW_OUTPUT)).booleanValue();
+    }
+    
+    public void setAlwaysShowOutput(boolean b) {
+        putProperty(PROP_ALWAYS_SHOW_OUTPUT, Boolean.valueOf(b), true);
     }
     
 }

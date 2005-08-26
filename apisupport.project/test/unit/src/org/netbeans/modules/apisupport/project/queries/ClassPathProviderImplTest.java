@@ -116,6 +116,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-libs-formlayout.jar"));
         expectedRoots.add(urlForJar("libs/external/forms-1.0.5.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-options-api.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         assertEquals("right COMPILE classpath for ant/src", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(src, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);
@@ -206,6 +207,7 @@ public class ClassPathProviderImplTest extends TestBase {
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-libs-formlayout.jar"));
         expectedRoots.add(urlForJar("libs/external/forms-1.0.5.jar"));
         expectedRoots.add(urlForJar("nbbuild/netbeans/ide6/modules/org-netbeans-modules-options-api.jar"));
+        expectedRoots.add(urlForJar("nbbuild/netbeans/platform6/modules/org-netbeans-api-progress.jar"));
         assertEquals("right COMPILE classpath for ant/src-bridge", expectedRoots.toString(), urlsOfCp(cp).toString());
         cp = ClassPath.getClassPath(srcbridge, ClassPath.EXECUTE);
         assertNotNull("have an EXECUTE classpath", cp);

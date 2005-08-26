@@ -37,8 +37,14 @@ final class NbInputHandler implements InputHandler {
     
     private JComboBox combo = null;
     private JTextField input = null;
+    private final Runnable interestingOutputCallback;
+    
+    public NbInputHandler(Runnable interestingOutputCallback) {
+        this.interestingOutputCallback = interestingOutputCallback;
+    }
     
     public void handleInput(InputRequest request) throws BuildException {
+        interestingOutputCallback.run();
         
         // #30196 - for one Ant script containing several <input> tasks there will be created
         // just one instance of the NbInputHandler. So it is necessary to cleanup the instance

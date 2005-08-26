@@ -7,17 +7,19 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.apache.tools.ant.module.bridge;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 import org.apache.tools.ant.module.AntModule;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Enumerations;
 import org.openide.windows.OutputWriter;
@@ -75,7 +77,7 @@ final class DummyBridgeImpl implements BridgeInterface, IntrospectionHelperProxy
         return null;
     }
     
-    public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName) {
+    public boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName, Runnable interestingOutputCallback) {
         err.println(NbBundle.getMessage(DummyBridgeImpl.class, "ERR_cannot_run_target"));
         problem.printStackTrace(err);
         return false;

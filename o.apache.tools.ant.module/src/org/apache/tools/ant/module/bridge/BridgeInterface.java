@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,9 +35,10 @@ public interface BridgeInterface {
      * @param properties any Ant properties to define
      * @param verbosity the intended logging level
      * @param displayName a user-presentable name for the session
+     * @param interestingOutputCallback will be called if and when some interesting output appears, or input is requested
      * @return true if the build succeeded, false if it failed for any reason
      */
-    boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName);
+    boolean run(File buildFile, List targets, InputStream in, OutputWriter out, OutputWriter err, Properties properties, int verbosity, String displayName, Runnable interestingOutputCallback);
     
     /**
      * Try to stop a running build.

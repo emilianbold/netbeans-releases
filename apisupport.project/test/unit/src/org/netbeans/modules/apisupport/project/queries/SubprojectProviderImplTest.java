@@ -53,6 +53,7 @@ public class SubprojectProviderImplTest extends TestBase {
             "openide/explorer",
             "core/options",
             "libs/form-layout",
+            "core/progress",
         });
     }
     
