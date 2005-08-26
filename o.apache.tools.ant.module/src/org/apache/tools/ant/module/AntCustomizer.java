@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 public final class AntCustomizer extends JPanel implements 
-OptionsCategory.Panel, ActionListener {
+ActionListener {
 
     private JTextField tfAntHome = new JTextField ();
     private JButton bAntHome = new JButton ();
@@ -169,10 +169,7 @@ OptionsCategory.Panel, ActionListener {
             );
     }
     
-    
-    // OptionsCathegory.Panel ..................................................
-    
-    public void applyChanges () {
+    void applyChanges () {
         System.out.println("AntCustomizer.applyChanges");
         AntSettings settings = AntSettings.getDefault ();
         settings.setAntHome (new File (tfAntHome.getText ()));
@@ -183,14 +180,14 @@ OptionsCategory.Panel, ActionListener {
         settings.setExtraClasspath (classpath);
     }
     
-    public void cancel () {
+    void cancel () {
     }
     
-    public boolean isValid () {
+    boolean dataValid () {
         return true;
     }
     
-    public boolean isChanged () {
+    boolean isChanged () {
         return true;
     }
     
