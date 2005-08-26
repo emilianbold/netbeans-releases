@@ -124,16 +124,20 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
         String mbeanName = mbean.getName();
         DataFolder mbeanFolder = mbean.getDataFolder();
         DataObject mbeanDObj = null;
+        Resource mbeanRc = null;
+        
+        boolean rollback = false;
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             DataObject dTemplate = getDynTemplate();                
             mbeanDObj = dTemplate.createFromTemplate( 
                     mbeanFolder, mbeanName );
             FileObject mbeanFile = mbeanDObj.getPrimaryFile();
-            Resource mbeanRc = JavaModel.getResource(mbeanFile);
+            mbeanRc = JavaModel.getResource(mbeanFile);
             mbeanClass = WizardHelpers.getJavaClass(mbeanRc,mbeanName);
             
-            addNeededImport(mbean, mbeanRc);
+            if (!mbean.getPackageName().equals("")) // NOI18N
+                addNeededImport(mbean, mbeanRc);
             updateDescription(mbean,mbeanClass);
             updateGetAttr(mbean,mbeanClass);
             updateSetAttr(mbean,mbeanClass);
@@ -146,8 +150,22 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
                     mbeanFolder, mbeanName + WizardConstants.MBEAN_SUPPORT_SUFFIX );
             
             createdFile = mbeanFile;
+        }catch (Exception e) {
+            rollback = true;
+            e.printStackTrace();
         } finally {
-            JavaModel.getJavaRepository().endTrans();
+            JavaModel.getJavaRepository().endTrans(rollback);
+        }
+        
+        rollback = false;
+        JavaModel.getJavaRepository().beginTrans(true);
+        try {
+            if ((mbeanRc != null) && (mbean.getPackageName().equals(""))) // NOI18N
+                addNeededImport(mbean, mbeanRc);
+        } catch (Exception e) {
+            rollback = true;
+        } finally {
+            JavaModel.getJavaRepository().endTrans(rollback);
         }
         return createdFile;
     }
@@ -249,10 +267,7 @@ public class DynMBeanClassGen extends MBeanFileGenerator {
             opList.toArray(new MBeanOperation[opList.size()]);
         StringBuffer content = new StringBuffer();
         content.append("\n");// NOI18N
-        if (operations.length > 0) {
-            content.append(METHOD_SIGNATURE_DEF);
-            addImport(mbeanClass.getResource(),"java.util.Arrays"); // NOI18N
-        }
+        
         MessageFormat formOperation = 
                 new MessageFormat(OPERATION_CHECK_PATTERN);
         Object[] args;

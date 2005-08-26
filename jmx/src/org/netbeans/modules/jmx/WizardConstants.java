@@ -244,6 +244,7 @@ public class WizardConstants
     public static final String VOID_NAME            = "void";// NOI18N
     public static final String VOID_OBJ_FULLNAME    = "java.lang.Void";// NOI18N
     public static final String VOID_RET_TYPE        = "void";// NOI18N
+    public static final String ARRAYS_FULLNAME      = "java.util.Arrays";// NOI18N
     
     public static final String NULL = "null";// NOI18N
     public static final String CLASS_EXT = ".class";// NOI18N
