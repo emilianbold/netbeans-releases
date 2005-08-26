@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="ide" name="JMX module validation">
         <testset dir="qa-functional/src">
             <patternset>
+                <include name="org/netbeans/modules/jmx/test/helpers/SleepDuringScan.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/CreateAgentProject.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/ConstructAgent.class"/>
                 <include name="org/netbeans/modules/jmx/test/agentwizard/CompileAgentProject.class"/>
