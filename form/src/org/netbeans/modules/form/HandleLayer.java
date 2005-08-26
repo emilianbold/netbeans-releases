@@ -2489,24 +2489,26 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 java.lang.reflect.Method method = context.getClass().getDeclaredMethod("getTransferable", new Class[0]); // NOI18N
                 method.setAccessible(true);
                 Transferable transferable = (Transferable)method.invoke(context, new Object[0]);
-                Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
-                if( null != node ) {
-                    NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                    if (newComponentDrop != null) {
-                        PaletteItem item = newComponentDrop.getPaletteItem();
-                        if (item != null) {
-                            draggedComponent = new NewComponentDrag(item);
-                            draggedComponent.move(dtde.getLocation(), 0);
-                            repaint();                    
-                        }
-                    }
-                } else if( dtde.isDataFlavorSupported( PaletteController.ITEM_DATA_FLAVOR ) ) {
-                    Lookup itemLookup = (Lookup)transferable.getTransferData( PaletteController.ITEM_DATA_FLAVOR );
-                    PaletteItem item = (PaletteItem)itemLookup.lookup( PaletteItem.class );
+                if (dtde.isDataFlavorSupported(PaletteController.ITEM_DATA_FLAVOR)) {
+                    Lookup itemLookup = (Lookup)transferable.getTransferData(PaletteController.ITEM_DATA_FLAVOR);
+                    PaletteItem item = (PaletteItem)itemLookup.lookup(PaletteItem.class);
                     if (item != null) {
                         draggedComponent = new NewComponentDrag(item);
                         draggedComponent.move(dtde.getLocation(), 0);
                         repaint();                    
+                    }
+                } else {
+                    Node node = NodeTransfer.node(transferable, NodeTransfer.DND_COPY);
+                    if(node != null) {
+                        NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
+                        if (newComponentDrop != null) {
+                            PaletteItem item = newComponentDrop.getPaletteItem();
+                            if (item != null) {
+                                draggedComponent = new NewComponentDrag(item);
+                                draggedComponent.move(dtde.getLocation(), 0);
+                                repaint();                    
+                            }
+                        }
                     }
                 }
             } catch (Exception ex) {
@@ -2541,7 +2543,9 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
                 if (node != null) {
                     NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
-                    newComponentDrop.componentAdded(getFormModel(), id);
+                    if (newComponentDrop != null) {
+                        newComponentDrop.componentAdded(getFormModel(), id);
+                    }
                 }
                 formDesigner.toggleSelectionMode();
             }
