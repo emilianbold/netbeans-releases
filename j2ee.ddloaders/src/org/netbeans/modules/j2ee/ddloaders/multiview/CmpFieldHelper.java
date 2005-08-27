@@ -191,31 +191,13 @@ public class CmpFieldHelper {
         NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
         if (NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
             EntityMethodController entityMethodController = entityHelper.getEntityMethodController();
-            entityMethodController.beginWriteJmiTransaction();
-            boolean rollback = true;
             try {
-                String fieldName = getFieldName();
-                Method getterMethod = entityHelper.getGetterMethod(fieldName);
-                Method setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-                JavaClass localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
-                entityMethodController.registerClassForSave(localBusinessInterfaceClass);
-                removeMethod(localBusinessInterfaceClass, getterMethod);
-                removeMethod(localBusinessInterfaceClass, setterMethod);
-                JavaClass remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
-                entityMethodController.registerClassForSave(remoteBusinessInterfaceClass);
-                removeMethod(remoteBusinessInterfaceClass, getterMethod);
-                removeMethod(remoteBusinessInterfaceClass, setterMethod);
-                try {
-                    entityMethodController.deleteField(field, entityHelper.ejbJarFile);
-                } catch (IOException e) {
-                    Utils.notifyError(e);
-                }
-                rollback = false;
-            } finally {
-                entityMethodController.endWriteJmiTransaction(rollback);
+                entityMethodController.deleteField(field, entityHelper.ejbJarFile);
+                modelUpdatedFromUI();
+                return true;
+            } catch (IOException e) {
+                Utils.notifyError(e);
             }
-            modelUpdatedFromUI();
-            return true;
         }
         return false;
     }

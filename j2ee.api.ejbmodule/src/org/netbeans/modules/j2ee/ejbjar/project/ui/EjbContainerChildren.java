@@ -22,6 +22,7 @@ import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -39,25 +40,28 @@ import java.util.List;
  * @author Chris Webster
  */
 public class EjbContainerChildren extends Children.Keys implements PropertyChangeListener {
-    
+
     private final EjbJar model;
     private final ClassPath srcPath;
     private final FileObject ddFile;
     private final EjbNodesFactory nodeFactory;
-    
+
     public EjbContainerChildren(EjbJar model, ClassPath srcPath, FileObject ddFile, EjbNodesFactory nodeFactory) {
         this.model = model;
-        this.srcPath = srcPath;
+        //this.srcPath = srcPath;
+        // method controllers need full classpath to handle beans correctly
+        ClassPath bootClassPath = ClassPath.getClassPath(ddFile, ClassPath.BOOT);
+        this.srcPath = ClassPathSupport.createProxyClassPath(new ClassPath[]{srcPath, bootClassPath});
         this.ddFile = ddFile;
         this.nodeFactory = nodeFactory;
     }
-    
+
     protected void addNotify() {
         super.addNotify();
         updateKeys();
         model.addPropertyChangeListener(this);
     }
-    
+
     private void updateKeys() {
         EnterpriseBeans beans = model.getEnterpriseBeans();
         List keys = Collections.EMPTY_LIST;
@@ -93,13 +97,13 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
         }
         setKeys(keys);
     }
-    
+
     protected void removeNotify() {
         model.removePropertyChangeListener(this);
         setKeys(Collections.EMPTY_SET);
         super.removeNotify();
     }
-    
+
     protected Node[] createNodes(Object key) {
         Node[] node = null;
         if (key instanceof Session) {
@@ -123,11 +127,11 @@ public class EjbContainerChildren extends Children.Keys implements PropertyChang
         }
         return node == null?new Node[0]:node;
     }
-    
+
     public void propertyChange(PropertyChangeEvent pce) {
         updateKeys();
     }
-    
+
     private void addKeyValues(List keyContainer, List beans) {
         keyContainer.addAll(beans);
     }

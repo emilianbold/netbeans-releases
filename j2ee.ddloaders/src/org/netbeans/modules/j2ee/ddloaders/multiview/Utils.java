@@ -36,6 +36,7 @@ import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -223,7 +224,9 @@ public class Utils {
     public static ClassPath getSourceClassPath(FileObject ejbJarFile) {
         Sources sources = ProjectUtils.getSources(FileOwnerQuery.getOwner(ejbJarFile));
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        return ClassPathFactory.createClassPath(new ClassPathImpl(groups));
+        ClassPath srcClassPath = ClassPathFactory.createClassPath(new ClassPathImpl(groups));
+        ClassPath bootClassPath = ClassPath.getClassPath(ejbJarFile, ClassPath.BOOT);
+        return ClassPathSupport.createProxyClassPath(new ClassPath[]{srcClassPath, bootClassPath});
     }
 
     public static Method getMethod(JavaClass javaClass, Method method) {
