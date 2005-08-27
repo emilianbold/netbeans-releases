@@ -20,7 +20,6 @@ import javax.swing.Icon;
 
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.*;
-import org.netbeans.modules.xml.dtd.grammar.*;
 import org.netbeans.modules.xml.spi.dom.*;
 import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.api.XSLCustomizer;
@@ -978,8 +977,7 @@ public final class XSLGrammarQuery implements GrammarQuery{
             }
         }
 
-        DTDParser dtdParser = new DTDParser(true);
-        resultGrammarQuery = dtdParser.parse(inputSource);
+        resultGrammarQuery = DTDUtil.parseDTD(true, inputSource);
 
     }
 

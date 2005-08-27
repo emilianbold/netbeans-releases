@@ -15,7 +15,7 @@ package org.netbeans.modules.xml.xsd;
 import java.util.Enumeration;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
-import org.netbeans.modules.xml.dtd.grammar.DTDParser;
+import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
 import java.io.*;
 
@@ -101,8 +101,7 @@ public class SchemaGrammarQueryManager extends org.netbeans.modules.xml.api.mode
         else
             inputSource.setSystemId("nbres:/org/netbeans/modules/xml/schema/resources/XMLSchema_jaxb.dtd"); //NOI18N
         if (inputSource!=null) {
-            DTDParser dtdParser = new DTDParser(true);
-            return dtdParser.parse(inputSource);
+            return DTDUtil.parseDTD(true, inputSource);
         }
         return null;
     }    

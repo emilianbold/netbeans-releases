@@ -16,7 +16,7 @@ import java.util.Enumeration;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.*;
-import org.netbeans.modules.xml.dtd.grammar.DTDParser;
+import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
 
 /** Taglib Grammar provided code completion for jsptaglibrary specified by XML schema.
@@ -63,8 +63,7 @@ public class TaglibGrammarQueryManager extends org.netbeans.modules.xml.api.mode
                 try {
                     InputSource inputSource = resolver.resolveEntity(TaglibCatalog.TAGLIB_2_0_ID, null);
                     if (inputSource!=null) {
-                        DTDParser dtdParser = new DTDParser(true);
-                        return dtdParser.parse(inputSource);
+                        return DTDUtil.parseDTD(true, inputSource);
                     }
                 } catch(SAXException e) {
                 } catch(java.io.IOException e) {

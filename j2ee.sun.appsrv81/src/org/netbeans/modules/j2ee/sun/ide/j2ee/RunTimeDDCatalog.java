@@ -20,7 +20,7 @@ import org.openide.util.Utilities;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.*;
-import org.netbeans.modules.xml.dtd.grammar.DTDParser;
+import org.netbeans.modules.xml.api.model.DTDUtil;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.GrammarQueryManager;
 /** Catalog for App Server 8PE DTDs that enables completion support in editor.
@@ -376,8 +376,7 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                        // System.out.println("ejbjar  tag");
                         InputSource inputSource = resolver.resolveEntity(EJBJAR_2_1_ID, null);
                         if (inputSource!=null) {
-                            DTDParser dtdParser = new DTDParser(true);
-                            return dtdParser.parse(inputSource);
+                            return DTDUtil.parseDTD(true, inputSource);
                         }
                     }
                     
@@ -385,16 +384,14 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                         //System.out.println("app tag");
                         InputSource inputSource = resolver.resolveEntity(APP_1_4_ID, null);
                         if (inputSource!=null) {
-                            DTDParser dtdParser = new DTDParser(true);
-                            return dtdParser.parse(inputSource);
+                            return DTDUtil.parseDTD(true, inputSource);
                         }
                     }
                     if (is.getSystemId().endsWith("webservices.xml") ) {  // NOI18N
                        // System.out.println("webservices tag");
                         InputSource inputSource = resolver.resolveEntity(WEBSERVICES_1_1_ID, null);
                         if (inputSource!=null) {
-                            DTDParser dtdParser = new DTDParser(true);
-                            return dtdParser.parse(inputSource);
+                            return DTDUtil.parseDTD(true, inputSource);
                         }
                     }
                     

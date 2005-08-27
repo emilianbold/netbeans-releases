@@ -26,6 +26,8 @@ import org.openide.util.Lookup;
 
 import org.netbeans.api.xml.parsers.SAXEntityParser;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.netbeans.modules.xml.api.model.GrammarQuery;
+
 
 /**
  * Produces {@link DTDGrammar} from passed SAX declaration handler events.
@@ -58,7 +60,7 @@ public class DTDParser {
         this.dtdOnly = dtdOnly;
     }
     
-    public DTDGrammar parse(InputSource in) {
+    public GrammarQuery parse(InputSource in) {
 
         Handler handler = new Handler();
         
