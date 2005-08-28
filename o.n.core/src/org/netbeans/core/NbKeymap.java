@@ -19,6 +19,7 @@ import javax.swing.event.*;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Mutex;
 
 /** Implementation of standard key - action mappings.
@@ -40,10 +41,10 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     /* The keymap that is currently active */
     private Keymap active;
     
-    private final Action NO_ACTION = new KeymapAction(null);
+    private final Action NO_ACTION = new KeymapAction(null, null);
     
-    public Action createMapAction(Keymap k) {
-        return new KeymapAction(k);
+    public Action createMapAction(Keymap k, String contextName) {
+        return new KeymapAction(k, contextName);
     }
 
     /** Default constructor
@@ -84,6 +85,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
             if (a != null) {
                 // always reset immediatelly, the action may set the new ctx then
                 active = null; 
+                StatusDisplayer.getDefault ().setStatusText ("");
                 return a;
             }
             
@@ -103,6 +105,7 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
             }
             
             active = null;
+            StatusDisplayer.getDefault ().setStatusText ("");
             
             // don't fall through, would be misleading
             return NO_ACTION;
@@ -358,9 +361,11 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
     
     public class KeymapAction extends javax.swing.AbstractAction {
         private Keymap keymap;
+        private String contextName;
         
-        public KeymapAction(Keymap keymap) {
+        public KeymapAction(Keymap keymap, String contextName) {
             this.keymap = keymap;
+            this.contextName = contextName;
         }
         
         public Keymap getSubMap() {
@@ -368,6 +373,8 @@ public final class NbKeymap extends Observable implements Keymap, Comparator {
         }
         
         public void actionPerformed(java.awt.event.ActionEvent e) {
+            if (contextName != null)
+                StatusDisplayer.getDefault ().setStatusText (contextName);
             NbKeymap.this.active = keymap;
         }
     }

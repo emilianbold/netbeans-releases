@@ -136,7 +136,7 @@ final class ShortcutsFolder extends FolderInstance {
         try {
             // XXX
             NbKeymap globalMap = (NbKeymap)Lookup.getDefault().lookup(Keymap.class);
-            Action a = globalMap.createMapAction((Keymap)new SubFolder(df).instanceCreate());
+            Action a = globalMap.createMapAction((Keymap)new SubFolder(df).instanceCreate(), getKeysText (df));
             KeyActionPair pair = new KeyActionPair(df.getName(), a);
             return pair;
         } catch (IOException x) {
@@ -146,6 +146,21 @@ final class ShortcutsFolder extends FolderInstance {
         }
         return null;
         
+    }
+    
+    private static String getKeysText (DataFolder folder) {
+        String s = folder.getPrimaryFile ().getPath ();
+        s = s.substring ("Shortcuts/".length ());
+        StringTokenizer st = new StringTokenizer (s, "/");
+        StringBuffer sb = new StringBuffer ();
+        while (st.hasMoreElements ()) {
+            String shortcut = st.nextToken ();
+            KeyStroke keyStroke = Utilities.stringToKey (shortcut);
+            sb.append (getKeyText (keyStroke));
+            if (st.hasMoreElements ())
+                sb.append (' ');
+        }
+        return sb.toString ();
     }
 
     private static class SubFolder extends FolderInstance {
