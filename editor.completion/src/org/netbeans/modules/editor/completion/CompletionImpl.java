@@ -262,7 +262,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         boolean cancel = false;
         JTextComponent component = Registry.getMostActiveComponent();
         if (component != activeComponent) {
-            activeProviders = getCompletionProvidersForKitClass(Utilities.getKitClass(component));
+            activeProviders = getCompletionProvidersForComponent(component);
             if (debug) {
                 StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n");
                 if (activeProviders != null) {
@@ -321,24 +321,35 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
         docAutoPopupTimer.restart();
     }
     
-    private CompletionProvider[] getCompletionProvidersForKitClass(Class kitClass) {
-        if (kitClass == null)
+    private CompletionProvider[] getCompletionProvidersForComponent(JTextComponent component) {
+        if (component == null)
             return null;
+        
+        Object mimeTypeObj = component.getDocument().getProperty("mimeType");  //NOI18N
+        String mimeType;
+        
+        if (mimeTypeObj instanceof String)
+            mimeType = (String) mimeTypeObj;
+        else {
+            BaseKit kit = Utilities.getKit(component);
+            
+            if (kit == null) {
+                return new CompletionProvider[0];
+            }
+            
+            mimeType = kit.getContentType();
+        }
+        
         synchronized (providersCache) {
-            if (providersCache.containsKey(kitClass))
-                return (CompletionProvider[])providersCache.get(kitClass);
-            BaseKit kit = BaseKit.getKit(kitClass);
-            if (kit == null)
-                return null;
-            String name = kit.getContentType();
-            if (name == null)
-                return null;
+            if (providersCache.containsKey(mimeType))
+                return (CompletionProvider[])providersCache.get(mimeType);
+            
             List list = new ArrayList();
-            MimeLookup lookup = MimeLookup.getMimeLookup(name);
+            MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
             list.addAll(lookup.lookup(new Lookup.Template(CompletionProvider.class)).allInstances());
             int size = list.size();
             CompletionProvider[] ret = size == 0 ? null : (CompletionProvider[])list.toArray(new CompletionProvider[size]);
-            providersCache.put(kitClass, ret);
+            providersCache.put(mimeType, ret);
             return ret;
         }
     }
