@@ -90,9 +90,9 @@ public final class AquaLFCustoms extends LFCustoms {
             DESKTOP_BORDER, empty,
             SCROLLPANE_BORDER, topOnly,
             EXPLORER_STATUS_BORDER, topOnly,
-            EDITOR_STATUS_LEFT_BORDER, empty,
-            EDITOR_STATUS_RIGHT_BORDER, empty,
-            EDITOR_STATUS_INNER_BORDER, empty,
+            EDITOR_STATUS_LEFT_BORDER, topOnly,
+            EDITOR_STATUS_RIGHT_BORDER, topOnly,
+            EDITOR_STATUS_INNER_BORDER, topOnly,
             EDITOR_STATUS_ONLYONEBORDER, topOnly,
             EDITOR_TOOLBAR_BORDER, new PlainAquaToolbarUI.AquaTbBorder(),
 
