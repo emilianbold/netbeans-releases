@@ -18,9 +18,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
+import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
+import org.netbeans.spi.project.MoveOperationImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
@@ -29,7 +34,7 @@ import org.w3c.dom.Element;
  *
  * @author Jan Lahoda
  */
-public class FreeformProjectOperations implements DeleteOperationImplementation {
+public class FreeformProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     
     private FreeformProject project;
     
@@ -106,6 +111,24 @@ public class FreeformProjectOperations implements DeleteOperationImplementation 
     
     public void notifyDeleted() throws IOException {
         project.helper().notifyDeleted();
+    }
+
+    public void notifyCopying() throws IOException {
+    }
+
+    public void notifyCopied(Project original, File originalPath, String nueName) throws IOException {
+        if (!original.getProjectDirectory().equals(project.getProjectDirectory())) {
+            project.setName(nueName);
+        }
+    }
+
+    public void notifyMoving() throws IOException {
+    }
+
+    public void notifyMoved(Project original, File originalPath, String nueName) throws IOException {
+        if (!original.getProjectDirectory().equals(project.getProjectDirectory())) {
+            project.setName(nueName);
+        }
     }
     
 }

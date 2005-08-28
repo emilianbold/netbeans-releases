@@ -32,6 +32,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
@@ -251,7 +252,7 @@ public final class View implements LogicalViewProvider {
         }
         
         public boolean canRename() {
-            return false;
+            return true;
         }
         
         public boolean canDestroy() {
@@ -262,6 +263,9 @@ public final class View implements LogicalViewProvider {
             return false;
         }
         
+        public void setName(String name) {
+            DefaultProjectOperations.performDefaultRenameOperation(p, name);
+        }
     }
     
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {

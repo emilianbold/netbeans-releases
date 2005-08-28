@@ -73,6 +73,9 @@ public final class Actions implements ActionProvider {
     private static final Set/*<String>*/ COMMON_IDE_GLOBAL_ACTIONS = new HashSet(Arrays.asList(new String[] {
         ActionProvider.COMMAND_DEBUG,
         ActionProvider.COMMAND_DELETE,
+        ActionProvider.COMMAND_COPY,
+        ActionProvider.COMMAND_MOVE,
+        ActionProvider.COMMAND_RENAME,
     }));
     /**
      * Similar to {@link #COMMON_IDE_GLOBAL_ACTIONS}, but these are not IDE-specific.
@@ -115,12 +118,24 @@ public final class Actions implements ActionProvider {
         }
         // #46886: also always enable all common global actions, in case they should be selected:
         names.addAll(COMMON_NON_IDE_GLOBAL_ACTIONS);
+        names.add(COMMAND_RENAME);
+        names.add(COMMAND_MOVE);
+        names.add(COMMAND_COPY);
         names.add(COMMAND_DELETE);
         return (String[])names.toArray(new String[names.size()]);
     }
     
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         if (COMMAND_DELETE.equals(command)) {
+            return true;
+        }
+        if (COMMAND_COPY.equals(command)) {
+            return true;
+        }
+        if (COMMAND_RENAME.equals(command)) {
+            return true;
+        }
+        if (COMMAND_MOVE.equals(command)) {
             return true;
         }
         
@@ -177,6 +192,19 @@ public final class Actions implements ActionProvider {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
             return ;
         }
+        if (COMMAND_COPY.equals(command)) {
+            DefaultProjectOperations.performDefaultCopyOperation(project);
+            return ;
+        }
+        if (COMMAND_RENAME.equals(command)) {
+            DefaultProjectOperations.performDefaultRenameOperation(project, null);
+            return ;
+        }
+        if (COMMAND_MOVE.equals(command)) {
+            DefaultProjectOperations.performDefaultMoveOperation(project);
+            return ;
+        }
+        
         Element genldata = project.helper().getPrimaryConfigurationData(true);
         Element actionsEl = Util.findElement(genldata, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
         if (actionsEl == null) {
@@ -439,6 +467,9 @@ public final class Actions implements ActionProvider {
         actions.add(CommonProjectActions.openSubprojectsAction());
         actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);
+        actions.add(CommonProjectActions.renameProjectAction());
+        actions.add(CommonProjectActions.moveProjectAction());
+        actions.add(CommonProjectActions.copyProjectAction());
         actions.add(CommonProjectActions.deleteProjectAction());
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
