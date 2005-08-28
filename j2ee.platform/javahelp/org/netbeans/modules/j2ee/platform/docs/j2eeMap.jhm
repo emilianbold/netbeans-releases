@@ -24,6 +24,7 @@
         <!-- Start of "Create" section -->
 		<!-- Start of "Create/About" subsection -->
 		<mapID target="about_create_webapps" url="web/create/about/about_create_webapps.html" />
+		<mapID target="about_create_webcomps" url="web/create/about/about_create_webcomps.html" />
 		<mapID target="about_struct_webapps" url="web/create/about/about_struct_webapps.html" />
 		<mapID target="create_webapps_proj" url="web/create/about/create_webapps_proj.html" />
 		<mapID target="upgrade_to_j2ee14" url="web/create/about/upgrade_to_j2ee14.html" />

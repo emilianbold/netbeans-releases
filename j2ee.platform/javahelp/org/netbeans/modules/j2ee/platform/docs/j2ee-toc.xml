@@ -69,7 +69,23 @@
 	   <tocitem text="About Creating Web Applications" target="about_create_webapps" />
 	   <tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 	   <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
-	   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="upgrade_to_j2ee14" />
+	    <tocitem text="Web Application Frameworks" >
+	  <tocitem text="About Web Application Frameworks" target="about_framework"  />
+	  <tocitem text="JavaServer Faces" >      
+	  <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
+	  <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
+	  <tocitem text="Testing JSF Support" target="framework_jsf_test" />
+          </tocitem>
+          <tocitem text="Struts" >    
+          <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
+	  <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
+	  <tocitem text="Testing Struts Support" target="framework_struts_test" />
+	  </tocitem>
+      </tocitem>
+	  </tocitem>
+    
+<tocitem text="Creating and Editing Web Components"> 
+      <tocitem text="About Creating Web Components" target="about_create_webcomps" />
        <tocitem text="JSP and HTML Files">
           <tocitem text="About Creating and Editing JSP, HTML, and Tag Files" target="about_jsp_edit" />
           <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
@@ -113,19 +129,7 @@
           <tocitem text="Creating a Tag Handler" target="taghandler_create" />
           <tocitem text="Defining a Tag Handler's TLD Information" target="taghandler_edit" />
       </tocitem> 
-      <tocitem text="Web Application Frameworks" >
-	  <tocitem text="About Web Application Frameworks" target="about_framework"  />
-	  <tocitem text="JavaServer Faces" >      
-	  <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
-	  <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
-	  <tocitem text="Testing JSF Support" target="framework_jsf_test" />
-          </tocitem>
-          <tocitem text="Struts" >    
-          <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
-	  <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
-	  <tocitem text="Testing Struts Support" target="framework_struts_test" />
-	  </tocitem>
-      </tocitem>
+     
       </tocitem> 
        <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="applet_create"/>
@@ -184,7 +188,7 @@
 	    <tocitem text="Debugging a Web Application" target="debug_webapp" /> 
 	    <tocitem text="Creating A Debug Target for a Free-Form Web Project" target="debug_freeform" />
      </tocitem>
-    
+    <tocitem text="Upgrading to the J2EE 1.4 Specification" target="upgrade_to_j2ee14" /> 
 <!-- End of web applications -->
 </tocitem>
 
