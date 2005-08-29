@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +56,6 @@ public final class TargetExecutor implements Runnable {
      * @see "#43001"
      */
     private static final Map/*<InputOutput,String>*/ freeTabs = new WeakHashMap();
-    
-    private static final Map/*<ThreadGroup,Runnable>*/ interestingOutputCallbacksByThreadGroup = Collections.synchronizedMap(new WeakHashMap());
     
     private AntProjectCookie pcookie;
     private InputOutput io;
@@ -276,14 +273,13 @@ public final class TargetExecutor implements Runnable {
                 stopProcess(thisProcess[0]);
                 return true;
             }
-        }, new AbstractAction("Open Output Tab") { // XXX I18N
+        }, new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 io.select();
             }
         });
         handle[0].start();
         StopBuildingAction.registerProcess(thisProcess[0], displayName);
-        interestingOutputCallbacksByThreadGroup.put(thisProcess[0].getThreadGroup(), interestingOutputCallback);
         ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback);
         
         } finally {
