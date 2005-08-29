@@ -17,8 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Stack;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -33,11 +35,12 @@ import javax.swing.filechooser.FileView;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -90,8 +93,7 @@ public final class UIUtil {
      * what is need to be notified about document changes is to override {@link
      * #insertUpdate} method.
      */
-    public static class DocumentAdapter implements DocumentListener {
-        public void insertUpdate(DocumentEvent e) {}
+    public abstract static class DocumentAdapter implements DocumentListener {
         public void removeUpdate(DocumentEvent e) { insertUpdate(null); }
         public void changedUpdate(DocumentEvent e) { insertUpdate(null); }
     }
@@ -159,7 +161,7 @@ public final class UIUtil {
             if (root != null) {
                 Collection items = new TreeSet();
                 for (Enumeration subFolders = root.getFolders(true); subFolders.hasMoreElements(); ) {
-                    LayerFolderPresenter layerFolder = new LayerFolderPresenter(
+                    LayerItemPresenter layerFolder = new LayerItemPresenter(
                             (FileObject) subFolders.nextElement(), root);
                     items.add(layerFolder);
                 }
@@ -168,37 +170,82 @@ public final class UIUtil {
                 }
             }
         } catch (IOException exc) {
-            ErrorManager.getDefault().notify(exc);
+            Util.err.notify(exc);
         }
         return model;
     }
     
-    public static class LayerFolderPresenter implements Comparable {
+    public static class LayerItemPresenter implements Comparable {
         
-        private String description;
-        private String folderPath;
+        private String displayName;
+        private FileObject item;
+        private FileObject root;
+        private boolean contentType;
         
-        public LayerFolderPresenter(FileObject folder, FileObject root) {
-            int rootPathLength = root.getPath().length();
-            this.folderPath = folder.getPath();
-            // XXX localization (consider/utilize following lines)
-//            jglick suggests: DataObject.find(folder).getNodeDelegate().getDisplayName()
-//            or if that is problematic for any reason,
-//            fo.getFileSystem().getStatus().annotateName(fo.getNameExt(), Collections.singleton(fo))
-            this.description = folderPath.substring(rootPathLength + 1).replaceAll("/", " | "); // NOI18N
+        public LayerItemPresenter(final FileObject item, 
+                final FileObject root,
+                final boolean contentType) {
+            this.item = item;
+            this.root = root;
+            this.contentType = contentType;
         }
         
-        public String getCategoryPath() {
-            return folderPath;
+        public LayerItemPresenter(final FileObject item, final FileObject root) {
+            this(item, root, false);
+        }
+        
+        public FileObject getFileObject() {
+            return item;
+        }
+        
+        public String getFullPath() {
+            return item.getPath();
+        }
+        
+        public String getDisplayName() {
+            if (displayName == null) {
+                displayName = computeDisplayName();
+            }
+            return displayName;
         }
         
         public String toString() {
-            return description;
+            return getDisplayName();
         }
         
         public int compareTo(Object o) {
-            return Collator.getInstance().compare(description,
-                    ((LayerFolderPresenter) o).description);
+            return Collator.getInstance().compare(getDisplayName(),
+                    ((LayerItemPresenter) o).getDisplayName());
+        }
+        
+        private static String getFileObjectName(FileObject fo) {
+            String name = null;
+            try {
+                name = fo.getFileSystem().getStatus().annotateName(
+                        fo.getNameExt(), Collections.singleton(fo));
+            } catch (FileStateInvalidException ex) {
+                // let's use fo.getName()
+            }
+            return name == null ? fo.getName() : name;
+        }
+        
+        private String computeDisplayName() {
+            FileObject displayRoot = contentType ? root.getParent() : root;
+            FileObject displayItem = contentType ? item.getParent() : item;
+            String displaySeparator = contentType ? "/" : " | "; // NOI18N
+            Stack s = new Stack();
+            s.push(getFileObjectName(displayItem));
+            FileObject parent = displayItem.getParent();
+            while (!displayRoot.getPath().equals(parent.getPath())) {
+                s.push(getFileObjectName(parent));
+                parent = parent.getParent();
+            }
+            StringBuffer sb = new StringBuffer();
+            sb.append(s.pop());
+            while (!s.empty()) {
+                sb.append(displaySeparator + s.pop());
+            }
+            return sb.toString();
         }
         
     }
