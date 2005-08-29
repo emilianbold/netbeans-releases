@@ -20,7 +20,6 @@
 #include <commdlg.h>
 
 static char* getUserHomeFromRegistry(char* userhome);
-static BOOL shouldUseSmoothFonts();
 static char* GetStringValue(HKEY key, const char *name);
 static DWORD GetDWordValue(HKEY key, const char *name);
 static void parseConfigFile(const char* path);
@@ -117,14 +116,6 @@ int WINAPI
             options,
             cmdline);
 
-    // someone forcing the font anti-aliasing setting?
-    if (strstr(cmdline2, "swing.aatext") == NULL) {
-        // no, follow the system setting
-        if (shouldUseSmoothFonts()) {
-            strcat(cmdline2, " -J-Dswing.aatext=true");
-        }
-    }
-
     STARTUPINFO start;
     PROCESS_INFORMATION pi;
 
@@ -177,26 +168,6 @@ char* getUserHomeFromRegistry(char* userhome)
     *pc = '\0';
     strcpy(userhome, path);
     return userhome;
-}
-
-
-BOOL shouldUseSmoothFonts()
-{
-    HKEY key;
-    DWORD smoothFont = 1;
-
-    if (RegOpenKeyEx(
-            HKEY_CURRENT_USER,
-            "Control Panel\\Desktop",
-            0,
-            KEY_READ,
-            &key) != 0)
-        return FALSE;
-    smoothFont = GetDWordValue(key, "FontSmoothingType");
-    RegCloseKey(key);
-    if (smoothFont == 2)
-        return TRUE;
-    return FALSE;
 }
 
 
