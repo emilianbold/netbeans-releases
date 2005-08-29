@@ -113,6 +113,37 @@ public class DataModelTest extends LayerTestBase {
 
         cmf.run();
     }
-
+    
+    public void testDataModelGenarationForCustomSimpleWizard() throws Exception {
+        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        WizardDescriptor wd = new WizardDescriptor(new Panel[] {});
+        wd.putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, project);
+        DataModel data = new DataModel(wd);
+        
+        // first panel data (Wizard Type)
+        data.setBranching(false);
+        data.setFileTemplateType(false);
+        data.setNumberOfSteps(1);
+        
+        // second panel data (Name and Location)
+        data.setClassNamePrefix("DocBook");
+        data.setPackageName("org.example.module1");
+        
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        assertEquals(
+                Arrays.asList(new String[] {
+                    "src/org/example/module1/DocBookVisualPanel1.form",
+                    "src/org/example/module1/DocBookVisualPanel1.java",
+                    "src/org/example/module1/DocBookWizardPanel1.java",
+                    "src/org/example/module1/SampleAction.java"
+                }),
+                Arrays.asList(cmf.getCreatedPaths()));
+        assertEquals("project.xml was modified",
+                Arrays.asList(new String[] {"nbproject/project.xml"}),
+                Arrays.asList(cmf.getModifiedPaths()));
+        
+        cmf.run();
+    }
+    
 }
 

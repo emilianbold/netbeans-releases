@@ -93,51 +93,59 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             }
         }
         
-        // generate .java for wizard iterator
-        String iteratorClass = prefix + "WizardIterator"; // NOI18N
-        Map replaceTokens = new HashMap(basicTokens);
-        replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
-        replaceTokens.put("@@ITERATOR_CLASS@@", iteratorClass); // NOI18N
-        String path = getDefaultPackagePath(iteratorClass + ".java"); // NOI18N
-        URL template = DataModel.class.getResource(fileTemplateType
-                ? "instantiatingIterator.javx" : "wizardIterator.javx"); // NOI18N
-        cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
-        
         // add dependency on util to project.xml
         cmf.add(cmf.addModuleDependency("org.openide.util", -1, null, true)); // NOI18N
         cmf.add(cmf.addModuleDependency("org.openide.dialogs", -1, null, true)); // NOI18N
         
-        if (fileTemplateType) {
-            // generate .html description for the template
-            String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase() + prefix.substring(1);
-            template = DataModel.class.getResource("wizardDescription.html"); // NOI18N
-            cmf.add(cmf.createFile(getDefaultPackagePath(lowerCasedPrefix) + ".html", template)); // NOI18N
+        // generate .java for wizard iterator
+        if (fileTemplateType || branching) {
+            String iteratorClass = prefix + "WizardIterator"; // NOI18N
+            Map replaceTokens = new HashMap(basicTokens);
+            replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
+            replaceTokens.put("@@ITERATOR_CLASS@@", iteratorClass); // NOI18N
+            String path = getDefaultPackagePath(iteratorClass + ".java"); // NOI18N
+            URL template = DataModel.class.getResource(fileTemplateType
+                    ? "instantiatingIterator.javx" : "wizardIterator.javx"); // NOI18N
+            cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
             
-            // add layer entry about a new file wizard
-            String instanceFullPath = category + '/' + lowerCasedPrefix;
-            cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, displayName, null));
-            cmf.add(cmf.createLayerAttribute(instanceFullPath, "template", Boolean.TRUE)); // NOI18N
-            String fqIteratorClass = getPackageName() + '.' + iteratorClass;
-            cmf.add(cmf.createLayerAttribute(instanceFullPath, "instantiatingIterator", // NOI18N
-                    "newvalue:" + fqIteratorClass)); // NOI18N
-            try {
-                URL url = new URL("nbresloc:/" + getPackageName().replace('.','/') + '/' // NOI18N
-                        + lowerCasedPrefix + ".html"); // NOI18N
-                cmf.add(cmf.createLayerAttribute(instanceFullPath, "templateWizardURL", url)); // NOI18N
-            } catch (MalformedURLException ex) {
-                Util.err.notify(ex);
-            }
-            
-            // Copy wizard icon
-            if (origIconPath != null) {
-                String relToSrcDir = addCreateIconOperation(cmf, origIconPath);
+            if (fileTemplateType) {
+                // generate .html description for the template
+                String lowerCasedPrefix = prefix.substring(0, 1).toLowerCase() + prefix.substring(1);
+                template = DataModel.class.getResource("wizardDescription.html"); // NOI18N
+                cmf.add(cmf.createFile(getDefaultPackagePath(lowerCasedPrefix) + ".html", template)); // NOI18N
+                
+                // add layer entry about a new file wizard
+                String instanceFullPath = category + '/' + lowerCasedPrefix;
+                cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, displayName, null));
+                cmf.add(cmf.createLayerAttribute(instanceFullPath, "template", Boolean.TRUE)); // NOI18N
+                String fqIteratorClass = getPackageName() + '.' + iteratorClass;
+                cmf.add(cmf.createLayerAttribute(instanceFullPath, "instantiatingIterator", // NOI18N
+                        "newvalue:" + fqIteratorClass)); // NOI18N
                 try {
-                    URL url = new URL("nbresloc:/" + relToSrcDir);
-                    cmf.add(cmf.createLayerAttribute(instanceFullPath, "SystemFileSystem.icon", url)); // NOI18N
+                    URL url = new URL("nbresloc:/" + getPackageName().replace('.','/') + '/' // NOI18N
+                            + lowerCasedPrefix + ".html"); // NOI18N
+                    cmf.add(cmf.createLayerAttribute(instanceFullPath, "templateWizardURL", url)); // NOI18N
                 } catch (MalformedURLException ex) {
                     Util.err.notify(ex);
                 }
+                
+                // Copy wizard icon
+                if (origIconPath != null) {
+                    String relToSrcDir = addCreateIconOperation(cmf, origIconPath);
+                    try {
+                        URL url = new URL("nbresloc:/" + relToSrcDir); // NOI18N
+                        cmf.add(cmf.createLayerAttribute(instanceFullPath, "SystemFileSystem.icon", url)); // NOI18N
+                    } catch (MalformedURLException ex) {
+                        Util.err.notify(ex);
+                    }
+                }
             }
+        } else {
+            Map replaceTokens = new HashMap(basicTokens);
+            replaceTokens.put("@@PANELS_DEFINITION_BLOCK@@", panelsDefinitionBlock.toString()); // NOI18N
+            String path = getDefaultPackagePath("SampleAction.java"); // NOI18N
+            URL template = DataModel.class.getResource("sampleAction.javx"); // NOI18N
+            cmf.add(cmf.createFileWithSubstitutions(path, template, replaceTokens));
         }
     }
     
