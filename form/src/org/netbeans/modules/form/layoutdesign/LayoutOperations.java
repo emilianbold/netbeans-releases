@@ -42,7 +42,7 @@ class LayoutOperations implements LayoutConstants {
     /**
      * Extracts surroundings of given interval (placed in a sequential group).
      * Extracted intervals are removed and go to the 'restLeading' and
-     * 'restTrailing' lists.
+     * 'restTrailing' lists. Does not extract/remove the interval itself.
      */
     int extract(LayoutInterval interval, int alignment, boolean closed,
                 List restLeading, List restTrailing)
@@ -622,24 +622,107 @@ class LayoutOperations implements LayoutConstants {
         }
         remainder.setCurrentSpace(remainderSpace);
 
-        LayoutInterval seq;
-        if (remainder.isSequential()) {
-            seq = remainder;
+        LayoutInterval remainderGap;
+        int remainderPos = remainderSpace.positions[dimension][alignment];
+        if (LayoutRegion.isValidCoordinate(outPos)) {
+            int gapSize = alignment == LEADING ? remainderPos - outPos : outPos - remainderPos;
+            remainderGap = new LayoutInterval(SINGLE);
+            remainderGap.setSizes(NOT_EXPLICITLY_DEFINED, gapSize, Short.MAX_VALUE);
+        }
+        else { // take the existing gap next to group [this case is not used currently]
+            remainderGap = LayoutInterval.getDirectNeighbor(group, alignment, false);
+            if (remainderGap != null && remainderGap.isEmptySpace()) {
+                layoutModel.removeInterval(remainderGap);
+                // [should check for last interval in parent]
+                LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(group, alignment, true);
+                outPos = neighbor != null ?
+                    neighbor.getCurrentSpace().positions[dimension][alignment^1] :
+                    group.getParent().getCurrentSpace().positions[dimension][alignment];
+                int gapSize = alignment == LEADING ? remainderPos - outPos : outPos - remainderPos;
+                resizeInterval(remainderGap, gapSize);
+            }
+            else remainderGap = null;
+        }
+        if (remainderGap != null) {
+            LayoutInterval seq;
+            if (remainder.isSequential()) {
+                seq = remainder;
+            }
+            else {
+                 seq = new LayoutInterval(SEQUENTIAL);
+                 layoutModel.setIntervalAlignment(remainder, DEFAULT);
+                 layoutModel.addInterval(remainder, seq, 0);
+            }
+            layoutModel.addInterval(remainderGap, seq, alignment == LEADING ? 0 : -1);
+            layoutModel.addInterval(seq, group, -1);
+            group.getCurrentSpace().positions[dimension][alignment] = outPos;
         }
         else {
-             seq = new LayoutInterval(SEQUENTIAL);
-             if (remainderGroup == null) {
-                 layoutModel.setIntervalAlignment(remainder, DEFAULT);
-             }
-             layoutModel.addInterval(remainder, seq, 0);
+            layoutModel.addInterval(remainder, group, -1);
         }
-        layoutModel.addInterval(seq, group, -1);
+    }
 
-        int remainderPos = remainderSpace.positions[dimension][alignment];
-        int gapSize = alignment == LEADING ? remainderPos - outPos : outPos - remainderPos;
-        LayoutInterval gap = new LayoutInterval(SINGLE);
-        gap.setSizes(NOT_EXPLICITLY_DEFINED, gapSize, Short.MAX_VALUE);
-        layoutModel.addInterval(gap, seq, -1);
+    /**
+     * Makes given interval parallel with part of its parent sequence.
+     */
+    void parallelizeWithParentSequence(LayoutInterval interval, int endIndex) {
+        LayoutInterval parent = interval.getParent();
+        assert parent.isParallel();
+        LayoutInterval parParent = parent;
+        while (!parParent.getParent().isSequential()) {
+            parParent = parParent.getParent();
+        }
+        LayoutInterval parentSeq = parParent.getParent();
+
+        int startIndex = parentSeq.indexOf(parParent);
+        if (endIndex < 0)
+            endIndex = parentSeq.getSubIntervalCount() - 1;
+        else if (startIndex > endIndex) {
+            int temp = startIndex;
+            startIndex = endIndex;
+            endIndex = temp;
+        }
+
+        layoutModel.removeInterval(interval);
+        if (interval.getAlignment() == DEFAULT) {
+            layoutModel.setIntervalAlignment(interval, parent.getGroupAlignment());
+        }
+        addParallelWithSequence(interval, parentSeq, startIndex, endIndex);
+
+        if (parent.getSubIntervalCount() == 1) {
+            addContent(layoutModel.removeInterval(parent, 0),
+                       parent.getParent(),
+                       layoutModel.removeInterval(parent));
+        }
+        else if (parent.getSubIntervalCount() == 0) {
+            layoutModel.removeInterval(parent);
+        }
+    }
+
+    void addParallelWithSequence(LayoutInterval interval, LayoutInterval seq, int startIndex, int endIndex) {
+        LayoutInterval group;
+        if (startIndex > 0 || endIndex < seq.getSubIntervalCount()-1) {
+            group = new LayoutInterval(PARALLEL);
+            if (interval.getAlignment() != DEFAULT) {
+                group.setGroupAlignment(interval.getAlignment());
+            }
+            if (startIndex != endIndex) {
+                LayoutInterval subSeq = new LayoutInterval(SEQUENTIAL);
+                subSeq.setAlignment(seq.getAlignment());
+                for (int n=endIndex-startIndex+1; n > 0; n--) {
+                    layoutModel.addInterval(layoutModel.removeInterval(seq, startIndex), subSeq, -1);
+                }
+                layoutModel.addInterval(subSeq, group, 0);
+            }
+            else {
+                layoutModel.addInterval(layoutModel.removeInterval(seq, startIndex), group, 0);
+            }
+            layoutModel.addInterval(group, seq, startIndex);
+        }
+        else {
+            group = seq.getParent();
+        }
+        layoutModel.addInterval(interval, group, -1);
     }
 
     int optimizeGaps(LayoutInterval group, int dimension) {

@@ -226,6 +226,10 @@ class LayoutRegion implements LayoutConstants {
         }
     } */
 
+    static boolean isValidCoordinate(int pos) {
+        return pos > Short.MIN_VALUE && pos < Short.MAX_VALUE;
+    }
+
     /**
      * @param r1 base LayoutRegion
      * @param r2 compared LayoutRegion
