@@ -96,7 +96,7 @@ ActionListener {
             }
         });
 
-        JPanel pButtons = new JPanel (new GridLayout (1, 2));
+        JPanel pButtons = new JPanel (new GridLayout (1, 2, 3, 3));
         loc (bClone = new JButton (), "CTL_Create_New");
         bClone.addActionListener (this);
         pButtons.add (bClone);
@@ -107,20 +107,19 @@ ActionListener {
         tabbedPane = new JTabbedPane ();
 
         FormLayout layout = new FormLayout (
-            "5dlu, p, 3dlu, p:g, 5dlu, p", // cols
-            "p, 3dlu, p, 5dlu, f:p:g");      // rows
+            "p, 3dlu, p:g, 5dlu, p", // cols
+            "p, 5dlu, f:p:g");      // rows
 
         PanelBuilder builder = new PanelBuilder (layout, this);
 
         CellConstraints cc = new CellConstraints ();
         CellConstraints lc = new CellConstraints ();
 
-        builder.addSeparator ( loc ("CTL_Color_Scheme"),      cc.xyw (1, 1, 6));
-        builder.addLabel (     loc ("CTL_Color_Scheme_Name"), lc.xy (2, 3), 
-                               cbSchemes,                     cc.xy (4, 3));
-        builder.add (          pButtons,                      cc.xy (6, 3, "l,d"));
+        builder.addLabel (     loc ("CTL_Color_Scheme_Name"), lc.xy (1, 1), 
+                               cbSchemes,                     cc.xy (3, 1));
+        builder.add (          pButtons,                      cc.xy (5, 1, "l,d"));
 	
-        builder.add (          tabbedPane,                    cc.xyw (1, 5, 6));
+        builder.add (          tabbedPane,                    cc.xyw (1, 3, 5));
 
 	tabbedPane.addTab (loc ("Syntax_coloring_tab"), syntaxColoringPanel);
 	tabbedPane.addTab (loc ("Editor_tab"), editorPanel);

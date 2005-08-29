@@ -61,6 +61,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.awt.Mnemonics;
@@ -155,14 +156,16 @@ public class OptionsPanel extends JPanel {
         // title bar
         JPanel pTitle = new JPanel (new BorderLayout ());
         lTitle = new JLabel ();
-        lTitle.setBackground (new Color (0, 0, 200));
+        lTitle.setBackground (new Color (0, 85, 229));
         lTitle.setForeground (Color.white);
         Font f = lTitle.getFont ();
         lTitle.setFont (new Font (f.getName (), Font.BOLD, 16));
         lTitle.setIconTextGap (8);
         lTitle.setOpaque (true);
-        lTitle.setBorder (new EmptyBorder (2, 2, 2, 2));
-        pTitle.setBorder (new BevelBorder (BevelBorder.LOWERED));
+        pTitle.setBorder (new CompoundBorder (
+            new LoweredBorder (),
+            new LineBorder (new Color (0, 85, 229), 1)
+        ));
         pTitle.add ("Center", lTitle);
 
         // icon view
