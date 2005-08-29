@@ -28,6 +28,8 @@ import org.jdesktop.layout.*;
 import org.netbeans.core.spi.multiview.*;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.actions.FileSystemAction;
+import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.util.*;
@@ -101,6 +103,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     MultiViewElementCallback multiViewObserver;
 
     private ExplorerManager explorerManager;
+    private FormProxyLookup lookup;
 
     /** The icons for FormDesigner */
     private static String iconURL =
@@ -135,12 +138,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         // add FormDataObject to lookup so it can be obtained from multiview TopComponent
         ActionMap map = ComponentInspector.getInstance().setupActionMap(getActionMap());
         FormDataObject formDataObject = formEditor.getFormDataObject();
-        associateLookup(new ProxyLookup(new Lookup[] {
+        lookup = new FormProxyLookup(new Lookup[] {
             ExplorerUtils.createLookup(explorerManager, map),
             Lookups.fixed(new Object[] { formDataObject,  PaletteUtils.getPalette() }),
-            // should not affect selected nodes, but should provide cookies etc.
-            new NoNodeLookup(formDataObject.getNodeDelegate().getLookup())
-        }));
+            formDataObject.getNodeDelegate().getLookup()
+        });
+        associateLookup(lookup);
 
         formToolBar = new FormToolBar(this);
     }
@@ -175,8 +178,23 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         addPropertyChangeListener("activatedNodes", new PropertyChangeListener() { // NOI18N
             public void propertyChange(PropertyChangeEvent evt) {
                 try {
+                    Lookup[] lookups = lookup.getSubLookups();
+                    Node[] oldNodes = (Node[])evt.getOldValue();
                     Node[] nodes = (Node[])evt.getNewValue();
-                    explorerManager.setSelectedNodes(nodes);
+                    Lookup lastLookup = lookups[lookups.length-1];
+                    Node delegate = formEditor.getFormDataObject().getNodeDelegate();
+                    if (!(lastLookup instanceof NoNodeLookup)
+                        && (oldNodes.length >= 1)
+                        && (!oldNodes[0].equals(delegate))) {
+                        switchLookup();
+                    } else if ((lastLookup instanceof NoNodeLookup)
+                        && (nodes.length == 0)) {
+                        switchLookup();
+                    }
+                    List list = new ArrayList(nodes.length);
+                    list.addAll(Arrays.asList(nodes));
+                    list.remove(delegate);
+                    explorerManager.setSelectedNodes((Node[])list.toArray(new Node[list.size()]));
                 } catch (PropertyVetoException ex) {
                     ex.printStackTrace();
                 }
@@ -211,6 +229,19 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         // listener registered after FormDesigner
         formEditor.reinstallListener();
     }
+    
+    private void switchLookup() {
+        Lookup[] lookups = lookup.getSubLookups();
+        Lookup nodeLookup = formEditor.getFormDataObject().getNodeDelegate().getLookup();
+        int index = lookups.length - 1;
+        if (lookups[index] instanceof NoNodeLookup) {
+            lookups[index] = nodeLookup;
+        } else {
+            // should not affect selected nodes, but should provide cookies etc.
+            lookups[index] = new NoNodeLookup(nodeLookup);
+        }
+        lookup.setSubLookups(lookups);
+    }
 
     // ------
     // important getters
@@ -241,6 +272,18 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     
     FormEditor getFormEditor() {
         return formEditor;
+    }
+    
+    public javax.swing.Action[] getActions() {
+        Action[] actions = super.getActions();
+        SystemAction fsAction = SystemAction.get(FileSystemAction.class);
+        if (!Arrays.asList(actions).contains(fsAction)) {
+            Action[] newActions = new Action[actions.length+1];
+            System.arraycopy(actions, 0, newActions, 0, actions.length);
+            newActions[actions.length] = fsAction;
+            actions = newActions;
+        }
+        return actions;
     }
 
     // ------------
@@ -1713,4 +1756,21 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
         }
     }
+    
+    static class FormProxyLookup extends ProxyLookup {
+        
+        FormProxyLookup(Lookup[] lookups) {
+            super(lookups);
+        }
+        
+        Lookup[] getSubLookups() {
+            return getLookups();
+        }
+        
+        void setSubLookups(Lookup[] lookups) {
+            setLookups(lookups);
+        }
+        
+    }
+    
 }
