@@ -86,7 +86,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         super(new Environment(entry),
               org.openide.util.lookup.Lookups.singleton(entry.getDataObject()));
         this.myEntry = entry;
-        initialize();
+        initialize();       
     }
     
     
@@ -294,10 +294,19 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return name of the editor
      */
     protected String messageName () {
-        FileObject entry = myEntry.getDataObject().getPrimaryFile();
-        String name = entry.getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
-        int version;
         
+        DataObject obj = myEntry.getDataObject();        
+        if (! obj.isValid()) return ""; // NOI18N       
+        
+        String name = obj.getNodeDelegate().getHtmlDisplayName();
+        FileObject entry = myEntry.getDataObject().getPrimaryFile();        
+        if (name == null) {            
+            name = entry.getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
+        } else {
+            if (!name.startsWith("<html>")) name = "<html>" + name;
+        }               
+        
+        int version;        
         if(isModified()) {
             version = entry.canWrite() ? 1 : 2;
         } else {
