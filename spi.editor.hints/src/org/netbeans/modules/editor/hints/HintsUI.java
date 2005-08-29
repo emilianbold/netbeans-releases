@@ -169,6 +169,7 @@ public class HintsUI implements MouseListener, KeyListener {
          
         Dimension d = jc.getPreferredSize();
         
+        p.x -= 14;
         SwingUtilities.convertPointToScreen(p, comp);
         SwingUtilities.convertPointFromScreen(p, lp);
         jc.setBounds (p.x, p.y, d.width, d.height);
