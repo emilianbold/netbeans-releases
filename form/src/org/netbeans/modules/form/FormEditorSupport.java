@@ -23,6 +23,10 @@ import javax.swing.text.Document;
 import org.openide.*;
 import org.openide.nodes.Node;
 import org.openide.awt.UndoRedo;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
@@ -71,6 +75,8 @@ public class FormEditorSupport extends JavaEditor
 
     /** Set of opened FormEditorSupport instances (java or form opened) */
     private static Set opened = Collections.synchronizedSet(new HashSet());
+    
+    private static Map fsToStatusListener = new WeakHashMap();
 
     // --------------
     // constructor
@@ -95,11 +101,37 @@ public class FormEditorSupport extends JavaEditor
         }
         multiviewTC = openCloneableTopComponent();
         multiviewTC.requestActive();
+        try {
+            addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
+            updateMVTCDisplayName();
+        } catch (FileStateInvalidException fsiex) {
+            fsiex.printStackTrace();
+        }
 
         if (switchToForm) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
             handler.requestActive(handler.getPerspectives()[FORM_ELEMENT_INDEX]);
         }
+    }
+    
+    private void addStatusListener(FileSystem fs) {
+        FileStatusListener fsl = (FileStatusListener)fsToStatusListener.get(fs);
+        if (fsl == null) {
+            fsl = new FileStatusListener() {
+                public void annotationChanged(FileStatusEvent ev) {
+                    Iterator iter = opened.iterator();
+                    while (iter.hasNext()) {
+                        FormEditorSupport fes = (FormEditorSupport)iter.next();
+                        if (ev.hasChanged(fes.getFormDataObject().getPrimaryFile())) {
+                            fes.updateMVTCDisplayName();
+                        }
+                    }
+                }
+            };
+            fs.addFileStatusListener(fsl);
+            fsToStatusListener.put(fs, fsl);
+            System.out.println("ADDED");
+        } // else do nothing - the listener is already added
     }
 
     /** Overriden from JavaEditor - opens editor and ensures it is selected
@@ -446,8 +478,11 @@ public class FormEditorSupport extends JavaEditor
             version = readonly ? 0 : 3;
         }
 
+        Node node = formDataObject.getNodeDelegate();
+        String title = node.getHtmlDisplayName();
+        title = (title == null) ? node.getDisplayName() : title;
         return FormUtils.getFormattedBundleString("FMT_FormMVTCTitle", // NOI18N
-            new Object[] {new Integer(version), formDataObject.getName()});
+            new Object[] {new Integer(version), title});
     }
 
     /** Updates title (display name) of all multiviews for given form. Replans
