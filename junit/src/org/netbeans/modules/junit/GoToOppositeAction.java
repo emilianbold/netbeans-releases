@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.jmi.reflect.RefFeatured;
 import javax.jmi.reflect.RefObject;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -33,6 +34,7 @@ import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.junit.wizards.Utils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -59,6 +61,7 @@ public final class GoToOppositeAction extends NodeAction {
      */
     public GoToOppositeAction() {
         super();
+        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
     }
     
     /**
@@ -108,6 +111,13 @@ public final class GoToOppositeAction extends NodeAction {
                                          .findAllResources(oppoResName);
         if (oppoFiles.isEmpty()) {
             if (sourceToTest) {
+                String sourceClsName = baseResName.replace('/', '.');
+                String testClsName = sourceClsName + "Test";            //NOI18N
+                TestUtil.notifyUser(
+                        NbBundle.getMessage(getClass(),
+                                            "MSG_test_class_not_found", //NOI18N
+                                            testClsName, sourceClsName),
+                        ErrorManager.INFORMATIONAL);
                 return;             //PENDING - offer creation of new test class
             } else {
                 return;
@@ -266,6 +276,15 @@ public final class GoToOppositeAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    /**
+     */
+    protected void initialize () {
+	super.initialize ();
+        putProperty(Action.SHORT_DESCRIPTION,
+                    NbBundle.getMessage(getClass(),
+                                        "HINT_Action_GoToTest"));       //NOI18N
+    }
+
     /**
      */
     protected boolean asynchronous() {
