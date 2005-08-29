@@ -112,6 +112,8 @@ public class XmlMultiViewEditorTest extends NbTestCase {
         // open XML View
         ((EditCookie) bookDO.getCookie(EditCookie.class)).edit();
         Helper.waitForDispatchThread();
+        // handle consequent calls of SwingUtilities.invokeLater();
+        Helper.waitForDispatchThread();
 
         // test if data object was modified
         SaveCookie cookie = Helper.getSaveCookie(bookDO);
@@ -186,7 +188,7 @@ public class XmlMultiViewEditorTest extends NbTestCase {
             Helper.waitForDispatchThread();
 
             XmlMultiViewEditorSupport editor = (XmlMultiViewEditorSupport) bookDO.getCookie(EditorCookie.class);
-            Document doc = editor.getDocument();
+            Document doc = Helper.getDocument(editor);
             assertTrue("The document is empty :", doc.getLength() > 0);
         }
     }

@@ -19,11 +19,13 @@ import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
+import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.test.BookDataObject;
 import org.netbeans.modules.xml.multiview.test.bookmodel.Chapter;
 
 import javax.swing.*;
+import javax.swing.text.Document;
 
 public class Helper {
 
@@ -75,6 +77,9 @@ public class Helper {
     }
 
     public static void waitForDispatchThread() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return;
+        }
         final boolean[] finished = new boolean[]{false};
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -96,5 +101,16 @@ public class Helper {
                 return ((cookie = (SaveCookie) dataObject.getCookie(SaveCookie.class)) != null);
             }
         }.cookie;
+    }
+
+    public static Document getDocument(final XmlMultiViewEditorSupport editor) {
+        return new StepIterator() {
+            Document document;
+
+            public boolean step() throws Exception {
+                document = editor.getDocument();
+                return (document.getLength() > 0);
+            }
+        }.document;
     }
 }
