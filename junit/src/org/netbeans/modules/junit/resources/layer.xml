@@ -74,10 +74,13 @@
         <folder name="text">
             <folder name="x-java">
                 <folder name="Popup">
-                    <file name="GoToOppositeAction.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.GoToOppositeAction"/>
-                    </file>
-                    <attr name="GoToOppositeAction.instance/generate-goto-popup" boolvalue="true"/>
+                    <folder name="goto">
+                        <attr name="goto-super-implementation/GoToOppositeAction.shadow" boolvalue="true"/>
+                        <file name="GoToOppositeAction.shadow">
+                            <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>
+                        </file>
+                        <attr name="GoToOppositeAction.shadow/goto" boolvalue="true"/>
+                    </folder>
                 </folder>
             </folder>
         </folder>
@@ -87,18 +90,23 @@
     <folder name="Actions">
         <folder name="JUnitTests">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/>
+            <file name="org-netbeans-modules-junit-GoToOppositeAction.instance" />
+            <attr name="org-netbeans-modules-junit-GoToOppositeAction.instance/Separator.instance" boolvalue="true"/>
+            <file name="Separator.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
+            </file>
+            <attr name="Separator.instance/org-netbeans-modules-junit-CreateTestAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-junit-CreateTestAction.instance" />
-            <file name="org-netbeans-modules-junit-OpenTestAction.instance" />
         </folder>
        
     </folder>
     
     <folder name="Menu">
         <folder name="GoTo">
-            <file name="org-netbeans-modules-junit-OpenTestAction.shadow">            
-                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-OpenTestAction.instance"/>            
+            <file name="org-netbeans-modules-junit-GoToOppositeAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/JUnitTests/org-netbeans-modules-junit-GoToOppositeAction.instance"/>            
             </file>
-            <attr name="org-netbeans-modules-junit-OpenTestAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>   
+            <attr name="org-netbeans-modules-junit-GoToOppositeAction.shadow/org-netbeans-core-windows-actions-RecentViewListAction.shadow" boolvalue="true"/>   
 
         </folder>
     </folder>
@@ -110,7 +118,7 @@
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.CreateTestAction"/>
 	</file>
         <file name="DO-K.instance">
-	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.OpenTestAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.junit.GoToOppositeAction"/>
 	</file>
     </folder>
     
