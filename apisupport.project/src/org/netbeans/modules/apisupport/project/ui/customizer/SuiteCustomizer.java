@@ -35,6 +35,7 @@ public final class SuiteCustomizer extends BasicCustomizer {
     private static final String MODULE_LIST = "ModuleList"; // NOI18N
     private static final String BUILD = "Build"; // NOI18N
     private static final String BASIC_BRANDING = "BasicBranding"; // NOI18N
+    private static final String SPLASH_BRANDING = "SplashBranding"; // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
@@ -68,13 +69,16 @@ public final class SuiteCustomizer extends BasicCustomizer {
         ProjectCustomizer.Category sources = createCategory(SOURCES, "LBL_ConfigSources"); // NOI18N
         ProjectCustomizer.Category libraries = createCategory(LIBRARIES, "LBL_ConfigLibraries"); // NOI18N
         ProjectCustomizer.Category moduleList = createCategory(MODULE_LIST, "LBL_ConfigModuleList"); // NOI18N
+        
         ProjectCustomizer.Category basicBranding = createCategory(BASIC_BRANDING, "LBL_BasicBranding"); // NOI18N
+        ProjectCustomizer.Category splashBranding = createCategory(SPLASH_BRANDING, "LBL_SplashBranding"); // NOI18N
+
         
         ProjectCustomizer.Category build = ProjectCustomizer.Category.create(
                 BUILD,
                 NbBundle.getMessage(SuiteProperties.class, "LBL_Build"),
                 null,
-                new ProjectCustomizer.Category[] { basicBranding, moduleList }
+                new ProjectCustomizer.Category[] { basicBranding, splashBranding, moduleList }
         );
         
         setCategories(new ProjectCustomizer.Category[] {
@@ -85,6 +89,7 @@ public final class SuiteCustomizer extends BasicCustomizer {
         createPanel(libraries, new SuiteCustomizerLibraries(suiteProps));
         createPanel(moduleList, new SuiteCustomizerModuleList(suiteProps));
         createPanel(basicBranding, new SuiteCustomizerBasicBranding(suiteProps));
+        createPanel(splashBranding, new SuiteCustomizerSplashBranding(suiteProps));
         
         listenToPanels();
     }

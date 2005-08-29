@@ -61,6 +61,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     }
     
     void refresh() {
+        getBrandingModel().brandingEnabledRefresh();        
         buildWithBranding.setSelected(getBrandingModel().isBrandingEnabled());
         nameValue.setText(getBrandingModel().getName());
         titleValue.setText(getBrandingModel().getTitle());
@@ -73,7 +74,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     }
     
     public void store() {
-        getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
+        //getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
         getBrandingModel().setName(nameValue.getText());
         getBrandingModel().setTitle(titleValue.getText());
         getBrandingModel().setIconSource(iconSource);
@@ -219,6 +220,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     
     private void buildWithBrandingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buildWithBrandingActionPerformed
         enableOrDisableComponents();
+        getBrandingModel().setBrandingEnabled(buildWithBranding.isSelected());        
     }//GEN-LAST:event_buildWithBrandingActionPerformed
     
     

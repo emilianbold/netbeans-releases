@@ -206,7 +206,7 @@ public final class BrandingSupport {
             BundleKey bKey = (BundleKey)it.next();
             if (keys.contains(bKey.getKey())) {
                 retval.add(bKey);
-            }
+            } 
         }
         
         if (retval.size() != keys.size()) {
@@ -217,6 +217,7 @@ public final class BrandingSupport {
                 throw new IllegalStateException();
             }
         }
+                    
         return (retval.size() != keys.size()) ? null : retval;
     }
     
@@ -457,7 +458,7 @@ public final class BrandingSupport {
             if (keys.contains(key)) {
                 String value = (String)p.getProperty(key);
                 bundleKeys.add(new BundleKey(moduleEntry, bundle, key, value));
-            }
+            } 
         }
     }
     
