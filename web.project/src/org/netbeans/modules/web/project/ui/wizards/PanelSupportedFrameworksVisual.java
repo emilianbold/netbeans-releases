@@ -302,7 +302,12 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
      * @return the help context for this action
      */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(PanelSupportedFrameworksVisual.class);
+        if (jPanelConfig.getComponentCount()>0){
+            for (int i = 0; i < jPanelConfig.getComponentCount(); i++)
+                if (jPanelConfig.getComponent(i) instanceof  HelpCtx.Provider)
+                    return ((HelpCtx.Provider)jPanelConfig.getComponent(i)).getHelpCtx();
+        }
+        return null;
     }
     
     public void tableChanged(TableModelEvent e) {
@@ -350,6 +355,8 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             panel.fireChangeEvent();
     }
 
+    
+    
     public void stateChanged(javax.swing.event.ChangeEvent e) {
         if (panel != null)
             panel.fireChangeEvent();

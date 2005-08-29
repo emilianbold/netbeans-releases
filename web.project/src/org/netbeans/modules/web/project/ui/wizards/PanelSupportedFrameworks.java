@@ -51,6 +51,9 @@ final class PanelSupportedFrameworks implements WizardDescriptor.Panel, WizardDe
     }
     
     public HelpCtx getHelp() {
+        HelpCtx helpCtx = null;
+        if (component != null && (helpCtx = component.getHelpCtx())!=null)
+            return helpCtx;
         return new HelpCtx(PanelSupportedFrameworks.class);
     }
     
