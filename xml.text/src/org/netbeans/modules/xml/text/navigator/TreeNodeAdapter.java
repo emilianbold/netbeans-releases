@@ -157,6 +157,11 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             String documentText = getDoctypeText();
             String visibleText  = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
             return visibleText;
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+            //limit the text length
+            String documentText = getCDATAText();
+            String visibleText  = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
+            return visibleText;
         }
         
         return de.getName() + " [unknown content]";
@@ -170,6 +175,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             return getPIText();
         } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
             return getDoctypeText();
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+            return getCDATAText();
         }
         return "";
     }
@@ -198,6 +205,17 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         return documentText;
     }
     
+    private String getCDATAText() {
+        String documentText = "???";
+        try {
+            documentText = de.getDocumentModel().getDocument().getText(de.getStartOffset(), de.getEndOffset() - de.getStartOffset());
+            //cut the leading PI name and the <?
+            if(documentText.length() > 0) documentText = documentText.substring("<![CDATA[".length(), documentText.length() - "]]>".length()).trim();
+        }catch(BadLocationException e) {
+            return "???";
+        }
+        return documentText;
+    }
     
     public void childrenReordered(DocumentElementEvent ce) {
         //notify treemodel - do that in event dispath thread
@@ -210,7 +228,6 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         }catch(Exception ie) {
             ie.printStackTrace(); //XXX handle somehow
         }
-        
     }
     
     public String getAttribsText() {

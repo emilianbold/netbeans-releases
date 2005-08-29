@@ -87,7 +87,10 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 //scan the inserted text - if it contains only text set textOnly flag
                 TokenItem ti = sup.getTokenChain(changeOffset, changeOffset + 1);
                 while(ti != null && ti.getOffset() < (changeOffset + changeLength)) {
-                    if(ti.getTokenID() != XMLTokenIDs.TEXT) {
+                    if(ti.getTokenID() != XMLTokenIDs.TEXT 
+                            && ti.getTokenID() != XMLTokenIDs.DECLARATION
+                            && ti.getTokenID() != XMLTokenIDs.PI_CONTENT
+                            && ti.getTokenID() != XMLTokenIDs.CDATA_SECTION) {
                         textOnly = false;
                         break;
                     }
@@ -97,7 +100,11 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             }
             
-            if(textOnly && leaf.getType().equals(XML_CONTENT)) {
+            if(textOnly && 
+                    ( leaf.getType().equals(XML_CONTENT)
+                    || leaf.getType().equals(XML_DOCTYPE)
+                    || leaf.getType().equals(XML_PI)
+                    || leaf.getType().equals(XML_CDATA))){
                 //just a text written into a text element simply fire document element change event and do not regenerate anything
                 //add the element update request into transaction
                 if(debug) System.out.println("ONLY CONTENT UPDATE!!!");
@@ -283,7 +290,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else if (sel instanceof CDATASectionImpl) {
                     //CDATA section
-                    addedElements.add(dtm.addDocumentElement(((CDATASectionImpl)sel).getNodeName(), XML_CDATA, Collections.EMPTY_MAP,
+                    addedElements.add(dtm.addDocumentElement("cdata", XML_CDATA, Collections.EMPTY_MAP,
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else if (sel instanceof ProcessingInstructionImpl) {
                     //PI section

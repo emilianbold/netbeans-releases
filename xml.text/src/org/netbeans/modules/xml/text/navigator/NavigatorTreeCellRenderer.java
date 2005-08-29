@@ -31,12 +31,12 @@ public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final String TAG_16 = "/org/netbeans/modules/xml/text/navigator/resources/tag.gif";
     private static final String PI_16 = "/org/netbeans/modules/xml/text/navigator/resources/xml.png";
     private static final String DOCTYPE_16 = "/org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
-    private static final String COMMENT_16 = "/org/netbeans/modules/xml/text/navigator/resources/comment.gif";
+    private static final String CDATA_16 = "/org/netbeans/modules/xml/text/navigator/resources/comment.gif";
     
     private static final Icon TAG_ICON = getImageIcon(TAG_16);
     private static final Icon PI_ICON = getImageIcon(PI_16);
     private static final Icon DOCTYPE_ICON = getImageIcon(DOCTYPE_16);
-    private static final Icon COMMENT_ICON = getImageIcon(COMMENT_16);
+    private static final Icon CDATA_ICON = getImageIcon(CDATA_16);
     
     public NavigatorTreeCellRenderer() {
         super();
@@ -59,6 +59,8 @@ public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
             setIcon(PI_ICON);
         } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
             setIcon(DOCTYPE_ICON);
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_CDATA)) {
+            setIcon(CDATA_ICON);
         } 
         
         return this;
