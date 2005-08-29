@@ -78,7 +78,8 @@ public final class GoToOppositeAction extends NodeAction {
         FileObject[] oppositeRoots;
         boolean sourceToTest = true;   //false .. navigation from test to source
 
-        if ((nodes.length != 1)
+        if ((nodes == null)
+          || (nodes.length != 1)
           || ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) == null)
           || ((project = FileOwnerQuery.getOwner(selectedFO)) == null)
           || ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
@@ -218,7 +219,8 @@ public final class GoToOppositeAction extends NodeAction {
         FileObject[] oppositeRootsRaw;
         
         return
-            (nodes.length == 1)
+          (nodes != null)
+          && (nodes.length == 1)
           && ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) != null)
           && ((project = FileOwnerQuery.getOwner(selectedFO)) != null)
           && ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
@@ -249,7 +251,8 @@ public final class GoToOppositeAction extends NodeAction {
         boolean sourceToTest = true;   //false .. navigation from test to source
 
         boolean disabled = 
-          ((nodes = TopComponent.getRegistry().getCurrentNodes()).length != 1)
+          ((nodes = TopComponent.getRegistry().getCurrentNodes()) == null)
+          || (nodes.length != 1)
           || ((selectedFO = TestUtil.getFileObjectFromNode(nodes[0])) == null)
           || ((project = FileOwnerQuery.getOwner(selectedFO)) == null)
           || ((srcCP = ClassPath.getClassPath(selectedFO, ClassPath.SOURCE))
