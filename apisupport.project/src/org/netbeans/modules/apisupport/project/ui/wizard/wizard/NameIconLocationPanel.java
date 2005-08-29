@@ -76,8 +76,8 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         data.setIcon(icon.getText().equals(NONE_LABEL) ? null : icon.getText());
         data.setPackageName(packageName.getEditor().getItem().toString());
         Object item = category.getSelectedItem();
-        if (item != null && item instanceof UIUtil.LayerFolderPresenter) {
-            data.setCategory(((UIUtil.LayerFolderPresenter) item).getCategoryPath());
+        if (item != null && item instanceof UIUtil.LayerItemPresenter) {
+            data.setCategory(((UIUtil.LayerItemPresenter) item).getFullPath());
         } else {
             data.setCategory("Templates/Other"); // NOI18N
         }

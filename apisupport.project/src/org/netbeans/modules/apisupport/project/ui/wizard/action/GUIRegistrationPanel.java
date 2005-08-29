@@ -15,20 +15,38 @@ package org.netbeans.modules.apisupport.project.ui.wizard.action;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.EventQueue;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.Vector;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.ui.UIUtil.LayerItemPresenter;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-
-// XXX s/hardcoded_values/values_from_target_SFS
 
 /**
  * The second panel in the <em>New Action Wizard</em>.
@@ -37,7 +55,17 @@ import org.openide.util.Utilities;
  */
 final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
+    private final RequestProcessor SFS_RP = new RequestProcessor(GUIRegistrationPanel.class.getName());
+    private FileSystem sfs;
+    
     private static final ListCellRenderer POSITION_RENDERER = new PositionRenderer();
+    private static final String POSITION_HERE =
+            NbBundle.getMessage(GUIRegistrationPanel.class, "CTL_PositionHere");
+    private static final String POSITION_SEPARATOR = " - "; // NOI18N
+    
+    private static final String WAIT_VALUE =
+            NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_PleaseWait");
+    private static final DefaultComboBoxModel WAIT_MODEL = new DefaultComboBoxModel(new Object[] { WAIT_VALUE });
     
     private DataModel data;
     private boolean firstTime = true;
@@ -48,11 +76,17 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private final JComponent[] fileTypeGroup;
     private final JComponent[] editorGroup;
     
+    // XXX should be cleared when SFS of the module's universe has changed
+    private static Map cachedPositionModels = new HashMap();
+    
     public GUIRegistrationPanel(final WizardDescriptor setting, final DataModel data) {
         super(setting);
         this.data = data;
         initComponents();
-        readSFS();
+        menu.addPopupMenuListener(new PML(menu, menuPosition));
+        toolbar.addPopupMenuListener(new PML(toolbar, toolbarPosition));
+        ftContentType.addPopupMenuListener(new PML(ftContentType, ftPosition));
+        edContentType.addPopupMenuListener(new PML(edContentType, edPosition));
         gmiGroup = new JComponent[] {
             menu, menuTxt, menuPosition, menuPositionTxt, menuSeparatorAfter, menuSeparatorBefore
         };
@@ -68,6 +102,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         editorGroup = new JComponent[] {
             edContentType, edContentTypeTxt, edPosition, edPositionTxt, edSeparatorAfter, edSeparatorBefore
         };
+        readSFS();
     }
     
     protected String getPanelName() {
@@ -75,29 +110,33 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     protected void storeToDataModel() {
+        // XXX this is just a prevention for the case when the user press Back button - should be ensured by a wizard (issue 63142)
+        if (!checkValidity()) {
+            return;
+        }
         // second panel data (GUI Registration)
-        data.setCategory((String) category.getSelectedItem());
+        data.setCategory(getSelectedLayerItem(category).getFullPath());
         // global menu item
         data.setGlobalMenuItemEnabled(globalMenuItem.isSelected());
-        data.setGMIParentMenu(new String[]{(String) menu.getSelectedItem()});
+        data.setGMIParentMenu(getSelectedLayerItem(menu).getFullPath());
         data.setGMIPosition((Position) menuPosition.getSelectedItem());
         data.setGMISeparatorAfter(menuSeparatorAfter.isSelected());
         data.setGMISeparatorBefore(menuSeparatorBefore.isSelected());
         // global toolbar button
         data.setToolbarEnabled(globalToolbarButton.isSelected());
-        data.setToolbar((String) toolbar.getSelectedItem());
+        data.setToolbar(getSelectedLayerItem(toolbar).getFullPath());
         data.setToolbarPosition((Position) toolbarPosition.getSelectedItem());
         // global keyboard shortcut
         data.setKeyboardShortcutEnabled(globalKeyboardShortcut.isSelected());
         // file type context menu item
         data.setFileTypeContextEnabled(fileTypeContext.isSelected());
-        data.setFTContextType((String) ftContentType.getSelectedItem());
+        data.setFTContextType(getSelectedLayerItem(ftContentType).getFullPath());
         data.setFTContextPosition((Position) ftPosition.getSelectedItem());
         data.setFTContextSeparatorBefore(ftSeparatorBefore.isSelected());
         data.setFTContextSeparatorAfter(ftSeparatorAfter.isSelected());
         // editor context menu item
         data.setEditorContextEnabled(editorContext.isSelected());
-        data.setEdContextType((String) edContentType.getSelectedItem());
+        data.setEdContextType(getSelectedLayerItem(edContentType).getFullPath());
         data.setEdContextPosition((Position) edPosition.getSelectedItem());
         data.setEdContextSeparatorBefore(edSeparatorBefore.isSelected());
         data.setEdContextSeparatorAfter(edSeparatorAfter.isSelected());
@@ -107,7 +146,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         initializeGlobalAction();
         if (firstTime) {
             firstTime = false;
-            setValid(Boolean.TRUE);
+            setValid(Boolean.FALSE);
         } else {
             checkValidity();
         }
@@ -137,12 +176,26 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         setGroupEnabled(editorGroup, editorContext.isSelected());
     }
     
-    private void checkValidity() {
+    private boolean checkValidity() {
+        boolean result = false;
         if (globalKeyboardShortcut.isSelected() && keyStroke.getText().equals("")) { // NOI18N
             setErrorMessage(getMessage("MSG_YouMustSpecifyShortcut")); // NOI18N
+        } else if (!check(globalMenuItem, menu, menuPosition) ||
+                !check(globalToolbarButton, toolbar, toolbarPosition) ||
+                !check(fileTypeContext, ftContentType, ftPosition) ||
+                !check(editorContext, edContentType, edPosition)) {
+            setValid(Boolean.FALSE);
         } else {
             setErrorMessage(null);
+            result = true;
         }
+        return result;
+    }
+    
+    private boolean check(JCheckBox groupCheckBox, JComboBox menu, JComboBox position) {
+        boolean result = !groupCheckBox.isSelected() ||
+                (getSelectedItem(menu) != null && getSelectedItem(position) != null);
+        return result;
     }
     
     private void setGroupEnabled(JComponent[] group, boolean enabled) {
@@ -154,89 +207,114 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     }
     
     private void readSFS() {
-        category.setModel(new DefaultComboBoxModel(new String[] { "Build", "Edit", "Help", "Tools" }));
-        
-        // read menu related values
-        menu.setModel(new DefaultComboBoxModel(new String[] { "File" }));
-        Position menuPos1 = new Position(
-                "org-netbeans-modules-project-ui-NewProject.shadow",
-                "org-netbeans-modules-project-ui-NewFile.shadow",
-                "New Project",
-                "New File");
-        Position menuPos2 = new Position(
-                "SeparatorNew.instance",
-                "org-netbeans-modules-project-ui-NewProject.shadow",
-                "New File",
-                "New Separator");
-        DefaultComboBoxModel menuPosModel = new DefaultComboBoxModel(new Object[] {
-            menuPos1, menuPos2
+        setValid(Boolean.FALSE);
+        loadCombo("Actions", category); // NOI18N
+        loadComboAndPositions("Menu", menu, menuPosition, null); // NOI18N
+        loadComboAndPositions("Toolbars", toolbar, toolbarPosition, null); // NOI18N
+        loadComboAndPositions("Loaders/text", ftContentType, ftPosition, "Actions"); // NOI18N
+        loadComboAndPositions("Editors/text", edContentType, edPosition, "Popup"); // NOI18N
+    }
+    
+    private void loadCombo(final String startFolder,
+            final JComboBox combo) {
+        loadComboAndPositions(startFolder, combo, null, null);
+    }
+    
+    private void loadComboAndPositions(final String startFolder,
+            final JComboBox combo,
+            final JComboBox comboPositions,
+            final String subFolder) {
+        combo.setModel(WAIT_MODEL);
+        SFS_RP.post(new Runnable() {
+            public void run() {
+                Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
+                final FileObject parent = getSFS().getRoot().getFileObject(startFolder);
+                final Enumeration items = subFolder == null
+                        ? parent.getFolders(true) : loadFolders(parent, subFolder);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        // sort items
+                        Collection sorted = new TreeSet();
+                        while (items.hasMoreElements()) {
+                            FileObject item = (FileObject) items.nextElement();
+                            sorted.add(new LayerItemPresenter(item, parent, subFolder != null));
+                        }
+                        // create model
+                        DefaultComboBoxModel model = new DefaultComboBoxModel();
+                        for (Iterator it = sorted.iterator(); it.hasNext(); ) {
+                            model.addElement(it.next());
+                        }
+                        combo.setModel(model);
+                        // load positions combo
+                        if (comboPositions != null) {
+                            loadPositionsCombo((LayerItemPresenter) combo.getSelectedItem(),
+                                    comboPositions);
+                        }
+                    }
+                });
+            }
         });
-        menuPosition.setModel(menuPosModel);
+    }
+    
+    private void loadPositionsCombo(
+            final LayerItemPresenter parent,
+            final JComboBox positionsCombo) {
         
-        // read toolbar related values
-        toolbar.setModel(new DefaultComboBoxModel(new String[] { "Edit" }));
-        Position toolbarPos1 = new Position(
-                "org-openide-actions-CutAction.shadow",
-                "org-openide-actions-CopyAction.shadow",
-                "Cut",
-                "Copy");
-        Position toolbarPos2 = new Position(
-                "org-openide-actions-CopyAction.shadow",
-                "org-openide-actions-PasteAction.shadow",
-                "Cut",
-                "Paste");
-        DefaultComboBoxModel toolbarPosModel = new DefaultComboBoxModel(new Object[] {
-            toolbarPos1, toolbarPos2
-        });
-        toolbarPosition.setModel(toolbarPosModel);
-        
-        // read file type context menu item related values
-        ftContentType.setModel(new DefaultComboBoxModel(new String[] { "text/x-java" }));
-        Position ftPos1 = new Position(
-                "OpenAction.instance",
-                "java-project-separator-1.instance",
-                "Open",
-                "java-project-separator-1");
-        Position ftPos2 = new Position(
-                "java-project-separator-1.instance",
-                "CompileFile.instance",
-                "java-project-separator-1",
-                "Compile File");
-        DefaultComboBoxModel ftPosModel = new DefaultComboBoxModel(new Object[] {
-            ftPos1, ftPos2
-        });
-        ftPosition.setModel(ftPosModel);
-        
-        // read file type context menu item related values
-        edContentType.setModel(new DefaultComboBoxModel(new String[] { "text/x-java" }));
-        Position edPos1 = new Position(
-                "OpenAction.instance",
-                "java-project-separator-1.instance",
-                "Open",
-                "java-project-separator-1");
-        Position edPos2 = new Position(
-                "java-project-separator-1.instance",
-                "CompileFile.instance",
-                "java-project-separator-1",
-                "Compile File");
-        DefaultComboBoxModel edPosModel = new DefaultComboBoxModel(new Object[] {
-            edPos1, edPos2
-        });
-        edPosition.setModel(edPosModel);
+        assert parent != null;
+        assert positionsCombo != null;
+        ComboBoxModel model = (ComboBoxModel) cachedPositionModels.get(parent);
+        if (model == null) {
+            positionsCombo.setModel(WAIT_MODEL);
+            SFS_RP.post(new Runnable() {
+                public void run() {
+                    final Enumeration filesEn = parent.getFileObject().getData(false);
+                    EventQueue.invokeLater(new Runnable() {
+                        public void run() {
+                            createPositionModel(positionsCombo, filesEn, parent);
+                        }
+                    });
+                }
+            });
+        } else {
+            positionsCombo.setModel(model);
+            checkValidity();
+        }
+    }
+    
+    private void createPositionModel(final JComboBox positionsCombo,
+            final Enumeration filesEn,
+            final LayerItemPresenter parent) {
+        DefaultComboBoxModel newModel = new DefaultComboBoxModel();
+        LayerItemPresenter previous = null;
+        while (filesEn.hasMoreElements()) {
+            LayerItemPresenter current = new LayerItemPresenter(
+                    (FileObject) filesEn.nextElement(),
+                    parent.getFileObject());
+            newModel.addElement(createPosition(previous, current));
+            previous = current;
+        }
+        newModel.addElement(createPosition(previous, null));
+        cachedPositionModels.put(parent, newModel);
+        positionsCombo.setModel(newModel);
+        checkValidity();
+    }
+    
+    private static Object getSelectedItem(JComboBox combo) {
+        Object item = combo.getSelectedItem();
+        return item == WAIT_VALUE ? null : item;
+    }
+    
+    private static LayerItemPresenter getSelectedLayerItem(JComboBox combo) {
+        return (LayerItemPresenter) getSelectedItem(combo);
         
     }
     
-    private static class PositionRenderer extends DefaultListCellRenderer {
-        public Component getListCellRendererComponent(
-                JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Position pos = (Position) value;
-            String txtPosition = pos.getBeforeName() + " - " + // NOI18N
-                    NbBundle.getMessage(GUIRegistrationPanel.class, "CTL_PositionHere") +
-                    " - " + pos.getAfterName(); // NOI18N
-            Component c = super.getListCellRendererComponent(
-                    list, txtPosition, index, isSelected, cellHasFocus);
-            return c;
-        }
+    private static Position createPosition(LayerItemPresenter first, LayerItemPresenter second) {
+        return new Position(
+                first == null ? null : first.getFileObject().getNameExt(),
+                second == null ? null : second.getFileObject().getNameExt(),
+                first == null ? null : first.getDisplayName(),
+                second == null ? null : second.getDisplayName());
     }
     
     /** This method is called from within the constructor to
@@ -647,11 +725,11 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
 
     }
     // </editor-fold>//GEN-END:initComponents
-
+    
     private void editorContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editorContextActionPerformed
         setGroupEnabled(editorGroup, editorContext.isSelected());
     }//GEN-LAST:event_editorContextActionPerformed
-
+    
     private void fileTypeContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTypeContextActionPerformed
         setGroupEnabled(fileTypeGroup, fileTypeContext.isSelected());
     }//GEN-LAST:event_fileTypeContextActionPerformed
@@ -719,5 +797,75 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private javax.swing.JLabel toolbarPositionTxt;
     private javax.swing.JLabel toolbarTxt;
     // End of variables declaration//GEN-END:variables
+    
+    /** Don't call me from EDT! */
+    private FileSystem getSFS() {
+        assert !EventQueue.isDispatchThread() : "Called from ETD!"; // NOI18N
+        if (sfs == null) {
+            try {
+                // XXX takes very long time. Consider to call it when e.g. module is loaded
+                sfs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
+            } catch (IOException ex) {
+                Util.err.notify(ex);
+            }
+        }
+        return sfs;
+    }
+    
+    Enumeration loadFolders(final FileObject startFolder, final String subFolder) {
+        Enumeration en = startFolder.getFolders(true);
+        Vector included = new Vector(); // let's be in sync with o.o.filesystems
+        while (en.hasMoreElements()) {
+            FileObject fo = (FileObject) en.nextElement();
+            if (subFolder.equals(fo.getName())) {
+                included.add(fo);
+            }
+        }
+        return included.elements();
+    }
+    
+    private static class PositionRenderer extends DefaultListCellRenderer {
+        
+        public Component getListCellRendererComponent(
+                JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String text;
+            if (value == null || value == WAIT_VALUE) {
+                text = WAIT_VALUE;
+            } else {
+                Position pos = (Position) value;
+                String before = pos.getBeforeName() == null ? "" : pos.getBeforeName() + POSITION_SEPARATOR;
+                String after = pos.getAfterName() == null ? "" : POSITION_SEPARATOR + pos.getAfterName();
+                text = before + POSITION_HERE + after;
+            }
+            Component c = super.getListCellRendererComponent(
+                    list, text, index, isSelected, cellHasFocus);
+            return c;
+        }
+        
+    }
+    
+    private class PML implements PopupMenuListener {
+        
+        private JComboBox menu;
+        private JComboBox position;
+        
+        PML(JComboBox menu, JComboBox position) {
+            this.menu = menu;
+            this.position = position;
+        }
+        
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            loadPositionsCombo(getSelectedLayerItem(menu), position);
+        }
+        
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+            // we don't care
+        }
+        
+        public void popupMenuCanceled(PopupMenuEvent e) {
+            popupMenuWillBecomeInvisible(null);
+        }
+        
+    }
     
 }

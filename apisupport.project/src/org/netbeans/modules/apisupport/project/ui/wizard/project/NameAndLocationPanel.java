@@ -76,8 +76,8 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         data.setName(txtName.getText().trim());
         data.setDisplayName(txtDisplayName.getText().trim());
         Object item = comCategory.getSelectedItem();
-        if (item != null && item instanceof UIUtil.LayerFolderPresenter) {
-            data.setCategory(((UIUtil.LayerFolderPresenter) item).getCategoryPath());
+        if (item != null && item instanceof UIUtil.LayerItemPresenter) {
+            data.setCategory(((UIUtil.LayerItemPresenter) item).getFullPath());
         } else {
             data.setCategory("Templates/Project/Other"); //NOI18N
         }
