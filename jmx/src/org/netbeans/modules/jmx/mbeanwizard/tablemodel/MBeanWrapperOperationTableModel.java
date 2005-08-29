@@ -87,11 +87,11 @@ public class MBeanWrapperOperationTableModel extends MBeanOperationTableModel {
                 case 1: oper.setName((String)aValue);
                 break;
                 case 2: oper.setReturnTypeName((String)aValue);
-                break;/*
-                case 3: oper.setSimpleSignature((String)aValue);
                 break;
-                case 4: oper.setExceptionClasses((String)aValue);
-                break;*/
+                case 3: //do nothing (already saved by the popup)
+                break;
+                case 4: //do nothing (already saved by the popup)
+                break;
                 case 5: oper.setDescription((String)aValue);
                 break;
                 default: System.out.println("Error setValueAt " +// NOI18N
