@@ -71,7 +71,8 @@ Microsystems, Inc. All Rights Reserved.
   
     <folder name="Templates">
         <folder name="JSP_Servlet">
-            <folder name="JSF">
+            <folder name="Java_Server_Faces">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.Bundle"/>
                     <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
