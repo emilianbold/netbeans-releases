@@ -272,7 +272,7 @@ public class JspPGPanel extends SectionInnerPanel implements java.awt.event.Item
         gridBagConstraints.insets = new java.awt.Insets(3, 5, 0, 0);
         add(browseButton1, gridBagConstraints);
 
-        hintUrlPatterns.setText(org.openide.util.NbBundle.getMessage(JspPGPanel.class, "HINT_urlPatterns1"));
+        hintUrlPatterns.setText(org.openide.util.NbBundle.getMessage(JspPGPanel.class, "HINT_urlPatterns"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
