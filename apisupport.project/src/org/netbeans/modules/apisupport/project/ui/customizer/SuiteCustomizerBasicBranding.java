@@ -82,8 +82,17 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     
     private void enableOrDisableComponents() {
         nameValue.setEnabled(buildWithBranding.isSelected());
+        name.setEnabled(buildWithBranding.isSelected());        
+        
         titleValue.setEnabled(buildWithBranding.isSelected());
+        title.setEnabled(buildWithBranding.isSelected());
+        
         browse.setEnabled(buildWithBranding.isSelected());
+        
+        iconLocation.setEnabled(buildWithBranding.isSelected());
+        icon.setEnabled(buildWithBranding.isSelected());
+        
+        iconPreview.setEnabled(buildWithBranding.isSelected());
     }
     
     /** This method is called from within the constructor to

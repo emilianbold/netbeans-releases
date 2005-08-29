@@ -23,6 +23,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.ImageIcon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding.ImagePreview;
@@ -54,6 +56,11 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     public SuiteCustomizerSplashBranding(final SuiteProperties suiteProps) {
         super(suiteProps);
         BasicBrandingModel branding = getBrandingModel();
+        branding.addChangeListener(new ChangeListener() {
+            public void stateChanged(ChangeEvent e) {
+                enableDisableComponents();
+            }
+        });
         
         splashImage =new SplashComponentPreview();
         fontSize = SplashUISupport.getIntegerField();
@@ -152,6 +159,12 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         splashImage.increment(10);
         splashImage.setText("This is a sample text");
         
+        enableDisableComponents();
+        
+    }
+    
+    private void enableDisableComponents() {
+        final BasicBrandingModel branding = getBrandingModel();
         fontSize.setEnabled(branding.isBrandingEnabled());
         runningTextBounds.setEnabled(branding.isBrandingEnabled());
         progressBarBounds.setEnabled(branding.isBrandingEnabled());
@@ -162,7 +175,15 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         progressBarEnabled.setEnabled(branding.isBrandingEnabled());        
         splashLocation.setEnabled(branding.isBrandingEnabled());
         splashImage.setEnabled(branding.isBrandingEnabled());
-        
+        barBoundsLabel.setEnabled(branding.isBrandingEnabled());
+        barColorLabel.setEnabled(branding.isBrandingEnabled());
+        browse.setEnabled(branding.isBrandingEnabled());
+        splashLabel.setEnabled(branding.isBrandingEnabled());
+        splashLocation.setEnabled(branding.isBrandingEnabled());
+        splashPreview.setEnabled(branding.isBrandingEnabled());
+        textBoundsLabel.setEnabled(branding.isBrandingEnabled());
+        textColorLabel.setEnabled(branding.isBrandingEnabled());
+        textFontSizeLabel.setEnabled(branding.isBrandingEnabled());                
     }
     
     private void resetSplashPreview() throws NumberFormatException {        
@@ -185,28 +206,28 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         javax.swing.JComboBox barColor;
+        javax.swing.JTextField fontSize;
         java.awt.GridBagConstraints gridBagConstraints;
-        javax.swing.JCheckBox jCheckBox1;
         javax.swing.JTextField jTextField1;
         javax.swing.JTextField jTextField4;
-        javax.swing.JTextField jTextField6;
+        javax.swing.JCheckBox progressBarEnabled;
         javax.swing.JComboBox textColor;
 
-        jLabel1 = splashImage;
-        textColor = this.barColor;
+        splashPreview = splashImage;
+        barColor = this.barColor;
         jTextField1 = this.progressBarBounds;
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        barColor = this.textColor;
+        barColorLabel = new javax.swing.JLabel();
+        barBoundsLabel = new javax.swing.JLabel();
+        textColorLabel = new javax.swing.JLabel();
+        textColor = this.textColor;
         jTextField4 = this.runningTextBounds;
         splashLocation = new javax.swing.JTextField();
-        jTextField6 = fontSize;
-        jCheckBox1 = this.progressBarEnabled;
-        jButton1 = new javax.swing.JButton();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
+        fontSize = this.fontSize;
+        progressBarEnabled = this.progressBarEnabled;
+        browse = new javax.swing.JButton();
+        textFontSizeLabel = new javax.swing.JLabel();
+        textBoundsLabel = new javax.swing.JLabel();
+        splashLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -218,7 +239,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(jLabel1, gridBagConstraints);
+        add(splashPreview, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -226,7 +247,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 23);
-        add(textColor, gridBagConstraints);
+        add(barColor, gridBagConstraints);
 
         jTextField1.setInputVerifier(jTextField1.getInputVerifier());
         jTextField1.setVerifyInputWhenFocusTarget(false);
@@ -240,32 +261,32 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 23);
         add(jTextField1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_BarColor"));
+        org.openide.awt.Mnemonics.setLocalizedText(barColorLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_BarColor"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(jLabel2, gridBagConstraints);
+        add(barColorLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_BarBounds"));
+        org.openide.awt.Mnemonics.setLocalizedText(barBoundsLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_BarBounds"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(jLabel3, gridBagConstraints);
+        add(barBoundsLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextColor"));
+        org.openide.awt.Mnemonics.setLocalizedText(textColorLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextColor"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
-        add(jLabel4, gridBagConstraints);
+        add(textColorLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -273,7 +294,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 23);
-        add(barColor, gridBagConstraints);
+        add(textColor, gridBagConstraints);
 
         jTextField4.setInputVerifier(jTextField1.getInputVerifier());
         jTextField4.setVerifyInputWhenFocusTarget(false);
@@ -299,21 +320,21 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(splashLocation, gridBagConstraints);
 
-        jTextField6.setInputVerifier(jTextField1.getInputVerifier());
+        fontSize.setInputVerifier(jTextField1.getInputVerifier());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
-        add(jTextField6, gridBagConstraints);
+        add(fontSize, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ProgressBarEnabled"));
-        jCheckBox1.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
-        jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(progressBarEnabled, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_ProgressBarEnabled"));
+        progressBarEnabled.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        progressBarEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        progressBarEnabled.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
+                progressBarEnabledActionPerformed(evt);
             }
         });
 
@@ -323,12 +344,12 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(jCheckBox1, gridBagConstraints);
+        add(progressBarEnabled, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Browse"));
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(browse, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Browse"));
+        browse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                browseActionPerformed(evt);
             }
         });
 
@@ -337,39 +358,39 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        add(jButton1, gridBagConstraints);
+        add(browse, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextFontSize"));
+        org.openide.awt.Mnemonics.setLocalizedText(textFontSizeLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextFontSize"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
-        add(jLabel5, gridBagConstraints);
+        add(textFontSizeLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextBounds"));
+        org.openide.awt.Mnemonics.setLocalizedText(textBoundsLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_TextBounds"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
-        add(jLabel6, gridBagConstraints);
+        add(textBoundsLabel, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Splash"));
+        org.openide.awt.Mnemonics.setLocalizedText(splashLabel, java.util.ResourceBundle.getBundle("org/netbeans/modules/apisupport/project/ui/customizer/Bundle").getString("LBL_Splash"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
-        add(jLabel7, gridBagConstraints);
+        add(splashLabel, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
     
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
 // TODO add your handling code here:
         JFileChooser chooser = UIUtil.getIconFileChooser();
         int ret = chooser.showDialog(this, NbBundle.getMessage(getClass(), "LBL_Select")); // NOI18N
@@ -384,23 +405,23 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
             resetSplashPreview();
         }
         
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_browseActionPerformed
     
-    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+    private void progressBarEnabledActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_progressBarEnabledActionPerformed
         resetSplashPreview();
-    }//GEN-LAST:event_jCheckBox1ActionPerformed
+    }//GEN-LAST:event_progressBarEnabledActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel barBoundsLabel;
+    private javax.swing.JLabel barColorLabel;
+    private javax.swing.JButton browse;
+    private javax.swing.JLabel splashLabel;
     private javax.swing.JTextField splashLocation;
+    private javax.swing.JLabel splashPreview;
+    private javax.swing.JLabel textBoundsLabel;
+    private javax.swing.JLabel textColorLabel;
+    private javax.swing.JLabel textFontSizeLabel;
     // End of variables declaration//GEN-END:variables
     
     private BasicBrandingModel getBrandingModel() {
