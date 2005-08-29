@@ -182,7 +182,15 @@ public class LayerUtils {
         }
         return handle;
     }
-    
+
+    private static final Set/*<String>*/ XML_LIKE_TYPES = new HashSet();
+    static {
+        XML_LIKE_TYPES.add(".settings"); // NOI18N
+        XML_LIKE_TYPES.add(".wstcref"); // NOI18N
+        XML_LIKE_TYPES.add(".wsmode"); // NOI18N
+        XML_LIKE_TYPES.add(".wsgrp"); // NOI18N
+        XML_LIKE_TYPES.add(".wsmgr"); // NOI18N
+    }
     /**
      * Find the name of the external file that will be generated for a given
      * layer path if it is created with contents.
@@ -199,7 +207,7 @@ public class LayerUtils {
             ext = "";
         } else if (ext.equals(".java")) { // NOI18N
             ext = "_java"; // NOI18N
-        } else if (ext.equals(".settings")) { // NOI18N
+        } else if (XML_LIKE_TYPES.contains(ext)) {
             ext = ".xml"; // NOI18N
         }
         String name = base + ext;
