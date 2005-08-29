@@ -39,7 +39,7 @@ public class InvalidExpressionException extends Exception {
      * @param t a target exception
      */
     public InvalidExpressionException (Throwable t) {
-        super (t.getMessage () == null ? t.getClass ().getName () : t.getMessage ());
+        super (t.getMessage ());// == null ? t.getClass ().getName () : t.getMessage ());
         throwable = t;
     }
     
