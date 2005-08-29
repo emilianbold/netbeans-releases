@@ -143,7 +143,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     }
 
     public StyledDocument openDocument() throws IOException {
-        dObj.getDataCache().loadData();
+        dObj.getDataCache().getData();
         return super.openDocument();
     }
 
@@ -189,13 +189,13 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
     private MultiViewDescription[] getMultiViewDescriptions() {
         if (multiViewDescriptions == null) {
-            MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
-            MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
-            multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
-            System.arraycopy(customDesc, 0, multiViewDescriptions, 0, customDesc.length);
-            multiViewDescriptions[customDesc.length] = xmlDesc;
-            xmlMultiViewIndex = customDesc.length;
-        }
+                MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
+                MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
+                multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
+                System.arraycopy(customDesc, 0, multiViewDescriptions, 0, customDesc.length);
+                multiViewDescriptions[customDesc.length] = xmlDesc;
+                xmlMultiViewIndex = customDesc.length;
+            }
         return multiViewDescriptions;
     }
 
