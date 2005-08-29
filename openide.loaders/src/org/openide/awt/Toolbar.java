@@ -588,7 +588,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (c instanceof AbstractButton) {
             c.setFocusable(false);
             ((JComponent) c).setOpaque(false);
-            if( !(c instanceof JToggleButton) && isMetalLaF && (isJdk15 || isJdk16)) {
+            if( isMetalLaF && (isJdk15 || isJdk16)) {
                 //JDK 1.5 metal/ocean resets borders, so fix it this way
                 ((AbstractButton) c).setBorderPainted(false);
                 ((AbstractButton) c).setOpaque(false);
