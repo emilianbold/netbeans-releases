@@ -48,7 +48,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
     
     private transient WizardDescriptor.Panel[] panels;
 
-    private transient boolean debug = true;
+    private transient boolean debug = false;
     
     public void initialize (TemplateWizard wizard) {
         if (debug) log ("initialize");
