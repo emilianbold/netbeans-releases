@@ -356,6 +356,7 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.WAR_EAR_NAME, PropertyUtils.getUsablePropertyName(name) + ".war"); // NOI18N
         
         ep.setProperty(WebProjectProperties.WAR_COMPRESS, "false"); // NOI18N
+        ep.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); // NOI18N
         ep.setProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL, ""); // NOI18N
         
         ep.setProperty(WebProjectProperties.LAUNCH_URL_RELATIVE, ""); // NOI18N

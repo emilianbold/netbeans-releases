@@ -160,6 +160,22 @@ is divided into following sections:
                     <istrue value="${{display.browser}}"/>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
+                
+                <condition property="do.war.package.with.custom.manifest">
+                    <and>
+                        <istrue value="${{war.package}}"/>
+                        <isset property="has.custom.manifest"/>
+                    </and>
+                </condition>
+                <condition property="do.war.package.without.custom.manifest">
+                    <and>
+                        <istrue value="${{war.package}}"/>
+                        <not>
+                            <isset property="has.custom.manifest"/>
+                        </not>
+                    </and>
+                </condition>
+                
                 <property value="${{build.web.dir}}/META-INF" name="build.meta.inf.dir"/>
                 <property name="build.classes.dir.real" value="${{build.classes.dir}}"/>
                 <property name="build.web.dir.real" value="${{build.web.dir}}"/>
@@ -746,7 +762,7 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="-do-dist-without-manifest" unless="has.custom.manifest">
+            <target name="-do-dist-without-manifest" if="do.war.package.without.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
@@ -755,7 +771,7 @@ is divided into following sections:
                 </jar>
             </target>
 
-            <target name="-do-dist-with-manifest" if="has.custom.manifest">
+            <target name="-do-dist-with-manifest" if="do.war.package.with.custom.manifest">
                 <xsl:attribute name="depends">init,compile,compile-jsps,-pre-dist</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
