@@ -26,6 +26,7 @@
     <tocitem text="Multiple Source Roots in Projects" target="proj_sources_multi"/>
     <tocitem text="Creating a Java Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
+    <tocitem text="Importing an Eclipse or JBuilder Project" target="proj_import" />
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Setting the Target JDK" target="proj_jdk" />

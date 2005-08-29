@@ -38,6 +38,7 @@
 <mapID target="proj_free_projectxml" url="project/proj_free_projectxml.html" />
 <mapID target="proj_webfree_debug" url="project/proj_webfree_debug.html" />
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
+<mapID target="proj_import" url="project/proj_import.html" />
 <mapID target="proj_gloss_freeform" url="project/csh/glossary_freeform.html" />
 <mapID target="proj_gloss_standard" url="project/csh/glossary_standard.html" />
 <mapID target="proj_fav_window" url="project/csh/proj_fav_window.html" />
