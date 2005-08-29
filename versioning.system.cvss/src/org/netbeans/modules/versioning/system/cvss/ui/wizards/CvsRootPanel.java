@@ -15,6 +15,9 @@ package org.netbeans.modules.versioning.system.cvss.ui.wizards;
 
 import java.awt.Dimension;
 import javax.swing.JLabel;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 
 /**
  * CVS Root field by field customizer UI.
@@ -38,6 +41,8 @@ public class CvsRootPanel extends javax.swing.JPanel {
         setPreferredWidth(userLabel, w);
         setPreferredWidth(hostLabel, w);
         setPreferredWidth(repositoryLabel, w);
+
+        portTextField.setDocument(new PortDocument());
     }
     
     private void setPreferredWidth(JLabel label, int width) {
@@ -45,7 +50,22 @@ public class CvsRootPanel extends javax.swing.JPanel {
         dim.width = width;
         label.setPreferredSize(dim);
     }
-    
+
+     static class PortDocument extends PlainDocument {
+
+         public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+
+             if (str == null) return;
+
+             char[] upper = str.toCharArray();
+             for (int i = 0; i < upper.length; i++) {
+                 if ("1234567890".indexOf(upper[i]) == -1) {  // NOI18N
+                     return;
+                 }
+             }
+             super.insertString(offs, new String(upper), a);
+         }
+     }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -65,9 +85,11 @@ public class CvsRootPanel extends javax.swing.JPanel {
         add(accessLabel, gridBagConstraints);
 
         accessComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "pserver", "ext", "local", "fork" }));
+        accessComboBox.setMinimumSize(new java.awt.Dimension(120, 24));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 0);
         add(accessComboBox, gridBagConstraints);
 
@@ -79,10 +101,12 @@ public class CvsRootPanel extends javax.swing.JPanel {
         add(userLabel, gridBagConstraints);
 
         userTextField.setColumns(12);
+        userTextField.setMinimumSize(new java.awt.Dimension(120, 19));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
+        gridBagConstraints.weightx = 10.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(userTextField, gridBagConstraints);
 
         hostLabel.setLabelFor(hostTextField);
@@ -95,7 +119,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
         hostTextField.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weightx = 20.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(hostTextField, gridBagConstraints);
 
@@ -108,7 +132,9 @@ public class CvsRootPanel extends javax.swing.JPanel {
         portTextField.setColumns(5);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 3.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
         add(portTextField, gridBagConstraints);
 
@@ -122,7 +148,7 @@ public class CvsRootPanel extends javax.swing.JPanel {
         repositoryTextField.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weightx = 20.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 3);
         add(repositoryTextField, gridBagConstraints);
 
