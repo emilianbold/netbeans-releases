@@ -15,7 +15,6 @@ package org.netbeans.modules.form.actions;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +47,7 @@ public class SetAnchoringAction extends NodeAction {
     private JCheckBoxMenuItem[] items;
     
     protected boolean enable(Node[] nodes) {
-        List comps = LayoutUtils.getSelectedLayoutComponents(nodes);
+        List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 0));
     }
     
@@ -92,7 +91,7 @@ public class SetAnchoringAction extends NodeAction {
 
     private void createAnchoringSubmenu(JMenu menu) {
         Node[] nodes = getActivatedNodes();
-        List components = LayoutUtils.getSelectedLayoutComponents(nodes);
+        List components = FormUtils.getSelectedLayoutComponents(nodes);
         if ((components == null) || (components.size() < 1)) {
             return;
         }

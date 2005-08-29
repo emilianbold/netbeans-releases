@@ -15,23 +15,12 @@ package org.netbeans.modules.form.actions;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
-import org.netbeans.modules.form.layoutdesign.LayoutComponent;
-import org.netbeans.modules.form.layoutdesign.LayoutConstants;
-import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
-import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.layoutdesign.LayoutUtils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
@@ -51,7 +40,7 @@ public class SetResizabilityAction extends NodeAction {
     private JCheckBoxMenuItem[] items;
     
     protected boolean enable(Node[] nodes) {
-        List comps = LayoutUtils.getSelectedLayoutComponents(nodes);
+        List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 0));
     }
     
@@ -95,7 +84,7 @@ public class SetResizabilityAction extends NodeAction {
 
     private void createResizabilitySubmenu(JMenu menu) {
         Node[] nodes = getActivatedNodes();
-        List components = LayoutUtils.getSelectedLayoutComponents(nodes);
+        List components = FormUtils.getSelectedLayoutComponents(nodes);
         if ((components == null) || (components.size() < 1)) {
             return;
         }

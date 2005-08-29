@@ -14,20 +14,18 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.List;
 import javax.swing.border.TitledBorder;
 import java.text.MessageFormat;
-import java.security.*;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.java.classpath.*;
 
 import org.netbeans.modules.form.editors2.IconEditor;
 import org.netbeans.modules.form.editors2.BorderDesignSupport;
@@ -1171,4 +1169,29 @@ public class FormUtils
         }
         
     }
+    
+    public static List/*RADComponent*/ getSelectedLayoutComponents(Node[] nodes) {
+        if ((nodes == null) || (nodes.length < 1))
+            return null;
+
+        ArrayList components = new ArrayList();
+        for (int i=0; i<nodes.length; i++) {
+            RADComponentCookie radCookie =
+                (RADComponentCookie) nodes[i].getCookie(RADComponentCookie.class);
+            if (radCookie != null) {
+                RADComponent metacomp = radCookie.getRADComponent();
+                if ((metacomp instanceof RADVisualComponent)) {
+                    RADVisualContainer visCont = ((RADVisualComponent)metacomp).getParentContainer();
+                    if ((visCont!= null) && (visCont.getLayoutSupport() == null)) {
+                        components.add(metacomp);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+        return components;
+    }    
 }

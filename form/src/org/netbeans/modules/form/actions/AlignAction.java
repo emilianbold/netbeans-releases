@@ -41,7 +41,7 @@ public class AlignAction extends NodeAction {
     private JMenuItem[] items;
     
     protected boolean enable(Node[] nodes) {
-        List comps = LayoutUtils.getSelectedLayoutComponents(nodes);
+        List comps = FormUtils.getSelectedLayoutComponents(nodes);
         return ((comps != null) && (comps.size() > 1));
     }
     
@@ -86,7 +86,7 @@ public class AlignAction extends NodeAction {
 
     private void createAlignSubmenu(JMenu menu) {
         Node[] nodes = getActivatedNodes();
-        List components = LayoutUtils.getSelectedLayoutComponents(nodes);
+        List components = FormUtils.getSelectedLayoutComponents(nodes);
         if (!(menu.getMenuComponentCount() > 0)) {
             ResourceBundle bundle = NbBundle.getBundle(AlignAction.class);
 
