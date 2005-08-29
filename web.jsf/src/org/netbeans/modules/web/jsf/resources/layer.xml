@@ -74,9 +74,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Java_Server_Faces">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <file name="JSFManagedBean.java" url="templates/JSFManagedBean.template">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.Bundle"/>
-                    <!--<attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/>-->
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                     <attr name="templateCategory" stringvalue="servlet-types"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/JSFManagedBean.html"/>
