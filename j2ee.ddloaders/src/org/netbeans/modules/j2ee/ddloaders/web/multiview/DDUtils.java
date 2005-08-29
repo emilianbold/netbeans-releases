@@ -414,6 +414,8 @@ public class DDUtils {
             return NbBundle.getMessage(DDUtils.class,"MSG_WrongUriEnd");
         } else if (uri.matches(".*\\*.*\\*.*")) { //NOI18N
             return NbBundle.getMessage(DDUtils.class,"MSG_TwoAsterisks");
+        } else if (uri.matches("..*\\*..*")) { //NOI18N
+            return NbBundle.getMessage(DDUtils.class,"MSG_AsteriskInTheMiddle"); 
         }
         return null;
     }
