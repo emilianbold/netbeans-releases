@@ -14,6 +14,7 @@
 package org.netbeans.modules.editor.structure.api;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -236,8 +237,23 @@ public final class DocumentModel {
             //the only exception where startoffset and endoffset can be the some is root elements =>
             if(ancestor == getRootElement()) return true;
             
+            //xxx testing
+            if(ancestor.getStartOffset() == descendant.getStartOffset()
+            && ancestor.getEndOffset() > descendant.getEndOffset()
+            && !isEmpty(descendant))
+                return true;
+            
+            if(ancestor.getEndOffset() == descendant.getEndOffset()
+            && ancestor.getStartOffset() < descendant.getStartOffset()
+            && !isEmpty(descendant))
+                return true;
+            
             return ((ancestor.getStartOffset() < descendant.getStartOffset()) &&
                     (ancestor.getEndOffset() > descendant.getEndOffset()));
+            
+            //XXX must be resolved: the case where both offsets are the same is not handled :-((((
+            
+            
         }finally{
             readUnlock();
         }
@@ -386,7 +402,9 @@ public final class DocumentModel {
         DocumentChange[] changes = changesWatcher.getDocumentChanges();
         
         //clear all elements with an empty body
-        checkForClearedElements();
+//        checkForClearedElements();
+        
+        if(debug) debugElements();
         
         try {
             //let the model provider to decide what has changed and what to regenerate
@@ -462,7 +480,16 @@ public final class DocumentModel {
             
             //there is a problem with empty elements - if an element is removed its boundaries
             //are the some and the standart getParent/getChildren algorith fails.
-            if(isEmpty(de)) return Collections.EMPTY_LIST;
+            //the root element can be empty however it has to return children (also empty)
+            if(!de.equals(getRootElement()) && isEmpty(de)) return Collections.EMPTY_LIST;
+            
+            //if the root element is empty the rest of elements is also empty and
+            //has to be returned as children
+            if(de.equals(getRootElement()) && isEmpty(de)) {
+                ArrayList al = new ArrayList((Collection)getElementsSet().clone());
+                al.remove(de); //remove the root itself
+                return al;
+            }
             
             ArrayList children = new ArrayList();
             //get all elements with startOffset >= de.getStartOffset()
@@ -486,6 +513,7 @@ public final class DocumentModel {
                     DocumentElement nextChild = firstChild;
                     while(pchi.hasNext()) {
                         DocumentElement docel = (DocumentElement)pchi.next();
+                        
                         //test whether we didn't overpal the given 'de' endOffset
                         if(docel.getStartOffset() >= de.getEndOffset()) break;
                         
@@ -495,6 +523,7 @@ public final class DocumentModel {
                             children.add(docel);
                             nextChild = docel;
                         }
+                        
                     }
                 }
             }
@@ -522,6 +551,8 @@ public final class DocumentModel {
                 throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
             }
             
+            if(de.equals(getRootElement())) return null;
+            
             //get all elements with startOffset <= de.getStartOffset()
             SortedSet head = getElementsSet().headSet(de);
             //List head = headList(elements, de);
@@ -533,10 +564,13 @@ public final class DocumentModel {
             for(int i = headarr.length - 1; i >= 0; i--) {
                 DocumentElement el = headarr[i];
                 //test whether the element is empty - if so, get next one etc...
-                if(!isEmpty(el) && isDescendantOf(el,de)) return el;
+                if(!isEmpty(el) && isDescendantOf(el,de) && el.getStartOffset() < de.getStartOffset()) return el;
             }
             
-            return null;
+            //if not found (e.g. has the same startoffsets in case of root) 
+            //root is returned in all cases except parent of the root itself
+            return getRootElement(); 
+            
         }finally{
             readUnlock();
         }
@@ -567,8 +601,8 @@ public final class DocumentModel {
     /** removes all elements with empty body. It is currently needed to call this before
      * model update in an implementations of this class since otherwise the getChildren() method
      * fails!!!!.
-     * XXX this should be solved somehow better! 
-     * 
+     * XXX this should be solved somehow better!
+     *
      * Note: runs only under model.writeLock()
      */
     private void checkForClearedElements() {
@@ -700,10 +734,11 @@ public final class DocumentModel {
             //create a new DocumentElement instance
             DocumentElement de = createDocumentElement(name, type, attributes, startOffset, endOffset);
             
-            if(debug) System.out.println("# ADD " + de + " adding into transaction");
-            
-            DocumentModelModification dmm = new DocumentModelModification(de, DocumentModelModification.ELEMENT_ADD);
-            modifications.add(dmm);
+            if(!getElementsSet().contains(de)) {
+                if(debug) System.out.println("# ADD " + de + " adding into transaction");
+                DocumentModelModification dmm = new DocumentModelModification(de, DocumentModelModification.ELEMENT_ADD);
+                modifications.add(dmm);
+            }
             
             return de;
         }
@@ -832,6 +867,7 @@ public final class DocumentModel {
         
         //note: document change events are fired from the leafs to root
         private void removeDE(DocumentElement de) {
+            if(debug) System.out.println("[DTM] removing " + de);
             DocumentElement parent = null;
             //remove the element itself. Do not do so if the element is root element
             if(de == getRootElement()) return ;
@@ -844,7 +880,7 @@ public final class DocumentModel {
             
             //remove the element itself
 //                elements.remove(de);
-            if(debug) System.out.println("[DMT] removed element " + de);
+            if(debug) System.out.println("[DMT] removed element " + de + " ;parent = " + parent);
             
                 /* events firing:
                  * If the removed element had a children, we have to fire add event
@@ -861,6 +897,7 @@ public final class DocumentModel {
             //fire events for all affected children
             while(childrenIterator.hasNext()) {
                 DocumentElement child = (DocumentElement)childrenIterator.next();
+                if(debug) System.out.println("switching child " + child + "from removed " + de + "to parent " + parent);
                 de.childRemoved(child);
                 parent.childAdded(child);
             }
@@ -925,8 +962,9 @@ public final class DocumentModel {
                 //the elements has the same startoffsets - so we need
                 //to compare them according to their endoffsets
                 int endOffsetDelta = de2.getEndOffset() - de1.getEndOffset();
-                if(endOffsetDelta != 0) return endOffsetDelta;
-                else {
+                if(endOffsetDelta != 0) {
+                    return (isEmpty(de1) || isEmpty(de2)) ? -endOffsetDelta : endOffsetDelta;
+                } else {
                     //because of TreeSet operations seems to use the comparator to test equality of elements
                     int typesDelta = de1.getType().compareTo(de2.getType());
                     if(typesDelta != 0) return typesDelta;

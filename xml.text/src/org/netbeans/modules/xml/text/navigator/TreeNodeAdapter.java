@@ -15,9 +15,11 @@ package org.netbeans.modules.xml.text.navigator;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.DefaultTreeModel;
@@ -121,14 +123,81 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     }
     
     public String toString() {
-        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)) {
-            String text = getDocumentContent();
-            if(text.length() > 15) text = text.substring(0,15) + "...";
-            return de.getName() + " (" + text + ")";
-        } else {
-            return de.getName();
+        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
+        || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+            //XML TAG text
+            String attribsVisibleText = "";
+            AttributeSet attribs = getDocumentElement().getAttributes();
+            
+            if(attribs.getAttributeCount() > 0) {
+                String attribsText = getAttribsText();
+                if(NavigatorContent.showAttributes) {
+                    attribsVisibleText = attribsText.length() > ATTRIBS_MAX_LEN ? attribsText.substring(0,ATTRIBS_MAX_LEN) + "..." : attribsText.toString();
+                }
+            }
+            
+            String contentText = "";
+            String documentText = getDocumentContent();
+            if(NavigatorContent.showContent) {
+                contentText  = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
+            }
+            
+            String text = getDocumentElement().getName()
+            + ((attribsVisibleText.trim().length() > 0) ? " " + attribsVisibleText : "")
+            + ((contentText.trim().length() > 0) ? " "+ contentText : "");
+            return text;
+            
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+            //PI text
+            String documentText = getPIText();
+            documentText = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
+            return documentText;
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+            //limit the text length
+            String documentText = getDoctypeText();
+            String visibleText  = documentText.length() > TEXT_MAX_LEN ? documentText.substring(0,TEXT_MAX_LEN) + "..." : documentText;
+            return visibleText;
         }
+        
+        return de.getName() + " [unknown content]";
     }
+    
+    public String getToolTipText() {
+        if(de.getType().equals(XMLDocumentModelProvider.XML_TAG)
+                || de.getType().equals(XMLDocumentModelProvider.XML_EMPTY_TAG)) {
+            return getAttribsText() + " " + getDocumentContent();
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_PI)) {
+            return getPIText();
+        } else if(de.getType().equals(XMLDocumentModelProvider.XML_DOCTYPE)) {
+            return getDoctypeText();
+        }
+        return "";
+    }
+    
+    private String getPIText() {
+        String documentText = null;
+        try {
+            documentText = de.getDocumentModel().getDocument().getText(de.getStartOffset(), de.getEndOffset() - de.getStartOffset());
+            //cut the leading PI name and the <?
+            if(documentText.length() > 0) documentText = documentText.substring("<?".length() + de.getName().length(), documentText.length() - 1).trim();
+        }catch(BadLocationException e) {
+            return "???";
+        }
+        return documentText;
+    }
+    
+    private String getDoctypeText() {
+        String documentText = "???";
+        try {
+            documentText = de.getDocumentModel().getDocument().getText(de.getStartOffset(), de.getEndOffset() - de.getStartOffset());
+            //cut the leading PI name and the <?
+            if(documentText.length() > 0) documentText = documentText.substring("<!DOCTYPE ".length() + de.getName().length(), documentText.length() - 1).trim();
+        }catch(BadLocationException e) {
+            return "???";
+        }
+        return documentText;
+    }
+    
     
     public void childrenReordered(DocumentElementEvent ce) {
         //notify treemodel - do that in event dispath thread
@@ -142,6 +211,22 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
             ie.printStackTrace(); //XXX handle somehow
         }
         
+    }
+    
+    public String getAttribsText() {
+        StringBuffer attribsText = new StringBuffer();
+        Enumeration attrNames = getDocumentElement().getAttributes().getAttributeNames();
+        if(attrNames.hasMoreElements()) {
+            attribsText.append("(");
+            while(attrNames.hasMoreElements()) {
+                String aname = (String)attrNames.nextElement();
+                String value = (String)getDocumentElement().getAttributes().getAttribute(aname);
+                attribsText.append(aname + "=" + value);
+                if(attrNames.hasMoreElements()) attribsText.append(", ");
+            }
+            attribsText.append(")");
+        }
+        return attribsText.toString();
     }
     
     public void elementAdded(DocumentElementEvent e) {
@@ -323,5 +408,8 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     }
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.debug");
+    
+    private static final int ATTRIBS_MAX_LEN = 30;
+    private static final int TEXT_MAX_LEN = ATTRIBS_MAX_LEN;
     
 }

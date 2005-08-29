@@ -90,7 +90,7 @@ public class NavigatorContent extends JPanel   {
                     if(model != null) {
                         JPanel panel = new NavigatorContentPanel(model);
                         showUI(panel);
-                    }
+                    } else System.out.println("model is null!!!!");
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
                 }

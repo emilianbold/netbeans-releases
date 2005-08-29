@@ -55,7 +55,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             throws DocumentModelException, DocumentModelTransactionCancelledException {
         
         if(debug) System.out.println("\n\n\n\n\n");
-        //DocumentModelUtils.dumpElementStructure(model.getRootElement());
+        if(debug) DocumentModelUtils.dumpElementStructure(model.getRootElement());
         
         ArrayList regenerate = new ArrayList(); //used to store elements to be regenerated
         
@@ -102,23 +102,29 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 //add the element update request into transaction
                 if(debug) System.out.println("ONLY CONTENT UPDATE!!!");
                 dtm.updateDocumentElement(leaf);
-                continue;
+//                continue;
             }
             
-            //user written a tag or something what is not a text
-            //we need to get the element's parent. Simple leaf.getParent() is not enought
-            //since when an element is deleted then a wrong parent can be choosen
-            if(leaf.getType().equals(XML_CONTENT)) {
-                do {
-                    toRegenerate = toRegenerate.getParentElement();
-                } while(toRegenerate != null && toRegenerate.getType().equals(XML_CONTENT));
-                
-                if(toRegenerate == null) {
-                    //no suitable parent found - the element is either a root or doesn't have any xml_tag ancestor => use root
-                    toRegenerate = model.getRootElement();
+            //if one or more elements are deleted get correct paret to regenerate
+            if(leaf.getStartOffset() == leaf.getEndOffset())
+                toRegenerate = leaf.getParentElement();
+            else {
+                //user written a tag or something what is not a text
+                //we need to get the element's parent. Simple leaf.getParent() is not enought
+                //since when an element is deleted then a wrong parent can be choosen
+                if(leaf.getType().equals(XML_CONTENT)) {
+                    do {
+                        toRegenerate = toRegenerate.getParentElement();
+                    } while(toRegenerate != null && toRegenerate.getType().equals(XML_CONTENT));
+                    
+                    if(toRegenerate == null) {
+                        //no suitable parent found - the element is either a root or doesn't have any xml_tag ancestor => use root
+                        toRegenerate = model.getRootElement();
+                    }
                 }
             }
             
+            if(toRegenerate == null) toRegenerate = model.getRootElement(); //root element is empty
             
             //now regenerate all sub-elements inside parent of the affected element
             
@@ -196,7 +202,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
 //                if(debug) System.out.println("--- found syntax element ---\n"+sel.toString());
                 
                 if(sel instanceof SyntaxElement.Error) {
-                    System.out.println("Error found! => breaking the generation.");
+                    if(debug) System.out.println("Error found! => breaking the generation.");
                     throw new DocumentModelException("XML File is unparsable.");
                 }
                 
@@ -289,8 +295,9 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else if (sel instanceof CommentImpl) {
                     //comment element <!-- xxx -->
-                    addedElements.add(dtm.addDocumentElement("", XML_COMMENT, Collections.EMPTY_MAP,
-                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    //DO NOT CREATE ELEMENT FOR COMMENTS
+//                    addedElements.add(dtm.addDocumentElement("", XML_COMMENT, Collections.EMPTY_MAP,
+//                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else {
                     //everything else is content
                     addedElements.add(dtm.addDocumentElement("...", XML_CONTENT, Collections.EMPTY_MAP, sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
