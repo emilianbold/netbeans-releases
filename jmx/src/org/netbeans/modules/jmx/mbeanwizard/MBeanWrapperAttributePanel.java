@@ -208,7 +208,7 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
          * and enables the finish button
          */
         public boolean isFinishPanel() {
-            return true;
+            return false;
         }
         
         /**

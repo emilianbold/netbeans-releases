@@ -492,7 +492,13 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
          * Implementation of the FinishablePanel Interface; provides the Finish Button to be always enabled 
          * @return finish true if the panel can be the last one and enables the finish button
          */
-        public boolean isFinishPanel() { return isValid();}
+        public boolean isFinishPanel() //{ return isValid();}
+        {
+            if (!getPanel().fromExistingClassJCheckBox.isSelected())
+                return isValid();
+            else
+                return false;
+        }
         
         /**
          * Method returning the corresponding panel; here the StandardMBeanPanel
