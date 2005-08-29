@@ -28,10 +28,10 @@ import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
  */
 public class NavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
     
-    private static final String TAG_16 = "/org/netbeans/modules/xml/text/navigator/resources/tag.gif";
-    private static final String PI_16 = "/org/netbeans/modules/xml/text/navigator/resources/xml.png";
+    private static final String TAG_16 = "/org/netbeans/modules/xml/text/navigator/resources/tag.png";
+    private static final String PI_16 = "/org/netbeans/modules/xml/text/navigator/resources/xml_declaration.png";
     private static final String DOCTYPE_16 = "/org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
-    private static final String CDATA_16 = "/org/netbeans/modules/xml/text/navigator/resources/comment.gif";
+    private static final String CDATA_16 = "/org/netbeans/modules/xml/text/navigator/resources/cdata.png";
     
     private static final Icon TAG_ICON = getImageIcon(TAG_16);
     private static final Icon PI_ICON = getImageIcon(PI_16);

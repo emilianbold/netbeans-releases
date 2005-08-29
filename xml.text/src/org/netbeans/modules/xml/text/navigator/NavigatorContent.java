@@ -212,7 +212,7 @@ public class NavigatorContent extends JPanel   {
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowContent"),     //NOI18N
                     NbBundle.getMessage(NavigatorContent.class, "LBL_ShowContentTip"),     //NOI18N
                     showContent,
-                    new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/content.gif")), //NOI18N
+                    new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/text/navigator/resources/content.png")), //NOI18N
                     null
                     );
             
