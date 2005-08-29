@@ -55,7 +55,7 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(JSFConfigurationPanel .class);
+        return new HelpCtx(JSFConfigurationPanel.class);
     }
     
     public boolean isValid() {
