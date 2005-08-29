@@ -41,17 +41,9 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
             };
             String[] steps = new String[panels.length];
             for (int i = 0; i < panels.length; i++) {
-                steps[i] = panels[i].getComponent().getName();
-            }
-
-            for (int i = 0; i < panels.length; i++) {
                 Component c = panels[i].getComponent();
-                if (steps[i] == null) {
-                    // Default step name to component name of panel. Mainly
-                    // useful for getting the name of the target chooser to
-                    // appear in the list of steps.
-                    steps[i] = c.getName();
-                }
+                // Default step name to component name of panel.
+                steps[i] = c.getName();
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
@@ -136,3 +128,4 @@ public final class @@ITERATOR_CLASS@@ implements WizardDescriptor.Iterator {
      */
 
 }
+

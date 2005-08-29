@@ -75,3 +75,4 @@ public class @@WIZARD_PANEL_CLASS@@ implements WizardDescriptor.Panel {
     public void storeSettings(Object settings) {}
     
 }
+
