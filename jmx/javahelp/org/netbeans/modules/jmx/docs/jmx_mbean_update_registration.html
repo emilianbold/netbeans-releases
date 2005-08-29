@@ -1,0 +1,74 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Making an MBean implements javax.management.MBeanRegistration
+interface<br>
+</h2>
+<br>
+Contextual (enabled only if an<span style="font-weight: bold;">
+MBean</span> is selected) action located under the <span
+ style="font-style: italic; font-weight: bold;">management</span> menu.
+You can access the management menu from :<br>
+<ul>
+  <li>Top level menu</li>
+  <li>Project tree node contextual menu (right click on selected node)<br>
+  </li>
+</ul>
+<br>
+<h2>Action applicability</h2>
+<br>
+This action&nbsp; applies to any MBean type. If an MBean already
+implements this interface, the action is disabled.<br>
+This action applies to any MBean. You don't need to have them
+generated from the MBean wizard. <br>
+MBeans imported from other context can be updated.<br>
+<br>
+<h2>Using the Implement MBeanRegistration Interface... action<br>
+</h2>
+<br>
+<ol>
+  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
+menu select <span style="font-weight: bold; font-style: italic;">Implement
+MBeanRegistration Interface...</span></li>
+  <li>A windows is displayed with a message listing the set of methods
+that will be added to the current MBean</li>
+  <ul>
+    <li>preRegister : Called before the MBean is registered in the
+MBeanServer<br>
+    </li>
+    <li>postRegister : Called after the MBean is registered in the
+MBeanServer</li>
+    <li>preDeregister : Called before the MBean is unregistered in the
+MBeanServer</li>
+    <li>postDeregister : Called after the MBean is unregistered in the
+MBeanServer</li>
+  </ul>
+  <li>You have the ability to generate private fields in order to keep
+some references to preRegister method parameters. These parameters are :</li>
+  <ul>
+    <li>The MBean ObjectName. If you are interested in the name the
+MBean is given, you should keep a reference to this parameter.<br>
+    </li>
+    <li>The MBeanServer in which the MBean is registered. If you want
+your MBean to make JMX call to other MBeans, you should keep this
+reference.<br>
+    </li>
+  </ul>
+  <li>Click OK when you are finished </li>
+  <li>MBeanRegistration methods are added at the end of the MBean class.</li>
+  <li>The updated MBean class file is automaticaly opened in the editor.</li>
+</ol>
+</body>
+</html>
