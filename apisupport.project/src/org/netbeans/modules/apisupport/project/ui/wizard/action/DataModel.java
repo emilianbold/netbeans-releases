@@ -38,7 +38,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // global menu item fields
     private boolean globalMenuItemEnabled;
-    private String[] gmiParentMenuPath;
+    private String gmiParentMenuPath;
     private Position gmiPosition;
     private boolean gmiSeparatorAfter;
     private boolean gmiSeparatorBefore;
@@ -116,7 +116,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         }
         
         // add layer entry about the action
-        String instanceFullPath = "Actions/" + category + "/" // NOI18N
+        String instanceFullPath = category + "/" // NOI18N
                 + dashedFqClassName + ".instance"; // NOI18N
         cmf.add(cmf.createLayerEntry(instanceFullPath, null, null, null, null));
         cmf.add(cmf.createLayerAttribute(instanceFullPath, "instanceClass", fqClassName)); // NOI18N
@@ -129,18 +129,16 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // create layer entry for global menu item
         if (globalMenuItemEnabled) {
-            String parentPath = getGMIParentMenuPath();
-            generateShadowWithOrderAndSeparator(parentPath, shadow,
+            generateShadowWithOrderAndSeparator(gmiParentMenuPath, shadow,
                     dashedPkgName, instanceFullPath, gmiSeparatorBefore,
                     gmiSeparatorAfter, gmiPosition);
         }
         
         // create layer entry for toolbar button
         if (toolbarEnabled) {
-            String parentPath = "Toolbars/" + toolbar; // NOI18N
-            generateOrder(parentPath, toolbarPosition.getBefore(), shadow);
-            generateShadow(parentPath + "/" + shadow, instanceFullPath); // NOI18N
-            generateOrder(parentPath, shadow, toolbarPosition.getAfter());
+            generateOrder(toolbar, toolbarPosition.getBefore(), shadow);
+            generateShadow(toolbar + "/" + shadow, instanceFullPath); // NOI18N
+            generateOrder(toolbar, shadow, toolbarPosition.getAfter());
         }
         
         // create layer entry for keyboard shortcut
@@ -151,16 +149,14 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         
         // create file type context menu item
         if (ftContextEnabled) {
-            String parentPath = "Loaders/" + ftContextType + "/Actions"; // NOI18N
-            generateShadowWithOrderAndSeparator(parentPath, shadow,
+            generateShadowWithOrderAndSeparator(ftContextType, shadow,
                     dashedPkgName, instanceFullPath, ftContextSeparatorBefore,
                     ftContextSeparatorAfter, ftContextPosition);
         }
         
         // create editor context menu item
         if (edContextEnabled) {
-            String parentPath = "Editors/" + edContextType + "/Popup"; // NOI18N
-            generateShadowWithOrderAndSeparator(parentPath, shadow,
+            generateShadowWithOrderAndSeparator(edContextType, shadow,
                     dashedPkgName, instanceFullPath, edContextSeparatorBefore,
                     edContextSeparatorAfter, edContextPosition);
         }
@@ -274,15 +270,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         this.globalMenuItemEnabled = globalMenuItemEnabled;
     }
     
-    private String getGMIParentMenuPath() {
-       StringBuffer sb = new StringBuffer("Menu"); // NOI18N
-        for (int i = 0; i < gmiParentMenuPath.length; i++) {
-            sb.append('/' + gmiParentMenuPath[i]);
-        }
-        return sb.toString();
-    }
-    
-    void setGMIParentMenu(String[] gmiParentMenuPath) {
+    void setGMIParentMenu(String gmiParentMenuPath) {
         this.gmiParentMenuPath = gmiParentMenuPath;
     }
     

@@ -51,16 +51,16 @@ public class DataModelTest extends LayerTestBase {
         data.setAlwaysEnabled(true);
         
         // second panel data (GUI Registration)
-        data.setCategory("Tools");
+        data.setCategory("Actions/Tools");
         // global menu item
         data.setGlobalMenuItemEnabled(true);
-        data.setGMIParentMenu(new String[] {"Help", "Tutorials"});
+        data.setGMIParentMenu("Menu/Help/Tutorials");
         data.setGMIPosition(new Position("quick-start.url", "prj-import-guide.url"));
         data.setGMISeparatorBefore(true);
         data.setGMISeparatorAfter(true);
         // global toolbar button
         data.setToolbarEnabled(true);
-        data.setToolbar("Edit");
+        data.setToolbar("Toolbars/Edit");
         data.setToolbarPosition(new Position("org-openide-actions-FindAction.instance", null));
         // global keyboard shortcut
         data.setKeyboardShortcutEnabled(true);
@@ -141,26 +141,26 @@ public class DataModelTest extends LayerTestBase {
         data.setMultiSelection(false);
         
         // second panel data (GUI Registration)
-        data.setCategory("Tools");
+        data.setCategory("Actions/Tools");
         // global menu item
         data.setGlobalMenuItemEnabled(true);
-        data.setGMIParentMenu(new String[] {"Help", "Tutorials"});
+        data.setGMIParentMenu("Menu/Help/Tutorials");
         data.setGMIPosition(new Position("quick-start.url", "prj-import-guide.url"));
         data.setGMISeparatorBefore(true);
         data.setGMISeparatorAfter(true);
         // global toolbar button
         data.setToolbarEnabled(true);
-        data.setToolbar("Edit");
+        data.setToolbar("Toolbars/Edit");
         data.setToolbarPosition(new Position("org-openide-actions-FindAction.instance", null));
         // file type context menu item
         data.setFileTypeContextEnabled(true);
-        data.setFTContextType("text/x-java");
+        data.setFTContextType("Loaders/text/x-java/Actions");
         data.setFTContextPosition(new Position(null, "OpenAction.instance"));
         data.setFTContextSeparatorBefore(false);
         data.setFTContextSeparatorAfter(true);
         // editor context menu item
         data.setEditorContextEnabled(true);
-        data.setEdContextType("text/x-java");
+        data.setEdContextType("Editors/text/x-java/Popup");
         data.setEdContextPosition(new Position(null, "generate-goto-popup"));
         data.setEdContextSeparatorBefore(false);
         data.setEdContextSeparatorAfter(true);
