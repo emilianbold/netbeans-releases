@@ -41,9 +41,11 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.modules.apisupport.project.ui.wizard.action.DataModel.Position;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -229,6 +231,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             public void run() {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
                 final FileObject parent = getSFS().getRoot().getFileObject(startFolder);
+                if (parent == null) {
+                    Util.err.log(ErrorManager.WARNING, "Could not find " + startFolder);
+                    return;
+                }
                 final Enumeration items = subFolder == null
                         ? parent.getFolders(true) : loadFolders(parent, subFolder);
                 EventQueue.invokeLater(new Runnable() {
@@ -807,6 +813,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 sfs = LayerUtils.getEffectiveSystemFilesystem(data.getProject());
             } catch (IOException ex) {
                 Util.err.notify(ex);
+                sfs = FileUtil.createMemoryFileSystem();
             }
         }
         return sfs;
@@ -855,7 +862,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         }
         
         public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-            loadPositionsCombo(getSelectedLayerItem(menu), position);
+            LayerItemPresenter item = getSelectedLayerItem(menu);
+            if (item != null) {
+                loadPositionsCombo(item, position);
+            }
         }
         
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
