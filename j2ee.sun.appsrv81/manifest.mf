@@ -4,9 +4,6 @@ OpenIDE-Module-Layer: org/netbeans/modules/j2ee/sun/ide/j2ee/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/sun/ide/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/sun/ide/j2ee/Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.sun.appsrv81/1
-OpenIDE-Module-Implementation-Version: 1
-Class-Path:  docs/org-netbeans-modules-j2ee-sun-appsrv81.jar 
-    
 
 Name: org/netbeans/modules/j2ee/sun/ide/j2ee/runtime/actions/RunASVerifierAction.class
 OpenIDE-Module-Class: Action

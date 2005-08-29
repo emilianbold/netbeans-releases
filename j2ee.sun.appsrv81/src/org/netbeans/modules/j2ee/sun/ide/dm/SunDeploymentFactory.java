@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.openide.ErrorManager;
 
 /** This deploymenmt factory can creates an alternate deployment manager for
  * S1AS8.
@@ -48,11 +49,14 @@ public class SunDeploymentFactory implements Constants, DeploymentFactory {
             //
             //turn off severe loggin which is not needed in plugins:
             java.util.logging.Logger.getLogger("javax.enterprise.system.tools.deployment").setLevel(java.util.logging.Level.OFF);
+        } catch (ClassNotFoundException cnfe) {
+            // ignore this, since the plugin's install location property may not be set.
         } catch (Throwable e){
             //nothin to report there. The node name will indicate the config issue 
             //e.printStackTrace();
-            System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
-            
+            //System.out.println("  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,e);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
         }
         
     }

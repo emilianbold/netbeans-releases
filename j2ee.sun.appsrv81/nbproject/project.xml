@@ -69,6 +69,15 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
                 <dependency>
                     <!-- necessary to resolve dynamically loaded references -->
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <!-- necessary to resolve dynamically loaded references -->
                     <code-name-base>org.openide.explorer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

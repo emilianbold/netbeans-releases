@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
+import org.openide.ErrorManager;
 
 /**
  *
@@ -56,7 +57,9 @@ public class DirectoryDeploymentFacade
             
         } catch (Throwable t) {
           //  t.printStackTrace();
-            System.out.println("WARNING: cannot create a good DirectoryDeploymentFacade: to correct, set com.sun.aas.installRoot to the correct App Server 8 PE Location and restart. -> " +t.getMessage());
+           // System.out.println("WARNING: cannot create a good DirectoryDeploymentFacade: to correct, set com.sun.aas.installRoot to the correct App Server 8 PE Location and restart. -> " +t.getMessage());
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,t);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "  WARNING: cannot create a good SunDeploymentFactory:to correct, set com.sun.aas.installRoot to the correct App Server 8.1 PE Location and restart.");
         }
     }
     /** Creates a new instance of DirectoryDeploymentFacade */
