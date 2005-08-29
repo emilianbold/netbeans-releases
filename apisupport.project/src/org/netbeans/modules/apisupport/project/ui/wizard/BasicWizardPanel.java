@@ -71,7 +71,7 @@ public abstract class BasicWizardPanel implements WizardDescriptor.Panel, Proper
     }
     
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(getClass());
     }
     
     public void storeSettings(Object settings) {;}
