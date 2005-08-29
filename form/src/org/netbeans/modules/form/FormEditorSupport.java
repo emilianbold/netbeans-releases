@@ -76,7 +76,7 @@ public class FormEditorSupport extends JavaEditor
     /** Set of opened FormEditorSupport instances (java or form opened) */
     private static Set opened = Collections.synchronizedSet(new HashSet());
     
-    private static Map fsToStatusListener = new WeakHashMap();
+    private static Map fsToStatusListener = new HashMap();
 
     // --------------
     // constructor
@@ -130,8 +130,18 @@ public class FormEditorSupport extends JavaEditor
             };
             fs.addFileStatusListener(fsl);
             fsToStatusListener.put(fs, fsl);
-            System.out.println("ADDED");
         } // else do nothing - the listener is already added
+    }
+    
+    private void detachStatusListeners() {
+        Iterator iter = fsToStatusListener.entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry)iter.next();
+            FileSystem fs = (FileSystem)entry.getKey();
+            FileStatusListener fsl = (FileStatusListener)entry.getValue();
+            fs.removeFileStatusListener(fsl);
+        }
+        fsToStatusListener.clear();
     }
 
     /** Overriden from JavaEditor - opens editor and ensures it is selected
@@ -323,8 +333,10 @@ public class FormEditorSupport extends JavaEditor
 
     protected void notifyClosed() {
         opened.remove(this);
-        if (opened.isEmpty())
+        if (opened.isEmpty()) {
             detachTopComponentsListener();
+            detachStatusListeners();
+        }
 
         super.notifyClosed(); // close java editor
         if (formEditor != null) {
