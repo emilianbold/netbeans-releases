@@ -66,7 +66,7 @@ public class PickIconAction extends CookieAction {
                 FileUtil.copyFile(icon, folder, icon.getName(), icon.getExt());
                 iconPath = folderPath + '/' + icon.getNameExt();
             }
-            f.setAttribute("SystemFileSystem.icon", new URL("nbresloc:" + iconPath)); // NOI18N
+            f.setAttribute("SystemFileSystem.icon", new URL("nbresloc:/" + iconPath)); // NOI18N
         } catch (IOException e) {
             Util.err.notify(ErrorManager.INFORMATIONAL, e);
         }
