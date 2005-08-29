@@ -83,7 +83,12 @@ public class TargetLister {
      */
     public static Set/*<Target>*/ getTargets(AntProjectCookie script) throws IOException {
         Set/*<File>*/ alreadyImported = new HashSet();
-        Script main = new Script(null, script, alreadyImported, System.getProperties(), Collections.EMPTY_MAP);
+        Map/*<String,String>*/ properties = new HashMap(System.getProperties());
+        File xml = script.getFile();
+        if (xml != null) {
+            properties.put("basedir", xml.getParentFile().getAbsolutePath()); // NOI18N
+        }
+        Script main = new Script(null, script, alreadyImported, properties, Collections.EMPTY_MAP);
         Set/*<Target>*/ targets = new HashSet();
         Set/*<AntProjectCookie>*/ visitedScripts = new HashSet();
         traverseScripts(main, targets, visitedScripts);

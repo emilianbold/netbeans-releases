@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="importing" basedir="." xmlns:nowhere="http://nowhere.net/property">
     <property name="x" value="1"/>
-    <property file="p${x}.properties"/>
+    <property file="${basedir}/p${x}.properties"/>
     <macrodef name="property" uri="http://nowhere.net/property">
         <attribute name="name"/>
         <attribute name="value"/>
