@@ -36,6 +36,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
@@ -141,6 +142,20 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             }
             if (fo.hasExt("instance")) { // NOI18N
                 return getInstanceLabel(fo);
+            }
+            if (fo.hasExt("shadow")) { // NOI18N
+                String originalFile = (String) fo.getAttribute("originalFile"); // NOI18N
+                if (originalFile != null) {
+                    FileObject orig;
+                    try {
+                        orig = fo.getFileSystem().findResource(originalFile);
+                    } catch (FileStateInvalidException e) {
+                        orig = null;
+                    }
+                    if (orig != null && orig.hasExt("instance")) { // NOI18N
+                        return getInstanceLabel(orig);
+                    }
+                }
             }
         }
         return name;

@@ -211,6 +211,8 @@ public class LayerUtilsTest extends LayerTestBase {
         cmf.add(cmf.createLayerEntry("test-module2-another-action.instance", null, null, null, Collections.singletonMap("instanceCreate", "newvalue:test.module2.AnotherAction")));
         cmf.add(cmf.createLayerEntry("test-module2-factory-action.instance", null, null, null, Collections.singletonMap("instanceCreate", "methodvalue:test.module2.FactoryAction.create")));
         cmf.add(cmf.createLayerEntry("sep-42.instance", null, null, null, Collections.singletonMap("instanceClass", "javax.swing.JSeparator")));
+        cmf.add(cmf.createLayerEntry("link-to-standard.shadow", null, null, null, Collections.singletonMap("originalFile", "Actions/System/org-openide-actions-OpenAction.instance")));
+        cmf.add(cmf.createLayerEntry("link-to-custom.shadow", null, null, null, Collections.singletonMap("originalFile", "test-module2-MyAction.instance")));
         cmf.run();
         FileSystem fs = LayerUtils.getEffectiveSystemFilesystem(module2);
         assertDisplayName(fs, "right display name for platform file", "Menu/Window/SelectDocumentNode", "Select Document in");
@@ -222,6 +224,8 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "label for newvalue instanceCreate", "test-module2-another-action.instance", "<instance of AnotherAction>");
         assertDisplayName(fs, "label for methodvalue instanceCreate", "test-module2-factory-action.instance", "<instance from FactoryAction.create>");
         assertDisplayName(fs, "label for menu separator", "sep-42.instance", "<separator>");
+        assertDisplayName(fs, "link to standard menu item", "link-to-standard.shadow", "Open");
+        assertDisplayName(fs, "link to custom menu item", "link-to-custom.shadow", "<instance of MyAction>");
     }
     
     public void testSystemFilesystemNetBeansOrgProject() throws Exception {
