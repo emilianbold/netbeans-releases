@@ -153,7 +153,6 @@ public class LayoutPersistenceManager implements LayoutConstants {
                 }
                 sb.append('<').append(XML_COMPONENT).append(' ');
                 sb.append(ATTR_COMPONENT_ID).append("=\"").append(name).append("\""); // NOI18N
-                sb.append(' ');
                 saveLinkSize(interval.getComponent().getLinkSizeId(dimension));
                 saveAlignment(interval.getRawAlignment(), false);
             } else if (interval.isEmptySpace()) {
@@ -177,7 +176,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
      */
     private void saveLinkSize(int linkSizeId) {
         if (linkSizeId != NOT_EXPLICITLY_DEFINED) {
-            sb.append(ATTR_LINK_SIZE).append("=\"").append(linkSizeId).append("\""); // NOI18N
+            sb.append(" ").append(ATTR_LINK_SIZE).append("=\"").append(linkSizeId).append("\""); // NOI18N
         }
     }
     
