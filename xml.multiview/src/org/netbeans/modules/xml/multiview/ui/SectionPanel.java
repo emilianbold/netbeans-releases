@@ -96,6 +96,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         if(autoExpand) {
             open();
         }
+        titleButton.addFocusListener(sectionFocusListener);
     }
     
     public SectionView getSectionView() {
@@ -234,6 +235,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
         foldButton.setFocusPainted(false);
+        foldButton.setFocusable(false);
         foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/minus.gif")));
         foldButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
