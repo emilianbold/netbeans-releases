@@ -28,8 +28,7 @@ Microsystems, Inc. All Rights Reserved.
         <mapID target="jmx_instrumenting_notification_app" url="jmx_instrumenting_notification_app.html"/>
         <mapID target="jmx_instrumenting_from_existing_app" url="jmx_instrumenting_from_existing_app.html"/>
         <mapID target="jmx_junit_app" url="jmx_junit_app.html"/>
-        <mapID target="jmx_mbean_update_attributes" url="jmx_mbean_update_attributes.html"/>
-        <mapID target="jmx_mbean_update_operations" url="jmx_mbean_update_operations.html"/>
+        <mapID target="jmx_mbean_update_attributes_operations" url="jmx_mbean_update_attributes_operations.html"/>
         <mapID target="jmx_mbean_update_notification" url="jmx_mbean_update_notification.html"/>
         <mapID target="jmx_mbean_update_registration" url="jmx_mbean_update_registration.html"/>
 

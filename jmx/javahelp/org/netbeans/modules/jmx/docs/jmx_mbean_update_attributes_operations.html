@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Adding Attributes / Operations to an MBean</h2>
+<br>
+Contextual (enabled only if a <span style="font-weight: bold;">Standard
+MBean</span> is selected) actions are located under the <span
+ style="font-style: italic; font-weight: bold;">management</span> menu.
+You can access the management menu from :<br>
+<ul>
+  <li>Top level menu</li>
+  <li>Project tree node contextual menu (right click on selected node)<br>
+  </li>
+</ul>
+<br>
+<h2>Actions applicability</h2>
+<br>
+These actions are enabled for <span style="font-weight: bold;">Standard
+MBean only</span> (MBean that follow the Standard MBean JMX design
+pattern).<br>
+Current tooling doesn't allow for Dynamic MBean attributes/operations
+update.<br>
+These actions apply to any Standard MBean. You don't need to have them
+generated from the MBean wizard. <br>
+MBeans imported from other context can be updated.<br>
+<br>
+<h2>Using the Add MBean Attributes... action<br>
+</h2>
+<br>
+<ol>
+  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
+menu select <span style="font-weight: bold; font-style: italic;">Add
+MBean Attributes...</span></li>
+  <li>A windows is displayed with a Table containing existing
+attributes. You can't update nor remove existing attributes.<br>
+  </li>
+  <li>Add attributes using <span
+ style="font-style: italic; font-weight: bold;">Add Attribute</span>
+button.</li>
+  <li>Enter valid name, type and description for each added attribute.<br>
+  </li>
+  <li>You can remove added attribute using <span
+ style="font-weight: bold; font-style: italic;">Remove Attribute</span>
+button.</li>
+  <li>Click OK when you are finished</li>
+  <li>New Attributes are added at the end of the MBean interface and
+class.</li>
+  <li>The update MBean class file is automaticaly opened in the editor.</li>
+</ol>
+<br>
+<h2>Using the Add MBean Attributes... action<br>
+</h2>
+<br>
+<ol>
+  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
+menu select <span style="font-weight: bold; font-style: italic;">Add
+MBean Operations...</span></li>
+  <li>A windows is displayed with a Table containing existing
+operations. You can't update nor remove existing op[erations.</li>
+  <li>Add operations using <span
+ style="font-style: italic; font-weight: bold;">Add Operation</span>
+button.</li>
+  <li>Enter valid name, parameters type, exceptions and description for
+each added operation.<br>
+  </li>
+  <li>You can remove added operation using <span
+ style="font-weight: bold; font-style: italic;">Remove Operation </span>button.</li>
+  <li>Click OK when you are finished</li>
+  <li>New Operations are added at the end of the MBean interface and
+class.</li>
+  <li>The update MBean class file is automaticaly opened in the editor.</li>
+</ol>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>
