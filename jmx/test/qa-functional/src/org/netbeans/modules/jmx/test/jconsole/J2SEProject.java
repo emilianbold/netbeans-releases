@@ -209,9 +209,16 @@ public class J2SEProject extends JellyTestCase {
        
        //Control dialog
        DialogOperator dop = new DialogOperator();
-       
-       dop.waitTitle("Remote Management Configuration");
-
+       int maxToWait = 10;
+       while(maxToWait > 0) {
+        try {
+            dop.waitTitle("Remote Management Configuration");
+            break;
+        }catch(Exception e) {
+            System.out.println("Remote dialog not yet displayed " + e.toString());
+            maxToWait--;
+        }
+       }
        System.out.println("FOUND DIALOG : " + dop.getTitle());
        Component[] comp = dop.getComponents();
        JButton b = findOkButton(comp[0]);
