@@ -51,7 +51,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="NetBeansModuleDevelopment">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.Bundle"/>
             <!-- New Action wizard -->
-            <!--
             <file name="newAction">
                 <attr boolvalue="true" name="template"/>
                 <attr methodvalue="org.netbeans.modules.apisupport.project.ui.wizard.action.NewActionIterator.createIterator" name="instantiatingIterator"/>
@@ -60,7 +59,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newAction.html"/>
                 <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
-            -->
             <!-- J2SE Library Descriptor wizard -->
             <file name="emptyLibraryDescriptor">
                 <attr boolvalue="true" name="template"/>
