@@ -55,7 +55,7 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     private Timer timer;
     private TimerTask timerTask;
     
-    private int foldsUpdateInterval = 100;
+    private int foldsUpdateInterval = 500;
     private long foldsGenerationTime = -1;
     
     private DocumentModel model = null;
