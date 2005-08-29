@@ -87,7 +87,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 //scan the inserted text - if it contains only text set textOnly flag
                 TokenItem ti = sup.getTokenChain(changeOffset, changeOffset + 1);
                 while(ti != null && ti.getOffset() < (changeOffset + changeLength)) {
-                    if(ti.getTokenID() != XMLTokenIDs.TEXT 
+                    if(ti.getTokenID() != XMLTokenIDs.TEXT
                             && ti.getTokenID() != XMLTokenIDs.DECLARATION
                             && ti.getTokenID() != XMLTokenIDs.PI_CONTENT
                             && ti.getTokenID() != XMLTokenIDs.CDATA_SECTION) {
@@ -100,7 +100,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             }
             
-            if(textOnly && 
+            if(textOnly &&
                     ( leaf.getType().equals(XML_CONTENT)
                     || leaf.getType().equals(XML_DOCTYPE)
                     || leaf.getType().equals(XML_PI)
@@ -294,12 +294,20 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                             sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
                 } else if (sel instanceof ProcessingInstructionImpl) {
                     //PI section
-                    addedElements.add(dtm.addDocumentElement(((ProcessingInstructionImpl)sel).getNodeName(), XML_PI, Collections.EMPTY_MAP,
-                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    String nodeName = ((ProcessingInstructionImpl)sel).getNodeName();
+                    //if the nodename is not parsed, then the element is somehow broken => do not show it.
+                    if(nodeName != null) {
+                        addedElements.add(dtm.addDocumentElement(nodeName, XML_PI, Collections.EMPTY_MAP,
+                                sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    }
                 } else if (sel instanceof DocumentTypeImpl) {
                     //document type <!DOCTYPE xxx [...]>
-                    addedElements.add(dtm.addDocumentElement(((DocumentTypeImpl)sel).getName(), XML_DOCTYPE, Collections.EMPTY_MAP,
-                            sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    String nodeName = ((DocumentTypeImpl)sel).getName();
+                    //if the nodename is not parsed, then the element is somehow broken => do not show it.
+                    if(nodeName != null) {
+                        addedElements.add(dtm.addDocumentElement(nodeName, XML_DOCTYPE, Collections.EMPTY_MAP,
+                                sel.getElementOffset(), getSyntaxElementEndOffset(sel)));
+                    }
                 } else if (sel instanceof CommentImpl) {
                     //comment element <!-- xxx -->
                     //DO NOT CREATE ELEMENT FOR COMMENTS
