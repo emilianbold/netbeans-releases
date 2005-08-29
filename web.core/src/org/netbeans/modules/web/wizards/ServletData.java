@@ -317,14 +317,22 @@ class ServletData extends DeployData {
 
     boolean checkMappingsForServlet() { 
 
-	errorMessage = new String(); 
-	if(getUrlMappings() == null || getUrlMappings().length == 0) { 
+	errorMessage = new String();
+        String[] mappings = getUrlMappings();
+	if(mappings == null || mappings.length == 0) { 
 
 	    if(debug) log("\tNo URL mappings"); //NOI18N
 	    errorMessage = NbBundle.getMessage(ServletData.class, 
 					       "MSG_no_mapping"); 
 	    return false; 
 	}
+        for (int i=0;i<mappings.length;i++) {
+            String errMessage = checkServletMappig(mappings[i]);
+            if (errMessage!=null) {
+                errorMessage = errMessage; 
+                return false; 
+            }
+        }
 	if(debug) log("\tmappings are fine"); //NOI18N
 	return true; 
     }
@@ -599,6 +607,17 @@ class ServletData extends DeployData {
 
     void log(String s) { 
 	System.out.println("ServletData" + s); 
-    } 
+    }
+    
+    private String checkServletMappig(String uri) {
+        if (!uri.matches("[\\*/].*")) { //NOI18N
+            return NbBundle.getMessage(ServletData.class,"MSG_WrongUriStart");
+        } else if (uri.length()>1  && uri.endsWith("/")) {
+            return NbBundle.getMessage(ServletData.class,"MSG_WrongUriEnd");
+        } else if (uri.matches(".*\\*.*\\*.*")) { //NOI18N
+            return NbBundle.getMessage(ServletData.class,"MSG_TwoAsterisks");
+        }
+        return null;
+    }
 }
 
