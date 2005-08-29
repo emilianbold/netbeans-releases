@@ -31,6 +31,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -291,5 +292,12 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             
             panel.readFromDataModel();
         }
+        
+        public HelpCtx getHelp() {
+            return new HelpCtx(getClass());
+        }
+        
     }
+    
 }
+
