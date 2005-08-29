@@ -2,58 +2,21 @@
  * __NAME__.java
  *
  * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
  */
- 
-package Templates.JSP_Servlet;           
 
-import org.apache.struts.validator.ValidatorForm;
+package Templates.Classes;
 
-/** 
+/**
  *
  * @author __USER__
- * @version 
  */
+public class Class {
 
-public class NewStrutsFormBean extends ValidatorForm {
-    
-   private String name;
-
-   private int number;
-
-   /**
-    * @return
-    */
-   public String getName() {
-       return name;
-   }
-
-   /**
-    * @param string
-    */
-   public void setName(String string) {
-       name = string;
-   }
-
-   /**
-    * @return
-    */
-   public int getNumber() {
-       return number;
-   }
-
-   /**
-    * @param i
-    */
-   public void setNumber(int i) {
-       number = i;
-   }
-
-   /**
-    *
-    */
-   public FirstNewBean() {
-       super();
-       // TODO Auto-generated constructor stub
-   }
+    /** Creates a new instance of __NAME__ */
+    public Class() {
+    }
 
 }
