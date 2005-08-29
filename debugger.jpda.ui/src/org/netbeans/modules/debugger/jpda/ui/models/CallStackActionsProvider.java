@@ -46,6 +46,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_MakeCurrent_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                // TODO: Check whether is not current - API change necessary
                 return true;
             }
             public void perform (Object[] nodes) {
@@ -58,6 +59,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_CallstackAction_PopToHere_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
+                // TODO: Check whether this frame is deeper then the top-most
                 return true;
             }
             public void perform (Object[] nodes) {
@@ -85,8 +87,10 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         
         CallStackFrame csf = (CallStackFrame) node;
         JPDAThread t = csf.getThread ();
-        boolean popToHere = debugger.canPopFrames () && 
-                            (t.getStackDepth () > 0);
+        boolean popToHere = debugger.canPopFrames (); /*&& 
+                            //(t.getStackDepth () > 0);
+        Do not do the check here - it can freeze AWT and it's too early
+        Implement the check on individual actions.
         if (popToHere)
             try {
                 popToHere = ! debugger.getCurrentThread ().getCallStack (0, 1) [0].
@@ -94,7 +98,7 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             } catch (AbsentInformationException ex) {
                 popToHere = false;
             }
-
+        */
         if (popToHere)
             return new Action [] { MAKE_CURRENT_ACTION, POP_TO_HERE_ACTION };
         else
@@ -122,9 +126,12 @@ public class CallStackActionsProvider implements NodeActionsProvider {
             JPDAThread t = frame.getThread ();
             CallStackFrame[] stack = t.getCallStack ();
             int i, k = stack.length;
+            if (k < 2) return ;
             for (i = 0; i < k; i++)
                 if (stack [i].equals (frame)) {
-                    stack [i - 1].popFrame ();
+                    if (i > 0) {
+                        stack [i - 1].popFrame ();
+                    }
                     return;
                 }
         } catch (AbsentInformationException ex) {
