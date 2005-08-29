@@ -302,6 +302,9 @@ public class NbEditorUI extends ExtEditorUI {
         if (listener == null){
             listener = new ChangeListener(){
                 public void stateChanged(javax.swing.event.ChangeEvent e) {
+                    if (Utilities.getEditorUI(component) == null) {
+                        return; //#63146
+                    }
                     Map newMap = CustomizableSideBar.createSideBars(component);
                     processSideBars(newMap, scroller, ec);
                     ec.revalidate();
