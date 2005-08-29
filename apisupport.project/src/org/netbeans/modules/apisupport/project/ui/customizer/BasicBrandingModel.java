@@ -48,6 +48,13 @@ public class BasicBrandingModel {
     
     public static final String BRANDING_TOKEN_PROPERTY = "branding.token";//NOI18N
     
+    static final int SPLASH_WIDTH = 398;
+    static final int SPLASH_HEIGHT = 299;    
+
+    static final int ICON_WIDTH = 48;
+    static final int ICON_HEIGHT = 48;    
+    
+    
     /** for generating property branding.token*/
     private boolean brandingEnabled;
     
@@ -172,8 +179,7 @@ public class BasicBrandingModel {
             
             getBranding().brandFile(icon, getScaleAndStoreIconTask());
             getBranding().brandBundleKeys(splashKeys);
-            getBranding().brandFile(splash);
-            
+            getBranding().brandFile(splash);                        
         } else {
             suiteProps.removeProperty(BRANDING_TOKEN_PROPERTY);
         }
@@ -182,11 +188,17 @@ public class BasicBrandingModel {
     private Runnable getScaleAndStoreIconTask() throws IOException {
         return new Runnable() {
             public void run() {
-                BufferedImage bi = new BufferedImage(48,48,BufferedImage.TYPE_INT_RGB);//NOI18N
+                BufferedImage bi = new BufferedImage(
+                        BasicBrandingModel.ICON_WIDTH,
+                        BasicBrandingModel.ICON_HEIGHT,
+                        BufferedImage.TYPE_INT_RGB);
+                
                 Graphics2D g2 = bi.createGraphics();
                 ImageIcon image = new ImageIcon(icon.getBrandingSource());
-                //image.p
-                g2.drawImage(image.getImage(),0, 0, 48, 48, Color.LIGHT_GRAY,null);//NOI18N
+                g2.drawImage(image.getImage(),0, 0, 
+                        BasicBrandingModel.ICON_WIDTH, BasicBrandingModel.ICON_HEIGHT, 
+                        Color.LIGHT_GRAY,null);//NOI18N
+                
                 g2.dispose();
                 try {
                     ImageIO.write(bi,"png",icon.getFileLocation());//NOI18N
@@ -289,7 +301,7 @@ public class BasicBrandingModel {
         splashHeight = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N
                 "org/netbeans/core/startup/Bundle.properties",//NOI18N
-                "SPLASH_WIDTH");//NOI18N
+                "SPLASH_HEIGHT");//NOI18N
         
         splashShowProgressBar = getBranding().getBundleKey(
                 "org.netbeans.core.startup",//NOI18N

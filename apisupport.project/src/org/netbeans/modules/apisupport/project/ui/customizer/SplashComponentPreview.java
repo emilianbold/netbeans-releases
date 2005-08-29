@@ -21,18 +21,18 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.net.URL;
-import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import org.openide.ErrorManager;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
@@ -64,8 +64,8 @@ class SplashComponentPreview extends JLabel {
     /**
      * Creates a new splash screen component.
      */
-    public SplashComponentPreview() {
-        setBorder(new javax.swing.border.TitledBorder("Splash Screen Preview: "));        
+    public SplashComponentPreview() {                
+        setBorder(new TitledBorder(NbBundle.getMessage(getClass(),"LBL_SplashPreview")));
     }
     
     void setFontSize(final String fontSize) throws NumberFormatException {
@@ -73,7 +73,7 @@ class SplashComponentPreview extends JLabel {
         String sizeStr = fontSize;
         size = Integer.parseInt(sizeStr);
         
-        Font font = new Font("Dialog", Font.PLAIN, size);
+        Font font = new Font("Dialog", Font.PLAIN, size);//NOI18N
         
         setFont(font); // NOI18N
         fm = getFontMetrics(font);
@@ -85,7 +85,6 @@ class SplashComponentPreview extends JLabel {
         //this.image = image.getScaledInstance(398, 299, Image.SCALE_DEFAULT);
     }
     
-///////////////////////////////////////////////////////
     
     void setFontSize(final int size) throws NumberFormatException {
         Font font = new Font("Dialog", Font.PLAIN, size);
@@ -94,10 +93,6 @@ class SplashComponentPreview extends JLabel {
         fm = getFontMetrics(font);
     }
     
-    /*void setSplashImageIcon(final URL url) {
-        ImageIcon imgIcon = new ImageIcon(url);
-        this.image = imgIcon.getImage();
-    }*/
     
     void setRunningTextBounds(final Rectangle bounds) throws NumberFormatException {        
         view = bounds;
@@ -239,8 +234,8 @@ class SplashComponentPreview extends JLabel {
      */
     public void paint(Graphics g) {
         super.paint(g);
-        int width = 398;//image.getWidth(null);
-        int height = 299;//image.getHeight(null);
+        int width = BasicBrandingModel.SPLASH_WIDTH;
+        int height = BasicBrandingModel.SPLASH_HEIGHT;
         int x = (getWidth()/2)-(width/2);
         int y = (getHeight()/2)-(height/2);
         

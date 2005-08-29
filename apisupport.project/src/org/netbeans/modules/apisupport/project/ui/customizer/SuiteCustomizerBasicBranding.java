@@ -22,6 +22,7 @@ import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
@@ -106,7 +107,7 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
 
         title = new javax.swing.JLabel();
         titleValue = new javax.swing.JTextField();
-        iconPreview = new ImagePreview(48, 48);
+        iconPreview = new ImagePreview(BasicBrandingModel.ICON_WIDTH, BasicBrandingModel.ICON_HEIGHT);
         name = new javax.swing.JLabel();
         nameValue = new javax.swing.JTextField();
         buildWithBranding = new javax.swing.JCheckBox();
@@ -253,11 +254,8 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
         ImagePreview(int width, int height){
             //this.image = im;
             this.width = width;
-            this.height = height;
-            String bundlePath = "org/netbeans/modules/apisupport/project/ui/customizer/Bundle";//NOI18N
-            
-            border = new javax.swing.border.TitledBorder(
-                    ResourceBundle.getBundle(bundlePath).getString("LBL_IconPreview"));//NOI18N
+            this.height = height;            
+            border = new TitledBorder(NbBundle.getMessage(getClass(),"LBL_IconPreview"));//NOI18N
             setBorder(border);
         }
         

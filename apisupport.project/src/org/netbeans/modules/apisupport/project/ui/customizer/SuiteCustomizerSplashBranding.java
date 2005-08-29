@@ -46,7 +46,6 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     private SplashUISupport.ColorComboBox barColor;
     private SplashUISupport.ColorComboBox edgeColor;
     private SplashUISupport.ColorComboBox cornerColor;
-    private JCheckBox progressBarEnabled;
     
     private URL splashSource = null;
     
@@ -69,9 +68,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         textColor = SplashUISupport.getColorComboBox();
         barColor = SplashUISupport.getColorComboBox();
         edgeColor = SplashUISupport.getColorComboBox();
-        cornerColor = SplashUISupport.getColorComboBox();
-        
-        progressBarEnabled = new JCheckBox("is progress bar enabled");
+        cornerColor = SplashUISupport.getColorComboBox();        
         
         initComponents();
         refresh();
@@ -131,11 +128,18 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         branding.getSplashProgressBarBounds().setValue(SplashUISupport.boundsToString((Rectangle)progressBarBounds.getValue()));        
         branding.getSplashRunningTextColor().setValue(SplashUISupport.colorToString(textColor.getColor()));        
         branding.getSplashProgressBarColor().setValue(SplashUISupport.colorToString(barColor.getColor()));                        
+        //these colors below has a little effect on resulting branded splash 
+        //then user can't adjust it from UI 
         //edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
         //cornerColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarCornerColor().getValue()));
         
         branding.getSplashShowProgressBar().setValue(Boolean.toString(progressBarEnabled.isSelected()));        
         branding.getSplash().setBrandingSource(splashSource);
+        
+        //hardcoded size of splash If current UI isn't sufficient then must be edited directly in generated
+        //branding files.
+        branding.getSplashWidth().setValue(Integer.toString(BasicBrandingModel.SPLASH_WIDTH,10));        
+        branding.getSplashHeight().setValue(Integer.toString(BasicBrandingModel.SPLASH_HEIGHT,10));
     }
     
     
@@ -157,7 +161,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         
         splashImage.setMaxSteps(10);
         splashImage.increment(10);
-        splashImage.setText("This is a sample text");
+        splashImage.setText(NbBundle.getMessage(getClass(),"TEXT_SplashSample"));
         
         enableDisableComponents();
         
@@ -210,7 +214,6 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         java.awt.GridBagConstraints gridBagConstraints;
         javax.swing.JTextField jTextField1;
         javax.swing.JTextField jTextField4;
-        javax.swing.JCheckBox progressBarEnabled;
         javax.swing.JComboBox textColor;
 
         splashPreview = splashImage;
@@ -223,7 +226,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         jTextField4 = this.runningTextBounds;
         splashLocation = new javax.swing.JTextField();
         fontSize = this.fontSize;
-        progressBarEnabled = this.progressBarEnabled;
+        progressBarEnabled = new javax.swing.JCheckBox();
         browse = new javax.swing.JButton();
         textFontSizeLabel = new javax.swing.JLabel();
         textBoundsLabel = new javax.swing.JLabel();
@@ -416,6 +419,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     private javax.swing.JLabel barBoundsLabel;
     private javax.swing.JLabel barColorLabel;
     private javax.swing.JButton browse;
+    private javax.swing.JCheckBox progressBarEnabled;
     private javax.swing.JLabel splashLabel;
     private javax.swing.JTextField splashLocation;
     private javax.swing.JLabel splashPreview;
