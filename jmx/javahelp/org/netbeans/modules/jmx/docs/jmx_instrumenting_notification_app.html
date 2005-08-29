@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Sending MBean notifications</h2>
+An MBean can send notifications in any part of its implementation
+(Attributes, Operations, non exposed method, ...)<br>
+This chapter highlights the&nbsp; things to do in order to send a
+notification when an attribute is set.<br>
+The code extract is based on an MBean that has been updated with JMX
+Notification support ( delegation to a notification broadcaster and
+sequence number handling generation). This can be done thanks to <span
+ style="font-weight: bold;">JMX MBean Wizard</span> or thanks to <span
+ style="font-weight: bold;">the action to update an existing MBean</span>
+(See Updating existing MBeans chapter).<br>
+<br>
+<h2>Adding code to send Attribute Change Notifications
+</h2>
+In the editor, select the <span style="font-style: italic;">set&lt;MyAttribute&gt;</span>
+method name. After your attribute is set, add the following code: <br>
+<br>
+<span style="font-style: italic; font-weight: bold;">//Send a
+notification when the
+attribute is set</span><br style="font-weight: bold;">
+<span style="font-style: italic; font-weight: bold;">Notification n =
+new
+Notification(AttributeChangeNotification.ATTRIBUTE_CHANGE, this,
+getNextSeqNumber());<br>
+broadcaster.sendNotification(n);</span><br>
+<br>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

@@ -16,15 +16,29 @@ Microsystems, Inc. All Rights Reserved.
 <map version="1.0">
   <mapID target="jmx_about" url="jmx_about.html" />
 	<mapID target="tbd" url="tbd.html" />
-        <mapID target="release_notes" url="release_notes.html" />
+        <mapID target="ext_documentation" url="ext_documentation.html" />
 	<mapID target="jmx_architecture" url="jmx_architecture.html" />
         <mapID target="jmx_instrumentation" url="jmx_instrumentation.html" />
         <mapID target="jmx_agent" url="jmx_agent.html" />
         <mapID target="jmx_manager" url="jmx_manager.html" />
         <mapID target="jmx_jdk50" url="jmx_jdk50.html" />
         <mapID target="jmx_progr_model" url="jmx_progr_model.html"/>
+        
         <mapID target="jmx_instrumenting_app" url="jmx_instrumenting_app.html"/>
+        <mapID target="jmx_instrumenting_notification_app" url="jmx_instrumenting_notification_app.html"/>
+        <mapID target="jmx_instrumenting_from_existing_app" url="jmx_instrumenting_from_existing_app.html"/>
+        <mapID target="jmx_junit_app" url="jmx_junit_app.html"/>
+        <mapID target="jmx_mbean_update_attributes" url="jmx_mbean_update_attributes.html"/>
+        <mapID target="jmx_mbean_update_operations" url="jmx_mbean_update_operations.html"/>
+        <mapID target="jmx_mbean_update_notification" url="jmx_mbean_update_notification.html"/>
+        <mapID target="jmx_mbean_update_registration" url="jmx_mbean_update_registration.html"/>
+
         <mapID target="jmx_agent_app" url="jmx_agent_app.html"/>
+        <mapID target="jmx_agent_instantiate_mbean_app" url="jmx_agent_instantiate_mbean_app.html"/>
+        <mapID target="jmx_agent_instantiate_java_app" url="jmx_agent_instantiate_java_app.html"/>
+        <mapID target="jmx_manager_app" url="jmx_manager_app.html"/>
+        
+        <mapID target="jmx_sample" url="jmx_sample.html"/>
         <mapID target="jconsole_standalone" url="jconsole_standalone.html"/>
         <mapID target="jmx_project_conf" url="jmx_project_conf.html"/>
         <mapID target="jmx_remote_running_app" url="jmx_remote_running_app.html"/>

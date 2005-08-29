@@ -15,7 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <toc version="1.0">
   <tocitem>JMX. Application Management
-    <tocitem target="release_notes">Release Notes</tocitem>
+    <tocitem target="ext_documentation">JMX / JConsole documentation links</tocitem>
     <tocitem>Overview
      <tocitem target="jmx_about">About JMX Application Development</tocitem>
      <tocitem target="jmx_jdk50">JMX and JDK 5.0</tocitem>
@@ -27,10 +27,25 @@ Microsystems, Inc. All Rights Reserved.
      <tocitem target="jmx_agent">Agent Level</tocitem>
      <tocitem target="jmx_manager">Manager Level</tocitem>
     </tocitem>
-    <tocitem>JMX MBean and Agent Wizards
-     <tocitem target="jmx_instrumenting_app">Instrumenting your Resources with MBean</tocitem>
-     <tocitem target="jmx_agent_app">Writing a JMX Agent</tocitem>
+    <tocitem target="jmx_sample">JMX Anagram Game sample project</tocitem>
+    <tocitem>Instrumenting your Resources with JMX MBean
+     <tocitem target="jmx_instrumenting_app">Generating an MBean</tocitem>
+     <tocitem target="jmx_instrumenting_from_existing_app">Generating an MBean from an existing Java class</tocitem>
+     <tocitem target="jmx_junit_app">Writing a JMX MBean JUnit test</tocitem>
+     <tocitem>Updating existing MBeans
+      <tocitem target="jmx_mbean_update_attributes">Adding Attributes</tocitem>
+      <tocitem target="jmx_mbean_update_operations">Adding Operations</tocitem>
+      <tocitem target="jmx_mbean_update_registration">Implementing MBeanRegistration interface</tocitem>
+      <tocitem target="jmx_mbean_update_notification">Implementing NotificationEmitter interface</tocitem>
+     </tocitem>
+     <tocitem target="jmx_instrumenting_notification_app">Sending MBean Notifications</tocitem>
     </tocitem>
+    <tocitem>Writing a JMX Agent
+     <tocitem target="jmx_agent_app">Generating a JMX Agent</tocitem>
+     <tocitem target="jmx_agent_instantiate_mbean">Registering MBeans</tocitem>
+     <tocitem target="jmx_agent_instantiate_java">Registering Java objects as MBeans</tocitem>
+    </tocitem>
+    <tocitem target="jmx_manager_app">Writing a JMX Manager</tocitem>   
     <tocitem>Running, Debugging and Visualizing JMX Management [Sun JDK 1.5 only]
      <tocitem target="jconsole_standalone">JConsole Management Console</tocitem>
      <tocitem target="jmx_project_conf">Configuring your Java Application Project</tocitem>

@@ -1,0 +1,225 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Writing a JMX MBean JUnit test.<br>
+</h2>
+JMX JUnit tests are full JUnit tests that handle the JMX MBean
+deployment tasks in order for the developper to focus on testing MBean
+attributes and operations.<br>
+<br>
+You have to go through the following 5 steps in order to achieve MBean
+unit testing : <br>
+<h2>1) Generate the MBean JUnit test</h2>
+JMX JUnit tests can be generated from :<br>
+<ul>
+  <li><span style="font-weight: bold;">The <span
+ style="font-style: italic;">JMX MBean </span>wizard</span>. During
+the MBean creation, a JUnit test case can be generated. Using this
+wizard allows to generate test cases for <span
+ style="font-weight: bold;">any kind of MBeans (mainly Standard or
+Dynamic)</span>. If yo uwant to generate JUnit tests for new MBeans,
+you should use this wizard.</li>
+  <li><span style="font-weight: bold;"><span style="font-style: italic;">The
+JMX MBean JUnit Test</span> wizard</span>. This wizard allows you to
+generate a JMX JUnit test for an existing MBean. It does its best job
+when generating a test for a <span style="font-weight: bold;">Standard
+MBean</span>. When generating a test for a Dynamic MBean, it will only
+handle the MBean deployment tasks. <span style="font-weight: bold;">You
+will have to add manualy the test cases for each attribute / operation
+you whish to test</span>. If a JUnit test already exist for this MBean
+class (we look for &lt;mbean package&gt;.&lt;MBeanClassName&gt;Test
+file name in the test area), no test can be generated.<br>
+  </li>
+  <li>The <span style="font-weight: bold; font-style: italic;">Create
+JUnit Test...</span> contextual action accessible from <span
+ style="font-weight: bold; font-style: italic;">management</span> menu.
+When an MBean is selected, the action becomes enabled (If no test
+already exists). This action has the same behavior as the previous
+wizard.<br>
+  </li>
+</ul>
+<br>
+<h3>Selecting an MBean constructor<br>
+</h3>
+The MBean that you whish to test can have multiple constructors. When
+you
+will generate a JUnit test from <span
+ style="font-weight: bold; font-style: italic;">JMX MBean JUnit Test</span>
+wizard or <span style="font-weight: bold; font-style: italic;">Create
+JUnit Test...</span> action, you will be asked to select a constructor
+from the list of MBean constructors.<br>
+In the case,&nbsp; of a JUnit test generated from the <span
+ style="font-weight: bold;"><span style="font-style: italic;">JMX MBean
+</span></span>wizard, the generated MBean default constructor is used.<br>
+<br>
+<h2>2) Updating MBean construction in the JUnit generated test</h2>
+If your MBean under test needs some parameters at construction time,
+you can provide these parameters thanks to the <span
+ style="font-weight: bold; font-style: italic;">createMBean</span>
+method.<br>
+Go to the createMBean method and update the MBean constructor call.
+This is not needed if your MBean construtor is a void one.<br>
+<br>
+In the following example, the MBean class MYClass expects an Object
+parameter.<br>
+<br>
+<span style="font-style: italic;">public Object createMBean() {</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; //TODO update
+MYClass(Object o) constructor parameters with valid values.</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; return new </span><span
+ style="font-style: italic;">MYClass</span><span
+ style="font-style: italic;">(</span><span style="font-style: italic;"><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; null</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+);</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;}<br>
+<br>
+</span>
+<h2>3) Adding test logic to an MBean attribute test</h2>
+For each attribute (if any) a test case is generated. The test case
+contains a
+call to get the attribute. <br>
+After the attribute has been get, a call to fail is generated. <span
+ style="font-weight: bold;">You have to replace the call to fail method
+with your test logic</span>.<br>
+The following code example test <span style="font-weight: bold;">Toto
+attribute</span>.<br>
+<br>
+<span style="font-style: italic;">/**</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">* Test of Toto Attribute</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">*/</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">public void testTotoAttribute()
+throws Exception {</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;
+System.out.println("testTotoAttribute");</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; </span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp; // Get JMX
+MBean Attribute.</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp; Boolean val
+= (Boolean) <span style="font-weight: bold;">getAttribute("Toto")</span>;</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; // TODO add your
+test code below by replacing the default call to fail.</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">fail("The test case is empty.");</span></span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">}<br>
+</span>
+<br>
+<h2>4) Adding test logic to an MBean operation test</h2>
+For each operation (if any) a test case is generated. The test case
+contains :<br>
+<ul>
+  <li>The operation signature creation.<br>
+  </li>
+  <li>The operation parameters creation <span
+ style="font-weight: bold;">that you have to update with valid values</span>.
+Some default values are generated.<br>
+  </li>
+  <li>The operation invocation.</li>
+  <li>A call to fail method <span style="font-weight: bold;">that you
+have to replace with your test logic</span>.</li>
+</ul>
+<br>
+The following code example is a test for operation <span
+ style="font-weight: bold;">addAll(Integer, java.util.Collection)</span><br>
+<span style="font-style: italic;">/**</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">* Test of addAll Operation</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">*/</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">public void testAddAllOperation()
+throws Exception {</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;
+System.out.println("testaddAllOperation");</span><br
+ style="font-style: italic;">
+<br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; // Operation
+signature.</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; String[] signature
+= new String[] {</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+java.lang.Integer.TYPE.getName(),</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+java.util.Collection.class.getName()</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; };</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; // TODO update
+with your operation values.</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">Object[] params = new Object[] {</span></span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+0,</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+null</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; };</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; // Invoke JMX
+MBean Operation.</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; Boolean val =
+(Boolean)<span style="font-weight: bold;">
+invoke("addAll",params,signature);</span></span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; // TODO add your
+test code below by replacing the default call to fail.</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; <span
+ style="font-weight: bold;">fail("The test case is empty.");</span></span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">}</span><br>
+<br>
+<h2>5) Running the JUnit test</h2>
+Like any other JUnit test, select your MBean test file, right click
+then select Run File action.<br>
+<br>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>
