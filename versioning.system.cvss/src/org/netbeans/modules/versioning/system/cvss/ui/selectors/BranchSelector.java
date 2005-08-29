@@ -86,7 +86,7 @@ public final class BranchSelector implements Runnable {
         RequestProcessor.getDefault().post(this);
 
         try {
-            Node[] selected = NodeOperation.getDefault().select("Select Branch", "Choose Branch or Tag", rootNode, new NodeAcceptor() {
+            Node[] selected = NodeOperation2.select("Select Branch", "Choose Branch or Tag", rootNode, new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length != 1) return false;
                     return nodes[0].getLookup().lookup(String.class) != null;
