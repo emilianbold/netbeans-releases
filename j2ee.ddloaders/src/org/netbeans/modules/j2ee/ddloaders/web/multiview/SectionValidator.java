@@ -46,6 +46,12 @@ public class SectionValidator {
             // validation for duplicite url-patterns
             String[] urlPatterns = DDUtils.getUrlPatterns(webApp,servlets[i]);
             for (int j=0;j<urlPatterns.length;j++) {
+                String errMessage = DDUtils.checkServletMappig(urlPatterns[j]);
+                if (errMessage!=null) {
+                    Error.ErrorLocation loc = new Error.ErrorLocation(servlets[i],"ServletMapping"); //NOI18N
+                    error = new Error(Error.ERROR_MESSAGE, errMessage , loc);
+                    break;
+                } 
                 if (DDUtils.isServletMapping(webApp, servlets[i], urlPatterns[j])) {
                     Error.ErrorLocation loc = new Error.ErrorLocation(servlets[i],"ServletMapping"); //NOI18N
                     error = new Error(Error.DUPLICATE_VALUE_MESSAGE, urlPatterns[j] , loc);
@@ -128,6 +134,8 @@ public class SectionValidator {
         String[] patterns = DDUtils.getStringArray(urlPatterns);
         if (patterns.length>0) {
             for (int i=0;i<patterns.length;i++) {
+                String errMessage = DDUtils.checkServletMappig(patterns[i]);
+                if (errMessage!=null) return errMessage;
                 if (DDUtils.isServletMapping(webApp,patterns[i])) {
                     return NbBundle.getMessage(SectionValidator.class,"TXT_UrlPatternExists",patterns[i]);
                 }

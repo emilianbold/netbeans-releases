@@ -22,6 +22,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.openide.loaders.DataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * @author mkuchtiak
@@ -404,6 +405,17 @@ public class DDUtils {
         String[] names = new String[list.size()];
         list.toArray(names);
         return names;
+    }
+    
+    public static String checkServletMappig(String uri) {
+        if (!uri.matches("[\\*/].*")) { //NOI18N
+            return NbBundle.getMessage(DDUtils.class,"MSG_WrongUriStart");
+        } else if (uri.length()>1  && uri.endsWith("/")) {
+            return NbBundle.getMessage(DDUtils.class,"MSG_WrongUriEnd");
+        } else if (uri.matches(".*\\*.*\\*.*")) { //NOI18N
+            return NbBundle.getMessage(DDUtils.class,"MSG_TwoAsterisks");
+        }
+        return null;
     }
     
 }

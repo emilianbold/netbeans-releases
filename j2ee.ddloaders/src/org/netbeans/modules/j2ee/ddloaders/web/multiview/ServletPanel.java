@@ -453,11 +453,11 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
             String text = (String)value;
             String[] patterns = DDUtils.getStringArray(text);
             for (int i=0;i<patterns.length;i++) {
-                /*
-                if (!patterns[i].startsWith("/")) {
-                    getSectionView().getErrorPanel().setError(new Error(Error.ERROR_MESSAGE, patterns[i], servletMappingsTF));
+                String errorMessage = DDUtils.checkServletMappig(patterns[i]);
+                if (errorMessage!=null) {
+                    getSectionView().getErrorPanel().setError(new Error(Error.ERROR_MESSAGE, errorMessage, servletMappingsTF));
                     return;
-                }*/
+                }
                 if (DDUtils.isServletMapping(dObj.getWebApp(),servlet,patterns[i])) {
                     getSectionView().getErrorPanel().setError(new Error(Error.DUPLICATE_VALUE_MESSAGE, patterns[i], servletMappingsTF));
                     return;
