@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
  */
 public class ColorComboBox extends JComboBox {
     
-    public static final String PROP_COLOR = "color";
+    public static final String PROP_COLOR = "color"; //NOI18N
     public static final Value  CUSTOM_COLOR = 
             new Value (loc ("Custom"), null); //NOI18N
     
@@ -83,7 +83,7 @@ public class ColorComboBox extends JComboBox {
 	new Value (Color.WHITE), 
 	new Value (Color.YELLOW), 
 	CUSTOM_COLOR, 
-	new Value ("None", null)
+	new Value (loc ("CTL_None_Color"), null)                  //NOI18N
     };
     
     
@@ -113,9 +113,14 @@ public class ColorComboBox extends JComboBox {
     public void setDefaultColor (Color color) {
 	Object[] ncontent = new Object [content.length];
 	System.arraycopy (content, 0, ncontent, 0, content.length);
-	ncontent [content.length - 1] = new Value (
-	    "Default", color
-	);
+        if (color != null)
+            ncontent [content.length - 1] = new Value (
+                loc ("CTL_Default_Color"), color                   //NOI18N
+            );
+        else
+            ncontent [content.length - 1] = new Value (
+                loc ("CTL_None_Color"), null                       //NOI18N
+            );
 	setModel (new DefaultComboBoxModel (ncontent));
     }
     
@@ -158,42 +163,6 @@ public class ColorComboBox extends JComboBox {
             this.text = text;
             this.color = color;
         }
-    }
-    
-    private static class Editor extends JLabel implements ComboBoxEditor {
-
-        private Object value;
-        
-        Editor () {
-            //setOpaque (false);
-        }
-        
-        public Component getEditorComponent () {
-            return this;
-        }
-
-        public void setItem (Object anObject) {
-            value = anObject;
-            if (value instanceof String) {
-                setText ("Default");
-                super.setForeground (SystemColor.textText);
-                super.setBackground (SystemColor.text);
-            } else {
-                setText ("");
-                super.setBackground ((Color) value);
-            }
-        }
-
-        public Object getItem () {
-            return value;
-        }
-        
-	public void setBackground (Color c) {}
-	public void setForeground (Color c) {}
-        
-        public void selectAll() {}
-        public void addActionListener (ActionListener l) {}
-        public void removeActionListener (ActionListener l) {}
     }
     
     private class Renderer extends JComponent implements 
