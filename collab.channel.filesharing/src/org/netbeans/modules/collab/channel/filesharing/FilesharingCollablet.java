@@ -58,16 +58,6 @@ import org.netbeans.modules.collab.channel.filesharing.util.FileshareUtil;
 import org.netbeans.modules.collab.core.Debug;
 
 
-//import org.netbeans.modules.collab.channel.filesharing.mdc.*;
-//import org.netbeans.modules.collab.channel.filesharing.config.*;
-//import org.netbeans.modules.collab.channel.filesharing.context.*;
-//import org.netbeans.modules.collab.channel.filesharing.event.*;
-//import org.netbeans.modules.collab.channel.filesharing.eventlistener.*;
-//import org.netbeans.modules.collab.channel.filesharing.filehandler.*;
-//import org.netbeans.modules.collab.channel.filesharing.filesystem.*;
-//import org.netbeans.modules.collab.channel.filesharing.ui.*;
-//import org.netbeans.modules.collab.channel.filesharing.util.*;
-
 /**
  * Filesharing Channel
  *
