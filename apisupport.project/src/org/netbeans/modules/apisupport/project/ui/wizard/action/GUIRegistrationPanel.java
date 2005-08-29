@@ -69,6 +69,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_PleaseWait");
     private static final DefaultComboBoxModel WAIT_MODEL = new DefaultComboBoxModel(new Object[] { WAIT_VALUE });
     
+    private static final String EMPTY_VALUE =
+            NbBundle.getMessage(GUIRegistrationPanel.class, "LBL_Empty");
+    private static final DefaultComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel(new Object[] { EMPTY_VALUE });
+    
     private DataModel data;
     private boolean firstTime = true;
     
@@ -120,28 +124,36 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
         data.setCategory(getSelectedLayerItem(category).getFullPath());
         // global menu item
         data.setGlobalMenuItemEnabled(globalMenuItem.isSelected());
-        data.setGMIParentMenu(getSelectedLayerItem(menu).getFullPath());
-        data.setGMIPosition((Position) menuPosition.getSelectedItem());
-        data.setGMISeparatorAfter(menuSeparatorAfter.isSelected());
-        data.setGMISeparatorBefore(menuSeparatorBefore.isSelected());
+        if (globalMenuItem.isSelected()) {
+            data.setGMIParentMenu(getSelectedLayerItem(menu).getFullPath());
+            data.setGMIPosition((Position) menuPosition.getSelectedItem());
+            data.setGMISeparatorAfter(menuSeparatorAfter.isSelected());
+            data.setGMISeparatorBefore(menuSeparatorBefore.isSelected());
+        }
         // global toolbar button
         data.setToolbarEnabled(globalToolbarButton.isSelected());
-        data.setToolbar(getSelectedLayerItem(toolbar).getFullPath());
-        data.setToolbarPosition((Position) toolbarPosition.getSelectedItem());
+        if (globalToolbarButton.isSelected()) {
+            data.setToolbar(getSelectedLayerItem(toolbar).getFullPath());
+            data.setToolbarPosition((Position) toolbarPosition.getSelectedItem());
+        }
         // global keyboard shortcut
         data.setKeyboardShortcutEnabled(globalKeyboardShortcut.isSelected());
         // file type context menu item
         data.setFileTypeContextEnabled(fileTypeContext.isSelected());
-        data.setFTContextType(getSelectedLayerItem(ftContentType).getFullPath());
-        data.setFTContextPosition((Position) ftPosition.getSelectedItem());
-        data.setFTContextSeparatorBefore(ftSeparatorBefore.isSelected());
-        data.setFTContextSeparatorAfter(ftSeparatorAfter.isSelected());
+        if (fileTypeContext.isSelected()) {
+            data.setFTContextType(getSelectedLayerItem(ftContentType).getFullPath());
+            data.setFTContextPosition((Position) ftPosition.getSelectedItem());
+            data.setFTContextSeparatorBefore(ftSeparatorBefore.isSelected());
+            data.setFTContextSeparatorAfter(ftSeparatorAfter.isSelected());
+        }
         // editor context menu item
         data.setEditorContextEnabled(editorContext.isSelected());
-        data.setEdContextType(getSelectedLayerItem(edContentType).getFullPath());
-        data.setEdContextPosition((Position) edPosition.getSelectedItem());
-        data.setEdContextSeparatorBefore(edSeparatorBefore.isSelected());
-        data.setEdContextSeparatorAfter(edSeparatorAfter.isSelected());
+        if (editorContext.isSelected()) {
+            data.setEdContextType(getSelectedLayerItem(edContentType).getFullPath());
+            data.setEdContextPosition((Position) edPosition.getSelectedItem());
+            data.setEdContextSeparatorBefore(edSeparatorBefore.isSelected());
+            data.setEdContextSeparatorAfter(edSeparatorAfter.isSelected());
+        }
     }
     
     protected void readFromDataModel() {
@@ -203,7 +215,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private void setGroupEnabled(JComponent[] group, boolean enabled) {
         for (int i = 0; i < group.length; i++) {
             if (group[i] != null) {
-                group[i].setEnabled(enabled);
+                group[i].setEnabled(enabled
+                        && !(group[i] instanceof JComboBox && ((JComboBox) group[i]).getModel() == EMPTY_MODEL));
             }
         }
     }
@@ -232,7 +245,9 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 Util.err.log("Loading " + startFolder + " from SFS...."); // NOI18N
                 final FileObject parent = getSFS().getRoot().getFileObject(startFolder);
                 if (parent == null) {
-                    Util.err.log(ErrorManager.WARNING, "Could not find " + startFolder);
+                    Util.err.log(ErrorManager.WARNING, "Could not find " + startFolder); // NOI18N
+                    setEmptyModel(combo);
+                    setEmptyModel(comboPositions);
                     return;
                 }
                 final Enumeration items = subFolder == null
@@ -307,7 +322,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private static Object getSelectedItem(JComboBox combo) {
         Object item = combo.getSelectedItem();
-        return item == WAIT_VALUE ? null : item;
+        return (item == WAIT_VALUE || item == EMPTY_VALUE) ? null : item;
     }
     
     private static LayerItemPresenter getSelectedLayerItem(JComboBox combo) {
@@ -321,6 +336,14 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                 second == null ? null : second.getFileObject().getNameExt(),
                 first == null ? null : first.getDisplayName(),
                 second == null ? null : second.getDisplayName());
+    }
+    
+    private void setEmptyModel(JComboBox combo) {
+        if (combo != null) {
+            combo.setModel(EMPTY_MODEL);
+            combo.setEnabled(false);
+            checkValidity();
+        }
     }
     
     /** This method is called from within the constructor to
@@ -734,18 +757,23 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     private void editorContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editorContextActionPerformed
         setGroupEnabled(editorGroup, editorContext.isSelected());
+        checkValidity();
     }//GEN-LAST:event_editorContextActionPerformed
     
     private void fileTypeContextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileTypeContextActionPerformed
         setGroupEnabled(fileTypeGroup, fileTypeContext.isSelected());
+        checkValidity();
     }//GEN-LAST:event_fileTypeContextActionPerformed
     
     private void globalMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalMenuItemActionPerformed
         setGroupEnabled(gmiGroup, globalMenuItem.isSelected());
+        
+        checkValidity();
     }//GEN-LAST:event_globalMenuItemActionPerformed
     
     private void globalToolbarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalToolbarButtonActionPerformed
         setGroupEnabled(toolbarGroup, globalToolbarButton.isSelected());
+        checkValidity();
     }//GEN-LAST:event_globalToolbarButtonActionPerformed
     
     private void globalKeyboardShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalKeyboardShortcutActionPerformed
@@ -838,6 +866,8 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             String text;
             if (value == null || value == WAIT_VALUE) {
                 text = WAIT_VALUE;
+            } else if (value == EMPTY_VALUE) {
+                text = EMPTY_VALUE;
             } else {
                 Position pos = (Position) value;
                 String before = pos.getBeforeName() == null ? "" : pos.getBeforeName() + POSITION_SEPARATOR;
