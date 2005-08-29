@@ -6,7 +6,7 @@ import org.openide.util.actions.CallableSystemAction;
 public final class @@CLASS_NAME@@ extends CallableSystemAction {
 
     public void performAction() {
-        // your code here
+        // TODO implement action body
     }
 
     public String getName() {
@@ -30,4 +30,3 @@ public final class @@CLASS_NAME@@ extends CallableSystemAction {
     }
 
 }
-
