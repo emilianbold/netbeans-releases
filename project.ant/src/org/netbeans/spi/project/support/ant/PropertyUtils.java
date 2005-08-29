@@ -447,6 +447,7 @@ public class PropertyUtils {
                 }
             } else {
                 // $ followed by some other char, leave as is.
+                // XXX is this actually right?
                 if (needed.isEmpty()) {
                     val.append(rawval.substring(idx, idx + 2));
                 }
