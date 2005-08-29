@@ -181,6 +181,12 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     else
                         contextParam.setParamValue("false"); //NOI18N
                     ddRoot.addContextParam(contextParam);
+                    
+                    // adding configuration file deffinition
+                    contextParam = (InitParam)servlet.createBean("InitParam"); //NOI18N
+                    contextParam.setParamName("javax.faces.CONFIG_FILES"); //NOI18N
+                    contextParam.setParamValue("/WEB-INF/faces-config.xml"); //NOI18N
+                    ddRoot.addContextParam(contextParam);
 
                     WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
                     wfl.addWelcomeFile("welcomeJSF.jsp");  //NOI18N
