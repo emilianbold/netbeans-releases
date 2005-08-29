@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.junit.output;
 
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -100,6 +101,18 @@ final class TestMethodNode extends AbstractNode {
                                          new Float(testcase.timeMillis/1000f)));
         buf.append("</font>");                                          //NOI18N
         return buf.toString();
+    }
+    
+    /**
+     */
+    public Action getPreferredAction() {
+        Report.Trouble trouble = testcase.trouble;
+        String callstackFrameInfo =
+                ((trouble != null) && (trouble.stackTrace.length != 0))
+                ? trouble.stackTrace[0]
+                : null;
+        
+        return new JumpAction(this, callstackFrameInfo);
     }
     
 }

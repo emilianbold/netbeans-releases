@@ -28,9 +28,13 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.junit.TestUtil;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 import org.openide.util.Utilities;
 
 /**
@@ -610,4 +614,51 @@ public final class Utils {
         return true;
     }
     
+    /**
+     */
+    public static void openFile(FileObject file, int lineNum) {
+
+        /*
+         * Most of the following code was copied from the Ant module, method
+         * org.apache.tools.ant.module.run.Hyperlink.outputLineAction(...).
+         */
+
+        if (file == null) {
+            java.awt.Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+
+        try {
+            DataObject dob = DataObject.find(file);
+            EditorCookie ed = (EditorCookie)
+                              dob.getCookie(EditorCookie.class);
+            if (ed != null && /* not true e.g. for *_ja.properties */
+                              file == dob.getPrimaryFile()) {
+                if (lineNum == -1) {
+                    // OK, just open it.
+                    ed.open();
+                } else {
+                    ed.openDocument();//XXX getLineSet doesn't do it for you
+                    try {
+                        Line l = ed.getLineSet().getOriginal(lineNum - 1);
+                        if (!l.isDeleted()) {
+                            l.show(Line.SHOW_GOTO);
+                        }
+                    } catch (IndexOutOfBoundsException ioobe) {
+                        // Probably harmless. Bogus line number.
+                        ed.open();
+                    }
+                }
+            } else {
+                java.awt.Toolkit.getDefaultToolkit().beep();
+            }
+        } catch (DataObjectNotFoundException ex1) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex1);
+        } catch (IOException ex2) {
+            // XXX see above, should not be necessary to call openDocument
+            // at all
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex2);
+        }
+    }
+        
 }
