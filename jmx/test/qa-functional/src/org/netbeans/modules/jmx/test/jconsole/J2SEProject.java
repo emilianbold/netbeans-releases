@@ -255,8 +255,31 @@ public class J2SEProject extends JellyTestCase {
           }
       }
       System.out.println("*********************** TEXT FOUND ************");
-      OutputTabOperator oto2 = new OutputTabOperator("-connect-jconsole");
-      oto2.waitText("jconsole  -interval=4");
+      
+      OutputTabOperator oto2 = null;
+      maxToWait = 10;
+      while(maxToWait > 0) {
+            try {
+                oto2 = new OutputTabOperator("-connect-jconsole");
+                break;
+            }catch(Exception e) {
+                System.out.println("Output tab not yet displayed " + e.toString());
+                maxToWait--;
+            }
+        }
+      
+      maxToWait = 10;
+      while(maxToWait > 0) {
+          try {
+              System.out.println("Waiting for jconsole  -interval=4");
+              oto2.waitText("jconsole  -interval=4");
+              break;
+          }catch(Exception e){
+              System.out.println("JConsole not started, will wait again");
+              maxToWait--;
+          }
+      }
+      
       //Now we can kill
       //RuntimeTabOperator rto = RuntimeTabOperator.invoke();
       // or when Runtime pane is already opened
