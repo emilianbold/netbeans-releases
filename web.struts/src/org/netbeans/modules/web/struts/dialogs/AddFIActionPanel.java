@@ -16,6 +16,7 @@ package org.netbeans.modules.web.struts.dialogs;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.struts.config.model.Action;
@@ -276,7 +277,12 @@ public class AddFIActionPanel extends javax.swing.JPanel implements ValidatingPa
             String resource=tResourceFile.getText().trim();
             return resource.length()==0?null:resource;
         } else {
-            return (String)cbAction.getSelectedItem();
+            WebModule wm = WebModule.getWebModule(config.getPrimaryFile());
+            String mapping = StrutsConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor());
+            String resource = (String)cbAction.getSelectedItem();
+            if (mapping.startsWith("*.")) //NOI18N
+                resource = resource + mapping.substring(1);
+            return resource;
         }
     }
     
