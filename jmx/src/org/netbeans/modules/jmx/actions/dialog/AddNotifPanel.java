@@ -171,7 +171,7 @@ public class AddNotifPanel extends javax.swing.JPanel {
                         new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
                         btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
-                        new HelpCtx(AddNotifAction.class),
+                        new HelpCtx("jmx_mbean_update_notification"), // NOI18N
                         (ActionListener) null
                 ));
         

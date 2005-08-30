@@ -279,7 +279,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
                 btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
-                        new HelpCtx(RegisterMBeanAction.class),
+                        new HelpCtx("jmx_agent_instantiate"), // NOI18N
                         (ActionListener) null
                         ));
                 

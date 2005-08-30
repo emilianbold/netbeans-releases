@@ -190,7 +190,7 @@ public class AddAttributesPanel extends javax.swing.JPanel
                         new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
                         btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
-                        new HelpCtx(AddAttrAction.class),
+                        new HelpCtx("jmx_mbean_update_attributes_operations"), // NOI18N
                         (ActionListener) null
                 ));
         

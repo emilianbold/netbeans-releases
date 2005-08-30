@@ -102,7 +102,7 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
                         new Object[] {btnOK, DialogDescriptor.CANCEL_OPTION},
                         btnOK,                      //initial value
                         DialogDescriptor.DEFAULT_ALIGN,
-                        new HelpCtx(AddRegisterIntfAction.class),
+                        new HelpCtx("jmx_mbean_update_registration"), // NOI18N
                         (ActionListener) null
                 ));
         
