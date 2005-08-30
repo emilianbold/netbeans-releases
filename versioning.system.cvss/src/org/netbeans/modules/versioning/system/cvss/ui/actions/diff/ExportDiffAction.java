@@ -100,7 +100,7 @@ public class ExportDiffAction extends AbstractSystemAction {
         }
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
             public boolean accept(File f) {
-                return f.getName().endsWith("diff") || f.getName().endsWith("patch");  // NOI18N
+                return f.getName().endsWith("diff") || f.getName().endsWith("patch") || f.isDirectory();  // NOI18N
             }
             public String getDescription() {
                 return "Patch Files (*.diff, *.patch)";
@@ -109,10 +109,21 @@ public class ExportDiffAction extends AbstractSystemAction {
 
         int ret = chooser.showDialog(WindowManager.getDefault().getMainWindow(), "Export");
         if (ret == JFileChooser.APPROVE_OPTION) {
-            final File destination = chooser.getSelectedFile();
+            File destination = chooser.getSelectedFile();
+            String name = destination.getName();
+            boolean requiredExt = false;
+            requiredExt |= name.endsWith(".diff");  // NOI18N
+            requiredExt |= name.endsWith(".dif");   // NOI18N
+            requiredExt |= name.endsWith(".patch"); // NOI18N
+            if (requiredExt == false) {
+                File parent = destination.getParentFile();
+                destination = new File(parent, name + ".patch"); // NOI18N
+            }
+
+            final File out = destination;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
-                    async(destination);
+                    async(out);
                 }
             });
         }
