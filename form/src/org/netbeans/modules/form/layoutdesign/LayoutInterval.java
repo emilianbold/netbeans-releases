@@ -34,6 +34,8 @@ public final class LayoutInterval implements LayoutConstants {
                                     | ATTR_DESIGN_RESIZING
                                     | ATTR_DESIGN_SUPPRESSED_RESIZING;
 
+    static final int ATTR_PERSISTENT_MASK = ATTRIBUTE_FILL | ATTRIBUTE_FORMER_FILL;
+
     // type of the interval - SINGLE, SEQUENTIAL, PARALLEL
     private int type;
 
@@ -192,7 +194,7 @@ public final class LayoutInterval implements LayoutConstants {
             return USE_PREFERRED_SIZE;
         }
         if (hasAttribute(ATTR_DESIGN_RESIZING)) {
-            return isEmptySpace() && (getPreferredSize(designTime) > 0) ? NOT_EXPLICITLY_DEFINED : 0;
+            return isEmptySpace() && (getPreferredSize(designTime) != 0) ? NOT_EXPLICITLY_DEFINED : 0;
         }
         return minSize;
     }

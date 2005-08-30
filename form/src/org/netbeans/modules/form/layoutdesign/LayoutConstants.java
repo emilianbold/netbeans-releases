@@ -51,10 +51,6 @@ public interface LayoutConstants {
      */
     int PARALLEL = 103;
 
-    // structure type attributes (bitwise)
-
-    int CLOSED_GROUP = 1;
-
     // alignment constants (independent on orientation/axis)
     // also serves the role of index to array of positions
 
