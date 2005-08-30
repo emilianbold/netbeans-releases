@@ -28,6 +28,7 @@ import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -283,7 +284,7 @@ public class NewProjectIterator extends BasicWizardIterator {
     }
     
     private static void createProjectZip(OutputStream target, Project source) throws IOException {
-        Sources srcs = (Sources)source.getLookup().lookup(Sources.class);
+        Sources srcs = ProjectUtils.getSources(source); // #63247: don't use lookup directly
         // assuming we got 1-sized array, should be enforced by UI.
         SourceGroup[] grps = srcs.getSourceGroups(Sources.TYPE_GENERIC);
         SourceGroup group = grps[0];

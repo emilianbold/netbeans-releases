@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
@@ -166,7 +167,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
             setErrorMessage(getMessage("MSG_NoProjectSelected"));
             return;
         }
-        Sources srcs = (Sources)sel.getProject().getLookup().lookup(Sources.class);
+        Sources srcs = ProjectUtils.getSources(sel.getProject()); // #63247: don't use lookup directly
         if (srcs.getSourceGroups(Sources.TYPE_GENERIC).length > 1) {
             setErrorMessage(getMessage("MSG_NoExternalRoots")); 
             return;
