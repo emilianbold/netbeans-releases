@@ -1431,10 +1431,10 @@ public class WizardHelpers
             boolean defaultExists = false;
             for (int i = 0 ; i < superConst.length ; i++) {
                 if ((superConst[i].getParameters().size() == 0) &&
-                        Modifier.isPublic(superConst[i].getModifiers()))
+                        !Modifier.isPrivate(superConst[i].getModifiers()))
                     defaultExists = true;
             }
-            superClassCheck = defaultExists;
+            superClassCheck = defaultExists || (superConst.length == 0);
         }
         return (getAllConstructors(clazz).length == 0) &&
                 superClassCheck;

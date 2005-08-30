@@ -437,9 +437,6 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 }
                 //select first row
                 constructorComboBox.setSelectedItem(0); // NOI18N
-            } else if (WizardHelpers.hasOnlyDefaultConstruct(mbeanClass)) {
-                constructorComboBox.setEnabled(true);
-                constructorComboBox.addItem(mbeanClass.getSimpleName() + "()"); // NOI18N
             } else {
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
