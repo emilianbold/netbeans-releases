@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 import org.netbeans.modules.versioning.system.cvss.settings.CvsModuleConfig;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 
@@ -140,6 +141,11 @@ public class DiffExecutor {
         protected String preferredID(){
             return "DiffExecutorTopComponent";    //NOI18N       
         }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(getClass());
+        }
+
     }
     
 }

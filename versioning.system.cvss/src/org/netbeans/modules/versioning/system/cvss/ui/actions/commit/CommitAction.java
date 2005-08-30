@@ -14,6 +14,7 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
@@ -106,6 +107,7 @@ public class CommitAction extends AbstractSystemAction {
                 null,
                 null);
         descriptor.setClosingOptions(null);
+        descriptor.setHelpCtx(new HelpCtx(CommitSettings.class));
         settings.addVersioningListener(new VersioningListener() {
             public void versioningEvent(VersioningEvent event) {
                 refreshCommitDialog(settings, commit);

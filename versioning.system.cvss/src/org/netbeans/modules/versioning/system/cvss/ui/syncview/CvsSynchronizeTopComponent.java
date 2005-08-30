@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.syncview;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.ErrorManager;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
@@ -49,6 +50,10 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
         setLayout(new BorderLayout());
         syncPanel = new SynchronizePanel(this);
         add(syncPanel);
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
     }
 
     protected void componentActivated() {
