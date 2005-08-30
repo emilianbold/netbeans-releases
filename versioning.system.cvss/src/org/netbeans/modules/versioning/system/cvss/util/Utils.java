@@ -70,7 +70,6 @@ public class Utils {
         List files = new ArrayList(nodes.length);
         List rootFiles = new ArrayList(nodes.length);
         List rootFileExclusions = new ArrayList(5);
-        rootFileExclusions.add(new File("F:\\nbprojects\\cvstests\\src\\cvstests\\piwe")); // TODO: for testing
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             CvsFileNode cvsNode = (CvsFileNode) node.getLookup().lookup(CvsFileNode.class);
@@ -365,8 +364,10 @@ public class Utils {
 
         // eliminate branches
         int lastIndex = nums.length -1;
+        boolean cutoff = false;
         while (lastIndex>1 && "1".equals(nums[lastIndex])) { // NOI18N
             lastIndex -= 2;
+            cutoff = true;
         }
         if (lastIndex <= 0) {
             return null;
@@ -374,7 +375,7 @@ public class Utils {
             return null;
         } else {
             int rev = Integer.parseInt(nums[lastIndex]);
-            rev--;
+            if (!cutoff) rev--;
             StringBuffer sb = new StringBuffer(nums[0]);
             for (int i = 1; i<lastIndex; i++) {
                 sb.append(".").append(nums[i]); // NOI18N
