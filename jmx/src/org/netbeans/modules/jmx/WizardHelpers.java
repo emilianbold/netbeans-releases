@@ -1313,12 +1313,17 @@ public class WizardHelpers
     public static String[] getInterfaceNames(JavaClass clazz) {  
         Set results = new HashSet();
         JavaClass superClass = clazz.getSuperClass();
+        JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();
         if (superClass != null) {
-            List superCLassIntfs = clazz.getInterfaces();
+            superClass = (JavaClass)
+                pkg.getJavaClass().resolve(superClass.getName());
+            List superCLassIntfs = superClass.getInterfaces();
             for (Iterator<JavaClass> it = superCLassIntfs.iterator(); it.hasNext();) {
-                JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();
+                String intfName = it.next().getName();
+                if (!containsString(results,intfName))
+                    results.add(intfName);
                 JavaClass superIntf = (JavaClass)
-                pkg.getJavaClass().resolve(it.next().getName());
+                    pkg.getJavaClass().resolve(intfName);
                 String[] intfs = getInterfaceNames(superIntf);
                 for (int i = 0; i < intfs.length; i++) {
                     if (!containsString(results,intfs[i]))
@@ -1328,7 +1333,6 @@ public class WizardHelpers
         }
         List interfaces = clazz.getInterfaces();
         for (Iterator<JavaClass> it = interfaces.iterator(); it.hasNext();) {
-            JavaModelPackage pkg = (JavaModelPackage) clazz.refImmediatePackage();  
             JavaClass superIntf = (JavaClass)
                 pkg.getJavaClass().resolve(it.next().getName());
             String[] intfs = getInterfaceNames(superIntf);
@@ -1421,20 +1425,33 @@ public class WizardHelpers
         return (Constructor[]) results.toArray(new Constructor[results.size()]);
     }
     
+    private static boolean checkDefaultConstruct(JavaClass clazz) {
+        boolean superClassCheck = true;
+        if (clazz.getSuperClass() != null) {
+            JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
+            JavaClass superClass = (JavaClass)
+                    pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
+            superClassCheck = checkDefaultConstruct(superClass);
+        }
+        Constructor[] constructors = getAllConstructors(clazz);
+        boolean defaultExists = false;
+        for (int i = 0 ; i < constructors.length ; i++) {
+            if ((constructors[i].getParameters().size() == 0) &&
+                    !Modifier.isPrivate(constructors[i].getModifiers())) {
+                defaultExists = true;
+                break;
+            }
+        }
+        return superClassCheck && (defaultExists || (constructors.length == 0));
+    }
+    
     public static boolean hasOnlyDefaultConstruct(JavaClass clazz) {
         boolean superClassCheck = true;
         if (clazz.getSuperClass() != null) {
             JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
-            JavaClass superClass = (JavaClass) 
+            JavaClass superClass = (JavaClass)
                     pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
-            Constructor[] superConst = getAllConstructors(superClass);
-            boolean defaultExists = false;
-            for (int i = 0 ; i < superConst.length ; i++) {
-                if ((superConst[i].getParameters().size() == 0) &&
-                        !Modifier.isPrivate(superConst[i].getModifiers()))
-                    defaultExists = true;
-            }
-            superClassCheck = defaultExists || (superConst.length == 0);
+            superClassCheck = checkDefaultConstruct(superClass);
         }
         return (getAllConstructors(clazz).length == 0) &&
                 superClassCheck;
