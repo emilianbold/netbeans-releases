@@ -49,6 +49,11 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             if (supposedPlaf == null) {
                 return null;
             }
+            if (!binaryRoot.getProtocol().equals("jar")) { // NOI18N
+                // XXX probably shouldn't just return null in this case
+                Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
+                return null;
+            }
             File binaryRootF = new File(FileUtil.getArchiveFile(binaryRoot).getFile());
             FileObject fo = FileUtil.toFileObject(binaryRootF);
             if (fo == null) {
@@ -59,7 +64,13 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
             final List/*<URL>*/ candidates = new ArrayList();
             URL[] roots = supposedPlaf.getJavadocRoots();
             for (int i = 0; i < roots.length; i++) {
-                candidates.add(new URL(roots[i], cnbdashes + "/")); // NOI18N
+                if (roots[i].getProtocol().equals("jar")) { // NOI18N
+                    // suppose javadoc zip like org-openide-util.zip
+                    candidates.add(roots[i]);
+                } else {
+                    // suppose netbeans cvs root
+                    candidates.add(new URL(roots[i], cnbdashes + '/'));
+                }
             }
             Iterator it = candidates.iterator();
             while (it.hasNext()) {
