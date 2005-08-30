@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="subdir/importing2" basedir=".." xmlns:nowhere="http://nowhere.net/property">
+<project name="subdir/importing2" basedir="..">
     <property name="x" value="1"/>
-    <property file="${basedir}/p${x}.properties"/>
-    <macrodef name="property" uri="http://nowhere.net/property">
+    <property file="${basedir}${file.separator}p${x}.properties"/>
+    <macrodef name="metaprop">
         <attribute name="name"/>
         <attribute name="value"/>
         <sequential>
@@ -10,7 +10,7 @@
         </sequential>
     </macrodef>
     <property name="prop2" value="3"/>
-    <nowhere:property name="z" value="prop${y}"/>
+    <metaprop name="z" value="prop${y}"/>
     <import file="imported${z}.xml"/>
     <target name="master"/>
 </project>
