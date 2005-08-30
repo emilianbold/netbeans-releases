@@ -16,15 +16,11 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.ErrorManager;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
-import org.netbeans.lib.cvsclient.file.FileUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
-import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 
@@ -259,17 +255,7 @@ class RevisionNode extends AbstractNode {
                     JOptionPane.WARNING_MESSAGE);
             if (res != JOptionPane.YES_OPTION) return;
 
-            try {
-                File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision.getNumber());
-                FileUtils.copyFile(cleanFile, file);
-                FileObject fo = FileUtil.toFileObject(file);
-                if (fo != null) {
-                    fo.refresh();
-                }
-                CvsVersioningSystem.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-            } catch (Exception e1) {
-                ErrorManager.getDefault().notify(e1);
-            }
+            GetCleanAction.rollback(file, revision.getNumber());
         }
     }
 

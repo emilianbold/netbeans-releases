@@ -17,7 +17,7 @@ import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
-import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
 import org.openide.ErrorManager;
@@ -237,10 +237,16 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         Object o = dispResults.get(idx);
         if (o instanceof SearchHistoryPanel.DispRevision) {
             SearchHistoryPanel.DispRevision drev = (SearchHistoryPanel.DispRevision) o;
-            File file = drev.getRevision().getLogInfoHeader().getFile();
-            DiffExecutor de = new DiffExecutor(file.getName());
             String revision = drev.getRevision().getNumber().trim();
-            de.showDiff(file, Utils.previousRevision(revision), revision);
+            File file = drev.getRevision().getLogInfoHeader().getFile();
+            int res = JOptionPane.showConfirmDialog(
+                    null, 
+                    NbBundle.getMessage(SummaryView.class, "CTL_Rollback_Prompt", file.getName(), revision),
+                    NbBundle.getMessage(SummaryView.class, "CTL_Rollback_Title"),
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (res != JOptionPane.YES_OPTION) return;
+            GetCleanAction.rollback(file, revision);
         }
     }
 

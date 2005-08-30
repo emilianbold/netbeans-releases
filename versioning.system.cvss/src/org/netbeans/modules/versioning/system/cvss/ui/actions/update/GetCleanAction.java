@@ -63,38 +63,50 @@ public class GetCleanAction extends AbstractSystemAction {
 
     private void revertModifications() {
         FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
-        AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
         File [] files = cache.listFiles(getFilesToProcess(), FileInformation.STATUS_LOCAL_CHANGE & FileInformation.STATUS_IN_REPOSITORY);
         for (int i = 0; i < files.length; i++) {
             File file = files[i];
-            Entry entry = null;
-            try {
-                entry = ah.getEntry(file);
-            } catch (IOException e) {
-                // non-fatal, we have no entry for this file
-            }
-            try {
-                File cleanFile = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE);
-                if (cleanFile != null) {
-                    FileUtils.copyFile(cleanFile, file);
-                    if (entry != null && entry.isUserFileToBeRemoved()) {
-                        entry.setRevision(entry.getRevision().substring(1));
-                        ah.setEntry(file, entry);
-                    }
-                    FileObject fo = FileUtil.toFileObject(file);
-                    if (fo != null) {
-                        fo.refresh();
-                    }
-                    cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
-                } else {
-                    // TODO can not find in repository
-                    // locally delete? NOt yet there seems to be bug in checkout -p
-                    System.err.println("CVSrepo: can not locate: " + file);
-                    cleanFile.getName(); // raise compatability NPE
+            rollback(file, VersionsCache.REVISION_BASE);
+        }
+    }
+    
+    /**
+     * Overwrites given file with its specified revision. Revision number and sticky information in Entries is NOT modified, 
+     * only the content is overwritten.
+     * 
+     * @param file the file to overwrite
+     * @param revision revision to get
+     */ 
+    public static void rollback(File file, String revision) {
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        AdminHandler ah = CvsVersioningSystem.getInstance().getAdminHandler();
+        Entry entry = null;
+        try {
+            entry = ah.getEntry(file);
+        } catch (IOException e) {
+            // non-fatal, we have no entry for this file
+        }
+        try {
+            File cleanFile = VersionsCache.getInstance().getRemoteFile(file, revision);
+            if (cleanFile != null) {
+                FileUtils.copyFile(cleanFile, file);
+                if (entry != null && entry.isUserFileToBeRemoved()) {
+                    entry.setRevision(entry.getRevision().substring(1));
+                    ah.setEntry(file, entry);
                 }
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(e);
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    fo.refresh();
+                }
+                cache.refresh(file, revision == VersionsCache.REVISION_BASE ? FileStatusCache.REPOSITORY_STATUS_UPTODATE : FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            } else {
+                // TODO can not find in repository
+                // locally delete? NOt yet there seems to be bug in checkout -p
+                System.err.println("CVSrepo: can not locate: " + file);
+                cleanFile.getName(); // raise compatability NPE
             }
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
         }
     }
 }
