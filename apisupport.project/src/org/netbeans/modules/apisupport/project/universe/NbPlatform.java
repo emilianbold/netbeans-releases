@@ -430,7 +430,11 @@ public final class NbPlatform implements Comparable {
     private String urlsToAntPath(URL[] urls) {
         StringBuffer path = new StringBuffer();
         for (int i = 0; i < urls.length; i++) {
-            path.append(urls[i].getFile());
+            if (urls[i].getProtocol().equals("jar")) { // NOI18N
+                path.append(FileUtil.getArchiveFile(urls[i]).getFile());
+            } else {
+                path.append(urls[i].getFile());
+            }
             if (i != urls.length - 1) {
                 path.append(':'); // NOI18N
             }
