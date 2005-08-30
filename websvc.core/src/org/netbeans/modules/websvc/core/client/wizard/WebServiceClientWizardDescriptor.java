@@ -89,7 +89,7 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
     }
 
     public HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(WebServiceClientWizardDescriptor.class);
     }
 
     public boolean isValid() { 
