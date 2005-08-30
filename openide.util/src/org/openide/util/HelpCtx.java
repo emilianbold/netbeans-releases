@@ -7,21 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.openide.util;
 
-import org.openide.ErrorManager;
-
-import java.beans.*;
-
-import java.lang.reflect.*;
-
+import java.beans.BeanDescriptor;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.net.URL;
-
 import javax.swing.JComponent;
-
+import org.openide.ErrorManager;
 
 /** Provides help for any window or other feature in the system.
 * It is designed to be JavaHelp-compatible and to use the same tactics when
@@ -231,7 +228,7 @@ public final class HelpCtx extends Object {
                 return new HelpCtx(v);
             }
         } catch (IntrospectionException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            err.log("findHelp on " + instance + ": " + e);
         }
 
         return HelpCtx.DEFAULT_HELP;

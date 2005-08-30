@@ -386,7 +386,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
                 }
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
+            // #63238: Ignore - generally not important context for us to be checking errors.
         }
         return null;
     }
