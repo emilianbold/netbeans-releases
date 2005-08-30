@@ -1,5 +1,3 @@
-
-
 package @@PACKAGENAME@@;
 
 import java.awt.Component;
@@ -8,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.HashSet;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -25,10 +24,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-/**
- *
- * 
- */
 public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
@@ -37,7 +32,6 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
  
-    /** Creates a new instance of templateWizardIterator */
     public @@TEMPLATENAME@@WizardIterator() {
     }
         
@@ -45,10 +39,10 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         return new @@TEMPLATENAME@@WizardIterator();
     }
 
-    private WizardDescriptor.Panel[] createPanels () {
+    private WizardDescriptor.Panel[] createPanels() {
 
         return new WizardDescriptor.Panel[] {
-                new @@TEMPLATENAME@@WizardPanel()
+            new @@TEMPLATENAME@@WizardPanel(),
         };
     }
     
@@ -60,12 +54,11 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
     }
     
     
-    public Set/*<FileObject>*/ instantiate () throws IOException {
-        Set resultSet = new HashSet ();
-        File dirF = (File)wiz.getProperty("projdir");        //NOI18N
-        dirF = FileUtil.normalizeFile(dirF);
+    public Set/*<FileObject>*/ instantiate() throws IOException {
+        Set resultSet = new LinkedHashSet();
+        File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
         dirF.mkdirs();
-        String name = (String)wiz.getProperty("name");        //NOI18N
+        String name = (String) wiz.getProperty("name");
         
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
@@ -74,11 +67,20 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         
         Project p = ProjectManager.getDefault().findProject(dir);
 
-        resultSet.add (dir);
+        // Always open top dir as a project:
+        resultSet.add(dir);
+        // Look for nested projects to open as well:
+        Enumeration e = dir.getFolders(true);
+        while (e.hasMoreElements()) {
+            FileObject subfolder = (FileObject) e.nextElement();
+            if (ProjectManager.getDefault().isProject(subfolder)) {
+                resultSet.add(subfolder);
+            }
+        }
 
-        dirF = (dirF != null) ? dirF.getParentFile() : null;
-        if (dirF != null && dirF.exists()) {
-            ProjectChooser.setProjectsFolder (dirF);    
+        File parent = dirF.getParentFile();
+        if (parent != null && parent.exists()) {
+            ProjectChooser.setProjectsFolder(parent);
         }
                         
         return resultSet;

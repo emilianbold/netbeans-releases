@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,6 +31,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -118,39 +118,45 @@ public class NewProject extends BasicAction {
                         Project p = null;        
                         for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
                             Object obj = it.next ();
-                            FileObject newFo = null;
+                            FileObject newFo;
+                            DataObject newDo;
                             if (obj instanceof DataObject) {
-                                // old style way with Set/*DataObject*/
-                                final DataObject newDo = (DataObject)obj;
-                                boolean mainProjectSet = false;
-                                
-                                // check if it's project's directory
-                                if (newDo.getPrimaryFile ().isFolder ()) {
-                                    try {
-                                        p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );                            
-                                        if ( p != null ) {
-                                            // It is a project open it
-                                            OpenProjectList.getDefault().open( p, true );
-                                            if ( setFirstMainFinal && !mainProjectSet ) {
-                                                OpenProjectList.getDefault().setMainProject( p );
-                                                mainProjectSet = true;
-                                            }
-                                        }
-                                        else {
-                                            // Just a folder to expand
-                                            filesToOpen.add( newDo );
-                                        }
-                                    }
-                                    catch ( IOException e ) {
-                                        continue;
-                                    }
-                                }                                 
-                                else {                            
-                                    filesToOpen.add( newDo );                            
+                                newDo = (DataObject) obj;
+                                newFo = newDo.getPrimaryFile();
+                            } else if (obj instanceof FileObject) {
+                                newFo = (FileObject) obj;
+                                try {
+                                    newDo = DataObject.find(newFo);
+                                } catch (DataObjectNotFoundException e) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                    continue;
                                 }
-                            } 
-                            else {
-                                assert false : obj;
+                            } else {
+                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Found unrecognized object " + obj + " in result set from instantiate()");
+                                continue;
+                            }
+                            boolean mainProjectSet = false;
+                            // check if it's a project directory
+                            if (newFo.isFolder()) {
+                                try {
+                                    p = ProjectManager.getDefault().findProject(newFo);
+                                    if (p != null) {
+                                        // It is a project, so open it
+                                        OpenProjectList.getDefault().open(p);
+                                        if (setFirstMainFinal && !mainProjectSet) {
+                                            OpenProjectList.getDefault().setMainProject( p );
+                                            mainProjectSet = true;
+                                        }
+                                    } else {
+                                        // Just a folder to expand
+                                        filesToOpen.add(newDo);
+                                    }
+                                } catch (IOException e) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                    continue;
+                                }
+                            } else {
+                                filesToOpen.add(newDo);
                             }
                         }
                         
