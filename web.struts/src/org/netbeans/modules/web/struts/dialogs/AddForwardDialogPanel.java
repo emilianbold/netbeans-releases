@@ -18,6 +18,7 @@ import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.struts.config.model.Action;
@@ -320,7 +321,9 @@ public class AddForwardDialogPanel extends javax.swing.JPanel implements Validat
         if (jRadioButtonResFile.isSelected()) {
             return jTextFieldResFile.getText().trim();
         } else {
-            return (String)jComboBoxFwdAction.getSelectedItem();
+            return StrutsConfigUtilities.getActionAsResource(
+                    WebModule.getWebModule(config.getPrimaryFile()),
+                    (String)jComboBoxFwdAction.getSelectedItem());
         }
     }
 
