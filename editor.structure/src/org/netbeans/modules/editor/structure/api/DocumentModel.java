@@ -434,9 +434,9 @@ public final class DocumentModel {
     private void resortElements() {
         //the resort has to lock the model for access since it modifies the elements order
         //and the document for modifications
-        doc.readLock();
+        writeLock();
         try {
-            writeLock();
+            doc.readLock();
             try {
                 ArrayList list = new ArrayList(elements);
                 elements.clear();
@@ -445,10 +445,10 @@ public final class DocumentModel {
                     elements.add(i.next());
                 }
             } finally {
-                writeUnlock();
+                doc.readUnlock();
             }
         }finally {
-            doc.readUnlock();
+            writeUnlock();            
         }
         documentDirty = false;
     }
