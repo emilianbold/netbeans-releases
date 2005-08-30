@@ -1,4 +1,3 @@
-
 package @@PACKAGENAME@@;
 
 import java.awt.event.ActionEvent;
@@ -10,27 +9,24 @@ import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
-/** The action which shows @@TEMPLATENAME@@ component.
-*
-* @author machine generated
-*/
+/**
+ * Action which shows @@TEMPLATENAME@@ component.
+ */
 public class @@TEMPLATENAME@@Action extends AbstractAction {
 
     public @@TEMPLATENAME@@Action() {
-        putValue(NAME, NbBundle.getMessage(getClass(), "CTL_@@TEMPLATENAME@@Action") );
-        putValue(SMALL_ICON, new ImageIcon(
-            Utilities.loadImage("@@ICONPATH@@"))); // NOI18N
+        putValue(NAME, NbBundle.getMessage(@@TEMPLATENAME@@Action.class, "CTL_@@TEMPLATENAME@@Action"));
+        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("@@ICONPATH@@", true)));
     }
 
-
     public void actionPerformed(ActionEvent evt) {
-        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent"); // NOI18N
-        if( null == win ) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                "Can not find @@TEMPLATENAME@@ component." )); // NOI18N
+        TopComponent win = WindowManager.getDefault().findTopComponent("@@TEMPLATENAME@@TopComponent");
+        if (win == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING, "Cannot find @@TEMPLATENAME@@ component.");
             return;
         }
         win.open();
         win.requestActive();
     }
+
 }
