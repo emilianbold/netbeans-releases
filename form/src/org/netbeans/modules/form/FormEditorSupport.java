@@ -242,7 +242,8 @@ public class FormEditorSupport extends JavaEditor
         return FormEditor.getFormDataObject(formModel);
     }
     public FormModel getFormModel() {
-        return getFormEditor().getFormModel();
+        FormEditor fe = getFormEditor();
+        return (fe == null) ? null : fe.getFormModel();
     }
     // END of PENDING
 
@@ -260,8 +261,9 @@ public class FormEditorSupport extends JavaEditor
     /** Marks the form as modified if it's not yet. Used if changes made 
      * in form data don't affect the java source file (generated code). */
     void markFormModified() {
-        if (formEditor.isFormLoaded() && !formDataObject.isModified())
-            super.notifyModified();
+        if (formEditor.isFormLoaded() && !formDataObject.isModified()) {
+            notifyModified();
+        }
     }
 
     protected UndoRedo.Manager createUndoRedoManager() {
@@ -378,8 +380,9 @@ public class FormEditorSupport extends JavaEditor
     protected boolean notifyModified () {
         boolean alreadyModified = isModified();
         boolean retVal = super.notifyModified();
-        if (!alreadyModified)
+        if (!alreadyModified) {
             updateMVTCDisplayName();
+        }
         return retVal;
     }
 
@@ -863,6 +866,20 @@ public class FormEditorSupport extends JavaEditor
 
         public void componentShowing() {
             super.componentShowing();
+            FormDataObject formDO = (FormDataObject)
+                                        ((DataEditorSupport)cloneableEditorSupport()).getDataObject();
+            FormModel model = null;
+            if (formDO != null) {
+                FormEditorSupport fe = formDO.getFormEditor();
+                if (fe != null) {
+                    model = fe.getFormModel();
+                    if (model != null) {
+                        JavaCodeGenerator codeGen = (JavaCodeGenerator)FormEditor.getCodeGenerator(model);
+                        codeGen.regenerateCode();
+                    }
+                }
+            }
+
         }
 
         public void componentHidden() {
@@ -946,4 +963,5 @@ public class FormEditorSupport extends JavaEditor
             return formEditor != null ? formEditor.canClose() : true;
         }
     }
+    
 }

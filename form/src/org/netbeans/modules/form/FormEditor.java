@@ -680,13 +680,7 @@ public class FormEditor {
                     FormModel formModel = (FormModel) iter.next();
                     String propName = evt.getPropertyName();
 
-                    if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)
-                        || FormLoaderSettings.PROP_GENERATE_ON_SAVE.equals(propName))
-                    {
-                        formModel.fireSyntheticPropertyChanged(null, propName,
-                                        evt.getOldValue(), evt.getNewValue());
-                    }
-                    else if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)
+                    if (FormLoaderSettings.PROP_SELECTION_BORDER_SIZE.equals(propName)
                           || FormLoaderSettings.PROP_SELECTION_BORDER_COLOR.equals(propName)
                           || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName)
                           || FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)
