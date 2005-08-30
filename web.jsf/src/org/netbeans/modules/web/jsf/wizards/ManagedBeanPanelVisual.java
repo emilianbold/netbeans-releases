@@ -16,6 +16,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 //import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -29,10 +30,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     public ManagedBeanPanelVisual(Project proj) {
         initComponents();
         
-//        jComboBoxSuperclass.getModel().addListDataListener(this);
-//        WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
-//        String[] configFiles = StrutsConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
-//        jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
+        WebModule wm = WebModule.getWebModule(proj.getProjectDirectory());
+        String[] configFiles = JSFConfigUtilities.getConfigFiles(wm.getDeploymentDescriptor());
+        jComboBoxConfigFile.setModel(new javax.swing.DefaultComboBoxModel(configFiles));
         
         
 //        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FormBeanNewPanelVisual.class, "ACS_BeanFormProperties"));  // NOI18N
@@ -137,8 +137,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     }
     
     void store(WizardDescriptor settings) {
-//        settings.putProperty(WizardProperties.FORMBEAN_SUPERCLASS, jComboBoxSuperclass.getSelectedItem());
-//        settings.putProperty(WizardProperties.FORMBEAN_CONFIG_FILE, jComboBoxConfigFile.getSelectedItem());
+        settings.putProperty(WizardProperties.CONFIG_FILE, jComboBoxConfigFile.getSelectedItem());
+        settings.putProperty(WizardProperties.SCOPE, jComboBoxScope.getSelectedItem());
+        settings.putProperty(WizardProperties.DESCRIPTION, jTextAreaDesc.getText());
     }
     
     /** Help context where to find more about the paste type action.

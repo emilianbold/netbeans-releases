@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -24,6 +24,7 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.config.model.*;
 import org.openide.ErrorManager;
@@ -44,8 +45,7 @@ public class JSFConfigUtilities {
             NavigationRule [] rules = config.getNavigationRule();
             for (int i = 0; i < rules.length; i++)
                 list.add(rules[i]);
-        }
-        catch (java.io.IOException e){
+        } catch (java.io.IOException e){
             ErrorManager.getDefault().notify(e);
         }
         return list;
@@ -58,8 +58,7 @@ public class JSFConfigUtilities {
             ManagedBean [] beans = config.getManagedBean();
             for (int i = 0; i < beans.length; i++)
                 list.add(beans[i]);
-        }
-        catch (java.io.IOException e){
+        } catch (java.io.IOException e){
             ErrorManager.getDefault().notify(e);
         }
         return list;
@@ -78,10 +77,10 @@ public class JSFConfigUtilities {
      * then returns null.
      */
     public static NavigationRule findNavigationRule(FacesConfig config, String fromView){
-          NavigationRule [] rules = config.getNavigationRule();
-            for (int i = 0; i < rules.length; i++)
-                if (rules[i].getFromViewId().equals(fromView))
-                    return rules[i];
+        NavigationRule [] rules = config.getNavigationRule();
+        for (int i = 0; i < rules.length; i++)
+            if (rules[i].getFromViewId().equals(fromView))
+                return rules[i];
         return null;
     }
     
@@ -93,7 +92,7 @@ public class JSFConfigUtilities {
         Sources sources = (Sources)proj.getLookup().lookup(Sources.class);
         return sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
     }
- 
+    
     public static String getResourcePath(SourceGroup[] groups, FileObject fo, char separator, boolean withExt) {
         for (int i=0;i<groups.length;i++) {
             FileObject root = groups[i].getRootFolder();
@@ -143,25 +142,57 @@ public class JSFConfigUtilities {
         return null;
     }
     
-    public static boolean validateXML (FileObject dd){
+    public static boolean validateXML(FileObject dd){
         try{
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
             InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.validateXml"); //NOI18N
             return  "true".equals(param.getParamValue().trim());
         } catch (java.io.IOException e) {
-
+            
         }
         return false;
     }
     
-    public static boolean verifyObjects (FileObject dd){
+    public static boolean verifyObjects(FileObject dd){
         try{
             WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
             InitParam param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "com.sun.faces.verifyObjects"); //NOI18N
             return  "true".equals(param.getParamValue().trim());
         } catch (java.io.IOException e) {
-
+            ErrorManager.getDefault().notify(e);
         }
         return false;
+    }
+    
+    /** Returns relative path for all jsf configuration files in the web module
+     */
+    public static String[] getConfigFiles(FileObject dd){
+        InitParam param = null;
+        try{
+            WebApp webApp = DDProvider.getDefault().getDDRoot(dd);
+            param = (InitParam)webApp.findBeanByName("InitParam", "ParamName", "javax.faces.CONFIG_FILES"); //NOI18N
+        } catch (java.io.IOException e) {
+          ErrorManager.getDefault().notify(e);  
+        }
+        
+        if (param != null){
+            // the configuration files are defined
+            String value = param.getParamValue().trim();
+            if (value != null){
+                String[] files = value.split(","); 
+                for (int i = 0; i < files.length; i++)
+                    files[i] = files[i].trim();
+                return  files;
+            }
+        }
+        else{
+            // the configguration files are not defined -> looking for WEB-INF/faces-config.xml
+            WebModule wm = WebModule.getWebModule(dd);
+            FileObject baseDir = wm.getDocumentBase();
+            FileObject fo = baseDir.getFileObject("WEB-INF/faces-config.xml");
+            if (fo != null)
+                return new String[]{"WEB-INF/faces-config.xml"};
+        }
+        return new String[]{};
     }
 }

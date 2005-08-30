@@ -20,6 +20,11 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFConfigDataObject;
+import org.netbeans.modules.web.jsf.config.model.FacesConfig;
+import org.netbeans.modules.web.jsf.config.model.ManagedBean;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -110,38 +115,43 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
         DataObject dTemplate = DataObject.find( template );                
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wizard )  );
         
-//        Project project = Templates.getProject( wizard );
-//        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-//        dir = wm.getDocumentBase();
-//        String configFile = (String) wizard.getProperty(WizardProperties.FORMBEAN_CONFIG_FILE);
-//        FileObject fo = dir.getFileObject(configFile); //NOI18N
-//        StrutsConfigDataObject configDO = (StrutsConfigDataObject)DataObject.find(fo);
-//        StrutsConfig config= configDO.getStrutsConfig();
-//        
-//        FormBean formBean = new FormBean();
-//        String targetName = Templates.getTargetName(wizard);
-//        Sources sources = ProjectUtils.getSources(project);
-//        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-//        String packageName = null;
-//        org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
-//        for (int i = 0; i < groups.length && packageName == null; i++) {
-//            packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
-//            if (packageName!=null) break;
-//        }
-//        if (packageName!=null) packageName = packageName.replace('/','.');
-//        else packageName="";
-//        String className=null;
-//        if (packageName.length()>0)
-//            className=packageName+"."+targetName;//NOI18N
-//        else
-//            className=targetName;
-//        
-//        formBean.setAttributeValue("name", targetName); //NOI18N
-//        formBean.setAttributeValue("type", className); //NOI18N
-//        
-//        config.getFormBeans().addFormBean(formBean);
-//        configDO.write(config);
+        String configFile = (String) wizard.getProperty(WizardProperties.CONFIG_FILE);
+        Project project = Templates.getProject( wizard );
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        dir = wm.getDocumentBase();
+        FileObject fo = dir.getFileObject(configFile); //NOI18N
+        JSFConfigDataObject configDO = (JSFConfigDataObject)DataObject.find(fo);
+        FacesConfig config= configDO.getFacesConfig();
         
+        ManagedBean bean = new ManagedBean();
+        String targetName = Templates.getTargetName(wizard);
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        String packageName = null;
+        org.openide.filesystems.FileObject targetFolder = Templates.getTargetFolder(wizard);
+        for (int i = 0; i < groups.length && packageName == null; i++) {
+            packageName = org.openide.filesystems.FileUtil.getRelativePath (groups [i].getRootFolder (), targetFolder);
+            if (packageName!=null) break;
+        }
+        if (packageName!=null) packageName = packageName.replace('/','.');
+            else packageName="";
+        String className=null;
+        if (packageName.length()>0)
+            className=packageName+"."+targetName;//NOI18N
+        else
+            className=targetName;
+        
+        bean.setManagedBeanName(targetName);
+        bean.setManagedBeanClass(className);
+        bean.setManagedBeanScope((String) wizard.getProperty(WizardProperties.SCOPE));
+        
+        String description = (String) wizard.getProperty(WizardProperties.DESCRIPTION);
+        if (description != null && description.length() > 0){
+            String newLine = System.getProperty("line.separator");
+            bean.setDescription(new String[]{newLine + description + newLine});
+        }
+        config.addManagedBean(bean);
+        configDO.write(config);        
         return Collections.singleton(dobj);
     }
     
