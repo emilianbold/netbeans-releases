@@ -277,12 +277,9 @@ public class AddFIActionPanel extends javax.swing.JPanel implements ValidatingPa
             String resource=tResourceFile.getText().trim();
             return resource.length()==0?null:resource;
         } else {
-            WebModule wm = WebModule.getWebModule(config.getPrimaryFile());
-            String mapping = StrutsConfigUtilities.getActionServletMapping(wm.getDeploymentDescriptor());
-            String resource = (String)cbAction.getSelectedItem();
-            if (mapping.startsWith("*.")) //NOI18N
-                resource = resource + mapping.substring(1);
-            return resource;
+            return StrutsConfigUtilities.getActionAsResource(
+                    WebModule.getWebModule(config.getPrimaryFile()),
+                    (String)cbAction.getSelectedItem());
         }
     }
     
