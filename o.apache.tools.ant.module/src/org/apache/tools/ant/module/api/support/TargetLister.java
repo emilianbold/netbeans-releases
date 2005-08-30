@@ -84,10 +84,6 @@ public class TargetLister {
     public static Set/*<Target>*/ getTargets(AntProjectCookie script) throws IOException {
         Set/*<File>*/ alreadyImported = new HashSet();
         Map/*<String,String>*/ properties = new HashMap(System.getProperties());
-        File xml = script.getFile();
-        if (xml != null) {
-            properties.put("basedir", xml.getParentFile().getAbsolutePath()); // NOI18N
-        }
         Script main = new Script(null, script, alreadyImported, properties, Collections.EMPTY_MAP);
         Set/*<Target>*/ targets = new HashSet();
         Set/*<AntProjectCookie>*/ visitedScripts = new HashSet();
@@ -270,13 +266,13 @@ public class TargetLister {
             defaultTarget = _defaultTarget.length() > 0 ? _defaultTarget : null;
             String _name = prj.getAttribute("name"); // NOI18N
             name = _name.length() > 0 ? _name : null;
-            // For now, treat basedir as relative to the project file, regardless
-            // of import context. Unclear what exactly Ant's semantics are here.
+            // Treat basedir as relative to the project file, regardless
+            // of import context.
             String basedirS = prj.getAttribute("basedir"); // NOI18N
             if (basedirS.length() == 0) {
                 basedirS = "."; // NOI18N
             } else {
-                basedirS = basedirS.replaceAll("[/\\\\]", File.separator); // NOI18N
+                basedirS = basedirS.replace('/', File.separatorChar).replace('\\', File.separatorChar);
             }
             File _basedir = new File(basedirS);
             File basedir;
@@ -293,6 +289,9 @@ public class TargetLister {
             // Go through top-level elements and look for <target> and <import>.
             targets = new HashMap();
             Map/*<String,String>*/ propertyDefs = new HashMap(inheritedPropertyDefs);
+            if (basedir != null && !propertyDefs.containsKey("basedir")) { // NOI18N
+                propertyDefs.put("basedir", basedir.getAbsolutePath()); // NOI18N
+            }
             Map/*<String,Element>*/ macroDefs = new HashMap(inheritedMacroDefs);
             // Keep imported scripts in definition order so result is deterministic
             // if a subsubscript is imported via two different paths: first one (DFS)
@@ -348,7 +347,7 @@ public class TargetLister {
                     String name = el.getAttribute("name"); // NOI18N
                     targets.put(name, new Target(this, el, name));
                 } else if (macroParams == null && elName.equals("import")) { // NOI18N
-                    String fileS = el.getAttribute("file").replaceAll("[/\\\\]", File.separator); // NOI18N
+                    String fileS = el.getAttribute("file").replace('/', File.separatorChar).replace('\\', File.separatorChar); // NOI18N
                     String fileSubstituted = replaceAntProperties(fileS, propertyDefs);
                     if (fileSubstituted.indexOf("${") != -1) { // NOI18N
                         // Too complex a substitution to handle.
@@ -402,7 +401,7 @@ public class TargetLister {
                         String fileSubst = replaceAntProperties(file, propertyDefs);
                         File propertyFile = new File(fileSubst);
                         if (!propertyFile.isAbsolute() && basedir != null) {
-                            propertyFile = new File(basedir, fileSubst.replaceAll("[/\\\\]", File.separator));
+                            propertyFile = new File(basedir, fileSubst.replace('/', File.separatorChar).replace('\\', File.separatorChar));
                         }
                         if (!propertyFile.canRead()) {
                             //System.err.println("cannot read from " + propertyFile);

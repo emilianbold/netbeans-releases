@@ -193,6 +193,16 @@ public class TargetListerTest extends NbTestCase {
         assertEquals("correct qname #2", "subdir/imported1.foundme", t.getQualifiedName());
         t = (TargetLister.Target) targets.get(2);
         assertEquals("correct qname #3", "subdir/imported3.intermediate", t.getQualifiedName());
+        FileObject importing2 = testdir.getFileObject("computedimports/subdir/importing2.xml");
+        assertNotNull("importing2.xml found", importing2);
+        targets = getTargets(importing2);
+        assertEquals("three targets", 3, targets.size());
+        t = (TargetLister.Target) targets.get(0);
+        assertEquals("correct qname #1", "subdir/imported1.foundme", t.getQualifiedName());
+        t = (TargetLister.Target) targets.get(1);
+        assertEquals("correct qname #2", "subdir/imported3.intermediate", t.getQualifiedName());
+        t = (TargetLister.Target) targets.get(2);
+        assertEquals("correct qname #3", "subdir/importing2.master", t.getQualifiedName());
     }
     
     private static List/*<TargetLister.Target>*/ getTargets(FileObject fo) throws IOException {
