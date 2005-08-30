@@ -95,6 +95,7 @@
             <file name="ServerManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.actions.ServerManagerAction"/>
             </file>
+            <attr name="ServerManagerAction.instance/Separator2.instance" boolvalue="true"/>
         </folder>
     </folder>
 </filesystem>
