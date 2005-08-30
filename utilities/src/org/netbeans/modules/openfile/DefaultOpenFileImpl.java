@@ -436,14 +436,18 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
             boolean ret = openByCookie(cookie,cookieClass, line);      
             clearStatusLine();                              
             return ret;
-        }
+        } 
                             
         /* try to open the object using the default action */
-        Node dataNode = dataObject.getNodeDelegate();        
-        Action action = dataNode.getPreferredAction();
+        final Node dataNode = dataObject.getNodeDelegate();        
+        final Action action = dataNode.getPreferredAction();
         if (action != null && !(action instanceof FileSystemAction)) {            
-            action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
-            clearStatusLine();            
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    action.actionPerformed(new ActionEvent(dataNode, 0, null));                                 
+                    clearStatusLine();            
+                }
+            });            
             return true;            
         }             
         
