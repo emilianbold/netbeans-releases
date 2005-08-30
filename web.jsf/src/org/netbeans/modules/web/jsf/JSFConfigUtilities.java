@@ -164,7 +164,8 @@ public class JSFConfigUtilities {
         return false;
     }
     
-    /** Returns relative path for all jsf configuration files in the web module
+    /** Returns relative path for all jsf configuration files in the web module. If there is no
+     *  configuration file, then returns String array with lenght = 0. 
      */
     public static String[] getConfigFiles(FileObject dd){
         InitParam param = null;
@@ -194,5 +195,19 @@ public class JSFConfigUtilities {
                 return new String[]{"WEB-INF/faces-config.xml"};
         }
         return new String[]{};
+    }
+    
+    public static FileObject[] getConfiFilesFO(FileObject dd){
+        String[] sFiles = getConfigFiles(dd);
+        if (sFiles.length > 0){
+            WebModule wm = WebModule.getWebModule(dd);
+            FileObject documentBase = wm.getDocumentBase();
+            FileObject config;
+            FileObject[] files = new FileObject [sFiles.length];
+            for (int i = 0; i < sFiles.length; i++)
+                files[i] = documentBase.getFileObject(sFiles[i]);
+            return files;
+        }
+        return new FileObject [0];
     }
 }

@@ -15,6 +15,7 @@ package org.netbeans.modules.web.jsf;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -106,6 +107,13 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
 
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
+        
+        FileObject[] filesFO = JSFConfigUtilities.getConfiFilesFO(wm.getDeploymentDescriptor());
+        File[] files = new File[filesFO.length];
+        for (int i = 0; i < filesFO.length; i++)
+            files[i] = FileUtil.toFile(filesFO[i]);
+        if (files.length > 0)
+            return files;
         return null;
     }
 
