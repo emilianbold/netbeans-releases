@@ -143,6 +143,7 @@ public class JellyConstants {
    public static final String GENDELEG_CBX = "genDelegationCheckBox";
    public static final String GENSEQNUM_CBX = "genSeqNbCheckBox";
    public static final String NOTIF_TBL = "notificationTable";
+   public static final String NOTIF_ADDTYPE_BTN = "notifTypePopupJButton";
    public static final String NOTIF_ADD_BTN = "notifAddJButton";
    public static final String NOTIF_REM_BTN = "notifRemJButton";
    public static final String NOTIF_CLSS_BX = "notifClassBox";
@@ -151,6 +152,7 @@ public class JellyConstants {
    public static final String NT_ADD_BTN = "notifTypePopupJButton";
    public static final String NT_TYPE_TXT = "typeTextField";
    public static final String ADD_NT_BTN = "addNotifTypeJButton";
+   public static final String REM_NT_BTN = "remNotifTypeJButton";
    public static final String NT_CLOSE_BTN = "closeNotifTypeJButton";
 
    //Junit step
@@ -452,4 +454,12 @@ public class JellyConstants {
    public static final int NOTIF_CLASS_COL = 0;
    public static final int NOTIF_DESCR_COL = 1;
    public static final int NOTIF_TYPE_COL = 2;
+   
+   //notif type popup
+   public static final String EDIT_NT_TYPES = "Edit Types";
+   public static final String NT_DEF_NAME = "newjmxclass.type";
+   public static final int NT_TYPE_COL = 0;
+   public static final String NT1_TYPE = "newjmx.newtype0";
+   public static final String CLOSE_NT_BTN = "closeNotifTypeJButton";
+   public static final String N1_DESC = "mycomment";
 }
