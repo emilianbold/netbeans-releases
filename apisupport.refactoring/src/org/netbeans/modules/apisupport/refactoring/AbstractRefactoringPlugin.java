@@ -203,7 +203,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                 }
             }
         } else if (fo.isData()) {
-            if ("instance".equals(fo.getExt())) {
+            if ("instance".equals(fo.getExt())) { // NOI18N
                 String name = fo.getName().replace('-', '.');
                 if (name.equals(clzz.getName())) {
                     RefactoringElementImplementation elem = createLayerRefactoring(clzz, handle, fo, null);
@@ -212,7 +212,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                     }
                 }
             }
-            if ("settings".equals(fo.getExt())) {
+            if ("settings".equals(fo.getExt())) { // NOI18N
                 //TODO check also content of settings files for matches?
             }
             
@@ -264,7 +264,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         Iterator it = params.iterator();
         while (it.hasNext()) {
             Parameter param =(Parameter)it.next();
-            if (! "org.openide.filesystems.FileObject".equals(param.getType().getName())) {
+            if (! "org.openide.filesystems.FileObject".equals(param.getType().getName())) { // NOI18N
                 return problem;
             }
         }
@@ -312,7 +312,7 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
                 checkFileObject(childs[i], method, constructor, refactoringElements, handle);
             }
         } else if (fo.isData()) {
-            if ("settings".equals(fo.getExt())) {
+            if ("settings".equals(fo.getExt())) { // NOI18N
                 //TODO check also content of settings files for matches?
             }
             Enumeration en = fo.getAttributes();
@@ -366,21 +366,21 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        throw new RuntimeException("if you call checkLayer(), you need to implement this method");
+        throw new AssertionError("if you call checkLayer(), you need to implement this method");
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(Method method,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        throw new RuntimeException("if you call checkLayer(), you need to implement this method");
+        throw new AssertionError("if you call checkLayer(), you need to implement this method");
     }
     
     protected RefactoringElementImplementation createLayerRefactoring(Constructor constructor,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
             String layerAttribute) {
-        throw new RuntimeException("if you call checkLayer(), you need to implement this method");
+        throw new AssertionError("if you call checkLayer(), you need to implement this method");
     }
     
 }

@@ -127,12 +127,12 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        throw new NotSerializableException("WritableXMLFileSystem is not persistent");
+        throw new NotSerializableException("WritableXMLFileSystem is not persistent"); // NOI18N
     }
     
     private void setLocation(URL location) {
         String u = location.toExternalForm();
-        if (u.endsWith("/")) {
+        if (u.endsWith("/")) { // NOI18N
             throw new IllegalArgumentException(u);
         }
         this.location = location;
@@ -197,7 +197,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 TreeElement e = (TreeElement) it.next();
                 if (e.getLocalName().equals("file") || // NOI18N
                         e.getLocalName().equals("folder")) { // NOI18N
-                    TreeAttribute attr = e.getAttribute("name");
+                    TreeAttribute attr = e.getAttribute("name"); // NOI18N
                     if (attr != null && attr.getValue().equals(nextName)) {
                         subel = e;
                         break;
@@ -233,7 +233,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             TreeElement sub = (TreeElement) it.next();
             if (sub.getLocalName().equals("file") || // NOI18N
                     sub.getLocalName().equals("folder")) { // NOI18N
-                TreeAttribute attr = sub.getAttribute("name");
+                TreeAttribute attr = sub.getAttribute("name"); // NOI18N
                 if (attr == null) {
                     continue;
                 }
@@ -270,7 +270,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 conn.connect();
                 InputStream is = conn.getInputStream();
                 byte[] buf = new byte[conn.getContentLength()];
-                if (is.read(buf) != buf.length) throw new IOException("wrong content length");
+                if (is.read(buf) != buf.length) throw new IOException("wrong content length"); // NOI18N
                 // Also listen to changes in it.
                 FileObject fo = URLMapper.findFileObject(u);
                 if (fo != null) {
@@ -430,7 +430,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         if (el == null) {
             throw new FileNotFoundException(name);
         }
-        TreeAttribute externalName = el.getAttribute("url");
+        TreeAttribute externalName = el.getAttribute("url"); // NOI18N
         if (externalName != null && !URI.create(externalName.getValue()).isAbsolute()) {
             // Delete the external file if it can be found.
             FileObject externalFile = URLMapper.findFileObject(new URL(location, externalName.getValue()));
@@ -454,7 +454,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         if (idx != -1) newName = newName.substring(idx + 1);
         el.setAttribute("name", newName); // NOI18N
          */
-        throw new UnsupportedOperationException("XXX");
+        throw new UnsupportedOperationException("XXX"); // NOI18N
     }
     
     public boolean copy(String name, Transfer target, String targetName) throws IOException {
@@ -489,7 +489,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         }
         return true;
          */
-        throw new UnsupportedOperationException("XXX");
+        throw new UnsupportedOperationException("XXX"); // NOI18N
     }
     
     public boolean move(String name, Transfer target, String targetName) throws IOException {
@@ -529,7 +529,7 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         }
         return true;
          */
-        throw new UnsupportedOperationException("XXX");
+        throw new UnsupportedOperationException("XXX"); // NOI18N
     }
     
     public Enumeration attributes(String name) {
@@ -851,10 +851,10 @@ final class WritableXMLFileSystem extends AbstractFileSystem
                 String methodValueMagic = "methodvalue:"; // NOI18N
                 if (inStr.startsWith(newValueMagic)) {
                     // Impossible to set this (reliably) as a real value, so use this magic technique instead:
-                    attr.addAttribute("newvalue", inStr.substring(newValueMagic.length()));
+                    attr.addAttribute("newvalue", inStr.substring(newValueMagic.length())); // NOI18N
                 } else if (inStr.startsWith(methodValueMagic)) {
                     // Same here:
-                    attr.addAttribute("methodvalue", inStr.substring(methodValueMagic.length()));
+                    attr.addAttribute("methodvalue", inStr.substring(methodValueMagic.length())); // NOI18N
                 } else {
                     // Regular string value.
                     // Stolen from XMLMapAttr w/ mods:
@@ -872,13 +872,13 @@ final class WritableXMLFileSystem extends AbstractFileSystem
             } else if (v instanceof URL) {
                 attr.addAttribute("urlvalue", ((URL) v).toExternalForm()); // NOI18N
             } else if (v instanceof Boolean) {
-                attr.addAttribute("boolvalue", v.toString());
+                attr.addAttribute("boolvalue", v.toString()); // NOI18N
             } else if (v instanceof Character) {
-                attr.addAttribute("charvalue", v.toString());
+                attr.addAttribute("charvalue", v.toString()); // NOI18N
             } else if (v instanceof Integer) {
-                attr.addAttribute("intvalue", v.toString());
+                attr.addAttribute("intvalue", v.toString()); // NOI18N
             } else if (v != null) {
-                throw new UnsupportedOperationException("XXX: " + v);
+                throw new UnsupportedOperationException("XXX: " + v); // NOI18N
             }
             if (v != null && existingAttr == null) {
                 appendWithIndent(el, attr);
@@ -1072,15 +1072,15 @@ final class WritableXMLFileSystem extends AbstractFileSystem
         try {
             if (position != null) {
                 parent.insertBefore(child, position);
-                parent.insertBefore(new TreeText("\n" + spaces((depth + 1) * INDENT_STEP)), position);
+                parent.insertBefore(new TreeText("\n" + spaces((depth + 1) * INDENT_STEP)), position); // NOI18N
             } else {
                 if (/*XXX this is clumsy*/ parent.hasChildNodes()) {
                     parent.appendChild(new TreeText(spaces(INDENT_STEP)));
                 } else {
-                    parent.appendChild(new TreeText("\n" + spaces((depth + 1) * INDENT_STEP)));
+                    parent.appendChild(new TreeText("\n" + spaces((depth + 1) * INDENT_STEP))); // NOI18N
                 }
                 parent.appendChild(child);
-                parent.appendChild(new TreeText("\n" + spaces(depth * INDENT_STEP)));
+                parent.appendChild(new TreeText("\n" + spaces(depth * INDENT_STEP))); // NOI18N
             }
             parent.normalize();
             if (((TreeElement) child).getQName().equals("attr") && ((TreeElement) child).getAttribute("name").getValue().indexOf('/') != -1) { // NOI18N

@@ -153,7 +153,7 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         barColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarColor().getValue()));//
         edgeColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarEdgeColor().getValue()));
         cornerColor.setColor(SplashUISupport.stringToColor(branding.getSplashProgressBarCornerColor().getValue()));
-        progressBarEnabled.setSelected(getBrandingModel().getSplashShowProgressBar().getValue().trim().toLowerCase().equals("true"));
+        progressBarEnabled.setSelected(getBrandingModel().getSplashShowProgressBar().getValue().trim().toLowerCase().equals("true")); // NOI18N
         
         splashSource = getBrandingModel().getSplash().getBrandingSource();
         splashLocation.setText(getBrandingModel().getSplashLocation());

@@ -18,6 +18,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * Second UI panel of <code>NewNbModuleWizardIterator</code> for
@@ -96,25 +97,25 @@ final class BasicConfVisualPanel extends BasicVisualPanel {
     }
     
     private void checkBundle() {
-        checkEntry(getBundleValue(), "Bundle", ".properties"); // NOI18N
+        checkEntry(getBundleValue(), "bundle", ".properties"); // NOI18N
     }
     
     private void checkLayer() {
-        checkEntry(getLayerValue(), "Layer", ".xml"); // NOI18N
+        checkEntry(getLayerValue(), "layer", ".xml"); // NOI18N
     }
     
     /** Used for Layer and Bundle entries. */
     private void checkEntry(String path, String resName, String extension) {
         if (path.length() == 0) {
-            setErrorMessage(resName + " cannot be empty."); // NOI18N
+            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_empty"));
             return;
         }
         if (path.indexOf('/') == -1) {
-            setErrorMessage("Cannot use default package for " + resName);
+            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_def_pkg"));
             return;
         }
         if (!path.endsWith(extension)) {
-            setErrorMessage(resName + " must have \"" + extension + "\" extension."); // NOI18N
+            setErrorMessage(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_" + resName + "_ext", extension));
             return;
         }
         setErrorMessage(null);

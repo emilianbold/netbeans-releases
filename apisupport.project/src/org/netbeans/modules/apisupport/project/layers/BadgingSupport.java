@@ -43,6 +43,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -137,7 +138,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                 } catch (IOException ioe) {
                     // For debugging; SFS will rather notify a problem separately...
                     Util.err.notify(ErrorManager.INFORMATIONAL, ioe);
-                    return name + " <no such bundle: " + bundleName + ">"; // XXX I18N
+                    return NbBundle.getMessage(BadgingSupport.class, "LBL_no_such_bundle", name, bundleName);
                 }
             }
             if (fo.hasExt("instance")) { // NOI18N
@@ -175,7 +176,7 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                         return o.toString();
                     }
                 } else if (o instanceof JSeparator) {
-                    return "<separator>"; // XXX I18N
+                    return NbBundle.getMessage(BadgingSupport.class, "LBL_separator");
                 } else {
                     return o.toString();
                 }
@@ -195,10 +196,10 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
             clazz = instanceCreate.substring("new:".length()); // NOI18N
         } else if (instanceCreate != null && instanceCreate.startsWith("method:")) { // NOI18N
             String factoryDisplayLabel = instanceCreate.substring(instanceCreate.lastIndexOf('.', instanceCreate.lastIndexOf('.') - 1) + 1);
-            return "<instance from " + factoryDisplayLabel + ">"; // XXX I18N
+            return NbBundle.getMessage(BadgingSupport.class, "LBL_instance_from", factoryDisplayLabel);
         }
         String clazzDisplayLabel = clazz.substring(clazz.lastIndexOf('.') + 1);
-        return "<instance of " + clazzDisplayLabel + ">"; // XXX I18N
+        return NbBundle.getMessage(BadgingSupport.class, "LBL_instance_of", clazzDisplayLabel);
     }
     
     public Image annotateIcon(Image icon, int type, Set files) {

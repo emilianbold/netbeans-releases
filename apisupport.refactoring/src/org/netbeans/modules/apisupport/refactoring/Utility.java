@@ -70,7 +70,7 @@ public class Utility {
      * @return full class name
      */
     public static String getClassName(String pkg, final String simpleName) {
-        return (pkg == null || pkg.length() == 0 ? "" : pkg + ".") + simpleName;
+        return (pkg == null || pkg.length() == 0 ? "" : pkg + ".") + simpleName; // NOI18N
     }
     
     static void writeFileFromString(FileObject fileObject, String content) {
@@ -78,7 +78,7 @@ public class Utility {
         PrintWriter writer = null;
         try {
             lock = fileObject.lock();
-            writer = new PrintWriter(new OutputStreamWriter(fileObject.getOutputStream(lock), "UTF-8"));
+            writer = new PrintWriter(new OutputStreamWriter(fileObject.getOutputStream(lock), "UTF-8")); // NOI18N
             writer.print(content);
             
         } catch (IOException exc) {

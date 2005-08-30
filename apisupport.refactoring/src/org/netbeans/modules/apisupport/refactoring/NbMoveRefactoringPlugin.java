@@ -310,9 +310,9 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
          */
         public String getDisplayText() {
             if (sectionName != null) {
-                return NbBundle.getMessage(getClass(), "TXT_ManifestSectionRename", this.name, sectionName);
+                return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestSectionRename", this.name, sectionName);
             }
-            return NbBundle.getMessage(getClass(), "TXT_ManifestRename", this.name, attrName);
+            return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ManifestRename", this.name, attrName);
         }
         
         public void performChange() {
@@ -404,7 +404,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            return NbBundle.getMessage(getClass(), "TXT_ServicesRename", this.name);
+            return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ServicesRename", this.name);
         }
         
         public void performChange() {
@@ -438,7 +438,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
                     // moving to a different file.
                     oldcontent = oldcontent.replaceAll("^" + longName + "[ \\\n]?", ""); //NOI18N
                     String newcontent = Utility.readFileIntoString(newFile);
-                    newcontent = newName + "\n" + newcontent;
+                    newcontent = newName + "\n" + newcontent; // NOI18N
                     Utility.writeFileFromString(newFile, newcontent);
                     //check if we want to delete the old file or just update it.
                     StringTokenizer tok = new StringTokenizer(oldcontent, "\n"); //NOI18N

@@ -29,6 +29,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
+import org.netbeans.modules.apisupport.project.ManifestManager;
+import org.netbeans.modules.apisupport.project.NbModuleProjectType;
+import org.netbeans.modules.apisupport.project.ProjectXMLManager;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -38,8 +42,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.netbeans.modules.apisupport.project.*;
-import org.openide.filesystems.FileUtil;
+
 
 /**
  * Represents list of known modules.
@@ -201,13 +204,13 @@ public final class ModuleList {
                     continue KIDS;
                 }
             }
-            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name;
+            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name; // NOI18N
             try {
                 scanPossibleProject(kids[i], entries, false, false, root, nbdestdir, newPathPrefix);
             } catch (IOException e) {
                 // #60295: make it nonfatal.
-                Util.err.annotate(e, "Malformed project metadata in " + kids[i] + ", skipping..."); // XXX I18N
-                Util.err.notify(e);
+                Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + kids[i] + ", skipping...", null, null, null); // NOI18N
+                Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
             doScanNetBeansOrgSources(entries, kids[i], depth - 1, root, nbdestdir, newPathPrefix);
         }
@@ -241,7 +244,7 @@ public final class ModuleList {
                 assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + basedir;
                 String reltext = Util.findText(runtimeRelativePath);
                 // XXX assumes that module.jar is not overridden independently of module.jar.dir:
-                text = "${cluster}/${module.jar.dir}/" + reltext;
+                text = "${cluster}/${module.jar.dir}/" + reltext; // NOI18N
             }
             String evaluated = eval.evaluate(text);
             if (evaluated == null) {
@@ -254,7 +257,7 @@ public final class ModuleList {
         File manifest = new File(basedir, "manifest.mf"); // NOI18N
         ManifestManager mm = (manifest.isFile() ? 
             ManifestManager.getInstance(manifest, false) : ManifestManager.NULL_INSTANCE);
-        File clusterDir = PropertyUtils.resolveFile(basedir, eval.evaluate("${cluster}"));
+        File clusterDir = PropertyUtils.resolveFile(basedir, eval.evaluate("${cluster}")); // NOI18N
         ModuleEntry entry;
         if (!suiteComponent && !standalone) {
             entry = new NetBeansOrgEntry(root, cnb, path, clusterDir, module, cpextra.toString(), 
@@ -393,8 +396,8 @@ public final class ModuleList {
                 try {
                     scanPossibleProject(modules[i], entries, true, false, null, nbdestdir, null);
                 } catch (IOException e) {
-                    Util.err.annotate(e, "Malformed project metadata in " + modules[i] + ", skipping..."); // XXX I18N
-                    Util.err.notify(e);
+                    Util.err.annotate(e, ErrorManager.UNKNOWN, "Malformed project metadata in " + modules[i] + ", skipping...", null, null, null); // NOI18N
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
             sources = new ModuleList(entries);
@@ -611,7 +614,7 @@ public final class ModuleList {
         try {
             doc = XMLUtil.parse(new InputSource(projectXml.toURI().toString()), false, true, null, null);
         } catch (SAXException e) {
-            throw (IOException) new IOException(projectXml + ": " + e.toString()).initCause(e);
+            throw (IOException) new IOException(projectXml + ": " + e.toString()).initCause(e); // NOI18N
         }
         Element docel = doc.getDocumentElement();
         Element type = Util.findElement(docel, "type", "http://www.netbeans.org/ns/project/1"); // NOI18N

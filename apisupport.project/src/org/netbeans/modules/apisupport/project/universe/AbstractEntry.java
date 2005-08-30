@@ -73,7 +73,7 @@ abstract class AbstractEntry implements ModuleEntry {
                 }
             } catch (IOException e) {
                 publicClassNames = Collections.EMPTY_SET;
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "While scanning for public classes in " + this, null, null, null);
+                Util.err.annotate(e, ErrorManager.UNKNOWN, "While scanning for public classes in " + this, null, null, null); // NOI18N
                 Util.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }

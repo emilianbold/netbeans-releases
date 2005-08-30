@@ -265,7 +265,7 @@ public class BasicBrandingModel {
         
         mainWindowTitle = getBranding().getBundleKey(
                 "org.netbeans.core.windows",//NOI18N
-                "org/netbeans/core/windows/view/ui/Bundle.properties",
+                "org/netbeans/core/windows/view/ui/Bundle.properties", // NOI18N
                 "CTL_MainWindow_Title");//NOI18N
         assert mainWindowTitle != null;
         

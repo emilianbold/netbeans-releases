@@ -146,9 +146,9 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
          */
         public String getDisplayText() {
             if (sectionName != null) {
-                return NbBundle.getMessage(getClass(), "TXT_ManifestSectionDelete", this.name, sectionName);
+                return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_ManifestSectionDelete", this.name, sectionName);
             }
-            return NbBundle.getMessage(getClass(), "TXT_ManifestDelete", this.name, attrName);
+            return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_ManifestDelete", this.name, attrName);
         }
         
         public void performChange() {
@@ -230,7 +230,7 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            return NbBundle.getMessage(getClass(), "TXT_ServicesDelete", this.name);
+            return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_ServicesDelete", this.name);
         }
         
         public void performChange() {

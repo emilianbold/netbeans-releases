@@ -597,7 +597,7 @@ public class LayerUtils {
             }
         } else if (project instanceof SuiteProject) {
             SuiteProject p = (SuiteProject) project;
-            throw new AssertionError("XXX not yet implemented");
+            throw new AssertionError("XXX not yet implemented"); // NOI18N
         } else {
             throw new IllegalArgumentException(project.toString());
         }

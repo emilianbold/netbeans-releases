@@ -20,6 +20,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Represents panel for editing dependency details. Shown after <em>Edit</em>
@@ -62,7 +63,7 @@ final class EditDependencyPanel extends JPanel {
                 model.addElement((String) it.next());
             }
         } else {
-            model.addElement("<empty>"); // XXX I18N
+            model.addElement(NbBundle.getMessage(EditDependencyPanel.class, "EditDependencyPanel_empty"));
         }
         availablePkg.setModel(model);
         versionChanged(null);

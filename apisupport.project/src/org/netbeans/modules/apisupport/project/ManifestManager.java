@@ -91,7 +91,7 @@ public final class ManifestManager {
         if (tokens == null) {
             return new String[0];
         }
-        StringTokenizer st = new StringTokenizer(tokens, ",");
+        StringTokenizer st = new StringTokenizer(tokens, ","); // NOI18N
         String[] result = new String[st.countTokens()];
         for (int i = 0; i < result.length; i++) {
             result[i] = st.nextToken();
@@ -156,7 +156,7 @@ public final class ManifestManager {
                 publicPackages = parseExportedPackages(pp);
             }
         }
-        boolean deprecated = "true".equals(attr.getValue("OpenIDE-Module-Deprecated"));
+        boolean deprecated = "true".equals(attr.getValue("OpenIDE-Module-Deprecated")); // NOI18N
         ManifestManager mm = new ManifestManager(
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),

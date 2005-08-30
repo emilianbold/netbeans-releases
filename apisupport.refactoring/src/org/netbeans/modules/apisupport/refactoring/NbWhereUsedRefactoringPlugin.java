@@ -173,12 +173,12 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
          */
         public String getDisplayText() {
             if (attr != null && attrValue != null) {
-                return NbBundle.getMessage(getClass(), "TXT_LayerAttrValueWhereUsed", path, attr, attrValue);
+                return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_LayerAttrValueWhereUsed", path, attr, attrValue);
             }
             if (attr != null) {
-                return NbBundle.getMessage(getClass(), "TXT_LayerAttrWhereUsed", path, attr);
+                return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_LayerAttrWhereUsed", path, attr);
             }
-            return NbBundle.getMessage(getClass(), "TXT_LayerWhereUsed", path);
+            return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_LayerWhereUsed", path);
         }
     }
     
@@ -203,9 +203,9 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
          */
         public String getDisplayText() {
             if (sectionName != null) {
-                return NbBundle.getMessage(getClass(), "TXT_ManifestSectionWhereUsed", this.name, sectionName);
+                return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ManifestSectionWhereUsed", this.name, sectionName);
             }
-            return NbBundle.getMessage(getClass(), "TXT_ManifestWhereUsed", this.name, attrName);
+            return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ManifestWhereUsed", this.name, attrName);
         }
     }
     
@@ -224,7 +224,7 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            return NbBundle.getMessage(getClass(), "TXT_ServicesWhereUsed", this.name);
+            return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ServicesWhereUsed", this.name);
         }
     }
     

@@ -104,7 +104,7 @@ public class SuiteUtils {
                 File suiteF = FileUtil.toFile(suite.getProjectDirectory());
                 FileObject plafPropsFO = FileUtil.toFileObject(new File(suiteF, "/nbproject/platform.properties")); // NOI18N
                 FileObject subModuleNbProject = FileUtil.toFileObject(new File(subModuleF, "nbproject")); // NOI18N
-                if (subModuleNbProject.getFileObject("platform.properties") == null) {
+                if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
                     FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
                 }
                 ProjectManager.getDefault().saveProject(subModule);

@@ -87,7 +87,7 @@ class SplashComponentPreview extends JLabel {
     
     
     void setFontSize(final int size) throws NumberFormatException {
-        Font font = new Font("Dialog", Font.PLAIN, size);
+        Font font = new Font("Dialog", Font.PLAIN, size); // NOI18N
         
         setFont(font); // NOI18N
         fm = getFontMetrics(font);

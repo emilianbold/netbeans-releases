@@ -172,7 +172,7 @@ public class NewTCIterator extends BasicWizardIterator {
                                                 "", fo.getNameExt()); //NOI18N
                 try {
                     fileChanges.add(fileChanges.createFile(iconPath, fo.getURL()));
-                    relativeIconPath = packageName.replace('.', '/') + "/" + fo.getNameExt();
+                    relativeIconPath = packageName.replace('.', '/') + "/" + fo.getNameExt(); // NOI18N
                 } catch (FileStateInvalidException exc) {
                     ErrorManager.getDefault().notify(exc);
                 }
@@ -187,9 +187,9 @@ public class NewTCIterator extends BasicWizardIterator {
         
         // 2. update project dependencies
         ProjectXMLManager manager = new ProjectXMLManager(project.getHelper());
-        replaceTokens.put("@@MODULENAME@@", project.getCodeNameBase());
+        replaceTokens.put("@@MODULENAME@@", project.getCodeNameBase()); // NOI18N
         //TODO how to figure the currect specification version for module?
-        replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion());
+        replaceTokens.put("@@SPECVERSION@@", project.getSpecVersion()); // NOI18N
         try {
             SortedSet set = manager.getDirectDependencies(project.getPlatform());
             if (set != null) {
@@ -231,15 +231,15 @@ public class NewTCIterator extends BasicWizardIterator {
         final String settingsName = name + "TopComponent.settings"; //NOI18N
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewTCIterator.class.getResource("templateSettings.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null));
+        fileChanges.add(fileChanges.createLayerEntry("Windows2/Components/" + settingsName, template, replaceTokens, null, null)); // NOI18N
         
         final String wstcrefName = name + "TopComponent.wstcref"; //NOI18N
         // TODO use nbresloc URL protocol rather than NewLoaderIterator.class.getResource(...):
         template = NewTCIterator.class.getResource("templateWstcref.xml");//NOI18N
-        fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, 
+        fileChanges.add(fileChanges.createLayerEntry("Windows2/Modes/" + mode + "/" + wstcrefName, // NOI18N
                              template, replaceTokens, null, null));
         
-        fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName),
+        fileChanges.add(fileChanges.layerModifications(new CreateActionEntryOperation(name + "Action", packageName), // NOI18N
                                                        Collections.EMPTY_SET));
         String bundlePath = getRelativePath(model.getProject(), packageName, "", "Bundle.properties"); //NOI18N
         fileChanges.add(fileChanges.bundleKey(bundlePath, "CTL_" + name + "Action",  // NOI18N
@@ -277,14 +277,14 @@ public class NewTCIterator extends BasicWizardIterator {
             if (folder == null) {
                 folder = FileUtil.createFolder(layer.getRoot(), "Actions/Window"); // NOI18N
             }
-            String instance = packageName.replace('.','-') + "-" + name;
+            String instance = packageName.replace('.','-') + "-" + name; // NOI18N
             FileObject file = folder.createData(instance, "instance"); // NOI18N
             folder = layer.getRoot().getFileObject("Menu/Window");// NOI18N
             if (folder == null) {
                 folder = FileUtil.createFolder(layer.getRoot(), "Menu/Window"); // NOI18N
             }
             file = folder.createData(name, "shadow"); // NOI18N
-            file.setAttribute("originalFile", "Actions/Window/" + instance + ".instance");
+            file.setAttribute("originalFile", "Actions/Window/" + instance + ".instance"); // NOI18N
         }
     }
     

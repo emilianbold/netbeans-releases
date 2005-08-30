@@ -243,12 +243,12 @@ public class NewProjectIterator extends BasicWizardIterator {
         FileObject parent = xml != null ? xml.getParent() : null;
         // XXX this is not fully accurate since if two ops would both create the same file,
         // really the second one would automatically generate a uniquified name... but close enough!
-        Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip"));
+        Set externalFiles = Collections.singleton(LayerUtils.findGeneratedName(parent, name + "Project.zip")); // NOI18N
         fileChanges.add(fileChanges.layerModifications(new CreateProjectZipOperation(project, model.getTemplate(),
                 name, packageName, category),
                 externalFiles
                 ));
-        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName));
+        fileChanges.add(fileChanges.bundleKeyDefaultBundle(category + "/" + name +  "Project.zip", displayName)); // NOI18N
         
         // x. generate java classes
         final String iteratorName = getRelativePath(project, packageName,
@@ -368,13 +368,10 @@ public class NewProjectIterator extends BasicWizardIterator {
                 lock.releaseLock();
             }
             file.setAttribute("template", Boolean.TRUE); // NOI18N
-            file.setAttribute("SystemFileSystem.localizingBundle", packageName + ".Bundle");
-            URL descURL = new URL("nbresloc:/" + packageName.replace('.', '/') + "/" + name + "Description.html");
-            file.setAttribute("instantiatingWizardURL", descURL);
-            URL locUrl = new URL("nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/module.gif");
-            file.setAttribute("SystemFileSystem.icon",  locUrl);
-            
-            file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + "." + name + "WizardIterator.createIterator");
+            file.setAttribute("SystemFileSystem.localizingBundle", packageName + ".Bundle"); // NOI18N
+            URL descURL = new URL("nbresloc:/" + packageName.replace('.', '/') + "/" + name + "Description.html"); // NOI18N
+            file.setAttribute("instantiatingWizardURL", descURL); // NOI18N
+            file.setAttribute("instantiatingIterator", "methodvalue:" + packageName + "." + name + "WizardIterator.createIterator"); // NOI18N
         }
     }
     

@@ -125,7 +125,7 @@ public final class EditableManifest {
      * @throws IOException if writing to the stream failed
      */
     public void write(OutputStream os) throws IOException {
-        Writer w = new OutputStreamWriter(os, "UTF-8");
+        Writer w = new OutputStreamWriter(os, "UTF-8"); // NOI18N
         mainSection.write(w);
         Iterator it = sections.iterator();
         while (it.hasNext()) {

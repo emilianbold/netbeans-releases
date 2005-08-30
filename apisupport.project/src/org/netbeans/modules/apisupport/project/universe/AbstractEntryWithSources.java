@@ -32,7 +32,7 @@ abstract class AbstractEntryWithSources extends AbstractEntry {
     
     protected Set/*<String>*/ computePublicClassNamesInMainModule() throws IOException {
         Set/*<String>*/ result = new HashSet();
-        File src = new File(getSourceLocation(), "src"); // XXX hardcoding src.dir
+        File src = new File(getSourceLocation(), "src"); // XXX hardcoding src.dir // NOI18N
         ManifestManager.PackageExport[] pkgs = getPublicPackages();
         for (int i = 0; i < pkgs.length; i++) {
             String pkg = pkgs[i].getPackage();

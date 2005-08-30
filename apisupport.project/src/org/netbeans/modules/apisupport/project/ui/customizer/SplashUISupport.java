@@ -87,7 +87,7 @@ class SplashUISupport {
     }
     
     static String colorToString(final Color  color) throws NumberFormatException {
-        return "0x"+Integer.toString((~0xff000000 & color.getRGB()), 16).toUpperCase();
+        return "0x" + Integer.toString((~0xff000000 & color.getRGB()), 16).toUpperCase(); // NOI18N
     }
     
     static int stringToInteger(final String integer) throws NumberFormatException {
@@ -147,7 +147,7 @@ class SplashUISupport {
      */
     static class ColorComboBox extends JComboBox {
         
-        public static final String PROP_COLOR = "color";
+        public static final String PROP_COLOR = "color"; // NOI18N
         public static final Value  CUSTOM_COLOR =
                 new Value(loc("Custom"), null); //NOI18N
         
@@ -183,7 +183,7 @@ class SplashUISupport {
                     new Value(Color.WHITE),
                     new Value(Color.YELLOW),
                     CUSTOM_COLOR,
-                    new Value("None", null)
+                    new Value(NbBundle.getMessage(SplashUISupport.class, "SplashUISupport_color_none"), null),
         };
         
         
@@ -200,7 +200,7 @@ class SplashUISupport {
                         Color c = JColorChooser.showDialog(
                                 SwingUtilities.getAncestorOfClass
                                 (Dialog.class, ColorComboBox.this),
-                                loc("SelectColor"),
+                                loc("SelectColor"), // NOI18N
                                 null
                                 );
                         setColor(c);
@@ -214,7 +214,7 @@ class SplashUISupport {
             Object[] ncontent = new Object [content.length];
             System.arraycopy(content, 0, ncontent, 0, content.length);
             ncontent [content.length - 1] = new Value(
-                    "Default", color
+                    NbBundle.getMessage(SplashUISupport.class, "SplashUISupport_color_default"), color // NOI18N
                     );
             setModel(new DefaultComboBoxModel(ncontent));
         }
@@ -275,7 +275,7 @@ class SplashUISupport {
             public void setItem(Object anObject) {
                 value = anObject;
                 if (value instanceof String) {
-                    setText("Default");
+                    setText(NbBundle.getMessage(SplashUISupport.class, "SplashUISupport_color_default"));
                     super.setForeground(SystemColor.textText);
                     super.setBackground(SystemColor.text);
                 } else {

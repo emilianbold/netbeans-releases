@@ -35,11 +35,11 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
         initComponents();
         // XXX temporary hardcoded few ones - where to get all these values?
         coockieClass.setModel(new DefaultComboBoxModel(new String[] {
-            "DataObject",
-            "EditCookie",
-            "EditorCookie",
-            "OpenCookie",
-            "Project"
+            "DataObject", // NOI18N
+            "EditCookie", // NOI18N
+            "EditorCookie", // NOI18N
+            "OpenCookie", // NOI18N
+            "Project", // NOI18N
         }));
     }
     

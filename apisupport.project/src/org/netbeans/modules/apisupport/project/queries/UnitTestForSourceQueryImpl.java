@@ -32,11 +32,11 @@ public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourc
     }
 
     public URL[] findUnitTests(FileObject source) {
-        return find(source, "src.dir", "test.unit.src.dir");
+        return find(source, "src.dir", "test.unit.src.dir"); // NOI18N
     }
     
     public URL[] findSources(FileObject unitTest) {
-        return find(unitTest, "test.unit.src.dir", "src.dir");
+        return find(unitTest, "test.unit.src.dir", "src.dir"); // NOI18N
     }
     
     private URL[] find(FileObject file, String from, String to) {

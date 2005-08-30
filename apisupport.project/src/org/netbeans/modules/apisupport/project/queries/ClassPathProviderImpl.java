@@ -28,16 +28,17 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectType;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.SpecificationVersion;
 import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.*;
 
 public final class ClassPathProviderImpl implements ClassPathProvider {
     
@@ -264,7 +265,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     
     private List/*<PathResourceImplementation>*/ createFuncTestExecuteClasspath() {
         List/*<PathResourceImplementation>*/ entries = new ArrayList(createFuncTestCompileClasspath());
-        File funcTestClassesDir = project.getHelper().resolveFile("build/test/qa-functional/classes");
+        File funcTestClassesDir = project.getHelper().resolveFile("build/test/qa-functional/classes"); // NOI18N
         entries.add(ClassPathSupport.createResource(Util.urlForDir(funcTestClassesDir)));
         return entries;
     }

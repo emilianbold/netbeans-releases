@@ -30,6 +30,8 @@ import javax.swing.JButton;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -53,7 +55,6 @@ import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.netbeans.modules.apisupport.project.*;
 
 public final class ModuleActions implements ActionProvider {
     
@@ -62,9 +63,9 @@ public final class ModuleActions implements ActionProvider {
         List/*<Action>*/ actions = new ArrayList();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, "Build", null));
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, "Clean and Build", null));
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, "Clean", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_build"), null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, NbBundle.getMessage(ModuleActions.class, "ACTION_rebuild"), null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, NbBundle.getMessage(ModuleActions.class, "ACTION_clean"), null));
         actions.add(null);
         boolean isNetBeansOrg;
         try {
@@ -75,55 +76,55 @@ public final class ModuleActions implements ActionProvider {
         }
         if (isNetBeansOrg) {
             String path = project.getPathWithinNetBeansOrg();
-            actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, "Build with Dependencies"));
-            actions.add(createMasterAction(project, new String[] {"init", "all-" + path, "tryme"}, "Build with Dependencies and Try"));
+            actions.add(createMasterAction(project, new String[] {"init", "all-" + path}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps")));
+            actions.add(createMasterAction(project, new String[] {"init", "all-" + path, "tryme"}, NbBundle.getMessage(ModuleActions.class, "ACTION_build_with_deps_tryme")));
         } else {
-            actions.add(createGlobalAction(project, new String[] {"run"}, "Run"));
+            actions.add(createGlobalAction(project, new String[] {"run"}, NbBundle.getMessage(ModuleActions.class, "ACTION_run")));
         }
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, "Debug", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
         actions.add(null);
         boolean testactions = false;
         if (project.supportsUnitTests()) {
-            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, "Run Unit Tests", null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
             if (findTestBuildXml(project) != null) { // hide for external modules w/o XTest infrastructure
                 Properties props = new Properties();
                 props.setProperty("xtest.testtype", "unit"); // NOI18N
-                actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, "Run Unit Tests using XTest"));
-                actions.add(createTestAction(project, new String[] {"cleanresults", "coverage", "show-coverage-results-nb"}, props, "Measure Unit Test Coverage"));
+                actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_xtest")));
+                actions.add(createTestAction(project, new String[] {"cleanresults", "coverage", "show-coverage-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_coverage")));
             }
             testactions = true;
         }
         if (project.getFunctionalTestSourceDirectory() != null) {
             Properties props = new Properties();
             props.setProperty("xtest.testtype", "qa-functional"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"buildtests"}, props, "Build Functional Tests"));
+            actions.add(createTestAction(project, new String[] {"buildtests"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_build_func_tests")));
             props = new Properties();
             props.setProperty("xtest.testtype", "qa-functional"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, "Run Functional Tests using XTest"));
+            actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_xtest_functional")));
             testactions = true;
         }
         if (project.getPerformanceTestSourceDirectory() != null) {
             Properties props = new Properties();
             props.setProperty("xtest.testtype", "qa-performance"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"buildtests"}, props, "Build Performance Tests"));
+            actions.add(createTestAction(project, new String[] {"buildtests"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_build_perf_tests")));
             props = new Properties();
             props.setProperty("xtest.testtype", "qa-performance"); // NOI18N
-            actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, "Run Performance Tests using XTest"));
+            actions.add(createTestAction(project, new String[] {"cleanresults", "runtests", "show-results-nb"}, props, NbBundle.getMessage(ModuleActions.class, "ACTION_xtest_perf")));
             testactions = true;
         }
         if (testactions) {
             actions.add(null);
         }
-        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, "Generate Javadoc", null));
+        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
         // Prefer to always show it, for discoverability: if (project.evaluator().getProperty("javadoc.arch") != null)
-        actions.add(createGlobalAction(project, new String[] {"arch-nb"}, "Generate Architecture Description"));
+        actions.add(createGlobalAction(project, new String[] {"arch-nb"}, NbBundle.getMessage(ModuleActions.class, "ACTION_arch")));
         actions.add(null);
         if (isNetBeansOrg) {
-            actions.add(createCheckBundleAction(project, "Check for Unused Bundle Keys"));
+            actions.add(createCheckBundleAction(project, NbBundle.getMessage(ModuleActions.class, "ACTION_unused_bundle_keys")));
             actions.add(null);
         }
-        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, "Install/Reload in Target Platform", null));
-        actions.add(createGlobalAction(project, new String[] {"nbm"}, "Create NBM"));
+        actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), null));
+        actions.add(createGlobalAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
@@ -267,7 +268,7 @@ public final class ModuleActions implements ActionProvider {
     private FileObject[] findSources(Lookup context) {
         FileObject srcDir = project.getSourceDirectory();
         if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
             //System.err.println("findSources: srcDir=" + srcDir + " files=" + (files != null ? java.util.Arrays.asList(files) : null) + " context=" + context);
             return files;
         } else {
@@ -278,7 +279,7 @@ public final class ModuleActions implements ActionProvider {
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
         FileObject testSrcDir = project.getTestSourceDirectory();
         if (testSrcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true); // NOI18N
             if (files != null) {
                 return files;
             }
@@ -288,7 +289,7 @@ public final class ModuleActions implements ActionProvider {
             FileObject srcDir = project.getSourceDirectory();
             //System.err.println("  srcDir=" + srcDir);
             if (srcDir != null) {
-                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
                 //System.err.println("  files=" + files);
                 if (files != null) {
                     FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
@@ -317,7 +318,7 @@ public final class ModuleActions implements ActionProvider {
     private FileObject[] findFunctionalTestSources(Lookup context) {
         FileObject srcDir = project.getFunctionalTestSourceDirectory();
         if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
             return files;
         } else {
             return null;
@@ -327,7 +328,7 @@ public final class ModuleActions implements ActionProvider {
     private FileObject[] findPerformanceTestSources(Lookup context) {
         FileObject srcDir = project.getPerformanceTestSourceDirectory();
         if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true);
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
             return files;
         } else {
             return null;
@@ -362,14 +363,14 @@ public final class ModuleActions implements ActionProvider {
             if (files != null) {
                 String path = FileUtil.getRelativePath(project.getFunctionalTestSourceDirectory(), files[0]);
                 p = new Properties();
-                p.setProperty("xtest.testtype", "qa-functional");
+                p.setProperty("xtest.testtype", "qa-functional"); // NOI18N
                 p.setProperty("classname", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
                 targetNames = new String[] {"internal-execution"}; // NOI18N
                 buildScript = findTestBuildXml(project);
             } else if ((files = findPerformanceTestSources(context)) != null) { 
                 String path = FileUtil.getRelativePath(project.getPerformanceTestSourceDirectory(), files[0]);
                 p = new Properties();
-                p.setProperty("xtest.testtype", "qa-performance");
+                p.setProperty("xtest.testtype", "qa-performance"); // NOI18N
                 p.setProperty("classname", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
                 targetNames = new String[] {"internal-execution"}; // NOI18N
                 buildScript = findTestBuildXml(project);         

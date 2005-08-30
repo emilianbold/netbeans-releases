@@ -23,6 +23,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * the first panel in loaders wizard
@@ -70,30 +71,28 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
     }
     
     private void checkValidity() {
-        // XXX I18N
-        //TODO:
         String message = null;
         String txt = txtMimeType.getText().trim();
         
         if (txt.length() == 0 || DEFAULT_MIME_TYPE.equals(txt) || (!MIME_TYPE_PATTERN.matcher(txt).matches())) {
-            message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NotValidMimeType");
+            message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NotValidMimeType");
         } else {
             if (rbByElement.isSelected()) {
                 if (txtNamespace.getText().trim().length() == 0) {
-                    message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoNamespace");
+                    message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoNamespace");
                 } else {
                     Matcher match = ELEMENT_PATTERN.matcher(txt);
                     if (!match.matches()) {
-                        message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadMimeTypeForXML");
+                        message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadMimeTypeForXML");
                     }
                 }
             } else {
                 if (txtExtension.getText().trim().length() == 0) {
-                    message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoExtension");
+                    message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_NoExtension");
                 } else {
                     Matcher match = EXTENSION_PATTERN.matcher(txtExtension.getText());
                     if (!match.matches()) {
-                        message = org.openide.util.NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadExtensionPattern");
+                        message = NbBundle.getMessage(FileRecognitionPanel.class, "MSG_BadExtensionPattern");
                     }
                 }
             }

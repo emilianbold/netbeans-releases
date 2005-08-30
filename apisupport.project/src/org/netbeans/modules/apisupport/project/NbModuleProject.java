@@ -62,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
@@ -141,13 +142,12 @@ public final class NbModuleProject implements Project {
         // difficult to predict statically exactly what they are!
         // XXX would be good to mark at least the module JAR as owned by this project
         // (currently FOQ/SH do not support that)
-        // XXX I18N
-        sourcesHelper.addPrincipalSourceRoot("${src.dir}", "Source Packages", null, null); // #56457
-        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Source Packages", null, null);
+        sourcesHelper.addPrincipalSourceRoot("${src.dir}", NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages"), null, null); // #56457
+        sourcesHelper.addTypedSourceRoot("${src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_source_packages"), null, null);
         // XXX other principal source roots, as needed...
-        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Unit Test Packages", null, null);
-        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Functional Test Packages", null, null);
-        sourcesHelper.addTypedSourceRoot("${test.qa-performance.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, "Performance Test Packages", null, null);
+        sourcesHelper.addTypedSourceRoot("${test.unit.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_unit_test_packages"), null, null);
+        sourcesHelper.addTypedSourceRoot("${test.qa-functional.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_functional_test_packages"), null, null);
+        sourcesHelper.addTypedSourceRoot("${test.qa-performance.src.dir}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_performance_test_packages"), null, null);
         // #42332: also any other misc. test dirs (just add source roots, no CP etc. for now)
         FileObject testDir = helper.getProjectDirectory().getFileObject("test"); // NOI18N
         if (testDir != null) {
@@ -165,12 +165,12 @@ public final class NbModuleProject implements Project {
                     // Already handled specially.
                     continue;
                 }
-                sourcesHelper.addTypedSourceRoot("test/" + name + "/src", JavaProjectConstants.SOURCES_TYPE_JAVA, name + " Test Packages", null, null);
+                sourcesHelper.addTypedSourceRoot("test/" + name + "/src", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(NbModuleProject.class, "LBL_unknown_test_packages", name), null, null);
             }
         }
         if (helper.resolveFileObject("javahelp/manifest.mf") == null) { // NOI18N
             // Special hack for core - ignore core/javahelp
-            sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", "JavaHelp Packages", null, null);
+            sourcesHelper.addTypedSourceRoot("javahelp", "javahelp", NbBundle.getMessage(NbModuleProject.class, "LBL_javahelp_packages"), null, null);
         }
         Iterator it = getExtraCompilationUnits().entrySet().iterator();
         while (it.hasNext()) {
@@ -241,9 +241,9 @@ public final class NbModuleProject implements Project {
     
     private NbModuleTypeProvider.NbModuleType getModuleType() {
         Element data = getHelper().getPrimaryConfigurationData(true);
-        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) {
+        if (Util.findElement(data, "suite-component", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleTypeProvider.SUITE_COMPONENT;
-        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) {
+        } else if (Util.findElement(data, "standalone", NbModuleProjectType.NAMESPACE_SHARED) != null) { // NOI18N
             return NbModuleTypeProvider.STANDALONE;
         } else {
             return NbModuleTypeProvider.NETBEANS_ORG;
@@ -356,7 +356,7 @@ public final class NbModuleProject implements Project {
         defaults.put("test.qa-functional.src.dir", "test/qa-functional/src"); // NOI18N
         defaults.put("test.qa-performance.src.dir", "test/qa-performance/src"); // NOI18N
         defaults.put("build.test.unit.classes.dir", "build/test/unit/classes"); // NOI18N
-        defaults.put("javac.source", "1.4");
+        defaults.put("javac.source", "1.4"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(defaults));
         providers.add(createModuleClasspathPropertyProvider());
         Map/*<String,String>*/ buildDefaults = new HashMap();

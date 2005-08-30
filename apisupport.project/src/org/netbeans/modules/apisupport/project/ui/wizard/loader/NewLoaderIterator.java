@@ -295,7 +295,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
             installBefore = "org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject"; //NOI18N
         }
         
-        fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore));
+        fileChanges.add(fileChanges.addLoaderSection(packageName.replace('.', '/')  + "/" + namePrefix + "DataLoader", installBefore)); // NOI18N
         
         //8. create layerfile actions subsection
         
@@ -341,19 +341,19 @@ public class NewLoaderIterator extends BasicWizardIterator {
         //9. create sample template
         String suffix = null;
         if (model.isExtensionBased()) {
-            suffix = "Template." + getFirstExtension(model.getExtension());
+            suffix = "Template." + getFirstExtension(model.getExtension()); // NOI18N
             template = NewLoaderIterator.class.getResource("templateNew1");//NOI18N
         } else {
             template = NewLoaderIterator.class.getResource("templateNew2");//NOI18N
-            suffix = "Template.xml";
+            suffix = "Template.xml"; // NOI18N
             try {
-                replaceTokens.put("@@NAMESPACE@@", XMLUtil.toElementContent(model.getNamespace()));
+                replaceTokens.put("@@NAMESPACE@@", XMLUtil.toElementContent(model.getNamespace())); // NOI18N
             } catch (CharConversionException ex) {
                 assert false: ex;
             }
         }
         Map attrs = new HashMap();
-        attrs.put("template", Boolean.TRUE);
+        attrs.put("template", Boolean.TRUE); // NOI18N
         fileChanges.add(fileChanges.createLayerEntry("Templates/Other/" + namePrefix + suffix, //NOI18N
                                                      template,
                                                      replaceTokens,
@@ -370,7 +370,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         StringTokenizer tokens = new StringTokenizer(ext, " ,"); // NOI18N
         while (tokens.hasMoreTokens()) {
             String element = tokens.nextToken();
-            if (element.startsWith(".")) {
+            if (element.startsWith(".")) { // NOI18N
                 element = element.substring(1);
             }
             buff.append("        <ext name=\"").append(element).append("\"/>\n"); //NOI18N
@@ -380,7 +380,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
     }
     
     private static String getFirstExtension(String ext) {
-        StringTokenizer tokens = new StringTokenizer(ext," ,");
+        StringTokenizer tokens = new StringTokenizer(ext," ,"); // NOI18N
         String element = "someextension"; // NOI18N
         if (tokens.hasMoreTokens()) {
             element = tokens.nextToken();
@@ -398,7 +398,7 @@ public class NewLoaderIterator extends BasicWizardIterator {
         StringBuffer buff = new StringBuffer();
         buff.append("        <ext name=\"xml\"/>\n"); //NOI18N
         buff.append("        <resolver mime=\"").append(mime).append("\">\n"); //NOI18N
-        buff.append("            <xml-rule>\n");
+        buff.append("            <xml-rule>\n"); // NOI18N
         try {
             buff.append("                <element ns=\"").append(XMLUtil.toElementContent(namespace)).append("\"/>\n"); //NOI18N
         } catch (CharConversionException ex) {

@@ -34,13 +34,13 @@ import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.netbeans.modules.apisupport.project.*;
 import org.openide.util.NbBundle;
 
 /**
@@ -273,7 +273,7 @@ public final class NbPlatform implements Comparable {
             }
         }
         if (isDefault()) {
-            return label + " (Default)"; // XXX I18N
+            return NbBundle.getMessage(NbPlatform.class, "LBL_default_platform", label);
         } else {
             return label;
         }

@@ -148,7 +148,7 @@ public class NbModuleProjectGenerator {
             FileObject fo = FileUtil.toFileObject(license);
             try {
                 FileUtil.copyFile(fo, dirFO, fo.getName());
-                props.put(SingleModuleProperties.LICENSE_FILE, "${basedir}/" + fo.getNameExt());
+                props.put(SingleModuleProperties.LICENSE_FILE, "${basedir}/" + fo.getNameExt()); // NOI18N
                 //TODO set the nbm.license property
             } catch (IOException e) {
                 //TODO report
@@ -219,7 +219,7 @@ public class NbModuleProjectGenerator {
                 projectDir, GeneratedFilesHelper.BUILD_XML_PATH);
         Document prjDoc = XMLUtil.createDocument("project", null, null, null); // NOI18N
         Element prjEl = prjDoc.getDocumentElement();
-        prjEl.setAttribute("name", PropertyUtils.relativizeFile(nborg, 
+        prjEl.setAttribute("name", PropertyUtils.relativizeFile(nborg, // NOI18N
                 FileUtil.toFile(projectDir)));
         prjEl.setAttribute("default", "netbeans"); // NOI18N
         prjEl.setAttribute("basedir", "."); // NOI18N
@@ -446,7 +446,7 @@ public class NbModuleProjectGenerator {
     private static FileObject createFileObject(File fileToCreate) throws IOException {
         File parent = fileToCreate.getParentFile();
         if (parent == null) {
-            throw new IllegalArgumentException("Cannot create: " + fileToCreate);
+            throw new IllegalArgumentException("Cannot create: " + fileToCreate); // NOI18N
         }
         if (!parent.exists()) {
             parent.mkdirs();

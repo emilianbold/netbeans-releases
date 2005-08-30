@@ -122,7 +122,7 @@ public class NewNbModuleWizardIterator implements WizardDescriptor.Instantiating
         UIUtil.setProjectChooserDirParent(projectFolder);
         
         // XXX this constant should be defined somewhere!
-        settings.putProperty("setAsMain", Boolean.valueOf(data.isMainProject()));
+        settings.putProperty("setAsMain", Boolean.valueOf(data.isMainProject())); // NOI18N
         
         return resultSet;
     }

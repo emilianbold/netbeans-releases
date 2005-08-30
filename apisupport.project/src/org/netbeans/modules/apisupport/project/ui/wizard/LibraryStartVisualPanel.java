@@ -143,7 +143,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
             File fil = new File(tokens.nextToken());
             String name = fil.getName();
             name = name.substring(0, name.lastIndexOf('.'));
-            name = name.replaceAll("[0-9._-]+$", "");
+            name = name.replaceAll("[0-9._-]+$", ""); // NOI18N
             if (assignValues) {
                 data.setProjectName(name);
             }
@@ -154,7 +154,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                 Enumeration en = jf.entries();
                 while (en.hasMoreElements()) {
                     JarEntry entry = (JarEntry)en.nextElement();
-                    if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
+                    if (!entry.isDirectory() && entry.getName().endsWith(".class")) { // NOI18N
                         String nm = entry.getName();
                         int index = nm.lastIndexOf('/');
                         if (index > -1) {
@@ -169,7 +169,7 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
                         } else {
                             // a bad, bad jar having class files in default package.
                             if (!fileAlreadyMarked) {
-                                wrongOnes = wrongOnes == null ? fil.getName() : wrongOnes + "," + fil.getName();
+                                wrongOnes = wrongOnes == null ? fil.getName() : wrongOnes + "," + fil.getName(); // NOI18N
                                 fileAlreadyMarked = true;
                             }
                         }
@@ -384,10 +384,10 @@ final class LibraryStartVisualPanel extends BasicVisualPanel {
     
     private static final class JarZipFilter extends FileFilter {
              public boolean accept(File pathname) {
-                 return  pathname.isDirectory() || pathname.getName().endsWith("zip") || pathname.getName().endsWith("jar");
+                 return  pathname.isDirectory() || pathname.getName().endsWith("zip") || pathname.getName().endsWith("jar"); // NOI18N
              }
              public String getDescription() {
-                 return "*.jar, *.zip";
+                 return NbBundle.getMessage(LibraryStartVisualPanel.class, "LibraryStartVisualPanel_jar_zip_filter");
              }
         
     }

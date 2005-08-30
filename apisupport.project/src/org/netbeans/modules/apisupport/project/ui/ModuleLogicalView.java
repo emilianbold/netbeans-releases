@@ -49,6 +49,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -128,7 +129,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             ProjectInformation pi = ProjectUtils.getInformation(project);
             setName(pi.getName());
             setDisplayName(pi.getDisplayName());
-            setShortDescription("Project in " + FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath());
+            setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
             
             setFiles(getProjectFiles());
             pi.addPropertyChangeListener(new PropertyChangeListener() {
@@ -182,7 +183,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                     fileSystemListeners.add(fsl);
                 } catch (FileStateInvalidException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
+                    err.annotate(e, "Cannot get " + fo + " filesystem, ignoring...");  // NOI18N
                     err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
@@ -246,7 +247,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
     }
     
-    private static final String IMPORTANT_FILES_NAME = "important.files";
+    private static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
     
     private static final class RootChildren extends Children.Keys {
         
@@ -304,7 +305,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             if (root == null) {
                 return null;
             }
-            return GenericSources.group(project, root, propname, "Extra Javadoc Files", null, null); // XXX I18N
+            return GenericSources.group(project, root, propname, NbBundle.getMessage(ModuleLogicalView.class, "LBL_extra_javadoc_files"), null, null);
         }
         
     }
@@ -344,7 +345,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                     fileSystemListeners.add(fsl);
                 } catch (FileStateInvalidException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not get " + fo + " filesystem, ignoring...");  // NO18N
+                    err.annotate(e, "Cannot get " + fo + " filesystem, ignoring...");  // NOI18N
                     err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
@@ -361,8 +362,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             return Utilities.mergeImages(base, badge, 8, 8);
         }
         
-        // XXX I18N
-        private static final String DISPLAY_NAME = "Important Files";
+        private static final String DISPLAY_NAME = NbBundle.getMessage(ModuleLogicalView.class, "LBL_important_files");
         
         public String getDisplayName() {
             String s = DISPLAY_NAME;
@@ -473,19 +473,18 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         /** Abstract location to display name. */
         private static final java.util.Map/*<String,String>*/ FILES = new LinkedHashMap();
         static {
-            // XXX I18N
-            FILES.put("${manifest.mf}", "Module Manifest");
-            FILES.put("${javadoc.arch}", "Architecture Description");
-            FILES.put("${javadoc.apichanges}", "API Changes");
-            FILES.put("${javadoc.overview}", "Javadoc Overview");
-            FILES.put("build.xml", "Build Script");
-            FILES.put("nbproject/project.xml", "Project Metadata");
-            FILES.put("nbproject/project.properties", "Project Properties");
-            FILES.put("nbproject/private/private.properties", "Per-user Project Properties");
-            FILES.put("nbproject/suite.properties", "Suite Locator");
-            FILES.put("nbproject/private/suite-private.properties", "Per-user Suite Locator");
-            FILES.put("nbproject/platform.properties", "NetBeans Platform Config");
-            FILES.put("nbproject/private/platform-private.properties", "Per-user NetBeans Platform Config");
+            FILES.put("${manifest.mf}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_module_manifest"));
+            FILES.put("${javadoc.arch}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_arch_desc"));
+            FILES.put("${javadoc.apichanges}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_api_changes"));
+            FILES.put("${javadoc.overview}", NbBundle.getMessage(ModuleLogicalView.class, "LBL_javadoc_overview"));
+            FILES.put("build.xml", NbBundle.getMessage(ModuleLogicalView.class, "LBL_build.xml"));
+            FILES.put("nbproject/project.xml", NbBundle.getMessage(ModuleLogicalView.class, "LBL_project.xml"));
+            FILES.put("nbproject/project.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_project.properties"));
+            FILES.put("nbproject/private/private.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_private.properties"));
+            FILES.put("nbproject/suite.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_suite.properties"));
+            FILES.put("nbproject/private/suite-private.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_suite-private.properties"));
+            FILES.put("nbproject/platform.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_platform.properties"));
+            FILES.put("nbproject/private/platform-private.properties", NbBundle.getMessage(ModuleLogicalView.class, "LBL_platform-private.properties"));
         }
         
         private final NbModuleProject project;

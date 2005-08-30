@@ -181,9 +181,9 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
          */
         public String getDisplayText() {
             if (sectionName != null) {
-                return NbBundle.getMessage(getClass(), "TXT_ManifestSectionRename", this.name, sectionName);
+                return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ManifestSectionRename", this.name, sectionName);
             }
-            return NbBundle.getMessage(getClass(), "TXT_ManifestRename", this.name, attrName);
+            return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ManifestRename", this.name, attrName);
         }
         
         public void performChange() {
@@ -233,7 +233,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            return NbBundle.getMessage(getClass(), "TXT_ServicesRename", this.name);
+            return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ServicesRename", this.name);
         }
         
         public void performChange() {
@@ -249,8 +249,8 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                     newName = clazz.getName();
                     clazz = null;
                 }
-                longName = longName.replaceAll("[.]", "\\.");
-                content = content.replaceAll("^" + longName + "[ \\\n]?", newName + "\n");
+                longName = longName.replaceAll("[.]", "\\."); // NOI18N
+                content = content.replaceAll("^" + longName + "[ \\\n]?", newName + "\n"); // NOI18N
                 Utility.writeFileFromString(parentFile, content);
             }
         }
@@ -281,7 +281,7 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
          * @return Formatted text.
          */
         public String getDisplayText() {
-            return NbBundle.getMessage(getClass(), "TXT_ServicesPackageRename", this.name);
+            return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ServicesPackageRename", this.name);
         }
         
         public void performChange() {
@@ -289,8 +289,8 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             if (content != null) {
                 String longName = oldName;
                 String newName = pack.getName();
-                longName = longName.replaceAll("[.]", "\\.");
-                content = content.replaceAll("^" + longName, newName);
+                longName = longName.replaceAll("[.]", "\\."); // NOI18N
+                content = content.replaceAll("^" + longName, newName); // NOI18N
                 Utility.writeFileFromString(parentFile, content);
             }
         }

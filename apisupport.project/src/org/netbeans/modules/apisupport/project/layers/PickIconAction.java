@@ -29,6 +29,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 import org.openide.windows.WindowManager;
 
@@ -73,7 +74,7 @@ public class PickIconAction extends CookieAction {
     }
     
     public String getName() {
-        return "Pick Icon..."; // XXX I18N
+        return NbBundle.getMessage(PickIconAction.class, "LBL_pick_icon");
     }
     
     protected Class[] cookieClasses() {

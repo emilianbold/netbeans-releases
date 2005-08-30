@@ -145,10 +145,10 @@ public class Util {
         try {
             URL u = FileUtil.normalizeFile(dir).toURI().toURL();
             String s = u.toExternalForm();
-            if (s.endsWith("/")) {
+            if (s.endsWith("/")) { // NOI18N
                 return u;
             } else {
-                return new URL(s + "/");
+                return new URL(s + "/"); // NOI18N
             }
         } catch (MalformedURLException e) {
             throw new AssertionError(e);
@@ -285,8 +285,8 @@ public class Util {
      * Actually deletages to {@link #findLocalizedBundleInfo(FileObject, Manifest)}.
      */
     public static LocalizedBundleInfo findLocalizedBundleInfo(File projectDir) {
-        FileObject sourceDir = FileUtil.toFileObject(new File(projectDir, "src"));
-        FileObject manifestFO = FileUtil.toFileObject(new File(projectDir, "manifest.mf"));
+        FileObject sourceDir = FileUtil.toFileObject(new File(projectDir, "src")); // NOI18N
+        FileObject manifestFO = FileUtil.toFileObject(new File(projectDir, "manifest.mf")); // NOI18N
         
         LocalizedBundleInfo locInfo = null;
         Manifest mf = getManifest(manifestFO);

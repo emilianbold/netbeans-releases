@@ -119,10 +119,10 @@ public final class LayerNode extends FilterNode {
         protected Node[] createNodes(Object key) {
             try {
                 if (key == KEY_RAW) {
-                    FileSystem fs = badge(handle.layer(false), cp, handle.getLayerFile(), "<this layer>", null); // XXX I18N
+                    FileSystem fs = badge(handle.layer(false), cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer"), null);
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 } else if (key == KEY_CONTEXTUALIZED) {
-                    FileSystem fs = badge(sfs, cp, handle.getLayerFile(), "<this layer in context>", handle.layer(false)); // XXX I18N
+                    FileSystem fs = badge(sfs, cp, handle.getLayerFile(), NbBundle.getMessage(LayerNode.class, "LBL_this_layer_in_context"), handle.layer(false));
                     return new Node[] {DataObject.find(fs.getRoot()).getNodeDelegate()};
                 } else {
                     throw new AssertionError(key);
