@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /** AddDialog.java
@@ -30,15 +31,17 @@ import org.openide.util.NbBundle;
 public class AddDialog extends DialogDescriptor {
     private static Color errorLabelColor = javax.swing.UIManager.getDefaults().getColor("ToolBar.dockingForeground"); //NOI18N
     public static final JButton ADD_OPTION = new JButton(NbBundle.getMessage(AddDialog.class,"LBL_Add"));
+    //public static final JButton HELP_OPTION = new JButton(NbBundle.getMessage(AddDialog.class,"LBL_Help"));
     private JPanel panel;
     
     /** Creates a new instance of EditDialog */
-    public AddDialog(ValidatingPanel panel, String title) {
+    public AddDialog(ValidatingPanel panel, String title, HelpCtx helpCtx) {
         super (new InnerPanel((JPanel)panel),getTitle(title),true,
+              //new Object[]{ADD_OPTION, DialogDescriptor.CANCEL_OPTION, HELP_OPTION},
               new Object[]{ADD_OPTION, DialogDescriptor.CANCEL_OPTION},
               DialogDescriptor.OK_OPTION,
               DialogDescriptor.BOTTOM_ALIGN,
-              null,
+              helpCtx,
               null);
         this.panel=(JPanel)panel;
         AbstractButton[] comp = panel.getStateChangeComponents();
