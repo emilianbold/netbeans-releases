@@ -212,6 +212,11 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     NbPlatform getActivePlatform() {
+        if (moduleType != NbModuleTypeProvider.NETBEANS_ORG
+                && (platform == null || !NbPlatform.getPlatforms().contains(platform))) {
+            Util.err.log("Platform " + platform + " was presuambly removed. Switching to default."); // NOI18N
+            platform = NbPlatform.getDefaultPlatform();
+        }
         return platform;
     }
     
@@ -413,7 +418,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            addNonEmptyPackages(availablePublicPackages, FileUtil.toFileObject(srcDir), "java", false);
+            addNonEmptyPackages(availablePublicPackages, FileUtil.toFileObject(srcDir), "java", false); // NOI18N
             
             // find all available public packages in classpath extensions
             String[] libsPaths = getProjectXMLManager().getBinaryOrigins();
@@ -572,7 +577,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         try {
             JarFileSystem jfs = new JarFileSystem();
             jfs.setJarFile(jarFile);
-            addNonEmptyPackages(pkgs, jfs.getRoot(), "class", true);
+            addNonEmptyPackages(pkgs, jfs.getRoot(), "class", true); // NOI18N
         } catch (PropertyVetoException pve) {
             ErrorManager.getDefault().notify(pve);
         } catch (IOException ioe) {
