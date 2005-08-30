@@ -91,6 +91,8 @@ public class AddAttrAction extends CookieAction {
             boolean methodExist = 
                     Introspector.discoverAttrMethods(mbeanClass,rc,attributes[i]);
             if (methodExist)
+                Introspector.updateAttrExceptions(mbeanClass,rc,attributes[i]);
+            if (methodExist)
                 hasExistAttr = true;
         }
         

@@ -15,6 +15,8 @@ package org.netbeans.modules.jmx;
 
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.jmi.javamodel.Parameter;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * class representing a MBean Attribute.
@@ -27,7 +29,9 @@ public class MBeanAttribute implements Comparable {
     private String description;
     private String access;
     private Method getter;
+    private List<String> getterExceptions = new ArrayList();
     private Method setter;
+    private List<String> setterExceptions = new ArrayList();
     private boolean isReadable;
     private boolean isWritable;
     private boolean isMethodExits = false;
@@ -160,6 +164,22 @@ public class MBeanAttribute implements Comparable {
 
     public Method getSetter() {
         return setter;
+    }
+    
+    public List<String> getGetterExceptions() {
+        return getterExceptions;
+    }
+
+    public List<String> getSetterExceptions() {
+        return setterExceptions;
+    }
+    
+    public void setGetterExceptions(List<String> exceptions) {
+        this.getterExceptions = exceptions;
+    }
+
+    public void setSetterExceptions(List<String> exceptions) {
+        this.setterExceptions = exceptions;
     }
 
     public String getTypeName() {

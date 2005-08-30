@@ -30,6 +30,8 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.modules.javacore.api.JavaModel;
 
 /**
  * create a Data Object for an MBean with the informations of the MBean 
@@ -270,7 +272,7 @@ public class Translator {
             nbAttr = new Integer(strNbAttr).intValue();
         }
         
-        List attributes = new ArrayList();
+        List<MBeanAttribute> attributes = new ArrayList();
         for (int i = 0 ; i < nbAttr ; i++) {
              String attrName   = (String)wiz.getProperty(
                     WizardConstants.PROP_ATTR_NAME + i);
@@ -340,6 +342,17 @@ public class Translator {
                     attrAccess, attrDescr, true);
                 Introspector.discoverAttrMethods(wrappedClass,wrappedClass.getResource(),attr);
                 attributes.add(attr);
+            }
+        }
+        
+        //discover exceptions in existing methods (getter and setter)
+        if (mbean.isWrapppedClass()) {
+            JavaModelPackage pkg = JavaModel.getDefaultExtent();
+            JavaClass wrapClass = (JavaClass)
+                    pkg.getJavaClass().resolve(mbean.getWrappedClassName());
+            for (MBeanAttribute attribute : attributes) {
+                Introspector.updateAttrExceptions(wrapClass,
+                        wrapClass.getResource(),attribute);
             }
         }
         

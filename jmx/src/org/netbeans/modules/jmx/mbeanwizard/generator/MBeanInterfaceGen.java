@@ -173,6 +173,11 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
         else
             prefix = "get"; // NOI18N
         
+        ArrayList exceptions = new ArrayList();
+        List<String> getterExceptions = attribute.getGetterExceptions();
+        for (int i = 0; i < getterExceptions.size(); i ++)
+            exceptions.add(getTypeRef(pkg, getterExceptions.get(i)));
+        
         Method method = pkg.getMethod().createMethod(
                 prefix + attribute.getName(),
                 Collections.EMPTY_LIST,
@@ -183,7 +188,7 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
                 null, // string body
                 Collections.EMPTY_LIST, // type params
                 Collections.EMPTY_LIST, // parameters
-                Collections.EMPTY_LIST, // exceptions
+                exceptions, // exceptions
                 getTypeRef(pkg, attribute.getTypeName()), // type
                 0);
         tgtIntf.getFeatures().add(method);
@@ -202,6 +207,11 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
                 false);
         params.add(attrType);
         
+        ArrayList exceptions = new ArrayList();
+        List<String> setterExceptions = attribute.getSetterExceptions();
+        for (int i = 0; i < setterExceptions.size(); i ++)
+            exceptions.add(getTypeRef(pkg, setterExceptions.get(i)));
+        
         Method method = pkg.getMethod().createMethod(
                 "set" + attribute.getName(), // NOI18N
                 Collections.EMPTY_LIST, // annotations
@@ -212,7 +222,7 @@ public class MBeanInterfaceGen extends MBeanFileGenerator {
                 null, // string body
                 Collections.EMPTY_LIST, // type params
                 params, // parameters
-                Collections.EMPTY_LIST, // exceptions
+                exceptions, // exceptions
                 getTypeRef(pkg, WizardConstants.VOID_NAME), // type
                 0);
         tgtIntf.getFeatures().add(method);
