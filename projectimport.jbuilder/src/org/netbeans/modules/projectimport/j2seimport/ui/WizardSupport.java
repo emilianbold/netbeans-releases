@@ -33,7 +33,7 @@ public class WizardSupport extends WizardDescriptor implements BasicPanel.ErrorM
         }
         
         WizardSupport ws = new WizardSupport(wpanels, data);
-        ws.setTitleFormat(new java.text.MessageFormat("{1}")); // NOI18N
+        ws.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
         //TODO
         ws.setTitle(title); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(ws);

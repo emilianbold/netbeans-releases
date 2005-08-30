@@ -38,6 +38,9 @@ public abstract class BasicPanel extends JPanel {
     
     public abstract void validateContent() throws org.openide.WizardValidationException;
     
+    public String getName() {
+        return getPanelDescription();
+    }
     
     public final boolean isOK() {
         return isOK;
