@@ -131,8 +131,10 @@ class LayoutFeeder implements LayoutConstants {
             if (dragger.isResizing()) {
                 originalLPosFixed = originalLPositionsFixed[dim];
                 originalTPosFixed = originalTPositionsFixed[dim];
-                if (dragger.isResizing(dim))
+                if (dragger.isResizing(dim)) {
                     checkResizing();
+                    operations.resizeInterval(addingInterval, addingSpace.size(dim));
+                }
             }
 
 //            if (dragger.isResizing(dim)) {

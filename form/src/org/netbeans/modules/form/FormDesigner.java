@@ -215,7 +215,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
         resetTopDesignComponent(false);
         handleLayer.setViewOnly(formModel.isReadOnly());
-        componentLayer.setDesignerSize(getStoredDesignerSize());
 
         // Beans without layout model doesn't require layout designer
         if (formModel.getLayoutModel() != null) {
@@ -338,6 +337,35 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void updateWholeDesigner() {
         if (formModelListener != null)
             formModelListener.formChanged(null);
+    }
+
+    private void setupDesignerSize(Component comp) {
+        Dimension size = null;
+        RADVisualFormContainer formCont = null;
+        if (topDesignComponent instanceof RADVisualFormContainer) {
+            formCont = (RADVisualFormContainer) topDesignComponent;
+            if (!formModel.isFreeDesignDefaultLayout()
+                || formCont.getFormSizePolicy() == RADVisualFormContainer.GEN_BOUNDS)
+            {   // use hardcoded number for designer size
+                size = formCont.getDesignerSize();
+            }
+        }
+        if (size == null && formModel.isFreeDesignDefaultLayout()) {
+//            topDesignComponent instanceof RADVisualContainer && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null
+            // compute designer size from preferred size of top component
+            size = comp.getPreferredSize();
+            // remember the size in metadata
+            if (formCont != null) {
+                formCont.setFormSize(null);
+                formCont.setDesignerSize(size);
+            }
+            else if (topDesignComponent == formModel.getTopRADComponent()) {
+                topDesignComponent.setAuxValue(PROP_DESIGNER_SIZE, size);
+            }
+        }
+        else size = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);
+
+        componentLayer.setDesignerSize(size);
     }
 
     void updateComponentLayer() {
@@ -1539,6 +1567,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 Component formClone = (Component) replicator.createClone();
                 if (formClone != null) {
                     formClone.setVisible(true);
+                    setupDesignerSize(formClone);
                     componentLayer.setTopDesignComponent(formClone);
                     updateComponentLayer();
                 }
@@ -1626,8 +1655,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
             if (updateDone) {
                 updateComponentLayer();
-//                componentLayer.revalidate();
-//                repaintSelection();
+                getLayoutDesigner().externalSizeChangeHappened();
             }
         }
     }

@@ -292,9 +292,8 @@ class LayoutOperations implements LayoutConstants {
 
     void resizeInterval(LayoutInterval interval, int size) {
         assert size >= 0 || size == NOT_EXPLICITLY_DEFINED;
-        int min = interval.getMinimumSize() == interval.getPreferredSize()
-                  && (interval.getMinimumSize() != NOT_EXPLICITLY_DEFINED
-                      || interval.getMaximumSize() < Short.MAX_VALUE) ?
+        int min = (interval.getMinimumSize() == interval.getPreferredSize()
+                   && interval.getMaximumSize() < Short.MAX_VALUE) ?
                   size : interval.getMinimumSize();
         int max = interval.getMaximumSize() == interval.getPreferredSize() ?
                   size : interval.getMaximumSize();

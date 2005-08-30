@@ -1156,6 +1156,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         // dialog but before updating the designer through
                         // synthetic property change processing
                         formDesigner.getComponentLayer().setDesignerSize(size);
+                        formDesigner.getLayoutDesigner().externalSizeChangeHappened();
 //                        formDesigner.updateComponentLayer();
                         
                         setToolTipText(null);
@@ -2178,11 +2179,10 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     for (int i=0; i < movingComponents.length; i++) {
                         RADVisualComponent metacomp = movingComponents[i];
                         if (metacomp instanceof RADVisualContainer) {
-                            LayoutComponent layoutComp =
-                                    getLayoutModel().getLayoutComponent(metacomp.getId());
-                            if (layoutComp.isLayoutContainer()) {
+                            RADVisualContainer visCont = (RADVisualContainer) metacomp;
+                            if (visCont.getLayoutSupport() == null) {
                                 getFormModel().fireContainerLayoutChanged(
-                                    (RADVisualContainer)metacomp, null, null, null);
+                                    visCont, null, null, null);
                             }
                         }
                     }
