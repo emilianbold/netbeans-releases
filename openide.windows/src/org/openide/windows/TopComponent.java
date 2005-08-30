@@ -740,7 +740,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     * @return the help context
     */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(TopComponent.class);
+        return new HelpCtx(TopComponent.class);   // XXX #63303
     }
 
     /** Allows top component to specify list of modes into which can be docked
