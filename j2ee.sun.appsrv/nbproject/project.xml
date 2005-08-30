@@ -159,7 +159,7 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <!-- contributes to Linkageerror issues for javax.management -->
-                <!-- <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend> -->
+                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend> 
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <package>org.netbeans.modules.j2ee.sun.ide.editors</package>
                 <package>org.netbeans.modules.j2ee.sun.api</package>

@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 	<antcall target="projectized-common.compile"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         
-        <copy file="../../external/org-netbeans-modules-j2ee-sun-ide.jar" todir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
+        <copy file="../../external/org-netbeans-modules-j2ee-sun-appsrv81.jar" todir="${netbeans.dest.dir}/${cluster.dir}/ant/nblib"/>
         <copy file="../../external/persistence-tool-support.jar" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         
     </target>
@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${javahelp.jar}" if="has.javahelp"/>
             <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
             
-            <include name="ant/nblib/org-netbeans-modules-j2ee-sun-ide.jar"/>
+            <include name="ant/nblib/org-netbeans-modules-j2ee-sun-appsrv81.jar"/>
             <include name="modules/ext/persistence-tool-support.jar"/>
             
         </patternset>
