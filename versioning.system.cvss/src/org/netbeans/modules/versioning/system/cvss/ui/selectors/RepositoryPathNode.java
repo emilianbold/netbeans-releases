@@ -28,6 +28,7 @@ import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
 import java.awt.*;
+import java.beans.BeanInfo;
 
 /**
  * Represents a path in repository, its children
@@ -60,14 +61,29 @@ public class RepositoryPathNode extends AbstractNode {
 
     private RepositoryPathNode(Children children, Lookup lookup) {
         super(children, lookup);
+        setIconBaseWithExtension("org/netbeans/modules/versioning/system/cvss/ui/selectors/defaultFolder.gif"); // NOI18N
     }
 
     public Image getIcon(int type) {
-        return (Image) UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+        Image img = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            img = (Image)UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+        }
+        if (img == null) {
+            img = super.getIcon(type);
+        }
+        return img;
     }
 
     public Image getOpenedIcon(int type) {
-        return (Image) UIManager.get("Nb.Explorer.Folder.openedIcon"); // NOI18N
+        Image img = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
+        }
+        if (img == null) {
+            img = super.getIcon(type);
+        }
+        return img;
     }
 
     static class RepositoryPathChildren extends Children.Keys implements Runnable {

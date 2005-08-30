@@ -18,6 +18,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.CVSRoot;
@@ -25,8 +26,11 @@ import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.lib.cvsclient.command.CommandException;
 import org.netbeans.lib.cvsclient.command.checkout.ModuleListInformation;
 
+import javax.swing.*;
 import java.util.Collections;
 import java.util.List;
+import java.awt.*;
+import java.beans.BeanInfo;
 
 /**
  * Represents module aliases subtree.
@@ -43,6 +47,29 @@ final class AliasesNode extends AbstractNode {
 
     private AliasesNode(Children children) {
         super(children);
+        setIconBaseWithExtension("org/netbeans/modules/versioning/system/cvss/ui/selectors/defaultFolder.gif");  // NOI18N
+    }
+
+    public Image getIcon(int type) {
+        Image img = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            img = (Image)UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+        }
+        if (img == null) {
+            img = super.getIcon(type);
+        }
+        return img;
+    }
+
+    public Image getOpenedIcon(int type) {
+        Image img = null;
+        if (type == BeanInfo.ICON_COLOR_16x16) {
+            img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
+        }
+        if (img == null) {
+            img = super.getIcon(type);
+        }
+        return img;
     }
 
     static class AliasesChildren extends Children.Keys implements Runnable {
@@ -113,7 +140,34 @@ final class AliasesNode extends AbstractNode {
 
         private AliasNode(Children children, Lookup lookup) {
             super(children, lookup);
+            setIconBaseWithExtension("org/netbeans/modules/versioning/system/cvss/ui/selectors/defaultFolder.gif");  // NOI18N
         }
 
+        public Image getIcon(int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                img = (Image)UIManager.get("Nb.Explorer.Folder.icon");  // NOI18N
+            }
+            if (img == null) {
+                img = super.getIcon(type);
+            }
+            return badge(img);
+        }
+
+        public Image getOpenedIcon(int type) {
+            Image img = null;
+            if (type == BeanInfo.ICON_COLOR_16x16) {
+                img = (Image)UIManager.get("Nb.Explorer.Folder.openedIcon");  // NOI18N
+            }
+            if (img == null) {
+                img = super.getIcon(type);
+            }
+            return badge(img);
+        }
+
+        private Image badge(Image image) {
+            Image badge = Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/ui/selectors/link.png");  // NOI18N
+            return Utilities.mergeImages(image, badge, 0, 8);
+        }
     }
 }
