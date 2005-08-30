@@ -79,6 +79,7 @@ public class NbEditorUI extends ExtEditorUI {
     private boolean attached = false;
     private ChangeListener listener;
     private FontColorSettings fontColorSettings;    
+    private final Object FONT_COLOR_SETTINGS_LOCK = new Object();
     private FontColorSettings bfontColorSettings;    
     
     private LookupListener lookupListener;
@@ -148,25 +149,27 @@ public class NbEditorUI extends ExtEditorUI {
         return mimeType;
     }
     
-    private synchronized FontColorSettings getFontColorSettings(){
-        if (fontColorSettings == null){
-            final String mimeType = getDocumentContentType();
-            if (mimeType == null){
-                return null;
-            }
-            MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
-            Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
-            Collection inst = result.allInstances();
-            lookupListener = new LookupListener(){
-                public void resultChanged(LookupEvent ev){
-                    synchronized (coloringMap){
-                        coloringMap.remove(mimeType);
-                    }
+    private FontColorSettings getFontColorSettings(){
+        synchronized (FONT_COLOR_SETTINGS_LOCK){
+            if (fontColorSettings == null){
+                final String mimeType = getDocumentContentType();
+                if (mimeType == null){
+                    return null;
                 }
-            };
-            result.addLookupListener(lookupListener);
-            if (inst.size() > 0){
-                fontColorSettings = (FontColorSettings)inst.iterator().next();
+                MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
+                Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
+                Collection inst = result.allInstances();
+                lookupListener = new LookupListener(){
+                    public void resultChanged(LookupEvent ev){
+                        synchronized (coloringMap){
+                            coloringMap.remove(mimeType);
+                        }
+                    }
+                };
+                result.addLookupListener(lookupListener);
+                if (inst.size() > 0){
+                    fontColorSettings = (FontColorSettings)inst.iterator().next();
+                }
             }
         }
         return fontColorSettings;
