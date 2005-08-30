@@ -10,25 +10,25 @@
 
   <Layout>
     <DimensionLayout dim="0">
-      <Group type="103" alignment="-1" groupAlignment="0" min="-1" max="-1" attributes="0">
-          <Group type="102" alignment="1" min="-1" max="-1" attributes="0">
-              <EmptySpace min="-1" pref="268" max="32767" attributes="0"/>
-              <Component id="okButton" alignment="-1" linkSize="1" min="-2" pref="-1" max="-2" attributes="0"/>
-              <EmptySpace min="-1" pref="-1" max="-2" attributes="0"/>
-              <Component id="cancelButton" alignment="-1" linkSize="1" min="-2" pref="-1" max="-2" attributes="0"/>
-              <EmptySpace min="-1" pref="-1" max="-2" attributes="0"/>
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="250" max="32767" attributes="0"/>
+              <Component id="okButton" linkSize="1" min="-2" pref="67" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="cancelButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
-      <Group type="103" alignment="-1" groupAlignment="0" min="-1" max="-1" attributes="0">
-          <Group type="102" alignment="1" min="-1" max="-1" attributes="0">
-              <EmptySpace min="-1" pref="264" max="32767" attributes="0"/>
-              <Group type="103" alignment="-1" groupAlignment="3" min="-1" max="-1" attributes="0">
-                  <Component id="cancelButton" alignment="3" min="-2" pref="-1" max="-2" attributes="0"/>
-                  <Component id="okButton" alignment="3" min="-2" pref="-1" max="-2" attributes="0"/>
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace pref="266" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="okButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-1" pref="-1" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
