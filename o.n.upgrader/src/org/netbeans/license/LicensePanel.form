@@ -26,6 +26,7 @@
           <Connection component="Form" name="background" type="property"/>
         </Property>
         <Property name="columns" type="int" value="20"/>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="Dialog" size="12" style="1"/>
         </Property>
@@ -33,8 +34,6 @@
         <Property name="rows" type="int" value="1"/>
         <Property name="text" preCode="jTextAreaTop.setText(bundle.getString(&quot;MSG_LicenseDlgLabelTop&quot;));"/>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
-        <Property name="focusable" type="boolean" value="false"/>
-        <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -68,8 +67,6 @@
         <Property name="rows" type="int" value="2"/>
         <Property name="text" preCode="jTextAreaBottom.setText(bundle.getString(&quot;MSG_LicenseDlgLabelBottom&quot;));"/>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
-        <Property name="focusable" type="boolean" value="false"/>
-        <Property name="requestFocusEnabled" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

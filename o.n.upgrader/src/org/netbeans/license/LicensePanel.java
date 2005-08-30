@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
  * @author  Marek Slama
  */
 
-public class LicensePanel extends javax.swing.JPanel {
+final class LicensePanel extends javax.swing.JPanel {
     
     /** Creates new form LicensePanel */
     public LicensePanel(URL url) {
@@ -80,13 +80,12 @@ public class LicensePanel extends javax.swing.JPanel {
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 0, 11)));
         jTextAreaTop.setBackground(getBackground());
         jTextAreaTop.setColumns(20);
+        jTextAreaTop.setEditable(false);
         jTextAreaTop.setFont(new java.awt.Font("Dialog", 1, 12));
         jTextAreaTop.setLineWrap(true);
         jTextAreaTop.setRows(1);
         jTextAreaTop.setText(bundle.getString("MSG_LicenseDlgLabelTop"));
         jTextAreaTop.setWrapStyleWord(true);
-        jTextAreaTop.setFocusable(false);
-        jTextAreaTop.setRequestFocusEnabled(false);
         add(jTextAreaTop);
 
         jEditorPane1.setEditable(false);
@@ -103,8 +102,6 @@ public class LicensePanel extends javax.swing.JPanel {
         jTextAreaBottom.setRows(2);
         jTextAreaBottom.setText(bundle.getString("MSG_LicenseDlgLabelBottom"));
         jTextAreaBottom.setWrapStyleWord(true);
-        jTextAreaBottom.setFocusable(false);
-        jTextAreaBottom.setRequestFocusEnabled(false);
         add(jTextAreaBottom);
 
     }
