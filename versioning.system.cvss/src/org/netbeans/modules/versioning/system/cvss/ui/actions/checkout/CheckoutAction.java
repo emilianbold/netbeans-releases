@@ -249,6 +249,7 @@ public final class CheckoutAction extends SystemAction {
             descriptor.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
             descriptor.setOptions(options);
             descriptor.setClosingOptions(options);
+            descriptor.setHelpCtx(new HelpCtx(CheckoutCompletedPanel.class));
 
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.setVisible(true);

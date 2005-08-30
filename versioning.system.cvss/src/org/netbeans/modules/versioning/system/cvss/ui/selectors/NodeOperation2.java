@@ -20,6 +20,7 @@ import org.openide.nodes.NodeAcceptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.UserCancelException;
+import org.openide.util.HelpCtx;
 
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.*;
@@ -37,27 +38,29 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
 
     private final ExplorerManager manager = new ExplorerManager();
 
-    private JButton okButton;
-    private JButton cancelButton;
-    private JButton[] buttons;
     private DialogDescriptor dd;
-
-    /** aceptor */
+    private boolean hideIcons;
     private NodeAcceptor acceptor;
+    private HelpCtx helpCtx;
 
-    private NodeOperation2() {
-        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-        renderer.setOpenIcon(null);
-        renderer.setClosedIcon(null);
-        renderer.setLeafIcon(null);
-        tree.setCellRenderer(renderer);
+    /**
+     * Creates new selector with default node renderer.
+     */
+    public NodeOperation2() {
     }
 
-    public Node[] select(Node root, String title, String subtitle, NodeAcceptor acceptor) throws UserCancelException {
+    public Node[] select(String title, String subtitle, Node root, NodeAcceptor acceptor) throws UserCancelException {
         manager.setRootContext(root);
         manager.addPropertyChangeListener(this);
 
-        setRootVisible(false);
+        if (hideIcons) {
+            DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+            renderer.setOpenIcon(null);
+            renderer.setClosedIcon(null);
+            renderer.setLeafIcon(null);
+            tree.setCellRenderer(renderer);
+        }
+
         setPopupAllowed (false);
         setDefaultActionAllowed (false);
 
@@ -69,6 +72,9 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
 
         dd = new DialogDescriptor(pane, title);
         dd.setModal(true);
+        if (helpCtx  != null) {
+            dd.setHelpCtx(helpCtx);
+        }
         this.acceptor = acceptor;
         testAccept();
 
@@ -82,9 +88,12 @@ public final class NodeOperation2 extends BeanTreeView implements PropertyChange
         }
     }
 
+    public void setIconsVisible(boolean visible) {
+        hideIcons = visible == false;
+    }
 
-    public static Node[] select(String title, String subtitle, Node rootNode, NodeAcceptor nodeAcceptor) throws UserCancelException {
-        return new NodeOperation2().select(rootNode, title, subtitle, nodeAcceptor);
+    public void setHelpCtx(HelpCtx help) {
+        helpCtx = help;
     }
 
     public void propertyChange (PropertyChangeEvent ev) {

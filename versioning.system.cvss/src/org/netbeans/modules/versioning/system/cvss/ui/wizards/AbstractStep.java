@@ -52,14 +52,15 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
     }
 
     /**
-     * Calls to createComponent
+     * Calls to createComponent. Noramalizes size nad assigns
+     * helpId based on subclass name.
      */
     public final synchronized Component getComponent() {
         if (panel == null) {
             try {
                 underConstruction = true;
                 panel = createComponent();
-
+                HelpCtx.setHelpIDString(panel, getClass().getName());
                 if (applyStandaloneLayout == false) {
                     JTextArea template = new JTextArea();
                     template.setColumns(60);

@@ -26,6 +26,7 @@ import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.*;
 import org.openide.util.UserCancelException;
+import org.openide.util.HelpCtx;
 
 import java.util.*;
 import java.util.List;
@@ -54,10 +55,12 @@ public final class ModuleSelector {
         Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");
         kids.add(new Node[] {aliasesNode, pathsNode});
         Node rootNode = new AbstractNode(kids);
-        rootNode.setDisplayName("Repository Browser");
 
         try {
-            Node[] selected = NodeOperation.getDefault().select("Select Content to Checkout", "Choose Aliases or Folders", rootNode, new NodeAcceptor() {
+            NodeOperation2 op = new NodeOperation2();
+            op.setRootVisible(false);
+            op.setHelpCtx(new HelpCtx(ModuleSelector.class));
+            Node[] selected = op.select("Select Content to Checkout", "Choose Aliases or Folders", rootNode, new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     boolean ret = nodes.length > 0;
                     for (int i = 0; i < nodes.length; i++) {

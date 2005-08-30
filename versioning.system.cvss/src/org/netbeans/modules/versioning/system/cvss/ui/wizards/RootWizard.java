@@ -21,6 +21,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 
 /**
  * UI that allows to configure selected root
@@ -106,7 +107,8 @@ public final class RootWizard implements ActionListener, DocumentListener {
         // workaround DD bug, 
         rootPanel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
         dd = new DialogDescriptor(rootPanel, "Edit CVS Root");
-        dd.setModal(true); 
+        dd.setHelpCtx(new HelpCtx(CvsRootPanel.class));
+        dd.setModal(true);
         // all components visible
         rootPanel.setPreferredSize(rootPanel.getPreferredSize());
         updateVisibility();        

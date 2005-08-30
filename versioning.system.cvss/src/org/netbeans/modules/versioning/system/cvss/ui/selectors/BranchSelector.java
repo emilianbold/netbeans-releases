@@ -26,6 +26,7 @@ import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.modules.versioning.system.cvss.ClientRuntime;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
+import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -80,13 +81,16 @@ public final class BranchSelector implements Runnable {
         this.proxyDescriptor = proxy;
         rootKids = new BranchNodeChildren();
         rootNode = new AbstractNode(rootKids);
-        rootNode.setDisplayName("Branch Browser");
 
         // load on background
         RequestProcessor.getDefault().post(this);
 
         try {
-            Node[] selected = NodeOperation2.select("Select Branch", "Choose Branch or Tag", rootNode, new NodeAcceptor() {
+            NodeOperation2 op = new NodeOperation2();
+            op.setIconsVisible(false);
+            op.setRootVisible(false);
+            op.setHelpCtx(new HelpCtx(BranchSelector.class));
+            Node[] selected = op.select("Select Branch", "Choose Branch or Tag", rootNode, new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length != 1) return false;
                     return nodes[0].getLookup().lookup(String.class) != null;
