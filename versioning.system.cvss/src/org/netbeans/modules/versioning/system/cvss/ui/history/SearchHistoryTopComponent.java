@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 
 import java.awt.BorderLayout;
@@ -70,4 +71,9 @@ public class SearchHistoryTopComponent extends TopComponent {
     protected String preferredID(){
        return "SearchHistoryTopComponent";    //NOI18N       
     }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(getClass());
+    }
+    
 }

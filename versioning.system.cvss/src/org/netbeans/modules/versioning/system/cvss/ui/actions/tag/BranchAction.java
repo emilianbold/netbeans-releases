@@ -22,6 +22,7 @@ import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -68,7 +69,7 @@ public class BranchAction extends AbstractSystemAction {
                 new Object [] { branch, cancel },
                 branch,
                 DialogDescriptor.DEFAULT_ALIGN,
-                null,
+                new HelpCtx(BranchAction.class),
                 null);
         descriptor.setClosingOptions(null);
 

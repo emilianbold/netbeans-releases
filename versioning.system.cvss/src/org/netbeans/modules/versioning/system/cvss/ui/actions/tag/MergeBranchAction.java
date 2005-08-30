@@ -22,6 +22,7 @@ import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.tag.RtagCommand;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -69,7 +70,7 @@ public class MergeBranchAction extends AbstractSystemAction {
                 new Object [] { merge, cancel },
                 merge,
                 DialogDescriptor.DEFAULT_ALIGN,
-                null,
+                new HelpCtx(MergeBranchAction.class),
                 null);
         descriptor.setClosingOptions(null);
 

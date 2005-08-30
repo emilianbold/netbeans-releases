@@ -20,6 +20,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -68,7 +69,7 @@ public class SwitchBranchAction extends AbstractSystemAction {
                 new Object [] { swich, cancel },
                 swich,
                 DialogDescriptor.DEFAULT_ALIGN,
-                null,
+                new HelpCtx(SwitchBranchAction.class),
                 null);
         descriptor.setClosingOptions(null);
 
