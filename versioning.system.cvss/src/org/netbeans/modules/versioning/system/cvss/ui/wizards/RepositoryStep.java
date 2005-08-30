@@ -255,7 +255,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             storeValidValues();
         } catch (IOException e) {
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Test connection failed, suggesting to use a proxy."); // NOi18N
+            err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2019")); // NOi18N
             err.notify(ErrorManager.INFORMATIONAL, e);
             String msg = NbBundle.getMessage(CheckoutWizard.class, "BK1001", host);
             invalid(msg);
@@ -326,7 +326,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                 PasswordsFile.storePassword(root, getScrambledPassword());
             } catch (IOException e) {
                 ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "Can not write password file. Unfortunately further actions need to read from it.");
+                err.annotate(e, org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2020"));
                 err.notify(e);
             }
         } else if (root.startsWith(":ext:")) {  // NOI18N
@@ -375,7 +375,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                     }
                 }
             } catch (IllegalArgumentException ex) {
-                errorMessage = "Invalid CVS Root: " + ex.getLocalizedMessage();
+                errorMessage = org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2021") + ex.getLocalizedMessage();
             }
         }
         if (errorMessage != null) {
@@ -428,8 +428,8 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     /** Shows proper fields depending on CVS root connection method. */
     private void updateVisibility() {
         String root = selectedCvsRoot();
-        boolean showPserverFields = root.startsWith(":pserver:");
-        boolean showExtFields = root.startsWith(":ext:");
+        boolean showPserverFields = root.startsWith(":pserver:");  // NOI18N
+        boolean showExtFields = root.startsWith(":ext:"); // NOI18N
 
         repositoryPanel.passwordTextField.setVisible(showPserverFields);
         repositoryPanel.pPaswordLabel.setVisible(showPserverFields);
@@ -540,7 +540,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         } else if (repositoryPanel.editButton == e.getSource()) {
             editRoot();
         } else {
-            assert false : "Unexpected event source: " + e.getSource();
+            assert false : "Unexpected event source: " + e.getSource();  // NOI18N
         }
     }
 
@@ -575,13 +575,13 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     public void prepareValidation() {
         progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CheckoutWizard.class, "BK2012"));
         JComponent bar = ProgressHandleFactory.createProgressComponent(progress);
-        JButton stopButton = new JButton("Stop");
+        JButton stopButton = new JButton(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2022"));
         stopButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (backgroundValidationThread != null) {
                     // FIXME socks sockets are interruptible, direct sockets are not
                     backgroundValidationThread.interrupt();
-                    invalid("Verification stopped by user!");
+                    invalid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "BK2023"));
                 }
             }
         });

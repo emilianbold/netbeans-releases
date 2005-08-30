@@ -84,7 +84,7 @@ public final class RootWizard implements ActionListener, DocumentListener {
             host = cvsRoot.getHostName();
             int portG = cvsRoot.getPort();
             if (portG > 0) {
-                port = "" + portG;
+                port = "" + portG;  // NOI18N
             }            
             user = cvsRoot.getUserName();
             repository = cvsRoot.getRepository();
@@ -106,7 +106,7 @@ public final class RootWizard implements ActionListener, DocumentListener {
                 
         // workaround DD bug, 
         rootPanel.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
-        dd = new DialogDescriptor(rootPanel, "Edit CVS Root");
+        dd = new DialogDescriptor(rootPanel, org.openide.util.NbBundle.getMessage(RootWizard.class, "BK2024"));
         dd.setHelpCtx(new HelpCtx(CvsRootPanel.class));
         dd.setModal(true);
         // all components visible
@@ -158,7 +158,7 @@ public final class RootWizard implements ActionListener, DocumentListener {
             sb.append(s);            
             sb.append(":"); // NOI18N
             String portS = rootPanel.portTextField.getText();
-            if ("".equals(portS.trim()) == false) {
+            if ("".equals(portS.trim()) == false) {  // NOI18N
                 int portp = Integer.parseInt(portS);  // raise NFE
                 if (portp > 0) {
                     sb.append(portS);

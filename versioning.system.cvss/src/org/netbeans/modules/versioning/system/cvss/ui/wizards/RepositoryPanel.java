@@ -70,7 +70,7 @@ final class RepositoryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
         add(jPanel3, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(descLabel, "(:pserver:username@host:/repositoryPath)");
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(RepositoryPanel.class, "BK2018"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

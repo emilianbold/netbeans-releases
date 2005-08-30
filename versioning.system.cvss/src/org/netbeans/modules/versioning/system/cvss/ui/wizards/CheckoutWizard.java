@@ -99,9 +99,9 @@ public final class CheckoutWizard implements ChangeListener{
                 }
         );
         wizard.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);  // NOI18N
-        wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOi18N
-        wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOi18N
-        wizard.setTitleFormat(new MessageFormat("{0}"));
+        wizard.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);  // NOI18N
+        wizard.putProperty("WizardPanel_contentNumbered", Boolean.TRUE);  // NOI18N
+        wizard.setTitleFormat(new MessageFormat("{0}"));  // NOI18N
         wizard.setTitle(NbBundle.getMessage(CheckoutWizard.class, "BK0007"));
         Object result = DialogDisplayer.getDefault().notify(wizard);
         boolean finished = NotifyDescriptor.OK_OPTION.equals(result);
@@ -219,7 +219,7 @@ public final class CheckoutWizard implements ChangeListener{
                 if (file.exists() == false) {
                     boolean done = file.mkdirs();
                     if (done == false) {
-                        invalid("Can not create folder " + file.getPath());
+                        invalid(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "BK2013") + file.getPath());
                     }
                 }
             }
@@ -228,7 +228,7 @@ public final class CheckoutWizard implements ChangeListener{
         private boolean validateUserInput(boolean full) {
             String text = modulePanel.workTextField.getText();
             if (text == null || text.length() == 0) {
-                invalid("Local working directory must be specified.");
+                invalid(org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "BK2014"));
                 return false;
             }
 
@@ -241,7 +241,7 @@ public final class CheckoutWizard implements ChangeListener{
                     while (parent != null) {
                         if (parent.exists()) {
                             if (parent.canWrite() == false) {
-                                errorMessage = "Can not write into " + parent.getPath();
+                                errorMessage = org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "BK2016") + parent.getPath();
                             }
                             break;
                         }
@@ -250,7 +250,7 @@ public final class CheckoutWizard implements ChangeListener{
                     }
                 } else {
                     if (file.isFile()) {
-                        errorMessage = "Path points to file but directory is expected";
+                        errorMessage = org.openide.util.NbBundle.getMessage(CheckoutWizard.class, "BK2017");
                     }
                 }
             }
@@ -305,7 +305,7 @@ public final class CheckoutWizard implements ChangeListener{
                 if (s.trim().length() == 0) {
                     s = ".";  // NOI18N
                 }
-                String module = new StringTokenizer(s, ", ").nextToken();
+                String module = new StringTokenizer(s, ", ").nextToken(); // NOI18N
                 String tag = selector.selectTag(root, module, getProxyDescriptor());
                 if (tag != null) {
                     modulePanel.tagTextField.setText(tag);
