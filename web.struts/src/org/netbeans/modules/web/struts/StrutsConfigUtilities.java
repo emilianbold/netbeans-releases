@@ -321,4 +321,15 @@ public class StrutsConfigUtilities {
         return resource;
     }
     
+    public static String getActionAsResource(String mapping, String action){
+        String resource = "";
+        if (mapping != null && mapping.length()>0){
+            if (mapping.startsWith("*."))
+                resource = action + mapping.substring(1);
+            else
+                if (mapping.endsWith("/*"))
+                    resource = mapping.substring(0,mapping.length()-2) + action;
+        }
+        return resource;
+    }
 }

@@ -193,6 +193,10 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
         public void run() throws IOException {
             // copy struts-config.xml
             String content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/struts-config.xml").getInputStream ()); //NOI18N
+            content = content.replaceFirst("____ACTION_MAPPING___",  //NOI18N
+                    StrutsConfigUtilities.getActionAsResource(panel.getURLPattern(), "/Welcome"));
+            content = content.replaceFirst("_____MESSAGE_RESOURCE____",  //NOI18N
+                    panel.getAppResource().replace('.', '/'));
             FileObject target = FileUtil.createData(wm.getWebInf(), "struts-config.xml");//NOI18N
             createFile(target, content);
             //copy tiles-defs.xml
@@ -209,7 +213,7 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             createFile(target, content);
             //copy Welcome.jsp
             content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/welcome.jsp").getInputStream ()); //NOI18N
-            target = FileUtil.createData(wm.getDocumentBase(), "welcome.jsp");//NOI18N
+            target = FileUtil.createData(wm.getDocumentBase(), "welcomeStruts.jsp");//NOI18N
             createFile(target, content);
             //MessageResource.properties
             content = readResource (Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-struts/MessageResources.properties").getInputStream ()); //NOI18N
@@ -281,13 +285,6 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
 
                     ddRoot.addServletMapping(mapping);
                     
-                    WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    wfl.addWelcomeFile("welcome.jsp");
-                    for (int i = wfl.sizeWelcomeFile()-1;  i > 0; i-- ){
-                        wfl.setWelcomeFile(i, wfl.getWelcomeFile(i-1));
-                    }
-                    wfl.setWelcomeFile(0, "welcome.jsp");
-                    
                     if (panel.addTLDs()){
                         try{
                             JspConfig jspConfig = ddRoot.getSingleJspConfig();
@@ -308,18 +305,20 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                         }
                     }
                     ddRoot.write(dd);
+                    
+                    
                 }
                 catch (ClassNotFoundException cnfe){
                     ErrorManager.getDefault().notify(cnfe);
                 }
             }
             
-            FileObject strutsFO = wm.getWebInf().getFileObject("struts-config.xml");
-            StrutsConfig config = ((StrutsConfigDataObject)DataObject.find(strutsFO)).getStrutsConfig();
-            MessageResources resource = new MessageResources();
-            resource.setAttributeValue("parameter", panel.getAppResource().replace('.', '/'));
-            config.addMessageResources(resource);
-            config.write(FileUtil.toFile(strutsFO));
+            // changing index.jsp
+            FileObject documentBase = wm.getDocumentBase();
+            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
+            if (indexjsp != null){
+                changeIndexJSP(indexjsp);
+            }
         }
         
         private void addTaglib(JspConfig jspConfig, String location, String uri) throws ClassNotFoundException {
@@ -328,6 +327,30 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
             taglib.setTaglibUri(uri);
             jspConfig.addTaglib(taglib);
         }
+        
+        /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
+         */
+        private void changeIndexJSP(FileObject indexjsp) throws IOException {
+            String content = readResource(indexjsp.getInputStream());
+            // what find
+            String find = "<h1>JSP Page</h1>"; // NOI18N
+            String endLine = System.getProperty("line.separator"); //NOI18N
+            if ( content.indexOf(find) > 0){
+                StringBuffer replace = new StringBuffer();
+                replace.append(find);
+                replace.append(endLine);
+                replace.append("    <br/>");                        //NOI18N
+                replace.append(endLine);
+                replace.append("    <a href=\".");                  //NOI18N
+                replace.append(StrutsConfigUtilities.getActionAsResource(panel.getURLPattern(), "/Welcome")); //NOI18N
+                replace.append("\">");                              //NOI18N
+                replace.append(NbBundle.getMessage(StrutsFrameworkProvider.class,"LBL_STRUTS_WELCOME_PAGE"));
+                replace.append("</a>");                             //NOI18N
+                content = content.replaceFirst(find, replace.toString());
+                createFile(indexjsp, content);
+            }
+        }
     }
+    
     
 }

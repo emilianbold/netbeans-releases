@@ -17,20 +17,21 @@
     <global-forwards>
         <forward
         name="welcome"
-        path="/Welcome.do"/>
+        path="____ACTION_MAPPING___"/>
     </global-forwards>
 
     <action-mappings>
         
         <action
         path="/Welcome"
-        forward="/welcome.jsp"/>
+        forward="/welcomeStruts.jsp"/>
             
     </action-mappings>
-
+    
     <controller
-    processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
+        processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
 
+    <message-resources parameter="_____MESSAGE_RESOURCE____"/>    
     
     <!-- ========================= Tiles plugin ===============================-->
     <!--
