@@ -110,6 +110,7 @@ class ShortcutsFolder {
             if (dataObject instanceof DataFolder) continue;
             InstanceCookie ic = (InstanceCookie) dataObject.getCookie 
                 (InstanceCookie.class);
+            if (ic == null) continue;
             try {
                 Action action = (Action) ic.instanceCreate ();
                 String shortcuts = dataObject.getName ();
