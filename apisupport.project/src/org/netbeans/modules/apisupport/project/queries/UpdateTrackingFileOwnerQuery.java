@@ -20,13 +20,13 @@ import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.apisupport.project.*;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 
 /**
  * Associated built module files with their owning project.

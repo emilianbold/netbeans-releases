@@ -23,14 +23,16 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectType;
+import org.netbeans.modules.apisupport.project.Util;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.*;
-import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
-import org.netbeans.modules.apisupport.project.universe.ModuleList;
 
 /**
  * Enumerates subprojects, defined as other modules on which this one

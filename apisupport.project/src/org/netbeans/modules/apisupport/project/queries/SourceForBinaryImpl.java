@@ -22,11 +22,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Provides sources for module build products.

@@ -18,12 +18,12 @@ import java.net.URI;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Provide the module JAR as an exported artifact that other projects could import.

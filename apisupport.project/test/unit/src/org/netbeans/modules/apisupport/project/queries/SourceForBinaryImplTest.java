@@ -19,9 +19,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test functionality of SourceForBinaryImpl.

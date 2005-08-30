@@ -10,12 +10,13 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.modules.apisupport.project.queries;
 
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Returns source level of NB module sources.

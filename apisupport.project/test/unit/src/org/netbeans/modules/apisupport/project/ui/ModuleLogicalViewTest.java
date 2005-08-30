@@ -15,13 +15,13 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test functionality of {@link LogicalView}.

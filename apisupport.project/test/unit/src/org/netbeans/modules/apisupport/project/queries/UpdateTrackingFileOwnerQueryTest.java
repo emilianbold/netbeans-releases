@@ -16,9 +16,9 @@ package org.netbeans.modules.apisupport.project.queries;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test that project association by module inclusion list works.

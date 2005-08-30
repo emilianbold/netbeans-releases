@@ -16,9 +16,9 @@ package org.netbeans.modules.apisupport.project.universe;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test functionality of ModuleList.

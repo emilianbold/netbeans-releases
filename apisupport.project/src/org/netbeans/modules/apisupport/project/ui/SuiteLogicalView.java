@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.ui;
 
 import java.awt.Image;
 import javax.swing.Action;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.FilterNode;
@@ -23,7 +24,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.netbeans.modules.apisupport.project.suite.*;
 
 /**
  * Explorer view of suites.

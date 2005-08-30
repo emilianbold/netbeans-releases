@@ -19,7 +19,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.SortedSet;
-import org.netbeans.modules.apisupport.project.*;
+import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 
 /**
  * Test functionality of {@link NbPlatform}.

@@ -19,8 +19,9 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.Util;
 import org.openide.filesystems.FileUtil;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test {@link JavadocForBinaryImpl}.

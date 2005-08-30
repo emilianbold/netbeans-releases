@@ -14,11 +14,13 @@
 package org.netbeans.modules.apisupport.project.queries;
 
 import java.util.Iterator;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.NbModuleProjectType;
+import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
-import org.netbeans.modules.apisupport.project.*;
 
 // XXX need unit test
 

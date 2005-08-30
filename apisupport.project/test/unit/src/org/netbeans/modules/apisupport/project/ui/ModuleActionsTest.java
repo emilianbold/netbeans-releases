@@ -13,19 +13,15 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Arrays;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.apisupport.project.*;
-import org.openide.util.Lookup;
 
 // XXX much more to test
 

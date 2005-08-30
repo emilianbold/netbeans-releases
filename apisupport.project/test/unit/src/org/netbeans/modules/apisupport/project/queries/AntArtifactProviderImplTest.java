@@ -21,8 +21,9 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
+import org.netbeans.modules.apisupport.project.TestBase;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.apisupport.project.*;
 
 /**
  * Test AntArtifactProviderImpl.
