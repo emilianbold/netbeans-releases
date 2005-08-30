@@ -90,7 +90,7 @@ public final class BranchSelector implements Runnable {
             op.setIconsVisible(false);
             op.setRootVisible(false);
             op.setHelpCtx(new HelpCtx(BranchSelector.class));
-            Node[] selected = op.select("Select Branch", "Choose Branch or Tag", rootNode, new NodeAcceptor() {
+            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2012"), org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2013"), rootNode, new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length != 1) return false;
                     return nodes[0].getLookup().lookup(String.class) != null;
@@ -112,7 +112,7 @@ public final class BranchSelector implements Runnable {
 
         File checkoutFolder = Kit.createTmpFolder();
         if (checkoutFolder == null) {
-            error("Can not create temporary folder");
+            error(org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2015"));
             return;
         }
 
@@ -155,13 +155,13 @@ public final class BranchSelector implements Runnable {
             files = checkoutFolder.listFiles();
             for (int i = 0; i<files.length; i++) {
                 if (files[i].isFile()) continue;
-                if ("CVSROOT".equals(files[i].getName())) continue;
+                if ("CVSROOT".equals(files[i].getName())) continue;  // NOI18N
                 files = files[i].listFiles();
                 break;
             }
             for (int i = 0; i<files.length; i++) {
                 if (files[i].isDirectory()) continue;
-                if (".cvsignore".equals(files[i].getName())) continue;
+                if (".cvsignore".equals(files[i].getName())) continue;  // NOI18N
                 File[] logFiles = new File[] {files[i]};
                 log.setFiles(logFiles);
                 break;
@@ -210,11 +210,11 @@ public final class BranchSelector implements Runnable {
             Kit.deleteRecursively(checkoutFolder);
         } catch (CommandException e) {
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not list CVS tags.");
+            err.annotate(e, org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             err.notify(e);
         } catch (AuthenticationException e) {
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not list CVS tags.");
+            err.annotate(e, org.openide.util.NbBundle.getMessage(BranchSelector.class, "BK2016"));
             err.notify(e);
         } finally {
             Kit.deleteRecursively(checkoutFolder);

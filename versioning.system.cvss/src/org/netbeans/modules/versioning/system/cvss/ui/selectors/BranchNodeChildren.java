@@ -32,8 +32,8 @@ import java.util.Collections;
 final class BranchNodeChildren extends Children.Keys {
 
     private final Node headNode = new AbstractNode(Children.LEAF, Lookups.singleton("HEAD")); // NOI18N
-    private final SymbolicNamesNode branchesNode = SymbolicNamesNode.create("Branches");
-    private final SymbolicNamesNode tagsNode = SymbolicNamesNode.create("Tags");
+    private final SymbolicNamesNode branchesNode = SymbolicNamesNode.create(org.openide.util.NbBundle.getMessage(BranchNodeChildren.class, "BK2008"));
+    private final SymbolicNamesNode tagsNode = SymbolicNamesNode.create(org.openide.util.NbBundle.getMessage(BranchNodeChildren.class, "BK2009"));
 
     /**
      * Sets discovered branch names. Until called
@@ -90,14 +90,14 @@ final class BranchNodeChildren extends Children.Keys {
 
             private SNChildren() {
                 AbstractNode waitNode = new AbstractNode(Children.LEAF);
-                waitNode.setDisplayName("Loading...");
+                waitNode.setDisplayName(org.openide.util.NbBundle.getMessage(BranchNodeChildren.class, "BK2010"));
                 setKeys(Collections.singleton(waitNode));
             }
 
             public void setNames(Collection names) {
                 if (names.size() == 0) {
                     AbstractNode waitNode = new AbstractNode(Children.LEAF);
-                    waitNode.setDisplayName("Nothing has been found.");
+                    waitNode.setDisplayName(org.openide.util.NbBundle.getMessage(BranchNodeChildren.class, "BK2011"));
                     setKeys(Collections.singleton(waitNode));
                 } else {
                     setKeys(names);

@@ -37,7 +37,7 @@ final class AliasesNode extends AbstractNode {
 
     public static AliasesNode create(Client.Factory client, CVSRoot root) {
         AliasesNode node = new AliasesNode(new AliasesChildren(client, root));
-        node.setDisplayName("Aliases");
+        node.setDisplayName(org.openide.util.NbBundle.getMessage(AliasesNode.class, "BK2005"));
         return node;
     }
 
@@ -59,7 +59,7 @@ final class AliasesNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
             AbstractNode waitNode = new AbstractNode(Children.LEAF);
-            waitNode.setDisplayName("Loading...");
+            waitNode.setDisplayName(org.openide.util.NbBundle.getMessage(AliasesNode.class, "BK2006"));
             setKeys(Collections.singleton(waitNode));
             RequestProcessor rp = RequestProcessor.getDefault();
             task = rp.post(this);
@@ -93,7 +93,7 @@ final class AliasesNode extends AbstractNode {
 
         private Node errorNode(Exception ex) {
             AbstractNode errorNode = new AbstractNode(Children.LEAF);
-            errorNode.setDisplayName("Error");
+            errorNode.setDisplayName(org.openide.util.NbBundle.getMessage(AliasesNode.class, "BK2007"));
             errorNode.setShortDescription(ex.getLocalizedMessage());
             return errorNode;
         }

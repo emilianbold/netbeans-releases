@@ -56,7 +56,7 @@ public final class Kit implements Client.Factory {
             checkoutFolder = tmp;
         } catch (IOException e) {
             ErrorManager err = ErrorManager.getDefault();
-            err.annotate(e, "Can not create temporary folder.");
+            err.annotate(e, org.openide.util.NbBundle.getMessage(Kit.class, "BK2018"));
             err.notify(e);
         }
         return checkoutFolder;

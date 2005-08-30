@@ -52,7 +52,7 @@ public final class ModuleSelector {
         Children.Array kids = new Children.Array();
         Client.Factory clientFactory = Kit.createClientFactory(root, proxy);
         Node aliasesNode = AliasesNode.create(clientFactory, root);
-        Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");
+        Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");  // NOI18N
         kids.add(new Node[] {aliasesNode, pathsNode});
         Node rootNode = new AbstractNode(kids);
 
@@ -60,7 +60,7 @@ public final class ModuleSelector {
             NodeOperation2 op = new NodeOperation2();
             op.setRootVisible(false);
             op.setHelpCtx(new HelpCtx(ModuleSelector.class));
-            Node[] selected = op.select("Select Content to Checkout", "Choose Aliases or Folders", rootNode, new NodeAcceptor() {
+            Node[] selected = op.select(org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2019"), org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2020"), rootNode, new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     boolean ret = nodes.length > 0;
                     for (int i = 0; i < nodes.length; i++) {
@@ -95,10 +95,10 @@ public final class ModuleSelector {
     public String selectRepositoryPath(CVSRoot root, ProxyDescriptor proxy) {
 
         Client.Factory clientFactory = Kit.createClientFactory(root, proxy);
-        Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");
+        Node pathsNode = RepositoryPathNode.create(clientFactory, root, "");  // NOI18N
 
         try {
-            Node[] selected = NodeOperation.getDefault().select("Repository Browser", "Select Path", pathsNode, new NodeAcceptor() {
+            Node[] selected = NodeOperation.getDefault().select(org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2021"), org.openide.util.NbBundle.getMessage(ModuleSelector.class, "BK2022"), pathsNode, new NodeAcceptor() {
                 public boolean acceptNodes(Node[] nodes) {
                     if (nodes.length == 1) {
                         String path = (String) nodes[0].getLookup().lookup(String.class);
