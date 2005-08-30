@@ -41,8 +41,11 @@ Microsystems, Inc. All Rights Reserved.
     </tocitem>
     <tocitem>Writing a JMX Agent
      <tocitem target="jmx_agent_app">Generating a JMX Agent</tocitem>
-     <tocitem target="jmx_agent_instantiate_mbean">Registering MBeans</tocitem>
-     <tocitem target="jmx_agent_instantiate_java">Registering Java objects as MBeans</tocitem>
+     <tocitem>Registering MBeans
+        <tocitem target="jmx_agent_instantiate">Overview</tocitem>
+        <tocitem target="jmx_agent_instantiate_mbean">Registering JMX MBeans</tocitem>
+        <tocitem target="jmx_agent_instantiate_java">Registering Java objects as MBeans</tocitem>
+     </tocitem>
     </tocitem>
     <tocitem target="jmx_manager_app">Writing a JMX Manager</tocitem>   
     <tocitem>Running, Debugging and Visualizing JMX Management [Sun JDK 1.5 only]

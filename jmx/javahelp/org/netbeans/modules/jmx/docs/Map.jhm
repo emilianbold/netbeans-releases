@@ -33,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
         <mapID target="jmx_mbean_update_registration" url="jmx_mbean_update_registration.html"/>
 
         <mapID target="jmx_agent_app" url="jmx_agent_app.html"/>
+        <mapID target="jmx_agent_instantiate" url="jmx_agent_instantiate.html"/>
         <mapID target="jmx_agent_instantiate_mbean" url="jmx_agent_instantiate_mbean.html"/>
         <mapID target="jmx_agent_instantiate_java" url="jmx_agent_instantiate_java.html"/>
         <mapID target="jmx_manager_app" url="jmx_manager_app.html"/>
