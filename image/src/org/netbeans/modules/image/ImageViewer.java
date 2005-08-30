@@ -19,7 +19,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -32,28 +31,25 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.windows.*;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-
+import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+import org.openide.windows.Workspace;
 
 /**
  * Top component providing a viewer for images.
@@ -121,6 +117,7 @@ public class ImageViewer extends CloneableTopComponent {
     /** Initializes member variables and set listener for name changes on DataObject. */
     private void initialize(ImageDataObject obj) {
         TopComponent.NodeName.connect (this, obj.getNodeDelegate ());
+        setToolTipText(FileUtil.getFileDisplayName(obj.getPrimaryFile()));
         
         storedObject = obj;
             
