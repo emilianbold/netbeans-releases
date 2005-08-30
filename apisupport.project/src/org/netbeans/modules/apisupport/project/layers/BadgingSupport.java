@@ -45,6 +45,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.Presenter;
 
 /**
  * Handles addition of badges to a filesystem a la system filesystem.
@@ -175,6 +176,8 @@ final class BadgingSupport implements FileSystem.Status, FileChangeListener {
                     } else {
                         return o.toString();
                     }
+                } else if (o instanceof Presenter.Menu) {
+                    return ((Presenter.Menu) o).getMenuPresenter().getText();
                 } else if (o instanceof JSeparator) {
                     return NbBundle.getMessage(BadgingSupport.class, "LBL_separator");
                 } else {
