@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
         
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
             <file name="org-openide-actions-EditAction.instance"/>
             <file name="org-netbeans-core-actions-SystemExit.instance"/>
             <file name="org-openide-actions-FileSystemAction.instance"/>
@@ -196,10 +195,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="JavaPlatformsCustomizerAction.instance/org-netbeans-core-ui-templates-TemplatesAction.instance" boolvalue="true" />
             <attr name="LibrariesCustomizerAction.instance/org-netbeans-core-ui-templates-TemplatesAction.instance" boolvalue="true" />
             <attr name="org-netbeans-core-ui-templates-TemplatesAction.instance/Separator2.instance" boolvalue="true" />
-            <attr name="Separator2.instance/org-netbeans-core-actions-ConfigureShortcutsAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
-            <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-core-actions-OptionsAction.instance" boolvalue="true" />
-            <file name="org-netbeans-core-actions-OptionsAction.instance"/>
         </folder> 
 
         <folder name="Window">

@@ -21,8 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Menu">
         <folder name="Tools">
-            <file name="org-netbeans-core-actions-OptionsAction.instance_hidden"/>
-            <attr name="org-netbeans-core-actions-ConfigureShortcutsAction.instance/org-netbeans-modules-options-OptionsWindowAction.shadow" boolvalue="true" />
+            <attr name="Separator2.instance/org-netbeans-modules-options-OptionsWindowAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-options-OptionsWindowAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance"/>
             </file>
