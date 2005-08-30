@@ -20,16 +20,11 @@ import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileSystem;
@@ -119,24 +114,15 @@ public final class MenuWarmUpTask implements Runnable {
         }
 
         public void run() {         
-            String progressName = NbBundle.getBundle("org.netbeans.core.ui.resources.Bundle").getString("ProgressDisplayName_FileSystemRefresh");//NOI18N
-            assert progressName != null;
-            ProgressHandle progress = ProgressHandleFactory.createHandle(progressName);
-            assert progress != null;
-            progress.start();
-            try {
-                FileSystem[] all = getFileSystems();
-                for (int i = 0; i < all.length; i++) {
-                    FileSystem fileSystem = all[i];
-                    fileSystem.refresh(false);
-                }
-            } finally {
-                progress.finish();
+            FileSystem[] all = getFileSystems();
+            for (int i = 0; i < all.length; i++) {
+                FileSystem fileSystem = all[i];
+                fileSystem.refresh(false);
             }
             
             synchronized (rp) {
                 task = null;
-            }                            
+            }
         }        
         
         //copy - paste programming
