@@ -18,7 +18,9 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import org.openide.awt.HtmlRenderer;
+import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.nodes.Node;
 
 
 /**
@@ -73,6 +75,25 @@ final class ResultTreeView extends BeanTreeView {
         renderer.setIconTextGap(0);
         renderer.setIndent(2);
         return renderer;
+    }
+    
+    /**
+     */
+    public void addNotify() {
+        super.addNotify();
+        
+        final Node rootNode = ExplorerManager.find(this).getRootContext();
+        assert rootNode.getClass() == ReportNode.class;
+        
+        expandNode(rootNode);
+        
+        final Node[] childNodes = rootNode.getChildren().getNodes(true);
+        for (int i = 0; i < childNodes.length; i++) {
+            TestcaseNode testClassNode = (TestcaseNode) childNodes[i];
+            if (testClassNode.group.containsFailed()) {
+                expandNode(testClassNode);
+            }
+        }
     }
     
 }
