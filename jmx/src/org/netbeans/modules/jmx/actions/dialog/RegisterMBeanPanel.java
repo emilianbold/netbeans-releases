@@ -381,12 +381,14 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 constructorComboBox.setSelectedItem(
                         bundle.getString("LBL_StandardMBeanDefaultConstructor")); // NOI18N
             } else {
-                if (isValid) {
-                    isValid = false;
-                    constructorComboBox.setEnabled(false);
-                    stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
-                }
-            }
+                constructorComboBox.addItem(
+                        bundle.getString("LBL_StandardMBeanDefaultConstructor")); // NOI18N
+                if (WizardHelpers.hasOnlyDefaultConstruct(clazz))
+                    constructorComboBox.addItem(clazz.getSimpleName() + "()"); // NOI18N
+                //select first row
+                constructorComboBox.setSelectedItem(
+                        bundle.getString("LBL_StandardMBeanDefaultConstructor")); // NOI18N
+            } 
         } else {
             if (className.equals("")) // NOI18N
                 stateLabel.setText(""); // NOI18N
@@ -435,6 +437,9 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 }
                 //select first row
                 constructorComboBox.setSelectedItem(0); // NOI18N
+            } else if (WizardHelpers.hasOnlyDefaultConstruct(mbeanClass)) {
+                constructorComboBox.setEnabled(true);
+                constructorComboBox.addItem(mbeanClass.getSimpleName() + "()"); // NOI18N
             } else {
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }

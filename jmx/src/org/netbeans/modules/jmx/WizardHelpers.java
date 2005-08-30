@@ -1409,6 +1409,37 @@ public class WizardHelpers
         return (Constructor[]) results.toArray(new Constructor[results.size()]);
     }
     
+    private static Constructor[] getAllConstructors(JavaClass clazz) {
+        List childs = clazz.getChildren();
+        Set results = new HashSet();
+        for (Iterator<JavaClass> it = childs.iterator(); it.hasNext();) {
+            Element e = (Element)it.next();
+            if (e instanceof Constructor) {
+                results.add((Constructor) e);
+            }
+        }
+        return (Constructor[]) results.toArray(new Constructor[results.size()]);
+    }
+    
+    public static boolean hasOnlyDefaultConstruct(JavaClass clazz) {
+        boolean superClassCheck = true;
+        if (clazz.getSuperClass() != null) {
+            JavaModelPackage pkg = (JavaModelPackage) clazz.getResource().refImmediatePackage();
+            JavaClass superClass = (JavaClass) 
+                    pkg.getJavaClass().resolve(clazz.getSuperClass().getName());
+            Constructor[] superConst = getAllConstructors(superClass);
+            boolean defaultExists = false;
+            for (int i = 0 ; i < superConst.length ; i++) {
+                if ((superConst[i].getParameters().size() == 0) &&
+                        Modifier.isPublic(superConst[i].getModifiers()))
+                    defaultExists = true;
+            }
+            superClassCheck = defaultExists;
+        }
+        return (getAllConstructors(clazz).length == 0) &&
+                superClassCheck;
+    }
+    
     /**
      * Converts filename to the fully qualified name of the main class
      * residing in the file.<br />

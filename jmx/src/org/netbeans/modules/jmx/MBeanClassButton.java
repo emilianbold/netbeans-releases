@@ -142,8 +142,7 @@ public class MBeanClassButton {
                         if (dob != null) fo = dob.getPrimaryFile();
                         JavaClass foClass = WizardHelpers.getJavaClass(
                                 JavaModel.getResource(fo),fo.getName());
-                        accepted = Introspector.testCompliance(foClass)&&
-                                Introspector.checkCreation(foClass);
+                        accepted = Introspector.testCompliance(foClass);
                     }
                     return accepted;
                 }

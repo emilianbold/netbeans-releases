@@ -56,8 +56,7 @@ public class MBeanChildren extends JavaChildren {
                 if (dob != null) fo = dob.getPrimaryFile();
                 JavaClass foClass = WizardHelpers.getJavaClass(
                         JavaModel.getResource(fo),fo.getName());
-                accepted = Introspector.testCompliance(foClass)&&
-                        Introspector.checkCreation(foClass);
+                accepted = Introspector.testCompliance(foClass);
                 } catch (Exception e) {
                     accepted  = false;
                 }
