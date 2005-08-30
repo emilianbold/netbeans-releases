@@ -90,7 +90,6 @@ public class CommonPropertyVisualPanel extends javax.swing.JPanel implements Wiz
         descriptionTextArea.setFont(javax.swing.UIManager.getFont("Label.font"));
         descriptionTextArea.setLineWrap(true);
         descriptionTextArea.setText(NbBundle.getMessage(CommonPropertyVisualPanel.class, "CommonPropertyPanel_Description", this.helper.getData().getString(__JndiName)));
-        descriptionTextArea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         descriptionTextArea.setFocusable(false);
         descriptionTextArea.setMinimumSize(new java.awt.Dimension(500, 17));
         descriptionTextArea.setPreferredSize(new java.awt.Dimension(500, 17));

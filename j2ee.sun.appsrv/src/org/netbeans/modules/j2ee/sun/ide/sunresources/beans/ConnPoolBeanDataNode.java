@@ -38,7 +38,7 @@ public class ConnPoolBeanDataNode extends BaseResourceNode implements java.beans
     
     public ConnPoolBeanDataNode(SunResourceDataObject obj, ConnPoolBean key) {
         super(obj);
-        setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"); //NOI18N
         setShortDescription (NbBundle.getMessage (ConnPoolBeanDataNode.class, "DSC_ConnPoolNode"));//NOI18N
         
         resource = key;

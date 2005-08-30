@@ -39,7 +39,7 @@ public class DataSourceBeanDataNode extends BaseResourceNode implements java.bea
     public DataSourceBeanDataNode(SunResourceDataObject obj, DataSourceBean key) {
         super(obj);
         resource = key;
-        setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"); //NOI18N
         setShortDescription (NbBundle.getMessage (DataSourceBeanDataNode.class, "DSC_DataSourceNode"));//NOI18N
         
         key.addPropertyChangeListener(this);

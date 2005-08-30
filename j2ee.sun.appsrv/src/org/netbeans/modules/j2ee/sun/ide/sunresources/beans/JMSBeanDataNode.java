@@ -46,7 +46,7 @@ public class JMSBeanDataNode extends BaseResourceNode implements java.beans.Prop
     public JMSBeanDataNode(SunResourceDataObject obj, JMSBean key) {
         super(obj);
         resource = key;
-        setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"); //NOI18N
         setShortDescription (NbBundle.getMessage (JMSBeanDataNode.class, "DSC_JmsNode"));//NOI18N
         
         key.addPropertyChangeListener(this);

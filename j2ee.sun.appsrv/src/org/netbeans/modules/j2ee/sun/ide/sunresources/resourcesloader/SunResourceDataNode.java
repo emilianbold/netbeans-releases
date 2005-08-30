@@ -27,7 +27,7 @@ public class SunResourceDataNode extends DataNode {
     
     public SunResourceDataNode(SunResourceDataObject obj, Children ch) {
         super(obj, ch);
-        setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"); //NOI18N
     }
     
     protected SunResourceDataObject getSunResourceDataObject() {

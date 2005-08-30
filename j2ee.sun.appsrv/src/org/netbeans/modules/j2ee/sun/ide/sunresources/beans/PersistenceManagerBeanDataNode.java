@@ -38,7 +38,7 @@ public class PersistenceManagerBeanDataNode extends BaseResourceNode implements 
     
     public PersistenceManagerBeanDataNode(SunResourceDataObject obj, PersistenceManagerBean key) {
         super(obj);
-        setIconBase("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon"); //NOI18N
+        setIconBaseWithExtension("org/netbeans/modules/j2ee/sun/ide/resources/ResNodeNodeIcon.gif"); //NOI18N
         setShortDescription (NbBundle.getMessage (PersistenceManagerBeanDataNode.class, "DSC_PersistenceManagerNode"));//NOI18N
         resource = key;
         
