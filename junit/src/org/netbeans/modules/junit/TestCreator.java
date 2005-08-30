@@ -1715,6 +1715,9 @@ public final class TestCreator {
      */
     private static String getIndentString() {
         int spt = org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.getIndentSpace(); // spaces per tab
+        if (spt < 0) {
+            spt = 0;
+        }
         String tabString;
         if (org.netbeans.modules.javacore.jmiimpl.javamodel.MetadataElement.isExpandTab()) {
             char [] arr = new char[spt];
