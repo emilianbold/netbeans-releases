@@ -15,6 +15,7 @@ package org.netbeans.spi.options;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -75,6 +76,8 @@ public abstract class OptionsCategory {
         public static final String PROP_VALID = "valid";
         /** Property name constant. */
         public static final String PROP_CHANGED = "changed";
+        /** Property name constant. */
+        public static final String PROP_HELP_CTX = "helpCtx";
         
         
         /**
@@ -111,6 +114,13 @@ public abstract class OptionsCategory {
          * @return visual component representing this options category
          */
         public abstract JComponent getComponent ();
+
+        /** 
+         * Get current help context asociated with this panel.
+         *
+         * @return current help context
+         */
+        public abstract HelpCtx getHelpCtx ();
         
         /**
          * Registers new listener.

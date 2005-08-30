@@ -16,6 +16,7 @@ package org.netbeans.modules.options.indentation;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.openide.util.HelpCtx;
 
   
 /**
@@ -42,6 +43,10 @@ public final class IndentationPanelController extends PanelController {
     
     public boolean isChanged () {
         return indentationPanel.isChanged ();
+    }
+    
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx ("netbeans.optionsDialog.editor.identation");
     }
     
     public JComponent getComponent () {

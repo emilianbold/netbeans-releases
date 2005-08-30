@@ -16,6 +16,7 @@ package org.apache.tools.ant.module;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.openide.util.HelpCtx;
 
   
 /**
@@ -42,6 +43,10 @@ public final class AntPanelController extends PanelController {
     
     public boolean isChanged () {
         return antCustomizer.isChanged ();
+    }
+    
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx ("netbeans.optionsDialog.advanced.ant");
     }
     
     public JComponent getComponent () {

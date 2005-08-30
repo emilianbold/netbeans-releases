@@ -14,6 +14,8 @@
 package org.netbeans.modules.options.advanced;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyEditorManager;
 import java.util.ArrayList;
 import javax.swing.AbstractButton;
@@ -38,9 +40,11 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.modules.options.ui.TabbedPanel;
+import org.netbeans.spi.options.OptionsCategory.PanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.options.*;
 
@@ -53,8 +57,8 @@ import org.netbeans.modules.options.*;
 public final class AdvancedPanel extends JPanel {
 
     
-    private TabbedPanel tabbedPanel;
-    private Model model;
+    TabbedPanel     tabbedPanel;
+    private Model   model;
     
     
     AdvancedPanel () {
@@ -65,6 +69,11 @@ public final class AdvancedPanel extends JPanel {
             TabbedPanel.EXPAND_SOME // expansionPolicy 
         );
         tabbedPanel.setBorder (null);
+        tabbedPanel.addActionListener (new ActionListener () {
+            public void actionPerformed (ActionEvent e) {
+                firePropertyChange (PanelController.PROP_HELP_CTX, null, null);
+            }
+        });
         JScrollPane scrollPane = new JScrollPane (tabbedPanel);
         scrollPane.getVerticalScrollBar ().setUnitIncrement (20);
         
@@ -101,6 +110,10 @@ public final class AdvancedPanel extends JPanel {
     
     public void cancel () {
         model.cancel ();
+    }
+    
+    public HelpCtx getHelpCtx () {
+        return model.getHelpCtx (tabbedPanel.getSelectedComponent ());
     }
     
     public boolean dataValid () {

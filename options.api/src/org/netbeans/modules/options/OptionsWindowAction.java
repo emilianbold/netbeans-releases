@@ -20,6 +20,8 @@ import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.Map;
@@ -139,7 +141,7 @@ public class OptionsWindowAction extends AbstractAction {
                 optionsPanel = new WeakReference (op);
             }
             
-            DialogDescriptor descriptor = new DialogDescriptor (
+            final DialogDescriptor descriptor = new DialogDescriptor (
                 op,
                 "Options",
                 false,
@@ -154,6 +156,13 @@ public class OptionsWindowAction extends AbstractAction {
             if (index >= 0)
                 op.setCurrentIndex (index);
             descriptor.setAdditionalOptions (new Object[] {bClassic});
+            descriptor.setHelpCtx (op.getHelpCtx ());
+            final OptionsPanel op1 = op;
+            op.addPropertyChangeListener ("helpCtx", new PropertyChangeListener () {
+                public void propertyChange (PropertyChangeEvent evt) {
+                    descriptor.setHelpCtx (op1.getHelpCtx ());
+                }
+            });
             d = DialogDisplayer.getDefault ().createDialog (descriptor);
             d.setVisible (true);
             dialog = new WeakReference (d);

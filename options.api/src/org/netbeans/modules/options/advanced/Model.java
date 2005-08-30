@@ -36,6 +36,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.FolderLookup;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 
@@ -109,6 +110,19 @@ public final class Model extends TabbedPanelModel {
             if (((PanelController) it.next ()).isChanged ())
                 return true;
         return false;
+    }
+    
+    HelpCtx getHelpCtx (JComponent panel) {
+//        Iterator it = categoryToPanel.keySet ().iterator ();
+//        while (it.hasNext ()) {
+//            String category = (String) it.next ();
+//            if (panel == categoryToPanel.get (category)) {
+//                PanelController controller = (PanelController) 
+//                    categoryToController.get (category);
+//                return controller.getHelpCtx ();
+//            }
+//        }
+        return new HelpCtx ("netbeans.optionsDialog.advanced");
     }
     
     private boolean initialized = false;

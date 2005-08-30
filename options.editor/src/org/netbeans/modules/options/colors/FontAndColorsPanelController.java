@@ -16,6 +16,7 @@ package org.netbeans.modules.options.colors;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.openide.util.HelpCtx;
 
   
 /**
@@ -46,6 +47,10 @@ public final class FontAndColorsPanelController extends PanelController {
     
     public JComponent getComponent () {
         return fontAndColorsPanel;
+    }
+    
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx ("netbeans.optionsDialog.fontAndColorsPanel");
     }
 
     public void addPropertyChangeListener (PropertyChangeListener l) {

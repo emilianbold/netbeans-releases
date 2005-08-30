@@ -13,9 +13,12 @@
 
 package org.netbeans.modules.options.advanced;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
+import org.openide.util.HelpCtx;
 
   
 /**
@@ -26,7 +29,7 @@ import org.netbeans.spi.options.OptionsCategory.PanelController;
 public final class AdvancedPanelController extends PanelController {
 
     private AdvancedPanel advancedPanel = new AdvancedPanel ();
-    
+
     
     public void applyChanges () {
         advancedPanel.applyChanges ();
@@ -47,7 +50,11 @@ public final class AdvancedPanelController extends PanelController {
     public JComponent getComponent () {
         return advancedPanel;
     }
-
+    
+    public HelpCtx getHelpCtx () {
+        return advancedPanel.getHelpCtx ();
+    }
+    
     public void addPropertyChangeListener (PropertyChangeListener l) {
         advancedPanel.addPropertyChangeListener (l);
     }
