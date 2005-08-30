@@ -90,7 +90,9 @@ public final class GoToOppositeAction extends NodeAction {
                  .length == 0)
                         || ((oppositeRoots = Utils.skipNulls(oppositeRootsRaw))
                             .length == 0))
-             && (((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
+             && (selectedFO.isFolder()
+                        ||
+                 ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
                  .length == 0)
                         || ((oppositeRoots = Utils.skipNulls(oppositeRootsRaw))
                             .length == 0)
@@ -99,9 +101,12 @@ public final class GoToOppositeAction extends NodeAction {
         }
         
         String baseResName = srcCP.getResourceName(selectedFO, '/', false);
-        String oppoResName = sourceToTest
-                             ? getTestResName(baseResName, selectedFO.getExt())
-                             : getSrcResName(baseResName, selectedFO.getExt());
+        String oppoResName =
+                sourceToTest
+                ? (!selectedFO.isFolder()
+                        ? getTestResName(baseResName, selectedFO.getExt())
+                        : getSuiteResName(baseResName))
+                : getSrcResName(baseResName, selectedFO.getExt());
         assert ((oppoResName != null) || (sourceToTest == false));
         if (oppoResName == null) {
             return;     //if the selectedFO is not a test class (by name)
@@ -113,10 +118,17 @@ public final class GoToOppositeAction extends NodeAction {
         if (oppoFiles.isEmpty()) {
             if (sourceToTest) {
                 String sourceClsName = baseResName.replace('/', '.');
-                String testClsName = sourceClsName + "Test";            //NOI18N
+                String testClsName = !selectedFO.isFolder()
+                                     ? getTestClassName(sourceClsName)
+                                     : getSuiteName(sourceClsName);
+                String msgKey = 
+                        !selectedFO.isFolder()
+                        ? "MSG_test_class_not_found"                    //NOI18N
+                        : (sourceClsName.length() != 0)
+                              ? "MSG_testsuite_class_not_found"         //NOI18N
+                              : "MSG_testsuite_class_not_found_def_pkg";//NOI18N
                 TestUtil.notifyUser(
-                        NbBundle.getMessage(getClass(),
-                                            "MSG_test_class_not_found", //NOI18N
+                        NbBundle.getMessage(getClass(), msgKey,
                                             testClsName, sourceClsName),
                         ErrorManager.INFORMATIONAL);
                 return;             //PENDING - offer creation of new test class
@@ -230,7 +242,9 @@ public final class GoToOppositeAction extends NodeAction {
           && ((  (oppositeRootsRaw = utils.getTestFoldersRaw(selectedFORoot))
                  .length != 0)
                         && (Utils.skipNulls(oppositeRootsRaw).length != 0)
-              || ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
+              || !selectedFO.isFolder()
+                        &&
+                 ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
                  .length != 0)
                         && (Utils.skipNulls(oppositeRootsRaw).length != 0));
     }
@@ -262,7 +276,9 @@ public final class GoToOppositeAction extends NodeAction {
           || (((oppositeRootsRaw = utils.getTestFoldersRaw(selectedFORoot))
                  .length == 0)
                         || (Utils.skipNulls(oppositeRootsRaw).length == 0))
-             && (((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
+             && (selectedFO.isFolder()
+                        ||
+                 ((oppositeRootsRaw = utils.getSourceFoldersRaw(selectedFORoot))
                  .length == 0)
                         || (Utils.skipNulls(oppositeRootsRaw).length == 0)
                         || (sourceToTest = false));
@@ -308,6 +324,31 @@ public final class GoToOppositeAction extends NodeAction {
     
     /**
      */
+    private static String getSuiteResName(String baseResName) {
+        if (baseResName.length() == 0) {
+            return JUnitSettings.getDefault().getRootSuiteClassName();
+        }
+        
+        final String suiteSuffix = "Suite";                             //NOI18N
+
+        String lastNamePart
+                = baseResName.substring(baseResName.lastIndexOf('/') + 1);
+
+        StringBuffer buf = new StringBuffer(baseResName.length()
+                                            + lastNamePart.length()
+                                            + suiteSuffix.length()
+                                            + 6);
+        buf.append(baseResName).append('/');
+        buf.append(Character.toUpperCase(lastNamePart.charAt(0)))
+           .append(lastNamePart.substring(1));
+        buf.append(suiteSuffix);
+        buf.append(".java");                                            //NOI18N
+
+        return buf.toString();
+    }
+    
+    /**
+     */
     private static String getSrcResName(String testResName, String ext) {
         if (!testResName.endsWith("Test")) {                            //NOI18N
             return null;
@@ -325,6 +366,29 @@ public final class GoToOppositeAction extends NodeAction {
      */
     private static String getTestClassName(String baseClassName) {
         return baseClassName + "Test";                                  //NOI18N
+    }
+    
+    /**
+     */
+    private static String getSuiteName(String packageName) {
+        if (packageName.length() == 0) {
+            return JUnitSettings.getDefault().getRootSuiteClassName();
+        }
+
+        final String suiteSuffix = "Suite";                             //NOI18N
+
+        String lastNamePart
+                = packageName.substring(packageName.lastIndexOf('.') + 1);
+        StringBuffer buf = new StringBuffer(packageName.length()
+                                            + lastNamePart.length()
+                                            + suiteSuffix.length()
+                                            + 1);
+        buf.append(packageName).append('.');
+        buf.append(Character.toUpperCase(lastNamePart.charAt(0)))
+           .append(lastNamePart.substring(1));
+        buf.append(suiteSuffix);
+        
+        return buf.toString();
     }
     
     /**
