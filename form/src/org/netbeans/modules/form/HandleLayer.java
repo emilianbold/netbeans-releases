@@ -367,28 +367,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
                 System.out.println(layoutModel.dump(idToNameMap));
             }
-        } else if (e.isControlDown() && !e.isAltDown() && (e.getID() == KeyEvent.KEY_PRESSED)
-            && ((keyCode == KeyEvent.VK_LEFT) || (keyCode == KeyEvent.VK_RIGHT)
-            || (keyCode == KeyEvent.VK_UP) || (keyCode == KeyEvent.VK_DOWN))) {
-            LayoutDesigner designer = formDesigner.getLayoutDesigner();
-            int alignment = 0;
-            int dimension = 0;
-            switch (keyCode) {
-                case KeyEvent.VK_LEFT:
-                    alignment = LayoutConstants.LEADING;
-                    dimension = LayoutConstants.HORIZONTAL; break;
-                case KeyEvent.VK_RIGHT:
-                    alignment = LayoutConstants.TRAILING;
-                    dimension = LayoutConstants.HORIZONTAL; break;
-                case KeyEvent.VK_UP:
-                    alignment = LayoutConstants.LEADING;
-                    dimension = LayoutConstants.VERTICAL; break;
-                case KeyEvent.VK_DOWN:
-                    alignment = LayoutConstants.TRAILING;
-                    dimension = LayoutConstants.VERTICAL; break;
-                default: assert false;
-            }
-            formDesigner.align(e.isShiftDown(), dimension, alignment);
         }
 
         super.processKeyEvent(e);

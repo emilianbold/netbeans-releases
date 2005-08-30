@@ -175,7 +175,7 @@ class FormToolBar extends JToolBar {
     }
 
     void installDesignerActions() {
-        Collection actions = formDesigner.getDesignerActions();
+        Collection actions = formDesigner.getDesignerActions(true);
         Iterator iter = actions.iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();

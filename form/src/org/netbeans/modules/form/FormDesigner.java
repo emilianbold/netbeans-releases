@@ -660,7 +660,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
             }
         }
-        Iterator iter = getDesignerActions().iterator();
+        Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action action = (Action)iter.next();
             action.setEnabled(enabled);
@@ -811,7 +811,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     void align(boolean closed, int dimension, int alignment) {
         // Check that the action is enabled
         Action action = null;
-        Iterator iter = getDesignerActions().iterator();
+        Iterator iter = getDesignerActions(true).iterator();
         while (iter.hasNext()) {
             Action candidate = (Action)iter.next();
             if (candidate instanceof AlignAction) {
@@ -840,19 +840,25 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     /**
      * Returns designer actions (they will be displayed in toolbar).
      *
+     * @param forToolbar determines whether the method should return
+     * all designer actions or just the subset for the form toolbar.
      * @return <code>Collection</code> of <code>Action</code> objects.
      */
-    public Collection getDesignerActions() {
+    public Collection getDesignerActions(boolean forToolbar) {
         if (designerActions == null) {
             designerActions = new LinkedList();
-            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING));
-            //designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.CENTER));
-            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING));
-            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING));
-            //designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.CENTER));
-            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING));
+            // Grouping actions
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, true));
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING, true));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING, true));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING, true));
+            // Align actions
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, false));
+            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING, false));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING, false));
+            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING, false));
         }
-        return designerActions;
+        return forToolbar ? designerActions.subList(0, 4) : designerActions;
     }
     
     public Collection getResizabilityActions() {
@@ -1657,6 +1663,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         private int dimension;
         /** Requested alignment. */
         private int alignment;
+        /** Group/Align action. */
+        private boolean closed;
         
         /**
          * Creates action that aligns selected components in the specified direction.
@@ -1664,9 +1672,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
          * @param dimension dimension to align in.
          * @param alignment requested alignment.
          */
-        AlignAction(int dimension, int alignment) {
+        AlignAction(int dimension, int alignment, boolean closed) {
             this.dimension = dimension;
             this.alignment = alignment;
+            this.closed = closed;
             boolean horizontal = (dimension == LayoutConstants.HORIZONTAL);
             boolean leading = (alignment == LayoutConstants.LEADING);
             String code;
@@ -1687,7 +1696,6 @@ public class FormDesigner extends TopComponent implements MultiViewElement
          * @param e event that invoked the action.
          */
         public void actionPerformed(ActionEvent e) {
-            boolean closed = ((e.getModifiers() & ActionEvent.ALT_MASK) != 0);
             align(closed, dimension, alignment);
         }
         

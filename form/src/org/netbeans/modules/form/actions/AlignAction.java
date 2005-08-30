@@ -90,28 +90,46 @@ public class AlignAction extends NodeAction {
         if (!(menu.getMenuComponentCount() > 0)) {
             ResourceBundle bundle = NbBundle.getBundle(AlignAction.class);
 
+            JMenuItem leftGroupItem = new AlignMenuItem(
+                    bundle.getString("CTL_GroupLeft"), // NOI18N
+                    components,
+                    0);
+            JMenuItem rightGroupItem = new AlignMenuItem(
+                    bundle.getString("CTL_GroupRight"), // NOI18N
+                    components,
+                    1);
+            JMenuItem upGroupItem = new AlignMenuItem(
+                    bundle.getString("CTL_GroupUp"), // NOI18N
+                    components,
+                    2);
+            JMenuItem downGroupItem = new AlignMenuItem(
+                    bundle.getString("CTL_GroupDown"), // NOI18N
+                    components,
+                    3);
             JMenuItem leftItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignLeft"), // NOI18N
                     components,
-                    0);
+                    4);
             JMenuItem rightItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignRight"), // NOI18N
                     components,
-                    1);
+                    5);
             JMenuItem upItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignUp"), // NOI18N
                     components,
-                    2);
+                    6);
             JMenuItem downItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignDown"), // NOI18N
                     components,
-                    3);
-            items = new JMenuItem[] {leftItem, rightItem, upItem, downItem};
-            for (int i=0; i<4; i++) {
+                    7);
+            items = new JMenuItem[] {leftGroupItem, rightGroupItem, upGroupItem,
+                downGroupItem, leftItem, rightItem, upItem, downItem};
+            for (int i=0; i<8; i++) {
                 items[i].addActionListener(getMenuItemListener());
                 items[i].setEnabled(false);
                 HelpCtx.setHelpIDString(items[i], AlignAction.class.getName());
                 menu.add(items[i]);
+                if (i == 3) menu.addSeparator();
             }
         }        
         updateState(components);
@@ -124,8 +142,9 @@ public class AlignAction extends NodeAction {
         RADComponent rc = (RADComponent)components.get(0);
         FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
         for (int i=0; i<4; i++) {
-            Action a = (Action)formDesigner.getDesignerActions().toArray()[i];
+            Action a = (Action)formDesigner.getDesignerActions(true).toArray()[i];
             items[i].setEnabled(a.isEnabled());
+            items[i+4].setEnabled(a.isEnabled());
         }
     }
     
@@ -170,7 +189,7 @@ public class AlignAction extends NodeAction {
             RADComponent radC = (RADComponent)mi.getRADComponents().get(0);
             FormModel fm = radC.getFormModel();
             FormDesigner fd = FormEditor.getFormDesigner(fm);
-            ((Action)fd.getDesignerActions().toArray()[index]).actionPerformed(evt);            
+            ((Action)fd.getDesignerActions(false).toArray()[index]).actionPerformed(evt);            
         }
     }
         
