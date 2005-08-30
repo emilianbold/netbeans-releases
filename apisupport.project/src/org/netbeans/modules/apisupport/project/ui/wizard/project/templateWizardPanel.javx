@@ -13,7 +13,6 @@ import org.openide.util.HelpCtx;
 
 /**
  * Panel just asking for basic info.
- * @author machine generated
  */
 public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
@@ -90,5 +89,4 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel, Wiza
         component.validate (wizardDescriptor);
     }
 
-    
 }

@@ -1,4 +1,3 @@
-
 package @@PACKAGENAME@@;
 
 import java.io.File;
@@ -14,11 +13,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-
-/**
- *
- * @author  machine generated
- */
 
 public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListener {
     
@@ -42,8 +36,6 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         return this.projectNameTextField.getText ();
     }
     
-    /** 
-     */
     // <editor-fold defaultstate="collapsed" desc=" UI Code ">
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
@@ -160,20 +152,14 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
 //            NbBundle.getMessage(@@TEMPLATENAME@@PanelVisual.class,"MSG_IllegalProjectName"));
             return false; // Display name not specified
         }
-        File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
-        if (getCanonicalFile (f)==null) {
+        File f = FileUtil.normalizeFile(new File(projectLocationTextField.getText()).getAbsoluteFile());
+        if (!f.isDirectory()) {
             String message = "Project Folder is not a valid path.";
 //NbBundle.getMessage (@@TEMPLATENAME@@PanelVisual.class,"MSG_IllegalProjectLocation");
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
-        final File destFolder = getCanonicalFile(new File( createdFolderTextField.getText() ).getAbsoluteFile());
-        if (destFolder == null) {
-            String message = "Project Name is not a valid folder name.";
-//NbBundle.getMessage (@@TEMPLATENAME@@PanelVisual.class,"MSG_IllegalProjectName");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
-            return false;
-        }
+        final File destFolder = FileUtil.normalizeFile(new File(createdFolderTextField.getText()).getAbsoluteFile());
 
         File projLoc = destFolder;
         while (projLoc != null && !projLoc.exists()) {
@@ -307,14 +293,6 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
             
         }                
         panel.fireChangeEvent(); // Notify that the panel changed        
-    }
-
-    static File getCanonicalFile(File file) {
-        try {
-            return file.getCanonicalFile();
-        } catch (IOException e) {
-            return null;
-        }
     }
 
 }
