@@ -447,7 +447,7 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
          * @return HelpCtxt the help context
          */
         public HelpCtx getHelp() {
-            return new HelpCtx("jmx_instrumenting_app");// NOI18N
+            return new HelpCtx("jmx_instrumenting_from_existing_app");// NOI18N
         }
     }
     
