@@ -192,7 +192,7 @@ public final class LayoutInterval implements LayoutConstants {
             return USE_PREFERRED_SIZE;
         }
         if (hasAttribute(ATTR_DESIGN_RESIZING)) {
-            return isEmptySpace() ? NOT_EXPLICITLY_DEFINED : 0;
+            return isEmptySpace() && (getPreferredSize(designTime) > 0) ? NOT_EXPLICITLY_DEFINED : 0;
         }
         return minSize;
     }

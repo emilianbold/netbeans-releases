@@ -388,6 +388,7 @@ public class LayoutDesigner implements LayoutConstants {
                 // Determine intervals that should be added
                 LayoutInterval[] addingInts = new LayoutInterval[DIM_COUNT];
                 LayoutRegion origSpace = null;
+                modelListener.deactivate(); // Because of resitrictedCopy
                 for (int dim=0; dim < DIM_COUNT; dim++) {
                     if (components.length > 1) {
                         if (origSpace == null) {
@@ -412,6 +413,7 @@ public class LayoutDesigner implements LayoutConstants {
 //                        }
                     }
                 }
+                modelListener.activate();
 
                 LayoutFeeder layoutFeeder = new LayoutFeeder(operations, dragger, addingInts);
 
@@ -1118,7 +1120,7 @@ public class LayoutDesigner implements LayoutConstants {
                     }
                     changed = true;
                 }
-            } else { // [change alignment of whole sequence in parallel parent if...]
+            } else {
                 boolean before = true;
                 boolean seqChanged = false;
                 for (int i=0; i<parent.getSubIntervalCount(); i++) {
@@ -1168,8 +1170,8 @@ public class LayoutDesigner implements LayoutConstants {
                     }
                     if (insertGap) {
                         LayoutInterval gap = new LayoutInterval(SINGLE);
-                        gap.setSize(0);
                         setIntervalResizing(gap, true);
+                        layoutModel.setIntervalSize(gap, 0, 0, gap.getMaximumSize());
                         layoutModel.addInterval(gap, parent, index);
                     }
                     changed = true;
