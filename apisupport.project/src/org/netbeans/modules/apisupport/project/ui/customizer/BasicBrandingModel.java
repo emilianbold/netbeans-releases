@@ -112,10 +112,12 @@ public class BasicBrandingModel {
         /*if (name != null && !name.matches("[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*")) { // NOI18N
             throw new IllegalArgumentException("Malformed name: " + name); // NOI18N
         }*/
-        
-        this.name = name;
-        suiteProps.setProperty(NAME_PROPERTY, getName());
-        suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");//NOI18N
+     
+        if (isBrandingEnabled()) {
+            this.name = name;
+            suiteProps.setProperty(NAME_PROPERTY, getName());
+            suiteProps.setProperty(BRANDING_TOKEN_PROPERTY, "${" + NAME_PROPERTY + "}");//NOI18N
+        }
     }
     
     public String getTitle() {
@@ -139,12 +141,14 @@ public class BasicBrandingModel {
     }
     
     public void setTitle(String title) {
-        this.title = title;
-        productInformation.setValue(title);
-        mainWindowTitle.setValue(title+ " {0}");//NOI18N
-        mainWindowTitleNoProject.setValue(title+ " {0}");//NOI18N
-        currentVersion.setValue(title+ " {0}");//NOI18N
-        suiteProps.setProperty(TITLE_PROPERTY, getTitle());
+        if (isBrandingEnabled()) {
+            this.title = title;
+            productInformation.setValue(title);
+            mainWindowTitle.setValue(title+ " {0}");//NOI18N
+            mainWindowTitleNoProject.setValue(title+ " {0}");//NOI18N
+            currentVersion.setValue(title+ " {0}");//NOI18N
+            suiteProps.setProperty(TITLE_PROPERTY, getTitle());
+        }
     }
     
     public URL getIconSource() {
@@ -152,8 +156,10 @@ public class BasicBrandingModel {
     }
     
     public void setIconSource(final URL url) {
-        icon.setBrandingSource(url);
-        suiteProps.setProperty(ICON_LOCATION_PROPERTY, getIconLocation());
+        if (isBrandingEnabled()) {
+            icon.setBrandingSource(url);
+            suiteProps.setProperty(ICON_LOCATION_PROPERTY, getIconLocation());
+        }
     }
     
     public String getIconLocation() {
@@ -252,7 +258,7 @@ public class BasicBrandingModel {
                 initTitle = NbBundle.getBundle(getClass()).getString("APP_Title");//NOI18N
             }
             assert initTitle != null;
-            setTitle(initTitle);
+            title = initTitle;
         }
     }
     
