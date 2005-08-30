@@ -50,10 +50,12 @@ public class JComboMouseDriver extends LightSupportiveDriver implements ListDriv
     public void selectItem(ComponentOperator oper, int index) {
 	JComboBoxOperator coper = (JComboBoxOperator)oper;
         //1.5 workaround
-        queueTool.setOutput(oper.getOutput().createErrorOutput());
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
+        if(System.getProperty("java.version").startsWith("1.5")) {
+            queueTool.setOutput(oper.getOutput().createErrorOutput());
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+        }
         //end of 1.5 workaround
 	if(!coper.isPopupVisible()) {
             if(UIManager.getLookAndFeel().getClass().getName().equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel")) {

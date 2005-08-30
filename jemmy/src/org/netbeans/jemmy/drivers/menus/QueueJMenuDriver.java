@@ -119,10 +119,12 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                 };
 	}
         //1.5 workaround
-        queueTool.setOutput(oper.getOutput().createErrorOutput());
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
+        if(System.getProperty("java.version").startsWith("1.5")) {
+            queueTool.setOutput(oper.getOutput().createErrorOutput());
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+        }
         //end of 1.5 workaround
         result = runAction(action, oper, 
                            oper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout"),
@@ -168,10 +170,12 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                                         waitingTime);
         waiter.getTimeouts().setTimeout("Waiter.TimeDelta", 100);
         //1.5 workaround
-        queueTool.setOutput(env.getOutput().createErrorOutput());
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
-        queueTool.waitEmpty(10);
+        if(System.getProperty("java.version").startsWith("1.5")) {
+            queueTool.setOutput(env.getOutput().createErrorOutput());
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+            queueTool.waitEmpty(10);
+        }
         //end of 1.5 workaround
         try {
             return((JMenuItem)waiter.waitAction(null));
