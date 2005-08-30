@@ -241,6 +241,8 @@ public class Evaluator implements JavaParserVisitor {
             Assert.error(node, "arrayCreateError", e);
         } catch (InvalidTypeException e) {
             Assert.error(node, "arrayCreateError", e);
+        } catch (UnsupportedOperationException uoex) {
+            return Assert.error(node, "calleeException", uoex);
         }
 
         return arrayRef;
@@ -788,7 +790,12 @@ public class Evaluator implements JavaParserVisitor {
             args = new Value[0];
         }
 
-        MethodCall method = getConcreteMethod(ctx, args);
+        MethodCall method;
+        try {
+            method = getConcreteMethod(ctx, args);
+        } catch (UnsupportedOperationException uoex) {
+            return Assert.error(node, "calleeException", uoex, ctx);
+        }
 
         if (method.instanceContext != null) {
             try {
@@ -797,6 +804,9 @@ public class Evaluator implements JavaParserVisitor {
                         Evaluator.class, 
                         "CTL_UnsupportedOperationException"
                     )); 
+                if (!evaluationContext.canInvokeMethods()) {
+                    return Assert.error(node, "calleeException", new UnsupportedOperationException(), ctx);
+                }
                 return method.instanceContext.invokeMethod(frameThread, method.method, method.args,
                                                         ObjectReference.INVOKE_SINGLE_THREADED | ObjectReference.INVOKE_NONVIRTUAL);
             } catch (InvalidTypeException e) {
@@ -809,6 +819,7 @@ public class Evaluator implements JavaParserVisitor {
             } catch (InvocationException e) {
                 Assert.error(node, "calleeException", e, ctx);
             } catch (UnsupportedOperationException e) {
+                evaluationContext.setCanInvokeMethods(false);
                 Assert.error(node, "calleeException", e, ctx);
             }
             finally {
@@ -829,13 +840,20 @@ public class Evaluator implements JavaParserVisitor {
                             Evaluator.class, 
                             "CTL_UnsupportedOperationException"
                         )); 
-                    return classContext.newInstance(frameThread, method.method, method.args, ClassType.INVOKE_SINGLE_THREADED);
+                    try {
+                        return classContext.newInstance(frameThread, method.method, method.args, ClassType.INVOKE_SINGLE_THREADED);
+                    } catch (UnsupportedOperationException uoex) {
+                        return Assert.error(node, "calleeException", uoex, ctx);
+                    }
                 } else {
                     if (verbose) 
                         throw new UnsupportedOperationException (NbBundle.getMessage (
                             Evaluator.class, 
                             "CTL_UnsupportedOperationException"
                         )); 
+                    if (!evaluationContext.canInvokeMethods()) {
+                        return Assert.error(node, "calleeException", new UnsupportedOperationException(), ctx);
+                    }
                     return classContext.invokeMethod(frameThread, method.method, method.args, ClassType.INVOKE_SINGLE_THREADED);
                 }
             } catch (InvalidTypeException e) {
@@ -850,6 +868,7 @@ public class Evaluator implements JavaParserVisitor {
             } catch (IllegalArgumentException e) {
                 Assert.error(node, "callException", e, ctx);
             } catch (UnsupportedOperationException e) {
+                evaluationContext.setCanInvokeMethods(false);
                 Assert.error(node, "calleeException", e, ctx);
             }
             finally {
@@ -1201,7 +1220,14 @@ public class Evaluator implements JavaParserVisitor {
                     Evaluator.class, 
                     "CTL_UnsupportedOperationException"
                 )); 
+            if (!evaluationContext.canInvokeMethods()) {
+                throw new UnsupportedOperationException();
+            }
             return (PrimitiveValue) reference.invokeMethod(frameThread, toCall, new ArrayList(0), ObjectReference.INVOKE_SINGLE_THREADED);
+        } catch (UnsupportedOperationException uoex) {
+            evaluationContext.setCanInvokeMethods(false);
+            // this can happen on VMs that can not invoke methods...
+            throw new RuntimeException("Unexpected exception while invoking unboxing method", uoex);
         } catch (Exception e) {
             // this should never happen, indicates an internal error
             throw new RuntimeException("Unexpected exception while invoking unboxing method", e);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,8 @@ package org.netbeans.modules.debugger.jpda.expr;
 import com.sun.jdi.StackFrame;
 
 import java.util.*;
+
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 /**
  * Defines the exection context in which to evaluate a given expression. The context consists of:
@@ -32,6 +34,7 @@ public class EvaluationContext {
     private StackFrame frame;
     private List       sourceImports;
     private List       staticImports;
+    private boolean canInvokeMethods;
 
     /**
      * Creates a new context in which to evaluate expresions.
@@ -40,13 +43,15 @@ public class EvaluationContext {
      * @param imports list of imports
      * @param staticImports list of static imports
      */
-    public EvaluationContext(StackFrame frame, List imports, List staticImports) {
+    public EvaluationContext(StackFrame frame, List imports, List staticImports,
+                             boolean canInvokeMethods) {
         if (frame == null) throw new IllegalArgumentException("Frame argument must not be null");
         if (imports == null) throw new IllegalArgumentException("Imports argument must not be null");
         if (staticImports == null) throw new IllegalArgumentException("Static imports argument must not be null");
         this.frame = frame;
         this.sourceImports = imports;
         this.staticImports = staticImports;
+        this.canInvokeMethods = canInvokeMethods;
     }
 
     public List getStaticImports() {
@@ -59,6 +64,14 @@ public class EvaluationContext {
 
     public StackFrame getFrame() {
         return frame;
+    }
+    
+    public boolean canInvokeMethods() {
+        return canInvokeMethods;
+    }
+    
+    void setCanInvokeMethods(boolean canInvokeMethods) {
+        this.canInvokeMethods = canInvokeMethods;
     }
 }
 
