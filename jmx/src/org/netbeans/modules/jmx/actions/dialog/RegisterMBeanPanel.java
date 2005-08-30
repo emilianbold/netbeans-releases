@@ -220,7 +220,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     
     private boolean isAcceptable() {
         return ((standardMBeanSelected() && isExistingClass && isValid) ||
-                (!standardMBeanSelected() && isMBean));
+                (!standardMBeanSelected() && isMBean && isValid));
     }
     
     /**
@@ -401,6 +401,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
     private void updateConstructors(String currentMBeanClass) {
         //clear the comboBox list of MBean constructors
         constructorComboBox.removeAllItems();
+        isValid = true;
         //clear information message
         stateLabel.setText( ""); // NOI18N
         JavaModelPackage pkg = (JavaModelPackage) currentClass.refImmediatePackage();
@@ -437,12 +438,19 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 }
                 //select first row
                 constructorComboBox.setSelectedItem(0); // NOI18N
+            } else if (WizardHelpers.hasOnlyDefaultConstruct(mbeanClass)) {
+                constructorComboBox.addItem(mbeanClass.getSimpleName() + "()"); // NOI18N
+                constructorComboBox.setSelectedItem(0); // NOI18N
             } else {
+                isValid = false;
+                constructorComboBox.setEnabled(false);
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
         }
-        if ((!isMBean) && (!currentMBeanClass.equals("")))
+        if ((!isMBean) && (!currentMBeanClass.equals(""))) {
+            isValid = false;
             stateLabel.setText(bundle.getString("LBL_NotMBeanClass")); // NOI18N
+        }
         btnOK.setEnabled(isAcceptable());
     }
     
