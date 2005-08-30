@@ -200,9 +200,15 @@ an exception can be made for your code so you do not get further mail about it.
   <target name="check-noi18n-comments" depends="init-module-list" description="print info about configured modules">
     <echo message="Running NOI18N check..."/>
     <echo message="Selected modules: ${allmodules}"/>
-    <apply executable="misc/i18ncheck.pl" type="dir">
+    <apply executable="perl" type="file" parallel="true">
+      <arg file="misc/i18ncheck.pl"/>
       <fileset dir="..">
-        <patternset includes="${allmodules}"/>
+        <patternset>
+          <include name="${allmodules}/**/*.java"/>
+          <exclude name="**/build/"/>
+          <exclude name="**/test/"/>
+          <exclude name="**/antsrc/"/>
+        </patternset>
       </fileset>
     </apply>
   </target>
