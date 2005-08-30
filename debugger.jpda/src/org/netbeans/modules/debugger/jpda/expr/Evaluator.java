@@ -920,6 +920,26 @@ public class Evaluator implements JavaParserVisitor {
         }
 
         List methods = type.methodsByName(ctx.identifier);
+        
+        //Try outer classes
+        ReferenceType origType = type;
+        ObjectReference origObject = object;
+        
+        while (methods.size() == 0) {
+            Field outerRef = type.fieldByName("this$0"); 
+            if (outerRef == null) {
+                //System.out.println("No outerRef.");
+                type = origType;
+                object = origObject;
+                break; //No outer reference
+            }
+            object = (ObjectReference) object.getValue(outerRef);
+            type = object.referenceType();
+            methods = type.methodsByName(ctx.identifier);
+                
+        }
+       
+        //Static Imports
         if (ctx.localContext && methods.size() == 0) {
             for (Iterator i = staticImportsIterator(ctx.identifier); i.hasNext(); ) {
                 String typeName = (String) i.next();
