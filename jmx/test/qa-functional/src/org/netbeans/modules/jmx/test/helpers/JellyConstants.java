@@ -462,4 +462,13 @@ public class JellyConstants {
    public static final String NT1_TYPE = "newjmx.newtype0";
    public static final String CLOSE_NT_BTN = "closeNotifTypeJButton";
    public static final String N1_DESC = "mycomment";
+   
+   //wrapper tests
+   public static final String W_OP_CLASS = "WrapperOp";
+   public static final String W_OP_PACKAGE = "jmxtestmbeanfunctionaltest";
+   
+   //creation tests
+   public static final String MBEAN_CREATE_PACKAGE = "mbeancreationpackage";
+   public static final String NEW_JMX_CLASS20 = "NewJMXClass20";
+   public static final String WARN_SAME_CLASS = "The file NewJMXClass20.java already exists.";
 }
