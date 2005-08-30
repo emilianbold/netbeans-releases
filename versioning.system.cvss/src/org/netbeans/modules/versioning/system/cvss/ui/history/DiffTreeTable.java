@@ -24,6 +24,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 
 import javax.swing.*;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.beans.PropertyVetoException;
@@ -45,6 +46,12 @@ class DiffTreeTable extends TreeTableView {
         setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         setupColumns();
+
+        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+        renderer.setOpenIcon(null);
+        renderer.setClosedIcon(null);
+        renderer.setLeafIcon(null);
+        tree.setCellRenderer(renderer);
     }
     
     private void setupColumns() {
