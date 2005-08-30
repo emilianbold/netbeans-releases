@@ -170,9 +170,11 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     
     private class ToolbarParser extends HandlerBase implements EntityResolver {
         private ToolbarRow currentRow = null;
+        private int toolbarIndex = 0;
         
         public void startElement(String name, AttributeList amap) throws SAXException {
             if (TAG_ROW.equals(name)) {
+                toolbarIndex = 0;
                 currentRow = new ToolbarRow(ToolbarConfiguration.this);
                 addRow(currentRow);
             }
@@ -193,7 +195,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 else
                     vis = Boolean.TRUE;
                 
-                addToolbar(currentRow, checkToolbarConstraints (tbname, pos, vis));
+                addToolbar(currentRow, checkToolbarConstraints (tbname, pos, vis, toolbarIndex++));
             }
         }
         
@@ -444,12 +446,14 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
      * @param name name of checked toolbar
      * @param position position of toolbar
      * @param visible visibility of toolbar
+     * @param toolbarIndex index of the toolbar as defined by the order of 
+     * declarations in layers
      * @return toolbar constraints for specifed toolbar name
      */
-    ToolbarConstraints checkToolbarConstraints (String name, Integer position, Boolean visible) {
+    ToolbarConstraints checkToolbarConstraints (String name, Integer position, Boolean visible, int toolbarIndex) {
         ToolbarConstraints tc = (ToolbarConstraints)allToolbars.get (name);
         if (tc == null)
-            tc = new ToolbarConstraints (this, name, position, visible);
+            tc = new ToolbarConstraints (this, name, position, visible, toolbarIndex);
         else
             tc.checkNextPosition (position, visible);
         return tc;

@@ -75,24 +75,35 @@ public class ToolbarConstraints {
     private int       prefLastWidth;
     /** Last row index. */
     private int       lastRowIndex;
+    /** The toolbar index as defined by the order of declarations in layers.
+        Value -1 means that absolute pixel positioning will be used instead. */
+    private int initialIndexInRow;
     
     private PropertyChangeSupport propSupport;
 
+    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis) {
+        this( conf, nam, pos, vis, -1 );
+    }
+    
     /** Create new ToolbarConstraints
      * @param conf own ToolbarConfiguration
      * @param nam name of toolbar
      * @param pos wanted position of toolbar
      * @param vis visibility of toolbar
      */
-    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis) {
+    ToolbarConstraints (ToolbarConfiguration conf, String nam, Integer pos, Boolean vis, int initialIndexInRow) {
         toolbarConfig = conf;
         name = nam;
         if (pos == null) {
             position = 0;
             anchor = LEFT_ANCHOR;
+            this.initialIndexInRow = initialIndexInRow;
         } else {
             position = pos.intValue();
             anchor = NO_ANCHOR;
+            //the absolute positioning takes precedence over the order of 
+            //declarations in layers
+            this.initialIndexInRow = -1;
         }
         visible = vis.booleanValue();
 
@@ -182,7 +193,13 @@ public class ToolbarConstraints {
     int getRowCount () {
         return rowCount;
     }
-
+    
+    int checkInitialIndexInRow() {
+        int retValue = initialIndexInRow;
+        initialIndexInRow = -1;
+        return retValue;
+    }
+    
     /** @return toolbar bounds. */
     Rectangle getBounds () {
         return new Rectangle (bounds);

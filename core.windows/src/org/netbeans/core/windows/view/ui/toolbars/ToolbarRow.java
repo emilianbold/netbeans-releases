@@ -80,14 +80,21 @@ public class ToolbarRow {
      * @param pos specified position of new toolbar
      */
     void addToolbar (ToolbarConstraints newTC, int pos) {
-        int index = 0;
-        Iterator it = toolbars.iterator();
-        ToolbarConstraints tc;
-        while (it.hasNext()) {
-            tc = (ToolbarConstraints)it.next();
-            if (pos < tc.getPosition())
-                break;
-            index++;
+        int index = newTC.checkInitialIndexInRow();
+        if( index >= 0 ) {
+            //the toolbar is being added for the first time so get its index
+            //from the order of declarations in layers xml
+            index = Math.min( index, toolbars.size() );
+        } else {
+            index = 0;
+            Iterator it = toolbars.iterator();
+            ToolbarConstraints tc;
+            while (it.hasNext()) {
+                tc = (ToolbarConstraints)it.next();
+                if (pos <= tc.getPosition())
+                    break;
+                index++;
+            }
         }
         addToolbar2 (newTC, index);
     }
@@ -141,7 +148,6 @@ public class ToolbarRow {
         try {
             next = (ToolbarConstraints)toolbars.elementAt (index + 1);
             next.removePrevBar (tc);
-            next.setAnchor (ToolbarConstraints.NO_ANCHOR);
         } catch (ArrayIndexOutOfBoundsException e) { }
         if ((prev != null) && (next != null)) {
             prev.addNextBar (next);
