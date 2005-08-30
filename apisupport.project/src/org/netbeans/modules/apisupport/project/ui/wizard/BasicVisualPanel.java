@@ -67,6 +67,7 @@ public abstract class BasicVisualPanel extends JPanel {
      * Convenience method for accessing Bundle resources from this package.
      */
     protected final String getMessage(String key) {
+        // XXX [-jglick] this is poor form - makes it impossible to safely subclass anything! Please remove
         return NbBundle.getMessage(getClass(), key);
     }
 }
