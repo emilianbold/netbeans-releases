@@ -113,15 +113,15 @@ public final class Model extends TabbedPanelModel {
     }
     
     HelpCtx getHelpCtx (JComponent panel) {
-//        Iterator it = categoryToPanel.keySet ().iterator ();
-//        while (it.hasNext ()) {
-//            String category = (String) it.next ();
-//            if (panel == categoryToPanel.get (category)) {
-//                PanelController controller = (PanelController) 
-//                    categoryToController.get (category);
-//                return controller.getHelpCtx ();
-//            }
-//        }
+        Iterator it = categoryToPanel.keySet ().iterator ();
+        while (it.hasNext ()) {
+            String category = (String) it.next ();
+            if (panel == categoryToPanel.get (category)) {
+                PanelController controller = (PanelController) 
+                    categoryToController.get (category);
+                return controller.getHelpCtx ();
+            }
+        }
         return new HelpCtx ("netbeans.optionsDialog.advanced");
     }
     
