@@ -131,13 +131,14 @@ public final class SuiteProject implements Project {
         if (platformS != null) {
             fixedProps.put("netbeans.dest.dir", "${nbplatform." + platformS + ".netbeans.dest.dir}"); // NOI18N
         }
+        providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
+        providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
+        providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
+        fixedProps = new HashMap();
         // synchronize with suite.xml
         fixedProps.put("disabled.clusters", "nb4.2, enterprise2, ide6, harness"); // NOI18N
         fixedProps.put("disabled.modules", "org.netbeans.modules.autoupdate"); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
-        
-        providers.add(helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }
     
