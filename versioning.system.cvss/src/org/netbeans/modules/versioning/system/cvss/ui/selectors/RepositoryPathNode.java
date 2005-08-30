@@ -101,8 +101,7 @@ public class RepositoryPathNode extends AbstractNode {
 
         protected void addNotify() {
             super.addNotify();
-            AbstractNode waitNode = new AbstractNode(Children.LEAF);
-            waitNode.setDisplayName(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2024"));
+            AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2024"));
             setKeys(Collections.singleton(waitNode));
             RequestProcessor rp = RequestProcessor.getDefault();
             task = rp.post(this);
