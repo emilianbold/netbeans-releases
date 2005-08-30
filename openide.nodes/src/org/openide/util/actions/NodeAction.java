@@ -13,6 +13,7 @@
 
 package org.openide.util.actions;
 
+import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
@@ -41,7 +42,6 @@ import java.util.Set;
 
 import javax.swing.Action;
 import javax.swing.JMenuItem;
-
 
 /**
  * A type of action that listens on change in activated nodes selection and
@@ -319,7 +319,13 @@ public abstract class NodeAction extends CallableSystemAction implements Context
         }
 
         if (fire) {
-            firePropertyChange(PROP_ENABLED, null, null);
+            try {
+                firePropertyChange(PROP_ENABLED, null, null);
+            } catch (NullPointerException e) {
+                // Probably because of a JDK bug that AbstractButton$ButtonActionPropertyChangeListener.propertyChange does not grok null values for "enabled" prop:
+                ErrorManager.getDefault().annotate(e, ErrorManager.UNKNOWN, "You cannot add " + getClass().getName() + " directly to a JMenu etc.; use org.openide.awt.Actions.connect instead", null, null, null); // NOI18N
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
     }
     
