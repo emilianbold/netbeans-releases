@@ -81,6 +81,8 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
          */
         protected abstract void readFromDataModel();
         
+        protected abstract HelpCtx getHelp();
+  
     }
     
     /** DataModel that is passed through individual panels.*/
@@ -294,7 +296,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         }
         
         public HelpCtx getHelp() {
-            return new HelpCtx(getClass());
+            return getPanel().getHelp();
         }
         
     }

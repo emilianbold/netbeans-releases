@@ -21,13 +21,14 @@ import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.HelpCtx;
 
 /**
  * the first panel in TopComponent wizard
  *
  * @author Milos Kleint
  */
-public class BasicSettingsPanel extends BasicWizardIterator.Panel {
+final class BasicSettingsPanel extends BasicWizardIterator.Panel {
     
     private NewTCIterator.DataModel data;
     private boolean listenersAttached = false;
@@ -120,6 +121,10 @@ public class BasicSettingsPanel extends BasicWizardIterator.Panel {
     
     protected String getPanelName() {
         return getMessage("LBL_BasicSettings_Title");
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(BasicSettingsPanel.class);
     }
     
     /** This method is called from within the constructor to

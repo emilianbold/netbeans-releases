@@ -19,6 +19,7 @@ import java.util.StringTokenizer;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * The first panel in the <em>New Action Wizard</em>.
@@ -68,6 +69,10 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     protected void readFromDataModel() {
         condionallyEnabledActionPerformed(null);
         setValid(Boolean.TRUE);
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(ActionTypePanel.class);
     }
     
     /** This method is called from within the constructor to

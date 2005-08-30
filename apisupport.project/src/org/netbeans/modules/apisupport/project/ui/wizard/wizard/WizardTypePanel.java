@@ -17,6 +17,7 @@ import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * The first panel in the <em>New Wizard Wizard</em>.
@@ -76,6 +77,10 @@ final class WizardTypePanel extends BasicWizardIterator.Panel {
         } catch (NumberFormatException nfe) {
             return false;
         }
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(WizardTypePanel.class);
     }
     
     /** This method is called from within the constructor to

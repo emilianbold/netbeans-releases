@@ -21,6 +21,7 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * Represents <em>Name and Location</em> panel in J2SE Library Descriptor Wizard.
@@ -81,6 +82,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private void checkValidity() {
         //TODO:
         setValid(Boolean.TRUE);
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(NameAndLocationPanel.class);
     }
     
     /** This method is called from within the constructor to

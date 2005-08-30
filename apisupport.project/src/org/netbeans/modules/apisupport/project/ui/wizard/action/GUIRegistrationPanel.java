@@ -46,6 +46,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -344,6 +345,10 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
             combo.setEnabled(false);
             checkValidity();
         }
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(GUIRegistrationPanel.class);
     }
     
     /** This method is called from within the constructor to

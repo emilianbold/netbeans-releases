@@ -26,6 +26,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 
 /**
  * The second panel in project template wizard.
@@ -110,6 +111,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private void loadCombo() {
         comCategory.setModel(UIUtil.createLayerPresenterComboModel(
                 data.getProject(), "Templates/Project")); // NOI18N
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(NameAndLocationPanel.class);
     }
     
     /** This method is called from within the constructor to

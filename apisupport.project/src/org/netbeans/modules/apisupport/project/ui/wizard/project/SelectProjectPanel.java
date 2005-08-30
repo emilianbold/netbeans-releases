@@ -30,6 +30,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -37,8 +38,8 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
-
-public class SelectProjectPanel extends BasicWizardIterator.Panel {
+final class SelectProjectPanel extends BasicWizardIterator.Panel {
+    
     private NewProjectIterator.DataModel data;
     private final ComboWrapper EMPTY = new ComboWrapper(NbBundle.getMessage(getClass(),"MSG_No_Projects"));
     
@@ -175,7 +176,11 @@ public class SelectProjectPanel extends BasicWizardIterator.Panel {
     
     protected String getPanelName() {
         return getMessage("LBL_ProjectSelection_Title");
-    }    
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(SelectProjectPanel.class);
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnProject;

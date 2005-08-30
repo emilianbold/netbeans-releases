@@ -25,6 +25,7 @@ import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -111,6 +112,10 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
     
     private String getClassName() {
         return className.getText().trim();
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(NameIconLocationPanel.class);
     }
     
     /** This method is called from within the constructor to

@@ -23,6 +23,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -30,7 +31,7 @@ import org.openide.util.NbBundle;
  *
  * @author Milos Kleint
  */
-public class FileRecognitionPanel extends BasicWizardIterator.Panel {
+final class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
     private static final Pattern EXTENSION_PATTERN = Pattern.compile("[a-zA-Z0-9_,. ]*"); // NOI18N
     private static final Pattern ELEMENT_PATTERN = Pattern.compile("(application/([a-zA-Z0-9_.-])*\\+xml|text/([a-zA-Z0-9_.-])*\\+xml)"); // NOI18N
@@ -167,6 +168,10 @@ public class FileRecognitionPanel extends BasicWizardIterator.Panel {
     
     protected String getPanelName() {
         return getMessage("LBL_FileRecognition_Title");
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(FileRecognitionPanel.class);
     }
     
     /** This method is called from within the constructor to

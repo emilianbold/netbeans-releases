@@ -22,6 +22,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -100,6 +101,10 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
             }
         }
         setErrorMessage(null);
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(NameAndLocationPanel.class);
     }
     
     /** This method is called from within the constructor to

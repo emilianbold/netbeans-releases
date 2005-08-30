@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,16 +23,17 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.ui.platform.LibrariesModel;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
-
-
+import org.openide.util.HelpCtx;
 
 /**
  * Represents <em>Libraries</em> panel in J2SE Library Descriptor Wizard.
  *
  * @author Radek Matous
  */
-public class SelectLibraryPanel extends BasicWizardIterator.Panel {
+final class SelectLibraryPanel extends BasicWizardIterator.Panel {
+    
     private NewLibraryDescriptor.DataModel data;
+    
     /**
      * Creates new form SelectLibraryPanel
      */
@@ -39,7 +41,7 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle"));
+        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle")); // NOI18N
         
     }
     
@@ -48,11 +50,9 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         setValid(Boolean.TRUE);
     }
     
-    
     Library getSelectedLibrary() {
         return (librariesValue != null) ?(Library)librariesValue.getSelectedItem() : null;
     }
-    
     
     protected void storeToDataModel() {
         data.setLibrary(getSelectedLibrary());
@@ -63,7 +63,11 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_SelectLibraryPanel_Title");
+        return getMessage("LBL_SelectLibraryPanel_Title"); // NOI18N
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(SelectLibraryPanel.class);
     }
     
     /** This method is called from within the constructor to
@@ -163,7 +167,6 @@ public class SelectLibraryPanel extends BasicWizardIterator.Panel {
         
         newLibraries.removeAll(oldLibraries);
         int indexes[] = new int [newLibraries.size()];
-        
         
         int i=0;
         for (Iterator it = newLibraries.iterator(); it.hasNext();i++) {
