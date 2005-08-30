@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Registering Java objects as MBeans in a JMX Agent<br>
+</h2>
+<br>
+Contextual (enabled only if an<span style="font-weight: bold;">
+JMX Agent </span>is selected) action located under the <span
+ style="font-style: italic; font-weight: bold;">management</span> menu.
+You can access the management menu from :<br>
+<ul>
+  <li>Top level menu</li>
+  <li>Project tree node contextual menu (right click on selected node)<br>
+  </li>
+</ul>
+<br>
+<h2>Action applicability</h2>
+<br>
+This action&nbsp; applies when a <span style="font-weight: bold;">JMX
+Agent is selected</span>. A JMX Agent class is <span
+ style="font-weight: bold;">a class generated from the JMX Agent Wizard</span>.<br>
+The JMX Agent <span style="font-weight: bold;">init</span> method is
+updated with the code needed to :<br>
+<ul>
+  <li><span style="font-weight: bold;">Instantiate</span> the java
+object. This instantiation is optional. The java object to wrap can be
+instantiated anywhere else in your code.<br>
+  </li>
+  <li><span style="font-weight: bold;">Wrap</span> this java object in
+a javax.management.StandardMBean JMX class instance.<br>
+  </li>
+  <li><span style="font-weight: bold;">Name</span> (Provide an MBean
+ObjectName)<br>
+  </li>
+  <li><span style="font-weight: bold;">Register</span> (Call
+MBeanServer register method)<br>
+  </li>
+</ul>
+You can call this action multiple time to register multiple Java
+objects.<br>
+<br>
+<h2>Java classes that you can wrap</h2>
+Not all Java classes are good candidate for automatic exportation as
+MBean. Some checks are applied by JMX. A class that can be wrapped is :<br>
+<ul>
+  <li>A class that implements at least 1 interface. One of the
+implemented interface will be exported as the management interface.</li>
+  <li>A class that is compliant with JMX Standard MBean design pattern.<br>
+  </li>
+</ul>
+<br>
+<h2>Using the Instantiate and Register MBean... action<br>
+</h2>
+<ol>
+  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
+menu select<span style="font-style: italic;"><span
+ style="font-weight: bold;"> Instantiate and Register</span></span><span
+ style="font-weight: bold; font-style: italic;"> MBean...</span></li>
+  <li>A popup windows is displayed.</li>
+  <li><span style="font-style: italic;">Select Register Java Object
+Wrapped in a StandardMBean </span>checkbox</li>
+  <li>You can click on <span style="font-style: italic;">Browse...</span>
+button to select a Java class from the current project. You can also
+enter a Java class name directly in the textfield.<br>
+  </li>
+  <li>Once you entered a valid Java class, <span
+ style="font-style: italic;">ObjectName</span> textfield becomes
+active. A default ObjectName is provided. The ObjectName default
+computation is :</li>
+  <ul>
+    <li>Domain name is derivated from MBean package name. The package
+name is inverted (eg: com.foo.bar ==&gt; <span
+ style="font-weight: bold;">bar.foo.com</span>). If the package name is
+the default package name, the JMX default domain is used.<br>
+    </li>
+    <li>A single key named <span style="font-style: italic;">type</span>
+having the class name as its value. (eg: class MyClass ==&gt; <span
+ style="font-weight: bold;">type=MyClass</span>) <br>
+    </li>
+  </ul>
+  <li>You are free to add any key/value pairs. The default ObjectName
+computation is well suited to name "singleton" MBean. If you want to
+register more than 1 Java class of the same type, you should add at
+least a key to avoid naming conflict.</li>
+  <li>You can now select a Class constructor from the <span
+ style="font-style: italic;">Construtor</span> dropdown list. If you
+don't want to generate the Java object instantiation, select "<span
+ style="font-style: italic;">Object Instantiation Not Generated</span>"
+item.<br>
+  </li>
+  <li>Click OK when you are done.<br>
+  </li>
+  <li>The JMX Agent source code is loaded in the editor.</li>
+  <li>Goto the edit method to visualize generated code.</li>
+  <li>If you don't need to update the generated code (no object
+reference to provide nor no parameters to provide to the Java class
+constructor), you can now compile, run and visualize MBeans living in
+your
+Agent. Just click on <span style="font-style: italic;">Run/Run Main
+Project with JConsole...</span>, or on its associated toolbar icon.
+Compilation, execution and visualization will be processed
+automatically.</li>
+</ol>
+<br>
+<h2>Updating the generated code</h2>
+<br>
+In the Agent source file go to the <span
+ style="font-style: italic; font-weight: bold;">init()</span> method<br>
+<br>
+<ul>
+  <li>If you selected <span style="font-style: italic;">"Object
+Instantiation Not Generated</span>", you need to provide your own class
+instance. In the following extract, a class <span
+ style="font-style: italic;">MyClass</span> implementing an interface <span
+ style="font-style: italic;">AnInterfaceI</span> is wrapped in a
+StandardMBean. Just replace the <span style="font-style: italic;">null</span>
+parameter with your own object reference.</li>
+</ul>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; <span style="font-style: italic;">getMBeanServer().registerMBean(</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">//TODO replace
+first parameter by your own MyClass object.</span></span><br
+ style="font-style: italic; font-weight: bold;">
+<span style="font-style: italic; font-weight: bold;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span style="font-style: italic;">new
+javax.management.StandardMBean(</span><span
+ style="font-style: italic; font-weight: bold;">null</span><span
+ style="font-style: italic;">, I.class),</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp; &nbsp; new
+ObjectName(":type=Test2"));</span><br>
+<br>
+<ul>
+  <li>If you selected a construtor that needs some parameters, you need
+to update the generated code with such parameters. Provide needed
+parameters to the wrapped Java class constructor. In the following
+extract, a class <span style="font-style: italic;">MyClass</span>
+implementing an interface <span style="font-style: italic;">AnInterfaceI</span>
+is wrapped in a StandardMBean. The MyClass constructor needs a String
+at construction time. Just replace the <span
+ style="font-style: italic;">null</span> parameter with a String
+implementation.</li>
+</ul>
+<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">//TODO update
+MyClass(String) constructor parameters with valid values.</span><br>
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; getMBeanServer().registerMBean(</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; new
+javax.management.StandardMBean(</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;
+</span>new MyClass(<span style="font-weight: bold;">null</span>,
+AnInterfaceI.class),</span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; new
+ObjectName(":type=MyClass"));</span><span style="font-style: italic;"><br>
+</span>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

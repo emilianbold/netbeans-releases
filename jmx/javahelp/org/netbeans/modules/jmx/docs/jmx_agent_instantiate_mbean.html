@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Registering MBeans in a JMX Agent<br>
+</h2>
+<br>
+Contextual (enabled only if an<span style="font-weight: bold;">
+JMX Agent </span>is selected) action located under the <span
+ style="font-style: italic; font-weight: bold;">management</span> menu.
+You can access the management menu from :<br>
+<ul>
+  <li>Top level menu</li>
+  <li>Project tree node contextual menu (right click on selected node)<br>
+  </li>
+</ul>
+<br>
+<h2>Action applicability</h2>
+<br>
+This action&nbsp; applies when a <span style="font-weight: bold;">JMX
+Agent is selected</span>. A JMX Agent class is <span
+ style="font-weight: bold;">a class generated from the JMX Agent Wizard</span>.<br>
+The JMX Agent <span style="font-weight: bold;">init</span> method is
+updated with the code needed to :<br>
+<ul>
+  <li><span style="font-weight: bold;">Instantiate</span> (Call MBean
+constructor)<br>
+  </li>
+  <li><span style="font-weight: bold;">Name</span> (Provide an MBean
+ObjectName)<br>
+  </li>
+  <li><span style="font-weight: bold;">Register</span> (Call
+MBeanServer register method)<br>
+  </li>
+</ul>
+an MBean within the platform MBeanServer. You can call this action
+multiple time to register multiple MBeans.
+<h2>Using the Instantiate and Register MBean... action<br>
+</h2>
+<ol>
+  <li>From the <span style="font-weight: bold; font-style: italic;">management</span>
+menu select<span style="font-style: italic;"><span
+ style="font-weight: bold;"> Instantiate and Register</span></span><span
+ style="font-weight: bold; font-style: italic;"> MBean...</span></li>
+  <li>A popup windows is displayed.</li>
+  <li><span style="font-style: italic;">Register Existing MBean</span>
+is already selected.</li>
+  <li>You can click on <span style="font-style: italic;">Browse...</span>
+button to select an MBean from the current project. You can also enter
+an Mbean class name directly in the textfield.<br>
+  </li>
+  <li>Once you entered a valid MBean class, <span
+ style="font-style: italic;">ObjectName</span> textfield becomes
+active. A default ObjectName is provided. The ObjectName default
+computation is :</li>
+  <ul>
+    <li>Domain name is derivated from MBean package name. The package
+name is inverted (eg: com.foo.bar ==&gt; <span
+ style="font-weight: bold;">bar.foo.com</span>). If the package name is
+the default package name, the JMX default domain is used.<br>
+    </li>
+    <li>A single key named <span style="font-style: italic;">type</span>
+having the class name as its value. (eg: class MyClass ==&gt; <span
+ style="font-weight: bold;">type=MyClass</span>) <br>
+    </li>
+  </ul>
+  <li>You are free to add any key/value pairs. The default ObjectName
+computation is well suited to name "singleton" MBean. If you want to
+register more than 1 MBean of the same type, you should add at least a
+key to avoid naming conflict.</li>
+  <li>You can now select an MBean constructor.</li>
+  <li>Click OK when you are done.<br>
+  </li>
+  <li>The JMX Agent source code is loaded in the editor.</li>
+  <li>Goto the edit method to visualize generated code.</li>
+  <li>If you don't need to update the generated code (no parameters to
+provide to the MBean constructor), you can now compile, run and
+visualize MBeans living in your
+Agent. Just click on <span style="font-style: italic;">Run/Run Main
+Project with JConsole...</span>, or on its associated toolbar icon.
+Compilation, execution and visualization will be processed
+automatically.</li>
+</ol>
+<br>
+<h2>Updating the generated code</h2>
+In case your MBean need some parameters at construction time, you need
+to update the generated code with such parameters.<br>
+<br>
+<ol>
+  <li>In the Agent source file go to the <span
+ style="font-style: italic; font-weight: bold;">init()</span> method</li>
+  <li>Provide needed parameters to the MBean constructor. In the
+following extract, the MBean constructor needs a String.<br>
+  </li>
+</ol>
+<span style="font-style: italic;"><br>
+//TODO update Status(String) constructor parameters with valid values.</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;">getMBeanServer().registerMBean(</span><br
+ style="font-style: italic;">
+<span style="font-style: italic;"><span style="font-weight: bold;">&nbsp;&nbsp;&nbsp;
+new Status("OK message")</span></span><span style="font-style: italic;">,<br>
+&nbsp;&nbsp;&nbsp; new ObjectName("foo.bar.com:type=Status"));<br>
+</span>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>

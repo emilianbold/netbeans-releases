@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+ *     	  Copyright © 2004 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+  <meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+  <title>About JMX Application Development</title>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>Writing a JMX Manager</h2>
+<br>
+This chapter demonstrates the use of the JMX Manager Wizard. Part of
+the
+contained information can be applied to any Java application.<br>
+<br>
+Any application that connect to a remote JMX Agent is a JMX Manager.
+This Wizard handles a connection to a remote JMX Agent.<br>
+<br>
+A tutorial is accessible from <a
+ href="http://management.netbeans.org/jmx">http://management.netbeans.org/jmx</a><br>
+It details the needed steps to write and connect a manager application
+to a JMX Agent.<br>
+<br>
+<h2>Using the JMX Manager Wizard to generate a&nbsp; Manager<br>
+</h2>
+<ol>
+  <li>Select <span style="font-style: italic;">File/New File...</span></li>
+  <li>Select the <span style="font-style: italic;">Management </span>category.
+In <span style="font-style: italic;">File Types</span> select <span
+ style="font-style: italic;">JMX Manager<br>
+    </span></li>
+  <li>Type in a <span style="font-style: italic;">Name</span> and a <span
+ style="font-style: italic;">Package</span>.</li>
+  <li>A main method and some sample code are generated. If the current
+project is a <span style="font-style: italic;">Java Application project</span>,
+the agent class will be set as the project main class.&nbsp; You can
+disable these features by unselecting the appropriate checkbox.</li>
+  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
+  <li>In order to identify the agent you whish to connect to, click on <span
+ style="font-style: italic;">Edit...</span> button to enter a JMX agent
+URL</li>
+  <li>A JMX URL is composed of a protocol, a host, a port and a URL
+path. <br>
+  </li>
+  <li>First, enter a protocol. If you want to connect to a JDK 1.5 Agent,
+select "<span style="font-style: italic;">RMI JVM Agent</span>". <span
+ style="font-weight: bold;">JMX module relies on this protocol</span>.
+If you want to connect to agent generated with this JMX module you
+should select this protocol. You can enter any other protocol (eg:
+jmxmp)</li>
+  <li>Then a host.</li>
+  <li>A port.</li>
+  <li>A URL path. In case of <span style="font-style: italic;">RMI JVM
+Agent </span>the URL path is disabled and automaticaly computed by the
+wizard.</li>
+  <li>Click OK when you are done. The JMX Agent URL textfield is
+updated with your inputs. You can click on <span
+ style="font-style: italic;">Edit...</span> again to update the URL.</li>
+  <li>If the connection to the JMX Agent you selected requires
+authentication, you can provide some credentials. Select <span
+ style="font-style: italic;">Generate Authenticated Connection with
+User Credentials</span> checkbox</li>
+  <li>Enter a username and password.<br>
+  </li>
+  <li>If your connection is not authenticated&nbsp; but you are
+interested in some sample code in order to provide such credentials,
+select <span style="font-style: italic;">Generate Sample Code for
+Authenticated Connection </span>checkbox.</li>
+  <li>Click <span style="font-style: italic;">Finish&gt;</span><br>
+  </li>
+  <li>The JMX Manager source code is loaded in the editor.</li>
+  <li>If you want to get familiar with the generated code, go to the
+manager <span style="font-weight: bold;">connect</span> method. You
+will see how JMX API is used to connect to a remote Agent. Connection
+based on the URL and credentials you provided.</li>
+  <li>If you selected <span style="font-style: italic;">Generate
+Sample MBean Discovery Code,</span> go to the <span
+ style="font-weight: bold;">main</span> method. Uncomment the generated
+code. This code make a call to the remote agent in order to discover
+the running MBeans. The list of discovered MBean is displayed on the
+output.</li>
+  <li>You can then run your project like any other Java project (menu<span
+ style="font-style: italic;"> Run &gt; Run Main Project</span>). If a
+JMX Agent is up and running, you should see the list of discovered
+MBeans displayed in the output console.</li>
+</ol>
+<h3 class="pHeading2">
+<hr><small><a href="credits.html">Legal Notices</a>
+<table cellpadding="20" border="0">
+  <tbody>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</small>
+</h3>
+</body>
+</html>
