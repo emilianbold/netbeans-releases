@@ -144,7 +144,7 @@ public class CreateModuleXML extends Task {
                     if (codename == null) {
                         throw new BuildException("Missing manifest tag OpenIDE-Module; " + module + " is not a module", getLocation());
                     }
-                    if (codename.endsWith(" ")) { // #62887
+                    if (codename.endsWith(" ") || codename.endsWith("\t")) { // #62887
                         throw new BuildException("Illegal trailing space in OpenIDE-Module value from " + module, getLocation());
                     }
                     int idx = codename.lastIndexOf('/');
@@ -155,7 +155,11 @@ public class CreateModuleXML extends Task {
                         rel = -1;
                     } else {
                         codenamebase = codename.substring(0, idx);
-                        rel = Integer.parseInt(codename.substring(idx + 1));
+                        try {
+                            rel = Integer.parseInt(codename.substring(idx + 1));
+                        } catch (NumberFormatException e) {
+                            throw new BuildException("Invalid OpenIDE-Module '" + codename + "' in " + module, getLocation());
+                        }
                     }
                     File xml = new File(xmldir, codenamebase.replace('.', '-') + ".xml");
                     if (xml.exists()) {
