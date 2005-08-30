@@ -14,6 +14,7 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.io.File;
+import org.netbeans.api.project.ProjectUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Document;
@@ -90,7 +91,7 @@ public class J2SESharabilityQueryTest extends NbTestCase {
         res = SharabilityQuery.getSharability(f);
         assertEquals("Dist can't be sharable", SharabilityQuery.NOT_SHARABLE, res);
         FileObject newSourceRoot = addSourceRoot(helper, projdir, "src2.dir",new File(FileUtil.toFile(scratch),"sources2"));
-        ((Sources)pp.getLookup().lookup(Sources.class)).getSourceGroups(Sources.TYPE_GENERIC);
+        ProjectUtils.getSources(pp).getSourceGroups(Sources.TYPE_GENERIC);
         f = FileUtil.toFile (newSourceRoot);
         res = SharabilityQuery.getSharability(f);
         assertEquals("Sources2 must be sharable", SharabilityQuery.SHARABLE, res);

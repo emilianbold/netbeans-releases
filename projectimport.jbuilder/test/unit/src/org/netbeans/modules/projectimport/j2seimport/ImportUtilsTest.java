@@ -22,6 +22,7 @@ import java.util.List;
 import junit.framework.*;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -216,7 +217,7 @@ public class ImportUtilsTest  extends NbTestCase {
     
     private static void testLibraries(ProjectModel projectDefinition, J2SEProject nbProject) throws Exception{
         SourceRoots roots = nbProject.getSourceRoots();
-        Sources src = (Sources) nbProject.getLookup().lookup(Sources.class);
+        Sources src = ProjectUtils.getSources(nbProject);
         //workaround for unit code tests (isn't necessary for IDE run)
         src.getSourceGroups(Sources.TYPE_GENERIC);
         assertTrue(roots.getRoots().length > 0);

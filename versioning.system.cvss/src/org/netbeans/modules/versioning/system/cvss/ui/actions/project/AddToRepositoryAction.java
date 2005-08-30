@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.project;
 
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -202,15 +203,13 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
         File importDirectory = null;
         Project project = (Project) node.getLookup().lookup(Project.class);
         if (project != null) {
-            Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-            if (sources != null) {
-                SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-                if (groups.length == 1) {
-                    FileObject root = groups[0].getRootFolder();
-                    importDirectory = FileUtil.toFile(root);
-                } else {
-                    importDirectory = FileUtil.toFile(project.getProjectDirectory());
-                }
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            if (groups.length == 1) {
+                FileObject root = groups[0].getRootFolder();
+                importDirectory = FileUtil.toFile(root);
+            } else {
+                importDirectory = FileUtil.toFile(project.getProjectDirectory());
             }
         } else {
             FileObject fo = null;

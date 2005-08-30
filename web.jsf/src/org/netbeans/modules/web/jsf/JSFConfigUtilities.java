@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -89,7 +90,7 @@ public class JSFConfigUtilities {
     public static SourceGroup[] getDocBaseGroups(FileObject fo) throws java.io.IOException {
         Project proj = FileOwnerQuery.getOwner(fo);
         if (proj==null) return new SourceGroup[]{};
-        Sources sources = (Sources)proj.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(proj);
         return sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
     }
     

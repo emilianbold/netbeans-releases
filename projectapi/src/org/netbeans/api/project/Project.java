@@ -52,8 +52,8 @@ public interface Project extends Lookup.Provider {
      * object in lookup (e.g. <code>ExtensibleMetadataProvider</code>) but in most
      * cases you should not; in the case of queries, always call the static query
      * API helper method, rather than looking for the query implementation objects
-     * yourself. In the case of <code>ProjectInformation</code> and <code>Sources</code>,
-     * use {@link ProjectUtils} rather than directly searching the project lookup.
+     * yourself. <strong>In the case of <code>ProjectInformation</code> and <code>Sources</code>,
+     * use {@link ProjectUtils} rather than directly searching the project lookup.</strong>
      * </p>
      * <p>The following abilities are recommended:</p>
      * <ol>

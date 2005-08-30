@@ -20,6 +20,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
 import javax.swing.DefaultCellEditor;
+import org.netbeans.api.project.ProjectUtils;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -421,10 +422,7 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
                     TLDDataObject.class,
                     "");
             else {       
-                Sources sources = (Sources)proj.getLookup().lookup( Sources.class );
-                if (sources == null) {
-                    sources = GenericSources.genericOnly(proj);
-                }
+                Sources sources = ProjectUtils.getSources(proj);
                 fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ),
                                                org.openide.loaders.DataFolder.class,
                                                "");

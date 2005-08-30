@@ -41,6 +41,7 @@ public class GenericSources {
     /**
      * Lists only one source folder group, of {@link Sources#TYPE_GENERIC},
      * containing the project directory, as by {@link #group}.
+     * If you think you need this, look at {@link ProjectUtils#getSources} first.
      * @param p a project
      * @return a simple sources implementation
      */

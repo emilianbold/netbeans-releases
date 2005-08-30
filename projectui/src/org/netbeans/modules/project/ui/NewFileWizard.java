@@ -259,11 +259,7 @@ public final class NewFileWizard extends TemplateWizard {
 //            return WizardIterators.templateIteratotBridge( iter );
 //        } 
 //        else {            
-//            Sources c = (Sources)p.getLookup().lookup(Sources.class);
-//            if (c == null) {
-//                c = SourceContainers.genericOnly(p);
-//            }
-//            
+//            Sources c = ProjectUtils.getSources(p);
 //            WizardDescriptor.Panel panels[] = new WizardDescriptor.Panel[1];            
 //            panels[0] = Templates.createSimpleTargetChooser(p, template, c.getSourceGroups(Sources.TYPE_GENERIC));
 //            return new WizardIterators.InstantiatingArrayIterator( panels, template );

@@ -22,6 +22,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
@@ -68,7 +69,7 @@ public final class HTMLPaletteUtilities {
         Project proj = FileOwnerQuery.getOwner(fObj);
         SourceGroup[] sg = new SourceGroup[] {};
         if (proj != null) {
-            Sources sources = (Sources)proj.getLookup().lookup(Sources.class);
+            Sources sources = ProjectUtils.getSources(proj);
             sg = sources.getSourceGroups("doc_root");
 //            if (sg.length == 0)
 //                sg = sources.getSourceGroups(Sources.TYPE_GENERIC);

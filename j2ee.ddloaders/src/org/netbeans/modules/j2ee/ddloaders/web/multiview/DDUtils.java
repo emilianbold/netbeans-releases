@@ -273,14 +273,14 @@ public class DDUtils {
     public static SourceGroup[] getJavaSourceGroups(DDDataObject dObj) throws java.io.IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         if (proj==null) return new SourceGroup[]{};
-        Sources sources = (Sources)proj.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(proj);
         return sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
     
     public static SourceGroup[] getDocBaseGroups(DDDataObject dObj) throws java.io.IOException {
         Project proj = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
         if (proj==null) return new SourceGroup[]{};
-        Sources sources = (Sources)proj.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(proj);
         return sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
     }
     

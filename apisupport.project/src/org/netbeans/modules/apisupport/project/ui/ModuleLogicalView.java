@@ -145,7 +145,7 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         
         private Set getProjectFiles() {
             Set roots = new HashSet();
-            Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+            Sources sources = ProjectUtils.getSources(project);
             
             // TODO add Sources.addChengeListener(this)
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);

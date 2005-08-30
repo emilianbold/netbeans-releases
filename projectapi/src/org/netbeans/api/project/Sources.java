@@ -19,7 +19,7 @@ import org.openide.filesystems.FileObject;
 /**
  * Optional interface for a project to enumerate folders containing sources
  * of various kinds.
- * Use {@link ProjectUtils#getSources} as a client.
+ * <strong>Use {@link ProjectUtils#getSources} as a client.</strong>
  * Use {@link Project#getLookup} as a provider.
  * <p class="nonnormative">
  * May be used by the New File wizard, Find in Files, to-do task scanning,

@@ -21,6 +21,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -121,7 +122,7 @@ public class Utility {
     }
     
     public static final FileObject findMetaInfServices(Project project) {
-        Sources srcs = (Sources)project.getLookup().lookup(Sources.class);
+        Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < grps.length; i++) {
             FileObject fo = grps[i].getRootFolder().getFileObject("META-INF/services"); //NOI18N

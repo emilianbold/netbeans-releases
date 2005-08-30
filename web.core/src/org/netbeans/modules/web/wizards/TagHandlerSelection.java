@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectUtils;
 
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -57,7 +58,7 @@ public class TagHandlerSelection implements WizardDescriptor.Panel {
     // create only those which really need to be visible.
     public Component getComponent() {
         Project project = Templates.getProject( wizard );
-        Sources sources = (Sources)project.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         WebModule wm=null;
         j2eeVersion = WebModule.J2EE_14_LEVEL;

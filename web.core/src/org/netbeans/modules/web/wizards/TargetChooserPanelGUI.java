@@ -769,10 +769,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
                     org.openide.loaders.DataFolder.class,
                     folderTextField.getText().replace( File.separatorChar, '/' ) );
             else {		           
-                Sources sources = (Sources)project.getLookup().lookup( Sources.class );
-                if (sources == null) {
-                    sources = GenericSources.genericOnly(project);
-                }
+                Sources sources = ProjectUtils.getSources(project);
                 fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ),
                         org.openide.loaders.DataFolder.class,
                         folderTextField.getText().replace( File.separatorChar, '/' ) );
@@ -997,10 +994,7 @@ public class TargetChooserPanelGUI extends javax.swing.JPanel implements ActionL
         if (folders!=null) fo = BrowseFolders.showDialog(folders, TLDDataObject.class,
                 folderTextField.getText().replace( File.separatorChar, '/' ) );
         else {       
-            Sources sources = (Sources)project.getLookup().lookup( Sources.class );
-            if (sources == null) {
-                sources = GenericSources.genericOnly(project);
-            }
+            Sources sources = ProjectUtils.getSources(project);
             fo = BrowseFolders.showDialog( sources.getSourceGroups( Sources.TYPE_GENERIC ),
                                            org.openide.loaders.DataFolder.class,
                     folderTextField.getText().replace( File.separatorChar, '/' ) );

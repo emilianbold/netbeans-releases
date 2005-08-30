@@ -466,7 +466,7 @@ public class NbMoveRefactoringPlugin implements RefactoringPlugin {
     }
     
     private static FileObject createMetaInf(NbModuleProject project) throws IOException {
-        Sources srcs = (Sources)project.getLookup().lookup(Sources.class);
+        Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (int i = 0; i < grps.length; i++) {
             FileObject fo = grps[i].getRootFolder().getFileObject("META-INF"); //NOI18N

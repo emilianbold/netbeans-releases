@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.ejbcore.patterns;
 
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.openide.*;
 import org.openide.util.*;
@@ -62,7 +63,7 @@ public final class ServiceLocatorWizard implements WizardDescriptor.Instantiatin
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
-        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         panels = new WizardDescriptor.Panel[] {JavaTemplates.createPackageChooser(project,sourceGroups)};
         Utils.mergeSteps(wiz, panels, STEPS);
