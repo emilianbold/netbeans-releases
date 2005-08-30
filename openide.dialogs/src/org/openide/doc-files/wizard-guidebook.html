@@ -11,10 +11,23 @@
    - Microsystems, Inc. All Rights Reserved.
   -->
 
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
 
+<head>
+ <title>Wizard guidebook</title>
+    <link rel="stylesheet" href="http://www.netbeans.org/netbeans.css" type="text/css"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />  
+    <meta name="topic" content="openide/dialogs"/>
+    <meta name="type" content="article"/>
+    <meta name="audience" content="nbdeveloper"/>
+    <meta name="description" content="Guidebook of using WizardDescriptor API."/>
+    <meta name="author" content="jrojcek@netbeans.org,jrechtacek@netbeans.org"/>
+    <meta name="indexed" content="y"/>
+    <style type="text/css"/>
+</head>
 
-<h2>WizardDescriptor</h2>
+<h1>Wizard Descriptor API</h1>
 
 <body>
 
@@ -24,9 +37,6 @@ allows developer to create wizard from supplied
 <a href="../WizardDescriptor.Iterator.html"><code>WizardDescriptor.Iterator</code></a>
 or array of 
 <a href="../WizardDescriptor.Panel.html"><code>WizardDesriptor.Panel</code></a>.
-It also allows wizard developer to easy satisfy 
-<a href="http://ui.netbeans.org/docs/wizards_styleguide/wizard.html">UI Guidelines for Wizards
-in NetBeans</a>.
 
 <br><br>
 
@@ -56,7 +66,9 @@ It will create four steps wizard with no additional graphic.
 To achieve creation of subtitle, steps pane, help tab, ... one have to
 set initialization properties. 
 
-<h3>Wizard panel initialization</h3>
+<br><br>
+    
+<h2>Wizard panel initialization</h2>
 
 Use 
 <a href="../WizardDescriptor.html#putProperty(java.lang.String,%20java.lang.Object)">
@@ -136,6 +148,8 @@ behavior. Properties have to be set before <code>TopManager.getDefault().createD
 is called. 
 <br>
 Follow properties which could be changed at wizard runtime.
+
+<br><br>
 
 <h2>Wizard panel properties</h2>
 
