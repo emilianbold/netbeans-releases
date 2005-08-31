@@ -13,15 +13,16 @@
 
 package org.netbeans.modules.diff.builtin.provider;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffProvider;
-
-import org.netbeans.modules.diff.builtin.provider.io.LineIndexedAccess;
 
 /**
  *
@@ -55,22 +56,17 @@ public class BuiltInDiffProvider extends DiffProvider {
      *        or <code>null</code> when some error occured.
      */
     public Difference[] computeDiff(Reader r1, Reader r2) throws IOException {
-        /*
-        CharArrayWriter w1 = new CharArrayWriter(BUFF_LENGTH);
-        CharArrayWriter w2 = new CharArrayWriter(BUFF_LENGTH);
-        char[] buffer = new char[BUFF_LENGTH];
-        int length;
-        while((length = r1.read(buffer)) > 0) w1.write(buffer, 0, length);
-        while((length = r2.read(buffer)) > 0) w2.write(buffer, 0, length);
-        r1.close();
-        r2.close();
-        w1.close();
-        w2.close();
-        return Diff.diff(w1.toString(), w2.toString());
-         */
-        LineIndexedAccess l1 = new LineIndexedAccess(r1);
-        LineIndexedAccess l2 = new LineIndexedAccess(r2);
-        return LineDiff.diff(l1, l2);
+        return HuntDiff.diff(getLines(r1), getLines(r2));
+    }
+    
+    private static String[] getLines(Reader r) throws IOException {
+        BufferedReader br = new BufferedReader(r);
+        String line;
+        List lines = new ArrayList();
+        while ((line = br.readLine()) != null) {
+            lines.add(line);
+        }
+        return (String[]) lines.toArray(new String[0]);
     }
     
 }
