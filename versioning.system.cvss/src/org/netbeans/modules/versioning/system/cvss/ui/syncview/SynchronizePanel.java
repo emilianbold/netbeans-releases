@@ -33,7 +33,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -94,8 +93,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         // XXX click it in form editor
         jPanel2.setFloatable(false);
         jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
-        Border verysoftbevelborder = BorderFactory.createMatteBorder(0,0,1,0,jPanel2.getBackground().darker().darker());
-        jPanel2.setBorder(verysoftbevelborder);
         jPanel2.setLayout(new ToolbarLayout());
     }
     
@@ -161,7 +158,6 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = GridBagConstraints.REMAINDER; gbc.gridheight = 1;
         gbc.anchor = GridBagConstraints.FIRST_LINE_START; gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1; gbc.weighty = 1;
-        gbc.insets = new Insets(0, 5, 0, 5);
         
         add(component, gbc);            
         revalidate();
@@ -717,7 +713,7 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
         add(jPanel2, gridBagConstraints);
 
     }
