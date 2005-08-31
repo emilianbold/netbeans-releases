@@ -138,8 +138,9 @@ public class Server implements Node.Cookie {
         try {
             return getFactory().getDisconnectedDeploymentManager(uri);
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            throw new IllegalStateException();
+            IllegalStateException ise = new IllegalStateException();
+            ise.initCause(e);
+            throw ise;
         }
     }
     
