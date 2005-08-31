@@ -86,7 +86,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextArea" name="commentTextArea">
+        <Component class="org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea" name="commentTextArea">
           <Properties>
             <Property name="columns" type="int" value="40"/>
             <Property name="rows" type="int" value="8"/>

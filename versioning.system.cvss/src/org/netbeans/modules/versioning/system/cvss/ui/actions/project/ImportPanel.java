@@ -124,7 +124,7 @@ public class ImportPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     final javax.swing.JCheckBox checkoutCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JScrollPane commentScrollPane = new javax.swing.JScrollPane();
-    final javax.swing.JTextArea commentTextArea = new javax.swing.JTextArea();
+    final org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea commentTextArea = new org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea();
     final javax.swing.JButton folderButton = new javax.swing.JButton();
     final javax.swing.JTextField folderTextField = new javax.swing.JTextField();
     final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();

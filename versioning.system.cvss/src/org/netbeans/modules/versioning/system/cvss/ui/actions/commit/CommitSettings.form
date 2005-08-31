@@ -79,7 +79,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextArea" name="taMessage">
+        <Component class="org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea" name="taMessage">
           <Properties>
             <Property name="columns" type="int" value="30"/>
             <Property name="lineWrap" type="boolean" value="true"/>

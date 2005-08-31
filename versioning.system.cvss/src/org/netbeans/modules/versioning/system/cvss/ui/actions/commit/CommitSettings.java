@@ -169,7 +169,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
         tfRevision = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        taMessage = new javax.swing.JTextArea();
+        taMessage = new org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea();
         jLabel3 = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
 
@@ -239,7 +239,7 @@ public class CommitSettings extends javax.swing.JPanel implements PropertyChange
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea taMessage;
+    private org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea taMessage;
     private javax.swing.JTextField tfRevision;
     // End of variables declaration//GEN-END:variables
     
