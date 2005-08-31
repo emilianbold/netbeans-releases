@@ -12,11 +12,12 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
-import java.awt.event.KeyAdapter;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.openide.util.Utilities;
 
 
@@ -88,6 +89,7 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
         noServiceLocator = new javax.swing.JRadioButton();
         unreferencedServiceLocator = new javax.swing.JRadioButton();
         className = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -132,14 +134,46 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
         add(unreferencedServiceLocator, gridBagConstraints);
         unreferencedServiceLocator.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServiceLocatorStrategyPanel.class, "ACSD_UseServiceLocatorClass"));
 
+        className.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                classNameActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 5);
         add(className, gridBagConstraints);
 
+        jButton1.setText("...");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 5);
+        add(jButton1, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void classNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classNameActionPerformed
+        System.out.println("### 111");
+        validateClass();
+    }//GEN-LAST:event_classNameActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        className.setEnabled(true);
+        unreferencedServiceLocator.setSelected(true);
+        SwingUtilities.invokeLater (new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen(className);
+            }
+        });
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void unreferencedServiceLocatorItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_unreferencedServiceLocatorItemStateChanged
         validateClass();
@@ -162,6 +196,7 @@ public class ServiceLocatorStrategyPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField className;
+    private javax.swing.JButton jButton1;
     private javax.swing.JRadioButton noServiceLocator;
     private javax.swing.JRadioButton unreferencedServiceLocator;
     // End of variables declaration//GEN-END:variables
