@@ -99,6 +99,8 @@ public final class JavaAntLogger extends AntLogger {
         "junit", // NOI18N
         // Nice to handle stack traces from e.g. NB's own build system too!
         "exec", // NOI18N
+        // #63065: Mobility execution
+        "nb-run",     //NOI18N
     };
     
     private static final int[] LEVELS_OF_INTEREST = {
