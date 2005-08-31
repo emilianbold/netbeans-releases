@@ -16,6 +16,7 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
+import org.openide.util.HelpCtx;
 
 /**
  * Provides common support for a <em>standard</em> panels in the NetBeans module
@@ -24,7 +25,9 @@ import javax.swing.JPanel;
  * @author Martin Krauskopf
  */
 abstract class NbPropertyPanel extends JPanel implements
-        BasicCustomizer.LazyStorage, PropertyChangeListener {
+        BasicCustomizer.LazyStorage, PropertyChangeListener, HelpCtx.Provider {
+    
+    private Class helpCtxClass;
     
     /** Property whether <code>this</code> panel is valid. */
     static final String VALID_PROPERTY = "isPanelValid"; // NOI18N
@@ -41,11 +44,12 @@ abstract class NbPropertyPanel extends JPanel implements
     private String errMessage;
     
     /** Creates new NbPropertyPanel */
-    NbPropertyPanel(final ModuleProperties props) {
+    NbPropertyPanel(final ModuleProperties props, final Class helpCtxClass) {
         this.valid = true; // panel is valid by default
         this.props = props;
         initComponents();
         props.addPropertyChangeListener(this);
+        this.helpCtxClass = helpCtxClass;
     }
     
     /**
@@ -108,6 +112,10 @@ abstract class NbPropertyPanel extends JPanel implements
         firePropertyChange(CustomizerProviderImpl.LAST_SELECTED_PANEL, null, this);
     }
     
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(helpCtxClass);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -121,13 +129,12 @@ abstract class NbPropertyPanel extends JPanel implements
     }
     // </editor-fold>//GEN-END:initComponents
     
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
     
     abstract static class Single extends NbPropertyPanel {
-        Single(final SingleModuleProperties props) {
-            super(props);
+        Single(final SingleModuleProperties props, final Class helpCtxClass) {
+            super(props, helpCtxClass);
         }
         SingleModuleProperties getProperties() {
             return (SingleModuleProperties) props;
@@ -135,8 +142,8 @@ abstract class NbPropertyPanel extends JPanel implements
     }
     
     abstract static class Suite extends NbPropertyPanel {
-        Suite(final SuiteProperties props) {
-            super(props);
+        Suite(final SuiteProperties props, final Class helpCtxClass) {
+            super(props, helpCtxClass);
         }
         SuiteProperties getProperties() {
             return (SuiteProperties) props;

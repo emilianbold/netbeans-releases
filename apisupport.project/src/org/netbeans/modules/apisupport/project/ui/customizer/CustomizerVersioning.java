@@ -46,7 +46,7 @@ final class CustomizerVersioning extends NbPropertyPanel.Single
     
     /** Creates new form CustomizerVersioning */
     CustomizerVersioning(SingleModuleProperties props) {
-        super(props);
+        super(props, CustomizerVersioning.class);
         initComponents();
         initPublicPackageTable();
         refresh();

@@ -45,7 +45,7 @@ final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite {
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerLibraries(final SuiteProperties suiteProps) {
-        super(suiteProps);
+        super(suiteProps, SuiteCustomizerLibraries.class);
         initComponents();
         platformValue.setSelectedItem(suiteProps.getActivePlatform());
         refresh();

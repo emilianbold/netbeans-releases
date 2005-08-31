@@ -29,7 +29,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties props) {
-        super(props);
+        super(props, CustomizerDisplay.class);
         initComponents();
         refresh();
     }

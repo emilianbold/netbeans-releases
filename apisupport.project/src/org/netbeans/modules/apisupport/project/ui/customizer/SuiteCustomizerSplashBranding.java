@@ -12,6 +12,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.customizer;
+
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -19,18 +20,14 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
-import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
-import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding.ImagePreview;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-
 
 /**
  * Represents <em>Splash branding parameters</em> panel in Suite customizer.
@@ -38,7 +35,8 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
-    SplashComponentPreview splashImage;
+    
+    private SplashComponentPreview splashImage;
     private JFormattedTextField fontSize;
     private JFormattedTextField runningTextBounds;
     private JFormattedTextField progressBarBounds;
@@ -47,13 +45,13 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     private SplashUISupport.ColorComboBox edgeColor;
     private SplashUISupport.ColorComboBox cornerColor;
     
-    private URL splashSource = null;
+    private URL splashSource;
     
     /**
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerSplashBranding(final SuiteProperties suiteProps) {
-        super(suiteProps);
+        super(suiteProps, SuiteCustomizerSplashBranding.class);
         BasicBrandingModel branding = getBrandingModel();
         branding.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
@@ -75,7 +73,9 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
         
         PropertyChangeListener pL = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName() != SplashUISupport.ColorComboBox.PROP_COLOR) return;
+                if (evt.getPropertyName() != SplashUISupport.ColorComboBox.PROP_COLOR) {
+                    return;
+                }
                 resetSplashPreview();
             }
         };
@@ -394,7 +394,6 @@ public class SuiteCustomizerSplashBranding extends NbPropertyPanel.Suite {
     // </editor-fold>//GEN-END:initComponents
     
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
-// TODO add your handling code here:
         JFileChooser chooser = UIUtil.getIconFileChooser();
         int ret = chooser.showDialog(this, NbBundle.getMessage(getClass(), "LBL_Select")); // NOI18N
         if (ret == JFileChooser.APPROVE_OPTION) {

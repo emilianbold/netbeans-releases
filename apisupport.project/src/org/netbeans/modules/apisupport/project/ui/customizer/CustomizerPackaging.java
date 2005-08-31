@@ -25,7 +25,7 @@ final class CustomizerPackaging extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerPackaging */
     CustomizerPackaging(final SingleModuleProperties props) {
-        super(props);
+        super(props, CustomizerPackaging.class);
         initComponents();
         refresh();
     }

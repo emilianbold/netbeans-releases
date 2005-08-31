@@ -108,7 +108,7 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
             }
             dialog = ProjectCustomizer.createCustomizerDialog(categories,
                     getPanelProvider(), preselectedCategory, listener,
-                    new HelpCtx(getClass()));
+                    null);
             dialog.addWindowListener(listener);
             dialog.setTitle(NbBundle.getMessage(getClass(), "LBL_CustomizerTitle",
                     ProjectUtils.getInformation(getProject()).getDisplayName()));

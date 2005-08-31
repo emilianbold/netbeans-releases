@@ -24,7 +24,7 @@ final class CustomizerSources extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerSources */
     CustomizerSources(final SingleModuleProperties props) {
-        super(props);
+        super(props, CustomizerSources.class);
         initComponents();
         refresh();
     }

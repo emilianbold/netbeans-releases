@@ -24,7 +24,7 @@ final class SuiteCustomizerSources extends NbPropertyPanel {
      * Creates new form SuiteCustomizerSources
      */
     SuiteCustomizerSources(final SuiteProperties suiteProps) {
-        super(suiteProps);
+        super(suiteProps, SuiteCustomizerSources.class);
         initComponents();
         prjFolderValue.setText(suiteProps.getProjectDirectory());
     }

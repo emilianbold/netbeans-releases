@@ -15,10 +15,8 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.awt.Graphics;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -35,13 +33,14 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
-    private URL iconSource = null;
+    
+    private URL iconSource;
     
     /**
      * Creates new form SuiteCustomizerLibraries
      */
     public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps) {
-        super(suiteProps);
+        super(suiteProps, SuiteCustomizerBasicBranding.class);
         initComponents();
         
         DocumentListener textFieldChangeListener = new UIUtil.DocumentAdapter() {
@@ -276,7 +275,6 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
                 }
             }
         }
-        
         
         private void setImage(ImageIcon image) {
             this.image = image;

@@ -22,7 +22,7 @@ final class CustomizerCompiling extends NbPropertyPanel.Single {
     
     /** Creates new form CustomizerCompiling */
     CustomizerCompiling(final SingleModuleProperties props) {
-        super(props);
+        super(props, CustomizerCompiling.class);
         initComponents();
         refresh();
     }
