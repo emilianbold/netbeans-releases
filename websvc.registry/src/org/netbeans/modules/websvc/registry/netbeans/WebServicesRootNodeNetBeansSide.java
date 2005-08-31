@@ -46,11 +46,17 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
     }
     
     public Image getIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/netbeans/webservicegroup.png");
+        if (realNode!=null)
+            return Utilities.loadImage("org/netbeans/modules/websvc/registry/netbeans/webservicegroup.png");
+        else 
+            return Utilities.loadImage("org/netbeans/modules/websvc/registry/netbeans/webservicegroup_invalid.png");
     }
     
     public Image getOpenedIcon(int type){
-        return Utilities.loadImage("org/netbeans/modules/websvc/registry/netbeans/webservicegroup.png");
+        if (realNode!=null)
+            return Utilities.loadImage("org/netbeans/modules/websvc/registry/netbeans/webservicegroup.png");
+        else
+            return Utilities.loadImage("org/netbeans/modules/websvc/registry/netbeans/webservicegroup_invalid.png");
     }
     
     public Action[] getActions(boolean context) {
@@ -69,10 +75,11 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
     }
     
     public HelpCtx getHelpCtx() {
-        if(realNode != null) {
-            return realNode.getHelpCtx();
-        }
-        return HelpCtx.DEFAULT_HELP;
+        //if(realNode != null) {
+        //    return realNode.getHelpCtx();
+        //}
+        //return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(WebServicesRootNodeInterface.class);
     }
     
     
