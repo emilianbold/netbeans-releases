@@ -555,11 +555,11 @@ final class WritableXMLFileSystem extends AbstractFileSystem
     
     public Object readAttribute(String name, String attrName) {
         if (attrName.equals("WritableXMLFileSystem.cp")) { // NOI18N
-            // Special access for MiscPropEds, so it knows what classpath to work with.
+            // XXX currently unused
             return classpath;
         }
         if (attrName.equals("WritableXMLFileSystem.location")) { // NOI18N
-            // Special access for MiscPropEds, so it knows what classpath to work with.
+            // XXX used from PickIconAction; use a constant instead
             return location;
         }
         if (attrName.equals("DataFolder.Index.reorderable")) { // NOI18N
