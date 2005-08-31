@@ -89,7 +89,9 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             Document doc = target.getDocument();
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
             AddManagedBeanDialog dialogPanel = new AddManagedBeanDialog(data);
-            AddDialog dialog = new AddDialog(dialogPanel,NbBundle.getMessage(JSFPopupAction.class,"TTL_AddManagedBean"));
+            AddDialog dialog = new AddDialog(dialogPanel,
+                    NbBundle.getMessage(JSFPopupAction.class,"TTL_AddManagedBean"),
+                    new HelpCtx(AddManagedBeanDialog.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
@@ -124,7 +126,9 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             Document doc = target.getDocument();
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
             AddNavigationRuleDialog dialogPanel = new AddNavigationRuleDialog(data);
-            AddDialog dialog = new AddDialog(dialogPanel,NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationRule"));
+            AddDialog dialog = new AddDialog(dialogPanel,
+                    NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationRule"),
+                    new HelpCtx(AddNavigationRuleDialog.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
@@ -157,7 +161,9 @@ public final class JSFPopupAction extends SystemAction implements Presenter.Popu
             JSFConfigDataObject data = (JSFConfigDataObject)NbEditorUtilities.getDataObject(doc);
             AddNavigationCaseDialog dialogPanel = new AddNavigationCaseDialog(data, 
                     JSFEditorUtilities.getNavigationRule((BaseDocument)doc, target.getCaretPosition()));
-            AddDialog dialog = new AddDialog(dialogPanel,NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationCase"));
+            AddDialog dialog = new AddDialog(dialogPanel,
+                    NbBundle.getMessage(JSFPopupAction.class,"TTL_AddNavigationCase"),
+                    new HelpCtx(AddNavigationCaseDialog.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
