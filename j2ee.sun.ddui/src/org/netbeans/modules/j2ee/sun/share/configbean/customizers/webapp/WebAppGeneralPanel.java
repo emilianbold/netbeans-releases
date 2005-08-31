@@ -19,7 +19,6 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webapp;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.ResourceBundle;
 
 import java.awt.GridBagConstraints;
@@ -31,6 +30,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
 import org.netbeans.modules.j2ee.sun.dd.api.web.JspConfig;
+import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.WebAppRoot;
@@ -62,6 +62,10 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 	// Table for editing Property web properties
 	private GenericTableModel propertiesModel;
 	private GenericTablePanel propertiesPanel;
+
+    // Table for editing Property idempotent url patterns
+    private GenericTableModel idempotentUrlPatternModel;
+    private GenericTablePanel idempotentUrlPatternPanel;
 
 	/** Creates new form WebAppGeneralPanel */
 	public WebAppGeneralPanel(WebAppRootCustomizer src) {
@@ -287,16 +291,39 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
         gridBagConstraints.weighty = 1.0;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
 		add(propertiesPanel, gridBagConstraints);
+                
+        // add idempotentUrlPattern table
+        tableColumns = new ArrayList(2);
+        tableColumns.add(new GenericTableModel.AttributeEntry(SunWebApp.IDEMPOTENT_URL_PATTERN, "UrlPattern", // NOI18N 
+            webappBundle, "UrlPattern", true, false)); // NOI18N
+        tableColumns.add(new GenericTableModel.AttributeEntry(SunWebApp.IDEMPOTENT_URL_PATTERN, "NumOfRetries", // NOI18N 
+            webappBundle, "NumOfRetries", true, false)); // NOI18N
+        
+        idempotentUrlPatternModel = new GenericTableModel(SunWebApp.IDEMPOTENT_URL_PATTERN, tableColumns);
+        idempotentUrlPatternPanel = new GenericTablePanel(idempotentUrlPatternModel, 
+            webappBundle, "IdempotentUrlPatterns", // NOI18N - property name
+            HelpContext.HELP_WEBAPP_IDEMPOTENTURLPATTERN_POPUP);
+        idempotentUrlPatternPanel.setHeadingMnemonic(webappBundle.getString("MNE_IdempotentUrlPatterns").charAt(0)); // NOI18N
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+        add(idempotentUrlPatternPanel, gridBagConstraints);		
 	}
 	
 	public void addListeners() {
 		jspConfigModel.addTableModelListener(this);
         propertiesModel.addTableModelListener(this);
+        idempotentUrlPatternModel.addTableModelListener(this);
 	}
 	
 	public void removeListeners() {
 		jspConfigModel.removeTableModelListener(this);
         propertiesModel.removeTableModelListener(this);
+        idempotentUrlPatternModel.removeTableModelListener(this);
 	}
 	
 	private boolean interpretCheckboxState(ItemEvent e) {
@@ -326,9 +353,10 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 		jChkClassLoader.setSelected(bean.isClassLoader());
 		jTxtExtraClassPath.setText(bean.getExtraClassPath());
 		jChkDelegate.setSelected(bean.isDelegate());
-		
+
 		jspConfigPanel.setModel(bean.getJspConfig());
 		propertiesPanel.setModel(bean.getProperties());
+                idempotentUrlPatternPanel.setModelBaseBean(bean.getIdempotentUrlPattern());
 
 		enableClassLoaderFields(bean.isClassLoader());
 	}	
@@ -350,7 +378,9 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 //					bean.setJspConfig((JspConfig) jspConfigModel.getDataBaseBean());
 				} else if(eventSource == propertiesModel) {
 					bean.setProperties(propertiesModel.getData());
-				}
+				} else if(eventSource == idempotentUrlPatternModel) {
+                                    // Nothing to do, same deal as JspConfig
+                                }
 				
 				// Force property change to be issued by the bean
 				bean.setDirty();
