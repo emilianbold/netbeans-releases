@@ -855,6 +855,16 @@ public class LayoutModel implements LayoutConstants {
     }
     
     /**
+     * Returns dump of the layout interval.
+     *
+     * @param interval interval whose dump should be returned.
+     * @param dimension dimension in which the layout interval resides.
+     */
+    public String dump(LayoutInterval interval, int dimension) {
+        return new LayoutPersistenceManager(this).saveIntervalLayout(2, interval, dimension);
+    }
+    
+    /**
      * Returns dump of the layout model.
      *
      * @param indent determines size of indentation.

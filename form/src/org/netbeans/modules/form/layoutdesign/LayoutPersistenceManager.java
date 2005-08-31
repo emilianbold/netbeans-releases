@@ -112,6 +112,23 @@ public class LayoutPersistenceManager implements LayoutConstants {
     }
     
     /**
+     * Returns dump of the layout interval.
+     *
+     * @param indent determines size of indentation.
+     * @param root container layout model should be dumped.
+     * @param humanReadable determines whether constants should be replaced
+     * by human readable expressions.
+     * @return dump of the layout model.
+     */
+    String saveIntervalLayout(int indent, LayoutInterval interval, int dimension) {
+        this.indent = indent;
+        humanReadable = true;
+        sb = new StringBuffer();
+        saveInterval(interval, dimension);
+        return sb.toString();
+    }
+    
+    /**
      * Dumps the information about the given layout interval.
      *
      * @param interval layout interval to dump.
