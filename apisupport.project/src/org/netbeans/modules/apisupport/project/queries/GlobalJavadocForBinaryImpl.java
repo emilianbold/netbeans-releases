@@ -15,6 +15,7 @@ package org.netbeans.modules.apisupport.project.queries;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,7 +55,7 @@ public final class GlobalJavadocForBinaryImpl implements JavadocForBinaryQueryIm
                 Util.err.log(binaryRoot + " is not an archive file."); // NOI18N
                 return null;
             }
-            File binaryRootF = new File(FileUtil.getArchiveFile(binaryRoot).getFile());
+            File binaryRootF = new File(URI.create(FileUtil.getArchiveFile(binaryRoot).toExternalForm()));
             FileObject fo = FileUtil.toFileObject(binaryRootF);
             if (fo == null) {
                 Util.err.log("Cannot found FileObject for " + binaryRootF + "(" + binaryRoot + ")"); // NOI18N
