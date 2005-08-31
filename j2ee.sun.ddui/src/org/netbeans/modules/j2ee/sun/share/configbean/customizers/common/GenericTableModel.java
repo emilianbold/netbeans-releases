@@ -253,7 +253,9 @@ public class GenericTableModel extends BeanTableModel {
 				columnEntry.setEntry(parent, newRow, values[i]);
 			}
 		}
-		fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+                
+                int rowChanged = getRowCount() - 1;
+		fireTableRowsInserted(rowChanged, rowChanged);
 
 		return param;
 	}
@@ -435,7 +437,7 @@ public class GenericTableModel extends BeanTableModel {
 		public boolean isNameField() {
 			return nameFieldFlag;
 		}
-
+                
 		public String getLabelName() {
 			return columnName + " :";	// NOI18N
 		}
@@ -531,7 +533,7 @@ public class GenericTableModel extends BeanTableModel {
 			super(ppn, pn, resBundle, resourceBase, required, isName);
 		}
 
-		public Object getEntry(CommonDDBean parent) {
+                public Object getEntry(CommonDDBean parent) {
 			return parent.getAttributeValue(propertyName);
 		}
 
