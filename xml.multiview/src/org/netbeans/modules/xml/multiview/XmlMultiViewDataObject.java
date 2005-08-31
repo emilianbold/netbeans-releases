@@ -290,14 +290,16 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             try {
                 XmlMultiViewEditorSupport editorSupport = getEditorSupport();
                 if (editorSupport.getDocument() == null) {
-                    OutputStream outputStream = editorSupport.getXmlEnv().getFileOutputStream();
+                    XmlMultiViewEditorSupport.XmlEnv xmlEnv = editorSupport.getXmlEnv();
+                    OutputStream outputStream = xmlEnv.getFileOutputStream();
                     try {
                         outputStream.write(buffer);
                     } finally {
                         outputStream.close();
+                        xmlEnv.unmarkModified();
                     }
                 } else {
-                    getEditorSupport().saveDocument(dataLock);
+                    editorSupport.saveDocument(dataLock);
                 }
                 fileTime = file.lastModified().getTime();
             } catch (IOException e) {
