@@ -47,11 +47,13 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
+import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
+
 /**
  *
  * @author Nitya Doraisamy
  */
-public class ResourceConfigurator {
+public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     
     public static final String __JMSResource = "jms"; //NOI18N
@@ -154,7 +156,7 @@ public class ResourceConfigurator {
         }
     }
         
-    public void createJDBCDataSourceForWeb(String refName, String databaseInfo){
+    public void createJDBCDataSourceFromRef(String refName, String databaseInfo){
         String name = refName;
         if(databaseInfo != null){
             String vendorName = convertToValidName(databaseInfo);

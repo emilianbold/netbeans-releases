@@ -76,4 +76,5 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
    String getDebugAddressValue() throws java.rmi.RemoteException;
    boolean isDebugSharedMemory() throws java.rmi.RemoteException;
    
+   ResourceConfiguratorInterface getResourceConfigurator();
 }
