@@ -98,7 +98,7 @@ public final class NbModuleProject implements Project {
     private List/*<Map<String,String>>*/ evalDefs;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
-    private NbModuleTypeProviderImpl typeProvider;
+    private final NbModuleTypeProviderImpl typeProvider;
     
     private LocalizedBundleInfo bundleInfo;
     private String infoDisplayName;
@@ -110,6 +110,7 @@ public final class NbModuleProject implements Project {
         if (getCodeNameBase() == null) {
             throw new IOException("Misconfigured project in " + FileUtil.getFileDisplayName(getProjectDirectory()) + " has no defined <code-name-base>"); // NOI18N
         }
+        typeProvider = new NbModuleTypeProviderImpl();
         ModuleList ml = getModuleList();
         if (ml.getEntry(getCodeNameBase()) == null) {
             ModuleList.refresh();
@@ -192,7 +193,6 @@ public final class NbModuleProject implements Project {
         if (mf != null && srcFO != null) {
             bundleInfo = Util.findLocalizedBundleInfo(srcFO, getManifest());
         }
-        typeProvider = new NbModuleTypeProviderImpl();
         lookup = Lookups.fixed(new Object[] {
             new Info(),
             helper.createAuxiliaryConfiguration(),
@@ -663,7 +663,48 @@ public final class NbModuleProject implements Project {
     }
     
     public ModuleList getModuleList() throws IOException {
-        return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+        try {
+            return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+        } catch (IOException e) {
+            // #60094: see if we can fix it quietly by resetting platform to default.
+            FileObject platformPropertiesFile = null;
+            if (typeProvider.getModuleType() == NbModuleTypeProvider.STANDALONE) {
+                platformPropertiesFile = getProjectDirectory().getFileObject("nbproject/platform.properties"); // NOI18N
+            } else if (typeProvider.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
+                PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(
+                        getHelper().getStockPropertyPreprovider(),
+                        new PropertyProvider[] {
+                            getHelper().getPropertyProvider("nbproject/private/suite-private.properties"), // NOI18N
+                            getHelper().getPropertyProvider("nbproject/suite.properties"), // NOI18N
+                        });
+                String suiteDirS = baseEval.getProperty("suite.dir"); // NOI18N
+                if (suiteDirS != null) {
+                    FileObject suiteDir = getHelper().resolveFileObject(suiteDirS);
+                    if (suiteDir != null) {
+                        platformPropertiesFile = suiteDir.getFileObject("nbproject/platform.properties"); // NOI18N
+                    }
+                }
+            }
+            if (platformPropertiesFile != null) {
+                try {
+                    EditableProperties ep = Util.loadProperties(platformPropertiesFile);
+                    if (!NbPlatform.PLATFORM_ID_DEFAULT.equals(ep.getProperty("nbplatform.active"))) { // NOI18N
+                        ep.setProperty("nbplatform.active", NbPlatform.PLATFORM_ID_DEFAULT); // NOI18N
+                        Util.storeProperties(platformPropertiesFile, ep);
+                    } else {
+                        // That wasn't it, never mind.
+                        throw e;
+                    }
+                } catch (IOException e2) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e2);
+                    // Well, throw original exception.
+                    throw e;
+                }
+                // Try again!
+                return ModuleList.getModuleList(FileUtil.toFile(getProjectDirectory()));
+            }
+            throw e;
+        }
     }
     
     public NbPlatform getPlatform() {
