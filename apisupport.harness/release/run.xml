@@ -27,6 +27,8 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="-prepare-as-app" depends="-init" unless="app.name">
+        <available property="install.bin.exists" file="${install}/bin" type="dir"/>
+        <fail unless="install.bin.exists">You must set app.name (see Branding panel in suite Properties dialog) before attempting to run an application on the NetBeans Platform.</fail><!-- #63465 -->
         <property name="run.app.exe" value="bin\nb.exe"/>
         <property name="run.app.sh" value="bin/netbeans"/>
         <property name="run.exe" location="${install}\${run.app.exe}"/>
