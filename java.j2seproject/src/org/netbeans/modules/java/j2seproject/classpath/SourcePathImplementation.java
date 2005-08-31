@@ -13,16 +13,22 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeEvent;
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 
 
 /**
@@ -33,7 +39,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List resources;
     private SourceRoots sourceRoots;
-
+    private AntProjectHelper projectHelper;
+    
     /**
      * Construct the implementation.
      * @param sourceRoots used to get the roots information and events
@@ -42,6 +49,18 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         assert sourceRoots != null;
         this.sourceRoots = sourceRoots;
         this.sourceRoots.addPropertyChangeListener (this);
+    }
+    
+    /**
+     * Construct the implementation.
+     * @param sourceRoots used to get the roots information and events
+     * @param projectHelper used to obtain the project root
+     */
+    public SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper) {
+        assert sourceRoots != null;
+        this.sourceRoots = sourceRoots;
+        this.sourceRoots.addPropertyChangeListener (this);
+        this.projectHelper=projectHelper;
     }
 
     public List /*<PathResourceImplementation>*/ getResources() {
@@ -58,8 +77,20 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     PathResourceImplementation res = ClassPathSupport.createResource(roots[i]);
                     result.add (res);
                 }
+                // adds build/generated/wsclient to resources to be available for code completion
+                if (projectHelper!=null) {
+                    EditableProperties props = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    String wsClientDir = props.getProperty(J2SEProjectProperties.BUILD_DIR)+"/generated/wsclient/"; //NOI18N
+                    try {
+                        String rootURL =projectHelper.getProjectDirectory().getURL().toString();
+                        URL url = new URL(rootURL+wsClientDir);
+                        if (url!=null) result.add(ClassPathSupport.createResource(url));
+                    } catch (MalformedURLException ex) {
+                    } catch (FileStateInvalidException ex){}
+                }
                 this.resources = Collections.unmodifiableList(result);
             }
+
         }
         return this.resources;
     }
