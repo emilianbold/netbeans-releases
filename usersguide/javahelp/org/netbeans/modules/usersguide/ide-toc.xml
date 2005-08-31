@@ -27,6 +27,8 @@
     <tocitem text="Creating a Java Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Importing an Eclipse or JBuilder Project" target="proj_import" />
+    <tocitem text="Deleting a Project" target="proj_deleting" />
+    <tocitem text="Moving, Copying, and Renaming a Project" target="proj_move_copy_rename" />
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Setting the Target JDK" target="proj_jdk" />
