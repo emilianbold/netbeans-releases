@@ -59,8 +59,7 @@ import org.netbeans.modules.javacore.TryWrapper;
 * @version 1.00
 */
 
-public class JavaKit extends NbEditorKit {
-
+public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
     public static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
 
     private static final String[] getSetIsPrefixes = new String[] {
@@ -145,6 +144,10 @@ public class JavaKit extends NbEditorKit {
     
     public String getContentType() {
         return JAVA_MIME_TYPE;
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(JavaKit.class);
     }
 
     public Document createDefaultDocument() {
