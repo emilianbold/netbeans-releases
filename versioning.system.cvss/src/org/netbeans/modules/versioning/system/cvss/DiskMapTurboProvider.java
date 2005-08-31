@@ -16,6 +16,7 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.ErrorManager;
 
 import java.io.*;
 import java.util.*;
@@ -180,7 +181,8 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            ErrorManager.getDefault().annotate(e, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath());
+            ErrorManager.getDefault().notify(e);
             return true;
         } finally {
             if (oos != null) try { oos.close(); } catch (IOException e) {}
@@ -269,7 +271,7 @@ class DiskMapTurboProvider implements TurboProvider {
         for (;;) {
             int n = (len <= 4096) ? len : 4096;
             n = in.read(buffer, 0, n);
-            if (n < 0) throw new EOFException();
+            if (n < 0) throw new EOFException("Missing " + len + " bytes.");  // NOI18N
             out.write(buffer, 0, n);
             if ((len -= n) == 0) break;
         }
