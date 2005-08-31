@@ -576,7 +576,6 @@ public class RMIPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         jPanel2.add(rMIPortJTextField, gridBagConstraints);
 
-        rMIJCheckBox.setToolTipText("");
         rMIJCheckBox.setName("rMIJCheckBox");
         rMIJCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

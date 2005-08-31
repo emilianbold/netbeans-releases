@@ -161,12 +161,14 @@ public class LaunchAction extends javax.swing.AbstractAction {
         started();
         
         //RequestProcessor rp = new RequestProcessor();
-        console = new OutputConsole(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"));
+        console = new OutputConsole(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"));// NOI18N
         RunAction action = new RunAction(console);
         //console = action.getConsole();
         //rp.post(action);
         //In order to appear in Runtime|Processes list
-        task = org.openide.execution.ExecutionEngine.getDefault().execute(NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"), action, org.openide.windows.InputOutput.NULL);
+        task = org.openide.execution.ExecutionEngine.getDefault().execute(
+                NbBundle.getMessage(LaunchAction.class, "LBL_OutputName"), // NOI18N
+                action, org.openide.windows.InputOutput.NULL);
     }
     
     synchronized boolean isStarted() {

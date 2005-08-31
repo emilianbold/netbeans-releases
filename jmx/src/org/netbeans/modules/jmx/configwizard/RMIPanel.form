@@ -67,7 +67,6 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="rMIJCheckBox">
           <Properties>
-            <Property name="toolTipText" type="java.lang.String" value=""/>
             <Property name="name" type="java.lang.String" value="rMIJCheckBox"/>
           </Properties>
           <Events>

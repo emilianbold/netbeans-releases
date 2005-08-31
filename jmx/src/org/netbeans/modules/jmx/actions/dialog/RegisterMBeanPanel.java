@@ -447,7 +447,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 stateLabel.setText(bundle.getString("LBL_ClassWithNoConstructor")); // NOI18N
             }
         }
-        if ((!isMBean) && (!currentMBeanClass.equals(""))) {
+        if ((!isMBean) && (!currentMBeanClass.equals(""))) { // NOI18N
             isValid = false;
             stateLabel.setText(bundle.getString("LBL_NotMBeanClass")); // NOI18N
         }
