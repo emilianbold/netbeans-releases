@@ -69,68 +69,58 @@ public class AnnotationsAction extends AbstractSystemAction {
             JEditorPane pane = activatedEditorPane();
             AnnotationBarManager.hideAnnotationBar(pane);
         } else {
-            File [] files = getFilesToProcess();
-            CvsVersioningSystem cvss = CvsVersioningSystem.getInstance();
-            AdminHandler entries = cvss.getAdminHandler();
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
-                FileObject fo = FileUtil.toFileObject(file);
+            EditorCookie ec = activatedEditorCookie();
+            if (ec != null) {
+                File file = activatedFile();
+                CvsVersioningSystem cvss = CvsVersioningSystem.getInstance();
+                AdminHandler entries = cvss.getAdminHandler();
+
+                JEditorPane[] panes = ec.getOpenedPanes();
+                if (panes == null) {
+                    ec.open();
+                }
+                panes = ec.getOpenedPanes();
+                if (panes == null) {
+                    return;
+                }
+                JEditorPane currentPane = panes[0];
+                LogOutputListener ab = AnnotationBarManager.showAnnotationBar(currentPane);
+
+                AnnotateCommand annotate = new AnnotateCommand();
+
                 try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                    if (ec != null) {
-                        JEditorPane[] panes = ec.getOpenedPanes();
-                        if (panes == null) {
-                            ec.open();
-                        }
-                        panes = ec.getOpenedPanes();
-                        if (panes == null) {
-                            return;
-                        }
-                        JEditorPane currentPane = panes[0];
-                        LogOutputListener ab = AnnotationBarManager.showAnnotationBar(currentPane);
-
-                        AnnotateCommand annotate = new AnnotateCommand();
-
-                        try {
-                            Entry entry = entries.getEntry(file);
-                            if (entry == null) {
-                                continue;
-                            }
-                            String revision = entry.getRevision();
-                            annotate.setAnnotateByRevision(revision);
-                            File[] cmdFiles = new File[] {file};
-                            annotate.setFiles(cmdFiles);
-
-                            ExecutorGroup group = new ExecutorGroup("Loading Annotations", 2);
-
-                            AnnotationsExecutor executor = new AnnotationsExecutor(cvss, annotate);
-                            executor.addLogOutputListener(ab);
-                            executor.joinGroup(group);
-                            executor.execute();
-
-                            // get commit message sfrom log
-
-                            LogCommand log = new LogCommand();
-                            log.setFiles(cmdFiles);
-                            log.setNoTags(true);
-
-                            LogExecutor lexecutor = new LogExecutor(cvss, log);
-                            lexecutor.addLogOutputListener(ab);
-                            lexecutor.joinGroup(group);
-                            lexecutor.setSilent(true);
-                            lexecutor.execute();
-
-
-                        } catch (IOException e) {
-                            ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e, "Can not load revision of " + file);
-                            err.notify(e);
-                        }
+                    Entry entry = entries.getEntry(file);
+                    if (entry == null) {
+                        return;
                     }
-                } catch (DataObjectNotFoundException e) {
+                    String revision = entry.getRevision();
+                    annotate.setAnnotateByRevision(revision);
+                    File[] cmdFiles = new File[] {file};
+                    annotate.setFiles(cmdFiles);
+
+                    ExecutorGroup group = new ExecutorGroup("Loading Annotations", 2);
+
+                    AnnotationsExecutor executor = new AnnotationsExecutor(cvss, annotate);
+                    executor.addLogOutputListener(ab);
+                    executor.joinGroup(group);
+                    executor.execute();
+
+                    // get commit message sfrom log
+
+                    LogCommand log = new LogCommand();
+                    log.setFiles(cmdFiles);
+                    log.setNoTags(true);
+
+                    LogExecutor lexecutor = new LogExecutor(cvss, log);
+                    lexecutor.addLogOutputListener(ab);
+                    lexecutor.joinGroup(group);
+                    lexecutor.setSilent(true);
+                    lexecutor.execute();
+
+
+                } catch (IOException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, "Can not locate editor for " + fo);
+                    err.annotate(e, "Can not load revision of " + file);
                     err.notify(e);
                 }
             }
@@ -164,5 +154,19 @@ public class AnnotationsAction extends AbstractSystemAction {
             return (EditorCookie) node.getCookie(EditorCookie.class);
         }
         return null;
+    }
+
+    private File activatedFile() {
+        Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if (nodes.length == 1) {
+            Node node = nodes[0];
+            DataObject dobj = (DataObject) node.getCookie(DataObject.class);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                return FileUtil.toFile(fo);
+            }
+        }
+        return null;
+
     }
 }
