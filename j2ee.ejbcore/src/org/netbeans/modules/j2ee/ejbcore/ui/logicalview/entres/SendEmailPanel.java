@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
+
 
 /**
  *
@@ -38,18 +38,6 @@ public class SendEmailPanel extends javax.swing.JPanel {
         return jndiName.getText();
     }
     
-    public String getMailHost(){
-        return mailHost.getText();
-    }
-    
-    public String getReturnAddress(){
-        return returnAddress.getText();
-    }
-    
-    public String getDefaultUser(){
-        return user.getText();
-    }
-    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -60,18 +48,12 @@ public class SendEmailPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
         jndiName = new javax.swing.JTextField();
-        mailHost = new javax.swing.JTextField();
-        user = new javax.swing.JTextField();
-        returnAddress = new javax.swing.JTextField();
         serviceLocatorPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(400, 230));
+        setPreferredSize(null);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_jndiName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -79,30 +61,6 @@ public class SendEmailPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jLabel1, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_MailHost"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
-        add(jLabel2, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_DefaultUser"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 8, 8);
-        add(jLabel3, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_DefaultReturnAddress"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
-        add(jLabel4, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -113,36 +71,6 @@ public class SendEmailPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
         add(jndiName, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(mailHost, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(user, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(returnAddress, gridBagConstraints);
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
 
@@ -164,14 +92,8 @@ public class SendEmailPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jndiName;
-    private javax.swing.JTextField mailHost;
-    private javax.swing.JTextField returnAddress;
     private javax.swing.JPanel serviceLocatorPanel;
-    private javax.swing.JTextField user;
     // End of variables declaration//GEN-END:variables
     
 }

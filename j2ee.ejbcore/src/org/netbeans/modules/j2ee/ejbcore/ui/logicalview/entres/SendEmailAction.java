@@ -18,7 +18,6 @@ import java.text.MessageFormat;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
@@ -33,6 +32,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.DialogDescriptor;
 
 
 /**
@@ -54,10 +54,16 @@ public class SendEmailAction extends NodeAction {
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
         SendEmailPanel p = new SendEmailPanel(erc.getServiceLocatorName()); //NOI18N
-        NotifyDescriptor nd = new NotifyDescriptor(p,
+        DialogDescriptor nd = new DialogDescriptor(
+                p,
                 NbBundle.getMessage(SendEmailAction.class, "LBL_SpecifyMailResource"),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE, null, null);
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(SendEmailPanel.class),
+                null
+                );
         Object option = DialogDisplayer.getDefault().notify(nd);
         if (option == NotifyDescriptor.OK_OPTION) {
             try {

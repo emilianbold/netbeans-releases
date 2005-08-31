@@ -29,6 +29,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -60,10 +61,16 @@ public class SendJMSMessageAction extends NodeAction {
             MessageDestinationPanel panel = 
                     new MessageDestinationPanel(okButton, erc.getServiceLocatorName());
             
-            NotifyDescriptor nd = new NotifyDescriptor(panel, 
-                        NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SelectMessageDestination"), 
-                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.DEFAULT_OPTION, 
-                        new Object[] {okButton, cancelButton}, null);
+            DialogDescriptor nd = new DialogDescriptor(
+                    panel,
+                    NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SelectMessageDestination"),
+                    true,
+                    DialogDescriptor.OK_CANCEL_OPTION,
+                    DialogDescriptor.OK_OPTION,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(MessageDestinationPanel.class),
+                    null
+                    );
             
             Object button = DialogDisplayer.getDefault().notify(nd);
             if (button != okButton) {

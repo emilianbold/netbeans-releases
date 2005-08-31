@@ -20,6 +20,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
@@ -43,7 +44,7 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
     }
     
     public org.openide.util.HelpCtx getHelp() {
-        return null;
+        return new HelpCtx(EntityEJBWizardDescriptor.class);
     }
     
     public boolean isValid() {

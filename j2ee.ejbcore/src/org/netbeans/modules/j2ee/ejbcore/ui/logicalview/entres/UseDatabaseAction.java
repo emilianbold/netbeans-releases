@@ -38,6 +38,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.actions.NodeAction;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.DialogDescriptor;
 
 
 /**
@@ -61,10 +62,16 @@ public class UseDatabaseAction extends NodeAction {
             enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
         SelectDatabasePanel p = new SelectDatabasePanel("myDatabase", erc.getServiceLocatorName()); //NOI18N
-        final NotifyDescriptor nd = new NotifyDescriptor(p, 
+        final DialogDescriptor nd = new DialogDescriptor(
+                p, 
                 NbBundle.getMessage(UseDatabaseAction.class, "LBL_ChooseDatabase"),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE, null, null);
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN, 
+                new HelpCtx(SelectDatabasePanel.class), 
+                null
+                );
         p.getServiceLocatorPanel().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {

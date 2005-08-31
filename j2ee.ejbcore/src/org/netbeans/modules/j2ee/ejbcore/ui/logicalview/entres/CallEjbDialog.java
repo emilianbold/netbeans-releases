@@ -14,36 +14,24 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
-import org.netbeans.jmi.javamodel.JavaModelPackage;
-import org.netbeans.jmi.javamodel.Method;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.dnd.EjbReference;
 import org.netbeans.modules.javacore.api.JavaModel;
-import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
-import org.openide.loaders.DataObject;
+import org.openide.DialogDescriptor;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
-import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 
@@ -83,10 +71,15 @@ public class CallEjbDialog {
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         CallEjbPanel panel = new CallEjbPanel(root, erc.getServiceLocatorName(), beanClass);
         
-        final NotifyDescriptor nd = new NotifyDescriptor(panel, title,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE,
-                null, null
+        final DialogDescriptor nd = new DialogDescriptor(
+                panel, 
+                title, 
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(CallEjbPanel.class), 
+                null
                 );
         
         panel.addPropertyChangeListener(new PropertyChangeListener() {
