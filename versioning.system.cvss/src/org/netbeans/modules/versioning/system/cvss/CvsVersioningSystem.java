@@ -177,7 +177,7 @@ public class CvsVersioningSystem {
      * @throws CommandException
      * @throws AuthenticationException
      */
-    public RequestProcessor.Task post(Command cmd, CVSListener mgr) throws CommandException,
+    public RequestProcessor.Task post(Command cmd, ExecutorSupport mgr) throws CommandException,
             AuthenticationException, NotVersionedException, IllegalCommandException,
             IOException {
         return post(cmd, defaultGlobalOptions, mgr);
@@ -192,7 +192,7 @@ public class CvsVersioningSystem {
      * @throws AuthenticationException
      * @throws NotVersionedException
      */ 
-    public RequestProcessor.Task post(Command cmd, GlobalOptions options, CVSListener mgr) throws CommandException,
+    public RequestProcessor.Task post(Command cmd, GlobalOptions options, ExecutorSupport mgr) throws CommandException,
             AuthenticationException, NotVersionedException, IllegalCommandException,
             IOException {
         ClientRuntime clientRuntime = getClientRuntime(cmd, options);

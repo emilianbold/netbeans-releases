@@ -38,6 +38,8 @@ public class LogExecutor extends ExecutorSupport {
 
     private final List listeners = new ArrayList(1);
 
+    private boolean silent;
+
     /**
      * Executes the given command by posting it to CVS module engine. It returns immediately, the command is
      * executed in the background. This method may split the original command into more commands if the original
@@ -102,5 +104,13 @@ public class LogExecutor extends ExecutorSupport {
 
     public List getLogEntries() {
         return toRefresh;
+    }
+
+    protected boolean logCommandOutput() {
+        return silent == false;
+    }
+
+    void setSilent(boolean silent) {
+        this.silent = silent;
     }
 }

@@ -97,7 +97,7 @@ public class ClientRuntime {
      * @throws IllegalCommandException if the command is not valid, e.g. it contains files that cannot be
      * processed by a single command (they do not have a common filesystem root OR their CVS Roots differ) 
      */ 
-    public RequestProcessor.Task createTask(Command cmd, GlobalOptions globalOptions, final CVSListener mgr) 
+    public RequestProcessor.Task createTask(Command cmd, GlobalOptions globalOptions, final ExecutorSupport mgr)
             throws IllegalCommandException {
         
         File [] files = getCommandFiles(cmd);
@@ -128,10 +128,7 @@ public class ClientRuntime {
         client.getEventManager().addCVSListener(mgr);
         final CommandRunnable cr = new CommandRunnable(client, globalOptions, cmd);
         RequestProcessor.Task task = requestProcessor.create(cr);
-        String name = cmd.getDisplayName();
-        if (name == null) {
-            name = cmd.getCVSCommand();
-        }
+        String name = mgr.getDisplayName();  // TODO share handle
         final ProgressHandle handle = ProgressHandleFactory.createHandle(name, cr);
         cr.setProgressHandle(handle, name);
         task.addTaskListener(new TaskListener() {

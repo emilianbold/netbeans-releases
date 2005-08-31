@@ -71,4 +71,8 @@ public class AnnotationsExecutor extends ExecutorSupport {
     public void addLogOutputListener(LogOutputListener listener) {
         listeners.add(listener);
     }
+
+    protected boolean logCommandOutput() {
+        return false;
+    }
 }

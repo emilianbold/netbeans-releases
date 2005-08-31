@@ -80,10 +80,13 @@ public abstract class ExecutorSupport implements CVSListener  {
     private boolean                     terminated;
 
     private boolean                     finishedExecution;
+    private boolean executed;
 
     private StringBuffer message = new StringBuffer();
     private ClientRuntime clientRuntime;
     private List errorMessages = new ArrayList();
+
+    private ExecutorGroup group;
 
     protected ExecutorSupport(CvsVersioningSystem cvs, Command cmd, GlobalOptions options) {
         this.cvs = cvs;
@@ -96,7 +99,8 @@ public abstract class ExecutorSupport implements CVSListener  {
 
     /** Async execution. */
     public void execute() {
-        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1001", new Date(), cmd.getDisplayName());
+        executed = true;
+        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1001", new Date(), getDisplayName());
         String sep = NbBundle.getMessage(ExecutorSupport.class, "BK1000");
         executeImpl("\n" + sep + "\n" + msg + "\n"); // NOI18N
     }
@@ -104,11 +108,13 @@ public abstract class ExecutorSupport implements CVSListener  {
     private void executeImpl(String header) {
         try {
             clientRuntime = cvs.getClientRuntime(cmd, options);
-            clientRuntime.log(header);
+            if (group == null || group.start()) {
+                clientRuntime.log(header);
+            }
             task = cvs.post(cmd, options, this);
         } catch (Throwable e) {
             failure = e;
-            String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), cmd.getDisplayName());
+            String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1003", new Date(), getDisplayName());
             if (clientRuntime != null) {
                 clientRuntime.log(msg + "\n"); // NOI18N
                 clientRuntime.logError(e);
@@ -119,6 +125,46 @@ public abstract class ExecutorSupport implements CVSListener  {
                 notifyAll();
             }
         }
+    }
+
+    /**
+     * Default implementation takes first non-null name:
+     * <ul>
+     *   <li>group display name
+     *   <li>command display name
+     *   <li>plain command syntax
+     * </ul>
+     */
+    protected String getDisplayName() {
+        String commandName;
+        if (group != null) {
+            commandName = group.getDisplayName();
+        } else {
+            commandName = cmd.getDisplayName();
+            if (commandName == null) {
+                commandName = cmd.getCVSCommand();
+            }
+        }
+        return commandName;
+    }
+
+    /**
+     * Controls command textual messages logging
+     * into output window. By default everything is logged.
+     */
+    protected boolean logCommandOutput() {
+        return true;
+    }
+
+    /**
+     * Notifies the executor that it is a part of
+     * given execution chain.
+     *
+     * <p> Must be called before {@link #execute}
+     */
+    public void joinGroup(ExecutorGroup group) {
+        assert executed == false;
+        this.group = group;
     }
 
     /**
@@ -146,14 +192,7 @@ public abstract class ExecutorSupport implements CVSListener  {
                 message.setLength(0);
             }
         } else {
-            // do not log file content while fetching diff revisions
-            boolean log = true;
-            if (cmd instanceof CheckoutCommand) {
-                CheckoutCommand checkout = (CheckoutCommand) cmd;
-                log = checkout.isPipeToOutput() == false;
-            }
-
-            if (log) {
+            if (logCommandOutput()) {
                 clientRuntime.log(e.getMessage() + "\n");  // NOI18N
             }
         }
@@ -198,19 +237,21 @@ public abstract class ExecutorSupport implements CVSListener  {
                     }
                     else if (retryConnection(error)) {
                         terminated = false;
-                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), cmd.getDisplayName());
+                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1004", new Date(), getDisplayName());
                         executeImpl(msg + "\n"); // NOI18N
                     } else {
-                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), cmd.getDisplayName());
+                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1005", new Date(), getDisplayName());
                         clientRuntime.log(msg + "\n");  // NOI18N
                         failure = result.getError();
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, failure);
                     }
                 } else {
-                    String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), cmd.getDisplayName());
-                    clientRuntime.log(msg + "\n"); // NOI18N
+                    if (group == null || group.finished()) {
+                        String msg = NbBundle.getMessage(ExecutorSupport.class, "BK1002", new Date(), getDisplayName());
+                        clientRuntime.log(msg + "\n"); // NOI18N
+                        clientRuntime.focusLog();
+                    }
                     commandFinished((ClientRuntime.Result) e.getSource());
-                    clientRuntime.focusLog();
                     if (cmd.hasFailed()) {
                         reportError(errorMessages);
                     }

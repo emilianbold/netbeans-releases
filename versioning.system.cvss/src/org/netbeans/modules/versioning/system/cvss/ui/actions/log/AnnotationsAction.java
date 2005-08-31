@@ -25,6 +25,7 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemActi
 import org.netbeans.modules.versioning.system.cvss.ui.actions.annotate.AnnotationBarManager;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.lib.cvsclient.command.annotate.AnnotateCommand;
 import org.netbeans.lib.cvsclient.command.log.LogCommand;
 import org.netbeans.lib.cvsclient.admin.Entry;
@@ -101,8 +102,11 @@ public class AnnotationsAction extends AbstractSystemAction {
                             File[] cmdFiles = new File[] {file};
                             annotate.setFiles(cmdFiles);
 
+                            ExecutorGroup group = new ExecutorGroup("Loading Annotations", 2);
+
                             AnnotationsExecutor executor = new AnnotationsExecutor(cvss, annotate);
                             executor.addLogOutputListener(ab);
+                            executor.joinGroup(group);
                             executor.execute();
 
                             // get commit message sfrom log
@@ -113,6 +117,8 @@ public class AnnotationsAction extends AbstractSystemAction {
 
                             LogExecutor lexecutor = new LogExecutor(cvss, log);
                             lexecutor.addLogOutputListener(ab);
+                            lexecutor.joinGroup(group);
+                            lexecutor.setSilent(true);
                             lexecutor.execute();
 
 

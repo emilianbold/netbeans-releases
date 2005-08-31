@@ -15,6 +15,7 @@ package org.netbeans.modules.versioning.system.cvss;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.PipedFileInformation;
+import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.lib.cvsclient.event.FileInfoEvent;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -33,7 +34,7 @@ final class VersionsCacheExecutor extends ExecutorSupport {
     private File checkedOutVersion;
     private ClientRuntime.Result result;
 
-    public VersionsCacheExecutor(Command cmd, GlobalOptions options) {
+    public VersionsCacheExecutor(CheckoutCommand cmd, GlobalOptions options) {
         super(CvsVersioningSystem.getInstance(), cmd, options);
     }
 
@@ -78,4 +79,10 @@ final class VersionsCacheExecutor extends ExecutorSupport {
     public File getCheckedOutVersion() {
         return checkedOutVersion;
     }
+
+    protected boolean logCommandOutput() {
+        return ((CheckoutCommand)cmd).isPipeToOutput() == false;
+    }
+
+
 }
