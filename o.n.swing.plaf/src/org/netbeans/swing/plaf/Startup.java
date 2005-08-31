@@ -140,7 +140,6 @@ public final class Startup {
               LookAndFeel lf = UIManager.getLookAndFeel();
               if (uiClass != lf.getClass()) {
                   result = (LookAndFeel) uiClass.newInstance();
-                  UIManager.setLookAndFeel(lf);
               } else {
                   result = UIManager.getLookAndFeel();
               }
