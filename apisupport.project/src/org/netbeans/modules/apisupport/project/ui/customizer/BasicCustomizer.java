@@ -34,7 +34,6 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.ErrorManager;
-import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -202,7 +201,6 @@ abstract class BasicCustomizer implements CustomizerProvider, PropertyChangeList
                     return panel == null ? new JPanel() : panel;
                 }
             };
-            return panelProvider;
         }
         return panelProvider;
     }
