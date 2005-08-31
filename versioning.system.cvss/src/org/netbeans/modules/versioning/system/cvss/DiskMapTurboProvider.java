@@ -275,5 +275,6 @@ class DiskMapTurboProvider implements TurboProvider {
             out.write(buffer, 0, n);
             if ((len -= n) == 0) break;
         }
+        out.flush();
     }
 }
