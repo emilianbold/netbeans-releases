@@ -31,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Dimension;
 
 /**
  * Contains all components of the Search History panel.
@@ -87,6 +88,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); //NOI18N
         getActionMap().put("search", searchAction);//NOI18N
         bSearch.setAction(searchAction);
+        
+        Dimension d1 = tbSummary.getPreferredSize();
+        Dimension d2 = tbDiff.getPreferredSize();
+        if (d1.width > d2.width) {
+            tbDiff.setPreferredSize(d1);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -350,11 +357,12 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         searchCriteriaPanel = new javax.swing.JPanel();
         bSearch = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
+        jToolBar1 = new javax.swing.JToolBar();
         tbSummary = new javax.swing.JToggleButton();
         tbDiff = new javax.swing.JToggleButton();
+        jSeparator2 = new javax.swing.JSeparator();
         bNext = new javax.swing.JButton();
         bPrev = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
         resultsPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -386,6 +394,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jPanel1, gridBagConstraints);
 
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
         buttonGroup1.add(tbSummary);
         tbSummary.setSelected(true);
         tbSummary.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowSummary"));
@@ -395,10 +405,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        add(tbSummary, gridBagConstraints);
+        jToolBar1.add(tbSummary);
 
         buttonGroup1.add(tbDiff);
         tbDiff.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/history/Bundle").getString("CTL_ShowDiff"));
@@ -408,12 +415,11 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        add(tbDiff, gridBagConstraints);
+        jToolBar1.add(tbDiff);
+
+        jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        jSeparator2.setMaximumSize(new java.awt.Dimension(2, 32767));
+        jToolBar1.add(jSeparator2);
 
         bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-next.png")));
         bNext.addActionListener(new java.awt.event.ActionListener() {
@@ -422,11 +428,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        add(bNext, gridBagConstraints);
+        jToolBar1.add(bNext);
 
         bPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff-prev.png")));
         bPrev.addActionListener(new java.awt.event.ActionListener() {
@@ -435,21 +437,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         });
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        add(bPrev, gridBagConstraints);
+        jToolBar1.add(bPrev);
 
-        jSeparator2.setOrientation(javax.swing.SwingConstants.VERTICAL);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 8);
-        add(jSeparator2, gridBagConstraints);
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(jToolBar1, gridBagConstraints);
 
         resultsPanel.setLayout(new java.awt.BorderLayout());
 
@@ -487,6 +481,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel resultsPanel;
     private javax.swing.JPanel searchCriteriaPanel;
     private javax.swing.JToggleButton tbDiff;
