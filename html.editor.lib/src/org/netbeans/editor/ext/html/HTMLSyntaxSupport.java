@@ -514,7 +514,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     id = item == null ? null : item.getTokenID();
                 }
                 if( id == HTMLTokenContext.TAG_CLOSE_SYMBOL) {   // with this tag // NOI18N
-                    return new SyntaxElement.Tag( this, offset, getTokenEnd( item ), name, attrs );
+                    return new SyntaxElement.Tag( this, offset, getTokenEnd( item ), name, attrs, item.getImage().equals("/>"));
                 } else {                                                            // without this tag
                     return new SyntaxElement.Tag( this, offset, lastOffset, name, attrs );
                 }             

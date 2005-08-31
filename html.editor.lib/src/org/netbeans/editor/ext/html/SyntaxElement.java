@@ -39,6 +39,9 @@ public class SyntaxElement {
     public static final int TYPE_TAG = 4;
     public static final int TYPE_ENDTAG = 5;
       
+    public static final String[] TYPE_NAMES = 
+            new String[]{"comment","declaration","error","text","tag","endtag"};
+    
     private HTMLSyntaxSupport support;
     private SyntaxElement previous;
     private SyntaxElement next;
@@ -94,10 +97,9 @@ public class SyntaxElement {
     }
 
     public String toString() {
-        return "Element(" +type+")[" + offset + "," + (offset+length-1) + "]"; // NOI18N
+        String textContent = getType() == TYPE_TEXT ? getText() : "";
+        return "Element(" +TYPE_NAMES[type]+")[" + offset + "," + (offset+length-1) + "] \"" + textContent + ""; // NOI18N
     }
-
-    
     
     
     /**
@@ -106,7 +108,7 @@ public class SyntaxElement {
      * It represents unknown/broken declaration or either public or system
      * DOCTYPE declaration.
      */
-    static class Declaration extends SyntaxElement {
+    public static class Declaration extends SyntaxElement {
         private String root;
         private String publicID;
         private String file;
@@ -160,7 +162,7 @@ public class SyntaxElement {
         
     }
 
-    static class Named extends SyntaxElement {
+    public static class Named extends SyntaxElement {
         String name;
 
         public Named( HTMLSyntaxSupport support, int from, int to, int type, String name ) {
@@ -177,14 +179,24 @@ public class SyntaxElement {
     }
 
 
-    static class Tag extends SyntaxElement.Named {
+    public static class Tag extends SyntaxElement.Named {
         Collection attribs;
-
-        public Tag( HTMLSyntaxSupport support, int from, int to, String name, Collection attribs ) {
+        private boolean empty = false;
+        
+        public Tag( HTMLSyntaxSupport support, int from, int to, String name, Collection attribs) {
+            this(support, from, to, name, attribs, false);
+        }
+        
+        public Tag( HTMLSyntaxSupport support, int from, int to, String name, Collection attribs, boolean isEmpty ) {
             super( support, from, to, TYPE_TAG, name );
             this.attribs = attribs;
+            this.empty = isEmpty;
         }
 
+        public boolean isEmpty() {
+            return empty;
+        }
+        
         public Collection getAttributes() {
             return attribs;
         }
@@ -199,6 +211,8 @@ public class SyntaxElement {
             }
 
             ret.append( "}" );      //NOI18N
+            if(isEmpty()) ret.append(" (EMPTY TAG)");
+            
             return ret.toString();
         }
     }
