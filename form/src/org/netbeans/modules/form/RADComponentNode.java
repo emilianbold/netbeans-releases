@@ -171,6 +171,7 @@ public class RADComponentNode extends FormNode
                 actions.add(SystemAction.get(SetAnchoringAction.class));
                 actions.add(SystemAction.get(SetResizabilityAction.class));
                 actions.add(SystemAction.get(ChooseSameSizeAction.class));
+                actions.add(SystemAction.get(DefaultSizeAction.class));
                 actions.add(null);
                 actions.add(SystemAction.get(EventsAction.class));
                 actions.add(null);

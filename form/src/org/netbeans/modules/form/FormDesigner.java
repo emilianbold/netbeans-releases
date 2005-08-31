@@ -371,6 +371,30 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         componentLayer.setDesignerSize(size);
     }
 
+    public void updateDesignerSize() {
+        if (!(topDesignComponent instanceof RADVisualContainer))
+            return;
+
+//        formModel.fireContainerLayoutChanged((RADVisualContainer)topDesignComponent, null, null, null);
+        updateLayoutRecursively((RADVisualContainer)topDesignComponent);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setupDesignerSize(getTopVisualContainer());
+            }
+        });
+//        updateComponentLayer();
+    }
+
+    private void updateLayoutRecursively(RADVisualContainer metacont) {
+        RADVisualComponent[] subComps = metacont.getSubComponents();
+        for (int i=0; i < subComps.length; i++) {
+            if (subComps[i] instanceof RADVisualContainer)
+                updateLayoutRecursively((RADVisualContainer)subComps[i]);
+        }
+        formModel.fireContainerLayoutChanged(metacont, null, null, null);
+//        replicator.updateContainerLayout(metacont);
+    }
+
     void updateComponentLayer() {
         if (getLayoutDesigner() == null) return;
         componentLayer.revalidate();

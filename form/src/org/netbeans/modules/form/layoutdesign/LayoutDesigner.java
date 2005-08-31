@@ -2674,6 +2674,42 @@ public class LayoutDesigner implements LayoutConstants {
 
     // -----
 
+    public void setDefaultSize(String compId) {
+        LayoutComponent component = layoutModel.getLayoutComponent(compId);
+        if (component != null)
+            setDefaultSize(component);
+    }
+
+    private void setDefaultSize(LayoutComponent component) {
+        if (component.isLayoutContainer()) {
+            for (Iterator it=component.getSubcomponents(); it.hasNext(); ) {
+                LayoutComponent comp = (LayoutComponent) it.next();
+                if (comp.isLayoutContainer())
+                    setDefaultSize(comp);
+            }
+            setDefaultSizeInContainer(component.getLayoutRoot(HORIZONTAL));
+            setDefaultSizeInContainer(component.getLayoutRoot(VERTICAL));
+            updateDesignModifications(component);
+        }
+        else {
+            operations.resizeInterval(component.getLayoutInterval(HORIZONTAL), NOT_EXPLICITLY_DEFINED);
+            operations.resizeInterval(component.getLayoutInterval(VERTICAL), NOT_EXPLICITLY_DEFINED);
+        }
+        imposeSize = true;
+    }
+
+    private void setDefaultSizeInContainer(LayoutInterval interval) {
+        if (!interval.isGroup()) {
+            if (LayoutInterval.canResize(interval))
+                operations.resizeInterval(interval, interval.getMinimumSize());
+        }
+        else {
+            for (Iterator it=interval.getSubIntervals(); it.hasNext(); ) {
+                setDefaultSizeInContainer((LayoutInterval)it.next());
+            }
+        }
+    }
+
     private void updateDesignModifications(LayoutComponent container) {
         updateDesignModifications(container.getLayoutRoot(HORIZONTAL), HORIZONTAL);
         updateDesignModifications(container.getLayoutRoot(VERTICAL), VERTICAL);
