@@ -165,17 +165,6 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
                         System.out.println("Cannot load jar: " + registryRuntimeJars[i]);
                     }
                 }
-                /*
-                String [] registry14Jars = WS_JDK14_PATCH;
-                
-                for(int i = 0; i < registry14Jars.length; i++) {
-                    File jarFile = locator.locate(registry14Jars[i], null, false);
-                    if (jarFile != null) {
-                        loader.addURL(jarFile);
-                    } else {
-                        System.out.println("Cannot load jar: " + registry14Jars[i]);
-                    }
-                }*/
 //            }
         } catch(Exception ex) {
             throw new Exception(ex.getLocalizedMessage(), ex);
