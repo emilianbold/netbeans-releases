@@ -136,13 +136,7 @@ public class ResultWindow extends TopComponent {
     
     /**
      */
-    void openEmptyView() {
-        displayReport(-1, null);
-    }
-    
-    /**
-     */
-    void displayReport(final int index, final Report report) {
+    void displayReport(final int index, final Report report, boolean promote) {
         assert EventQueue.isDispatchThread();
         
         final ResultView view = new ResultView(report);
@@ -151,8 +145,10 @@ public class ResultWindow extends TopComponent {
         add(view, BorderLayout.CENTER);
 //        tabbedPanel.add(new javax.swing.JLabel("Tab " + (tabbedPanel.getTabCount() + 1)));
         
-        open();
-        requestActive();
+        if (promote) {
+            open();
+            requestVisible();
+        }
     }
     
     /**

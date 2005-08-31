@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -69,13 +71,20 @@ final class Manager {
             return;
         }
          */
-        sessionStarted(session);
+        
+        if (junitSessions.put(session, Boolean.FALSE) == null) {
+            sessionStarted(session);
+        }
     }
     
     /**
      */
     private void sessionStarted(final AntSession session) {
-        junitSessions.put(session, dummy);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                ResultWindow.getInstance().displayReport(-1, null, true);
+            }
+        });
         
         /*
          * This method is called only from method taskStarted(AntSession)
@@ -130,6 +139,46 @@ final class Manager {
          */
     }
     
+    /** */
+    private ComponentListener listener;
+    
+    /**
+     */
+    void reportStarted(final AntSession session) {
+        
+        if (junitSessions.put(session, Boolean.TRUE) == Boolean.TRUE) {
+            return;
+        }
+        
+        /**
+         * This class detects when the JUnit Results window is hidden
+         * by the text output window and makes it appear again.
+         */
+        class DishonourAvenger implements ComponentListener {
+            private boolean activated = false;
+            
+            public void componentMoved(ComponentEvent e) {}
+            public void componentResized(ComponentEvent e) {}
+            public void componentShown(ComponentEvent e) {}
+            public void componentHidden(ComponentEvent e) {
+                if (!activated) {
+                    activated = true;
+                    
+                    final ResultWindow window = ResultWindow.getInstance();
+                    window.removeComponentListener(this);
+                    window.requestVisible();
+                }
+            }
+        }
+        
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                ResultWindow.getInstance().addComponentListener(
+                        listener = new DishonourAvenger());
+            }
+        });
+    }
+    
     /**
      */
     synchronized void sessionFinished(final AntSession session,
@@ -137,6 +186,14 @@ final class Manager {
         if (junitSessions.remove(session) == null) {
             /* This session did not run the "junit" task. */
             return;
+        }
+        
+        if (listener != null) {
+            Mutex.EVENT.writeAccess(new Runnable() {
+                public void run() {
+                    ResultWindow.getInstance().removeComponentListener(listener);
+                }
+            });
         }
         
         /*
@@ -177,7 +234,7 @@ final class Manager {
                 }
                  */
                 //win.displayReport(index, report);
-                win.displayReport(0, report);
+                win.displayReport(0, report, false);
             }
         });
         /* ... and update information about displayed and pending sessions: */

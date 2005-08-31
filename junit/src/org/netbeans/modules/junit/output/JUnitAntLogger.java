@@ -66,7 +66,10 @@ public final class JUnitAntLogger extends AntLogger {
     /**
      */
     public void messageLogged(final AntEvent event) {
-        getOutputReader(event.getSession()).messageLogged(event.getMessage());
+        if (getOutputReader(event.getSession())
+                .messageLogged(event.getMessage())) {
+            Manager.getInstance().reportStarted(event.getSession());
+        }
     }
     
     /**

@@ -78,9 +78,11 @@ final class JUnitOutputReader {
     
     /**
      */
-    void messageLogged(final String msg) {
+    boolean messageLogged(final String msg) {
+        boolean testsuiteStarted = false;
+        
         if (msg == null) {
-            return;
+            return testsuiteStarted;
         }
         
         //<editor-fold defaultstate="collapsed" desc="if (waitingForIssueStatus) ...">
@@ -93,7 +95,7 @@ final class JUnitOutputReader {
             
                 trouble = (testcase.trouble = new Report.Trouble(error));
                 waitingForIssueStatus = false;
-                return;
+                return testsuiteStarted;
             } else {
                 report.reportTestcase(testcase);
                 waitingForIssueStatus = false;
@@ -105,7 +107,7 @@ final class JUnitOutputReader {
             if (msg.equals("</testsuite>")) {                           //NOI18N
                 closePreviousReport();
             }
-            return;
+            return testsuiteStarted;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="if (outputBuffer != null) ...">
         if (outputBuffer != null) {
@@ -113,11 +115,11 @@ final class JUnitOutputReader {
                 Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
                 if (matcher.matches() && (matcher.group(1) == null)) {
                     flushOutput();
-                    return;
+                    return testsuiteStarted;
                 }
             }
             outputBuffer.add(msg);
-            return;
+            return testsuiteStarted;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="if (trouble != null) ...">
         if (trouble != null) {
@@ -131,7 +133,8 @@ final class JUnitOutputReader {
                         trouble.message = exceptionMsg;
                     }
                 }
-                return;   //ignore other texts until we get exception class name
+                return testsuiteStarted;   //ignore other texts until
+                                           //we get exception class name
             }
             String trimmed = RegexpUtils.specialTrim(msg);
             if (trimmed.length() == 0) {
@@ -146,7 +149,7 @@ final class JUnitOutputReader {
 
                 trouble = null;
                 testcase = null;
-                return;
+                return testsuiteStarted;
             }
             if (trimmed.startsWith(RegexpUtils.CALLSTACK_LINE_PREFIX)) {
                 matcher = regexp.getCallstackLinePattern().matcher(msg);
@@ -157,21 +160,21 @@ final class JUnitOutputReader {
                     callstackBuffer.add(
                             trimmed.substring(
                                    RegexpUtils.CALLSTACK_LINE_PREFIX.length()));
-                    return;
+                    return testsuiteStarted;
                 }
             }
             if ((callstackBuffer == null) && (trouble.message != null)) {
                 trouble.message = trouble.message + '\n' + msg;
             }
             /* else: just ignore the text */
-            return;
+            return testsuiteStarted;
         }//</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="TESTCASE_PREFIX">
         if (msg.startsWith(RegexpUtils.TESTCASE_PREFIX)) {
 
             if (report == null) {
-                return;
+                return testsuiteStarted;
             }
             
             String header = msg.substring(RegexpUtils.TESTCASE_PREFIX.length());
@@ -190,7 +193,7 @@ final class JUnitOutputReader {
         else if (msg.startsWith(RegexpUtils.OUTPUT_DELIMITER_PREFIX)) {
 
             if (report == null) {
-                return;
+                return testsuiteStarted;
             }
             
             Matcher matcher = regexp.getOutputDelimPattern().matcher(msg);
@@ -210,6 +213,8 @@ final class JUnitOutputReader {
                 xmlOutputBuffer = new StringBuffer(4096);
                 xmlOutputBuffer.append(msg);
             }
+            
+            testsuiteStarted = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_PREFIX">
         else if (msg.startsWith(RegexpUtils.TESTSUITE_PREFIX)) {
@@ -220,12 +225,14 @@ final class JUnitOutputReader {
                 report = new Report(suiteName);
                 report.antScript = antScript;
             }
+            
+            testsuiteStarted = true;
         }//</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="TESTSUITE_STATS_PREFIX">
         else if (msg.startsWith(RegexpUtils.TESTSUITE_STATS_PREFIX)) {
 
             if (report == null) {
-                return;
+                return testsuiteStarted;
             }
             
             Matcher matcher = regexp.getSuiteStatsPattern().matcher(msg);
@@ -244,6 +251,8 @@ final class JUnitOutputReader {
                 }
             }
         }//</editor-fold>
+        
+        return testsuiteStarted;
     }
     
     /**
