@@ -7,24 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.core;
 
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
@@ -41,7 +31,6 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
-
 
 /**
  * Bridge to old layers based system.
@@ -69,7 +58,10 @@ class ShortcutsFolder {
         FileObject root = Repository.getDefault ().
             getDefaultFileSystem ().getRoot ();
         root.getFileObject (SHORTCUTS_FOLDER).addFileChangeListener (listener);
-        root.getFileObject (PROFILES_FOLDER).addFileChangeListener (listener);
+        FileObject profilesFolder = root.getFileObject(PROFILES_FOLDER);
+        if (profilesFolder != null) {
+            profilesFolder.addFileChangeListener(listener);
+        }
     }
     
     private void refresh () {
@@ -78,28 +70,32 @@ class ShortcutsFolder {
         NbKeymap keymap = (NbKeymap) Lookup.getDefault ().lookup (Keymap.class);
         keymap.removeBindings ();
 
-        // get current profile name
-        FileObject root = Repository.getDefault ().
-            getDefaultFileSystem ().getRoot ();
-        FileObject fo = root.getFileObject (PROFILES_FOLDER);
-        String keymapName = (String) fo.getAttribute ("currentProfile");
-        if (keymapName == null)
-            keymapName = "NetBeans";
-
-        // update shortcuts
+        // update main shortcuts
         readShortcuts (keymap, SHORTCUTS_FOLDER);
-        String folderName = PROFILES_FOLDER + '/' + keymapName;
-        readShortcuts (keymap, folderName);
         
-        // add listener to current profile folder
-        
-        if (listenerFolder != null) {
-            fo = root.getFileObject (listenerFolder);
-            if (fo != null) fo.removeFileChangeListener (listener);
+        // update shortcuts from profile
+        FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+        FileObject profilesFolder = root.getFileObject(PROFILES_FOLDER);
+        if (profilesFolder != null) {
+            String keymapName = (String) profilesFolder.getAttribute("currentProfile"); // NOI18N
+            if (keymapName == null) {
+                keymapName = "NetBeans"; // NOI18N
+            }
+            String folderName = PROFILES_FOLDER + '/' + keymapName;
+            FileObject profileFolder = root.getFileObject(folderName);
+            if (profileFolder != null) {
+                readShortcuts(keymap, folderName);
+                // add listener to current profile folder
+                if (listenerFolder != null) {
+                    FileObject formerProfileFolder = root.getFileObject(listenerFolder);
+                    if (formerProfileFolder != null) {
+                        formerProfileFolder.removeFileChangeListener(listener);
+                    }
+                }
+                listenerFolder = folderName;
+                profileFolder.addFileChangeListener(listener);
+            }
         }
-        fo = root.getFileObject (folderName);
-        listenerFolder = folderName;
-        fo.addFileChangeListener (listener);
     }
     
     private void readShortcuts (NbKeymap keymap, String folderName) {
