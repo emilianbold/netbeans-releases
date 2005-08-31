@@ -45,6 +45,7 @@ import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -195,18 +196,19 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     contextParam.setParamName("javax.faces.CONFIG_FILES"); //NOI18N
                     contextParam.setParamValue("/WEB-INF/faces-config.xml"); //NOI18N
                     ddRoot.addContextParam(contextParam);
-
-                    WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    wfl.addWelcomeFile("welcomeJSF.jsp");  //NOI18N
-                    for (int i = wfl.sizeWelcomeFile()-1;  i > 0; i-- ){
-                        wfl.setWelcomeFile(i, wfl.getWelcomeFile(i-1));
-                    }
-                    wfl.setWelcomeFile(0, "faces/welcomeJSF.jsp");
                     ddRoot.write(dd);
+                    
+                    
                 }
                 catch (ClassNotFoundException cnfe){
                     ErrorManager.getDefault().notify(cnfe);
                 }
+            }
+            
+            FileObject documentBase = wm.getDocumentBase();
+            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
+            if (indexjsp != null){
+                changeIndexJSP(indexjsp);
             }
 
         }
@@ -221,6 +223,28 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             }
             finally {
                 lock.releaseLock();
+            }
+        }
+        /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
+         */
+        private void changeIndexJSP(FileObject indexjsp) throws IOException {
+            String content = readResource(indexjsp.getInputStream());
+            // what find
+            String find = "<h1>JSP Page</h1>"; // NOI18N
+            String endLine = System.getProperty("line.separator"); //NOI18N
+            if ( content.indexOf(find) > 0){
+                StringBuffer replace = new StringBuffer();
+                replace.append(find);
+                replace.append(endLine);
+                replace.append("    <br/>");                        //NOI18N
+                replace.append(endLine);
+                replace.append("    <a href=\".");                  //NOI18N
+                replace.append(JSFConfigUtilities.getActionAsResource(panel.getURLPattern(),"/welcomeJSF.jsp")); //NOI18N
+                replace.append("\">");                              //NOI18N
+                replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
+                replace.append("</a>");                             //NOI18N
+                content = content.replaceFirst(find, replace.toString());
+                createFile(indexjsp, content);
             }
         }
     }
