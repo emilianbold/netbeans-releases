@@ -212,7 +212,7 @@ ActionListener {
             Component customEditor = editor.getCustomEditor ();
             DialogDescriptor dd = new DialogDescriptor (
                 customEditor,
-                "Classpath_Editor_Title"
+                loc ("Classpath_Editor_Title")
             );
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
@@ -228,7 +228,7 @@ ActionListener {
             Component customEditor = editor.getCustomEditor ();
             DialogDescriptor dd = new DialogDescriptor (
                 customEditor,
-                "Properties_Editor_Title"
+                loc ("Properties_Editor_Title")
             );
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
