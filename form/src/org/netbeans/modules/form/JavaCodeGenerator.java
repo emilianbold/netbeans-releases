@@ -2405,7 +2405,7 @@ class JavaCodeGenerator extends CodeGenerator {
             do { // go through one line
                 c = code.charAt(i);
                 if (!insideString) {
-                    if (c == '}' || c == ')') {
+                    if (c == '}') {
                         lastOpeningBr = -1;
                         endingSpace = -1;
                         if (startingSpace) { // first non-space char on the line
@@ -2415,6 +2415,27 @@ class JavaCodeGenerator extends CodeGenerator {
                             lineStart = i;
                         } else if (!closingBr)
                             brackets--;
+                    } else if (c == ')') {
+                        
+                        int bracketCount = 0;
+                        int begin = i;
+                        while (begin < code.length() && (code.charAt(begin) == ')')) {
+                            bracketCount += 1;
+                            begin += 1;
+                        }
+                        
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            firstClosingBr = true;
+                            closingBr = true;
+                            startingSpace = false;
+                            lineStart = i;
+                        } else if (!closingBr)
+                            brackets -= bracketCount;
+                        if (bracketCount > 1) {
+                            i += bracketCount - 1;
+                        }
                     } else if (c == '{' || c == '(') {
                         closingBr = false;
                         lastOpeningBr = -1;
@@ -2509,7 +2530,7 @@ class JavaCodeGenerator extends CodeGenerator {
             // calculate indentation level for the next line
             if (brackets < 0) {
                 if (indentLevel > minIndentLevel)
-                    indentLevel--;
+                    indentLevel += brackets;
                 
             } else if (brackets > 0)
                 indentLevel++;
