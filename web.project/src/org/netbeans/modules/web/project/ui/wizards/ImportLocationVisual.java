@@ -26,6 +26,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.project.ProjectUtils;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -714,8 +715,8 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeModuleContainer container = (J2eeModuleContainer) allProjects[i].getLookup().lookup(J2eeModuleContainer.class);
-            ProjectInformation projectInfo = (ProjectInformation) allProjects[i].getLookup().lookup(ProjectInformation.class);
-            if (container != null && projectInfo != null) {
+            ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
+            if (container != null) {
                 earProjects.add(projectInfo.getProject());
                 jComboBoxEnterprise.addItem(projectInfo.getDisplayName());
             }

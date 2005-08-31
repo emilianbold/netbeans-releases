@@ -57,12 +57,8 @@ public class StatusProjectsAction extends SystemAction {
         String title;
         if (projects.length == 1) {
             Project project = projects[0];
-            ProjectInformation pinfo = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-            if (pinfo != null) {
-                title = pinfo.getDisplayName();
-            } else {
-                title = FileUtil.toFile(project.getProjectDirectory()).getName(); 
-            }            
+            ProjectInformation pinfo = ProjectUtils.getInformation(project);
+            title = pinfo.getDisplayName();
         } else {
             title = NbBundle.getMessage(StatusProjectsAction.class, "CTL_StatusProjects_WindowTitle", Integer.toString(projects.length));
         }

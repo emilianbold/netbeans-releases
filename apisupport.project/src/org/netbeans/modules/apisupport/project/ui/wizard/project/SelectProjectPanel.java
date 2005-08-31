@@ -209,7 +209,7 @@ final class SelectProjectPanel extends BasicWizardIterator.Panel {
             if (text != null) {
                 return text;
             }
-            ProjectInformation inf = (ProjectInformation)proj.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation inf = ProjectUtils.getInformation(proj);
             return inf.getDisplayName();
         }
     }

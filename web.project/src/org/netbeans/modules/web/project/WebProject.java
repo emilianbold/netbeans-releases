@@ -25,6 +25,7 @@ import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
@@ -866,9 +867,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                 docBase.getFileSystem().addFileChangeListener(this);
             }
             ProjectInformation info = (ProjectInformation) getLookup().lookup(ProjectInformation.class);
-            if (info != null) {
-                info.addPropertyChangeListener (this);
-            }
+            info.addPropertyChangeListener (this);
         }
 
         public void cleanup() throws FileStateInvalidException {

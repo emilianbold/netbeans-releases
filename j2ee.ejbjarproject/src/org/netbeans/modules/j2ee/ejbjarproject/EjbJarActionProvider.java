@@ -20,6 +20,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.jmi.javamodel.Resource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
@@ -203,7 +204,7 @@ class EjbJarActionProvider implements ActionProvider {
             }
             if (isDebugged()) {
                 NotifyDescriptor nd;
-                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                ProjectInformation pi = ProjectUtils.getInformation(project);
                 String text = pi.getDisplayName();
                 nd = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(EjbJarActionProvider.class, "MSG_SessionRunning", text),

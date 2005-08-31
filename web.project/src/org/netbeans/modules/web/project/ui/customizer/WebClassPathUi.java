@@ -43,6 +43,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.api.project.ProjectUtils;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -142,12 +143,8 @@ public class WebClassPathUi {
                     } else {
                         Project p = item.getArtifact().getProject();
                         String projectName;
-                        ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
-                        if (pi != null) {
-                            projectName = pi.getDisplayName();
-                        } else {
-                            projectName = "???";    //NOI18N
-                        }
+                        ProjectInformation pi = ProjectUtils.getInformation(p);
+                        projectName = pi.getDisplayName();
                         return MessageFormat.format(NbBundle.getMessage(WebClassPathUi.class,"MSG_ProjectArtifactFormat"), new Object[] {
                             projectName,
                                     item.getArtifactURI().toString()
@@ -189,10 +186,8 @@ public class WebClassPathUi {
                     else {
                         Project p = item.getArtifact().getProject();
                         if (p != null) {
-                            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
-                            if (pi != null) {
-                                return pi.getIcon();
-                            }
+                            ProjectInformation pi = ProjectUtils.getInformation(p);
+                            return pi.getIcon();
                         }
                         return ICON_ARTIFACT;
                     }

@@ -45,6 +45,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
@@ -142,14 +143,8 @@ public class J2SEClassPathUi {
                     }
                     else {
                         Project p = item.getArtifact().getProject();
-                        String projectName;
-                        ProjectInformation pi = (ProjectInformation) p.getLookup().lookup (ProjectInformation.class);
-                        if (pi != null) {
-                            projectName = pi.getDisplayName();
-                        }
-                        else {
-                            projectName = "???";    //NOI18N
-                        }
+                        ProjectInformation pi = ProjectUtils.getInformation(p);
+                        String projectName = pi.getDisplayName();
                         return MessageFormat.format (NbBundle.getMessage(J2SEClassPathUi.class,"MSG_ProjectArtifactFormat"), new Object[] {
                             projectName,
                             item.getArtifactURI().toString()
@@ -191,10 +186,8 @@ public class J2SEClassPathUi {
                     else {
                         Project p = item.getArtifact().getProject();
                         if (p != null) {
-                            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
-                            if (pi != null) {
-                                return pi.getIcon();
-                            }
+                            ProjectInformation pi = ProjectUtils.getInformation(p);
+                            return pi.getIcon();
                         }
                         return ICON_ARTIFACT;
                     }

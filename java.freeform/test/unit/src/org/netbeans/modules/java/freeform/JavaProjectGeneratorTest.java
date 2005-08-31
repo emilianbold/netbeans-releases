@@ -129,7 +129,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project was not created", p);
         assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         
-        ProjectInformation pi = (ProjectInformation)p.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation pi = ProjectUtils.getInformation(p);
         assertEquals("Project name was not set", "proj-1", pi.getName());
     }
     

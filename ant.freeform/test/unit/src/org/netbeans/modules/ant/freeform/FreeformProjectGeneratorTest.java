@@ -25,6 +25,7 @@ import java.util.jar.JarOutputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ActionProvider;
@@ -97,7 +98,7 @@ public class FreeformProjectGeneratorTest extends NbTestCase {
         assertNotNull("Project was not created", p);
         assertEquals("Project folder is incorrect", base, p.getProjectDirectory());
         
-        ProjectInformation pi = (ProjectInformation)p.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation pi = ProjectUtils.getInformation(p);
         assertEquals("Project name was not set", "proj-1", pi.getName());
     }
     

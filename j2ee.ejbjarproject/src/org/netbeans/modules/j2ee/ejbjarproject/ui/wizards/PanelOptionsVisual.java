@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -248,8 +249,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         earProjects = new ArrayList();
         for (int i = 0; i < allProjects.length; i++) {
             J2eeModuleContainer container = (J2eeModuleContainer) allProjects[i].getLookup().lookup(J2eeModuleContainer.class);
-            ProjectInformation projectInfo = (ProjectInformation) allProjects[i].getLookup().lookup(ProjectInformation.class);
-            if (container != null && projectInfo != null) {
+            ProjectInformation projectInfo = ProjectUtils.getInformation(allProjects[i]);
+            if (container != null) {
                 earProjects.add(projectInfo.getProject());
                 addToAppComboBox.addItem(projectInfo.getDisplayName());
             }

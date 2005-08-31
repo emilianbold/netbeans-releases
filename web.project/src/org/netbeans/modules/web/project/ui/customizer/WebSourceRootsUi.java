@@ -31,6 +31,7 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -514,15 +515,11 @@ public final class WebSourceRootsUi {
                 if (projectConflict) {
                     Project p = FileOwnerQuery.getOwner(f.toURI());
                     if (p!=null) {
-                        ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
-                        if (pi != null) {
-                            String projectName = pi.getDisplayName();
-                            if (projectName != null) {
-                                message = MessageFormat.format (NbBundle.getMessage(WebSourceRootsUi.class,"TXT_RootOwnedByProject"), new Object[] { //NOI18N
-                                    message,
-                                    projectName});
-                            }
-                        }
+                        ProjectInformation pi = ProjectUtils.getInformation(p);
+                        String projectName = pi.getDisplayName();
+                        message = MessageFormat.format (NbBundle.getMessage(WebSourceRootsUi.class,"TXT_RootOwnedByProject"), new Object[] { //NOI18N
+                            message,
+                            projectName});
                     }
                 }
                 return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);

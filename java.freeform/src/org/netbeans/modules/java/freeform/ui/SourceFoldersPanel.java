@@ -41,6 +41,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
 import org.netbeans.modules.ant.freeform.spi.ProjectPropertiesPanel;
@@ -993,15 +994,11 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
                 if (projectConflict) {
                     Project p = FileOwnerQuery.getOwner(f.toURI());
                     if (p!=null) {
-                        ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
-                        if (pi != null) {
-                            String projectName = pi.getDisplayName();
-                            if (projectName != null) {
-                                message = MessageFormat.format (NbBundle.getMessage(SourceFoldersPanel.class,"TXT_RootOwnedByProject"), new Object[] {
-                                    message,
-                                    projectName});
-                            }
-                        }
+                        ProjectInformation pi = ProjectUtils.getInformation(p);
+                        String projectName = pi.getDisplayName();
+                        message = MessageFormat.format (NbBundle.getMessage(SourceFoldersPanel.class,"TXT_RootOwnedByProject"), new Object[] {
+                            message,
+                            projectName});
                     }
                 }
                 return super.getListCellRendererComponent(list, message, index, isSelected, cellHasFocus);

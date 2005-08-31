@@ -32,6 +32,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -143,7 +144,7 @@ class ProjectNode extends AbstractNode {
     private ProjectInformation getProjectInformation () {
         Project p = this.antArtifact.getProject();
         if (p != null) {
-            return (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            return ProjectUtils.getInformation(p);
         }
         return null;
     }
@@ -190,7 +191,7 @@ class ProjectNode extends AbstractNode {
             ProjectInformation info = null;
             Project p = this.antArtifact.getProject ();
             if (p != null) {
-                info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+                info = ProjectUtils.getInformation(p);
             }
             ShowJavadocAction.showJavaDoc (pageURL, info == null ?
                 NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());

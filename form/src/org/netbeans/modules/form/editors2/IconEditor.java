@@ -832,8 +832,8 @@ public class IconEditor extends PropertyEditorSupport implements PropertyEditor,
                 SourceGroup grp = sourceGroup(fo, owner);
                 String name = (grp!=null) ? grp.getDisplayName() : FileUtil.getFileDisplayName(fo);
                 if (withProjectName) {
-                    ProjectInformation pi = (ProjectInformation)owner.getLookup().lookup(ProjectInformation.class);
-                    if (pi != null) name  += " ["+pi.getDisplayName()+"]"; // NOI18N
+                    ProjectInformation pi = ProjectUtils.getInformation(owner);
+                    name  += " [" + pi.getDisplayName() + "]"; // NOI18N
                 }
                 return name;
             } else

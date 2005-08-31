@@ -35,6 +35,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import junit.framework.TestCase;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles.Operation;
 import org.netbeans.modules.apisupport.project.layers.LayerTestBase;
 import org.netbeans.modules.apisupport.project.ui.customizer.ModuleDependency;
@@ -101,7 +102,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
     
     public void testBundleKeyDefaultBundle() throws Exception {
         NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
-        ProjectInformation pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation pi = ProjectUtils.getInformation(project);
         assertEquals("display name before from bundle", "Testing Module", pi.getDisplayName());
         assertEquals("display name before from project", "Testing Module", project.getBundleInfo().getDisplayName());
         
@@ -111,7 +112,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
                 op.getModifiedPaths());
         op.run();
         
-        pi = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
+        pi = ProjectUtils.getInformation(project);
         assertEquals("display name after from bundle", "Much Better Name", pi.getDisplayName());
         assertEquals("display name after from project", "Much Better Name", project.getBundleInfo().getDisplayName());
     }

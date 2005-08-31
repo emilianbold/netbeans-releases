@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
@@ -177,7 +178,7 @@ public class EarActionProvider implements ActionProvider {
             if (isDebugged()) {
                 NotifyDescriptor nd;
                 String text;
-                ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                ProjectInformation pi = ProjectUtils.getInformation(project);
                 text = pi.getDisplayName();
                 nd = new NotifyDescriptor.Confirmation(
                             NbBundle.getMessage(EarActionProvider.class, "MSG_SessionRunning", text),

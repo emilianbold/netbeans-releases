@@ -202,8 +202,8 @@ public class SelectorUtils {
             SourceGroup grp = getSourceGroup(fo, owner);
             String n = (grp!=null)?grp.getDisplayName():FileUtil.getFileDisplayName(fo);
             if (incPrjName) {
-                ProjectInformation pi = (ProjectInformation)owner.getLookup().lookup(ProjectInformation.class);
-                if (pi != null) n  += " ["+pi.getDisplayName()+"]";
+                ProjectInformation pi = ProjectUtils.getInformation(owner);
+                n  += " [" + pi.getDisplayName() + "]";
             }
             return n;
         } else 

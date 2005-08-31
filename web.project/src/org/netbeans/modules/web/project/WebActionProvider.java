@@ -28,6 +28,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeAppProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -221,7 +222,7 @@ class WebActionProvider implements ActionProvider {
                     NotifyDescriptor nd;
                     String text;
                     if (command.equals (COMMAND_RUN)) {
-                        ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                        ProjectInformation pi = ProjectUtils.getInformation(project);
                         text = pi.getDisplayName();
                     } else { //COMMAND_RUN_SINGLE
                         files = ActionUtils.findSelectedFiles(context, null, null, false);
@@ -343,7 +344,7 @@ class WebActionProvider implements ActionProvider {
                     NotifyDescriptor nd;
                     String text;
                     if (command.equals (COMMAND_RUN)) {
-                        ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                        ProjectInformation pi = ProjectUtils.getInformation(project);
                         text = pi.getDisplayName();
                     } else { //COMMAND_RUN_SINGLE
                         files = ActionUtils.findSelectedFiles(context, null, null, false);

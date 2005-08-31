@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.checkout;
 
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.settings.HistorySettings;
@@ -222,13 +223,8 @@ public final class CheckoutAction extends SystemAction {
             } else if (checkedOutProjects.size() == 1) {
                 Project project = (Project) checkedOutProjects.iterator().next();
                 projectToBeOpened = project;
-                ProjectInformation projectInformation = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-                String projectName;
-                if (projectInformation != null) {
-                    projectName = projectInformation.getDisplayName();
-                } else {
-                    projectName = NbBundle.getMessage(CheckoutAction.class, "BK1013");
-                }
+                ProjectInformation projectInformation = ProjectUtils.getInformation(project);
+                String projectName = projectInformation.getDisplayName();
                 String msg = NbBundle.getMessage(CheckoutAction.class, "BK1011", projectName);
                 panel.jLabel1.setText(msg);
                 panel.openButton.setText(NbBundle.getMessage(CheckoutAction.class, "BK1012"));
