@@ -471,4 +471,6 @@ public class JellyConstants {
    public static final String MBEAN_CREATE_PACKAGE = "mbeancreationpackage";
    public static final String NEW_JMX_CLASS20 = "NewJMXClass20";
    public static final String WARN_SAME_CLASS = "The file NewJMXClass20.java already exists.";
+   public static final String WA1_NAME = "A1";
+   public static final String WA2_NAME = "A2";
 }
