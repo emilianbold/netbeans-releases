@@ -62,6 +62,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public abstract GenerateFromIntf createGenerateFromIntf();
 
     public final void createAndAdd(Method clientView, boolean local, boolean isComponent) {
+        Type returnType = clientView.getType();
         JavaClass home = null;
         JavaClass component = null;
         boolean rollback = true;
@@ -93,7 +94,7 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     Method me = (Method) it.next();
                     if (JMIUtils.findInClass(me,bc) == null) {
                         registerClassForSave(bc);
-                        TypeReference typeReference = JavaModelUtil.resolveImportsForType(bc, me.getType());
+                        TypeReference typeReference = JavaModelUtil.resolveImportsForType(bc, returnType);
                         me.setTypeName(typeReference);
                         bc.getContents().add(me);
                     }
