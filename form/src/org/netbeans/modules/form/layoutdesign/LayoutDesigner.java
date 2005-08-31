@@ -591,14 +591,41 @@ public class LayoutDesigner implements LayoutConstants {
                         layoutModel.setIntervalAlignment(comp, alignment);
                         layoutModel.addInterval(comp, parent, index);
                     }
+                    // Consolidate the groups where the components has been added
+                    boolean active = modelListener.isActive();
+                    if (active) modelListener.deactivate();
+                    iter = temp.iterator();
+                    while (iter.hasNext()) {
+                        iter.next(); // skip the component
+                        LayoutInterval group = (LayoutInterval)iter.next();
+                        iter.next(); iter.next(); // skip alignment and index
+                        while (group.getSubIntervalCount() == 1) {
+                            LayoutInterval sub = group.getSubInterval(0);
+                            LayoutInterval parent = group.getParent();
+                            layoutModel.removeInterval(sub);
+                            int alignment = group.getAlignment();
+                            int index = layoutModel.removeInterval(group);
+                            layoutModel.setIntervalAlignment(sub, alignment);
+                            layoutModel.addInterval(sub, parent, index);
+                            group = sub;
+                        }
+                    }
                     compCount = 0;
+                    if (active) modelListener.activate();
                 }
                 // consolidate copy
                 if ((copy.getSubIntervalCount() == 1) && (compCount == 0)) {
+                    boolean active = modelListener.isActive();
+                    if (active) modelListener.deactivate();
                     LayoutInterval subCopy = copy.getSubInterval(0);
                     layoutModel.removeInterval(subCopy);
                     layoutModel.setIntervalAlignment(subCopy, copy.getAlignment());
-                    copy = subCopy;
+                    if (copy.isSequential() && subCopy.isEmptySpace()) {
+                        copy = null;
+                    } else {
+                        copy = subCopy;
+                    }
+                    if (active) modelListener.activate();
                 }
                 return copy;
             } else {
@@ -1043,6 +1070,8 @@ public class LayoutDesigner implements LayoutConstants {
     // LayoutModel.Listener implementation & related
 
     class Listener implements LayoutModel.Listener {
+        private boolean active = false;
+        
         public void layoutChanged(LayoutEvent ev) {
             if (!layoutModel.isUndoRedoInProgress()) {
                 deactivate();
@@ -1052,9 +1081,15 @@ public class LayoutDesigner implements LayoutConstants {
         }
         void activate() {
             layoutModel.addListener(this);
+            active = true;
         }
         void deactivate() {
             layoutModel.removeListener(this);
+            active = false;
+        }
+        
+        boolean isActive() {
+            return active;
         }
     };
 
@@ -2809,6 +2844,10 @@ public class LayoutDesigner implements LayoutConstants {
             return false; // this container is not built
         component.setCurrentInterior(interior);
 
+        if (component.getParent() != null) {
+            component.setCurrentBounds(visualMapper.getComponentBounds(component.getId()),
+                visualMapper.getBaselinePosition(component.getId()));
+        }
         for (Iterator it=component.getSubcomponents(); it.hasNext(); ) {
             LayoutComponent subComp = (LayoutComponent) it.next();
             subComp.setCurrentBounds(visualMapper.getComponentBounds(subComp.getId()),
