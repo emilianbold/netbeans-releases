@@ -75,7 +75,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
         String str = bundle.getString("LBL_Operation_Panel");// NOI18N
         setName(str);
         wiz.setErrorMsg(" ");// NOI18N
-        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     protected void initJTables() {

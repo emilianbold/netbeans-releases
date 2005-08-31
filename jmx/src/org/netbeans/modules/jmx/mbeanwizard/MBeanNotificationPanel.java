@@ -86,6 +86,8 @@ public class MBeanNotificationPanel extends JPanel {
         
         //init state
         updateState();
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     private void initJTable() {

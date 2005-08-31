@@ -427,6 +427,7 @@ public class RMIPanel extends javax.swing.JPanel {
         sslClientAuthJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_RMI_SSL_CLIENT")); // NOI18N
         sslClientAuthJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_RMI_SSL_CLIENT_DESCRIPTION")); // NOI18N
         
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     

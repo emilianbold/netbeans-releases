@@ -80,6 +80,7 @@ public class ManagerPanel extends javax.swing.JPanel {
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_Manager_Panel"));// NOI18N 
         
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     private static boolean shouldEnableMainProjectClass() {

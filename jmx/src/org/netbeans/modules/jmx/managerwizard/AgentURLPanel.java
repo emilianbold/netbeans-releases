@@ -131,6 +131,8 @@ public class AgentURLPanel extends javax.swing.JPanel implements DocumentListene
                 
         // Provide a name in the title bar.
         setName(bundle.getString("LBL_AgentURL")); // NOI18N
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     /**

@@ -158,6 +158,8 @@ public class SNMPPanel extends javax.swing.JPanel {
         
         aclFileJButton.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_SNMP_ACL_FILE_BROWSE")); // NOI18N
         aclFileJButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_SNMP_ACL_FILE_BROWSE_DESCRIPTION")); // NOI18N
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     /**

@@ -87,6 +87,8 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         
         setName("ManagerPopup");// NOI18N
         
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
+        
         String urlText = getPanel().getJmxURLJTextField().getText();
         if (urlText.equals(WizardConstants.EMPTYSTRING))
             updateURLPathWithHostAndPort();

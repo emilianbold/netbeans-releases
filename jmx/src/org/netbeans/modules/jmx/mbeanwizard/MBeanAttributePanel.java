@@ -81,7 +81,7 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
         String str = bundle.getString("LBL_Attribute_Panel");// NOI18N
         setName(str);
         wiz.setErrorMsg(" ");// NOI18N
-        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     protected void initJTables() {

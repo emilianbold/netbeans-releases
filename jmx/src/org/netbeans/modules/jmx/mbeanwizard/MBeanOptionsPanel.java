@@ -154,6 +154,8 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         mbeanRegistrationJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_DESCRIPTION"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleName(bundle.getString("ACCESS_REGISTRATION_KEEP"));// NOI18N
         preRegisterParamJCheckBox.getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_REGISTRATION_KEEP_DESCRIPTION"));// NOI18N
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     public void setProject(Project project) {
