@@ -39,6 +39,15 @@ public class OpenVersioningAction extends StatusProjectsAction {
         return NbBundle.getMessage(OpenVersioningAction.class, "BK0001");
     }
 
+    /**
+     * Window/Versioning should be always enabled.
+     * 
+     * @return true
+     */ 
+    public boolean isEnabled() {
+        return true;
+    }
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(OpenVersioningAction.class);
     }
