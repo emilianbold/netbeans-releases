@@ -28,16 +28,4 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="netbeans-extra" depends="j2ee-api-14"/>
 
-    <target name="preview-help">
-        <java  classname="sunw.demo.jhdemo.JHLauncher" fork="true">
-            <classpath>
-                <fileset dir="${nb_all}/nbbuild/external">
-                    <include name="jhall*.jar"/>
-                </fileset>
-                <pathelement location="D:/jh2.0/demos/bin/hsviewer.jar"/>
-            </classpath>
-            <arg value="-helpset" />
-            <arg value="javahelp/${javahelp.base}/${javahelp.hs}" />
-        </java>
-    </target>
 </project>
