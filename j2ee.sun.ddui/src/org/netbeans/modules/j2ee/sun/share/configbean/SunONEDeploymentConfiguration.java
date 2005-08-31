@@ -138,16 +138,16 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
      *
      * @param configFiles Sun specific DD files referenced by this J2EE module, 
      *   e.g. sun-web.xml, sun-ejb-jar.xml, sun-cmp-mappings.xml, etc.
-     * @param resourceDir Directory that the DD files are or should be contained in.
+     * @param resourceDir Directory that the sun resource files will be created in.
      */
     public void init(File[] configFiles, File resourceDir, boolean keepUpdated) {
         assert configFiles != null && configFiles.length >= 1 : "No configuration files specified in SunONEDeploymentConfiguration.init()";
 //        assert resourceDir != null : "Directory for configuration files cannot be null.";
         
-        System.out.println("SunONEDC.init(): resourceDir = " + resourceDir.getAbsoluteFile());
-        for(int i = 0; i < configFiles.length; i++) {
-            System.out.println("SunONEDC.init(): file[" + i + "] = " + configFiles[i]);
-        }
+//        System.out.println("SunONEDC.init(): resourceDir = " + reresourceDir.getAbsoluteFile());
+//        for(int i = 0; i < configFiles.length; i++) {
+//            System.out.println("SunONEDC.init(): file[" + i + "] = " + configFiles[i]);
+//        }
         
         this.configFiles = configFiles;
         this.resourceDir = resourceDir;
