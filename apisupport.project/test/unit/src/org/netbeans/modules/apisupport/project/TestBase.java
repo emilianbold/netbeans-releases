@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -281,6 +283,34 @@ public abstract class TestBase extends NbTestCase {
                 "org/example/" + prjDir + "/resources/layer.xml",
                 "default"); // platform id
         return FileUtil.toFileObject(prjDirF);
+    }
+    
+    /** Generates an empty suite. */
+    public static SuiteProject generateSuite(File workDir, String prjDir) throws IOException {
+        String prjDirDotted = prjDir.replace('/', '.');
+        File prjDirF = file(workDir, prjDir);
+        SuiteProjectGenerator.createSuiteProject(prjDirF, "default");
+        return (SuiteProject) ProjectManager.getDefault().findProject(
+                FileUtil.toFileObject(prjDirF));
+    }
+
+    /**
+     * Generates a suite component module which becomes a part of the given
+     * <code>suiteProject</code>.
+     */
+    public static NbModuleProject generateSuiteComponent(SuiteProject suiteProject, String prjDir) throws Exception {
+        String prjDirDotted = prjDir.replace('/', '.');
+        File suiteDir = FileUtil.toFile(suiteProject.getProjectDirectory());
+        File prjDirF = file(suiteDir, prjDir);
+        NbModuleProjectGenerator.createSuiteComponentModule(
+                prjDirF,
+                "org.example." + prjDirDotted, // cnb
+                "Testing Module", // display name
+                "org/example/" + prjDir + "/resources/Bundle.properties",
+                "org/example/" + prjDir + "/resources/layer.xml",
+                suiteDir); // suite directory
+        return (NbModuleProject) ProjectManager.getDefault().findProject(
+                FileUtil.toFileObject(prjDirF));
     }
     
 }

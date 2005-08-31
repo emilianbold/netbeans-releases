@@ -86,35 +86,35 @@ public class SuitePropertiesTest extends TestBase {
         p = (NbModuleProject) model.getElementAt(1);
         assertEquals("lib project first", p.getCodeNameBase(), "org.netbeans.examples.modules.lib");
     }
-    
+
     public void testRemoveAllSubModules() throws Exception {
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
-        
+
         // simulate removing all items from the list
         JList moduleList = new JList(model);
         moduleList.setSelectedIndices(new int[] {0, model.getSize() - 1});
         model.removeModules(Arrays.asList(moduleList.getSelectedValues()));
         assertEquals("none subModule should left", 0, model.getSize());
-        
+
         saveProperties(suite1Props);
-        
+
         SubprojectProvider spp = getSubProjectProvider(findSuite1Project());
         assertEquals("none module should be left", 0, spp.getSubprojects().size());
     }
-    
+
     public void testRemoveOneSubModule() throws Exception {
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
-        
+
         // simulate removing all items from the list
         JList moduleList = new JList(model);
         moduleList.setSelectedIndex(0);
         model.removeModules(Arrays.asList(moduleList.getSelectedValues()));
         assertEquals("one subModule should left", 1, model.getSize());
-        
+
         saveProperties(suite1Props);
-        
+
         SubprojectProvider spp = getSubProjectProvider(findSuite1Project());
         assertEquals("one module should be left", 1, spp.getSubprojects().size());
         NbModuleProject libProject = (NbModuleProject) spp.getSubprojects().toArray()[0];
@@ -124,7 +124,7 @@ public class SuitePropertiesTest extends TestBase {
                 getLookup().lookup(NbModuleTypeProvider.class);
         assertSame("lib module is still suite component module", NbModuleTypeProvider.SUITE_COMPONENT,
                 libProjectNmtp.getModuleType());
-        
+
         // assert that the remove module (action-project) is standalone
         FileObject actionFO = suite1FO.getFileObject("action-project");
         Project actionProject = ProjectManager.getDefault().findProject(actionFO);
@@ -134,7 +134,7 @@ public class SuitePropertiesTest extends TestBase {
         assertSame("action-project module is standalone module now", NbModuleTypeProvider.STANDALONE,
                 actionNmtp.getModuleType());
     }
-    
+
     public void testMoveSubModuleBetweenSuites() throws Exception {
         FileObject miscFO = suite2FO.getFileObject("misc-project");
         Project miscProject = ProjectManager.getDefault().findProject(miscFO);
@@ -142,7 +142,7 @@ public class SuitePropertiesTest extends TestBase {
         SuiteProvider sp = (SuiteProvider) miscProject.getLookup().lookup(SuiteProvider.class);
         assertNotNull(sp);
         assertEquals("is in suite2", FileUtil.toFile(suite2FO), sp.getSuiteDirectory());
-        
+
         // simulate addition of miscProject to the suite1
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
@@ -151,12 +151,12 @@ public class SuitePropertiesTest extends TestBase {
 
         // saves all changes
         saveProperties(suite1Props);
-        
+
         // assert miscProject is part of suite1 (has moved from suite2)....
         SubprojectProvider suite1spp = getSubProjectProvider(findSuite1Project());
         assertEquals("one module should be left", 3, suite1spp.getSubprojects().size());
         assertTrue("misc-project has moved to suite1", suite1spp.getSubprojects().contains(miscProject));
-        
+
         // ....and as such has correctly set suite provider
         sp = (SuiteProvider) miscProject.getLookup().lookup(SuiteProvider.class);
         assertNotNull(sp);
@@ -167,7 +167,32 @@ public class SuitePropertiesTest extends TestBase {
         SubprojectProvider suite2spp = getSubProjectProvider(miscProject);
         assertFalse("misc-project is not part of suite2 anymore",
                 suite2spp.getSubprojects().contains(miscProject));
+
+    }
+    
+    public void testRemovingOneModuleFromThree_63307() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        assert suite1 != null;
+        NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
+        assert module1 != null;
+        NbModuleProject module2 = TestBase.generateSuiteComponent(suite1, "module2");
+        assert module2 != null;
+        NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
+        assert module3 != null;
         
+        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
+        Set/*<Project>*/ subModules = spp.getSubprojects();
+        SuiteProperties suiteProps = new SuiteProperties(suite1, suite1.getHelper(),
+                suite1.getEvaluator(), subModules);
+        
+        SuiteSubModulesListModel model = suiteProps.getModulesListModel();
+        assertEquals("three module suite components", 3, model.getSize());
+        model.removeModules(Arrays.asList(new Object[] { module2 }));
+        
+        saveProperties(suiteProps);
+        
+        suiteProps.refresh(spp.getSubprojects());
+        assertEquals("two module suite components", 2, suiteProps.getModulesListModel().getSize());
     }
     
     private void saveProperties(final SuiteProperties props) {

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -196,8 +197,7 @@ public class SuiteUtils {
                 }
             }
             if (removed) {
-                String [] newPieces = new String[pieces.size()];
-                projectProps.setProperty(MODULES_PROPERTY, (String[]) pieces.toArray(newPieces));
+                projectProps.setProperty(MODULES_PROPERTY, getAntProperty(pieces));
             }
         }
         return removed;
@@ -299,6 +299,16 @@ public class SuiteUtils {
         // XXX do not cast to NbModuleProject - find better way (e.g. provide method in NbModuleTypeProvider)
         ProjectXMLManager pxm = new ProjectXMLManager(((NbModuleProject) module).getHelper());
         pxm.setModuleType(type);
+    }
+    
+    private static String[] getAntProperty(final Collection pieces) {
+        List l = new ArrayList();
+        for (Iterator it = pieces.iterator(); it.hasNext();) {
+            String piece = (String) it.next() + (it.hasNext() ? ":" : ""); // NOI18N
+            l.add(piece);
+        }
+        String [] newPieces = new String[l.size()];
+        return (String[]) l.toArray(newPieces);
     }
     
 }
