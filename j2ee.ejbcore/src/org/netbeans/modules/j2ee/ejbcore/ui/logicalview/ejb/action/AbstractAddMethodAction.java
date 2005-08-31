@@ -93,16 +93,9 @@ public abstract class AbstractAddMethodAction extends AbstractAction implements 
     }
     
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-        JavaMetamodel.getDefaultRepository().beginTrans(false);
-        JavaClass jc = null;
-        try {
-            jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
-            if (jc != null) {
-                strategy.addMethod(jc);
-            }
-        }
-        finally {
-            JavaMetamodel.getDefaultRepository().endTrans();
+        JavaClass jc = JMIUtils.getJavaClassFromNode(activatedNodes[0]);
+        if (jc != null) {
+            strategy.addMethod(jc);
         }
     }
 
