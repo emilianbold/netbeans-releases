@@ -55,10 +55,11 @@ public class JavaCompletionProvider implements CompletionProvider {
         int ret = 0;
         if (typedText != null && typedText.endsWith(".")) // NOI18N
             ret |= COMPLETION_QUERY_TYPE;
-        if (typedText != null && (typedText.endsWith("()")) || typedText.endsWith("();") // NOI18N
-                || typedText.endsWith("().") || typedText.endsWith("(),") // NOI18N
-        )
-            ret |= TOOLTIP_QUERY_TYPE;
+
+//        if (typedText != null && (typedText.endsWith("()")) || typedText.endsWith("();") // NOI18N
+//                || typedText.endsWith("().") || typedText.endsWith("(),") // NOI18N
+//        )
+//            ret |= TOOLTIP_QUERY_TYPE;
 
         if (ret != 0) {
             try {
