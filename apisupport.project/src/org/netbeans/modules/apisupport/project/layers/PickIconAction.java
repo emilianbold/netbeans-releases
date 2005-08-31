@@ -53,7 +53,7 @@ public class PickIconAction extends CookieAction {
         }
         FileObject icon = FileUtil.toFileObject(chooser.getSelectedFile());
         // XXX might instead get WritableXMLFileSystem.cp and search for it in there:
-        String iconPath = FileUtil.getRelativePath(p.getSourceDirectory(), icon);
+        String iconPath = FileUtil.getRelativePath(src, icon);
         try {
             if (iconPath == null) {
                 String folderPath;
@@ -73,6 +73,15 @@ public class PickIconAction extends CookieAction {
         }
     }
     
+    protected boolean enable(Node[] activatedNodes) {
+        if (!super.enable(activatedNodes)) {
+            return false;
+        }
+        FileObject f = ((DataObject) activatedNodes[0].getCookie(DataObject.class)).getPrimaryFile();
+        URL location = (URL) f.getAttribute("WritableXMLFileSystem.location"); // NOI18N
+        return location != null; // #63458
+    }
+
     public String getName() {
         return NbBundle.getMessage(PickIconAction.class, "LBL_pick_icon");
     }
