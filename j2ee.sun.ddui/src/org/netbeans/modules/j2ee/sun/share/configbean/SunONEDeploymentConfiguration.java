@@ -142,7 +142,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
      */
     public void init(File[] configFiles, File resourceDir, boolean keepUpdated) {
         assert configFiles != null && configFiles.length >= 1 : "No configuration files specified in SunONEDeploymentConfiguration.init()";
-        assert resourceDir != null : "Directory for configuration files cannot be null.";
+//        assert resourceDir != null : "Directory for configuration files cannot be null.";
         
         System.out.println("SunONEDC.init(): resourceDir = " + resourceDir.getAbsoluteFile());
         for(int i = 0; i < configFiles.length; i++) {
