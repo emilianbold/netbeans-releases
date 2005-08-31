@@ -214,7 +214,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     public void dispose() {
         SunONEDeploymentConfiguration storedCfg = getConfiguration(configFiles[0]);
         if(storedCfg != null) {
-            assert this == storedCfg;
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "SunONEDeploymentConfiguration.dispose(): passed in configuration is not equal to logged configuration");
             removeConfiguration(configFiles[0]);
         }
     }
