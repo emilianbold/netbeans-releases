@@ -71,7 +71,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         divider = new Divider(this);
         java.awt.GridBagConstraints gridBagConstraints;
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -348,8 +348,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         searchCriteriaPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
         bSearch = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         tbSummary = new javax.swing.JToggleButton();
         tbDiff = new javax.swing.JToggleButton();
         bNext = new javax.swing.JButton();
@@ -371,20 +371,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.weightx = 1.0;
         add(searchCriteriaPanel, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(bSearch, gridBagConstraints);
+
         jPanel1.setPreferredSize(new java.awt.Dimension(10, 6));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jPanel1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        add(bSearch, gridBagConstraints);
 
         buttonGroup1.add(tbSummary);
         tbSummary.setSelected(true);
