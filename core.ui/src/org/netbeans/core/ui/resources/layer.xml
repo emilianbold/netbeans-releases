@@ -77,9 +77,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
-            <folder name="SelectDocumentNode">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            </folder>
             <file name="org-netbeans-core-actions-PreviousViewCallbackAction.instance"/>
             <file name="org-netbeans-core-actions-NextViewCallbackAction.instance"/>
         </folder>
@@ -204,12 +201,6 @@ Microsystems, Inc. All Rights Reserved.
             <!-- #22758 Just a placeholder for old roots menu items -->
             <attr name="oldRootsStart.txt/oldRootsEnd.txt" boolvalue="true" />
             <file name="oldRootsEnd.txt"/>
-            <folder name="SelectDocumentNode">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.resources.Bundle"/>
-            </folder>
-            <attr name="SwitchToRecentDocumentAction.shadow/SelectDocumentNode" boolvalue="true" />
-            <attr name="SelectDocumentNode/Separator4.instance" boolvalue="true" />
         </folder>
         <attr name="Window/Help" boolvalue="true" />
         <folder name="Help">

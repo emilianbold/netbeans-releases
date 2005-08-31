@@ -68,9 +68,9 @@ public final class NbSelectInPopupAction extends SystemAction implements Present
             JPopupMenu pm = super.getPopupMenu();
             pm.removeAll();
             FileSystem dfs = Repository.getDefault().getDefaultFileSystem();
-            FileObject fo = dfs.findResource("Menu/Window/SelectDocumentNode"); // NOI18N
-            DataFolder df = DataFolder.findFolder(fo);
-                
+            FileObject fo = dfs.findResource("Actions/Window/SelectDocumentNode"); // NOI18N
+            DataFolder df = fo != null ? DataFolder.findFolder(fo) : null;
+            
             if (df != null) {
                 DataObject actionObjects[] = df.getChildren();
                 for (int i = 0; i < actionObjects.length; i++) {

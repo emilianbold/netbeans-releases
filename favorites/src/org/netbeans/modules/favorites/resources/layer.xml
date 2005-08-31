@@ -51,13 +51,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-favorites-View.instance"/>
             </file>
             <attr name="ViewFavoritesTabAction.shadow/ViewRuntimeTabAction.shadow" boolvalue="true" />
-            
-            <folder name="SelectDocumentNode">
-                <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/SelectInFavoritesTabAction.shadow" boolvalue="true" />
-                <file name="SelectInFavoritesTabAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
-                </file>
-            </folder>
         </folder>
     </folder>
     
