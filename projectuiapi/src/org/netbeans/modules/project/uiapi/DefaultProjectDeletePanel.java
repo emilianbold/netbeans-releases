@@ -12,33 +12,32 @@
  */
 
 package org.netbeans.modules.project.uiapi;
-
-import java.awt.Component;
-import java.awt.Window;
-import java.text.MessageFormat;
-import java.util.Iterator;
-import java.util.List;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.awt.CardLayout;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation.InvalidablePanel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-final class DefaultProjectDeletePanel extends javax.swing.JPanel {
+final class DefaultProjectDeletePanel extends javax.swing.JPanel implements InvalidablePanel {
     
     private String projectDisplaName;
     private String projectFolder;
     private boolean enableCheckbox;
+    private ProgressHandle handle;
     
     /**
      * Creates new form DefaultProjectDeletePanel
      */
-    public DefaultProjectDeletePanel(String projectDisplaName, String projectFolder, boolean enableCheckbox) {
+    public DefaultProjectDeletePanel(ProgressHandle handle, String projectDisplaName, String projectFolder, boolean enableCheckbox) {
         this.projectDisplaName = projectDisplaName;
         this.projectFolder = projectFolder;
         this.enableCheckbox = enableCheckbox;
+        this.handle = handle;
         initComponents();
     }
     
@@ -53,6 +52,11 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel {
 
         warningText = new javax.swing.JTextArea();
         deleteSourcesCheckBox = new javax.swing.JCheckBox();
+        progress = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        progressImpl = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -77,12 +81,53 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(deleteSourcesCheckBox, gridBagConstraints);
 
+        progress.setLayout(new java.awt.CardLayout());
+
+        progress.add(jPanel4, "card3");
+
+        progressImpl.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Deleting_Project", new Object[] {}));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        progressImpl.add(jLabel5, gridBagConstraints);
+
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
+        jPanel3.add(ProgressHandleFactory.createProgressComponent(handle));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        progressImpl.add(jPanel3, gridBagConstraints);
+
+        progress.add(progressImpl, "card2");
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        add(progress, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox deleteSourcesCheckBox;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel progress;
+    private javax.swing.JPanel progressImpl;
     private javax.swing.JTextArea warningText;
     // End of variables declaration//GEN-END:variables
     
@@ -90,12 +135,34 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel {
         return deleteSourcesCheckBox.isSelected();
     }
 
+    void setDeleteSources(boolean value) {
+        deleteSourcesCheckBox.setSelected(value);
+    }
+    
     private String getWarningText() {
         return NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Pre_Delete_Warning", new Object[] {projectDisplaName});
     }
     
     private String getCheckboxText() {
         return NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Delete_Also_Sources", new Object[] {projectFolder});
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        //no changes.
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        //no changes.
+    }
+
+    public void showProgress() {
+        deleteSourcesCheckBox.setEnabled(false);
+        
+        ((CardLayout) progress.getLayout()).last(progress);
+    }
+
+    public boolean isPanelValid() {
+        return true;
     }
     
 }

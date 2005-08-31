@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -24,8 +25,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation.Executor;
 import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementation.UserInputHandler;
-import org.netbeans.modules.project.uiapi.DefaultProjectOperationsImplementationTest;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.ProjectFactory;
@@ -78,41 +79,32 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
     
     //<editor-fold defaultstate="collapsed" desc="Delete Operation">
     public void testDeleteProjectDeleteAll() throws Exception {
-        TestUserInputHandler handler = new TestUserInputHandler(UserInputHandler.USER_OK_ALL);
+        TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_OK_ALL);
         
         DefaultProjectOperationsImplementation.deleteProject(prj, handler);
         
-        assertTrue(handler.userConfirmationCalled);
-        assertTrue(handler.enableData);
-        assertTrue(handler.getProgressHandleCalled);
-        assertTrue(handler.deleteCalled);
+        assertTrue(handler.confirmationDialogCalled);
         
         assertFalse(projectDirectory.exists());
     }
     
     public void testDeleteProjectDeleteMetadata() throws Exception {
-        TestUserInputHandler handler = new TestUserInputHandler(UserInputHandler.USER_OK_METADATA);
+        TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_OK_METADATA);
         
         DefaultProjectOperationsImplementation.deleteProject(prj, handler);
         
-        assertTrue(handler.userConfirmationCalled);
-        assertTrue(handler.enableData);
-        assertTrue(handler.getProgressHandleCalled);
-        assertTrue(handler.deleteCalled);
+        assertTrue(handler.confirmationDialogCalled);
         
         assertTrue(projectDirectory.exists());
         assertTrue(Arrays.equals(new String[] {"src"}, projectDirectory.list()));
     }
     
     public void testDeleteProjectDoNotDelete() throws Exception {
-        TestUserInputHandler handler = new TestUserInputHandler(UserInputHandler.USER_CANCEL);
+        TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_CANCEL);
         
         DefaultProjectOperationsImplementation.deleteProject(prj, handler);
         
-        assertTrue(handler.userConfirmationCalled);
-        assertTrue(handler.enableData);
-        assertFalse(handler.getProgressHandleCalled);
-        assertFalse(handler.deleteCalled);
+        assertTrue(handler.confirmationDialogCalled);
         
         assertTrue(projectDirectory.exists());
         List/*<String>*/ items = Arrays.asList(projectDirectory.list());
@@ -125,14 +117,11 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
         createProject(projdir2);
         
-        TestUserInputHandler handler = new TestUserInputHandler(UserInputHandler.USER_OK_ALL);
+        TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_OK_ALL);
         
         DefaultProjectOperationsImplementation.deleteProject(prj, handler);
         
-        assertTrue(handler.userConfirmationCalled);
-        assertTrue(handler.enableData);
-        assertTrue(handler.getProgressHandleCalled);
-        assertTrue(handler.deleteCalled);
+        assertTrue(handler.confirmationDialogCalled);
         
         assertTrue(projectDirectory.exists());
         assertTrue(Arrays.equals(new String[] {"proj2"}, projectDirectory.list()));
@@ -150,14 +139,11 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
         dpoi.setExternalFile(extDir);
         
-        TestUserInputHandler handler = new TestUserInputHandler(UserInputHandler.USER_OK_ALL);
+        TestUserInputHandler handler = new TestUserInputHandler(TestUserInputHandler.USER_OK_ALL);
         
         DefaultProjectOperationsImplementation.deleteProject(prj, handler);
         
-        assertTrue(handler.userConfirmationCalled);
-        assertTrue(handler.enableData);
-        assertTrue(handler.getProgressHandleCalled);
-        assertTrue(handler.deleteCalled);
+        assertTrue(handler.confirmationDialogCalled);
         
         assertFalse(projectDirectory.exists());
         
@@ -166,33 +152,33 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
     
     private static final class TestUserInputHandler implements UserInputHandler {
         
+        public static final int USER_CANCEL = 1;
+        public static final int USER_OK_METADATA = 2;
+        public static final int USER_OK_ALL = 3;
+
         private int answer;
-        private ProgressHandle handle;
         
-        private boolean userConfirmationCalled;
-        private boolean enableData;
-        private boolean getProgressHandleCalled;
-        private boolean deleteCalled;
+        private boolean confirmationDialogCalled;
         
         public TestUserInputHandler(int answer) {
             this.answer = answer;
-            this.handle = ProgressHandleFactory.createHandle("test");
+            this.confirmationDialogCalled = false;
         }
-        
-        public int userConfirmation(String displayName, String projectFolder, boolean enableData) {
-            userConfirmationCalled = true;
-            this.enableData = enableData;
-            return answer;
-        }
-        
-        public ProgressHandle getProgressHandle() {
-            getProgressHandleCalled = true;
-            return handle;
-        }
-        
-        public void delete(Runnable r) {
-            deleteCalled = true;
-            r.run();
+
+        public void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
+            confirmationDialogCalled = true;
+            
+            if (answer == USER_CANCEL) {
+                return ;
+            }
+            
+            if (answer == USER_OK_ALL) {
+                ((DefaultProjectDeletePanel) panel).setDeleteSources(true);
+            } else {
+                ((DefaultProjectDeletePanel) panel).setDeleteSources(false);
+            }
+            
+            executor.execute();
         }
         
     }

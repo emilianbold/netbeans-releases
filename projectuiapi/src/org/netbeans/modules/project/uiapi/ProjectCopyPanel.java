@@ -200,6 +200,8 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
 
+        jPanel3.setLayout(new java.awt.BorderLayout());
+
         jPanel3.add(ProgressHandleFactory.createProgressComponent(handle));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -311,7 +313,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectFolder.setText(projectFolderFile.getAbsolutePath());
     }
     
-    public boolean isValid() {
+    public boolean isPanelValid() {
         return " ".equals(errorMessage.getText());
     }
 

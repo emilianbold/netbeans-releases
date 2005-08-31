@@ -117,20 +117,10 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     public static void deleteProject(final Project project) {
-        Runnable r = new Runnable() {
-            public void run() {
-                deleteProject(project, new GUIUserInputHandler());
-            }
-        };
-        
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
+        deleteProject(project, new GUIUserInputHandler());
     }
     
-    /*package private*/static void deleteProject(final Project project, final UserInputHandler handler) {
+    static void deleteProject(final Project project, UserInputHandler handler) {
         String displayName = getDisplayName(project);
         FileObject projectFolder = project.getProjectDirectory();
         
@@ -138,9 +128,9 @@ public final class DefaultProjectOperationsImplementation {
             ERR.log(ErrorManager.INFORMATIONAL, "delete started: " + displayName); // NOI18N
         }
         
-        List/*<FileObject>*/ metadataFiles = ProjectOperations.getMetadataFiles(project);
-        List/*<FileObject>*/ dataFiles = ProjectOperations.getDataFiles(project);
-        List/*<FileObject>*/ allFiles = new ArrayList/*<FileObject>*/();
+        final List/*<FileObject>*/ metadataFiles = ProjectOperations.getMetadataFiles(project);
+        final List/*<FileObject>*/ dataFiles = ProjectOperations.getDataFiles(project);
+        final List/*<FileObject>*/ allFiles = new ArrayList/*<FileObject>*/();
         
         allFiles.addAll(metadataFiles);
         allFiles.addAll(dataFiles);
@@ -153,31 +143,20 @@ public final class DefaultProjectOperationsImplementation {
             }
         }
         
-        int userAnswer = handler.userConfirmation(displayName, FileUtil.getFileDisplayName(projectFolder), !dataFiles.isEmpty());
-        List/*<FileObject>*/ toDeleteImpl = null;
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption"));
+        final DefaultProjectDeletePanel deletePanel = new DefaultProjectDeletePanel(handle, displayName, FileUtil.getFileDisplayName(projectFolder), !dataFiles.isEmpty());
         
-        switch (userAnswer) {
-            case UserInputHandler.USER_CANCEL:
-                return ;
-            case UserInputHandler.USER_OK_METADATA:
-                toDeleteImpl = metadataFiles;
-                break;
-            case UserInputHandler.USER_OK_ALL:
-                toDeleteImpl = allFiles;
-                break;
-            default:
-                throw new IllegalStateException("Invalid user answer: " + userAnswer);
-        }
+        String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
         
-        final ProgressHandle handle = handler.getProgressHandle();
-        final List/*<FileObject>*/ toDelete = toDeleteImpl;
-        final boolean[] result = new boolean[1];
-        
-        OpenProjects.getDefault().close(new Project[] {project});
-        
-        handler.delete(new Runnable() {
-            public void run() {
-                result[0] = performDelete(project, toDelete, handle);
+        handler.showConfirmationDialog(deletePanel, project, caption, "Yes", "No", true, new Executor() {
+            public void execute() {
+                OpenProjects.getDefault().close(new Project[] {project});
+                
+                if (deletePanel.isDeleteSources()) {
+                    performDelete(project, allFiles, handle);
+                } else {
+                    performDelete(project, metadataFiles, handle);
+                }
             }
         });
         
@@ -186,101 +165,16 @@ public final class DefaultProjectOperationsImplementation {
         }
     }
     
-    /*package private*/interface UserInputHandler {
-        
-        public int USER_CANCEL = 1;
-        public int USER_OK_METADATA = 2;
-        public int USER_OK_ALL = 3;
-        
-        public abstract int userConfirmation(String displayName, String projectFolder, boolean enableData);
-        
-        public abstract ProgressHandle getProgressHandle();
-        
-        public abstract void delete(Runnable r);
-        
+    static interface UserInputHandler {
+        void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor);
     }
     
     private static final class GUIUserInputHandler implements UserInputHandler {
         
-        public int userConfirmation(String displayName, String projectFolder, boolean enableData) {
-            DefaultProjectDeletePanel deletePanel = new DefaultProjectDeletePanel(displayName, projectFolder, enableData);
-            
-            String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
-            
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(deletePanel, caption, NotifyDescriptor.YES_NO_OPTION);
-            
-            if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-                if (deletePanel.isDeleteSources()) {
-                    return USER_OK_ALL;
-                } else {
-                    return USER_OK_METADATA;
-                }
-            } else {
-                return USER_CANCEL;
-            }
+        public void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
+            DefaultProjectOperationsImplementation.showConfirmationDialog(panel, project, caption, confirmButton, cancelButton, doSetMessageType, executor);
         }
         
-        private ProgressHandle handle = null;
-        
-        public synchronized ProgressHandle getProgressHandle() {
-            if (handle == null) {
-                handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption"));
-            }
-            
-            return handle;
-        }
-        
-        public void delete(final Runnable r) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    r.run();
-		    
-                    if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                        ERR.log(ErrorManager.INFORMATIONAL, "delete finished"); // NOI18N
-                    }
-                }
-            });
-        }
-        
-    }
-    
-    private static JComponent createProgressDialog(ProgressHandle handle) {
-        JPanel dialog = new JPanel();
-        
-        GridBagConstraints gridBagConstraints;
-        
-        JLabel jLabel1 = new JLabel();
-        JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
-        JPanel padding = new JPanel();
-        
-        dialog.setLayout(new java.awt.GridBagLayout());
-        
-        jLabel1.setText(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Deleting_Project"));
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new Insets(12, 12, 0, 12);
-        dialog.add(jLabel1, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(12, 12, 0, 12);
-        dialog.add(progress, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL | GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new Insets(12, 12, 12, 12);
-        dialog.add(padding, gridBagConstraints);
-        
-        return dialog;
     }
     //</editor-fold>
     
@@ -289,7 +183,7 @@ public final class DefaultProjectOperationsImplementation {
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Copy Project");
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, false);
         
-        showConfirmationDialog(panel, project, "Copy Project", "Copy", new Executor() {
+        showConfirmationDialog(panel, project, "Copy Project", "Copy", null, false, new Executor() {
             public void execute() {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
@@ -343,7 +237,7 @@ public final class DefaultProjectOperationsImplementation {
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Move Project");
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, true);
         
-        showConfirmationDialog(panel, project, "Move Project", "Move", new Executor() {
+        showConfirmationDialog(panel, project, "Move Project", "Move", null, false, new Executor() {
             public void execute() {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
@@ -362,7 +256,7 @@ public final class DefaultProjectOperationsImplementation {
         final ProgressHandle handle = ProgressHandleFactory.createHandle("Rename Project");
         final DefaultProjectRenamePanel panel = new DefaultProjectRenamePanel(handle, project, nueName);
         
-        showConfirmationDialog(panel, project, "Rename Project", "Rename", new Executor() {
+        showConfirmationDialog(panel, project, "Rename Project", "Rename", null, false, new Executor() {
             
             public void execute() {
                 String nueName = panel.getNewName();
@@ -484,23 +378,23 @@ public final class DefaultProjectOperationsImplementation {
         return result;
     }
     
-    private static void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, final Executor executor) {
+    private static void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
         final JButton confirm = new JButton(confirmButton);
-        final JButton cancel  = new JButton("Cancel");
+        final JButton cancel  = new JButton(cancelButton == null ? "Cancel" : cancelButton);
         
         assert panel instanceof InvalidablePanel;
         
         ((InvalidablePanel) panel).addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                confirm.setEnabled(((InvalidablePanel) panel).isValid());
+                confirm.setEnabled(((InvalidablePanel) panel).isPanelValid());
             }
         });
         
-        confirm.setEnabled(panel.isValid());
+        confirm.setEnabled(((InvalidablePanel) panel).isPanelValid());
         
         final Dialog[] dialog = new Dialog[1];
         
-        DialogDescriptor dd = new DialogDescriptor(wrapPanel(panel), caption, true, new Object[] {confirm, cancel}, confirm, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+        DialogDescriptor dd = new DialogDescriptor(doSetMessageType ? panel : wrapPanel(panel), caption, true, new Object[] {confirm, cancel}, confirm, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == confirm) {
                     confirm.setEnabled(false);
@@ -532,6 +426,10 @@ public final class DefaultProjectOperationsImplementation {
             }
         });
         
+        if (doSetMessageType) {
+            dd.setMessageType(NotifyDescriptor.QUESTION_MESSAGE);
+        }
+        
         dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
         
         dialog[0].setVisible(true);
@@ -539,14 +437,14 @@ public final class DefaultProjectOperationsImplementation {
         dialog[0] = null;
     }
     
-    private static interface Executor {
+    static interface Executor {
         public void execute();
     }
     
     public static interface InvalidablePanel {
         public void addChangeListener(ChangeListener l);
         public void removeChangeListener(ChangeListener l);
-        public boolean isValid();
+        public boolean isPanelValid();
         public void showProgress();
     }
     //</editor-fold>
