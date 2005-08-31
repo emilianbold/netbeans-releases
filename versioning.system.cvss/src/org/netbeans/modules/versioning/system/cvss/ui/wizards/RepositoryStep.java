@@ -397,11 +397,13 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
                 proxyDescriptor = CvsRootSettings.getProxyFor(root);
             }
             if (CVSRoot.METHOD_EXT.equals(root.getMethod())) {
-                CvsRootSettings.ExtSettings extSettings = CvsRootSettings.getExtSettingsFor(root);
-                repositoryPanel.internalSshRadioButton.setSelected(extSettings.extUseInternalSsh);
-                repositoryPanel.extPasswordField.setText(extSettings.extPassword);
-                repositoryPanel.extREmemberPasswordCheckBox.setSelected(extSettings.extRememberPassword);
-                repositoryPanel.extCommandTextField.setText(extSettings.extCommand);
+                if (CvsRootSettings.hasExtSettingsFor(root)) {
+                    CvsRootSettings.ExtSettings extSettings = CvsRootSettings.getExtSettingsFor(root);
+                    repositoryPanel.internalSshRadioButton.setSelected(extSettings.extUseInternalSsh);
+                    repositoryPanel.extPasswordField.setText(extSettings.extPassword);
+                    repositoryPanel.extREmemberPasswordCheckBox.setSelected(extSettings.extRememberPassword);
+                    repositoryPanel.extCommandTextField.setText(extSettings.extCommand);
+                }
             }
             schedulePasswordUpdate();
         }
