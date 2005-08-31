@@ -62,7 +62,6 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor.Instanti
         
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
-        dir = dir.createFolder(name);
         unZipFile(template.getInputStream(), dir);
         
         Project p = ProjectManager.getDefault().findProject(dir);
