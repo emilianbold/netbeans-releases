@@ -75,6 +75,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="ReferenceHelper.addReference-change-of-target-property-file">
+            <api name="general"/>
+            <summary>Semantic changes in the ReferenceHelper behavior</summary>
+            <version major="1" minor="10"/>
+            <date day="28" month="8" year="2005"/>
+            <author login="tzezula"/>
+            <compatibility semantic="yes"/>
+            <description>
+                The ReferenceHelper was changed to support better sharability of
+                projects. The collocated references are stored both into the project
+                properties (as relative) and private properties (as absolute)
+            </description>
+            <issue number="63401"/>
+        </change>
 
         <change id="delete-support">
             <api name="general"/>

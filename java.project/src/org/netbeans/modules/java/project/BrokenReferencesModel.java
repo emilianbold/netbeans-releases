@@ -362,16 +362,8 @@ public class BrokenReferencesModel extends AbstractListModel {
         final String reference = getOneReference(index).ID;
         FileObject myProjDirFO = helper.getProjectDirectory();
         File myProjDir = FileUtil.toFile(myProjDirFO);
-        final String propertiesFile;
-        final String path;
-        if (CollocationQuery.areCollocated(myProjDir, file)) {
-            propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-            path = PropertyUtils.relativizeFile(myProjDir, file);
-            assert path != null : "expected relative path from " + myProjDir + " to " + file; // NOI18N
-        } else {
-            propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-            path = file.getAbsolutePath();
-        }
+        final String propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
+        final String path = file.getAbsolutePath();
         Project p;
         try {
             p = ProjectManager.getDefault().findProject(myProjDirFO);
@@ -389,13 +381,10 @@ public class BrokenReferencesModel extends AbstractListModel {
                     }
                     
                     // #47541 - check that property is not defined in opposite
-                    // property file and delete it if it is
-                    String oppositePropertiesFile = (propertiesFile.equals(AntProjectHelper.PROJECT_PROPERTIES_PATH) ? 
-                        AntProjectHelper.PRIVATE_PROPERTIES_PATH : AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    props = helper.getProperties(oppositePropertiesFile);
+                    props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     if (props.containsKey(reference)) {
                         props.remove(reference);
-                        helper.putProperties(oppositePropertiesFile, props);
+                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     }
                     
                     if (proj != null) {

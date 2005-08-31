@@ -293,42 +293,62 @@ public final class ReferenceHelper {
      * @return was there any change or not
      */
     private boolean setPathProperty(File base, File path, String propertyName) {
-        String value;
-        String propertiesFile;
-        if (CollocationQuery.areCollocated(base, path)) {
+        String[] values;
+        String[] propertiesFiles;
+        
+        String relativePath = relativizeFileToExtraBaseFolders(path);
+        // try relativize against external base dirs
+        if (relativePath != null) {
+            propertiesFiles = new String[] {
+                AntProjectHelper.PROJECT_PROPERTIES_PATH
+            };
+            values = new String[] {
+                relativePath
+            };
+        }        
+        else if (CollocationQuery.areCollocated(base, path)) {
             // Fine, using a relative path to subproject.
-            value = PropertyUtils.relativizeFile(base, path);
-            assert value != null : "These dirs are not really collocated: " + base + " & " + path;
-            propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-        } else {
-            // try relativize against external base dirs
-            value = relativizeFileToExtraBaseFolders(path);
-            if (value != null) {
-                propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
-            } else {
-                // use an absolute path.
-                propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
-                value = path.getAbsolutePath();
-            }
-            
+            relativePath = PropertyUtils.relativizeFile(base, path);
+            assert relativePath != null : "These dirs are not really collocated: " + base + " & " + path;
+            values = new String[] {
+                relativePath,
+                path.getAbsolutePath()
+            };            
+            propertiesFiles = new String[] {
+                AntProjectHelper.PROJECT_PROPERTIES_PATH,
+                AntProjectHelper.PRIVATE_PROPERTIES_PATH,
+            };
+        } else {                        
+            // use an absolute path.
+            propertiesFiles = new String[] {
+                AntProjectHelper.PRIVATE_PROPERTIES_PATH
+            };
+            values = new String[] {
+                path.getAbsolutePath()
+            };            
         }
-        EditableProperties props = h.getProperties(propertiesFile);
-        if (!value.equals(props.getProperty(propertyName))) {
-            props.put(propertyName, value);
-            h.putProperties(propertiesFile, props);
+        
+        boolean metadataChanged = false;
+        for (int i=0; i<propertiesFiles.length; i++) {
+            EditableProperties props = h.getProperties(propertiesFiles[i]);
+            if (!values[i].equals(props.getProperty(propertyName))) {
+                props.put(propertyName, values[i]);
+                h.putProperties(propertiesFiles[i], props);
+                metadataChanged = true;
+            }
+        }
+        
+        if (propertiesFiles.length == 1) {                    
             // check presence of this property in opposite property file and
             // remove it if necessary
-            propertiesFile = (propertiesFile == AntProjectHelper.PROJECT_PROPERTIES_PATH ? 
+            String propertiesFile = (propertiesFiles[0] == AntProjectHelper.PROJECT_PROPERTIES_PATH ? 
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH : AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            props = h.getProperties(propertiesFile);
+            EditableProperties props = h.getProperties(propertiesFile);
             if (props.remove(propertyName) != null) {
                 h.putProperties(propertiesFile, props);
             }
-            return true;
-        } else {
-            return false;
         }
-        
+        return metadataChanged;
     }
     
     /**
@@ -1298,7 +1318,7 @@ public final class ReferenceHelper {
             
             //TODO: extra base dir relativization:
             if (CollocationQuery.areCollocated(absolutePath, projectDir)) {
-                privRemove.add(key);
+// Don't remove it from private properties and add the relative path to project properties   privRemove.add(key);
                 pubAdd.put(key, PropertyUtils.relativizeFile(projectDir, absolutePath));
             }
         }

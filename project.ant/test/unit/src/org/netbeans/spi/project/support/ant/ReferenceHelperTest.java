@@ -30,10 +30,13 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.Util;
+import org.netbeans.modules.queries.AlwaysRelativeCollocationQuery;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -113,11 +116,17 @@ public class ReferenceHelperTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        super.setUp();
-        TestUtil.setLookup(new Object[] {
+        super.setUp();        
+        Object[] instances = new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
             AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()),
-        });
+        };
+        ClassLoader l = ReferenceHelper.class.getClassLoader();
+        TestUtil.setLookup (new ProxyLookup (new Lookup[] {
+            Lookups.fixed(instances),
+            Lookups.singleton(l),
+            Lookups.exclude(Lookups.metaInfServices(l), new Class[] {AlwaysRelativeCollocationQuery.class})
+        }));
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
@@ -618,14 +627,20 @@ public class ReferenceHelperTest extends NbTestCase {
      * Check that methods to add foreign file references really work.
      * @throws Exception in case of unexpected failure
      */
-    public void testForeignFileReferences() throws Exception {
+    public void testForeignFileReferences() throws Exception {        
         // test collocated foreign project reference
         File f = new File(new File(FileUtil.toFile(sisterprojdir), "dist"), "proj2.jar");
         assertEquals("can add a ref to an artifact", "${reference.proj2.dojar}", r.createForeignFileReference(f, "jar"));
         assertEquals("creating reference second time must return already existing ID", "${reference.proj2.dojar}", r.createForeignFileReference(f, "jar"));
-        assertNotNull("ref added", r.getRawReference("proj2", "dojar"));
-        String refval = pev.getProperty("reference.proj2.dojar");
-        assertEquals("reference correctly evaluated", "../proj2/dist/proj2.jar", refval);
+        assertNotNull("ref added", r.getRawReference("proj2", "dojar"));                
+        EditableProperties privateProps = h.getProperties (AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        String refval = privateProps.getProperty("project.proj2");        
+        assertEquals("reference correctly stored into private.properties", FileUtil.toFile(sisterprojdir).getAbsolutePath(), refval);        
+        EditableProperties projectProps = h.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        refval = projectProps.getProperty("project.proj2");        
+        assertEquals("reference correctly stored into project.properties", "../proj2", refval);        
+        refval = pev.getProperty("reference.proj2.dojar");
+        assertEquals("reference correctly evaluated", f.getAbsolutePath(), refval);                
         assertEquals("reference correctly evaluated", f, h.resolveFile(refval));
         AntArtifact art = r.getForeignFileReferenceAsArtifact("${reference.proj2.dojar}");
         assertNotNull("got the reference back", art);
@@ -678,7 +693,10 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("Duplicate reference created", ref, ref2);
         assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar}", ref);
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated", "../j a r s/m y l i b.jar", refval);
+        assertEquals("Reference was not correctly evaluated from project.properties", "../j a r s/m y l i b.jar", refval);
+        refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertEquals("Reference was not correctly evaluated from private.properties", f.getAbsolutePath(), refval);
+        
         assertEquals("Reference was not correctly evaluated", f, h.resolveFile(refval));
         collocatedLib = scratch.createFolder("jars2").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
@@ -686,8 +704,10 @@ public class ReferenceHelperTest extends NbTestCase {
         ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
         assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar-1}", ref);
-        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated", "../jars2/m y l i b.jar", refval);
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));        
+        assertEquals("Reference was not correctly evaluated form project.properties", "../jars2/m y l i b.jar", refval);        
+        refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));        
+        assertEquals("Reference was not correctly evaluated from private.properties", f.getAbsolutePath(), refval);                        
         collocatedLib = scratch.createFolder("jars3").createData("m y l i b.jar");
         f = FileUtil.toFile(collocatedLib);
         ref = r.createForeignFileReference(f, "jar");
@@ -695,7 +715,10 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("Duplicate reference created", ref, ref2);
         assertEquals("Foreign file reference was not correctly created", "${file.reference.m_y_l_i_b.jar-2}", ref);
         refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
-        assertEquals("Reference was not correctly evaluated", "../jars3/m y l i b.jar", refval);
+        assertEquals("Reference was not correctly evaluated from project.properties", "../jars3/m y l i b.jar", refval);
+        refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertEquals("Reference was not correctly evaluated from private.properties", f.getAbsolutePath(), refval);
+        
         assertTrue("Reference was not removed", r.destroyReference(ref));
         assertFalse("There should not be any reference", r.destroyReference(ref));
         refval = pev.evaluate(ref);
@@ -708,7 +731,9 @@ public class ReferenceHelperTest extends NbTestCase {
         ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
         assertEquals("Foreign file reference was not correctly created", "${file.reference.mylib2.jar}", ref);
-        refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertNull ("Foreign file reference is stored into project.properties",refval);
+        refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));        
         assertEquals("Reference was not correctly evaluated", f.getAbsolutePath(), refval);
         assertEquals("Reference was not correctly evaluated", f, h.resolveFile(refval));
         nonCollocatedLib = scratch.getFileObject("separate").createFolder("jars2").createData("mylib2.jar");
@@ -717,6 +742,8 @@ public class ReferenceHelperTest extends NbTestCase {
         ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
         assertEquals("Foreign file reference was not correctly created", "${file.reference.mylib2.jar-1}", ref);
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertNull ("Foreign file reference is stored into project.properties",refval);
         refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
         assertEquals("Reference was not correctly evaluated", f.getAbsolutePath(), refval);
         nonCollocatedLib = scratch.getFileObject("separate").createFolder("jars3").createData("mylib2.jar");
@@ -725,13 +752,15 @@ public class ReferenceHelperTest extends NbTestCase {
         ref2 = r.createForeignFileReference(f, "jar");
         assertEquals("Duplicate reference created", ref, ref2);
         assertEquals("Foreign file reference was not correctly created", "${file.reference.mylib2.jar-2}", ref);
+        refval = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
+        assertNull ("Foreign file reference is stored into project.properties",refval);
         refval = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(ref.substring(2, ref.length()-1));
         assertEquals("Reference was not correctly evaluated", f.getAbsolutePath(), refval);
         r.destroyForeignFileReference(ref);
         refval = pev.evaluate(ref);
         assertEquals("Reference was not removed", ref, refval);
         
-    }
+    } 
     
     public void testToAntArtifact() throws Exception {
         ReferenceHelper.RawReference ref = new ReferenceHelper.RawReference(

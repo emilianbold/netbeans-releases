@@ -77,6 +77,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+    <change id="BrokenReferencesModel.updateReference">
+        <api name="general"/>
+        <summary>Semantic changes in the BrokenReferencesModel.updateReference behavior</summary>
+        <version major="1" minor="6"/>
+        <date day="28" month="8" year="2005"/>
+        <author login="tzezula"/>
+        <compatibility semantic="yes"/>
+        <description>
+                The BrokenReferencesModel was changed to support better sharability of
+                projects. The BrokenReferencesModel always stores the resolved broken reference
+                into the private properties as absolute files and does not affect the project properties.
+        </description>
+        <issue number="63401"/>
+    </change>
     <change id="JavaProjectConstants">
             <api name="general"/>
             <summary>Added artifact type representing folder</summary>
