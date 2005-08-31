@@ -58,7 +58,7 @@ final class BasicInfoWizardPanel extends BasicWizardPanel {
             visualPanel = new BasicInfoVisualPanel(getSettings(), wizardType);
             visualPanel.addPropertyChangeListener(this);
             visualPanel.setName(getMessage("LBL_BasicInfoPanel_Title")); // NOI18N
-            visualPanel.checkForm();
+            visualPanel.updateAndCheck();
         }
         return visualPanel;
     }

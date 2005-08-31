@@ -53,13 +53,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private NewModuleProjectData data;
     
-    private boolean isNetBeansOrg;
     private int wizardType;
     
     private ButtonModel lastSelectedType;
     private static String lastSelectedSuite;
     private boolean wasLocationUpdate;
     private static boolean wasSuiteModuleSelected = true;
+    private boolean moduleTypeGroupAttached = true;
     
     /** Creates new form BasicInfoVisualPanel */
     public BasicInfoVisualPanel(WizardDescriptor setting, int wizType) {
@@ -129,7 +129,15 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         return locationValue.getText().trim();
     }
     
+    private File getLocationFile() {
+        return new File(getLocationValue());
+    }
+    
     private void updateEnabled() {
+        boolean isNetBeansOrg = isNetBeansOrgFolder();
+        standAloneModule.setEnabled(!isNetBeansOrg);
+        suiteModule.setEnabled(!isNetBeansOrg);
+        
         boolean standalone = standAloneModule.isSelected();
         boolean suiteModuleSelected = suiteModule.isSelected();
         platform.setEnabled(standalone);
@@ -140,101 +148,60 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         browseSuiteButton.setEnabled(suiteModuleSelected);
     }
     
-    void checkForm() {
-        // check module name
-        String name = getNameValue();
-        if ("".equals(name)) {
-            setErrorMessage(getMessage("MSG_NameCannotBeEmpty")); // NOI18N
-            return;
-        }
-        updateAndCheck(true);
+    void updateAndCheck() {
+        updateGUI();
         
-        // check module location
-        File fLocation = new File(getLocationValue());
-        if (!fLocation.exists()) {
-            setErrorMessage(getMessage("MSG_LocationMustExist")); // NOI18N
-            return;
-        }
-        if (!fLocation.canWrite()) {
-            updateAndCheck(false); // also update folder but doesn't check for existing folder
-            setErrorMessage(getMessage("MSG_LocationNotWritable")); // NOI18N
-            return;
+        if ("".equals(getNameValue())) {
+            setErrorMessage(getMessage("MSG_NameCannotBeEmpty"));
+        } else if ("".equals(getLocationValue())) {
+            setErrorMessage(getMessage("MSG_LocationCannotBeEmpty"));
+        } else if (suiteModule.isSelected() && moduleSuiteValue.getSelectedItem() == null) {
+            setErrorMessage(getMessage("MSG_ChooseRegularSuite"));
+        } else if (standAloneModule.isSelected() && !((NbPlatform) platformValue.getSelectedItem()).isValid()) {
+            setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid"));
+        } else if (getFolder().exists()) {
+            setErrorMessage(getMessage("MSG_ProjectFolderExists"));
+        } else if (!getLocationFile().exists()) {
+            setErrorMessage(getMessage("MSG_LocationMustExist"));
+        } else if (!getLocationFile().canWrite()) {
+            setErrorMessage(getMessage("MSG_LocationNotWritable"));
         } else {
-            updateAndCheck(true);
+            setErrorMessage(null);
         }
+    }
+    
+    private void updateGUI() {
+        if (!"".equals(getNameValue()) && !"".equals(getLocationValue())) {
+            // update project folder
+            File destFolder = getFolder();
+            folderValue.setText(destFolder.getPath());
+        }
+        
+        if (isNetBeansOrgFolder()) {
+            detachModuleTypeGroup();
+        } else {
+            attachModuleTypeGroup();
+        }
+        updateEnabled();
     }
     
     private void detachModuleTypeGroup() {
-        moduleTypeGroup.remove(standAloneModule);
-        moduleTypeGroup.remove(suiteModule);
-        standAloneModule.setSelected(false);
-        suiteModule.setSelected(false);
-    }
-    
-    /**
-     * @param alsoCheckFolderExistence - if function should also check if the
-     *        target location doesn't already exist
-     */
-    private void updateAndCheck(boolean checkFolderExistence) {
-        if ("".equals(getLocationValue()) || "".equals(getNameValue())) { // NOI18N
-            folderValue.setText("");
-            setErrorMessage(null, false);
-            return;
-        }
-        String path = getLocationValue() + File.separator + getNameValue();
-        File fFolder = FileUtil.normalizeFile(new File(path));
-        folderValue.setText(fFolder.getPath());
-        boolean isNBOrg = ModuleList.findNetBeansOrg(fFolder) != null;
-        if (isNBOrg != isNetBeansOrg) {
-            isNetBeansOrg = isNBOrg;
-            if (isNetBeansOrg) {
-                lastSelectedType = moduleTypeGroup.getSelection();
-                detachModuleTypeGroup();
-            } else {
-                moduleTypeGroup.add(standAloneModule);
-                moduleTypeGroup.add(suiteModule);
-                moduleTypeGroup.setSelected(lastSelectedType, true);
-            }
-            standAloneModule.setEnabled(!isNetBeansOrg);
-            suiteModule.setEnabled(!isNetBeansOrg);
-            typeChanged(null);
-        }
-        // check for regular module suite in case of module component
-        if (suiteModule.isSelected() && !checkModuleSuite()) {
-            return;
-        }
-        // check for regular netbeans platform in case of standalone module
-        if (standAloneModule.isSelected() && !checkNbPlatform()) {
-            return;
-        }
-        if (checkFolderExistence) {
-            if (fFolder.exists()) {
-                setErrorMessage(getMessage("MSG_ProjectFolderExists")); // NOI18N
-                return;
-            }
-        }
-        setErrorMessage(null);
-    }
-    
-    private boolean checkModuleSuite() {
-        if (moduleSuiteValue.getSelectedItem() == null) {
-            setErrorMessage(getMessage("MSG_ChooseRegularSuite")); // NOI18N
-            return false;
-        } else {
-            setErrorMessage(null);
-            return true;
+        if (moduleTypeGroupAttached) {
+            lastSelectedType = moduleTypeGroup.getSelection();
+            moduleTypeGroup.remove(standAloneModule);
+            moduleTypeGroup.remove(suiteModule);
+            standAloneModule.setSelected(false);
+            suiteModule.setSelected(false);
+            moduleTypeGroupAttached = false;
         }
     }
     
-    private boolean checkNbPlatform() {
-        // always at least the default platform is selected
-        NbPlatform plaf = (NbPlatform) platformValue.getSelectedItem();
-        if (standAloneModule.isSelected() && !plaf.isValid()) {
-            setErrorMessage(getMessage("MSG_ChosenPlatformIsInvalid")); // NOI18N
-            return false;
-        } else {
-            setErrorMessage(null);
-            return true;
+    private void attachModuleTypeGroup() {
+        if (!moduleTypeGroupAttached) {
+            moduleTypeGroup.add(standAloneModule);
+            moduleTypeGroup.add(suiteModule);
+            moduleTypeGroup.setSelected(lastSelectedType, true);
+            moduleTypeGroupAttached = true;
         }
     }
     
@@ -260,7 +227,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         data.setProjectLocation(getLocationValue());
         data.setProjectFolder(folderValue.getText());
         data.setMainProject(mainProject.isSelected());
-        data.setNetBeansOrg(isNetBeansOrg);
+        data.setNetBeansOrg(isNetBeansOrgFolder());
         data.setStandalone(standAloneModule.isSelected());
         data.setPlatform(((NbPlatform) platformValue.getSelectedItem()).getID());
         data.setSuiteRoot((String) moduleSuiteValue.getSelectedItem());
@@ -293,7 +260,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     
     private void attachDocumentListeners() {
         DocumentListener fieldsDL = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) { checkForm(); }
+            public void insertUpdate(DocumentEvent e) { updateAndCheck(); }
         };
         nameValue.getDocument().addDocumentListener(fieldsDL);
         locationValue.getDocument().addDocumentListener(fieldsDL);
@@ -302,15 +269,24 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         });
     }
     
+    private File getFolder() {
+        String destFolderS = getLocationValue() + File.separator + getNameValue();
+        return FileUtil.normalizeFile(new File(destFolderS));
+    }
+    
+    private boolean isNetBeansOrgFolder() {
+        return ModuleList.findNetBeansOrg(getFolder()) != null;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+// <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
-
+        
         moduleTypeGroup = new javax.swing.ButtonGroup();
         infoPanel = new javax.swing.JPanel();
         nameLbl = new javax.swing.JLabel();
@@ -334,11 +310,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         browseSuiteButton = new javax.swing.JButton();
         chooserFiller = new javax.swing.JLabel();
         pnlThouShaltBeholdLayout = new javax.swing.JPanel();
-
+        
+        
         setLayout(new java.awt.GridBagLayout());
-
+        
         infoPanel.setLayout(new java.awt.GridBagLayout());
-
+        
         nameLbl.setLabelFor(nameValue);
         org.openide.awt.Mnemonics.setLocalizedText(nameLbl, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ProjectName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -347,7 +324,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(nameLbl, gridBagConstraints);
-
+        
         locationLbl.setLabelFor(locationValue);
         org.openide.awt.Mnemonics.setLocalizedText(locationLbl, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ProjectLocation"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -356,7 +333,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 12);
         infoPanel.add(locationLbl, gridBagConstraints);
-
+        
         folderLbl.setLabelFor(folderValue);
         org.openide.awt.Mnemonics.setLocalizedText(folderLbl, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ProjectFolder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -365,7 +342,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         infoPanel.add(folderLbl, gridBagConstraints);
-
+        
         nameValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -374,7 +351,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         infoPanel.add(nameValue, gridBagConstraints);
-
+        
         locationValue.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -383,26 +360,26 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         infoPanel.add(locationValue, gridBagConstraints);
-
+        
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_BrowseButton_o"));
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocation(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 6, 0);
         infoPanel.add(browseButton, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.weighty = 1.0;
         infoPanel.add(filler, gridBagConstraints);
-
+        
         folderValue.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -410,7 +387,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         infoPanel.add(folderValue, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -418,14 +395,14 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(infoPanel, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(separator2, gridBagConstraints);
-
+        
         mainProject.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_SetAsMainProject"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -434,9 +411,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(mainProject, gridBagConstraints);
-
+        
         typeChooserPanel.setLayout(new java.awt.GridBagLayout());
-
+        
         moduleTypeGroup.add(standAloneModule);
         standAloneModule.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(standAloneModule, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_StandaloneModule"));
@@ -445,7 +422,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
                 typeChanged(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -454,7 +431,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         typeChooserPanel.add(standAloneModule, gridBagConstraints);
-
+        
         platform.setLabelFor(platformValue);
         org.openide.awt.Mnemonics.setLocalizedText(platform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_NetBeansPlatform"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -463,13 +440,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 18, 0, 12);
         typeChooserPanel.add(platform, gridBagConstraints);
-
+        
         platformValue.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 platformChosen(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -478,21 +455,21 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         typeChooserPanel.add(platformValue, gridBagConstraints);
-
+        
         org.openide.awt.Mnemonics.setLocalizedText(managePlatform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_ManagePlatforms"));
         managePlatform.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 managePlatformActionPerformed(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         typeChooserPanel.add(managePlatform, gridBagConstraints);
-
+        
         moduleTypeGroup.add(suiteModule);
         org.openide.awt.Mnemonics.setLocalizedText(suiteModule, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_AddToModuleSuite"));
         suiteModule.addActionListener(new java.awt.event.ActionListener() {
@@ -500,7 +477,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
                 typeChanged(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -508,7 +485,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 0, 0);
         typeChooserPanel.add(suiteModule, gridBagConstraints);
-
+        
         moduleSuite.setLabelFor(moduleSuiteValue);
         org.openide.awt.Mnemonics.setLocalizedText(moduleSuite, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "LBL_ModuleSuite"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -517,13 +494,13 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 12);
         typeChooserPanel.add(moduleSuite, gridBagConstraints);
-
+        
         moduleSuiteValue.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moduleSuiteChosen(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -532,14 +509,14 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         typeChooserPanel.add(moduleSuiteValue, gridBagConstraints);
-
+        
         org.openide.awt.Mnemonics.setLocalizedText(browseSuiteButton, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_BrowseButton_w"));
         browseSuiteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseModuleSuite(evt);
             }
         });
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -547,20 +524,20 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         typeChooserPanel.add(browseSuiteButton, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.weighty = 1.0;
         typeChooserPanel.add(chooserFiller, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(typeChooserPanel, gridBagConstraints);
-
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -569,10 +546,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(pnlThouShaltBeholdLayout, gridBagConstraints);
-
+        
     }
-    // </editor-fold>//GEN-END:initComponents
-
+// </editor-fold>//GEN-END:initComponents
+    
     private void managePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatformActionPerformed
         NbPlatformCustomizer.showCustomizer();
         platformValue.setModel(new ComponentFactory.NbPlatformListModel()); // refresh
@@ -580,7 +557,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     }//GEN-LAST:event_managePlatformActionPerformed
     
     private void platformChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformChosen
-        updateAndCheck(true);
+        updateAndCheck();
     }//GEN-LAST:event_platformChosen
     
     private void moduleSuiteChosen(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moduleSuiteChosen
@@ -590,7 +567,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
             lastSelectedSuite = suite;
             wasLocationUpdate = false;
         }
-        checkModuleSuite();
+        updateAndCheck();
     }//GEN-LAST:event_moduleSuiteChosen
     
     private void browseModuleSuite(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseModuleSuite
@@ -621,13 +598,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     }//GEN-LAST:event_browseModuleSuite
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
-        updateEnabled();
-        wasSuiteModuleSelected = suiteModule.isSelected();
-        if (wasSuiteModuleSelected) {
-            checkModuleSuite();
-        } else { // standalone module
-            checkNbPlatform();
-        }
+        updateAndCheck();
     }//GEN-LAST:event_typeChanged
     
     private void browseLocation(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocation
@@ -639,7 +610,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         }
     }//GEN-LAST:event_browseLocation
     
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JButton browseSuiteButton;
     private javax.swing.JLabel chooserFiller;
@@ -663,5 +634,5 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private javax.swing.JRadioButton standAloneModule;
     private javax.swing.JRadioButton suiteModule;
     private javax.swing.JPanel typeChooserPanel;
-    // End of variables declaration//GEN-END:variables
+// End of variables declaration//GEN-END:variables
 }
