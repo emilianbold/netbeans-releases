@@ -157,9 +157,9 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
         
         // Code templates
         javaAbbrevMap.put("forc", // NOI18N
-                "for (Iterator ${iterator} = ${collection instanceof=\"java.util.Collection\"}.iterator();"
-                + " ${iterator}.hasNext();) {\n"
-                + "    ${Object} ${elem} = (${Object}) ${iterator}.next();\n"
+                "for (Iterator ${it} = ${collection instanceof=\"java.util.Collection\"}.iterator();"
+                + " ${it}.hasNext();) {\n"
+                + "    ${Object} ${elem} = (${Object}) ${it}.next();\n"
                 + "    ${cursor}\n"
                 + "}"
         );
