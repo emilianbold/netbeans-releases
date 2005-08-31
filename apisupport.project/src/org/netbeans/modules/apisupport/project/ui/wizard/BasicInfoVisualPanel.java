@@ -60,6 +60,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     private boolean wasLocationUpdate;
     private static boolean wasSuiteModuleSelected = true;
     private boolean moduleTypeGroupAttached = true;
+    private boolean mainProjectTouched;
     
     /** Creates new form BasicInfoVisualPanel */
     public BasicInfoVisualPanel(WizardDescriptor setting, int wizType) {
@@ -79,6 +80,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
                 suiteModule.setSelected(wasSuiteModuleSelected);
                 if (wasSuiteModuleSelected) {
                     locationValue.setText((String) moduleSuiteValue.getSelectedItem());
+                    mainProject.setSelected(false);
                 } else {
                     locationValue.setText(ModuleUISettings.getDefault().getLastUsedModuleLocation());
                 }
@@ -405,6 +407,12 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         
         mainProject.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(mainProject, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_SetAsMainProject"));
+        mainProject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mainProjectActionPerformed(evt);
+            }
+        });
+        
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -549,6 +557,10 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         
     }
 // </editor-fold>//GEN-END:initComponents
+
+    private void mainProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mainProjectActionPerformed
+        mainProjectTouched = true;
+    }//GEN-LAST:event_mainProjectActionPerformed
     
     private void managePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatformActionPerformed
         NbPlatformCustomizer.showCustomizer();
@@ -598,6 +610,9 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
     }//GEN-LAST:event_browseModuleSuite
     
     private void typeChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_typeChanged
+        if (!mainProjectTouched) {
+            mainProject.setSelected(standAloneModule.isSelected());
+        }
         updateAndCheck();
     }//GEN-LAST:event_typeChanged
     
