@@ -27,6 +27,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
+import org.netbeans.util.Util;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -45,6 +46,7 @@ public final class AcceptLicense {
     /** If License was not accepted during installation user must accept it here. 
      */
     public static void showLicensePanel () throws Exception {
+        Util.setDefaultLookAndFeel();
         URL url = AcceptLicense.class.getResource("LICENSE.html"); // NOI18N
         LicensePanel licensePanel = new LicensePanel(url);
         ResourceBundle bundle = NbBundle.getBundle(AcceptLicense.class);

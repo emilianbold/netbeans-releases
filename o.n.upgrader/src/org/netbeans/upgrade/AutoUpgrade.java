@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JOptionPane;
 
+import org.netbeans.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
@@ -76,6 +77,7 @@ public final class AutoUpgrade {
     }
     
     private static boolean showUpgradeDialog (final File source) {
+        Util.setDefaultLookAndFeel();
         JOptionPane p = new JOptionPane (
             new AutoUpgradePanel (source.getAbsolutePath ()),
             JOptionPane.QUESTION_MESSAGE,
