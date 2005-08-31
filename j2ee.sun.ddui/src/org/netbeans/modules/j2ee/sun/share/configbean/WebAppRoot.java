@@ -39,6 +39,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.LocaleCharsetInfo;
 import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageDestination;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceDescription;
+import org.openide.ErrorManager;
 
 
 /** Property structure of WebAppRoot from DTD (sections that are handled
@@ -226,7 +227,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	 *  is destroyed.  See IZ 41214
 	 */
 	protected void beanRemoved(String xpath) {
-	super.beanRemoved(xpath);
+		super.beanRemoved(xpath);
 		
 		if("/web-app/servlet".equals(xpath)) {	// NOI18N
 			getPCS().firePropertyChange(SERVLET_LIST_CHANGED, false, true);
@@ -264,7 +265,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		Collection snippets = new ArrayList();
 		Snippet snipOne = new DefaultSnippet() {
 			public CommonDDBean getDDSnippet() {
-                DDProvider provider = DDProvider.getDefault();
+				DDProvider provider = DDProvider.getDefault();
 				SunWebApp swa = (SunWebApp) provider.newGraph(SunWebApp.class);
 
 //				ServletVersion servletVersion = (ServletVersion) getJ2EEModuleVersion();
@@ -274,13 +275,13 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 					swa.setContextRoot(contextRoot);
 				}
                 
-                if(errorUrl != null) {
-                    try {
-                        swa.setErrorUrl(errorUrl);
-                    } catch(VersionNotSupportedException ex) {
-                        // should not happen w/ 8.1 files.
-                    }
-                }
+				if(errorUrl != null) {
+					try {
+						swa.setErrorUrl(errorUrl);
+					} catch(VersionNotSupportedException ex) {
+						// should not happen w/ 8.1 files.
+					}
+				}
 
                                 if(classLoader != null) {
                                     if(classLoader.toString().equals("true")){       //NOI18N
@@ -303,6 +304,19 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                                         }
                                     }
                                 }
+                                
+				try {
+					int numPatterns = idempotentUrlPattern.sizeIdempotentUrlPattern();
+					if(numPatterns > 0) {
+						swa.setIdempotentUrlPattern(new boolean[numPatterns]);
+						for(int i = 0; i < numPatterns; i++) {
+							swa.setIdempotentUrlPatternUrlPattern(i, idempotentUrlPattern.getIdempotentUrlPatternUrlPattern(i));
+							swa.setIdempotentUrlPatternNumOfRetries(i, idempotentUrlPattern.getIdempotentUrlPatternNumOfRetries(i));
+						}
+					}
+				} catch(VersionNotSupportedException ex) {
+					//Should never happen
+				}
 
 				JspConfig jc = getJspConfig();
 				if(jc.sizeWebProperty() > 0) {
@@ -397,25 +411,40 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		if(null != beanGraph) {
 			contextRoot = beanGraph.getContextRoot();
             
-            try {
-                errorUrl = beanGraph.getErrorUrl();
-            } catch(VersionNotSupportedException ex) {
-                errorUrl = "";
-            }
+			try {
+				errorUrl = beanGraph.getErrorUrl();
+			} catch(VersionNotSupportedException ex) {
+				errorUrl = "";
+			}
             
-                        try{
+                        try {
                             MyClassLoader myClassLoader = beanGraph.getMyClassLoader();
-                            if(myClassLoader != null){
+                            if(myClassLoader != null) {
                                 delegate = Utils.booleanValueOf(myClassLoader.getDelegate()) ? Boolean.TRUE : Boolean.FALSE;
                                 extraClassPath = myClassLoader.getExtraClassPath();
-                                if((delegate != null) || (extraClassPath != null)) classLoader = Boolean.TRUE;
+                                if((delegate != null) || (extraClassPath != null)) {
+                                    classLoader = Boolean.TRUE;
+                                }
                             }
-                        }catch(VersionNotSupportedException ex){
+                        } catch(VersionNotSupportedException ex) {
                             //Should never happen
                             delegate = Boolean.TRUE;
                             classLoader = Boolean.TRUE;
                         }
-
+                        
+                        try {
+                            int numPatterns = beanGraph.sizeIdempotentUrlPattern();
+                            if(numPatterns > 0) {
+                                idempotentUrlPattern.setIdempotentUrlPattern(new boolean[numPatterns]);
+                                for(int i = 0; i < numPatterns; i++) {
+                                    idempotentUrlPattern.setIdempotentUrlPatternUrlPattern(i, beanGraph.getIdempotentUrlPatternUrlPattern(i));
+                                    idempotentUrlPattern.setIdempotentUrlPatternNumOfRetries(i, beanGraph.getIdempotentUrlPatternNumOfRetries(i));
+                                }
+                            }
+                        } catch(VersionNotSupportedException ex) {
+                            //Should never happen
+                        }
+                        
 			JspConfig jc = beanGraph.getJspConfig();
 			if(jc != null && jc.sizeWebProperty() > 0) {
 				jspConfig = (JspConfig) jc.clone();
@@ -452,11 +481,13 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}	
 	
 	protected void clearProperties() {
-        StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
+		DDProvider provider = DDProvider.getDefault();
+		StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
         
 		contextRoot = null;
-        errorUrl = null;
+		errorUrl = null;
 		extraClassPath = null;
+		idempotentUrlPattern = (SunWebApp) provider.newGraph(SunWebApp.class);
 		jspConfig = beanFactory.createJspConfig();
 		properties = null;
 		messageDestinations = null;
@@ -468,7 +499,7 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	}
 	
 	protected void setDefaultProperties() {
-        StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
+		StorageBeanFactory beanFactory = StorageBeanFactory.getDefault();
         
 		// Add two properties to make developing and debugging JSP's easier by
 		// by default for new web applications.]
@@ -487,10 +518,8 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                 classLoader = Boolean.TRUE;
                 delegate = Boolean.TRUE;
 
-                
-        
-        // errorUrl is required for SJSAS 8.1
-        errorUrl = "";
+		// errorUrl is required for SJSAS 8.1
+		errorUrl = "";
 	}	
 	
 	/* ------------------------------------------------------------------------
@@ -521,8 +550,8 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 			}
  		}
 		
-        return webAppRootFactoryMap;
-    }	
+		return webAppRootFactoryMap;
+	}	
 
 	/* ------------------------------------------------------------------------
 	 * Property support
@@ -531,8 +560,8 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	/** Holds value of property contextRoot. */
 	private String contextRoot;
 	
-    /** Holds value of property errorUrl. */
-    private String errorUrl;
+	/** Holds value of property errorUrl. */
+	private String errorUrl;
     
 	/** Holds value of property classLoader. */
 	private Boolean classLoader;
@@ -542,7 +571,10 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	
 	/** Holds value of property delegate. */
 	private Boolean delegate;
-	
+
+    /** Holds value of property idempotentUrlPattern */
+    private SunWebApp idempotentUrlPattern;
+        
 	/** Holds value of property jspConfig. */
 	private JspConfig jspConfig;
 	
@@ -688,7 +720,53 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		delegate = newDelegateAsBoolean;
 		getPCS().firePropertyChange("delegate", oldDelegate, delegate);		
 	}
-	
+        
+    /** Getter for property idempotentUrlPattern.
+     * @return SunWebApp instance that only holds the list of idempotentUrlPatterns
+     *  that have been set.
+     */
+    public SunWebApp getIdempotentUrlPattern() {
+        return idempotentUrlPattern;
+    }
+    
+    /** Setter for property idempotentUrlPattern.
+     * @param iup New value of property idempotentUrlPattern
+     *
+     * @throws PropertyVetoException
+     */
+    public void setIdempotentUrlPattern(SunWebApp newIdempotentUrlPattern) throws java.beans.PropertyVetoException {
+        SunWebApp oldIdempotentUrlPattern = idempotentUrlPattern;
+        getVCS().fireVetoableChange("idempotentUrlPatterns", oldIdempotentUrlPattern, newIdempotentUrlPattern);
+        idempotentUrlPattern = newIdempotentUrlPattern;
+        getPCS().firePropertyChange("idempotentUrlPatterns", oldIdempotentUrlPattern, idempotentUrlPattern);
+    }
+    
+// !PW May not need these.    
+//    public void addIdempotentUrlPattern(String urlPattern, String numRetries) throws java.beans.PropertyVetoException {
+//        getVCS().fireVetoableChange("idempotentUrlPattern", null, urlPattern);	// NOI18N
+//        if(idempotentUrlPattern == null) {
+//            DDProvider provider = DDProvider.getDefault();
+//            idempotentUrlPattern = (SunWebApp) provider.newGraph(SunWebApp.class);
+//        }
+//
+//        try {
+//            int index = idempotentUrlPattern.addIdempotentUrlPattern(true);
+//            idempotentUrlPattern.setIdempotentUrlPatternUrlPattern(index, urlPattern);
+//            idempotentUrlPattern.setIdempotentUrlPatternNumOfRetries(index, numRetries);
+//        } catch (VersionNotSupportedException ex) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//        }
+//
+//        getPCS().firePropertyChange("idempotentUrlPattern", null, urlPattern );	// NOI18N
+//    }
+//
+//    public void removeIdempotentUrlPattern(String urlPattern) throws java.beans.PropertyVetoException {
+//        getVCS().fireVetoableChange("idempotentUrlPattern", oldProperty, null);	// NOI18N
+//        FIXME unfinished.
+//        properties.remove(oldProperty);
+//        getPCS().firePropertyChange("idempotentUrlPattern", oldProperty, null );	// NOI18N
+//    }
+        
 	/** Getter for property jspConfig.
 	 * @return Value of property jspConfig.
 	 *
