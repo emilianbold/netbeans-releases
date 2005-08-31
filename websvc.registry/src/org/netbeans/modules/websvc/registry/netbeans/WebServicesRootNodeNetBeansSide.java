@@ -75,10 +75,6 @@ public class WebServicesRootNodeNetBeansSide extends AbstractNode implements Web
     }
     
     public HelpCtx getHelpCtx() {
-        //if(realNode != null) {
-        //    return realNode.getHelpCtx();
-        //}
-        //return HelpCtx.DEFAULT_HELP;
         return new HelpCtx(WebServicesRootNodeInterface.class);
     }
     
