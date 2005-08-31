@@ -88,6 +88,7 @@ public abstract class InstanceProperties {
      * Returns instance properties for the server instance.
      *
      * @param url the url connection string to get the instance deployment manager.
+     *   PENDING - should the deployment manager be connected or not? Is it legal to pass a disconnected URL?
      * @return the InstanceProperties object, null if instance does not exists.
      */
     public static InstanceProperties getInstanceProperties(String url) {
