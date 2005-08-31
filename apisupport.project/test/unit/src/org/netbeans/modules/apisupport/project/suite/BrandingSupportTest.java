@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -41,7 +42,7 @@ public class BrandingSupportTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         File suiteDir  = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
         FileObject fo = FileUtil.toFileObject(suiteDir);
         SuiteProject suitePrj = (SuiteProject) ProjectManager.getDefault().findProject(fo);
         assertNotNull(suitePrj);

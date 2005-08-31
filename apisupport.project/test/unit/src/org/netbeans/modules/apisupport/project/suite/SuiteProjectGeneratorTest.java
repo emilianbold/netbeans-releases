@@ -17,6 +17,7 @@ import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.TestBase;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -42,7 +43,7 @@ public class SuiteProjectGeneratorTest extends TestBase {
     
     public void testCreateSuiteProject() throws Exception {
         File targetPrjDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(targetPrjDir, "default");
+        SuiteProjectGenerator.createSuiteProject(targetPrjDir, NbPlatform.PLATFORM_ID_DEFAULT);
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         Project p = ProjectManager.getDefault().findProject(fo);

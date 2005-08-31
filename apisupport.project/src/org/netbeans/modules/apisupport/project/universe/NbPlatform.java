@@ -58,7 +58,7 @@ public final class NbPlatform implements Comparable {
     private static final String PLATFORM_SOURCES_SUFFIX = ".sources"; // NOI18N
     private static final String PLATFORM_JAVADOC_SUFFIX = ".javadoc"; // NOI18N
     private static final String PLATFORM_HARNESS_DIR_SUFFIX = ".harness.dir"; // NOI18N
-    private static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
+    public static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
     
     private static SortedSet/*<NbPlatform>*/ platforms;
 

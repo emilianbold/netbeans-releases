@@ -281,7 +281,7 @@ public abstract class TestBase extends NbTestCase {
                 "Testing Module", // display name
                 "org/example/" + prjDir + "/resources/Bundle.properties",
                 "org/example/" + prjDir + "/resources/layer.xml",
-                "default"); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT); // platform id
         return FileUtil.toFileObject(prjDirF);
     }
     
@@ -289,7 +289,7 @@ public abstract class TestBase extends NbTestCase {
     public static SuiteProject generateSuite(File workDir, String prjDir) throws IOException {
         String prjDirDotted = prjDir.replace('/', '.');
         File prjDirF = file(workDir, prjDir);
-        SuiteProjectGenerator.createSuiteProject(prjDirF, "default");
+        SuiteProjectGenerator.createSuiteProject(prjDirF, NbPlatform.PLATFORM_ID_DEFAULT);
         return (SuiteProject) ProjectManager.getDefault().findProject(
                 FileUtil.toFileObject(prjDirF));
     }

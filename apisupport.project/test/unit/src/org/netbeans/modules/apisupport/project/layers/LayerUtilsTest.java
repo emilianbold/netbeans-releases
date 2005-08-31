@@ -22,6 +22,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -134,7 +135,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemSuiteComponentProject() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -184,7 +185,7 @@ public class LayerUtilsTest extends LayerTestBase {
     
     public void testSystemFilesystemLocalizedNames() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
         /* XXX too hard to unit test in practice:
         SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
         // Make ide6 *not* be excluded, so we can test some editor actions:

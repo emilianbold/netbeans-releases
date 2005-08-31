@@ -38,7 +38,7 @@ public class NbPlatformTest extends TestBase {
         assertTrue("Platforms order", Collator.getInstance().compare(
                 ((NbPlatform) platforms.first()).getLabel(),
                 ((NbPlatform) platforms.last()).getLabel()) < 0);
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         assertNotNull("have default platform", def);
         assertEquals("can use a special method call for that", def, NbPlatform.getDefaultPlatform());
         NbPlatform custom = NbPlatform.getPlatformByID("custom");
@@ -49,7 +49,7 @@ public class NbPlatformTest extends TestBase {
         assertEquals("right custom platform by dest dir", custom, NbPlatform.getPlatformByDestDir(file(extexamplesF, "suite3/nbplatform")));
         assertEquals("right dest dir for default platform", file("nbbuild/netbeans"), def.getDestDir());
         assertEquals("right dest dir for custom platform", file(extexamplesF, "suite3/nbplatform"), custom.getDestDir());
-        assertEquals("right name for default platform", "default", def.getID());
+        assertEquals("right name for default platform", NbPlatform.PLATFORM_ID_DEFAULT, def.getID());
         assertEquals("right name for custom platform", "custom", custom.getID());
         assertEquals("right sources for default platform", new HashSet(Arrays.asList(new URL[] {
             Util.urlForDir(nbrootF),
@@ -82,13 +82,13 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testAddSourceRoot() throws Exception {
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         doAddSourceRoot(def, new URL("file:/nonsense/"));
     }
     
     public void testRemoveRoots() throws Exception {
         URL url = new URL("file:/nonsense/");
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         doAddSourceRoot(def, url);
         assertTrue("adding of new source root", Arrays.asList( // double check
                 def.getSourceRoots()).toString().indexOf("nonsense") != -1);
@@ -98,11 +98,11 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testMovingSourceRoots() throws Exception {
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         URL url = new URL("file:/nonsense/");
         doAddSourceRoot(def, url);
         
-        def = NbPlatform.getPlatformByID("default");
+        def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         URL[] srcRoot = def.getSourceRoots();
         assertEquals("new url should be the last one", url, srcRoot[srcRoot.length - 1]);
         def.moveSourceRootUp(srcRoot.length - 1);
@@ -116,13 +116,13 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testAddJavadoc() throws Exception {
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         doAddJavadocRoot(def, new URL("file:/nonsense/"));
     }
     
     public void testRemoveJavadocs() throws Exception {
         URL url = new URL("file:/nonsense/");
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         doAddJavadocRoot(def, url);
         assertTrue("adding of new javadoc", Arrays.asList( // double check
                 def.getJavadocRoots()).toString().indexOf("nonsense") != -1);
@@ -132,11 +132,11 @@ public class NbPlatformTest extends TestBase {
     }
 
     public void testMovingJavadocRoots() throws Exception {
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         URL url = new URL("file:/nonsense/");
         doAddJavadocRoot(def, url);
 
-        def = NbPlatform.getPlatformByID("default");
+        def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         URL[] jdRoot = def.getJavadocRoots();
         assertEquals("new url should be the last one", url, jdRoot[jdRoot.length - 1]);
         def.moveJavadocRootUp(jdRoot.length - 1);
@@ -193,7 +193,7 @@ public class NbPlatformTest extends TestBase {
     }
     
     public void testIsLabelValid() throws Exception {
-        NbPlatform def = NbPlatform.getPlatformByID("default");
+        NbPlatform def = NbPlatform.getPlatformByID(NbPlatform.PLATFORM_ID_DEFAULT);
         assertFalse("already used label", NbPlatform.isLabelValid(def.getLabel()));
         assertFalse("null label", NbPlatform.isLabelValid(null));
         assertTrue("valid label", NbPlatform.isLabelValid("whatever"));

@@ -20,6 +20,7 @@ import java.util.HashSet;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,7 +68,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
                 "Testing Module", // display name
                 "org/example/testModule/resources/Bundle.properties",
                 "org/example/testModule/resources/layer.xml",
-                "default"); // platform id
+                NbPlatform.PLATFORM_ID_DEFAULT); // platform id
         FileObject fo = FileUtil.toFileObject(targetPrjDir);
         // Make sure generated files are created too - simulate project opening.
         NbModuleProject p = (NbModuleProject) ProjectManager.getDefault().findProject(fo);
@@ -87,7 +88,7 @@ public class NbModuleProjectGeneratorTest extends TestBase {
     public void testCreateSuiteComponentModule() throws Exception {
         // create suite for the module being tested
         File suiteDir = new File(getWorkDir(), "testSuite");
-        SuiteProjectGenerator.createSuiteProject(suiteDir, "default");
+        SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
         FileObject fo = FileUtil.toFileObject(suiteDir);
         Project suiteProject = ProjectManager.getDefault().findProject(fo);
         assertNotNull("have a project in " + suiteDir, suiteProject);

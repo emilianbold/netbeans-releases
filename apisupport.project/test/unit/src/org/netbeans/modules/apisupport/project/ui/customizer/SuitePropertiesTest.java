@@ -25,6 +25,7 @@ import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.TestBase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.ComponentFactory.SuiteSubModulesListModel;
+import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -76,7 +77,7 @@ public class SuitePropertiesTest extends TestBase {
     
     public void testPropertiesAreLoaded() throws Exception {
         assertNotNull(suite1Props.getActivePlatform());
-        assertEquals("platform id: ", "default", suite1Props.getActivePlatform().getID());
+        assertEquals("platform id: ", NbPlatform.PLATFORM_ID_DEFAULT, suite1Props.getActivePlatform().getID());
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
         assertEquals("number of sub-modules: ", 2, model.getSize());
