@@ -278,7 +278,11 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
         }
         
         public void storeSettings(Object settings) {
-            panel.storeToDataModel();
+            WizardDescriptor wiz = (WizardDescriptor) settings;
+            if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) || 
+                    WizardDescriptor.FINISH_OPTION.equals(wiz.getValue())) {
+                panel.storeToDataModel();
+            }
             //XXX hack
             ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", null); // NOI18N
         }
@@ -292,7 +296,10 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
                 ((WizardDescriptor) settings).putProperty("NewFileWizard_Title", substitute); // NOI18N
             }
             
-            panel.readFromDataModel();
+            WizardDescriptor wiz = (WizardDescriptor) settings;
+            if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue())) {
+                panel.readFromDataModel();
+            }
         }
         
         public HelpCtx getHelp() {
