@@ -18,11 +18,14 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.Dimension;
 import java.awt.Component;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.text.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -137,6 +140,12 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         insertEmptyLines(true);
         setDiffHighlight(true);
         insertEmptyLinesNotReported();
+        
+        Border original = jScrollPane1.getBorder();
+        Color borderColor = original instanceof LineBorder ? ((LineBorder) original).getLineColor() : Color.BLACK;
+        jScrollPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+        jScrollPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
+        jSplitPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
     }
 
     private void saveSources(Reader r1, Reader r2) throws IOException {
