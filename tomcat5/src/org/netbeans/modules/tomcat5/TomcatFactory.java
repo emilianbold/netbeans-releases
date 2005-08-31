@@ -35,6 +35,8 @@ import org.openide.util.NbBundle;
 public class TomcatFactory implements DeploymentFactory {
     
     public static final String tomcatUriPrefix = "tomcat:"; // NOI18N
+    // PENDING - shouldn't this be 5.0.x ?
+    private static final String DISCONNECTED_URI = "tomcat:jakarta-tomcat-5.0.19"; // NOI18N
     
     private static TomcatFactory instance;
     
@@ -82,7 +84,10 @@ public class TomcatFactory implements DeploymentFactory {
         // however, we could not rely on keeping data in the member variables.
         InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
         if (ip == null) {
-            throw new DeploymentManagerCreationException("Tomcat instance: " + uri + " is not registered in the IDE."); // NOI18N
+            // null ip either means that the instance is not registered, or that this is the disconnected URL
+            if (!DISCONNECTED_URI.equals(uri)) {
+                throw new DeploymentManagerCreationException("Tomcat instance: " + uri + " is not registered in the IDE."); // NOI18N
+            }
         }
         TomcatManager tm = (TomcatManager)managerCache.get(ip);
         if (tm == null) {
