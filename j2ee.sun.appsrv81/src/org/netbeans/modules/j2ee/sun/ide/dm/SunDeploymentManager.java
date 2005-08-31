@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.Utils;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunServerStateInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
+import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 
 import org.netbeans.modules.j2ee.sun.appsrvapi.PortDetector;
 import org.openide.ErrorManager;
@@ -802,6 +803,31 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return mmm;
     }
     
+    private ResourceConfiguratorInterface resourceConfigurator = null;
+    
+    public ResourceConfiguratorInterface getResourceConfigurator() {
+        if(resourceConfigurator == null){
+            try{
+                Class[] argClass = new Class[1];
+                argClass[0] = javax.enterprise.deploy.spi.DeploymentManager.class;
+                Object[] argObject = new Object[1];
+                argObject[0] = this;
+                
+                org.netbeans.modules.j2ee.sun.ide.ExtendedClassLoader loader = org.netbeans.modules.j2ee.sun.ide.Installer.getPluginLoader();
+                if(loader != null){
+                    Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator");
+                    resourceConfigurator = (ResourceConfiguratorInterface)cc.newInstance();
+                    java.lang.reflect.Method setDeploymentManager = cc.getMethod("setDeploymentManager", argClass);//NOI18N
+                    setDeploymentManager.invoke(resourceConfigurator, argObject);
+                }
+            }catch(Exception ex){
+                //Suppressing exception
+                //return will be a null value for resourceConfigurator
+            }
+        }
+        return resourceConfigurator;
+    }
+    
     public javax.management.MBeanServerConnection getMBeanServerConnection() throws RemoteException, ServerException{
         ServerInterface serverMgmt = getManagement();
         return (javax.management.MBeanServerConnection)serverMgmt.getMBeanServerConnection();
@@ -846,8 +872,8 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
         return retVal;
     }  
-    
-     // VBK hack target objects to support configuration prototyping in
+
+    // VBK hack target objects to support configuration prototyping in
      // J2EE 1.4 RI beta 1 deploytool
      class FakeTarget implements Target {
          
