@@ -14,8 +14,9 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 
 /**
  *
@@ -48,8 +49,6 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
             }
         });
 
-        primaryKeyCombo.setSelectedItem("String"); //NOI18N
-        
     }
     
     public boolean isCMP() {
@@ -73,7 +72,8 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         remoteCheckBox = new javax.swing.JCheckBox();
         localCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
-        primaryKeyCombo = new javax.swing.JComboBox(PK_TYPES);
+        primaryKeyTextField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -142,31 +142,50 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 8);
         add(jLabel1, gridBagConstraints);
 
-        primaryKeyCombo.setEditable(true);
-        primaryKeyCombo.setMaximumRowCount(10);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 8);
-        add(primaryKeyCombo, gridBagConstraints);
+        add(primaryKeyTextField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, "...");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        add(jButton1, gridBagConstraints);
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        SwingUtilities.invokeLater (new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen(primaryKeyTextField);
+            }
+        });
+    }//GEN-LAST:event_jButton1ActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton bmpButton;
     private javax.swing.JRadioButton cmpButton;
     private javax.swing.JLabel createInterfaceLabel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JCheckBox localCheckBox;
     private javax.swing.ButtonGroup persistenceGroup;
     private javax.swing.JLabel persistenceTypeLabel;
-    private javax.swing.JComboBox primaryKeyCombo;
+    private javax.swing.JTextField primaryKeyTextField;
     private javax.swing.JCheckBox remoteCheckBox;
     // End of variables declaration//GEN-END:variables
 
@@ -179,7 +198,7 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
     }
     
     public String getPrimaryKeyClassName() {
-        return (String) primaryKeyCombo.getSelectedItem();
+        return primaryKeyTextField.getText();
     }
     
 }
