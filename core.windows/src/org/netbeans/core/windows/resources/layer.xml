@@ -90,12 +90,12 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-            <attr name="Debug/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
+            <attr name="InspectorAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
             <file name="SwitchToRecentDocumentAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-SwitchToRecentDocumentAction.instance" />
             </file>
-            <attr name="SwitchToRecentDocumentAction.shadow/Separator3.instance" boolvalue="true" />
-            <attr name="org-netbeans-core-actions-HTMLViewAction.instance/Separator3.instance" boolvalue="true" />
+            <attr name="SwitchToRecentDocumentAction.shadow/ProgressListAction.shadow" boolvalue="true" />
+            <attr name="Debug/Separator3.instance" boolvalue="true" />
             <file name="Separator3.instance">
 	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
 	    </file>

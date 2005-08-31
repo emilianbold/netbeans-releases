@@ -28,7 +28,6 @@ import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.palette.*;
 import org.netbeans.modules.form.actions.TestAction;
-import org.netbeans.modules.form.actions.InstallBeanAction;
 
 /**
  * ToolBar in the FormDesigner - by default it holds buttons for selection and
@@ -128,31 +127,12 @@ class FormToolBar extends JToolBar {
         testButton.addMouseListener(listener);
         initButton(testButton);
 
-        InstallBeanAction paletteManagerAction = (InstallBeanAction)
-                                      SystemAction.get(InstallBeanAction.class);
-        // Issue 46562
-        JButton pmButton = add(paletteManagerAction);
-        pmButton.addMouseListener(listener);
-        String pmToolTip = paletteManagerAction.getName();
-        pmToolTip = org.openide.awt.Actions.cutAmpersand(pmToolTip);
-        pmButton.setToolTipText(pmToolTip);
-        initButton(pmButton);
-        Icon icon = (Icon)paletteManagerAction.getValue("hidden_icon"); // NOI18N
-        if (icon == null) {
-             Image i = Utilities.loadImage("org/netbeans/modules/form/resources/palette_manager.png", true); // NOI18N
-             icon = new ImageIcon(i);
-             paletteManagerAction.putValue("hidden_icon", icon); // NOI18N
-        }
-        pmButton.setIcon(icon);
-
         add(Box.createHorizontalStrut(4));
         add(separator1);
         add(Box.createHorizontalStrut(6));
         add(selectionButton);
         add(connectionButton);
         add(paletteButton);
-        add(Box.createHorizontalStrut(6));
-        add(pmButton);
         add(Box.createHorizontalStrut(6));
         add(testButton);
         add(Box.createHorizontalStrut(4));

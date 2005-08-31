@@ -55,24 +55,22 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-form-actions-EditFormAction.instance" />
         </folder>
         <folder name="Window">
-            <folder name="Form">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <file name="org-netbeans-modules-form-actions-InspectorAction.instance" />
-            </folder>
+            <file name="org-netbeans-modules-form-actions-InspectorAction.instance" />
         </folder>
     </folder>
 
     <folder name="Menu">
         <folder name="Window">
-            <attr name="oldRootsEnd.txt/Form" boolvalue="true" />
-            <folder name="Form">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <file name="InspectorAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Form/org-netbeans-modules-form-actions-InspectorAction.instance"/>
-                </file>
+            <file name="InspectorAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-form-actions-InspectorAction.instance"/>
+            </file>
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true" />
+            <attr name="InspectorAction.shadow/SwitchToRecentDocumentAction.shadow" boolvalue="true" />
+        </folder>
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-form-actions-InstallBeanAction.instance" />
             </folder>
-            <attr name="Form/Debugger" boolvalue="true" />
         </folder>
     </folder>
 

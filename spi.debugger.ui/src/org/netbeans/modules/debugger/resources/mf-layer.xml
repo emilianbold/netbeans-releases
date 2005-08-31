@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <attr name="Form/Debug" boolvalue="true" />
+            <attr name="ProgressListAction.shadow/Debug" boolvalue="true" />
             <folder name="Debug">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />

@@ -208,7 +208,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Window">
             <folder name="Versioning_hidden"/>            
             <attr name="org-netbeans-modules-web-monitor-client-MonitorAction.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow" boolvalue="true"/>
-            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/Form" boolvalue="true"/>
+            <attr name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow/InspectorAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-status-OpenVersioningAction.instance"/>
             </file>
