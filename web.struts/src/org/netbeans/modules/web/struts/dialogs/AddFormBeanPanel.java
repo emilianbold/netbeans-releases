@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.web.struts.dialogs;
 
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.openide.util.NbBundle;
 
 /**
@@ -99,6 +101,11 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
                 jButtonBrowseActionPerformed(evt);
             }
         });
+        jButtonBrowse.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentHidden(java.awt.event.ComponentEvent evt) {
+                jButtonBrowseComponentHidden(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -149,8 +156,16 @@ public class AddFormBeanPanel extends javax.swing.JPanel implements ValidatingPa
     }
     // </editor-fold>//GEN-END:initComponents
 
+    private void jButtonBrowseComponentHidden(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jButtonBrowseComponentHidden
+    }//GEN-LAST:event_jButtonBrowseComponentHidden
+
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
-// TODO add your handling code here:
+    SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen(TFBeanClass);
+            }
+        });
+
     }//GEN-LAST:event_jButtonBrowseActionPerformed
 
     private void jRadioButton1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButton1ItemStateChanged

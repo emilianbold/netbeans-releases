@@ -15,6 +15,8 @@ package org.netbeans.modules.web.jsf.dialogs;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.config.model.ManagedBean;
@@ -101,6 +103,12 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
 
         jButtonClass.setMnemonic(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "MNE_Browse").charAt(0));
         jButtonClass.setText(org.openide.util.NbBundle.getMessage(AddManagedBeanDialog.class, "LBL_Browse"));
+        jButtonClass.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonClassActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -168,6 +176,14 @@ public class AddManagedBeanDialog extends javax.swing.JPanel implements Validati
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void jButtonClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClassActionPerformed
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen(jTextFieldClass);
+            }
+        });
+    }//GEN-LAST:event_jButtonClassActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

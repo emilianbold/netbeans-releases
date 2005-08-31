@@ -16,6 +16,8 @@ package org.netbeans.modules.web.struts.dialogs;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.struts.config.model.Action;
@@ -318,6 +320,12 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
 
         jButtonBrowseClass.setMnemonic(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_Browse_mnem").charAt(0));
         jButtonBrowseClass.setText(org.openide.util.NbBundle.getMessage(AddActionPanel.class, "LBL_BrowseButton"));
+        jButtonBrowseClass.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBrowseClassActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -345,6 +353,15 @@ public class AddActionPanel extends javax.swing.JPanel implements ValidatingPane
 
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void jButtonBrowseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseClassActionPerformed
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen(TFActionClass);
+            }
+        }); 
+                
+    }//GEN-LAST:event_jButtonBrowseClassActionPerformed
 
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
 // TODO add your handling code here:

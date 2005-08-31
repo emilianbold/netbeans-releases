@@ -17,7 +17,9 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.struts.config.model.FormBean;
@@ -93,6 +95,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         jRadioButtonArray = new javax.swing.JRadioButton();
         jTextFieldInitValue = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -111,7 +114,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
@@ -150,7 +153,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jComboBoxFormName, gridBagConstraints);
@@ -182,6 +185,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jComboBoxPropertyType, gridBagConstraints);
 
@@ -221,7 +225,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
@@ -234,8 +238,31 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
         gridBagConstraints.weightx = 2.0;
         add(jPanel1, gridBagConstraints);
 
+        jButton1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/struts/dialogs/Bundle").getString("B_BROWSE"));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
+        add(jButton1, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen((JTextComponent)jComboBoxPropertyType.getEditor().getEditorComponent());
+            }
+        });
+
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jRadioButtonSingleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jRadioButtonSingleItemStateChanged
 // TODO add your handling code here:
@@ -245,6 +272,7 @@ public class AddFormPropertyPanel extends javax.swing.JPanel implements Validati
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JButton jButton1;
     private javax.swing.JComboBox jComboBoxFormName;
     private javax.swing.JComboBox jComboBoxPropertyType;
     private javax.swing.JLabel jLabel2;

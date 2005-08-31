@@ -16,7 +16,9 @@ package org.netbeans.modules.web.struts.dialogs;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.j2ee.common.FQNSearch;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.StrutsConfigUtilities;
 import org.netbeans.modules.web.struts.config.model.Action;
@@ -359,7 +361,11 @@ public class AddExceptionDialogPanel extends javax.swing.JPanel implements Valid
     }//GEN-LAST:event_jRadioButtonResFileItemStateChanged
 
     private void jButtonExcTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExcTypeActionPerformed
-// TODO add your handling code here:
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                FQNSearch.showFastOpen((JTextComponent)jComboBoxExcType.getEditor().getEditorComponent());
+            }
+        });
     }//GEN-LAST:event_jButtonExcTypeActionPerformed
 
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed
