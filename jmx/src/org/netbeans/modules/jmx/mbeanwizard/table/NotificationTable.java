@@ -92,10 +92,11 @@ public class NotificationTable extends JTable {
             nameField.setEnabled(true);
             Object o = getModel().getValueAt(row,column);
             nameField.setSelectedItem(o);
-            
+            final org.netbeans.modules.jmx.MBeanNotification notif = 
+                    (org.netbeans.modules.jmx.MBeanNotification) model.getNotification(row);
             nameField.addItemListener(new ItemListener() {
                 private String notifType;
-                
+          
                 public void itemStateChanged(ItemEvent evt) {
                     if (evt.getStateChange() == evt.DESELECTED)
                         notifType = evt.getItem().toString();
@@ -107,10 +108,10 @@ public class NotificationTable extends JTable {
                                 WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
                             array.add(new MBeanNotificationType(
                                     WizardConstants.NOTIF_TYPE_ATTRIBUTE_CHANGE));
-                            model.setValueAt(array, row, model.IDX_NOTIF_TYPE);
+                            notif.setNotificationTypeList(array);
                         } else if (notifType.equals(
                                 WizardConstants.ATTRIBUTECHANGE_NOTIFICATION)) {
-                            model.setValueAt(array, row, model.IDX_NOTIF_TYPE);
+                            notif.setNotificationTypeList(array);
                         }
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
