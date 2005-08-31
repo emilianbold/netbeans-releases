@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.j2seproject;
@@ -15,6 +15,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.javacore.JMManager;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
@@ -73,22 +75,46 @@ class MainClassUpdater implements PropertyChangeListener, MDRChangeListener {
             String attributeName = atEvent.getAttributeName();
             if ("name".equals(attributeName)) { //NOI18N
                 final String newMainClassName = (String) atEvent.getNewElement();
-                if (newMainClassName != null) {
-                    try {
-                        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction () {
-                            public Object run() throws Exception {
-                                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                String oldMainClass = props.getProperty(mainClassPropName);
-                                if (!newMainClassName.equals(oldMainClass)) {
-                                    props.put(mainClassPropName, newMainClassName);          //NOI18N
-                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-                                    ProjectManager.getDefault().saveProject (project);
+                if (newMainClassName != null) {                    
+                    Runnable r = new Runnable () {
+                        public void run () {
+                            try {
+                                //#63048:Deadlock while renaming main class of older j2se project
+                                //Don't show a modal dialog under mutex
+                                final String oldMainClass = (String) ProjectManager.mutex().readAccess(
+                                        new Mutex.ExceptionAction () {
+                                            public Object run () throws Exception {
+                                                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                                return props.getProperty(mainClassPropName);
+                                            }
+                                });                        
+                                if (!newMainClassName.equals(oldMainClass) && helper.requestSave()) {
+                                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction () {
+                                        public Object run() throws Exception {
+                                            EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                            props.put(mainClassPropName, newMainClassName);
+                                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
+                                            ProjectManager.getDefault().saveProject (project);
+                                            return null;
+                                        }
+                                    });
                                 }
-                                return null;
+                            } catch (MutexException e) {
+                                ErrorManager.getDefault().notify (e);
                             }
-                        });
-                    } catch (MutexException e) {
-                        ErrorManager.getDefault().notify (e);
+                            catch (IOException ioe) {
+                                ErrorManager.getDefault().notify (ioe);
+                            }
+                        }
+                    };
+                    //#63048:Deadlock while renaming main class of older j2se project
+                    //If we are not in the AWT thread reschedule it,
+                    //the UpdateHelper may need to display a dialog
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        r.run();
+                    }
+                    else {
+                        SwingUtilities.invokeLater(r);
                     }
                 }
             }
