@@ -101,7 +101,8 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
         File resourceDir = project.getEjbModule().getEnterpriseResourceDirectory();
         if (resourceDir != null) {
             FileObject resourceFO = FileUtil.toFileObject(resourceDir);
-            files.add(resourceFO);
+            if (resourceFO != null)
+                files.add(resourceFO);
         }
         
         return files;
