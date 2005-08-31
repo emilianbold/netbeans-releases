@@ -91,16 +91,16 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
     
     private String getLeftText() {
-        if (leftText == null) {
-            leftText = toHtmlText(codeTemplate.getAbbreviation()) + "  ";
-        }
-        return leftText;
-    }
-    
-    private String getRightText() {
         // Temporarily - return just the description - already in html
         // return toHtmlText(codeTemplate.getDescription());
         return codeTemplate.getDescription();
+    }
+    
+    private String getRightText() {
+        if (leftText == null) {
+            leftText = toHtmlText(codeTemplate.getAbbreviation());
+        }
+        return leftText;
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
@@ -116,7 +116,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
                 "org/netbeans/lib/editor/codetemplates/resources/codeTemplate.gif"));
         }
         CompletionUtilities.renderHtml(icon, getLeftText(), getRightText(),
-                g, defaultFont, defaultColor, width, height, selected, true);
+                g, defaultFont, defaultColor, width, height, selected);
     }
 
     public void defaultAction(JTextComponent component) {
@@ -210,16 +210,17 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         }
         
         private String createText() {
-            StringBuffer htmlText = new StringBuffer("<html><b>");
-            htmlText.append(toHtmlText(codeTemplate.getAbbreviation()));
-            htmlText.append("</b>&nbsp;&nbsp;&nbsp;");
-            // Temporarily - do not append the description
-            // htmlText.append(toHtmlText(codeTemplate.getDescription()));
-            htmlText.append("\n<br><br><pre>");
+            // Parametrized text - parsed; parameters in bold
+            StringBuffer htmlText = new StringBuffer("<html><pre>");
             ParametrizedTextParser parser = new ParametrizedTextParser(null, codeTemplate.getParametrizedText());
             parser.parse();
             parser.appendHtmlText(htmlText);
             htmlText.append("</pre>");
+
+            // Append abbreviation
+            htmlText.append("<br>Abbreviation: &nbsp;");
+            htmlText.append(toHtmlText(codeTemplate.getAbbreviation()));
+            htmlText.append("</html>");
             return htmlText.toString();
         }
 

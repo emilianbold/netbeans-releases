@@ -61,15 +61,27 @@ public final class CompletionUtilities {
     private CompletionUtilities() {
         // no instances
     }
-    
+
+    /**
+     * Get preferred width of the item by knowing its left and right html texts.
+     * <br/>
+     * It is supposed that the item will have an icon 16x16 and an appropriate
+     * space is reserved for it.
+     *
+     * @param leftHtmlText html text displayed on the left side of the item
+     *  next to the icon. It may be null which means no left text will be displayed.
+     * @param rightHtmlText html text aligned on the right edge of the item's
+     *  rendering area. It may be null which means no right text will be displayed.
+     * @return &gt;=0 preferred rendering width of the item.
+     */
     public static int getPreferredWidth(String leftHtmlText, String rightHtmlText,
     Graphics g, Font defaultFont) {
         int width = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP + AFTER_RIGHT_TEXT_GAP;
-        if (leftHtmlText != null) {
+        if (leftHtmlText != null && leftHtmlText.length() > 0) {
             width += (int)PatchedHtmlRenderer.renderHTML(leftHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
                     defaultFont, Color.black, PatchedHtmlRenderer.STYLE_CLIP, false, true);
         }
-        if (rightHtmlText != null) {
+        if (rightHtmlText != null && rightHtmlText.length() > 0) {
             if (leftHtmlText != null) {
                 width += BEFORE_RIGHT_TEXT_GAP;
             }
@@ -79,6 +91,43 @@ public final class CompletionUtilities {
         return width;
     }
     
+    /**
+     * Render a completion item using the provided icon and left and right
+     * html texts.
+     *
+     * @param icon icon 16x16 that will be displayed on the left. It may be null
+     *  which means that no icon will be displayed but the space for the icon
+     *  will still be reserved (to properly align with other items
+     *  that will provide an icon).
+     * 
+     * @param leftHtmlText html text that will be displayed on the left side
+     *  of the item's rendering area next to the icon.
+     *  <br/>
+     *  It may be null which indicates that no left text will be displayed.
+     *  <br/>
+     *  If there's not enough horizontal space in the rendering area
+     *  the text will be shrinked and "..." will be displayed at the end.
+     *
+     * @param rightHtmlText html text that will be aligned to the right edge
+     *  of the item's rendering area.
+     *  <br/>
+     *  It may be null which means that no right text will be displayed.
+     *  <br/>
+     *  The right text is always attempted to be fully displayed unlike
+     *  the left text that may be shrinked if there's not enough rendering space
+     *  in the horizontal direction.
+     *  <br/>
+     *  If there's not enough space even for the right text it will be shrinked
+     *  and "..." will be displayed at the end of the rendered string.
+     * @param g non-null graphics through which the rendering happens.
+     * @param defaultFont non-null default font to be used for rendering.
+     * @param defaultColor non-null default color to be used for rendering.
+     * @param width &gt;=0 available width for rendering.
+     * @param height &gt;=0 available height for rendering.
+     * @param selected whether the item being rendered is currently selected
+     *  in the completion's JList. If selected the foreground color is forced
+     *  to be black for all parts of the rendered strings.
+     */
     public static void renderHtml(ImageIcon icon, String leftHtmlText, String rightHtmlText,
     Graphics g, Font defaultFont, Color defaultColor,
     int width, int height, boolean selected) {
@@ -92,7 +141,7 @@ public final class CompletionUtilities {
         int rightTextX = width - AFTER_RIGHT_TEXT_GAP;
         FontMetrics fm = g.getFontMetrics(defaultFont);
         int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();
-        if (rightHtmlText != null) {
+        if (rightHtmlText != null && rightHtmlText.length() > 0) {
             int rightTextWidth = (int)PatchedHtmlRenderer.renderHTML(rightHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
                     defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_CLIP, false, true);
             rightTextX = Math.max(iconWidth, rightTextX - rightTextWidth);
@@ -103,61 +152,10 @@ public final class CompletionUtilities {
         }
 
         // Render left text
-        if (leftHtmlText != null && rightTextX > iconWidth) { // any space for left text?
+        if (leftHtmlText != null && leftHtmlText.length() > 0 && rightTextX > iconWidth) { // any space for left text?
             PatchedHtmlRenderer.renderHTML(leftHtmlText, g, iconWidth, textY, rightTextX - iconWidth, textY,
                 defaultFont, defaultColor, PatchedHtmlRenderer.STYLE_TRUNCATE, true, selected);
         }
     }
     
-    public static void renderHtml(ImageIcon icon, String leftHtmlText, String rightHtmlText,
-    Graphics g, Font defaultFont, Color defaultColor,
-    int width, int height, boolean selected, boolean preferLeftText) {
-        if (!preferLeftText) {
-            renderHtml(icon, leftHtmlText, rightHtmlText, g, defaultFont, defaultColor, width, height, selected);
-        } else {
-            // Prefer left text to be fully displayed
-            if (icon != null) {
-                // The image of the ImageIcon should already be loaded
-                // so no ImageObserver should be necessary
-                boolean done = g.drawImage(icon.getImage(), BEFORE_ICON_GAP, 0, null);
-                assert (done);
-            }
-            int iconWidth = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP;
-            int textWidth = width - iconWidth - AFTER_RIGHT_TEXT_GAP;
-            FontMetrics fm = g.getFontMetrics(defaultFont);
-            int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();
-            int textX = iconWidth;
-            if (leftHtmlText != null) {
-                int leftTextWidth = (int)PatchedHtmlRenderer.renderHTML(
-                        leftHtmlText, g, iconWidth, textY, textX, textY,
-                        defaultFont, defaultColor,
-                        PatchedHtmlRenderer.STYLE_CLIP, true, selected
-                );
-                leftTextWidth += BEFORE_RIGHT_TEXT_GAP;
-                textX += leftTextWidth;
-                textWidth -= leftTextWidth;
-            }
-            
-            // Render left text
-            if (rightHtmlText != null && textWidth > 0) { // any space for right text?
-                int rightTextWidth = (int)PatchedHtmlRenderer.renderHTML(
-                        rightHtmlText, g, 0, 0, Integer.MAX_VALUE, 0,
-                        defaultFont, defaultColor,
-                        PatchedHtmlRenderer.STYLE_CLIP, false, true
-                );
-                // Shift right text more to the right if too narrow
-                if (rightTextWidth < textWidth) {
-                    textX += textWidth - rightTextWidth;
-                }
-
-                PatchedHtmlRenderer.renderHTML(rightHtmlText, g,
-                        textX, textY, textWidth, textY,
-                        defaultFont, defaultColor,
-                        PatchedHtmlRenderer.STYLE_TRUNCATE, true, selected
-                );
-            }
-            
-        }
-    }
-
 }

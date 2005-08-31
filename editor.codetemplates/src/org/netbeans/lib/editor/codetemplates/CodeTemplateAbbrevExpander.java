@@ -31,7 +31,7 @@ final class CodeTemplateAbbrevExpander implements AbbrevExpander {
         Document doc = component.getDocument();
         CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
         op.waitLoaded();
-        CodeTemplate ct = op.find(abbrev.toString());
+        CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
         if (ct != null) {
             // Select the abbrev text
             component.setCaretPosition(abbrevStartOffset + abbrev.length());

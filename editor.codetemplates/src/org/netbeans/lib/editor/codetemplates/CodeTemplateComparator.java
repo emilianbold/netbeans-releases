@@ -23,21 +23,28 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
  */
 public final class CodeTemplateComparator implements Comparator {
     
-    public static final Comparator INSTANCE = new CodeTemplateComparator(false);
+    // public static final Comparator BY_ABBREVIATION = new CodeTemplateComparator(true, false);
     
-    public static final Comparator IGNORE_CASE_INSTANCE = new CodeTemplateComparator(true);
+    public static final Comparator BY_ABBREVIATION_IGNORE_CASE = new CodeTemplateComparator(true, true);
+    
+    // public static final Comparator BY_PARAMETRIZED_TEXT = new CodeTemplateComparator(false, false);
+    
+    public static final Comparator BY_PARAMETRIZED_TEXT_IGNORE_CASE = new CodeTemplateComparator(false, true);
+    
+    private final boolean byAbbreviation;
     
     private final boolean ignoreCase;
     
-    private CodeTemplateComparator(boolean ignoreCase) {
+    private CodeTemplateComparator(boolean byAbbreviation, boolean ignoreCase) {
+        this.byAbbreviation = byAbbreviation;
         this.ignoreCase = ignoreCase;
     }
     
     public int compare(Object o1, Object o2) {
         CodeTemplate t1 = (CodeTemplate)o1;
         CodeTemplate t2 = (CodeTemplate)o2;
-        String n1 = t1.getAbbreviation();
-        String n2 = t2.getAbbreviation();
+        String n1 = byAbbreviation ? t1.getAbbreviation() : t1.getParametrizedText();
+        String n2 = byAbbreviation ? t2.getAbbreviation() : t2.getParametrizedText();
         return ignoreCase ? n1.compareToIgnoreCase(n2) : n1.compareTo(n2);
     }
     

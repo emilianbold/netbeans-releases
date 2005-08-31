@@ -99,9 +99,11 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private Map abbrev2template;
     
-    private List sortedTemplates;
+    private List sortedTemplatesByAbbrev;
     
-    private List unmodifiableSortedTemplates;
+    private List unmodSortedTemplatesByAbbrev;
+    
+    private List sortedTemplatesByParametrizedText;
     
     private EventListenerList listenerList = new EventListenerList();
     
@@ -129,22 +131,22 @@ implements LookupListener, Runnable, SettingsChangeListener {
     }
     
     public Collection getCodeTemplates() {
-        return unmodifiableSortedTemplates;
+        return unmodSortedTemplatesByAbbrev;
     }
     
-    public CodeTemplate find(String abbreviation) {
+    public CodeTemplate findByAbbreviation(String abbreviation) {
         return (CodeTemplate)abbrev2template.get(abbreviation);
     }
     
-    public Collection find(String abbrevPrefix, boolean ignoreCase) {
+    public Collection findByParametrizedText(String prefix, boolean ignoreCase) {
         List result = new ArrayList();
         
         int low = 0;
-	int high = sortedTemplates.size() - 1;
+	int high = sortedTemplatesByParametrizedText.size() - 1;
 	while (low <= high) {
 	    int mid = (low + high) >> 1;
-	    CodeTemplate t = (CodeTemplate)sortedTemplates.get(mid);
-	    int cmp = compareTextIgnoreCase(t.getAbbreviation(), abbrevPrefix);
+	    CodeTemplate t = (CodeTemplate)sortedTemplatesByParametrizedText.get(mid);
+	    int cmp = compareTextIgnoreCase(t.getParametrizedText(), prefix);
 
 	    if (cmp < 0) {
 		low = mid + 1;
@@ -159,8 +161,8 @@ implements LookupListener, Runnable, SettingsChangeListener {
         // Go back whether prefix matches the name
         int i = low - 1;
         while (i >= 0) {
-            CodeTemplate t = (CodeTemplate)sortedTemplates.get(i);
-            int mp = matchPrefix(t.getAbbreviation(), abbrevPrefix);
+            CodeTemplate t = (CodeTemplate)sortedTemplatesByParametrizedText.get(i);
+            int mp = matchPrefix(t.getParametrizedText(), prefix);
             if (mp == MATCH_NO) { // not matched
                 break;
             } else if (mp == MATCH_IGNORE_CASE) { // matched when ignoring case
@@ -174,9 +176,9 @@ implements LookupListener, Runnable, SettingsChangeListener {
         }
         
         i = low;
-        while (i < sortedTemplates.size()) {
-            CodeTemplate t = (CodeTemplate)sortedTemplates.get(i);
-            int mp = matchPrefix(t.getAbbreviation(), abbrevPrefix);
+        while (i < sortedTemplatesByParametrizedText.size()) {
+            CodeTemplate t = (CodeTemplate)sortedTemplatesByParametrizedText.get(i);
+            int mp = matchPrefix(t.getParametrizedText(), prefix);
             if (mp == MATCH_NO) { // not matched
                 break;
             } else if (mp == MATCH_IGNORE_CASE) { // matched when ignoring case
@@ -373,17 +375,23 @@ implements LookupListener, Runnable, SettingsChangeListener {
     
     private void refreshMaps(List/*<CodeTemplate>*/ codeTemplates) {
         abbrev2template = new HashMap(codeTemplates.size());
-        sortedTemplates = new ArrayList(codeTemplates.size());
-        unmodifiableSortedTemplates = Collections.unmodifiableList(sortedTemplates);
+        sortedTemplatesByAbbrev = new ArrayList(codeTemplates.size());
+        unmodSortedTemplatesByAbbrev = Collections.unmodifiableList(sortedTemplatesByAbbrev);
+        sortedTemplatesByParametrizedText = new ArrayList(codeTemplates.size());
         // Construct template instances and store them in map and sorted list
         for (Iterator it = codeTemplates.iterator(); it.hasNext();) {
             CodeTemplate template = (CodeTemplate)it.next();
             String abbreviation = template.getAbbreviation();
             abbrev2template.put(abbreviation, template);
-            sortedTemplates.add(template);
+            sortedTemplatesByAbbrev.add(template);
+            sortedTemplatesByParametrizedText.add(template);
         }
         // Sort the templates in case insensitive order
-        Collections.sort(sortedTemplates, CodeTemplateComparator.IGNORE_CASE_INSTANCE);
+        Collections.sort(sortedTemplatesByAbbrev,
+                CodeTemplateComparator.BY_ABBREVIATION_IGNORE_CASE);
+
+        Collections.sort(sortedTemplatesByParametrizedText,
+                CodeTemplateComparator.BY_PARAMETRIZED_TEXT_IGNORE_CASE);
     }
 
     public void resultChanged(LookupEvent ev) {

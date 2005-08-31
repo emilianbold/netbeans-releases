@@ -56,7 +56,7 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
         private String identifierBeforeCursor;
 
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            CodeTemplateManager manager = CodeTemplateManager.get(doc);
+            CodeTemplateManagerOperation op = CodeTemplateManagerOperation.get(doc);
             identifierBeforeCursor = null;
             if (doc instanceof AbstractDocument) {
                 AbstractDocument adoc = (AbstractDocument)doc;
@@ -72,21 +72,11 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                     adoc.readUnlock();
                 }
             }
-            if (!manager.isLoaded()) {
-                synchronized (this) {
-                    manager.registerLoadedListener(this);
-                    // Listener could be fired synchronously so re-check
-                    if (!manager.isLoaded()) {
-                        try {
-                            wait();
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                }
-            }
+
+            op.waitLoaded();
 
             Collection cts = (identifierBeforeCursor != null)
-                ? CodeTemplateApiPackageAccessor.get().getOperation(manager).find(identifierBeforeCursor, true)
+                ? op.findByParametrizedText(identifierBeforeCursor, true)
                 : Collections.EMPTY_LIST;
             List items = new ArrayList(cts.size());
             for (Iterator it = cts.iterator(); it.hasNext();) {
