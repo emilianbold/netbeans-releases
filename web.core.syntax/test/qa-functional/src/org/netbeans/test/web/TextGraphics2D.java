@@ -147,8 +147,8 @@ public class TextGraphics2D extends Graphics2D {
         buf.append(str);
     }
     
-    public void drawString(AttributedCharacterIterator iterator,
-            int param, int param2) {
+    public void drawString(AttributedCharacterIterator iterator, int param,
+            int param2) {
         if (buf.length() > 0 && buf.charAt(buf.length()-1) != ' ') {
             buf.append(' ');
         }
@@ -248,6 +248,10 @@ public class TextGraphics2D extends Graphics2D {
     }
     
     public void drawString(String str, float param, float param2) {
+        // ignore '...' ussually rendered when the left epression is too long
+        if ("...".equals(str)) {
+            return;
+        }
         if (buf.length()>0 && buf.charAt(buf.length()-1) != ' ') {
             buf.append(' ');
         }
@@ -256,6 +260,11 @@ public class TextGraphics2D extends Graphics2D {
     
     public void drawString(AttributedCharacterIterator iterator,
             float param, float param2) {
+        // ignore '...' ussually rendered when the left epression is too long
+        if (iterator.next() == '.' && iterator.next() == '.'
+                && iterator.next() == '.') {
+            return;
+        }
         if (buf.length()>0 && buf.charAt(buf.length()-1)!=' ') {
             buf.append(' ');
         }
