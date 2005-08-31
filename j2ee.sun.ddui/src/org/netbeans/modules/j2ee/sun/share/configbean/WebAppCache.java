@@ -46,7 +46,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
  *		cache : Cache?
  *			[attr: max-entries CDATA 4096]
  *			[attr: timeout-in-seconds CDATA 30]
- *			[attr: enabled CDATA false]
+ *			[attr: enabled CDATA false]  // default is true for 8.1 onward
  *			property : WebProperty[0,n]
  *				[attr: name CDATA #REQUIRED ]
  *				[attr: value CDATA #REQUIRED ]
@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.WebProperty;
  *				| servlet-name : String
  *				| url-pattern : String
  *				| cache-helper-ref : String
+ *				| dispatcher <dispatcher> : String[0,n] // 8.1 onward
  *				| timeout : String?
  *				| 	[attr: name CDATA #REQUIRED ]
  *				| 	[attr: scope CDATA request.attribute]
