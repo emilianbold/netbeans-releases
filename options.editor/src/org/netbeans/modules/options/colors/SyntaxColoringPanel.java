@@ -371,6 +371,7 @@ PropertyChangeListener {
         if (category == null) {
             // no category selected > disable all elements
 	    tfFont.setText ("");
+            bFont.setEnabled (false);
             cbEffects.setEnabled (false);
             foregroundColorChooser.setEnabled (false);
 	    foregroundColorChooser.setSelectedItem (new Value (null, null));
@@ -381,6 +382,7 @@ PropertyChangeListener {
             updatePreview ();
             return;
         }
+        bFont.setEnabled (false);
         cbEffects.setEnabled (true);
         foregroundColorChooser.setEnabled (true);
         backgroundColorChooser.setEnabled (true);
