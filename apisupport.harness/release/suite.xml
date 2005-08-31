@@ -27,8 +27,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="cluster" location="build/cluster"/>
         <echo level="verbose">Suite in ${basedir} with target platform ${netbeans.dest.dir}, build cluster ${cluster}, and sorted modules ${modules.sorted}</echo>
         <!-- synchronize with SuiteProject -->
-        <property name="disabled.modules" value="org.netbeans.modules.autoupdate"/>
-        <property name="disabled.clusters" value="nb4.2, enterprise2, ide6, harness"/>
+        <property name="disabled.modules" value=""/>
+        <property name="disabled.clusters" value=""/>
     </target>
 
     <target name="build" depends="-init,branding" description="Build all modules in the suite.">

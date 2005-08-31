@@ -45,7 +45,6 @@ public class SuiteCustomizerModuleListTest extends TestBase {
     }
 
     protected void setUp() throws Exception {
-        clearWorkDir();
         super.setUp();
         suiteRepoFO = FileUtil.toFileObject(copyFolder(extexamplesF));
         suite1FO = suiteRepoFO.getFileObject("suite1");
@@ -60,47 +59,16 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         customizer = new SuiteCustomizerModuleList(this.suite1Props);
     }
 
-    protected void tearDown() throws Exception {
-    }
-
-    
-    public void testByDefaultJustPlatformWithoutAUIsEnabled() throws Exception {
-        Node n = customizer.getExplorerManager().getRootContext();
-        Node[] clusters = n.getChildren().getNodes();
-        
-        if (clusters.length == 0) {
-            fail ("Wrong, there should be some clusters");
-        }
-        
-        for (int i = 0; i < clusters.length; i++) {
-            // only platform shall be partially enabled
-            boolean shallBeEnabled = clusters[i].getName().indexOf("platform") != -1;
-            assertNodeEnabled(clusters[i], shallBeEnabled ? null : Boolean.FALSE);
-            if (!shallBeEnabled) {
-                continue;
-            }
-            
-            Node[] modules = clusters[i].getChildren().getNodes();
-            if (modules.length == 0) {
-                fail("Expected more modules for cluster: " + clusters[i]);
-            }
-            
-            for (int j = 0; j < modules.length; j++) {
-                shallBeEnabled = !modules[j].getName().equals("org.netbeans.modules.autoupdate");
-                assertNodeEnabled(modules[j], Boolean.valueOf(shallBeEnabled));
-                assertEquals("No children", Children.LEAF, modules[j].getChildren());
-            }
-        }
-    }
-    
     public void testDisableCluster() throws Exception {
         enableAllCusters(false);
         doDisableCluster(0, true);
     }
+    
     public void testDisableCluster2() throws Exception {
         enableAllCusters(false);
         doDisableCluster(1, true);
     }
+    
     public void testDisableTwoClusters() throws Exception {
         enableAllCusters(false);
         
@@ -144,9 +112,6 @@ public class SuiteCustomizerModuleListTest extends TestBase {
         
         return clusters[index].getName();
     }
-    
-    
-    
     
     public void testDisableModule() throws Exception {
         enableAllCusters(true);

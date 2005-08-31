@@ -136,8 +136,8 @@ public final class SuiteProject implements Project {
         providers.add(helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         fixedProps = new HashMap();
         // synchronize with suite.xml
-        fixedProps.put("disabled.clusters", "nb4.2, enterprise2, ide6, harness"); // NOI18N
-        fixedProps.put("disabled.modules", "org.netbeans.modules.autoupdate"); // NOI18N
+        fixedProps.put("disabled.clusters", ""); // NOI18N
+        fixedProps.put("disabled.modules", ""); // NOI18N
         providers.add(PropertyUtils.fixedPropertyProvider(fixedProps));
         return PropertyUtils.sequentialPropertyEvaluator(predefs, (PropertyProvider[]) providers.toArray(new PropertyProvider[providers.size()]));
     }

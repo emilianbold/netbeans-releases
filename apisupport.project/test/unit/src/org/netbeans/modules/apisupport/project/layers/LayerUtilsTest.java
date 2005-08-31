@@ -186,14 +186,6 @@ public class LayerUtilsTest extends LayerTestBase {
     public void testSystemFilesystemLocalizedNames() throws Exception {
         File suiteDir = new File(getWorkDir(), "testSuite");
         SuiteProjectGenerator.createSuiteProject(suiteDir, NbPlatform.PLATFORM_ID_DEFAULT);
-        /* XXX too hard to unit test in practice:
-        SuiteProject suite = (SuiteProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(suiteDir));
-        // Make ide6 *not* be excluded, so we can test some editor actions:
-        EditableProperties p = suite.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        p.setProperty("disabled.clusters", "");
-        suite.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
-        ProjectManager.getDefault().saveProject(suite);
-         */
         File module1Dir = new File(suiteDir, "testModule1");
         NbModuleProjectGenerator.createSuiteComponentModule(
                 module1Dir,
@@ -215,9 +207,6 @@ public class LayerUtilsTest extends LayerTestBase {
                 "test/module2/resources/layer.xml",
                 suiteDir);
         NbModuleProject module2 = (NbModuleProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(module2Dir));
-        /*
-        assertEquals("right disabled.clusters in suite evaluator", "", suite.getEvaluator().getProperty("disabled.clusters"));
-         */
         cmf = new CreatedModifiedFiles(module2);
         cmf.add(cmf.createLayerEntry("bar", null, null, "Bar", null));
         cmf.add(cmf.createLayerEntry("test-module2-MyAction.instance", null, null, null, null));
@@ -240,7 +229,7 @@ public class LayerUtilsTest extends LayerTestBase {
         assertDisplayName(fs, "label for menu separator", "sep-42.instance", "<separator>");
         assertDisplayName(fs, "link to standard menu item", "link-to-standard.shadow", "Open");
         assertDisplayName(fs, "link to custom menu item", "link-to-custom.shadow", "<instance of MyAction>");
-        /*
+        /* XXX too hard to unit test in practice, since we will get a CNFE trying to load a class from editor here:
         //System.err.println("items in Menu/Edit: " + java.util.Arrays.asList(fs.findResource("Menu/Edit").getChildren()));
         assertDisplayName(fs, "right display name for non-action with only menu presenter", "Menu/Edit/org-netbeans-modules-editor-MainMenuAction$FindSelectionAction.instance", "Find Selection");
          */
