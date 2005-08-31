@@ -59,19 +59,17 @@ final class CreatedModifiedFilesProvider  {
     
     private static void addOperations(CreatedModifiedFiles fileSupport, NewLibraryDescriptor.DataModel data)  {
         URL template;
-        CreatedModifiedFiles.Operation libDescrOperation;
         Map tokens;
         
         template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
         tokens = getTokens(fileSupport, data.getProject(), data);
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
+                
+        fileSupport.add(
+                fileSupport.createLayerEntry(layerEntry, template, tokens, null, null));
         
-        libDescrOperation = fileSupport.createLayerEntry(layerEntry, template, tokens, null, null);
-        
-        
-        fileSupport.add(libDescrOperation);
-        libDescrOperation = fileSupport.bundleKeyDefaultBundle(data.getLibraryName(), data.getLibraryDisplayName());
-        fileSupport.add(libDescrOperation);
+        fileSupport.add(
+                fileSupport.bundleKeyDefaultBundle(data.getLibraryName(), data.getLibraryDisplayName()));
     }
     
     

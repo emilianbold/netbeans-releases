@@ -22,6 +22,7 @@ import org.netbeans.modules.apisupport.project.ui.UIUtil;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * Represents <em>Name and Location</em> panel in J2SE Library Descriptor Wizard.
@@ -37,12 +38,14 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         super(setting);
         this.data = data;
         initComponents();
-        putClientProperty("NewFileWizard_Title", getMessage("LBL_LibraryWizardTitle")); // NOI18N
+        putClientProperty("NewFileWizard_Title",// NOI18N
+                NbBundle.getMessage(NameAndLocationPanel.class,"LBL_LibraryWizardTitle")); // NOI18N
         
         DocumentListener dListener = new UIUtil.DocumentAdapter() {
-            public void insertUpdate(DocumentEvent e) {
-                checkValidity();
-                updateData();
+            public void insertUpdate(DocumentEvent e) {                
+                if (checkValidity()) {
+                    updateData();                    
+                }
             }
         };
         libraryNameVale.getDocument().addDocumentListener(dListener);
@@ -66,26 +69,59 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         
         CreatedModifiedFilesProvider.setCreatedFiles(files, createdFilesValue);
         CreatedModifiedFilesProvider.setModifiedFiles(files, modifiedFilesValue);
+        checkValidity();
     }
     
     protected void readFromDataModel() {
-        checkValidity();
         libraryNameVale.setText(this.data.getLibrary().getName());
         libraryDisplayNameValue.setText(this.data.getLibrary().getDisplayName());
         updateData();
     }
     
     protected String getPanelName() {
-        return getMessage("LBL_NameAndLocation_Title"); // NOI18N
+        return NbBundle.getMessage(NameAndLocationPanel.class,"LBL_NameAndLocation_Title"); // NOI18N
     }
+
     
-    private void checkValidity() {
-        //TODO:
-        setValid(Boolean.TRUE);
+    private boolean checkValidity() {
+        String lName = libraryNameVale.getText();
+        String lDisplayName = libraryDisplayNameValue.getText();
+        boolean pValid = true;
+        if (lName.trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyName")); // NOI18N
+            pValid = false;
+        }
+        
+        if (pValid && lDisplayName.trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,"ERR_EmptyDescName")); // NOI18N
+            pValid = false;
+        }
+        
+        
+        CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
+        if (pValid && cmf != null) {
+            String[] modifiedFiles = cmf.getModifiedPaths();
+            pValid = (modifiedFiles != null && modifiedFiles.length == 2);
+            if (!pValid) {
+                setErrorMessage(NbBundle.getMessage(NameAndLocationPanel.class,
+                        "ERR_LibraryExists", data.getLibraryName()));
+            }
+        }
+        
+        
+        if (pValid) {
+            setErrorMessage(null);
+        }                
+        return pValid;
     }
     
     protected HelpCtx getHelp() {
         return new HelpCtx(NameAndLocationPanel.class);
+    }
+    
+    public void addNotify() {
+        super.addNotify();
+        checkValidity();
     }
     
     /** This method is called from within the constructor to
