@@ -71,6 +71,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         TFParameter = new javax.swing.JTextField();
         RBInputResource = new javax.swing.JRadioButton();
         RBInputAction = new javax.swing.JRadioButton();
+        jParameterSpecificLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -255,6 +256,13 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 0);
         add(RBInputAction, gridBagConstraints);
 
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(jParameterSpecificLabel, gridBagConstraints);
+
     }
     // </editor-fold>//GEN-END:initComponents
 
@@ -342,6 +350,7 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JLabel jLabelParameter;
     private javax.swing.JLabel jLabelScope;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jParameterSpecificLabel;
     // End of variables declaration//GEN-END:variables
  
     boolean valid(WizardDescriptor wizardDescriptor) {
@@ -353,12 +362,22 @@ public class ActionPanel1Visual extends javax.swing.JPanel implements HelpCtx.Pr
         // initialize the parameter value
         if (settings.getProperty(WizardProperties.ACTION_PARAMETER)==null) {
             String actionClass = (String)settings.getProperty(WizardProperties.ACTION_SUPERCLASS);
-            if (ActionPanelVisual.DISPATCH_ACTION.equals(actionClass))
+            if (ActionPanelVisual.DISPATCH_ACTION.equals(actionClass)){
                 TFParameter.setText("method"); //NOI18N
-            else if (ActionPanelVisual.MAPPING_DISPATCH_ACTION.equals(actionClass))
+                jParameterSpecificLabel.setText(NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Dispatch_Action"));//NOI18
+            }
+            else if (ActionPanelVisual.MAPPING_DISPATCH_ACTION.equals(actionClass)){
                 TFParameter.setText("customMethod"); //NOI18
-            else
+                jParameterSpecificLabel.setText(NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Mapping_Dispatch_Action"));//NOI18
+            }
+            else if (ActionPanelVisual.LOOKUP_DISPATCH_ACTION.equals(actionClass)){
                 TFParameter.setText(""); //NOI18
+                jParameterSpecificLabel.setText(NbBundle.getMessage(ActionPanel1Visual.class, "LBL_Lookup_Dispatch_Action"));//NOI18
+            }
+            else{
+                TFParameter.setText(""); //NOI18
+                jParameterSpecificLabel.setText("");   //NOI18
+            }
         }
         configFile = (String)settings.getProperty(WizardProperties.ACTION_CONFIG_FILE);
         Project proj = panel.getProject();
