@@ -53,7 +53,7 @@ public class AnnotationsAction extends AbstractSystemAction {
     }
 
     public boolean isEnabled() {
-        return super.isEnabled() && getFilesToProcess().length == 1;
+        return super.isEnabled() && activatedEditorCookie() != null;
     }
 
     protected int getFileEnabledStatus() {
@@ -147,16 +147,21 @@ public class AnnotationsAction extends AbstractSystemAction {
      * does not have any or more nodes selected.
      */
     private JEditorPane activatedEditorPane() {
+        EditorCookie ec = activatedEditorCookie();
+        if (ec != null) {
+            JEditorPane[] panes = ec.getOpenedPanes();
+            if (panes != null && panes.length > 0) {
+                return panes[0];
+            }
+        }
+        return null;
+    }
+
+    private EditorCookie activatedEditorCookie() {
         Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
         if (nodes.length == 1) {
             Node node = nodes[0];
-            EditorCookie ec = (EditorCookie) node.getCookie(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane[] panes = ec.getOpenedPanes();
-                if (panes != null && panes.length > 0) {
-                    return panes[0];
-                }
-            }
+            return (EditorCookie) node.getCookie(EditorCookie.class);
         }
         return null;
     }
