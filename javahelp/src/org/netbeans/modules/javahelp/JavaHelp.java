@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,7 +16,6 @@ package org.netbeans.modules.javahelp;
 import java.awt.*;
 import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
-import java.io.ObjectStreamException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
@@ -29,10 +28,11 @@ import javax.swing.*;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
 import javax.help.JHelp;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.WindowManager;
 
 // [PENDING] should event dispatch thread be used thruout?
@@ -83,6 +83,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     
     /** progress of merging help sets; max is # of sets to merge */
     private static final BoundedRangeModel mergeModel = new DefaultBoundedRangeModel(0, 0, 0, 0);
+    
+    private ProgressHandle progressHandle = null;
 
     /** Get the master help set that others will be merged into.
      * @return the master help set
@@ -339,7 +341,9 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             // in a separate thread. When finished, the progress dialog will hide
             // itself and control will return to event thread.
             Installer.err.log("showing progress dialog...");
+            progressHandle = ProgressHandleFactory.createHandle("");
             createProgressDialog(run, currentModalDialog()).show();
+            progressHandle.finish();
             Installer.err.log("dialog done.");
         } else {
             // Nothing much to do, run it synchronously in event thread.
@@ -614,7 +618,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         new ProgressDialog(run, WindowManager.getDefault().getMainWindow()) :
             new ProgressDialog(run, parent);
     }
-    private static final class ProgressDialog extends JDialog implements TaskListener, Runnable {
+    
+    private final class ProgressDialog extends JDialog implements TaskListener, Runnable {
         private Runnable run;
         public ProgressDialog(Runnable run, Dialog parent) {
             super(parent, NbBundle.getMessage(JavaHelp.class, "TITLE_loading_help_sets"), true);
@@ -626,19 +631,11 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         private void init(Runnable run) {
             this.run = run;
-            // XXX poor UI appearance, could use borders, better layout, ...
-            getContentPane().setLayout(new GridLayout(2, 2));
-            //a11y fix for issue 31669, add accessible description, labelfor - TDB
-            JLabel pLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_parsing_help_sets"));  //NOI18N
-            JLabel mLabel = new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_merging_help_sets"));  //NOI18N
-            JProgressBar pBar = new JProgressBar (HelpSetProcessor.parseModel);
-            JProgressBar mBar = new JProgressBar(mergeModel);
-            getContentPane().add(pLabel);
-            getContentPane().add(pBar);
-            getContentPane().add(mLabel);
-            getContentPane().add(mBar);
-            pLabel.setLabelFor(pBar);
-            mLabel.setLabelFor(mBar);
+            JComponent c = ProgressHandleFactory.createProgressComponent(progressHandle);
+            c.setPreferredSize(new Dimension(3 * c.getPreferredSize().width, 3 * c.getPreferredSize().height));
+            c.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+            getContentPane().add(c);
+            progressHandle.start();
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaHelp.class, "ACSD_Loading_Dialog"));  //NOI18N
             pack();
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
