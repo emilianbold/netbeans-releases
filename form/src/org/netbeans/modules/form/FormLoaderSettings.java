@@ -28,6 +28,8 @@ public class FormLoaderSettings extends SystemOption {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 8949624818164732719L;
 
+    public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
+
     /** Property name of the eventVariableName property */
     public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
 
@@ -88,6 +90,8 @@ public class FormLoaderSettings extends SystemOption {
     // ------------------------------------------
     // properties
 
+    private static boolean useIndentEngine = false;
+    
     /** The name of the Event variable generated in the event handlers. */
     private static String eventVariableName = "evt"; // NOI18N
 
@@ -170,6 +174,18 @@ public class FormLoaderSettings extends SystemOption {
     // ------------------------------------------
     // property access methods
 
+    public boolean getUseIndentEngine() {
+        return useIndentEngine;
+    }
+
+    public void setUseIndentEngine(boolean value) {
+        if (value == useIndentEngine)
+            return;
+        useIndentEngine = value;
+        firePropertyChange(PROP_USE_INDENT_ENGINE,
+                           !value ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
+    }
+    
     /** Getter for the sortEventSets option */
     public String getEventVariableName() {
         return eventVariableName;

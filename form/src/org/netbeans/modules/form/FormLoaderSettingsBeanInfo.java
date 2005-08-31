@@ -38,6 +38,10 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
+                new PropertyDescriptor(FormLoaderSettings.PROP_USE_INDENT_ENGINE,
+                                       FormLoaderSettings.class,
+                                       "getUseIndentEngine", // NOI18N
+                                       "setUseIndentEngine"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_EVENT_VARIABLE_NAME,
                                        FormLoaderSettings.class,
                                        "getEventVariableName", // NOI18N
@@ -134,6 +138,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
             ResourceBundle bundle = FormUtils.getBundle();
             int i = -1;
+
+            desc[++i].setDisplayName(bundle.getString("PROP_USE_INDENT_ENGINE")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_USE_INDENT_ENGINE")); // NOI18N
 
             desc[++i].setDisplayName(bundle.getString("PROP_EVENT_VARIABLE_NAME")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_EVENT_VARIABLE_NAME")); // NOI18N

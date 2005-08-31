@@ -725,10 +725,14 @@ class JavaCodeGenerator extends CodeGenerator {
 
         // create Writer for writing the generated code in
         StringWriter initCodeBuffer = new StringWriter(1024);
-        Writer initCodeWriter = indentEngine.createWriter(
-                           formEditorSupport.getDocument(),
-                           initComponentsOffset,
-                           initCodeBuffer);
+        Writer initCodeWriter;
+        if (formSettings.getUseIndentEngine()) // use original indent engine
+            initCodeWriter = indentEngine.createWriter(
+                                formEditorSupport.getDocument(),
+                                initComponentsOffset,
+                                initCodeBuffer);
+        else
+            initCodeWriter = initCodeBuffer;
         
         if (constructorProperties != null)
             constructorProperties.clear();
@@ -855,8 +859,13 @@ class JavaCodeGenerator extends CodeGenerator {
             }
             initCodeWriter.close();
 
-            // set the text into the guarded block
-            initComponentsSection.setText(initCodeBuffer.toString());
+             // set the text into the guarded block
+            String newText = initCodeBuffer.toString();
+            if (!formSettings.getUseIndentEngine()) {
+                newText = indentCode(newText, indentEngine);
+            }
+            initComponentsSection.setText(newText);
+            
             if (expandInitComponents) {
                 FoldHierarchy foldHierarchy = FoldHierarchy.get(formEditorSupport.getEditorPane());
                 Fold fold = FoldUtilities.findNearestFold(foldHierarchy, initComponentsOffset);
@@ -879,10 +888,16 @@ class JavaCodeGenerator extends CodeGenerator {
                                         formEditorSupport.getDocument());
 
         StringWriter variablesBuffer = new StringWriter(1024);
-        Writer variablesWriter = indentEngine.createWriter(
-                               formEditorSupport.getDocument(),
-                               variablesSection.getBegin().getOffset(),
-                               variablesBuffer);
+        Writer variablesWriter;
+        
+        if (formSettings.getUseIndentEngine())
+            variablesWriter = indentEngine.createWriter(
+                                formEditorSupport.getDocument(),
+                                variablesSection.getBegin().getOffset(),
+                                variablesBuffer);
+        else
+            variablesWriter = variablesBuffer;
+        
         try {
             variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
@@ -893,7 +908,11 @@ class JavaCodeGenerator extends CodeGenerator {
             variablesWriter.write("\n"); // NOI18N
             variablesWriter.close();
 
-            variablesSection.setText(variablesBuffer.toString());
+            String newText = variablesBuffer.toString();
+            if (!formSettings.getUseIndentEngine())
+                newText = indentCode(newText, indentEngine);
+
+            variablesSection.setText(newText);
             clearUndo();
         }
         catch (IOException e) { // should not happen
@@ -2329,6 +2348,173 @@ class JavaCodeGenerator extends CodeGenerator {
             ensureMainClassImplementsListeners();
             FormModel.t("code regenerated"); //NOI18N
         }
+    }
+    
+    private String indentCode(String code, IndentEngine refEngine) {
+        int spacesPerTab = 4;
+        boolean braceOnNewLine = false;
+        
+        if (refEngine != null) {
+            Class engineClass = refEngine.getClass();
+            try {
+                Method m = engineClass.getMethod("getSpacesPerTab", // NOI18N
+                        new Class[0]);
+                spacesPerTab = ((Integer)m.invoke(refEngine, new Object[0]))
+                .intValue();
+            } catch (Exception ex) {} // ignore
+            
+            try {
+                Method m = engineClass.getMethod("getJavaFormatNewlineBeforeBrace", // NOI18N
+                        new Class[0]);
+                braceOnNewLine = ((Boolean)m.invoke(refEngine, new Object[0]))
+                .booleanValue();
+            } catch (Exception ex) {} // ignore
+        }
+        
+        StringBuffer tab = new StringBuffer(spacesPerTab);
+        for (int i=0; i < spacesPerTab; i++)
+            tab.append(" "); // NOI18N
+        
+        return doIndentation(code, 1, tab.toString(), braceOnNewLine);
+    }
+    
+    // simple indentation method
+    private static String doIndentation(String code,
+            int minIndentLevel,
+            String tab,
+            boolean braceOnNewLine) {
+
+        int indentLevel = minIndentLevel;
+        boolean lastLineEmpty = false;
+        int codeLength = code.length();
+        StringBuffer buffer = new StringBuffer(codeLength);
+        
+        int i = 0;
+        while (i < codeLength) {
+            int lineStart = i;
+            int lineEnd;
+            boolean startingSpace = true;
+            boolean firstClosingBr = false;
+            boolean closingBr = false;
+            int lastOpeningBr = -1;
+            int endingSpace = -1;
+            boolean insideString = false;
+            int brackets = 0;
+            char c;
+            
+            do { // go through one line
+                c = code.charAt(i);
+                if (!insideString) {
+                    if (c == '}' || c == ')') {
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            firstClosingBr = true;
+                            closingBr = true;
+                            startingSpace = false;
+                            lineStart = i;
+                        } else if (!closingBr)
+                            brackets--;
+                    } else if (c == '{' || c == '(') {
+                        closingBr = false;
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            startingSpace = false;
+                            lineStart = i;
+                        } else if (c == '{') // possible last brace on the line
+                            lastOpeningBr = i;
+                        brackets++;
+                    } else if (c == '\"') { // start of String, its content is ignored
+                        insideString = true;
+                        lastOpeningBr = -1;
+                        endingSpace = -1;
+                        if (startingSpace) { // first non-space char on the line
+                            startingSpace = false;
+                            lineStart = i;
+                        }
+                        
+                    } else if (c == ' ' || c == '\t') {
+                        if (endingSpace < 0)
+                            endingSpace = i;
+                    } else {
+                        if (startingSpace) { // first non-space char on the line
+                            startingSpace = false;
+                            lineStart = i;
+                        }
+                        if (c != '\n') { // this char is not a whitespace
+                            endingSpace = -1;
+                            if (lastOpeningBr > -1)
+                                lastOpeningBr = -1;
+                        }
+                    }
+                } else if (c == '\"' && code.charAt(i-1) != '\\') // end of String
+                    insideString = false;
+                
+                i++;
+            }
+            while (c != '\n' && i < codeLength);
+            
+            if ((i-1 == lineStart && code.charAt(lineStart) == '\n')
+            || (i-2 == lineStart && code.charAt(lineStart) == '\r')) {
+                // the line is empty
+                if (!lastLineEmpty) {
+                    buffer.append("\n"); // NOI18N
+                    lastLineEmpty = true;
+                }
+                continue; // skip second and more empty lines
+            } else lastLineEmpty = false;
+            
+            // adjust indentation level for the line
+            if (firstClosingBr) { // the line starts with } or )
+                if (indentLevel > minIndentLevel)
+                    indentLevel--;
+                if (brackets < 0)
+                    brackets = 0; // don't change indentation for the next line
+            }
+            
+            // write indentation space
+            for (int j=0; j < indentLevel; j++)
+                buffer.append(tab);
+            
+            if (lastOpeningBr > -1 && braceOnNewLine) {
+                // write the line without last opening brace
+                // (indentation option "Add New Line Before Brace")
+                endingSpace = lastOpeningBr;
+                c = code.charAt(endingSpace-1);
+                while (c == ' ' || c == '\t') {
+                    endingSpace--;
+                    c = code.charAt(endingSpace-1);
+                }
+                i = lastOpeningBr;
+                brackets = 0;
+            }
+            
+            // calculate line end
+            if (endingSpace < 0) {
+                if (c == '\n')
+                    if (code.charAt(i-2) == '\r')
+                        lineEnd = i-2; // \r\n at the end of the line
+                    else
+                        lineEnd = i-1; // \n at the end of the line
+                else
+                    lineEnd = i; // end of whole code string
+            } else // skip spaces at the end of the line
+                lineEnd = endingSpace;
+            
+            // write the line
+            buffer.append(code.substring(lineStart, lineEnd));
+            buffer.append("\n"); // NOI18N
+            
+            // calculate indentation level for the next line
+            if (brackets < 0) {
+                if (indentLevel > minIndentLevel)
+                    indentLevel--;
+                
+            } else if (brackets > 0)
+                indentLevel++;
+        }
+        return buffer.toString();
     }
     
     //
