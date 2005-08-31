@@ -698,8 +698,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             if (convIndex == LAYOUT_NATURAL) {
                 layoutInitialized = true;
-            }
-            else if (convIndex >= 0 || layoutCodeNode != null) {
+            } else if (convIndex >= 0 || layoutCodeNode != null) {
                 try {
                     layoutInitialized =
                         layoutSupport.initializeLayoutDelegate(true);
@@ -710,7 +709,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 catch (LinkageError ex) {
                     layoutEx = ex;
                 }
-            }
+            } else if (layoutNode == null) { // Issue 63394: Bean form that is container
+                try {
+                    layoutInitialized = layoutSupport.initializeLayoutDelegate(false);
+                } catch (Exception ex) {
+                    layoutEx = ex;
+                }
+            } 
 
             if (!layoutInitialized) {
                 if (layoutEx != null) { // no LayoutSupportDelegate found
