@@ -75,6 +75,8 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
         
         //for functionnals tests
         keepRefCheckBox.setName("keepRefCheckBox"); // NOI18N
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     private boolean isAcceptable() {
@@ -93,6 +95,8 @@ public class AddRegistIntfPanel extends javax.swing.JPanel {
 
         btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
         btnOK.setEnabled(isAcceptable());
+        btnOK.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
         
         Object returned = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor (

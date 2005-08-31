@@ -67,6 +67,8 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
                 mbeanClassName + " " +  // NOI18N
                 bundle.getString("LBL_OpMethodsAlreadyExist_end") + // NOI18N
                 methodsList.toString());
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     private boolean isAcceptable() {
@@ -85,6 +87,8 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
 
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
+        btnOK.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
         
         Object returned = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor (

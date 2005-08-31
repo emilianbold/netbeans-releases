@@ -216,6 +216,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE")); // NOI18N
         interfaceComboBox.getAccessibleContext().setAccessibleDescription(
                 bundle.getString("ACCESS_REGISTER_STDMBEAN_INTERFACE_DESCRIPTION")); // NOI18N
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     private boolean isAcceptable() {
@@ -233,6 +235,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         String title = bundle.getString("LBL_RegisterMBeanAction.Title"); // NOI18N
         btnOK = new JButton(bundle.getString("LBL_OK")); //NOI18N
         btnOK.setEnabled(isAcceptable());
+        btnOK.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
         
         //set listeners
         mbeanClassTextField.getDocument().addDocumentListener(this);

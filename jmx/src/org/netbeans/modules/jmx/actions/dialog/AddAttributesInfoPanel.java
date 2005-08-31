@@ -66,6 +66,8 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
                 mbeanClassName + " " +  // NOI18N
                 bundle.getString("LBL_AttrMethodsAlreadyExist_end") + // NOI18N
                 methodsList.toString());
+        
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
     public boolean isAcceptable() {
@@ -84,6 +86,8 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
 
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
+        btnOK.getAccessibleContext().setAccessibleDescription(
+                bundle.getString("ACCESS_OK_DESCRIPTION")); // NOI18N
         
         Object returned = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor (
