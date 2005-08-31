@@ -2902,10 +2902,14 @@ public class LayoutDesigner implements LayoutConstants {
         Dimension preferred = visualMapper.getComponentPreferredSize(component.getId());
         for (int i=0; i < DIM_COUNT; i++) {
             LayoutInterval li = component.getLayoutInterval(i);
-            if (LayoutInterval.canResize(li)) {
+            int defPref = li.getPreferredSize();
+            if (LayoutInterval.canResize(li)
+                && (!li.getParent().isParallel()
+                    || LayoutInterval.canResize(li.getParent())
+                    || defPref != NOT_EXPLICITLY_DEFINED))
+            {   // resizing component with size-defining role in parent
                 int current = li.getCurrentSpace().size(i);
                 int pref = i == HORIZONTAL ? preferred.width : preferred.height;
-                int defPref = li.getPreferredSize();
                 if (defPref == NOT_EXPLICITLY_DEFINED)
                     defPref = pref;
                 if (defPref != current)
@@ -3183,6 +3187,14 @@ public class LayoutDesigner implements LayoutConstants {
                 LayoutInterval remaining = parent.getSubInterval(0);
                 layoutModel.removeInterval(remaining);
                 layoutModel.setIntervalAlignment(remaining, parent.getAlignment());
+                if (LayoutInterval.wantResize(remaining) && !LayoutInterval.canResize(parent)) {
+                    // resizing interval in fixed group - make it fixed
+                    if (remaining.isGroup())
+                        operations.suppressGroupResizing(remaining);
+                    else
+                        layoutModel.setIntervalSize(remaining,
+                                USE_PREFERRED_SIZE, remaining.getPreferredSize(), USE_PREFERRED_SIZE);
+                }
                 LayoutInterval superParent = parent.getParent();
                 int i = layoutModel.removeInterval(parent);
                 operations.addContent(remaining, superParent, i);

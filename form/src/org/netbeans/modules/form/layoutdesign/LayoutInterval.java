@@ -894,7 +894,7 @@ public final class LayoutInterval implements LayoutConstants {
      * If there are no other intervals resizing then the parent alignment is
      * returned. If there are resizing intervals on both sides, or the interval
      * itself is resizing, then the there is no (positive) effective alignment.
-     * @return LEADING, TRAILING, or LayoutRegion.NO_POINT
+     * @return LEADING, TRAILING, or DEFAULT
      */
     static int getEffectiveAlignment(LayoutInterval interval) {
         LayoutInterval parent = interval.getParent();
@@ -902,7 +902,7 @@ public final class LayoutInterval implements LayoutConstants {
             return interval.getAlignment();
 
         if (LayoutInterval.wantResize(interval))
-            return LayoutRegion.NO_POINT;
+            return DEFAULT;
 
         boolean before = true;
         boolean leadingFixed = true;
@@ -929,7 +929,7 @@ public final class LayoutInterval implements LayoutConstants {
         if (leadingFixed && trailingFixed)
             return parent.getAlignment();
 
-        return LayoutRegion.NO_POINT; // !leadingFixed && !trailingFixed
+        return DEFAULT; // !leadingFixed && !trailingFixed
     }
 
     static int getEffectiveAlignment(LayoutInterval interval, int edge) {
@@ -968,7 +968,7 @@ public final class LayoutInterval implements LayoutConstants {
         if (beforeFixed && afterFixed)
             return wantResize ? edge : parent.getAlignment();
 
-        return LayoutRegion.NO_POINT; // !leadingFixed && !trailingFixed
+        return DEFAULT; // !leadingFixed && !trailingFixed
     }
 
     /**

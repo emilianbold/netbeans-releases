@@ -37,7 +37,7 @@ class LayoutRegion implements LayoutConstants {
 
     // array of tracked positions - for each tracked point within each dimension
     // - for HORIZONTAL dimension there are LEADING, TRAILING, CENTER points
-    // - for VERTICAL dimension there are LEADIN, TRAILING, CENTER, BASELINE points
+    // - for VERTICAL dimension there are LEADING, TRAILING, CENTER, BASELINE points
     // (the constants can be used as indexes to the array)
     int positions[][];
 
@@ -328,5 +328,20 @@ class LayoutRegion implements LayoutConstants {
                && pos2[LEADING] != UNKNOWN && pos2[TRAILING] != UNKNOWN;
         return pos1[TRAILING] + margin > pos2[LEADING]
                && pos1[LEADING] - margin < pos2[TRAILING];
+    }
+
+    /**
+     * @return whether given regions occupy the same space
+     */
+    static boolean sameSpace(LayoutRegion r1, LayoutRegion r2) {
+        return sameSpace(r1, r2, HORIZONTAL) && sameSpace(r1, r2, VERTICAL);
+    }
+
+    /**
+     * @return whether given regions occupy the same space in given dimension
+     */
+    static boolean sameSpace(LayoutRegion r1, LayoutRegion r2, int dimension) {
+        return r1.positions[dimension][LEADING] == r2.positions[dimension][LEADING]
+            && r1.positions[dimension][TRAILING] == r2.positions[dimension][TRAILING];
     }
 }

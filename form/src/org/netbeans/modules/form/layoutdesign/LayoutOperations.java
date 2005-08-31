@@ -325,20 +325,32 @@ class LayoutOperations implements LayoutConstants {
             if (sub.isParallel()) {
                 int align = sub.getAlignment();
                 boolean sameAlign = true;
+                boolean subResizing = false;
                 Iterator it = sub.getSubIntervals();
                 while (it.hasNext()) {
                     LayoutInterval li = (LayoutInterval) it.next();
-                    if (LayoutInterval.wantResize(li)) { // will span over whole group
-                        sameAlign = true;
-                        break;
+                    if (!subResizing && LayoutInterval.wantResize(li)) {
+                        subResizing = true;
                     }
                     if (li.getAlignment() != align) {
                         sameAlign = false;
                     }
                 }
+                boolean compatible;
+                if (subResizing) {
+                    compatible = false;
+                    if (LayoutInterval.canResize(sub) || !LayoutInterval.canResize(group)) {
+                        for (int j=0; j < group.getSubIntervalCount(); j++) {
+                            if (j != i && LayoutInterval.wantResize(group.getSubInterval(j))) {
+                                compatible = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                else compatible = sameAlign;
 
-                if (sameAlign && LayoutInterval.canResize(sub) == LayoutInterval.canResize(group)) {
-                    // the sub-group can be dissolved into parent group
+                if (compatible) { // the sub-group can be dissolved into parent group
                     mergeParallelGroups(sub);
                     layoutModel.removeInterval(group, i--);
                     while (sub.getSubIntervalCount() > 0) {
