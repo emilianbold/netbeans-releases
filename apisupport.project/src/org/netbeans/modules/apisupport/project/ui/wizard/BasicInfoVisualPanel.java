@@ -464,7 +464,7 @@ public class BasicInfoVisualPanel extends BasicVisualPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         typeChooserPanel.add(platformValue, gridBagConstraints);
         
-        org.openide.awt.Mnemonics.setLocalizedText(managePlatform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_ManagePlatforms"));
+        org.openide.awt.Mnemonics.setLocalizedText(managePlatform, org.openide.util.NbBundle.getMessage(BasicInfoVisualPanel.class, "CTL_ManagePlatforms_g"));
         managePlatform.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 managePlatformActionPerformed(evt);
