@@ -354,13 +354,16 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 //            topDesignComponent instanceof RADVisualContainer && ((RADVisualContainer)topDesignComponent).getLayoutSupport() == null
             // compute designer size from preferred size of top component
             size = comp.getPreferredSize();
-            // remember the size in metadata
-            if (formCont != null) {
-                formCont.setFormSize(null);
-                formCont.setDesignerSize(size);
-            }
-            else if (topDesignComponent == formModel.getTopRADComponent()) {
-                topDesignComponent.setAuxValue(PROP_DESIGNER_SIZE, size);
+            Dimension storedSize = getStoredDesignerSize();
+            if (!size.equals(storedSize)) {
+                // remember the size in metadata
+                if (formCont != null) {
+                    formCont.setFormSize(null);
+                    formCont.setDesignerSize(size);
+                }
+                else if (topDesignComponent == formModel.getTopRADComponent()) {
+                    topDesignComponent.setAuxValue(PROP_DESIGNER_SIZE, size);
+                }
             }
         }
         else size = (Dimension) topDesignComponent.getAuxValue(PROP_DESIGNER_SIZE);

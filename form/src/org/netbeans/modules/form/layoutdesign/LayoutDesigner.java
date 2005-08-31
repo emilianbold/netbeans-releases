@@ -56,6 +56,7 @@ public class LayoutDesigner implements LayoutConstants {
     // updates of the current visual state stored in the model
 
     public boolean updateCurrentState() {
+        Object changeMark = layoutModel.getChangeMark();
         if (imposeSize || optimizeStructure) {
             modelListener.deactivate(); // some changes may happen...
         }
@@ -76,13 +77,10 @@ public class LayoutDesigner implements LayoutConstants {
                     //  a problem as there should be no visual difference]
                 }
             }
-
-            visualStateUpToDate = true;
-            return true; // structure change happened
         }
 
         visualStateUpToDate = true;
-        return false;
+        return !changeMark.equals(layoutModel.getChangeMark());
     }
 
     public void externalSizeChangeHappened() {
