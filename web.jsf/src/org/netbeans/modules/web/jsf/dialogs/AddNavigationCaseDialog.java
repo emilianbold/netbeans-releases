@@ -66,15 +66,18 @@ public class AddNavigationCaseDialog extends javax.swing.JPanel implements Valid
         if (getFromAction().length() == 0 && getFromOutcome().length() == 0)
             return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_EmptyFromActionOutcome");
         NavigationRule rule = JSFConfigUtilities.findNavigationRule(config, getRule());
-        NavigationCase[] cases = rule.getNavigationCase();
-        String from;
-        for (int i = 0; i < cases.length; i++){
-            from = cases[i].getFromAction();
-            if (from != null && from.equals(getFromAction()))
-                return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_FromActionExist");
-            from = cases[i].getFromOutcome();
-            if (from != null && from.equals(getFromOutcome()))
-                return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_FromOutcomeExist");
+        //if the rule exist, check whether doesn't already indlclude the case
+        if (rule != null){
+            NavigationCase[] cases = rule.getNavigationCase();
+            String from;
+            for (int i = 0; i < cases.length; i++){
+                from = cases[i].getFromAction();
+                if (from != null && from.equals(getFromAction()))
+                    return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_FromActionExist");
+                from = cases[i].getFromOutcome();
+                if (from != null && from.equals(getFromOutcome()))
+                    return NbBundle.getMessage(AddManagedBeanDialog.class,"MSG_AddNavigationCase_FromOutcomeExist");
+            }
         }
         return null;
     }
