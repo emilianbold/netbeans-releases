@@ -198,6 +198,7 @@ public final class LayerNode extends FilterNode {
             }
             public SystemAction[] getActions(Set/*<FileObject>*/ foSet) {
                 return new SystemAction[] {
+                    SystemAction.get(PickNameAction.class),
                     SystemAction.get(PickIconAction.class),
                 };
             }
