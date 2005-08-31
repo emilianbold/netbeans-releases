@@ -11,7 +11,6 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<!-- XXX publish to www/www/ns/ when finished -->
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://www.netbeans.org/ns/nb-module-project/2"
             xmlns="http://www.netbeans.org/ns/nb-module-project/2"
