@@ -691,11 +691,11 @@ public class LayoutModel implements LayoutConstants {
     // -----
     // changes recording and undo/redo
 
-    boolean isChangeRecording() {
+    public boolean isChangeRecording() {
         return recordingChanges;
     }
 
-    void setChangeRecording(boolean record) {
+    public void setChangeRecording(boolean record) {
         recordingChanges = record;
     }
 

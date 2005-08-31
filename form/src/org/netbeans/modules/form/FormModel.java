@@ -95,6 +95,7 @@ public class FormModel
             if (FormUtils.isContainer(formClass)) {
                 topComp = new RADVisualFormContainer();
                 layoutModel = new LayoutModel();
+                layoutModel.setChangeRecording(false);
             }
             else {
                 topComp = new RADVisualComponent();
@@ -603,6 +604,8 @@ public class FormModel
             undoRedoManager = new UndoRedoManager();
             undoRedoManager.setLimit(50);
             setUndoRedoRecording(true);
+            if (layoutModel != null)
+                layoutModel.setChangeRecording(true);
         }
 //        initializeCodeGenerator(); // [should go away]
 
