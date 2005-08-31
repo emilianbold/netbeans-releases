@@ -141,8 +141,8 @@ public class DiffViewImpl extends javax.swing.JPanel implements DiffView {
         setDiffHighlight(true);
         insertEmptyLinesNotReported();
         
-        Border original = jScrollPane1.getBorder();
-        Color borderColor = original instanceof LineBorder ? ((LineBorder) original).getLineColor() : Color.BLACK;
+        Color borderColor = UIManager.getColor("scrollpane_border");
+        if (borderColor == null) borderColor = UIManager.getColor("controlShadow");
         jScrollPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         jScrollPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         jSplitPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));

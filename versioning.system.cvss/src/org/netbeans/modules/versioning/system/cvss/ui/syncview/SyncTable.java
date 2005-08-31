@@ -125,8 +125,8 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
-        Border original = component.getBorder();
-        Color borderColor = original instanceof LineBorder ? ((LineBorder) original).getLineColor() : Color.BLACK;
+        Color borderColor = UIManager.getColor("scrollpane_border");
+        if (borderColor == null) borderColor = UIManager.getColor("controlShadow");
         component.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new SyncTableCellRenderer());
