@@ -23,7 +23,8 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.common;
  * @author Peter Williams
  */
 public class HelpContext {
-	
+
+        public static final String HELP_WEBAPP_IDEMPOTENTURLPATTERN_POPUP="AS_CFG_WebAppIdempotentUrlPatternProperty";
 	public static final String HELP_WEBAPP_JSPCONFIG_POPUP = "AS_CFG_WebAppJspConfigProperty";
 	public static final String HELP_WEBAPP_PROPERTY_POPUP = "AS_CFG_WebAppProperty";
 	public static final String HELP_SESSIONCONFIG_MANAGER_POPUP = "AS_CFG_SessionConfigurationManagerProperty";
@@ -38,6 +39,7 @@ public class HelpContext {
 	public static final String HELP_CACHE_HELPER_DEFINITION_POPUP = "AS_CFG_WebAppCacheHelperDefinition";
 	public static final String HELP_CACHE_HELPER_PROPERTY_POPUP = "AS_CFG_WebAppCacheHelperProperty";
 	public static final String HELP_CACHE_MAPPING_POLICY_POPUP = "AS_CFG_WebAppCacheMappingPolicy";
+	public static final String HELP_CACHE_MAPPING_DISPATCHER_POPUP = "AS_CFG_WebAppCacheMappingDispatcherField";
 	public static final String HELP_CACHE_MAPPING_KEYFIELD_POPUP = "AS_CFG_WebAppCacheMappingKeyField";
 	public static final String HELP_CACHE_MAPPING_CONSTRAINT_POPUP = "AS_CFG_WebAppCacheMappingConstraintField";
 	public static final String HELP_CACHE_MAPPING_CONSTRAINT_VALUE_POPUP = "AS_CFG_WebAppCacheMappingConstraintFieldValue";
