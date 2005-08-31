@@ -198,15 +198,10 @@ public final class LayoutComponent implements LayoutConstants {
     // kept to be available quickly for the layout designer
 
     void setCurrentBounds(Rectangle bounds, int baseline) {
-        LayoutRegion space = null;
-        for (int i=0; i < layoutIntervals.length; i++) {
-            if (space == null) {
-                space = layoutIntervals[i].getCurrentSpace();
-                space.set(bounds, baseline > 0 ? bounds.y + baseline : LayoutRegion.UNKNOWN);
-            }
-            else {
-                layoutIntervals[i].setCurrentSpace(space);
-            }
+        LayoutRegion space = layoutIntervals[0].getCurrentSpace();;
+        space.set(bounds, baseline > 0 ? bounds.y + baseline : LayoutRegion.UNKNOWN);
+        for (int i=1; i < layoutIntervals.length; i++) {
+            layoutIntervals[i].setCurrentSpace(space);
         }
     }
 
