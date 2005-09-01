@@ -15,7 +15,6 @@ package org.netbeans.modules.apisupport.project.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,8 +30,8 @@ import org.netbeans.modules.apisupport.project.NbModuleTypeProvider;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.SuiteProvider;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -40,112 +39,123 @@ import org.openide.filesystems.FileUtil;
 
 /**
  * Utility methods for miscellaneous suite module operations like moving its
- * submodules between individual suites, removing submodules, adding and other
+ * subModules between individual suites, removing subModules, adding and other
  * handy methods.
  * All methods should be run within <em>ProjectManager.mutex().writeAccess()<em> (???)
  *
  * @author Martin Krauskopf
  */
-public class SuiteUtils {
+final class SuiteUtils {
     
-    // XXX don't know exact allowed ant property format. We might use something
-    // more gentle like "\\$\\{[\\p{Alnum}-_\\.]+\\}"?
-    private static final String ANT_PROPERTY_REGEXP = "\\$\\{\\p{Graph}+\\}"; // NOI18N
+    // XXX also match "${dir}/somedir/${anotherdir}"
+    private static final String ANT_PURE_PROPERTY_REFERENCE_REGEXP = "\\$\\{\\p{Graph}+\\}"; // NOI18N
     
     private static final String MODULES_PROPERTY = "modules"; // NOI18N
     
-    private SuiteUtils() {};
+    private final SuiteProperties suiteProps;
     
-    public static void replaceSubModules(SuiteProperties suiteProps) throws IOException {
-        removeRemovedSubModules(suiteProps);
-        addModules(suiteProps);
+    private SuiteUtils(final SuiteProperties suiteProps) {
+        this.suiteProps = suiteProps;
     }
     
-    /**
-     * Detach the given <code>subModule</code> from the given
-     * <code>suite</code>. This actually means deleting
-     * <em>nbproject/suite.properties</em> and eventually
-     * <em>nbproject/private/suite-private.properties</em> if it exists from
-     * <code>subModule</code>'s base directory. Also set the
-     * <code>subModule</code>'s type to standalone. Then it intelligently clear
-     * <code>suite</code>'s properties (see {@link #removeSubModuleFromSuite})
-     * for details).
-     * <p>
-     * Also saves both, <code>suite</code> and <code>subModule</code>, using
-     * {@link ProjectManager#saveProject}.
-     */
-    private static void detachSubModuleFromSuite(Project suite, Project subModule) {
-        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) subModule.
-                getLookup().lookup(NbModuleTypeProvider.class);
-        if (nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT) {
-            try {
-                // clean up a submodule
-                
-                // XXX after a few calls this finally calls
-                // AntProjectListener.configurationXmlChanged() which in turns
-                // tries to load subModule's classpath (see
-                // NbModuleProject.computeModuleClasspath). But it is still
-                // computing classpath like if the subModule was
-                // suite-component because project.xml is not written yet. Has
-                // to be solved somehow. Probably need more controll over the
-                // process or manually write or... ?
-                setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
-                
-                File subModuleF = FileUtil.toFile(subModule.getProjectDirectory());
-                FileObject fo = FileUtil.toFileObject(new File(subModuleF, "nbproject/suite.properties")); // NOI18N
-                if (fo != null) {
-                    fo.delete();
-                }
-                fo = FileUtil.toFileObject(new File(subModuleF, "nbproject/private/suite-private.properties")); // NOI18N
-                if (fo != null) {
-                    fo.delete();
-                }
-                
-                // copy platform.properties if it doesn't exist yet
-                File suiteF = FileUtil.toFile(suite.getProjectDirectory());
-                FileObject plafPropsFO = FileUtil.toFileObject(new File(suiteF, "/nbproject/platform.properties")); // NOI18N
-                FileObject subModuleNbProject = FileUtil.toFileObject(new File(subModuleF, "nbproject")); // NOI18N
-                if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
-                    FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
-                }
-                ProjectManager.getDefault().saveProject(subModule);
-                
-                // clean up a suite
-                removeSubModuleFromSuite(suite, subModule);
-                ProjectManager.getDefault().saveProject(suite);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
+    public static void replaceSubModules(final SuiteProperties suiteProps) throws IOException {
+        SuiteUtils utils = new SuiteUtils(suiteProps);
+        Set/*<Project>*/ currentModules = suiteProps.getSubModules();
+        Set/*<Project>*/ origSubModules = suiteProps.getOrigSubModules();
+        
+        // remove removed modules
+        for (Iterator it = origSubModules.iterator(); it.hasNext(); ) {
+            NbModuleProject origModule = (NbModuleProject) it.next();
+            if (!currentModules.contains(origModule)) {
+                utils.removeModule(origModule);
             }
+        }
+        
+        // add new modules
+        for (Iterator it = currentModules.iterator(); it.hasNext(); ) {
+            NbModuleProject currentModule = (NbModuleProject) it.next();
+            if (origSubModules.contains(currentModule)) {
+                continue;
+            }
+            SuiteProject suite = SuiteUtils.findSuite(currentModule);
+            if (suite != null) {
+                // detach module from its current suite
+                SuiteUtils.removeModule(suite, currentModule);
+                ProjectManager.getDefault().saveProject(suite);
+            }
+            // attach it to the new suite
+            utils.attachSubModuleToSuite(currentModule);
         }
     }
     
+    private static void removeModule(final SuiteProject suite, final NbModuleProject subModule) throws IOException {
+        SubprojectProvider spp = (SubprojectProvider) suite.getLookup().lookup(SubprojectProvider.class);
+        Set/*<Project>*/ subModules = spp.getSubprojects();
+        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
+                suite.getEvaluator(), subModules);
+        SuiteUtils utils = new SuiteUtils(suiteProps);
+        utils.removeModule(subModule);
+        suiteProps.storeProperties();
+    }
+    
     /**
-     * Use {@link #detachSubModuleFromSuite} for complete detaching.
+     * Detach the given <code>subModule</code> from the suite. This actually
+     * means deleting its <em>nbproject/suite.properties</em> and eventually
+     * <em>nbproject/private/suite-private.properties</em> if it exists from
+     * <code>subModule</code>'s base directory. Also set the
+     * <code>subModule</code>'s type to standalone. Then it accordingly set the
+     * <code>suite</code>'s properties (see {@link #removeFromProperties})
+     * for details).
      * <p>
-     * Intelligently (XXX not so truthful in the meantime) removes the given
-     * <code>subModule</code> from the given <code>suite</code>'s properties
-     * and <b>saves</b> those properties into a disk.
+     * Also saves <code>subModule</code> using {@link ProjectManager#saveProject}.
      * </p>
      */
-    private static void removeSubModuleFromSuite(Project suite, Project subModule) throws IOException {
-        // load project.properties
-        FileObject suiteFO = suite.getProjectDirectory();
-        File suiteF = FileUtil.toFile(suiteFO);
-        FileObject subModuleFO = subModule.getProjectDirectory();
-        File subModuleF = FileUtil.toFile(subModuleFO);
-        FileObject projectPropsFO = suiteFO.getFileObject(SuiteProjectGenerator.PROJECT_PROPERTIES_PATH);
-        assert projectPropsFO != null : "Suite project doesn't have project.properties"; // NOI18N
-        EditableProperties projectProps = loadProperties(projectPropsFO);
-        // load private.properties
-        FileObject privatePropsFO = suiteFO.getFileObject(SuiteProjectGenerator.PRIVATE_PROPERTIES_PATH);
-        EditableProperties privateProps = privatePropsFO == null ? new EditableProperties(true) : loadProperties(privatePropsFO);
+    private void removeModule(NbModuleProject subModule) {
         
-        if (removeSubModule(projectProps, privateProps, suiteF, subModuleF)) {
-            // store properties files to a disk
-            Util.storeProperties(projectPropsFO, projectProps);
-            if (privatePropsFO != null) {
-                Util.storeProperties(privatePropsFO, privateProps);
+        NbModuleTypeProvider nmtp = (NbModuleTypeProvider) subModule.
+                getLookup().lookup(NbModuleTypeProvider.class);
+        assert nmtp.getModuleType() == NbModuleTypeProvider.SUITE_COMPONENT : "Not a suite component"; // NOI18N
+        try {
+            // clean up a subModule
+            
+            // XXX after a few calls this finally calls
+            // AntProjectListener.configurationXmlChanged() which in turns
+            // tries to load subModule's classpath (see
+            // NbModuleProject.computeModuleClasspath). But it is still
+            // computing classpath like if the subModule was
+            // suite-component because project.xml is not written yet. Has
+            // to be solved somehow. Probably need more controll over the
+            // process or manually write or... ?
+            SuiteUtils.setNbModuleType(subModule, NbModuleTypeProvider.STANDALONE);
+            
+            // remove both suite properties files
+            FileObject subModuleDir = subModule.getProjectDirectory();
+            FileObject fo = subModuleDir.getFileObject(
+                    "nbproject/suite.properties"); // NOI18N
+            if (fo != null) {
+                fo.delete();
             }
+            fo = subModuleDir.getFileObject(
+                    "nbproject/private/suite-private.properties"); // NOI18N
+            if (fo != null) {
+                fo.delete();
+            }
+            
+            // copy suite's platform.properties to the module (needed by standalone module)
+            FileObject plafPropsFO = suiteProps.getProject().getProjectDirectory().
+                    getFileObject("nbproject/platform.properties"); // NOI18N
+            FileObject subModuleNbProject = subModuleDir.getFileObject("nbproject"); // NOI18N
+            if (subModuleNbProject.getFileObject("platform.properties") == null) { // NOI18N
+                FileUtil.copyFile(plafPropsFO, subModuleNbProject, "platform"); // NOI18N
+            }
+            
+            // save subModule
+            ProjectManager.getDefault().saveProject(subModule);
+            
+            // now clean up the suite
+            removeFromProperties(subModule);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
     }
     
@@ -156,124 +166,44 @@ public class SuiteUtils {
      *
      * @return wheter something has changed or not
      */
-    private static boolean removeSubModule(
-            EditableProperties projectProps, EditableProperties privateProps,
-            File suiteF, File subModuleF) {
-        String modulesProp = projectProps.getProperty(MODULES_PROPERTY);
+    private boolean removeFromProperties(NbModuleProject moduleToRemove) {
+        String modulesProp = suiteProps.getProperty(MODULES_PROPERTY);
         boolean removed = false;
         if (modulesProp != null) {
             List pieces = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath(modulesProp)));
-            for (Iterator it = pieces.iterator(); it.hasNext(); ) {
-                String module = (String) it.next();
-                // every submodules created by GUI customizer has its own
-                // property but user should add manually path into the modules
-                // property directly.
-                if (module.matches(ANT_PROPERTY_REGEXP)) {
-                    String key = module.substring(2, module.length() - 1);
-                    
-                    String value = projectProps.getProperty(key);
-                    if (value != null &&
-                            PropertyUtils.resolveFile(suiteF, value).equals(subModuleF)) {
-                        projectProps.remove(key);
-                        it.remove();
-                        removed = true;
-                        break;
-                    }
-                    
-                    value = privateProps.getProperty(key);
-                    if (value != null &&
-                            new File(value).equals(subModuleF)) {
-                        privateProps.remove(key);
-                        it.remove();
-                        removed = true;
-                        break;
-                    }
-                } else {
-                    if (new File(module).equals(subModuleF)) {
-                        it.remove();
-                        removed = true;
-                        break;
-                    }
+            for (Iterator piecesIt = pieces.iterator(); piecesIt.hasNext(); ) {
+                String unevaluated = (String) piecesIt.next();
+                String evaluated = suiteProps.getEvaluator().evaluate(unevaluated);
+                if (evaluated == null) {
+                    Util.err.log("Cannot evaluate " + unevaluated + " property."); // NOI18N
+                    continue;
                 }
-            }
-            if (removed) {
-                projectProps.setProperty(MODULES_PROPERTY, getAntProperty(pieces));
+                if (moduleToRemove.getProjectDirectory() !=
+                        suiteProps.getHelper().resolveFileObject(evaluated)) {
+                    continue;
+                }
+                piecesIt.remove();
+                suiteProps.setProperty(MODULES_PROPERTY, getAntProperty(pieces));
+                removed = true;
+                // if the value is pure reference also tries to remove that
+                // reference which is nice to have. Otherwise just do nothing.
+                if (unevaluated.matches(ANT_PURE_PROPERTY_REFERENCE_REGEXP)) {
+                    String key = unevaluated.substring(2, unevaluated.length() - 1);
+                    suiteProps.removeProperty(key);
+                    suiteProps.removePrivateProperty(key);
+                }
+                break;
             }
         }
         return removed;
     }
     
-    private static EditableProperties loadProperties(FileObject propsFO) throws IOException {
-        EditableProperties projectProps = new EditableProperties(true);
-        InputStream is = propsFO.getInputStream();
-        try {
-            projectProps.load(is);
-        } finally {
-            is.close();
-        }
-        return projectProps;
-    }
-    
-    /**
-     * Removes removed submodues only. Calls {@link #detachSubModuleFromSuite}
-     * for each such a module.
-     */
-    private static void removeRemovedSubModules(SuiteProperties suiteProps) throws IOException {
-        Set/*<Project>*/ subModules = suiteProps.getSubModules();
-        Set/*<Project>*/ origSubModules = suiteProps.getOrigSubModules();
-        for (Iterator it = origSubModules.iterator(); it.hasNext(); ) {
-            Project subModule = (Project) it.next();
-            if (!subModules.contains(subModule)) {
-                detachSubModuleFromSuite(suiteProps.getProject(), subModule);
-                removeSubModule(suiteProps.getProjectProperties(),
-                        suiteProps.getPrivateProperties(),
-                        suiteProps.getProjectDirectoryFile(),
-                        FileUtil.toFile(subModule.getProjectDirectory()));
-            }
-        }
-    }
-    
-    private static void addModules(SuiteProperties suiteProps) throws IOException {
-        Set/*<Project>*/ subModules = suiteProps.getSubModules();
-        Set/*<Project>*/ origSubModules = suiteProps.getOrigSubModules();
-        for (Iterator it = subModules.iterator(); it.hasNext(); ) {
-            Project subModule = (Project) it.next();
-            if (origSubModules.contains(subModule)) {
-                continue;
-            }
-            Project suite = getSuite(subModule);
-            if (suite != null) {
-                // detach module from his current suite
-                detachSubModuleFromSuite(suite, subModule);
-            }
-            // attach it to the new suite
-            attachSubModuleToSuite(suiteProps, subModule,
-                    suiteProps.getHelper().getProjectDirectory());
-        }
-    }
-    
-    /** Returns suite for the given suite component. */
-    private static Project getSuite(Project comp) throws IOException {
-        SuiteProvider sp = (SuiteProvider) comp.getLookup().lookup(SuiteProvider.class);
-        Project suite = null;
-        if (sp != null && sp.getSuiteDirectory() != null) {
-            suite = ProjectManager.getDefault().findProject(
-                    FileUtil.toFileObject(sp.getSuiteDirectory()));
-        }
-        return suite;
-    }
-    
-    // XXX stolen from NbModuleProjectGenerator.appendToSuite - get rid of
-    // duplicated code!
-    private static void attachSubModuleToSuite(SuiteProperties suiteProps, Project subModule,
-            FileObject suiteDir) throws IOException {
-        
+    private void attachSubModuleToSuite(Project subModule) throws IOException {
         // adjust suite project's properties
         File projectDirF = FileUtil.toFile(subModule.getProjectDirectory());
-        File suiteDirF = FileUtil.toFile(suiteDir);
+        File suiteDirF = suiteProps.getProjectDirectoryFile();
         String projectPropKey = "project." + projectDirF.getName(); // NOI18N
         if (CollocationQuery.areCollocated(projectDirF, suiteDirF)) {
-            // XXX the generating of relative path doesn't seem's too clever, check it
             suiteProps.setProperty(projectPropKey,
                     PropertyUtils.relativizeFile(suiteDirF, projectDirF));
         } else {
@@ -301,7 +231,7 @@ public class SuiteUtils {
         pxm.setModuleType(type);
     }
     
-    private static String[] getAntProperty(final Collection pieces) {
+    private String[] getAntProperty(final Collection pieces) {
         List l = new ArrayList();
         for (Iterator it = pieces.iterator(); it.hasNext();) {
             String piece = (String) it.next() + (it.hasNext() ? ":" : ""); // NOI18N
@@ -309,6 +239,17 @@ public class SuiteUtils {
         }
         String [] newPieces = new String[l.size()];
         return (String[]) l.toArray(newPieces);
+    }
+    
+    /** Returns suite for the given suite component. */
+    private static SuiteProject findSuite(Project suiteComponent) throws IOException {
+        SuiteProvider sp = (SuiteProvider) suiteComponent.getLookup().lookup(SuiteProvider.class);
+        Project suite = null;
+        if (sp != null && sp.getSuiteDirectory() != null) {
+            suite = ProjectManager.getDefault().findProject(
+                    FileUtil.toFileObject(sp.getSuiteDirectory()));
+        }
+        return (SuiteProject) suite;
     }
     
 }
