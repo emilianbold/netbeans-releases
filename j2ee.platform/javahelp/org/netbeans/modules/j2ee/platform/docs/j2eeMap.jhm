@@ -191,8 +191,7 @@
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
 	<!-- The Server Manager dialog box (this help id will be moved to server section later): : -->
 	<mapID target="org.netbeans.modules.j2ee.deployment.impl.ui.ServerManagerDialog" url="server/server_register.html" />
-	<!-- The Test Web Service Operation dialog box (this help id will be moved to web service section later): -->
-	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/websvcdb.html" />
+
 
 <!-- End of CSH for Web Applications -->
 
@@ -242,6 +241,13 @@
 	<mapID target="wsc_secure" url="webservice/consume/wsc_secure.html" />
 	<mapID target="wsc_deploy" url="webservice/consume/wsc_deploy.html" />
 	<!-- End of "Consume" section -->
+
+	<!--Start of web service CSH -->
+	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/websvcdb.html" />
+	<mapID target="org.netbeans.modules.websvc.core.client.wizard.WebServiceClientWizardDescriptor" url="webservice/csh/wizards/WebServiceClientWizardDescriptor.html" />
+	<mapID target="org.netbeans.modules.websvc.dev.wizard.WebServiceWizardDescriptor" url="webservice/csh/wizards/WebServiceWizardDescriptor.html" />
+	<mapID target="org.netbeans.modules.websvc.dev.wizard.WsdlPanel" url="webservice/csh/wizards/WsdlPanel.html" />
+	<mapID target="org.netbeans.modules.websvc.dev.wizard.MessageHandlerWizard" url="webservice/csh/wizards/MessageHandlerWizard.html" />
 	
 <!-- End of "Developing Web Services" help -->
 
