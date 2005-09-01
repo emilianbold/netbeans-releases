@@ -135,17 +135,58 @@ public class SelectLayoutAction extends CallableSystemAction {
                 mi.addActionListener(new LayoutActionListener(null));
                 popup.addSeparator();
 
+                RADVisualContainer container = getContainer(nodes[0]);                
+                boolean hasFreeDesignSupport = hasFreeDesignSupport(container);
+                if(hasFreeDesignSupport){
+                    setBoldFontForMenuText(mi);                        
+                }
+                
                 PaletteItem[] layouts = getAllLayouts();
                 for (int i = 0; i < layouts.length; i++) {
                     mi = new JMenuItem(layouts[i].getNode().getDisplayName());
-                    HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());
-                    popup.add(mi);
+                    HelpCtx.setHelpIDString(mi, SelectLayoutAction.class.getName());                    
+                    addSortedMenuItem(popup, mi);
                     mi.addActionListener(new LayoutActionListener(layouts[i]));
+                    if(!hasFreeDesignSupport && isContainersLayout(container, layouts[i])){
+                        setBoldFontForMenuText(mi);                                                                        
+                    }                     
                 }
                 initialized = true;
             }
             return popup;
         }
+        
+        private boolean hasFreeDesignSupport(RADVisualContainer container){
+            return container != null && container.getLayoutSupport() == null;
+        }        
+        
+        private boolean isContainersLayout(RADVisualContainer container, PaletteItem layout){
+            return container != null 
+                   && (container.getLayoutSupport().getLayoutDelegate().getSupportedClass() == layout.getComponentClass() 
+                       || (container.getLayoutSupport().getLayoutDelegate().getClass() == org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport.class &&
+                           layout.getComponentClass() == org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport.class));
+        }
+
+        private static void addSortedMenuItem(JPopupMenu menu, JMenuItem menuItem) {
+            int n = menu.getComponentCount();
+            String text = menuItem.getText();
+            for (int i = 2; i < n; i++) { // 2 -> Free Design Item & Separator shouldn't be sorted
+                if(menu.getComponent(i) instanceof JMenuItem){
+                    String tx = ((JMenuItem)menu.getComponent(i)).getText();
+                    if (text.compareTo(tx) < 0) {
+                        menu.add(menuItem, i);
+                        return;
+                    }
+                }
+            }
+            menu.add(menuItem);
+        }
+
+        private static void setBoldFontForMenuText(JMenuItem mi) {
+            java.awt.Font font = mi.getFont();
+            mi.setFont(font.deriveFont(font.getStyle() | java.awt.Font.BOLD));
+        }
+    
     }
 
     private static class LayoutActionListener implements ActionListener {
