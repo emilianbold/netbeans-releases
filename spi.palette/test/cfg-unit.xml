@@ -26,15 +26,13 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="core/palette">
 
 
-    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="code" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/spi/palette/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
-
-
 
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->

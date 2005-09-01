@@ -13,6 +13,9 @@
 
 package org.netbeans.spi.palette;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+
 
 /**
  *
@@ -20,20 +23,30 @@ package org.netbeans.spi.palette;
  */
 public class DummyActions extends PaletteActions {
     
+    private Action[] paletteActions = new Action[] { new DummyAction(1), new DummyAction(2), new DummyAction(3) };
+    private Action[] categoryActions = new Action[] { new DummyAction(10), new DummyAction(20), new DummyAction(30) };
+    private Action[] itemActions = new Action[] { new DummyAction(100), new DummyAction(200), new DummyAction(300) };
+    
+    private Action preferredAction;
+    
     /** Creates a new instance of DummyActions */
     public DummyActions() {
     }
 
     public javax.swing.Action getPreferredAction(org.openide.util.Lookup item) {
-        return null;
+        return preferredAction;
+    }
+    
+    void setPreferredAction( Action a ) {
+        this.preferredAction = a;
     }
 
     public javax.swing.Action[] getCustomItemActions(org.openide.util.Lookup item) {
-        return null;
+        return itemActions;
     }
 
     public javax.swing.Action[] getCustomCategoryActions(org.openide.util.Lookup category) {
-        return null;
+        return categoryActions;
     }
 
     public javax.swing.Action[] getImportActions() {
@@ -41,6 +54,16 @@ public class DummyActions extends PaletteActions {
     }
 
     public javax.swing.Action[] getCustomPaletteActions() {
-        return null;
+        return paletteActions;
+    }
+    
+    private static class DummyAction extends AbstractAction {
+        public DummyAction( int id ) {
+            super( "Action_" + id );
+        }
+
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            System.out.println( "Action " + getValue( Action.NAME ) + " invoked." );
+        }
     }
 }
