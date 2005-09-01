@@ -113,7 +113,7 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         
         if (icon == null) {
             icon = new ImageIcon(Utilities.loadImage(
-                "org/netbeans/lib/editor/codetemplates/resources/codeTemplate.gif"));
+                "org/netbeans/lib/editor/codetemplates/resources/code_template.png"));
         }
         CompletionUtilities.renderHtml(icon, getLeftText(), getRightText(),
                 g, defaultFont, defaultColor, width, height, selected);
