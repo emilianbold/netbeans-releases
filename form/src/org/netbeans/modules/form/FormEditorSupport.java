@@ -101,12 +101,6 @@ public class FormEditorSupport extends JavaEditor
         }
         multiviewTC = openCloneableTopComponent();
         multiviewTC.requestActive();
-        try {
-            addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
-            updateMVTCDisplayName();
-        } catch (FileStateInvalidException fsiex) {
-            fsiex.printStackTrace();
-        }
 
         if (switchToForm) {
             MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
@@ -122,7 +116,8 @@ public class FormEditorSupport extends JavaEditor
                     Iterator iter = opened.iterator();
                     while (iter.hasNext()) {
                         FormEditorSupport fes = (FormEditorSupport)iter.next();
-                        if (ev.hasChanged(fes.getFormDataObject().getPrimaryFile())) {
+                        if (ev.hasChanged(fes.getFormDataObject().getPrimaryFile())
+                            || ev.hasChanged(fes.getFormDataObject().getFormFile())) {
                             fes.updateMVTCDisplayName();
                         }
                     }
@@ -472,6 +467,11 @@ public class FormEditorSupport extends JavaEditor
         Mode editorMode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
+        }
+        try {
+            addStatusListener(formDataObject.getPrimaryFile().getFileSystem());
+        } catch (FileStateInvalidException fsiex) {
+            fsiex.printStackTrace();
         }
         return (CloneableEditorSupport.Pane)mvtc;
     }
