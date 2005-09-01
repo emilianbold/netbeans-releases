@@ -96,4 +96,8 @@ public class DefaultItem implements Item {
         }
         return null;
     }
+    
+    public String toString() {
+        return itemNode.getDisplayName();
+    }
 }
