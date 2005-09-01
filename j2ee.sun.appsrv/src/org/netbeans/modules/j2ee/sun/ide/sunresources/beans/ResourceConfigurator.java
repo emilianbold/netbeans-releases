@@ -85,34 +85,25 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.j2ee.sun.ide.sunresources.beans.Bundle");// NOI18N
     
-    File resourceDir;
-    
-    public ResourceConfigurator(){
-    }
-    
     /**
      * Creates a new instance of ResourceConfigurator
      */
-    public ResourceConfigurator(File dir) {
-        setFile(dir);
+    public ResourceConfigurator(){
     }
+    
     
     public void setDeploymentManager(DeploymentManager dm){
         this.currentDM = dm;
     }
     
-    public void setFile(File dir){
-        this.resourceDir = dir;
-    }
-    
-    public boolean isJMSResourceDefined(String jndiName) {
-        if(resourceAlreadyDefined(jndiName, __JMSResource)) 
+    public boolean isJMSResourceDefined(String jndiName, File dir) {
+        if(resourceAlreadyDefined(jndiName, dir, __JMSResource)) 
             return true;
         else
             return false;    
     }
     
-    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName){
+    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir){
         Resources resources = DDProvider.getDefault().getResourcesGraph();
         JmsResource jmsResource = resources.newJmsResource();
         jmsResource.setJndiName(jndiName);
@@ -126,7 +117,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jmsResource.addPropertyElement(prop);
         resources.addJmsResource(jmsResource);
         try{
-            createFile(this.resourceDir, jndiName, __JMSResource, resources);
+            createFile(dir, jndiName, __JMSResource, resources);
         }catch(Exception ex){
             //Unable to saveJMSResourceDatatoXml
             System.out.println(ex.getMessage());
@@ -149,14 +140,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jmsCntnFactoryResource.setDescription(""); //NOI18N
         resources.addJmsResource(jmsCntnFactoryResource);
         try{
-            createFile(this.resourceDir, jndiName, __JMSConnectionFactory, resources);
+            createFile(dir, jndiName, __JMSConnectionFactory, resources);
         }catch(Exception ex){
             //Unable to saveJMSResourceDatatoXml
             System.out.println(ex.getMessage());
         }
     }
         
-    public void createJDBCDataSourceFromRef(String refName, String databaseInfo){
+    public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir){
         String name = refName;
         if(databaseInfo != null){
             String vendorName = convertToValidName(databaseInfo);
@@ -164,20 +155,20 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 name = vendorName;
             
             //Is connection pool already defined
-            String poolName = generatePoolName(name, this.resourceDir, databaseInfo);
+            String poolName = generatePoolName(name, dir, databaseInfo);
             if(poolName == null){
-                if(resourceAlreadyDefined(refName, __JdbcResource))
+                if(resourceAlreadyDefined(refName, dir, __JdbcResource))
                     return;
                 else
-                    createJDBCResource(name, refName, databaseInfo, this.resourceDir);
+                    createJDBCResource(name, refName, databaseInfo, dir);
             }else{
                 name = poolName;
-                createCPPoolAndJDBCResource(name, refName, databaseInfo, this.resourceDir);
+                createCPPoolAndJDBCResource(name, refName, databaseInfo, dir);
             }
         }
     }
     
-    public String createJDBCDataSourceForCmp(String beanName, String databaseInfo){
+    public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir){
         String name = "jdbc/" + beanName; //NOI18N
         String jndiName = name;
         if(databaseInfo != null){
@@ -186,14 +177,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 name = vendorName;
             
             //return if resource already defined
-            String poolName = generatePoolName(name, this.resourceDir, databaseInfo);
+            String poolName = generatePoolName(name, dir, databaseInfo);
             if(poolName == null)
                 return null;
             else
                 name = poolName;
             jndiName = "jdbc/" + name;
             
-            createCPPoolAndJDBCResource(name, jndiName, databaseInfo, this.resourceDir);
+            createCPPoolAndJDBCResource(name, jndiName, databaseInfo, dir);
             if(this.showMsg){
                 String mess = MessageFormat.format(bundle.getString("LBL_UnSupportedDriver"), new Object[]{jndiName}); //NOI18N
                 showInformation(mess);
@@ -361,7 +352,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             jdbcConnectionPool.addPropertyElement(password);
             resources.addJdbcConnectionPool(jdbcConnectionPool);
             try{
-                createFile(this.resourceDir, name, __JdbcConnectionPool, resources);
+                createFile(resourceDir, name, __JdbcConnectionPool, resources);
             }catch(Exception exception){
                 //Unable to save JdbcConnectionPool to Xml
                 System.out.println(exception.getMessage());
@@ -478,7 +469,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         String name = resourceName;
         //return null if resource already defined
         database = stripExtraDBInfo(database);
-        if(resourceAlreadyDefined(resourceName, __JdbcConnectionPool)) {
+        if(resourceAlreadyDefined(resourceName, resourceDir, __JdbcConnectionPool)) {
             boolean sameDBConnection = connectionPoolAlreadyDefined(resourceName, __JdbcConnectionPool, resourceDir, database);
             name = null;
             if(! sameDBConnection){
@@ -492,10 +483,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return name;
     }
 
-    private boolean resourceAlreadyDefined(String resName, String resType){
+    private boolean resourceAlreadyDefined(String resName, File dir, String resType){
         boolean returnVal = false;
         String filename = getFileName(resName, resType);
-        File resourceFile =  new File(this.resourceDir, filename);
+        File resourceFile =  new File(dir, filename);
         if(resourceFile.exists()){
             returnVal = true;
         }

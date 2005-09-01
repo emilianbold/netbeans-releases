@@ -25,14 +25,12 @@ import java.io.File;
  */
 public interface ResourceConfiguratorInterface {
     
-    public void setFile(File dir);
+    public boolean isJMSResourceDefined(String jndiName, File dir);
     
-    public boolean isJMSResourceDefined(String jndiName);
+    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir);
     
-    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName);
+    public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir);
     
-    public void createJDBCDataSourceFromRef(String refName, String databaseInfo);
-    
-    public String createJDBCDataSourceForCmp(String beanName, String databaseInfo);
+    public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir);
     
 }
