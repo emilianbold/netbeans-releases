@@ -41,23 +41,39 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
      */
     public SuiteCustomizerBasicBranding(final SuiteProperties suiteProps) {
         super(suiteProps, SuiteCustomizerBasicBranding.class);
-        initComponents();
-        
+        initComponents();        
+        refresh();        
         DocumentListener textFieldChangeListener = new UIUtil.DocumentAdapter() {
             public void insertUpdate(DocumentEvent e) {
                 checkValidity();
             }
         };
-        
         nameValue.getDocument().addDocumentListener(textFieldChangeListener);
-        titleValue.getDocument().addDocumentListener(textFieldChangeListener);
-        
-        refresh();
+        titleValue.getDocument().addDocumentListener(textFieldChangeListener);                
     }
     
     
     private void checkValidity() {
-        //TODO
+        boolean panelValid = true;
+        
+        if (panelValid && nameValue.getText().trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyName"));//NOI18N
+            panelValid = false;
+        }
+
+        if (panelValid && !nameValue.getText().trim().matches("[a-z][a-z0-9]*(_[a-z][a-z0-9]*)*")) {//NOI18N
+            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_InvalidName"));//NOI18N
+            panelValid = false;
+        }
+        
+        if (panelValid && titleValue.getText().trim().length() == 0) {
+            setErrorMessage(NbBundle.getMessage(SuiteCustomizerBasicBranding.class, "ERR_EmptyTitle"));//NOI18N
+            panelValid = false;
+        }        
+        
+        if (panelValid) {        
+            setErrorMessage(null);
+        }
     }
     
     void refresh() {
@@ -284,5 +300,10 @@ final class SuiteCustomizerBasicBranding extends NbPropertyPanel.Suite {
     
     private BasicBrandingModel getBrandingModel() {
         return getProperties().getBrandingModel();
+    }
+
+    public void addNotify() {
+        super.addNotify();
+        checkValidity();
     }
 }
