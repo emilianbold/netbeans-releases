@@ -106,6 +106,10 @@ public final class UIUtil {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
+        FileFilter[] filters = chooser.getChoosableFileFilters();
+        for (int i = 0; i < filters.length; i++) {
+            chooser.removeChoosableFileFilter(filters[i]);
+        }
         chooser.addChoosableFileFilter(new IconFilter());
         chooser.setFileView(new FileView() {
             public Icon getIcon(File f) {
