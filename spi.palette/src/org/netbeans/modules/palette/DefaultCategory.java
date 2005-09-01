@@ -202,6 +202,7 @@ public class DefaultCategory implements Category, NodeListener {
                 return false;
             }
             order.move( sourceIndex, targetIndex );
+            items = null;
             return true;
         }
         
@@ -269,5 +270,9 @@ public class DefaultCategory implements Category, NodeListener {
             ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ioE );
         }
         return false;
+    }
+    
+    public String toString() {
+        return categoryNode.getDisplayName();
     }
 }
