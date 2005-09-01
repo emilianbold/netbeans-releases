@@ -21,80 +21,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Adds property to IDE command line: suppress scanning of classpath -->
     <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
     
-    <!-- Creates an empty Java project in IDE -->
-    <!-- <property name="xtest.ide.create.project" value="true"/> -->
-    <!-- Opens project at specified location -->
-    <!--property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/-->
-
-    <!--property name="xtest.ide.exit" value="false"/-->
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <!-- You can override default qa-functional-compiler if you need something special -->
-    <target name="unit-compiler">
-        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
-            <classpath>
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-                <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-plain-lib.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-                
-                <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
-                <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-project.jar"/>
-                <pathelement location="${web/webapi.dir}/modules/org-netbeans-api-web-webmodule.jar"/>
-                
-                <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-                <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>                
-                <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-project-libraries.jar"/>
-                
-            </classpath>
-        </buildTests>
-    </target>
-    
     <!-- ========= -->
     <!-- Executors -->
     <!-- ========= -->
-    
-    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.-->
-    <target name="runcodetest">        
-        <executeTests  pluginName="jvm">
-            <classpath>
-                <pathelement location="${openide.dir}/core/openide.jar"/>
-                <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-plain-lib.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>
-                
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-java-editor-lib.jar"/>
-                <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-                
-                <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
-                <pathelement location="${web/webapi.dir}/modules/org-netbeans-modules-web-project.jar"/>
-                <pathelement location="${web/webapi.dir}/modules/org-netbeans-api-web-webmodule.jar"/>
-                
-                <pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
-                <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>                
-                <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-project-libraries.jar"/>                
-            </classpath>
+    <target name="runidetest">
+        <executeTests pluginname="ide">
+            <classpath refid="test.qa-functional.run.cp"/>
         </executeTests>
     </target>
     

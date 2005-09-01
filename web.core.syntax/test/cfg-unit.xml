@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="validation" executor="code" name="jsp syntax parser tests">
         <testset dir="unit/src">
             <patternset>
-                <!--<include name="org/netbeans/test/web/core/syntax/*Test.class"/>-->
+                <include name="org/netbeans/test/web/core/syntax/*Test.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -29,11 +29,11 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
+        
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     
     <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
     
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
-    
-    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     
 </mconfig>
