@@ -153,12 +153,6 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         return get( node, PaletteController.ATTR_SHOW_ITEM_NAMES, true );
     }
     
-    public void reset() {
-        //TODO reset node attributes
-        //TODO remove stored file
-    }
-
-
     private Node getNode( Lookup lkp ) {
         return (Node)lkp.lookup( Node.class );
     }
@@ -383,7 +377,7 @@ public final class DefaultSettings implements Settings, ModelListener, CategoryL
         Node node = getNode( model.getRoot() );
         return get( node, PaletteController.ATTR_ITEM_WIDTH, -1 );
     }
-    
+
     private class SettingsHandler extends DefaultHandler {
         private Node currentCategory = null;
         private Node rootNode;
