@@ -237,7 +237,6 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Windows2">
         <folder name="Components">
             <file name="synchronize.settings" url="components/synchronize.settings" />
-            <file name="console.settings" url="components/console.settings" />
         </folder>
         <folder name="Modes">
             <folder name="output">
