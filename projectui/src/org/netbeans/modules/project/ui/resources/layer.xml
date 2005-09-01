@@ -128,15 +128,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>        
         </folder>
         
-        <folder name="GoTo">
-            <file name="org-netbeans-modules-project-ui-SelectInProjectsMainMenu.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjectsMainMenu"/>
-            </file>
-
-            <file name="org-netbeans-modules-project-ui-SelectInFilesMainMenu.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFilesMainMenu"/>
-            </file>       
-        </folder>
     </folder>
 
     <folder name="org-netbeans-modules-project-ui-WelcomeScreenHack">
@@ -301,12 +292,12 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SeparatorBeforeSelectIn.instance/org-netbeans-modules-project-ui-SelectInProjects.shadow" boolvalue="true"/>            
             
             <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
-                <attr name="originalFile" stringvalue="Actions/GoTo/org-netbeans-modules-project-ui-SelectInProjectsMainMenu.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
             </file>
             <attr name="org-netbeans-modules-project-ui-SelectInProjects.shadow/org-netbeans-modules-project-ui-SelectInFiles.shadow" boolvalue="true"/>            
             
             <file name="org-netbeans-modules-project-ui-SelectInFiles.shadow">
-                <attr name="originalFile" stringvalue="Actions/GoTo/org-netbeans-modules-project-ui-SelectInFilesMainMenu.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
             </file>
         </folder>
         

@@ -31,18 +31,13 @@ Microsystems, Inc. All Rights Reserved.
                 </file>
             </folder>
         </folder>
-        <folder name="GoTo">
-            <file name="org-netbeans-modules-favorites-SelectInFavoritesMainMenu.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.favorites.Actions.selectMainMenu" />
-            </file>
-        </folder>
     </folder>
 
     <folder name="Menu">
         <folder name="GoTo">
             <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/org-netbeans-modules-favorites-SelectInFavorites.shadow" boolvalue="true"/>            
             <file name="org-netbeans-modules-favorites-SelectInFavorites.shadow">
-                <attr name="originalFile" stringvalue="Actions/GoTo/org-netbeans-modules-favorites-SelectInFavoritesMainMenu.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
             </file>
         </folder>
       <folder name="Window">

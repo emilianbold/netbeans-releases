@@ -35,7 +35,7 @@ import org.openide.util.actions.Presenter;
  * 
  * @author Pet Hrebejk 
  */
-public class SelectNodeAction extends LookupSensitiveAction implements Presenter.Menu {
+public class SelectNodeAction extends LookupSensitiveAction implements Presenter.Menu, Presenter.Popup {
     
     // XXX Better icons
     private static final Icon SELECT_IN_PROJECTS_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.gif" ) ); //NOI18N
@@ -55,47 +55,26 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
     
     private String findIn;
     
-    /** true when action should be placed in main menu, false otherwise */
-    private final boolean isMainMenu;
-    
     public static Action inProjects() {
-        return createInProjects(false);
+        SelectNodeAction a = new SelectNodeAction( SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME );
+        a.findIn = ProjectTab.ID_LOGICAL;
+        return a;
     }
     
     public static Action inFiles() {
-        return createInFiles(false);
-    }
-    
-    public static Action inProjectsMainMenu () {
-        return createInProjects(true);
-    }
-    
-    public static Action inFilesMainMenu () {
-        return createInFiles(true);
-    }
-    
-    private static Action createInProjects (boolean isMainMenu) {
-        SelectNodeAction a = new SelectNodeAction( SELECT_IN_PROJECTS_ICON, SELECT_IN_PROJECTS_NAME, isMainMenu );
-        a.findIn = ProjectTab.ID_LOGICAL;
-        return a;
-    } 
-    
-    private static Action createInFiles (boolean isMainMenu) {
-        SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME, isMainMenu );
+        SelectNodeAction a = new SelectNodeAction( SELECT_IN_FILES_ICON, SELECT_IN_FILES_NAME );
         a.findIn = ProjectTab.ID_PHYSICAL;
         return a;
     }
-    
     
     /** 
      * Constructor for global actions. E.g. actions in main menu which 
      * listen to the global context.
      *
      */
-    public SelectNodeAction( Icon icon, String name, boolean isMainMenu ) {
+    public SelectNodeAction( Icon icon, String name ) {
         super( icon, null, new Class[] { DataObject.class } );
         this.setDisplayName( name );
-        this.isMainMenu = isMainMenu;
     }
     
     private SelectNodeAction(String command, ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup) {
@@ -103,7 +82,6 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         this.command = command;
         this.performer = performer;
         this.namePattern = namePattern;
-        this.isMainMenu = false;
         refresh( getLookup() );
     }
        
@@ -132,21 +110,23 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
     // Presenter.Menu implementation ------------------------------------------
     
     public JMenuItem getMenuPresenter () {
-        JMenuItem menuPresenter = new JMenuItem (this);
-        
         if (ProjectTab.ID_LOGICAL.equals (this.findIn)) {
-            menuPresenter.setText (isMainMenu ? SELECT_IN_PROJECTS_NAME_MAIN_MENU : SELECT_IN_PROJECTS_NAME_MENU);
+            return buildPresenter(SELECT_IN_PROJECTS_NAME_MAIN_MENU);
         } else {
-            menuPresenter.setText (isMainMenu ? SELECT_IN_FILES_NAME_MAIN_MENU : SELECT_IN_FILES_NAME_MENU);
+            return buildPresenter(SELECT_IN_FILES_NAME_MAIN_MENU);
         }
-        
-        // remove icon if we are in main menu
-        if (isMainMenu) {
-            menuPresenter.setIcon(null);
-        }
-        
-        return menuPresenter;
     }
+
+    // Presenter.Popup implementation ------------------------------------------
+    
+    public JMenuItem getPopupPresenter() {
+        if (ProjectTab.ID_LOGICAL.equals (this.findIn)) {
+            return buildPresenter(SELECT_IN_PROJECTS_NAME_MENU);
+        } else {
+            return buildPresenter(SELECT_IN_FILES_NAME_MENU);
+        }
+    }
+
     
    // Private methods ---------------------------------------------------------
     
@@ -156,5 +136,14 @@ public class SelectNodeAction extends LookupSensitiveAction implements Presenter
         
         return dobj == null ? null : dobj.getPrimaryFile();
     }
+    
+    private JMenuItem buildPresenter (String title) {
+        JMenuItem menuPresenter = new JMenuItem (this);
+        menuPresenter.setText (title);
+        menuPresenter.setIcon(null);
+        
+        return menuPresenter;
+    }
+
     
 }

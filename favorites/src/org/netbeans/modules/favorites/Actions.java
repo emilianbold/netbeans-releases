@@ -57,7 +57,6 @@ public final class Actions extends Object {
     public static Action addOnFavoritesNode () { return AddOnFavoritesNode.getDefault(); }
     public static Action remove () { return Remove.getDefault(); }
     public static Action select () { return Select.getDefault(); }
-    public static Action selectMainMenu () { return SelectMainMenu.getDefault(); }
     
     /**
      * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
@@ -101,6 +100,11 @@ public final class Actions extends Object {
             return SELECT;
         }
         
+        private Select () {
+            super();
+            putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+        }
+        
         protected void performAction(Node[] activatedNodes) {
             Tab proj = Tab.findDefault();
             proj.open();
@@ -123,7 +127,14 @@ public final class Actions extends Object {
           }
 
         public String getName() {
-            return NbBundle.getMessage(Select.class, "ACT_Select"); // NOI18N
+            return NbBundle.getMessage(Select.class, "ACT_Select_Main_Menu"); // NOI18N
+        }
+
+        /** Overriden to have different title in popup menu, works but ugly a bit */
+        public JMenuItem getPopupPresenter() {
+            JMenuItem mi = super.getPopupPresenter();
+            mi.setText(NbBundle.getMessage(Select.class, "ACT_Select")); // NOI18N
+            return mi;
         }
 
         protected String iconResource() {
@@ -140,26 +151,6 @@ public final class Actions extends Object {
 
     } // end of Select
 
-
-    private static final class SelectMainMenu extends Select {
-        private static final Select SELECT_MAIN_MENU = new SelectMainMenu ();
-
-        private SelectMainMenu () {
-            super();
-            putValue("noIconInMenu", Boolean.TRUE); //NOI18N
-        }
-        
-        public static Action getDefault () {
-            return SELECT_MAIN_MENU;
-        }
-        
-        public String getName() {
-            return NbBundle.getMessage(Select.class, "ACT_Select_Main_Menu"); // NOI18N
-        }
-        
-    } // end of SelectMainMenu
-
-    
     /** Removes root link from favorites
     * @author   Jaroslav Tulach
     */
