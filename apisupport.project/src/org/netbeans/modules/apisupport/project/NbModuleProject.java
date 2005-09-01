@@ -43,6 +43,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.NbModuleTypeProvider.NbModuleType;
+import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -218,7 +219,8 @@ public final class NbModuleProject implements Project {
             new CustomizerProviderImpl(this, getHelper(), evaluator(), bundleInfo),
             new SuiteProviderImpl(),
             typeProvider,
-            new PrivilegedTemplatesImpl()                    
+            new PrivilegedTemplatesImpl(),
+            new ModuleProjectClassPathExtender(this),
       });
     }
     
