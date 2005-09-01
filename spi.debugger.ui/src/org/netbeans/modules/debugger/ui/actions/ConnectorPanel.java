@@ -102,7 +102,8 @@ Controller {
         cbAttachTypes.setSelectedIndex (index);
         doNotListen = false;
         add (cbAttachTypes, c);
-
+        c.insets = new Insets (0, 0, 6, 0);
+        add (new JSeparator(), c);
         c = new GridBagConstraints ();
         c.weightx = 1.0;
         c.weighty = 1.0;
@@ -110,6 +111,7 @@ Controller {
         c.gridwidth = 0;
         AttachType attachType = (AttachType) attachTypes.get (index);
         currentPanel = attachType.getCustomizer ();
+        
         add (currentPanel, c);
     }
 
