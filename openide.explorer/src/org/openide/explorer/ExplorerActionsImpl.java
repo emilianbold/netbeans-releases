@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.explorer;
@@ -451,8 +451,8 @@ final class ExplorerActionsImpl {
 
         public void actionPerformed(ActionEvent e) {
             throw new IllegalStateException(
-                "Should not be invoked at all. Paste types: " + java.util.Arrays.asList(pasteTypes)
-            ); // NOI18N
+                "Should not be invoked at all. Paste types: " + pasteTypes == null ? null : java.util.Arrays.asList(pasteTypes).toString () // NOI18N
+            );
         }
 
         public Object getValue(String s) {
