@@ -50,8 +50,6 @@ import org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
 import org.netbeans.modules.j2ee.sun.share.config.SecondaryConfigDataObject;
 
-import com.sun.tools.j2ee.editor.ComponentPanel;
-import com.sun.tools.j2ee.editor.PanelView;
 
 /**
  *
@@ -126,9 +124,15 @@ public class ConfigBeanTopComponent extends CloneableTopComponent {
     public void refresh() {
         try {
             rootNode = buildTree();
-            Node mainNode = rootNode.getChildren().getNodes()[0];
-            componentPanel.refresh(rootNode, mainNode); //todo: get currently selected node.
-            //open();
+            Node [] topNodes = rootNode.getChildren().getNodes();
+            if(topNodes.length > 0) {
+                Node mainNode = topNodes[0];
+                componentPanel.refresh(rootNode, mainNode); //todo: get currently selected node.
+                //open();
+            } else {
+                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+                    "ConfigBeanTopComponent: empty top level node list.  Root: " + rootNode + ", topNodes: " + topNodes);
+            }
         } catch (java.lang.Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }

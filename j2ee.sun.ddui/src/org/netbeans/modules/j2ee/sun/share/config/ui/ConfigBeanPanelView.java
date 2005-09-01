@@ -35,15 +35,12 @@ import org.openide.nodes.NodeMemberEvent;
 
 import org.netbeans.modules.j2ee.sun.share.config.Utils;
 
-import com.sun.tools.j2ee.editor.PanelView;
-
 
 /**
  *
  * @author  Jeri Lockhart
  */
 public class ConfigBeanPanelView extends PanelView {
-
 
     private CardLayout deck = new CardLayout();
     private Map map = new HashMap();
@@ -60,7 +57,7 @@ public class ConfigBeanPanelView extends PanelView {
 
     protected void initComponents() {
         setLayout(deck);
-        setPopupAllowed(true);
+//        setPopupAllowed(true);
         blankPanel.setName(BLANK_PANEL);
         add(BLANK_PANEL, blankPanel);
     }
