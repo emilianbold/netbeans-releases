@@ -24,6 +24,8 @@ import java.util.ResourceBundle;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
 import javax.swing.event.TableModelEvent;
@@ -67,6 +69,10 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
     private GenericTableModel idempotentUrlPatternModel;
     private GenericTablePanel idempotentUrlPatternPanel;
 
+    // Listens for changes to the default list of charsets
+    private ParameterEncodingPanel parameterEncodingPanel;
+    private PropertyChangeListener parameterEncodingChangeListener;
+    
 	/** Creates new form WebAppGeneralPanel */
 	public WebAppGeneralPanel(WebAppRootCustomizer src) {
 		masterPanel = src;
@@ -251,6 +257,26 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
     // End of variables declaration//GEN-END:variables
 	
 	private void initUserComponents() {
+            
+        /** Add parameter encoding panel.
+         */
+        parameterEncodingPanel = new ParameterEncodingPanel();
+
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0;
+        gridBagConstraints.insets = new Insets(0,0,0,0); //new Insets(4, 4, 4, 4);
+        add(parameterEncodingPanel, gridBagConstraints);		
+
+        parameterEncodingChangeListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent pce) {
+                String newValue = (String) pce.getNewValue();
+                updateParameterEncoding(pce.getPropertyName(), newValue);
+            }
+        };
+        
 		/** Add call properties table panel :
 		 *  TableEntry list has three properties: Name, Value, Description
 		 */
@@ -269,7 +295,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 			DynamicPropertyPanel.class, HelpContext.HELP_WEBAPP_JSPCONFIG_POPUP,
 			PropertyListMapping.getPropertyList(PropertyListMapping.WEBAPP_JSPCONFIG_PROPERTIES));
 		
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -316,14 +342,20 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 	
 	public void addListeners() {
 		jspConfigModel.addTableModelListener(this);
-        propertiesModel.addTableModelListener(this);
-        idempotentUrlPatternModel.addTableModelListener(this);
+		propertiesModel.addTableModelListener(this);
+		idempotentUrlPatternModel.addTableModelListener(this);
+		parameterEncodingPanel.addPropertyChangeListener(ParameterEncodingPanel.PROP_DEFAULT_CHARSET, parameterEncodingChangeListener);
+		parameterEncodingPanel.addPropertyChangeListener(ParameterEncodingPanel.PROP_FORM_HINT_FIELD, parameterEncodingChangeListener);
+		parameterEncodingPanel.addListeners();
 	}
 	
 	public void removeListeners() {
+		parameterEncodingPanel.removeListeners();
+		parameterEncodingPanel.removePropertyChangeListener(ParameterEncodingPanel.PROP_DEFAULT_CHARSET, parameterEncodingChangeListener);
+		parameterEncodingPanel.removePropertyChangeListener(ParameterEncodingPanel.PROP_FORM_HINT_FIELD, parameterEncodingChangeListener);
+		idempotentUrlPatternModel.removeTableModelListener(this);
+		propertiesModel.removeTableModelListener(this);
 		jspConfigModel.removeTableModelListener(this);
-        propertiesModel.removeTableModelListener(this);
-        idempotentUrlPatternModel.removeTableModelListener(this);
 	}
 	
 	private boolean interpretCheckboxState(ItemEvent e) {
@@ -354,6 +386,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 		jTxtExtraClassPath.setText(bean.getExtraClassPath());
 		jChkDelegate.setSelected(bean.isDelegate());
 
+                parameterEncodingPanel.initFields(bean.getDefaultCharset(), bean.getFormHintField(), true);
 		jspConfigPanel.setModel(bean.getJspConfig());
 		propertiesPanel.setModel(bean.getProperties());
                 idempotentUrlPatternPanel.setModelBaseBean(bean.getIdempotentUrlPattern());
@@ -361,6 +394,20 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 		enableClassLoaderFields(bean.isClassLoader());
 	}	
 	
+    private void updateParameterEncoding(String propName, String newValue) {
+        WebAppRoot bean = masterPanel.getBean();
+        if(bean != null) {
+            try {
+                if(ParameterEncodingPanel.PROP_DEFAULT_CHARSET.equals(propName)) {
+                    bean.setDefaultCharset(newValue);
+                } else if(ParameterEncodingPanel.PROP_FORM_HINT_FIELD.equals(propName)) {
+                    bean.setFormHintField(newValue);
+                }
+            } catch(PropertyVetoException ex) {
+            }
+        }
+    }
+    
 	/** ----------------------------------------------------------------------- 
 	 *  Implementation of javax.swing.event.TableModelListener
 	 */
@@ -389,4 +436,7 @@ public class WebAppGeneralPanel extends javax.swing.JPanel implements TableModel
 			}
 		}
 	}
+
+        
+        
 }
