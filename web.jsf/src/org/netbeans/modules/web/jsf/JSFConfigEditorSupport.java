@@ -119,7 +119,6 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     
     public JSFConfigEditorSupport(JSFConfigDataObject dobj) {
         super(dobj,new XmlEnv(dobj));
-        // TODO - there should not be this mimetype, but some differetnt. We need distinguish the completion providers.
         setMIMEType("text/x-jsf+xml");
         
     }
