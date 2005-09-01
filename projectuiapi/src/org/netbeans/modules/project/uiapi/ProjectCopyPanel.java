@@ -142,7 +142,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 5);
         add(projectName, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(browse, "...");
+        org.openide.awt.Mnemonics.setLocalizedText(browse, org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Browse", new Object[] {}));
         browse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseActionPerformed(evt);
@@ -227,7 +227,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
 
     private void browseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseActionPerformed
 // TODO add your handling code here:
-        File current = new File(projectFolder.getText());
+        File current = new File(projectLocation.getText());
         JFileChooser chooser = new JFileChooser(current);
         
         chooser.setMultiSelectionEnabled(false);
