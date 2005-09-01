@@ -17,6 +17,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.xml.parsers.DocumentInputSource;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
+import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -43,7 +44,6 @@ public class DiffStreamSource extends StreamSource {
      * Null is a valid value if base file does not exist in this revision. 
      */ 
     private File            remoteFile;
-    private final boolean   binary;
 
     /**
      * Creates a new StreamSource implementation for Diff engine.
@@ -52,11 +52,10 @@ public class DiffStreamSource extends StreamSource {
      * @param revision file revision, may be null if the revision does not exist (ie for new files)
      * @param title title to use in diff panel
      */ 
-    public DiffStreamSource(File baseFile, String revision, String title, boolean binary) {
+    public DiffStreamSource(File baseFile, String revision, String title) {
         this.baseFile = baseFile;
         this.revision = revision;
         this.title = title;
-        this.binary = binary;
     }
 
     public String getName() {
@@ -79,8 +78,13 @@ public class DiffStreamSource extends StreamSource {
     public Reader createReader() throws IOException {
         init();        
         if (revision == null || remoteFile == null) return null;
-        if (binary) return new StringReader("[Binary File " + getTitle() + "]");
-        return new FileReader(remoteFile);
+        boolean binary = CvsVersioningSystem.getInstance().isText(remoteFile) == false;
+        if (binary) {
+            // TODO I guess it should be handled by diff itself, it can use MIME test
+            return new StringReader("[Binary File " + getTitle() + "]");
+        } else {
+            return new FileReader(remoteFile);
+        }
     }
 
     public Writer createWriter(Difference[] conflicts) throws IOException {

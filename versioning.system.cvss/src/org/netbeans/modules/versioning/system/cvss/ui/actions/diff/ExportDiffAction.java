@@ -141,8 +141,7 @@ public class ExportDiffAction extends AbstractSystemAction {
             for (int i = 0; i < files.length; i++) {
                 progress.progress(i);
                 File file = files[i];
-                boolean binary = CvsVersioningSystem.getInstance().isText(file) == false;
-                Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL, binary);
+                Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL);
                 exportDiff(setup, out);
             }
             success = true;

@@ -226,8 +226,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
         public void run() {
             Diff diff = Diff.getDefault();
             try {
-                DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1, false);
-                DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2, false);
+                DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1);
+                DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2);
                 
                 if (currentTask != this) return;
                 final DiffView view = diff.createDiff(s1, s2);
