@@ -526,9 +526,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         String root = selectedCvsRoot();
         root = RootWizard.editCvsRoot(root);
         if (root != null) {
-            Component editor = repositoryPanel.rootComboBox.getEditor().getEditorComponent();
-            JTextComponent textEditor = (JTextComponent) editor;
-            textEditor.setText(root);
+            repositoryPanel.rootComboBox.setSelectedItem(root);
         }
     }
 
@@ -604,7 +602,7 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     }
 
     public String getCvsRoot() {
-        return (String) repositoryPanel.rootComboBox.getSelectedItem();
+        return selectedCvsRoot();
     }
 
     public ProxyDescriptor getProxyDescriptor() {
