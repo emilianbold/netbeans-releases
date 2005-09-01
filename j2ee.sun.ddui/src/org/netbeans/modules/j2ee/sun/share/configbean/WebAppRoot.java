@@ -306,6 +306,12 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                                 }
                                 
 				try {
+					if(Utils.notEmpty(defaultCharset) || Utils.notEmpty(formHintField)) {
+						swa.setParameterEncoding(true);
+						swa.setParameterEncodingDefaultCharset(defaultCharset);
+						swa.setParameterEncodingFormHintField(formHintField);
+					}
+
 					int numPatterns = idempotentUrlPattern.sizeIdempotentUrlPattern();
 					if(numPatterns > 0) {
 						swa.setIdempotentUrlPattern(new boolean[numPatterns]);
@@ -417,34 +423,38 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 				errorUrl = "";
 			}
             
-                        try {
-                            MyClassLoader myClassLoader = beanGraph.getMyClassLoader();
-                            if(myClassLoader != null) {
-                                delegate = Utils.booleanValueOf(myClassLoader.getDelegate()) ? Boolean.TRUE : Boolean.FALSE;
-                                extraClassPath = myClassLoader.getExtraClassPath();
-                                if((delegate != null) || (extraClassPath != null)) {
-                                    classLoader = Boolean.TRUE;
-                                }
-                            }
-                        } catch(VersionNotSupportedException ex) {
-                            //Should never happen
-                            delegate = Boolean.TRUE;
-                            classLoader = Boolean.TRUE;
-                        }
+            try {
+                // This block is separate from the rest because classloader exists for both 2.4.0 and 2.4.1
+                MyClassLoader myClassLoader = beanGraph.getMyClassLoader();
+                if(myClassLoader != null) {
+                    delegate = Utils.booleanValueOf(myClassLoader.getDelegate()) ? Boolean.TRUE : Boolean.FALSE;
+                    extraClassPath = myClassLoader.getExtraClassPath();
+                    if((delegate != null) || (extraClassPath != null)) {
+                        classLoader = Boolean.TRUE;
+                    }
+                }
+            } catch(VersionNotSupportedException ex) {
+                //Should never happen
+                delegate = Boolean.TRUE;
+                classLoader = Boolean.TRUE;
+            }
                         
-                        try {
-                            int numPatterns = beanGraph.sizeIdempotentUrlPattern();
-                            if(numPatterns > 0) {
-                                idempotentUrlPattern.setIdempotentUrlPattern(new boolean[numPatterns]);
-                                for(int i = 0; i < numPatterns; i++) {
-                                    idempotentUrlPattern.setIdempotentUrlPatternUrlPattern(i, beanGraph.getIdempotentUrlPatternUrlPattern(i));
-                                    idempotentUrlPattern.setIdempotentUrlPatternNumOfRetries(i, beanGraph.getIdempotentUrlPatternNumOfRetries(i));
-                                }
-                            }
-                        } catch(VersionNotSupportedException ex) {
-                            //Should never happen
-                        }
-                        
+            try {
+                defaultCharset = beanGraph.getParameterEncodingDefaultCharset();
+                formHintField = beanGraph.getParameterEncodingFormHintField();
+
+                int numPatterns = beanGraph.sizeIdempotentUrlPattern();
+                if(numPatterns > 0) {
+                    idempotentUrlPattern.setIdempotentUrlPattern(new boolean[numPatterns]);
+                    for(int i = 0; i < numPatterns; i++) {
+                        idempotentUrlPattern.setIdempotentUrlPatternUrlPattern(i, beanGraph.getIdempotentUrlPatternUrlPattern(i));
+                        idempotentUrlPattern.setIdempotentUrlPatternNumOfRetries(i, beanGraph.getIdempotentUrlPatternNumOfRetries(i));
+                    }
+                }
+            } catch(VersionNotSupportedException ex) {
+                //Should never happen
+            }
+
 			JspConfig jc = beanGraph.getJspConfig();
 			if(jc != null && jc.sizeWebProperty() > 0) {
 				jspConfig = (JspConfig) jc.clone();
@@ -487,6 +497,8 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		contextRoot = null;
 		errorUrl = null;
 		extraClassPath = null;
+                defaultCharset = null;
+                formHintField = null;
 		idempotentUrlPattern = (SunWebApp) provider.newGraph(SunWebApp.class);
 		jspConfig = beanFactory.createJspConfig();
 		properties = null;
@@ -572,8 +584,14 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 	/** Holds value of property delegate. */
 	private Boolean delegate;
 
-    /** Holds value of property idempotentUrlPattern */
-    private SunWebApp idempotentUrlPattern;
+	/** Holds value of property parameterEncoding-defaultCharset. */
+	private String defaultCharset;
+        
+	/** Holds value of property parameterEncoding-formHintField. */
+	private String formHintField;
+        
+	/** Holds value of property idempotentUrlPattern */
+	private SunWebApp idempotentUrlPattern;
         
 	/** Holds value of property jspConfig. */
 	private JspConfig jspConfig;
@@ -721,6 +739,48 @@ public class WebAppRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 		getPCS().firePropertyChange("delegate", oldDelegate, delegate);		
 	}
         
+	/** Getter for property parameterEncodingDefaultCharset.
+	 * @return Value of property parameterEncodingDefaultCharset.
+	 *
+	 */
+	public String getDefaultCharset() {
+		return defaultCharset;
+	}
+	
+	/** Setter for property parameterEncodingDefaultCharset.
+	 * @param newDefaultCharset New value of property parameterEncodingDefaultCharset.
+	 *
+	 * @throws PropertyVetoException
+	 *
+	 */
+	public void setDefaultCharset(String newDefaultCharset) throws java.beans.PropertyVetoException {
+		String oldDefaultCharset = defaultCharset;
+		getVCS().fireVetoableChange("defaultCharset", oldDefaultCharset, newDefaultCharset);
+		defaultCharset = newDefaultCharset;
+		getPCS().firePropertyChange("defaultCharset", oldDefaultCharset, defaultCharset);
+	}
+	
+	/** Getter for property parameterEncodingFormHintField.
+	 * @return Value of property parameterEncodingFormHintField.
+	 *
+	 */
+	public String getFormHintField() {
+		return formHintField;
+	}
+	
+	/** Setter for property parameterEncodingFormHintField.
+	 * @param newFormHintField New value of property parameterEncodingFormHintField.
+	 *
+	 * @throws PropertyVetoException
+	 *
+	 */
+	public void setFormHintField(String newFormHintField) throws java.beans.PropertyVetoException {
+		String oldFormHintField = formHintField;
+		getVCS().fireVetoableChange("formHintField", oldFormHintField, newFormHintField);
+		formHintField = newFormHintField;
+		getPCS().firePropertyChange("formHintField", oldFormHintField, formHintField);
+	}
+	
     /** Getter for property idempotentUrlPattern.
      * @return SunWebApp instance that only holds the list of idempotentUrlPatterns
      *  that have been set.
