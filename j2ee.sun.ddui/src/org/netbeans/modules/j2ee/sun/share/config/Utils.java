@@ -21,6 +21,22 @@ import javax.swing.SwingUtilities;
  * @author sherold
  */
 public final class Utils {
+
+    // !PW These are deliberately not public for now, I don't see any use of them
+    // outside this package.  I suppose this premise could change though.
+    static final String SERVER_ID_AS81 = "J2EE"; // NOI18N
+    static final String SERVER_ID_AS90 = "JavaEE5"; // NOI18N
+    
+    /**
+     * Check that current target server is Sun AppServer.
+     */
+    public static boolean isSunServer(String serverId) {
+        boolean result = false;
+        if(SERVER_ID_AS81.equals(serverId) || SERVER_ID_AS90.equals(serverId)) {
+            result = true;
+        }
+        return result;
+    }
     
     /**
      * Ensure that the specified ruannable task will run only in the event dispatch 

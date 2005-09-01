@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.xml.sax.InputSource;
 
@@ -46,8 +47,11 @@ import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport;
+
 import org.netbeans.modules.j2ee.sun.share.config.ui.*;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
+
 
 
 /** Data object representing a deployment plan file.
@@ -56,7 +60,7 @@ import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfigurat
  * @author Pavel Buzek
  */
 public class ConfigDataObject extends XMLDataObject implements ConfigurationSaver, FileChangeListener {
-    
+
     //PENDING: create serialVersionUID
     //    private static final long serialVersionUID = -1073885636989804140L;
     
@@ -100,8 +104,16 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         return newDo;
     }
     
-    public DeploymentConfiguration getDeploymentConfiguration() {
-        return SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(getPrimaryFile()));
+    public DeploymentConfiguration getDeploymentConfiguration() throws ConfigurationException {
+        // Request deployment configuration for SJSAS from j2eeserver module
+        FileObject fo = getPrimaryFile();
+        String serverId = getProvider().getServerID();
+        ConfigurationSupport.requestCreateConfiguration(fo, serverId);
+        return SunONEDeploymentConfiguration.getConfiguration(FileUtil.toFile(fo));
+    }
+    
+    public String getServer() {
+        return null;
     }
     
     protected void addSecondary(SecondaryConfigDataObject secondary) {
@@ -143,13 +155,19 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
         OpenCookie myOpen = getOpenCookie();
         for (Iterator i=getSecondaries().iterator(); i.hasNext();) {
             SecondaryConfigDataObject secondary = (SecondaryConfigDataObject) i.next();
-            if (secondary.getOpenCookie() == null)
+            if (secondary.getOpenCookie() == null) {
                 return null;
+            }
         }
         return myOpen;
     }
     
     protected OpenCookie getOpenCookie() {
+        // !PW Only enable configuration editor if SJSAS is the current target
+        // server.
+        if (!Utils.isSunServer(getProvider().getServerID())) {
+            return null;
+        }
         if (!isEditedChecked) {
             isEdited = checkIsEdited();
         }
@@ -240,7 +258,7 @@ public class ConfigDataObject extends XMLDataObject implements ConfigurationSave
             provider = (J2eeModuleProvider) p.getLookup().lookup(J2eeModuleProvider.class);
         }
         if (provider == null) {
-            throw new RuntimeException("Failed to get J2EE web module for " + f.getPath()); //NOI18N
+            throw new RuntimeException("Project " + p + " does not provide J2eeModuleProvider in its lookup"); // NOI18N
         }
         return provider;
     }
