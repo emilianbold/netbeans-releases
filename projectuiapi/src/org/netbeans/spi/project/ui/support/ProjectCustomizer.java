@@ -83,9 +83,15 @@ public final class ProjectCustomizer {
                                                 CategoryComponentProvider componentProvider,
                                                 String preselectedCategory ) {
         
-        CategoryChangeSupport catWrappers[] = new CategoryChangeSupport[categories.length];
+        CategoryChangeSupport changeSupport = new CategoryChangeSupport();
         for (int i = 0; i < categories.length; i++) {
-            Utilities.putCategoryChangeSupport(categories[i], new CategoryChangeSupport());
+            Utilities.putCategoryChangeSupport(categories[i], changeSupport);
+            Category[] subCategories = categories[i].getSubcategories();
+            if (subCategories != null) {
+                for (int j = 0; j < subCategories.length; j++) {
+                    Utilities.putCategoryChangeSupport(subCategories[j], changeSupport);
+                }
+            }
         }
         
         CategoryModel categoryModel = new CategoryModel( categories );
