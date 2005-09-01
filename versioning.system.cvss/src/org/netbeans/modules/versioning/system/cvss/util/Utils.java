@@ -130,17 +130,14 @@ public class Utils {
         Lookup lookup = node.getLookup();
         Project project = (Project) lookup.lookup(Project.class);
         if (project != null) {
+            FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             for (int j = 0; j < sourceGroups.length; j++) {
                 SourceGroup sourceGroup = sourceGroups[j];
                 File f = FileUtil.toFile(sourceGroup.getRootFolder());
                 if (f != null) {
-                    File cvsMeta = new File(f, "CVS");  // NOI18N
-                    boolean ret = cvsMeta.isDirectory();
-                    if (ret) {
-                        return ret;
-                    }
+                    if ((cache.getStatus(f).getStatus() & FileInformation.STATUS_MANAGED) != 0) return true;
                 }
             }
         }
