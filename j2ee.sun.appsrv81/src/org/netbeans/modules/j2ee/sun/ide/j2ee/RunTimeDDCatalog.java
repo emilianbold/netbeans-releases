@@ -125,8 +125,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         for (int i=0;i<SchemaToURLMap.length;i = i+2){
             list.add(SchemaToURLMap[i]);
         }
-        list.add("-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN");//JSF code completion
-        list.add("-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN");//JSF code completion
         
         return list.listIterator();
     }
@@ -158,26 +156,6 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
                 
                 
             }
-        }
-        if (publicId.equals("-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN")){
-            File file = new File(installRoot+"/lib/jsf-impl.jar");
-            String s = "";
-            try{
-                s= file.toURI().toURL().toExternalForm();
-            }catch(Exception e){
-                
-            }
-            return "jar:"+s+"!/com/sun/faces/web-facesconfig_1_0.dtd";
-        }
-        if (publicId.equals("-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.1//EN")){
-            File file = new File(installRoot+"/lib/jsf-impl.jar");
-            String s = "";
-            try{
-                s= file.toURI().toURL().toExternalForm();
-            }catch(Exception e){
-                
-            }
-            return "jar:"+s+"!/com/sun/faces/web-facesconfig_1_1.dtd";
         }
         return null;
     }
