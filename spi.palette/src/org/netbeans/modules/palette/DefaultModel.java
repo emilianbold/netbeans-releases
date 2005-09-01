@@ -224,6 +224,7 @@ public class DefaultModel implements Model, NodeListener {
                 return false;
             }
             order.move( sourceIndex, targetIndex );
+            categories = null;
             return true;
         }
         
