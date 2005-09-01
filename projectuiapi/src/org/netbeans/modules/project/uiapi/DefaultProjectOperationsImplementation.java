@@ -397,7 +397,7 @@ public final class DefaultProjectOperationsImplementation {
         
         final Dialog[] dialog = new Dialog[1];
         
-        DialogDescriptor dd = new DialogDescriptor(doSetMessageType ? panel : wrapPanel(panel), caption, true, new Object[] {confirm, cancel}, confirm, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+        DialogDescriptor dd = new DialogDescriptor(doSetMessageType ? panel : wrapPanel(panel), caption, true, new Object[] {confirm, cancel}, cancelButton != null ? cancel : confirm, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource() == confirm) {
                     confirm.setEnabled(false);
@@ -425,6 +425,8 @@ public final class DefaultProjectOperationsImplementation {
                             });
                         }
                     });
+                } else {
+                    dialog[0].setVisible(false);
                 }
             }
         });
