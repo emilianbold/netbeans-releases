@@ -12,28 +12,17 @@
  */
 
 package org.netbeans.modules.form.palette;
-
-import java.beans.BeanInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import java.io.File;
-import java.awt.event.ActionEvent;
-import java.awt.datatransfer.*;
-import javax.swing.*;
 import org.netbeans.spi.palette.PaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.spi.palette.PaletteActions;
-
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.*;
 import org.openide.util.*;
-import org.openide.util.datatransfer.PasteType;
-import org.openide.util.datatransfer.ExClipboard;
 
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -41,6 +30,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.FileOwnerQuery;
 
 import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.spi.palette.PaletteFilter;
+import org.openide.loaders.DataObject;
 
 /**
  * Class providing various useful methods for palette classes.
@@ -125,7 +116,19 @@ public final class PaletteUtils {
     public static PaletteController getPalette() {
         if( null == palette ) {
             try {
-                palette = PaletteFactory.createPalette( "FormDesignerPalette", new FormPaletteActions() );
+                PaletteFilter filter = new PaletteFilter(){
+                    public boolean isValidCategory( Lookup lkp ){                    
+                        FilterNode node = (FilterNode) lkp.lookup( Node.class );                           
+                        DataFolder df = (DataFolder) node.getCookie(DataObject.class);                        
+                        Boolean noPaletteCategory = (Boolean) df.getPrimaryFile().getAttribute("isNoPaletteCategory");
+                        return noPaletteCategory != null ? !noPaletteCategory.booleanValue() : true;
+                    }
+                    public boolean isValidItem( Lookup lkp ){                        
+                        return true;
+                    }    
+                };      
+                
+                palette = PaletteFactory.createPalette( "FormDesignerPalette", new FormPaletteActions(), filter, null);
             } catch( IOException ioE ) {
                 ioE.printStackTrace();
                 //TODO error handling

@@ -187,7 +187,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Layouts">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-
+            <attr name="isNoPaletteCategory" boolvalue="true" />
+            
             <file name="FlowLayout.palette_item" url="palette/FlowLayout.palette_item" />
             <file name="BorderLayout.palette_item" url="palette/BorderLayout.palette_item" />
             <file name="GridLayout.palette_item" url="palette/GridLayout.palette_item" />
