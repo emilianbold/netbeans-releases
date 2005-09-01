@@ -268,7 +268,8 @@ public final class DefaultProjectOperationsImplementation {
     
     /*package private for tests*/ static void doMoveProject(ProgressHandle handle, Project project, String nueName, FileObject newTarget) {
         try {
-            boolean wasMain = project.getProjectDirectory().equals(OpenProjects.getDefault().getMainProject());
+            Project main    = OpenProjects.getDefault().getMainProject();
+            boolean wasMain = main != null && project.getProjectDirectory().equals(main.getProjectDirectory());
             
             ProjectOperations.notifyMoving(project);
             
@@ -307,7 +308,9 @@ public final class DefaultProjectOperationsImplementation {
             
             OpenProjects.getDefault().open(new Project[] {nue}, false);
             
-            OpenProjects.getDefault().setMainProject(nue);
+            if (wasMain) {
+                OpenProjects.getDefault().setMainProject(nue);
+            }
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }

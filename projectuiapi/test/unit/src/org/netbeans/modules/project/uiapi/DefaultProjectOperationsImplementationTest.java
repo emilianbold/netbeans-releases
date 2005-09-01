@@ -364,7 +364,9 @@ public class DefaultProjectOperationsImplementationTest extends NbTestCase {
         
         main = OpenProjects.getDefault().getMainProject();
         
-        assertTrue(main == null || !prj.getProjectDirectory().equals(main.getProjectDirectory()));
+        assertTrue(    main == null
+                    || (    !prj.getProjectDirectory().equals(main.getProjectDirectory())
+                         && !newProject.getProjectDirectory().equals(main.getProjectDirectory())));
     }
     //</editor-fold>
 
