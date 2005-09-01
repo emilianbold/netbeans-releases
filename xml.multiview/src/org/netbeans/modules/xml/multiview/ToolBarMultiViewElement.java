@@ -33,11 +33,10 @@ import java.beans.PropertyVetoException;
  */
 public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     private ToolBarDesignEditor editor;
-    private PropertyChangeListener listener;
 
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         super(dObj);
-        listener = new PropertyChangeListener() {
+        PropertyChangeListener listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
                     Utils.runInAwtDispatchThread(new Runnable() {
@@ -77,6 +76,7 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     }
     
     public void componentClosed() {
+        super.componentClosed();
         editor.componentClosed();
     }
     
@@ -89,6 +89,7 @@ public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     }
     
     public void componentOpened() {
+        super.componentOpened();
         editor.componentOpened();
     }
     

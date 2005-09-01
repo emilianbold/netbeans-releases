@@ -32,11 +32,10 @@ import java.beans.PropertyVetoException;
  */
 public abstract class TreePanelMultiViewElement extends AbstractMultiViewElement {
     private TreePanelDesignEditor editor;
-    private PropertyChangeListener listener;
 
     public TreePanelMultiViewElement(final XmlMultiViewDataObject dObj) {
         super(dObj);
-        listener = new PropertyChangeListener() {
+        PropertyChangeListener listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
                     Utils.runInAwtDispatchThread(new Runnable() {
@@ -68,6 +67,7 @@ public abstract class TreePanelMultiViewElement extends AbstractMultiViewElement
     }
     
     public void componentClosed() {
+        super.componentClosed();
         editor.componentClosed();
     }
     
@@ -80,6 +80,7 @@ public abstract class TreePanelMultiViewElement extends AbstractMultiViewElement
     }
     
     public void componentOpened() {
+        super.componentOpened();
         editor.componentOpened();
     }
     

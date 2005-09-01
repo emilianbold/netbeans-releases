@@ -45,16 +45,6 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
         super(dObj);
     }
 
-    public void componentOpened() {
-        XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-        if (support!=null) support.addXmlDocListener();
-    }
-
-    public void componentClosed() {
-        XmlMultiViewEditorSupport support = dObj.getEditorSupport();
-        if (support!=null) support.removeXmlDocListener();
-    }
-
     public void componentDeactivated() {
     }
 

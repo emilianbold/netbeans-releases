@@ -65,7 +65,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         EditorCookie.Observable, PrintCookie {
 
     private XmlMultiViewDataObject dObj;
-    private XmlDocumentListener xmlDocListener;
+    private XmlDocumentListener xmlDocListener = new XmlDocumentListener();
     private int xmlMultiViewIndex;
     private TopComponent mvtc;
     private int lastOpenView=0;
@@ -76,6 +76,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     private int loading = 0;
     private FileLock saveLock;
     private static final String PROPERTY_MODIFICATION_LISTENER = "modificationListener"; // NOI18N
+    private boolean suppressXmlView = false;
 
     public XmlMultiViewEditorSupport() {
         super(null, null);
@@ -189,14 +190,25 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
 
     private MultiViewDescription[] getMultiViewDescriptions() {
         if (multiViewDescriptions == null) {
+            if (suppressXmlView) {
+                multiViewDescriptions = dObj.getMultiViewDesc();
+                xmlMultiViewIndex = 0;
+            } else {
                 MultiViewDescription[] customDesc = dObj.getMultiViewDesc();
                 MultiViewDescription xmlDesc = new XmlViewDesc(dObj);
+
                 multiViewDescriptions = new MultiViewDescription[customDesc.length + 1];
                 System.arraycopy(customDesc, 0, multiViewDescriptions, 0, customDesc.length);
                 multiViewDescriptions[customDesc.length] = xmlDesc;
                 xmlMultiViewIndex = customDesc.length;
             }
+        }
         return multiViewDescriptions;
+    }
+
+    public void setSuppressXmlView(boolean suppressXmlView) {
+        this.suppressXmlView = suppressXmlView;
+        multiViewDescriptions = null;
     }
 
     /** Focuses existing component to view, or if none exists creates new.
@@ -204,7 +216,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     * @see org.openide.cookies.EditCookie#edit
     */
     public void edit () {
-        openView(-1);
+        openView(xmlMultiViewIndex);
     }
 
     /** Opens the specific View
@@ -214,10 +226,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
             public void run() {
                 CloneableTopComponent mvtc = openCloneableTopComponent();
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
-                handler.requestVisible(handler.getPerspectives()[xmlMultiViewIndex]);
-                if (index >= 0) {
-                    handler.requestVisible(handler.getPerspectives()[index]);
-                }
+                handler.requestVisible(handler.getPerspectives()[index]);
                 mvtc.requestActive();
             }
         });
@@ -332,12 +341,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         }
 
         public OutputStream outputStream() throws IOException {
-            XmlMultiViewEditorSupport editorSupport = xmlMultiViewDataObject.getEditorSupport();
-            XmlMultiViewDataObject.DataCache dataCache = xmlMultiViewDataObject.getDataCache();
-            if (editorSupport.saveLock != null) {
+            if (xmlMultiViewDataObject.getEditorSupport().saveLock != null) {
                 return super.outputStream();
             } else {
-                return dataCache.createOutputStream();
+                return xmlMultiViewDataObject.getDataCache().createOutputStream();
             }
         }
 
@@ -399,23 +406,21 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         lastOpenView=index;
     }
 
-    void addXmlDocListener() {
-        if (xmlDocListener==null) {
-            xmlDocListener = new XmlDocumentListener();
+    public void multiviewComponentOpened() {
+        if (document == null) {
             try {
                 document = openDocument();
                 document.addDocumentListener(xmlDocListener);
-            } catch (java.io.IOException ex){}
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
         }
     }
 
-    void removeXmlDocListener() {
+    public void multiviewComponentClosed() {
         if (getOpenedPanes() == null) {
-            if (xmlDocListener != null) {
-                document.removeDocumentListener(xmlDocListener);
-                document = null;
-                xmlDocListener = null;
-            }
+            document.removeDocumentListener(xmlDocListener);
+            document = null;
         }
     }
 
