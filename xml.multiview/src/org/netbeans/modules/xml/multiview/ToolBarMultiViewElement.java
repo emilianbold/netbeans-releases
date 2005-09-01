@@ -34,19 +34,20 @@ import java.beans.PropertyVetoException;
 public abstract class ToolBarMultiViewElement extends AbstractMultiViewElement {
     private ToolBarDesignEditor editor;
 
+    private PropertyChangeListener listener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
+                Utils.runInAwtDispatchThread(new Runnable() {
+                    public void run() {
+                        callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
+                    }
+                });
+            }
+        }
+    };
+
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         super(dObj);
-        PropertyChangeListener listener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
-                    Utils.runInAwtDispatchThread(new Runnable() {
-                        public void run() {
-                            callback.getTopComponent().setDisplayName(dObj.getEditorSupport().messageName());
-                        }
-                    });
-                }
-            }
-        };
         dObj.addPropertyChangeListener(WeakListeners.propertyChange(listener, dObj));
     }
 
