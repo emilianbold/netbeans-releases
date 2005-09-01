@@ -15,7 +15,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.Client;
-import org.netbeans.lib.cvsclient.event.CVSListener;
 import org.netbeans.lib.cvsclient.event.TerminationEvent;
 import org.netbeans.lib.cvsclient.connection.*;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
@@ -141,6 +140,8 @@ public class ClientRuntime {
                     ErrorManager.getDefault().notify(ErrorManager.WARNING, e);                    
                 } finally {
                     handle.finish();
+                    log.getOut().close();
+                    log = IOProvider.getDefault().getIO(cvsRoot.toString(), false);
                 }
             }
         });
