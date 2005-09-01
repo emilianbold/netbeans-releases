@@ -90,44 +90,6 @@ public final class NbPlaces extends Object {
         return EnvironmentNode.find(EnvironmentNode.TYPE_SESSION); 
     }
 
-    /** Node with all workspaces */
-    public Node workspaces () {
-        FileSystem fs = Repository.getDefault().getDefaultFileSystem ();
-        // Not sure whether this is the right place for this node in layer.
-        FileObject fo = fs.findResource("UI/Services/IDEConfiguration/LookAndFeel/Workspace.instance"); // NOI18N
-        if(fo != null) {
-            try {
-                DataObject dob = DataObject.find(fo);
-                InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
-                if(ic != null && Node.class.isAssignableFrom(ic.instanceClass())) {
-                    Node node = (Node)ic.instanceCreate();
-                    if(node != null) {
-                        return node;
-                    }
-                }
-            } catch(IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
-            } catch(ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cnfe);
-            }
-        }
-        
-        Node n = new AbstractNode(Children.LEAF);
-        n.setName(NbBundle.getMessage(NbPlaces.class, "CTL_NoWorkspaces"));
-        return n;
-    }
-
-    /** Repository settings */
-    public Node repositorySettings () {
-        return new AbstractNode(Children.LEAF);
-    }
-
-    /** Workspace node for current project. This node can change when project changes.
-    */
-    public Node projectDesktop () {
-        return workplace().getNodeDelegate();
-    }
-
     /** Root nodes.
     */
     public Node[] roots () {
@@ -158,37 +120,6 @@ public final class NbPlaces extends Object {
         return findSessionFolder ("Actions"); // NOI18N
     }
 
-    /** Default folder for bookmarks.
-    */
-    public DataFolder bookmarks () {
-        return findSessionFolder ("Bookmarks"); // NOI18N
-    }
-
-    /** Default folder for projects.
-    */
-    public DataFolder projects () {
-        return findSessionFolder ("Projects"); // NOI18N
-    }
-
-    /** Startup folder.
-    */
-    public DataFolder startup () {
-        return findSessionFolder ("Startup"); // NOI18N
-    }
-
-    /** Welcome folder.
-    */
-    public DataFolder welcome () {
-        return findSessionFolder ("Welcome"); // NOI18N
-    }
-
-     /** Getter for project workplace. A folder that is presented to the
-     * user as project desktop.
-     */
-    public DataFolder workplace() {
-         return findSessionFolder("Workplace"); // NOI18N
-     }
-     
      /**
      * Returns a DataFolder subfolder of the session folder.  In the DataFolder
      * folders go first (sorted by name) followed by the rest of objects sorted
