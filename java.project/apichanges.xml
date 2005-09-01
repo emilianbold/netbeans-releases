@@ -83,7 +83,7 @@ is the proper place.
         <version major="1" minor="6"/>
         <date day="28" month="8" year="2005"/>
         <author login="tzezula"/>
-        <compatibility semantic="yes"/>
+        <compatibility modification="yes" semantic="incompatible"/>
         <description>
                 The BrokenReferencesModel was changed to support better sharability of
                 projects. The BrokenReferencesModel always stores the resolved broken reference
