@@ -55,7 +55,10 @@ public class ListCompletionView extends JList {
 
     /** Force the list to ignore the visible-row-count property */
     public Dimension getPreferredScrollableViewportSize() {
-        return getPreferredSize();
+        Dimension scrollable = super.getPreferredScrollableViewportSize();
+        Dimension preferred = getPreferredSize();
+        
+        return new Dimension(scrollable.width, preferred.height);
     }
 
     public void up() {
