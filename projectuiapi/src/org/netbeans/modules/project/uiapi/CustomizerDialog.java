@@ -107,6 +107,12 @@ public class CustomizerDialog {
             if (!categories[i].isValid()) {
                 return false;
             }
+            ProjectCustomizer.Category[] subCategories = categories[i].getSubcategories();
+            if (subCategories != null) {
+                if (!checkValidity(subCategories)) {
+                    return false;
+                }
+            }
         }
         return true;
     }
