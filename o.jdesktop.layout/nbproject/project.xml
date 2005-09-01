@@ -21,8 +21,8 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.jdesktop.layout</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/swing-layout-0.6.1.jar</runtime-relative-path>
-                <binary-origin>../external/swing-layout-0.6.1.jar</binary-origin>
+                <runtime-relative-path>ext/swing-layout-0.7.jar</runtime-relative-path>
+                <binary-origin>../external/swing-layout-0.7.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

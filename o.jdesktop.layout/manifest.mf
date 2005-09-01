@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.jdesktop.layout/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/layoutext/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
-OpenIDE-Module-Implementation-Version: 0.6.1
+OpenIDE-Module-Implementation-Version: 0.7
 OpenIDE-Module-Layer: org/netbeans/libs/layoutext/layer.xml
