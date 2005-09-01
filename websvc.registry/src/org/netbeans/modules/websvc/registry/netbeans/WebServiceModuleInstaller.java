@@ -61,7 +61,7 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
     public static void restoreds() {
         if(specialLoader == null) {
             try {
-                specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
+                specialLoader = new ExtensionClassLoader(WebServiceModuleInstaller.class.getClassLoader());
                 updatesSpecialLoader(specialLoader);
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
@@ -232,6 +232,6 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
 //         * Used to get the netbeans classloader of this class.
 //         *
 //         */
-    static class Empty {
-    }
+//    static class Empty {
+//    }
 }
