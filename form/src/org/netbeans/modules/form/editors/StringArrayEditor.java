@@ -74,12 +74,12 @@ public class StringArrayEditor implements XMLPropertyEditor,
 
         StringBuffer buf = new StringBuffer ();
         for (int i = 0; i < strings.length; i++) {
-            // XXX handles in-string escapes if quoted
-            buf.append(quoted ? "\""+strings[i]+"\"" : strings[i]); // NOI18N
+            // XXX handles in-string escapes if quoted                                                            
+            buf.append(quoted ? "\"" + strings[i].replaceAll("\\\"","\\\\\"") + "\"" : strings[i]); // NOI18N
             if (i != strings.length - 1)
                 buf.append (", "); // NOI18N
         }
-
+ 
         return buf.toString ();
     }
 
@@ -194,8 +194,10 @@ public class StringArrayEditor implements XMLPropertyEditor,
                         String valueStr = itemEl.getAttribute(ATTR_VALUE);
                         if (indexStr != null && valueStr != null) {
                             int index = Integer.parseInt(indexStr);
-                            if (index >=0 && index < count)
+                            if (index >=0 && index < count){                                                                                                                               
                                 stringArray[index] = valueStr;
+                            }
+                                
                         }
                     }
                 }
