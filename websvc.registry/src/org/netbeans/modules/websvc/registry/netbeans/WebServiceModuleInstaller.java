@@ -38,21 +38,6 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
     private static ExtensionClassLoader specialLoader = null;
     private static boolean registryInstalled = false;
         
-    public void restored() {
-        restoreds();
-//           Deployment.getDefault().addInstanceListener(this);
-        
-        if(registryInstalled) {
-            try {
-                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
-                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
-                persistenceManager.load(specialLoader);
-            } catch(Exception ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-            }
-        }
-    }
-    
     public void close() {
         if(registryInstalled) {
             try {
@@ -73,7 +58,7 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         close();
     }
     
-    public  void restoreds() {
+    public static void restoreds() {
         if(specialLoader == null) {
             try {
                 specialLoader = new ExtensionClassLoader(new Empty().getClass().getClassLoader());
@@ -83,8 +68,21 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
             }
         }
     }
-    
+
     public static ClassLoader getExtensionClassLoader() {
+        if (!registryInstalled) {
+            restoreds();
+        }
+        if (registryInstalled) {
+            try {
+                PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
+                specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
+                persistenceManager.load(specialLoader);
+            } catch(Exception ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+        
         return specialLoader;
     }
  
@@ -111,7 +109,7 @@ public class WebServiceModuleInstaller extends ModuleInstall /*implements Instan
         "modules/ext/jaxrpc16_xml/xalan.jar"
     };
         
-    public  void updatesSpecialLoader(ExtensionClassLoader loader) throws Exception {
+    public static void updatesSpecialLoader(ExtensionClassLoader loader) throws Exception {
         try {
 //            String serverInstanceIDs[] = Deployment.getDefault().getServerInstanceIDs();
 //            J2eePlatform platform = null;
