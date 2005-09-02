@@ -139,10 +139,6 @@ public class NbModuleProjectGeneratorTest extends TestBase {
             assertNotNull(BASIC_CREATED_FILES[i]+" file/folder cannot be found",
                     fo.getFileObject(BASIC_CREATED_FILES[i]));
         }
-        for (int i=0; i < SUITE_COMP_ABS_CREATED_FILES.length; i++) {
-            assertNotNull(SUITE_COMP_ABS_CREATED_FILES[i]+" file/folder cannot be found",
-                    fo.getFileObject(SUITE_COMP_ABS_CREATED_FILES[i]));
-        }
         assertEquals("now have two suite components", new HashSet(Arrays.asList(new Project[] {moduleProjectRel, moduleProjectAbs})), spp.getSubprojects());
     }
     
