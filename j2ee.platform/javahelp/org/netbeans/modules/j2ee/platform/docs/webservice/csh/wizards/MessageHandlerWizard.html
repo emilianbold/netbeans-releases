@@ -14,17 +14,37 @@
 <p>The New Message Handler Wizard wizard creates a new message handler.
 You open the New Message Handler Wizard wizard by right-clicking a web application,
 choosing New &gt; File/Folder and selecting Message Handler 
-  from the Web Services category.
+from the Web Services category.
+
+<p>SOAP message handlers are user-written Java classes that can modify a 
+SOAP message, which represents an RPC request or response. Handlers can be 
+associated with a web service or web service client. A handler has access 
+to the body and header blocks of a message, but not to the application code. 
+Handlers are usually designed to work with the header blocks and to supplement 
+the processing done by the application code.
+
+<p>Typical uses of handlers include:
+<ul><li>Logging and auditing
+	<li>Encryption and decryption
+	<li>Caching of data</ul>
+
 <p>In the Name and Location page, you have to set the following properties: 
-<p>tbd</p>
+<ul><li><b>Message Handler Name.</b> Specifies the name of the message handler.</li>
+      <li><b>Location.</b> Specifies the source root where the message handler will be created.
+      By default, you only have one source root, the <tt>src</tt> folder. To add additional source roots,
+        right-click the project node in the Projects window, choose Properties, click Sources, and define
+	a new source package folder.</li>
+	<li><b>Package.</b> Specifies the package name where the message handler will be housed.</li></ul>
 <table>
   <tr>
     <th colspan=2 align=left><a name="seealso">See Also</a></th>
   </tr>
   <tr>      
  <td width="23"></td>
-    <td>
-    <a href="../../consume/wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a><br>
+ <td>
+ <a href="../../create/add_ws_soap_message.html">Adding a SOAP Message Handler</a><br>
+	    <a href="../../create/create_ws_from_scratch.html">Creating a Web Service from Scratch</a><br>
+	    <a href="../../create/create_ws_from_wsdl.html">Creating a Web Service from a WSDL File</a><br>
     <a href="../../consume/wsc_create.html">Creating a Web Service Client</a><br>
     </td>
   </tr>
