@@ -106,6 +106,14 @@ public class UpdateExecutor extends ExecutorSupport {
             }
             cache.refreshCached(info.getFile(), c);
             refreshedFiles.add(info.getFile());
+            FileObject fo = FileUtil.toFileObject(info.getFile());
+            if (fo != null) {
+                fo.refresh();
+                fo.getParent().refresh();
+            } else {
+                fo = FileUtil.toFileObject(info.getFile().getParentFile());
+                if (fo != null) fo.refresh();
+            }
         }
                 
         // refresh all command roots
@@ -117,10 +125,6 @@ public class UpdateExecutor extends ExecutorSupport {
             }
             if (files[i].isFile()) {
                 cache.refreshCached(files[i].getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
-            }
-            FileObject fo = FileUtil.toFileObject(files[i]);
-            if (fo != null) {
-                fo.refresh();
             }
         }
         
