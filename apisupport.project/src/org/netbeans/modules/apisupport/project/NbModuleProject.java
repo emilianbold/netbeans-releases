@@ -95,8 +95,6 @@ public final class NbModuleProject implements Project {
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
-    private Map/*<String,String>*/ evalPredefs;
-    private List/*<Map<String,String>>*/ evalDefs;
     private Map/*<FileObject,Element>*/ extraCompilationUnits;
     private final GeneratedFilesHelper genFilesHelper;
     private final NbModuleTypeProviderImpl typeProvider;
@@ -785,10 +783,10 @@ public final class NbModuleProject implements Project {
     }
     
     /**
-     * Returns {@link LocalizedBundleInfo} for this project. For use from unit
-     * tests.
+     * <strong>For use from unit tests only.</strong> Returns {@link
+     * LocalizedBundleInfo} for this project.
      */
-    LocalizedBundleInfo getBundleInfo() {
+    public LocalizedBundleInfo getBundleInfo() {
         return bundleInfo;
     }
     
