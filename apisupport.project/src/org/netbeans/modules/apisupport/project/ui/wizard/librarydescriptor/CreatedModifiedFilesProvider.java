@@ -12,19 +12,28 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor;
-
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.swing.JTextArea;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
+import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
 import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ui.UIUtil;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -34,7 +43,7 @@ import org.openide.filesystems.URLMapper;
  * @author Radek Matous
  */
 final class CreatedModifiedFilesProvider  {
-
+    
     private static final String VOLUME_CLASS = "classpath";//NOI18N
     private static final String VOLUME_SRC = "src";//NOI18N
     private static final String VOLUME_JAVADOC = "javadoc";//NOI18N
@@ -64,7 +73,7 @@ final class CreatedModifiedFilesProvider  {
         template = CreatedModifiedFilesProvider.class.getResource("libdescriptemplate.xml");//NOI18N
         tokens = getTokens(fileSupport, data.getProject(), data);
         String layerEntry = getLibraryDescriptorEntryPath(data.getLibraryName());
-                
+        
         fileSupport.add(
                 fileSupport.createLayerEntry(layerEntry, template, tokens, null, null));
         
@@ -116,24 +125,26 @@ final class CreatedModifiedFilesProvider  {
         retval.put("bundle_to_substitute",getPackagePlusBundle(project).replace('/','.'));//NOI18N
         
         Iterator it = library.getContent(VOLUME_CLASS).iterator();
-        retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, project, "libs/"));//NOI18N
+        retval.put("classpath_to_substitute",getTokenSubstitution(it, fileSupport, data, "libs/"));//NOI18N
         
         it = library.getContent(VOLUME_SRC).iterator();
-        retval.put("src_to_substitute",getTokenSubstitution(it, fileSupport, project, "sources/"));//NOI18N
+        retval.put("src_to_substitute",getTokenSubstitution(it, fileSupport, data, "sources/"));//NOI18N
         
         it = library.getContent(VOLUME_JAVADOC).iterator();
-        retval.put("javadoc_to_substitute",getTokenSubstitution(it, fileSupport, project, "docs/"));//NOI18N
+        retval.put("javadoc_to_substitute",getTokenSubstitution(it, fileSupport, data, "docs/"));//NOI18N
         
         return retval;
     }
     
     private static String getTokenSubstitution(Iterator it, CreatedModifiedFiles fileSupport,
-            final NbModuleProject project, String pathPrefix) {
+            NewLibraryDescriptor.DataModel data, String pathPrefix) {
+        NbModuleProject project = data.getProject();
+        
         StringBuffer sb = new StringBuffer();
         while (it.hasNext()) {
             URL originalURL = (URL)it.next();
             String archiveName;
-            archiveName = addArchiveToCopy(fileSupport, project, originalURL, "release/"+pathPrefix);//NOI18N
+            archiveName = addArchiveToCopy(fileSupport, data, originalURL, "release/"+pathPrefix);//NOI18N
             if (archiveName != null) {
                 String urlToString = transformURL(originalURL, pathPrefix, archiveName);//NOI18N
                 sb.append("<resource>");//NOI18N
@@ -149,9 +160,7 @@ final class CreatedModifiedFilesProvider  {
     }
     
     /** returns archive name or temporarily null cause there is no zip support for file protocol  */
-    private static String addArchiveToCopy(CreatedModifiedFiles fileSupport,  final NbModuleProject project,
-            URL originalURL, String pathPrefix) {
-        
+    private static String addArchiveToCopy(CreatedModifiedFiles fileSupport,NewLibraryDescriptor.DataModel data, URL originalURL, String pathPrefix) {
         String retval = null;
         
         URL archivURL = FileUtil.getArchiveFile(originalURL);
@@ -163,10 +172,86 @@ final class CreatedModifiedFilesProvider  {
             sb.append(pathPrefix).append(retval);
             fileSupport.add(fileSupport.createFile(sb.toString(),archivURL));
         } else {
-            //TODO: probably add new Operation that will zip files first or add there
-            // posibility to use instead of URL InputStream and use lazy ByteArrayInputStream.
+            if ("file".equals(originalURL.getProtocol())) {//NOI18N
+                File folderToZip;
+                try {
+                    folderToZip = new File(originalURL.toURI());
+                } catch (URISyntaxException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return null;
+                }
+                retval = data.getLibraryName()+".zip";//NOI18N
+                pathPrefix += retval;
+                fileSupport.add(new ZipAndCopyOperation(data.getProject(), 
+                        folderToZip, pathPrefix));
+            }
         }
         return retval;
     }
     
+    private static class ZipAndCopyOperation extends CreatedModifiedFilesFactory.OperationBase {
+        private FileObject folderToZip;
+        private String relativePath;
+        ZipAndCopyOperation(NbModuleProject prj, File folderToZip, String relativePath) {
+            super(prj);
+            this.folderToZip = FileUtil.toFileObject(folderToZip);
+            this.relativePath = relativePath;
+            addCreatedOrModifiedPath(relativePath);
+        }
+        
+        public void run() throws java.io.IOException {
+            FileObject prjDir = getProject().getProjectDirectory();
+            assert prjDir != null;
+            
+            FileObject zipedTarget  = prjDir.getFileObject(relativePath);
+            if (zipedTarget == null) {
+                zipedTarget = FileUtil.createData(prjDir, relativePath);
+            }
+            
+            assert zipedTarget != null;
+            FileLock fLock = null;
+            OutputStream os = null;
+            
+            try {
+                fLock = zipedTarget.lock();
+                os = zipedTarget.getOutputStream(fLock);
+                createZipFile(os, folderToZip, Collections.list(folderToZip.getData(true)));
+            } finally {
+                if (os != null) {
+                    os.close();
+                }
+                
+                if (fLock != null) {
+                    fLock.releaseLock();
+                }
+            }
+        }
+        
+        private static void createZipFile(OutputStream target, FileObject root, Collection /* FileObject*/ files) throws IOException {
+            ZipOutputStream str = null;
+            try {
+                str = new ZipOutputStream(target);
+                Iterator it = files.iterator();
+                while (it.hasNext()) {
+                    FileObject fo = (FileObject)it.next();
+                    ZipEntry entry = new ZipEntry(FileUtil.getRelativePath(root, fo));
+                    str.putNextEntry(entry);
+                    InputStream in = null;
+                    try {
+                        in = fo.getInputStream();
+                        FileUtil.copy(in, str);
+                    } finally {
+                        if (in != null) {
+                            in.close();
+                        }
+                    }
+                    str.closeEntry();
+                }
+            } finally {
+                if (str != null) {
+                    str.close();
+                }
+            }
+        }
+    }
 }
