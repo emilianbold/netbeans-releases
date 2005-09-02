@@ -92,11 +92,8 @@ public abstract class DDMultiViewDataObject extends XmlMultiViewDataObject
 
     public void writeModel(RootInterface model, FileLock dataLock) {
         ModelSynchronizer synchronizer = (ModelSynchronizer) getModelSynchronizer();
-        if (model == synchronizer.getModel()) {
-            synchronizer.updateData(dataLock, false);
-        } else {
-            synchronizer.updateDataFromModel(model, dataLock, false);
-        }
+        ((RootInterface) synchronizer.getModel()).merge(model, RootInterface.MERGE_UPDATE);
+        synchronizer.updateData(dataLock, false);
     }
 
     public FileLock getDataLock() {

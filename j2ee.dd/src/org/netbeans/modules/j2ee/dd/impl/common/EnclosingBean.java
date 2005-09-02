@@ -32,7 +32,9 @@ import org.netbeans.modules.j2ee.dd.api.common.FindCapability;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 
 public abstract class EnclosingBean extends BaseBean implements CommonDDBean, CreateCapability, FindCapability {
-    
+
+    private Object original = this;
+
     /** Creates a new instance of EnclosingBean */
     public EnclosingBean(java.util.Vector comps, Version version) {
 	super(comps, version);
@@ -107,9 +109,19 @@ public abstract class EnclosingBean extends BaseBean implements CommonDDBean, Cr
         } catch (NameAlreadyUsedException ex){}
         return null;
     }
-    
+
+    public Object getOriginal() {
+        return original;
+    }
+
+    public Object clone() {
+        EnclosingBean enclosingBean = (EnclosingBean) super.clone();
+        enclosingBean.original = original;
+        return enclosingBean;
+    }
+
     public void merge(RootInterface root, int mode) {
         this.merge((BaseBean)root,mode);
     }
-    
+
 }

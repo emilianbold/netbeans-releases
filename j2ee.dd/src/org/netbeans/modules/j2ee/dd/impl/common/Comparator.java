@@ -28,12 +28,19 @@ public class Comparator extends org.netbeans.modules.schema2beans.BeanComparator
 				BaseBean 	curBean,
 				BaseBean 	newBean) {
         if (curBean!=null && newBean!= null) {
+            if (curBean instanceof EnclosingBean && newBean instanceof EnclosingBean) {
+                if (((EnclosingBean) curBean).getOriginal() == ((EnclosingBean) newBean).getOriginal()) {
+                    return curBean;
+                }
+            }
             if (curBean instanceof KeyBean) {
-                String prop = ((KeyBean)curBean).getKeyProperty();
+                String prop = ((KeyBean) curBean).getKeyProperty();
                 Object key1 = curBean.getValue(prop);
                 Object key2 = newBean.getValue(prop);
-                if (key1!=null) {
-                    if (key1.equals(key2)) return curBean;
+                if (key1 != null) {
+                    if (key1.equals(key2)) {
+                        return curBean;
+                    }
                 }
             } else {
                 if (beanName.equals("SessionConfig")) { //NOI18N
@@ -60,8 +67,8 @@ public class Comparator extends org.netbeans.modules.schema2beans.BeanComparator
                     return curBean;
                 } else if (beanName.equals("LocaleEncodingMappingList")) { //NOI18N
                     return curBean;
-                }   
-            }   
+                }
+            }
         }
         return super.compareBean(beanName, curBean, newBean);
     }

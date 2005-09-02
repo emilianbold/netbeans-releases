@@ -208,14 +208,15 @@ public class EjbJarProxy implements EjbJar {
     }
 
     public void merge(org.netbeans.modules.j2ee.dd.api.common.RootInterface bean, int mode) {
-        if (ejbJar!=null) {
-            if (ejbJar.getVersion().equals(((EjbJarProxy)bean).getVersion())) {
-                if (bean instanceof EjbJarProxy)
-                    ejbJar.merge(((EjbJarProxy)bean).getOriginal(), mode);
-                else ejbJar.merge(bean, mode);
+        if (bean instanceof EjbJarProxy) {
+            bean = ((EjbJarProxy) bean).getOriginal();
+        }
+        if (ejbJar != bean && bean instanceof EjbJar) {
+            EjbJar newEjbJar = (EjbJar) bean;
+            if (ejbJar != null && ejbJar.getVersion().equals(newEjbJar.getVersion())) {
+                ejbJar.merge(newEjbJar, mode);
             } else {
-                if (bean instanceof EjbJarProxy)
-                    setOriginal(((EjbJarProxy)bean).getOriginal());
+                setOriginal((EjbJar) newEjbJar.clone());
             }
         }
     }
@@ -439,4 +440,3 @@ public class EjbJarProxy implements EjbJar {
             return ejbJar.newRelationships();
     }
 }
-

@@ -23,6 +23,12 @@
                     public org.netbeans.modules.j2ee.dd.api.ejb.Relationships getSingleRelationships() {
                         return getRelationships();
                     }
+                    public Object clone() {
+                        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar =
+                            (org.netbeans.modules.j2ee.dd.api.ejb.EjbJar) super.clone();
+                        ejbJar.setVersion(getVersion());
+                        return ejbJar;
+                    }
                 </user-code>
 	</meta-element>
 	<meta-element>
