@@ -31,7 +31,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -45,13 +44,6 @@ import org.openide.util.MutexException;
  */
 public class SuitePropertiesTest extends TestBase {
     
-    private FileObject suiteRepoFO;
-    private SuiteProject suite1Prj;
-    private SuiteProject suite2Prj;
-    private SuiteProperties suite1Props;
-    private FileObject suite1FO;
-    private FileObject suite2FO;
-    
     public SuitePropertiesTest(String name) {
         super(name);
     }
@@ -59,19 +51,14 @@ public class SuitePropertiesTest extends TestBase {
     protected void setUp() throws Exception {
         clearWorkDir();
         super.setUp();
-        suiteRepoFO = FileUtil.toFileObject(copyFolder(extexamplesF));
-        suite1FO = suiteRepoFO.getFileObject("suite1");
-        suite2FO = suiteRepoFO.getFileObject("suite2");
-        suite1Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
-        suite2Prj = (SuiteProject) ProjectManager.getDefault().findProject(suite1FO);
-        SubprojectProvider suite1spp = (SubprojectProvider) suite1Prj.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ suite1subModules = suite1spp.getSubprojects();
-        this.suite1Props = new SuiteProperties(suite1Prj, suite1Prj.getHelper(),
-                suite1Prj.getEvaluator(), suite1subModules);
     }
     
-    private Project findSuite1Project() throws IOException {
-        return ProjectManager.getDefault().findProject(suite1FO);
+    private static SuiteProperties getSuiteProperties(SuiteProject suite) throws IOException {
+        SubprojectProvider spp = getSubProjectProvider(suite);
+        Set/*<Project>*/ subModules = spp.getSubprojects();
+        SuiteProperties suiteProps = new SuiteProperties(suite, suite.getHelper(),
+                suite.getEvaluator(), subModules);
+        return suiteProps;
     }
     
     private static SubprojectProvider getSubProjectProvider(Project project) throws IOException {
@@ -79,19 +66,35 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testPropertiesAreLoaded() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        assert suite1 != null;
+        NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
+        assert module1a != null;
+        NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
+        assert module1b != null;
+        SuiteProperties suite1Props = getSuiteProperties(suite1);
+        
         assertNotNull(suite1Props.getActivePlatform());
         assertEquals("platform id: ", NbPlatform.PLATFORM_ID_DEFAULT, suite1Props.getActivePlatform().getID());
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
         assertEquals("number of sub-modules: ", 2, model.getSize());
-        // assert order by display name ("Demo Action", "Demo Library")
+        // assert order by display name ("module1a", "module1b")
         NbModuleProject p = (NbModuleProject) model.getElementAt(0);
-        assertEquals("action project first", p.getCodeNameBase(), "org.netbeans.examples.modules.action");
+        assertEquals("module1a project first", p.getCodeNameBase(), "org.example.module1a");
         p = (NbModuleProject) model.getElementAt(1);
-        assertEquals("lib project first", p.getCodeNameBase(), "org.netbeans.examples.modules.lib");
+        assertEquals("module1b project first", p.getCodeNameBase(), "org.example.module1b");
     }
     
     public void testRemoveAllSubModules() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        assert suite1 != null;
+        NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
+        assert module1a != null;
+        NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
+        assert module1b != null;
+        SuiteProperties suite1Props = getSuiteProperties(suite1);
+        
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
         
@@ -103,7 +106,7 @@ public class SuitePropertiesTest extends TestBase {
         
         saveProperties(suite1Props);
         
-        SubprojectProvider spp = getSubProjectProvider(findSuite1Project());
+        SubprojectProvider spp = getSubProjectProvider(suite1);
         assertEquals("none module should be left", 0, spp.getSubprojects().size());
     }
     
@@ -113,10 +116,8 @@ public class SuitePropertiesTest extends TestBase {
         NbModuleProject module1 = TestBase.generateSuiteComponent(suite1, "module1");
         assert module1 != null;
         
-        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
-        SuiteProperties suiteProps = new SuiteProperties(suite1, suite1.getHelper(),
-                suite1.getEvaluator(), subModules);
+        SubprojectProvider spp = getSubProjectProvider(suite1);
+        SuiteProperties suiteProps = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suiteProps.getModulesListModel();
         assertEquals("one module suite component", 1, model.getSize());
@@ -135,6 +136,14 @@ public class SuitePropertiesTest extends TestBase {
     }
     
     public void testRemoveOneSubModule() throws Exception {
+        SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
+        assert suite1 != null;
+        NbModuleProject module1a = TestBase.generateSuiteComponent(suite1, "module1a");
+        assert module1a != null;
+        NbModuleProject module1b = TestBase.generateSuiteComponent(suite1, "module1b");
+        assert module1b != null;
+        SuiteProperties suite1Props = getSuiteProperties(suite1);
+        
         SuiteSubModulesListModel model = suite1Props.getModulesListModel();
         assertNotNull(model);
         
@@ -146,26 +155,22 @@ public class SuitePropertiesTest extends TestBase {
         
         saveProperties(suite1Props);
         
-        SubprojectProvider spp = getSubProjectProvider(findSuite1Project());
+        SubprojectProvider spp = getSubProjectProvider(suite1);
         assertEquals("one module should be left", 1, spp.getSubprojects().size());
-        NbModuleProject libProject = (NbModuleProject) spp.getSubprojects().toArray()[0];
-        assertEquals("lib module should be the one", "org.netbeans.examples.modules.lib",
-                libProject.getCodeNameBase());
-        NbModuleTypeProvider libProjectNmtp = (NbModuleTypeProvider) libProject.
+        NbModuleProject project = (NbModuleProject) spp.getSubprojects().toArray()[0];
+        assertEquals("module1b should be the one", "org.example.module1b", project.getCodeNameBase());
+        NbModuleTypeProvider libProjectNmtp = (NbModuleTypeProvider) project.
                 getLookup().lookup(NbModuleTypeProvider.class);
-        assertSame("lib module is still suite component module", NbModuleTypeProvider.SUITE_COMPONENT,
+        assertSame("module1b module is still suite component module", NbModuleTypeProvider.SUITE_COMPONENT,
                 libProjectNmtp.getModuleType());
         
-        // assert that the remove module (action-project) is standalone
-        FileObject actionFO = suite1FO.getFileObject("action-project");
-        Project actionProject = ProjectManager.getDefault().findProject(actionFO);
-        NbModuleTypeProvider actionNmtp = (NbModuleTypeProvider) actionProject.
+        // assert that the remove module (module1a) is standalone
+        NbModuleTypeProvider module1aNmtp = (NbModuleTypeProvider) module1a.
                 getLookup().lookup(NbModuleTypeProvider.class);
-        assertNotNull(actionNmtp);
-        assertSame("action-project module is standalone module now", NbModuleTypeProvider.STANDALONE,
-                actionNmtp.getModuleType());
+        assertNotNull(module1aNmtp);
+        assertSame("module1a module is standalone module now", NbModuleTypeProvider.STANDALONE,
+                module1aNmtp.getModuleType());
     }
-    
     
     public void testMoveSubModuleBetweenSuites() throws Exception {
         SuiteProject suite1 = TestBase.generateSuite(getWorkDir(), "suite1");
@@ -183,10 +188,7 @@ public class SuitePropertiesTest extends TestBase {
         assert module2a != null;
         
         // simulate addition of module2a to the suite1
-        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
-        SuiteProperties suite1Props = new SuiteProperties(suite1, suite1.getHelper(),
-                suite1.getEvaluator(), subModules);
+        SuiteProperties suite1Props = getSuiteProperties(suite1);
         SuiteSubModulesListModel suite1model = suite1Props.getModulesListModel();
         suite1model.addModule(module2a);
         
@@ -219,10 +221,8 @@ public class SuitePropertiesTest extends TestBase {
         NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
         assert module3 != null;
         
-        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
-        SuiteProperties suiteProps = new SuiteProperties(suite1, suite1.getHelper(),
-                suite1.getEvaluator(), subModules);
+        SubprojectProvider spp = getSubProjectProvider(suite1);
+        SuiteProperties suiteProps = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suiteProps.getModulesListModel();
         assertEquals("three module suite components", 3, model.getSize());
@@ -244,10 +244,8 @@ public class SuitePropertiesTest extends TestBase {
         NbModuleProject module3 = TestBase.generateSuiteComponent(suite1, "module3");
         assert module3 != null;
         
-        SubprojectProvider spp = (SubprojectProvider) suite1.getLookup().lookup(SubprojectProvider.class);
-        Set/*<Project>*/ subModules = spp.getSubprojects();
-        SuiteProperties suiteProps = new SuiteProperties(suite1, suite1.getHelper(),
-                suite1.getEvaluator(), subModules);
+        SubprojectProvider spp = getSubProjectProvider(suite1);
+        SuiteProperties suiteProps = getSuiteProperties(suite1);
         
         SuiteSubModulesListModel model = suiteProps.getModulesListModel();
         assertEquals("three module suite components", 3, model.getSize());
@@ -293,3 +291,4 @@ public class SuitePropertiesTest extends TestBase {
     }
     
 }
+
