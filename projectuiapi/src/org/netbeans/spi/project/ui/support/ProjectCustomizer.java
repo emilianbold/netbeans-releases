@@ -84,15 +84,7 @@ public final class ProjectCustomizer {
                                                 String preselectedCategory ) {
         
         CategoryChangeSupport changeSupport = new CategoryChangeSupport();
-        for (int i = 0; i < categories.length; i++) {
-            Utilities.putCategoryChangeSupport(categories[i], changeSupport);
-            Category[] subCategories = categories[i].getSubcategories();
-            if (subCategories != null) {
-                for (int j = 0; j < subCategories.length; j++) {
-                    Utilities.putCategoryChangeSupport(subCategories[j], changeSupport);
-                }
-            }
-        }
+        registerCategoryChangeSupport(changeSupport, categories);
         
         CategoryModel categoryModel = new CategoryModel( categories );
         JPanel categoryView = new CategoryView( categoryModel );
@@ -108,6 +100,17 @@ public final class ProjectCustomizer {
         }
         
         return customizerPane;
+    }
+
+    private static void registerCategoryChangeSupport(final CategoryChangeSupport changeSupport, 
+            final Category[] categories) {        
+        for (int i = 0; i < categories.length; i++) {
+            Utilities.putCategoryChangeSupport(categories[i], changeSupport);
+            Category[] subCategories = categories[i].getSubcategories();
+            if (subCategories != null) {
+                registerCategoryChangeSupport(changeSupport, subCategories);
+            }
+        }
     }
     
     /** Provides components for categories.
