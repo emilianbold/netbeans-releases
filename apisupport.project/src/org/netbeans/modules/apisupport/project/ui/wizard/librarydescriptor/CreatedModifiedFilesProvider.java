@@ -173,17 +173,14 @@ final class CreatedModifiedFilesProvider  {
             fileSupport.add(fileSupport.createFile(sb.toString(),archivURL));
         } else {
             if ("file".equals(originalURL.getProtocol())) {//NOI18N
-                File folderToZip;
-                try {
-                    folderToZip = new File(originalURL.toURI());
-                } catch (URISyntaxException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return null;
+                FileObject folderToZip;
+                folderToZip = URLMapper.findFileObject(originalURL);
+                if (folderToZip != null) {
+                    retval = data.getLibraryName()+".zip";//NOI18N
+                    pathPrefix += retval;
+                    fileSupport.add(new ZipAndCopyOperation(data.getProject(),
+                            folderToZip, pathPrefix));
                 }
-                retval = data.getLibraryName()+".zip";//NOI18N
-                pathPrefix += retval;
-                fileSupport.add(new ZipAndCopyOperation(data.getProject(), 
-                        folderToZip, pathPrefix));
             }
         }
         return retval;
@@ -192,9 +189,9 @@ final class CreatedModifiedFilesProvider  {
     private static class ZipAndCopyOperation extends CreatedModifiedFilesFactory.OperationBase {
         private FileObject folderToZip;
         private String relativePath;
-        ZipAndCopyOperation(NbModuleProject prj, File folderToZip, String relativePath) {
+        ZipAndCopyOperation(NbModuleProject prj, FileObject folderToZip, String relativePath) {
             super(prj);
-            this.folderToZip = FileUtil.toFileObject(folderToZip);
+            this.folderToZip = folderToZip;
             this.relativePath = relativePath;
             addCreatedOrModifiedPath(relativePath);
         }
