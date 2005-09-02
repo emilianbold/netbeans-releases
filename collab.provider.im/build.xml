@@ -27,6 +27,7 @@ Microsystems, Inc. All Rights Reserved.
           <fileset dir="../external">
            <include name="collab-service.jar"/>
            <include name="jso-*.jar"/>
+           <include name="README-JSO-CHANGES"/>
            <include name="log4j-1.2.8.jar"/>
            <include name="xp.jar"/>
            <include name="jaxen-core-1.0.jar"/>
@@ -46,8 +47,10 @@ Microsystems, Inc. All Rights Reserved.
                  releasedate="${nbm.release.date}"
 		 moduleauthor="${nbm.module.author}">
             <license name="im-libs-license.html">
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
+		<text>This module contains modified version of the JSO
+(Jabber Stream Objects) library. For changes, see the installed file
+modules/ext/README-JSO-CHANGES and review following license.
+</text>
 		<text>Jabber Stream Objects 0.12.3</text>
                 <file location="../external/jso-lgpl2.1-license.txt"/>
 		<text>Log4J - Apache Common Logging 1.2.8</text>
@@ -56,6 +59,8 @@ Microsystems, Inc. All Rights Reserved.
                 <file location="../external/jc-license.txt"/>
                 <text>Jaxen 1.0 and SaxPath 1.0</text>
                 <file location="../external/jaxen-license.txt"/>
+                <text>For the integration module:</text>
+                <file location="${license.file}"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
