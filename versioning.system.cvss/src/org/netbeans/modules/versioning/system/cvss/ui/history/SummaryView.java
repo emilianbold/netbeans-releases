@@ -106,6 +106,10 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (diffBounds != null && diffBounds.contains(p)) {
             associatedChangesInProject(idx);
         }
+        diffBounds = (Rectangle) resultsList.getClientProperty("Summary-Acop-" + idx);
+        if (diffBounds != null && diffBounds.contains(p)) {
+            associatedChangesInOpenProjects(idx);
+        }
     }
 
     public void mouseEntered(MouseEvent e) {
