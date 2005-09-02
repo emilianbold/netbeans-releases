@@ -98,22 +98,34 @@ public class SSHConnection extends AbstractConnection {
     }
 
     /**
-     * Verifies that we can successfuly connect to the SSH server but does not log into it.
+     * Verifies that we can successfuly connect to the SSH server and run 'cvs server' command on it.
      * 
      * @throws AuthenticationException if connection to the SSH server cannot be established (network problem)
      */ 
     public void verify() throws AuthenticationException {
         try {
-            Socket socket = socketFactory.createSocket(host, port);
-            socket.close();
+            open();
+            close();
+        } catch (CommandAbortedException e) {
+            throw new AuthenticationException(e, "SSH: open connection failed.");
         } catch (IOException e) {
-            AuthenticationException ae = new AuthenticationException(e, "SSH connection failed.");
-            throw ae;
+            throw new AuthenticationException(e, "SSH: close connection failed.");
+        } finally {
+            reset();
         }
     }
 
+    private void reset() {
+        session = null;
+        channel = null;
+        setInputStream(null);
+        setOutputStream(null);
+    }
+    
     public void close() throws IOException {
+        if (channel != null) channel.disconnect();
         if (session != null) session.disconnect();
+        reset();
     }
 
     public boolean isOpen() {
