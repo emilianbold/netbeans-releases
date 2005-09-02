@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -25,7 +24,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Dependency;
 
@@ -94,7 +92,7 @@ public final class ManifestManager {
         StringTokenizer st = new StringTokenizer(tokens, ","); // NOI18N
         String[] result = new String[st.countTokens()];
         for (int i = 0; i < result.length; i++) {
-            result[i] = st.nextToken();
+            result[i] = st.nextToken().trim();
         }
         return result;
     }
