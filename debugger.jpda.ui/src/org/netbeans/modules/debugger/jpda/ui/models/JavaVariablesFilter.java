@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,6 +23,7 @@ import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 
 
 /**
@@ -97,18 +98,17 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         
         String type = variable.getType ();
         
-        if ( isToArrayType (type)
-        ) 
+        if (isToArrayType (type)) 
             try {
                 ObjectVariable ov = (ObjectVariable) variable;
-                return ((ObjectVariable) ov.invokeMethod (
+                ov = (ObjectVariable) ov.invokeMethod (
                     "toArray",
                     "()[Ljava/lang/Object;",
                     new Variable [0]
-                )).getFields (from, to);
+                );
+                return original.getChildren(ov, from, to);
             } catch (NoSuchMethodException e) {
-                System.out.println (e.getLocalizedMessage ());
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
                      (e.getTargetException () instanceof 
@@ -117,11 +117,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     // PATCH for J2ME. see 45543
                     return original.getChildren (variable, from, to);
                 }
-                System.out.println (e.getLocalizedMessage ());
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
             }
-        if ( isMapMapType (type)
-        ) 
+        if (isMapMapType (type)) 
             try {
                 ObjectVariable ov = (ObjectVariable) variable;
                 ov = (ObjectVariable) ov.invokeMethod (
@@ -134,9 +132,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     "()[Ljava/lang/Object;",
                     new Variable [0]
                 );
-                int fc = ov.getFieldsCount();
-                if (to == 0) to = fc;
-                return ov.getFields (Math.min(from, fc), Math.min(to, fc));
+                return original.getChildren(ov, from, to);
             } catch (InvalidExpressionException e) {
                 if ( (e.getTargetException () != null) &&
                      (e.getTargetException () instanceof 
@@ -145,11 +141,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     // PATCH for J2ME. see 45543
                     return original.getChildren (variable, from, to);
                 }
-                System.out.println(e.getLocalizedMessage ());
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
             } catch (NoSuchMethodException e) {
-                System.out.println(e.getLocalizedMessage ());
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
             }
         if ( isMapEntryType (type)
         ) {
@@ -176,11 +170,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
                     // PATCH for J2ME. see 45543
                     return original.getChildren (variable, from, to);
                 }
-                System.out.println(e.getLocalizedMessage ());
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
             } catch (NoSuchMethodException e) {
-                System.out.println(e.getLocalizedMessage ());
-                e.printStackTrace ();
+                ErrorManager.getDefault().notify(e);
             }
 //        if ( type.equals ("java.lang.ref.WeakReference")
 //        ) 
@@ -222,8 +214,53 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
 
         String type = variable.getType();
 
-        if (isToArrayType(type) || isMapMapType (type)) {
-            return getChildren (original, variable, 0, 0).length;
+        if (isToArrayType (type)) {
+            try {
+                ObjectVariable ov = (ObjectVariable) variable;
+                ov = (ObjectVariable) ov.invokeMethod (
+                    "toArray",
+                    "()[Ljava/lang/Object;",
+                    new Variable [0]
+                );
+                return original.getChildrenCount(ov);
+            } catch (NoSuchMethodException e) {
+                ErrorManager.getDefault().notify(e);
+            } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getChildrenCount(variable);
+                }
+                ErrorManager.getDefault().notify(e);
+            }
+        } else if (isMapMapType (type)) {
+            try {
+                ObjectVariable ov = (ObjectVariable) variable;
+                ov = (ObjectVariable) ov.invokeMethod (
+                    "entrySet",
+                    "()Ljava/util/Set;",
+                    new Variable [0]
+                );
+                ov = (ObjectVariable) ov.invokeMethod (
+                    "toArray",
+                    "()[Ljava/lang/Object;",
+                    new Variable [0]
+                );
+                return original.getChildrenCount(ov);
+            } catch (InvalidExpressionException e) {
+                if ( (e.getTargetException () != null) &&
+                     (e.getTargetException () instanceof 
+                       UnsupportedOperationException)
+                ) {
+                    // PATCH for J2ME. see 45543
+                    return original.getChildrenCount(variable);
+                }
+                ErrorManager.getDefault().notify(e);
+            } catch (NoSuchMethodException e) {
+                ErrorManager.getDefault().notify(e);
+            }
         }
         else if (isMapEntryType(type)) {
             return 2;
@@ -364,6 +401,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             mapMapType.add ("java.util.TreeMap");
             mapMapType.add ("java.util.WeakHashMap");
             mapMapType.add ("java.util.LinkedHashMap");
+            mapMapType.add ("java.util.concurrent.ConcurrentHashMap");
+            mapMapType.add ("java.util.EnumMap");
         }
         return mapMapType.contains (type);
     }
@@ -379,6 +418,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             toArrayType.add ("java.util.Stack");
             toArrayType.add ("java.util.TreeSet");
             toArrayType.add ("java.util.Vector");
+            toArrayType.add ("java.util.concurrent.CopyOnWriteArraySet");
+            toArrayType.add ("java.util.EnumSet");
         }
         return toArrayType.contains (type);
     }
