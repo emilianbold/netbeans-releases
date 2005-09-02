@@ -78,7 +78,7 @@ public class ClientRuntime {
             File file = files[i];
             try {
                 String root = Utils.getCVSRootFor(file);
-                if (!root.equals(myRoot)) throw new IllegalCommandException("Command includes files from different CVS root: " + root);
+                if (!root.equals(myRoot)) throw new IllegalCommandException("Command includes files from different CVS root.\n Expected: " + myRoot + "\nGot:     " + root);
             } catch (IOException e) {
                 throw new IllegalCommandException("Missing or invalid CVS/Root for: " + file);
             }
