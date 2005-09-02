@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
     </li>
             </ul>
       </description>
-      <class package="org.openide.awt" name="Toolbar"/>
+      <class package="org.openide.awt" name="Toolbar" link="no"/>
     </change>
     <change>
       <api name="awt"/>
@@ -129,7 +129,7 @@ Microsystems, Inc. All Rights Reserved.
         final (it was static and only intended as a constant, so this is not
         incompatible).
       </description>
-      <class package="org.openide.awt" name="Toolbar"/>
+      <class package="org.openide.awt" name="Toolbar" link="no"/>
     </change>
     <change id="HtmlBrowser.getBrowserImpl-getBrowserComponent">
       <api name="awt"/>
@@ -158,7 +158,7 @@ Microsystems, Inc. All Rights Reserved.
         New constructor of <code>ToolbarPool</code>. Now any module can create its
         own <code>ToolbarPool</code> and use it.
       </description>
-      <class package="org.openide.awt" name="ToolbarPool"/>
+      <class package="org.openide.awt" name="ToolbarPool" link="no"/>
     </change>
     <change id="Mnemonics">
       <api name="awt"/>
@@ -206,7 +206,7 @@ Microsystems, Inc. All Rights Reserved.
           don't want this functionality, have to patch the actions' code.
         </p>
       </description>
-      <class package="org.openide.awt" name="awt"/>
+      <class package="org.openide.awt" name="awt" link="no"/>
     </change>
 <change>
      <api name="awt"/>
@@ -223,12 +223,12 @@ Microsystems, Inc. All Rights Reserved.
      for a subclass of <code>CallableSystemAction</code> to override the method
      with own implementation otherwise a warning is printed.
      <p>
-     There is a special contract to allow synchronous actions to be executed 
-     asynchronously, by using special <a href="arch/openide-actions.html#api-waitFinished" shape="rect">waitFinished</a>
+     There is a special contract to allow asynchronous actions to be executed 
+     synchronously, by using special <code>ActionEvent</code> with <q>waitFinished</q>
      as action command.
      </p>
      </description>
-     <class package="org.openide.util.actions" name="CallableSystemAction"/>
+     <class package="org.openide.util.actions" name="CallableSystemAction" link="no"/>
      <issue number="39640"/>
     </change>
      <change>
@@ -255,10 +255,10 @@ Microsystems, Inc. All Rights Reserved.
       text to Explorer.  The renderer itself can be found in 
       org.openide.awt.HtmlRenderer.
       </description>
-      <class package="org.openide.filesystems.FileSystem" name="HtmlStatus"/>
-      <class package="org.openide.nodes" name="Node"/>
+      <class package="org.openide.filesystems.FileSystem" name="HtmlStatus" link="no"/>
+      <class package="org.openide.nodes" name="Node" link="no"/>
       <class package="org.openide.awt" name="HtmlRenderer"/>
-      <class package="org.openide.loaders" name="DataNode"/>
+      <class package="org.openide.loaders" name="DataNode" link="no"/>
       <issue number="29466"/>
      </change>
 <change>
@@ -276,8 +276,8 @@ Microsystems, Inc. All Rights Reserved.
             "iconBase" is a path to the icon resources without the trailing .gif. The code in Actions adds
             .gif, _pressed.gif, _disabled.gif and _rollover.gif suffices to the iconBase.
         </description>
-        <class package="org.openide.util.actions" name="SystemAction"/>
-        <class package="org.openide.awt" name="awt"/>
+        <class package="org.openide.util.actions" name="SystemAction" link="no"/>
+        <class package="org.openide.awt" name="awt" link="no"/>
         <issue number="32256"/>
     </change>
 <change>
@@ -294,7 +294,7 @@ Microsystems, Inc. All Rights Reserved.
             is replaced by <code>TopComponent.getActions()</code> method.
             </p>
         </description>
-        <class package="org.openide.windows" name="TopComponent"/>
+        <class package="org.openide.windows" name="TopComponent" link="no"/>
         <issue number="30231"/>
     </change>
 <change>
@@ -309,18 +309,11 @@ Microsystems, Inc. All Rights Reserved.
             <p>
             Introduction of new action system, which generally means
             move from usage of <code>SystemAction</code> to <code>Action</code> instances.
-            Look at <a href="http://openide.netbeans.org/proposals/actions/index.html" shape="rect">
-            general proposal</a>. That document also focuses on declarative actions
+            Further step would be declarative actions
             usage which is not subject of current change, it will be part of later changes.
             </p>
-<p>
-            Current change is described by <a href="http://openide.netbeans.org/proposals/actions/impl.html" shape="rect">
-            description of already implemented changes</a> which also summarizes
-            <a href="http://openide.netbeans.org/proposals/actions/impl.html#summaryAPI" shape="rect">
-            these API changes</a>.
-            </p>
         </description>
-        <class package="org.openide.awt" name="awt"/>
+        <class package="org.openide.awt" name="awt" link="no"/>
         <issue number="27868"/>
     </change>
 </changes>
