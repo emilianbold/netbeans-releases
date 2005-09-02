@@ -487,28 +487,26 @@
             <property name="conditionSet"/>
             <property name="bidirectional">True</property>
         </wizardBean>
-        <wizardBean class="com.installshield.product.wizardbeans.WelcomePanel" id="welcomeInstall">
-            <property name="displayName">Welcome Panel</property>
+        <wizardBean class="org.netbeans.installer.NbWelcomePanel" id="nbWelcome">
+            <property name="displayName">Nb Welcome Panel</property>
             <property name="active">True</property>
             <property name="buildCategories"/>
             <property name="comments"/>
             <property name="conditionOperator">AND</property>
             <property name="conditionSet"/>
             <property name="bidirectional">True</property>
-            <property name="title"/>
-            <property name="description"/>
-            <property name="navigationOptions">0</property>
-            <property name="htmlHelpResource"/>
-            <property name="helpString"/>
-            <property name="text">$L(org.netbeans.installer.Bundle,InstallWelcomePanel.text, $L(org.netbeans.installer.Bundle,Product.displayName), $L(org.netbeans.installer.Bundle,AS.name))</property>
-            <property name="textSource">1</property>
+            <property name="includeLocalizedFiles">False</property>
             <property name="fileName"/>
+            <property name="showBorder">False</property>
+            <property name="title"/>
+            <property name="contentType">2</property>
+            <property name="description"/>
+            <property name="textSource">1</property>
+            <property name="text">$L(com.installshield.wizardx.i18n.WizardXResources, TextDisplayPanel.text)</property>
+            <property name="navigationOptions">0</property>
+            <property name="busyMessage"/>
             <property name="fileEncoding"/>
             <property name="resolveFileContents">False</property>
-            <property name="includeLocalizedFiles">False</property>
-            <property name="contentType">2</property>
-            <property name="showBorder">False</property>
-            <property name="busyMessage"/>
         </wizardBean>
         <wizardBean class="com.installshield.product.wizardbeans.LicensePanel" id="license">
             <property name="displayName">License Panel</property>
