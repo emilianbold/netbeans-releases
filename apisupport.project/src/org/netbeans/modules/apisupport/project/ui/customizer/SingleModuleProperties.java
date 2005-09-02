@@ -87,6 +87,11 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     private final static Map/*<String, String>*/ DEFAULTS;
     
+    private boolean majorReleaseVersionChanged;
+    private boolean specificationVersionChanged;
+    private boolean implementationVersionChange;
+    private boolean providedTokensChanged;
+    
     static {
         // setup defaults
         Map map = new HashMap();
@@ -161,8 +166,8 @@ public final class SingleModuleProperties extends ModuleProperties {
         originalPlatform = this.platform = NbPlatform.getPlatformByID(
                 getEvaluator().getProperty("nbplatform.active")); // NOI18N
         getPublicPackagesModel().reloadData(loadPublicPackages());
-        this.requiredTokens = new TreeSet(
-                Arrays.asList(manifestManager.getRequiredTokens()));
+        requiredTokens = Collections.unmodifiableSortedSet(
+                new TreeSet(Arrays.asList(manifestManager.getRequiredTokens())));
         if (isFileBundle()) {
             try {
                 bundleInfo.reload();
@@ -236,7 +241,10 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setMajorReleaseVersion(String ver) {
-        this.majorReleaseVersion = ver;
+        if (majorReleaseVersion != ver) {
+            majorReleaseVersion = ver;
+            majorReleaseVersionChanged = true;
+        }
     }
     
     String getSpecificationVersion() {
@@ -244,7 +252,10 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setSpecificationVersion(String ver) {
-        this.specificationVersion = ver;
+        if (specificationVersion != ver) {
+            specificationVersion = ver;
+            specificationVersionChanged = true;
+        }
     }
     
     String getImplementationVersion() {
@@ -252,7 +263,10 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setImplementationVersion(String ver) {
-        this.implementationVersion = ver;
+        if (implementationVersion != ver) {
+            implementationVersion = ver;
+            implementationVersionChange = true;
+        }
     }
     
     String getProvidedTokens() {
@@ -260,11 +274,10 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
     
     void setProvidedTokens(String tokens) {
-        this.provTokensString = tokens;
-    }
-    
-    private SortedSet getRequiredTokens() {
-        return requiredTokens;
+        if (provTokensString != tokens) {
+            provTokensString = tokens;
+            providedTokensChanged = true;
+        }
     }
     
     boolean isStandalone() {
@@ -347,7 +360,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     RequiredTokenListModel getRequiredTokenListModel() {
         if (requiredTokensListModel == null) {
-            requiredTokensListModel = new RequiredTokenListModel(getRequiredTokens());
+            requiredTokensListModel = new RequiredTokenListModel(requiredTokens);
         }
         return requiredTokensListModel;
     }
@@ -442,6 +455,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         
         // Store project.xml changes
         // store module dependencies
+        DependencyListModel dependencyListModel = getDependenciesListModel();
         if (dependencyListModel.isChanged()) {
             Set/*<ModuleDependency>*/ depsToSave =
                     new TreeSet(ModuleDependency.CODE_NAME_BASE_COMPARATOR);
@@ -496,24 +510,33 @@ public final class SingleModuleProperties extends ModuleProperties {
         String module = "".equals(getMajorReleaseVersion()) ?
             getCodeNameBase() :
             getCodeNameBase() + '/' + getMajorReleaseVersion();
-        setManifestAttribute(em, ManifestManager.OPENIDE_MODULE, module);
-        setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION,
-                getSpecificationVersion());
-        setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_IMPLEMENTATION_VERSION,
-                getImplementationVersion());
-        setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_PROVIDES,
-                getProvidedTokens());
-        
-        String[] reqTokens = new String[getRequiredTokens().size()];
-        getRequiredTokens().toArray(reqTokens);
-        StringBuffer result = new StringBuffer();
-        for (int i = 0; i < reqTokens.length; i++) {
-            if (i != 0) {
-                result.append(", "); // NOI18N
-            }
-            result.append(reqTokens[i]);
+        if (majorReleaseVersionChanged) {
+            setManifestAttribute(em, ManifestManager.OPENIDE_MODULE, module);
         }
-        setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_REQUIRES, result.toString());
+        if (specificationVersionChanged) {
+            setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_SPECIFICATION_VERSION,
+                    getSpecificationVersion());
+        }
+        if (implementationVersionChange) {
+            setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_IMPLEMENTATION_VERSION,
+                    getImplementationVersion());
+        }
+        if (providedTokensChanged) {
+            setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_PROVIDES,
+                    getProvidedTokens());
+        }
+        
+        if (getRequiredTokenListModel().isChanged()) {
+            String[] reqTokens = getRequiredTokenListModel().getTokens();
+            StringBuffer result = new StringBuffer(reqTokens.length > 1 ? "\n  " : ""); // NOI18N
+            for (int i = 0; i < reqTokens.length; i++) {
+                if (i != 0) {
+                    result.append(",\n  "); // NOI18N
+                }
+                result.append(reqTokens[i]);
+            }
+            setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_REQUIRES, result.toString());
+        }
         Util.storeManifest(manifestFO, em);
     }
     

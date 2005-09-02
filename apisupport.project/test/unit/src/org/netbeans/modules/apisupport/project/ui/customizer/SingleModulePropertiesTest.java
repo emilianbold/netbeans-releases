@@ -36,7 +36,6 @@ import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
@@ -70,7 +69,7 @@ public class SingleModulePropertiesTest extends TestBase {
     public void testThatBasicPropertiesAreLoaded() throws Exception {
         SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
                 "src/org/netbeans/examples/modules/misc/Bundle.properties");
-        
+
         assertNotNull(props.getActivePlatform());
         assertNotNull("loading bundle info", props.getBundleInfo());
         assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
@@ -81,7 +80,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertTrue("suite directory", props.getSuiteDirectory().endsWith("suite2"));
     }
-    
+
     public void testThatPropertiesAreRefreshed() throws Exception {
         FileObject suiteProjectFO = suite2FO.getFileObject("misc-project");
         SingleModuleProperties props = loadProperties(suiteProjectFO,
@@ -89,7 +88,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("spec. version", "1.0", props.getSpecificationVersion());
         assertEquals("display name", "Misc", props.getBundleInfo().getDisplayName());
         assertEquals("number of dependencies", 0, props.getDependenciesListModel().getSize());
-        
+
         // silently change manifest
         InputStream is = new FileInputStream(props.getManifestFile());
         EditableManifest em = new EditableManifest();
@@ -105,7 +104,7 @@ public class SingleModulePropertiesTest extends TestBase {
         } finally {
             os.close();
         }
-        
+
         // silently change bundle
         EditableProperties ep = new EditableProperties();
         is = new FileInputStream(props.getBundleInfo().getPath());
@@ -121,7 +120,7 @@ public class SingleModulePropertiesTest extends TestBase {
         } finally {
             os.close();
         }
-        
+
         // modify project.xml
         NbModuleProject miscProject = (NbModuleProject) ProjectManager.getDefault().findProject(suiteProjectFO);
         final ProjectXMLManager miscPXM = new ProjectXMLManager(miscProject.getHelper());
@@ -136,18 +135,17 @@ public class SingleModulePropertiesTest extends TestBase {
         });
         assertTrue("adding dependencies", result.booleanValue());
         ProjectManager.getDefault().saveProject(miscProject);
-        
+
         // simple reload
         miscProject = (NbModuleProject) ProjectManager.getDefault().findProject(suiteProjectFO);
-        Lookup lookup = miscProject.getLookup();
         props.refresh(getModuleType(miscProject), getSuiteProvider(miscProject));
-        
+
         // check that manifest and bundle has been reloaded
         assertEquals("spec. version", "1.1", props.getSpecificationVersion());
         assertEquals("display name should be changed", "Miscellaneous", props.getBundleInfo().getDisplayName());
         assertEquals("number of dependencies", 1, props.getDependenciesListModel().getSize());
     }
-    
+
     public void testThatPropertiesListen() throws IOException {
         FileObject miscProjectFO = suite2FO.getFileObject("misc-project");
         Project miscProject = ProjectManager.getDefault().findProject(miscProjectFO);
@@ -157,20 +155,20 @@ public class SingleModulePropertiesTest extends TestBase {
                 ProjectUtils.getInformation(miscProject).getDisplayName());
         assertEquals("display name from LocalizedBundleInfo", "Misc",
                 props.getBundleInfo().getDisplayName());
-        
+
         FileObject bundleFO = FileUtil.toFileObject(new File(props.getBundleInfo().getPath()));
         EditableProperties bundleEP = Util.loadProperties(bundleFO);
         bundleEP.setProperty(LocalizedBundleInfo.NAME, "Miscellaneous");
         // let's fire a change
         Util.storeProperties(bundleFO, bundleEP);
-        
+
         // display name should be refreshed
         assertEquals("display name was refreshed in ProjectInformation", "Miscellaneous",
                 ProjectUtils.getInformation(miscProject).getDisplayName());
         assertEquals("display name was refreshed in LocalizedBundleInfo", "Miscellaneous",
                 props.getBundleInfo().getDisplayName());
     }
-    
+
     public void testGetPublicPackages() throws Exception {
         // misc-project properties
         SingleModuleProperties props = loadProperties(suite2FO.getFileObject("misc-project"),
@@ -178,7 +176,7 @@ public class SingleModulePropertiesTest extends TestBase {
         PublicPackagesTableModel pptm = props.getPublicPackagesModel();
         assertEquals("number of available public packages", 1, pptm.getRowCount());
         assertEquals("number of selected public packages", 1, pptm.getSelectedPackages().length);
-        
+
         // libs/xerces properties
         props = loadProperties(nbroot.getFileObject("libs/xerces"),
                 "src/org/netbeans/libs/xerces/Bundle.properties");
@@ -186,9 +184,9 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of available public packages", 38, pptm.getRowCount());
         assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
     }
-    
+
     public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws IOException {
-        NbModuleProject p = generateStandaloneModule(getWorkDir(), "module1");
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         FileObject propsFO = FileUtil.toFileObject(new File(getWorkDir(),
                 "module1/src/org/example/module1/resources/Bundle.properties"));
         propsFO.delete();
@@ -201,6 +199,68 @@ public class SingleModulePropertiesTest extends TestBase {
         props.refresh(getModuleType(p), getSuiteProvider(p));
     }
     
+    public void testThatManifestFormattingIsNotMessedUp_61248() throws IOException {
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        EditableManifest em = Util.loadManifest(p.getManifestFile());
+        em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
+                "  org.openide.execution.ExecutionEngine,\n" +
+                "  org.openide.windows.IOProvider", null);
+        Util.storeManifest(p.getManifestFile(), em);
+        String before = TestBase.slurp(p.getManifestFile());
+
+        SingleModuleProperties props = loadProperties(p);
+        // two lines bellow are ensured by CustomizerVersioning - let's simulate it
+        props.setImplementationVersion("");
+        props.setProvidedTokens("");
+        props.storeProperties();
+        ProjectManager.getDefault().saveProject(p);
+        String after = TestBase.slurp(p.getManifestFile());
+        
+        assertEquals("the same content", before, after);
+    }
+    
+    public void testNiceFormattingForRequiredTokensInManifest_63516() throws IOException {
+        NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
+        EditableManifest em = Util.loadManifest(p.getManifestFile());
+        em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
+                "  org.openide.execution.ExecutionEngine,\n" +
+                "  org.openide.windows.IOProvider", null);
+        Util.storeManifest(p.getManifestFile(), em);
+
+        SingleModuleProperties props = loadProperties(p);
+        props.getRequiredTokenListModel().addToken("org.netbeans.api.javahelp.Help");
+        // two lines bellow are ensured by CustomizerVersioning - let's simulate it
+        props.setImplementationVersion("");
+        props.setProvidedTokens("");
+        props.storeProperties();
+        ProjectManager.getDefault().saveProject(p);
+        String real = TestBase.slurp(p.getManifestFile());
+        String expected = "Manifest-Version: 1.0\n" +
+                "OpenIDE-Module: org.example.module1\n" +
+                "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml\n" +
+                "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties\n" +
+                "OpenIDE-Module-Requires: \n" +
+                "  org.netbeans.api.javahelp.Help,\n" +
+                "  org.openide.execution.ExecutionEngine,\n" +
+                "  org.openide.windows.IOProvider\n" +
+                "OpenIDE-Module-Specification-Version: 1.0\n\n";
+        
+        assertEquals("expected content", expected, real);
+
+        props.getRequiredTokenListModel().removeToken("org.openide.execution.ExecutionEngine");
+        props.getRequiredTokenListModel().removeToken("org.netbeans.api.javahelp.Help");
+        props.storeProperties();
+        ProjectManager.getDefault().saveProject(p);
+        real = TestBase.slurp(p.getManifestFile());
+        expected = "Manifest-Version: 1.0\n" +
+                "OpenIDE-Module: org.example.module1\n" +
+                "OpenIDE-Module-Layer: org/example/module1/resources/layer.xml\n" +
+                "OpenIDE-Module-Localizing-Bundle: org/example/module1/resources/Bundle.properties\n" +
+                "OpenIDE-Module-Requires: org.openide.windows.IOProvider\n" +
+                "OpenIDE-Module-Specification-Version: 1.0\n\n";
+        
+        assertEquals("expected content", expected, real);
+    }
     
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {
 //        long startTotal = System.currentTimeMillis();
@@ -221,6 +281,11 @@ public class SingleModulePropertiesTest extends TestBase {
 //        System.err.println("Time to reload module list: " + (System.currentTimeMillis() - start) + "msec");
 //        System.err.println("Total time: " + (System.currentTimeMillis() - startTotal) + "msec");
 //    }
+    
+    private SingleModuleProperties loadProperties(NbModuleProject project) throws IOException {
+        return new SingleModuleProperties(project.getHelper(), project.evaluator(),
+                getSuiteProvider(project), getModuleType(project), null);
+    }
     
     private SingleModuleProperties loadProperties(FileObject dirFO, String propsRelPath) throws IOException {
 //        long start = System.currentTimeMillis();
