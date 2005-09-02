@@ -19,6 +19,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -136,7 +138,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of dependencies", 1, props.getDependenciesListModel().getSize());
     }
     
-    public void testThatPropertiesListen() throws IOException {
+    public void testThatPropertiesListen() throws Exception {
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         SingleModuleProperties props = loadProperties(p);
         assertEquals("display name from ProjectInformation", "Testing Module",
@@ -187,7 +189,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("number of selected public packages", 38, pptm.getSelectedPackages().length);
     }
     
-    public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws IOException {
+    public void testThatProjectWithoutBundleDoesNotThrowNPE_61469() throws Exception {
         FileObject pFO = TestBase.generateStandaloneModuleDirectory(getWorkDir(), "module1");
         FileObject propsFO = FileUtil.toFileObject(new File(getWorkDir(),
                 "module1/src/org/example/module1/resources/Bundle.properties"));
@@ -197,7 +199,7 @@ public class SingleModulePropertiesTest extends TestBase {
         props.refresh(getModuleType(p), getSuiteProvider(p));
     }
     
-    public void testThatManifestFormattingIsNotMessedUp_61248() throws IOException {
+    public void testThatManifestFormattingIsNotMessedUp_61248() throws Exception {
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         EditableManifest em = Util.loadManifest(p.getManifestFile());
         em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
@@ -217,7 +219,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertEquals("the same content", before, after);
     }
     
-    public void testNiceFormattingForRequiredTokensInManifest_63516() throws IOException {
+    public void testNiceFormattingForRequiredTokensInManifest_63516() throws Exception {
         NbModuleProject p = TestBase.generateStandaloneModule(getWorkDir(), "module1");
         EditableManifest em = Util.loadManifest(p.getManifestFile());
         em.setAttribute(ManifestManager.OPENIDE_MODULE_REQUIRES, "\n" +
@@ -258,6 +260,23 @@ public class SingleModulePropertiesTest extends TestBase {
                 "OpenIDE-Module-Specification-Version: 1.0\n\n";
         
         assertEquals("expected content", expected, real);
+    }
+    
+    public void testaddNonEmptyPackages() throws Exception {
+        FileObject srcDir = FileUtil.toFileObject(getWorkDir()).createFolder("src");
+        FileUtil.createData(srcDir, "pkg1/Clazz1.java");
+        FileUtil.createData(srcDir, "pkg1/Clazz2.java");
+        FileUtil.createData(srcDir, "pkg2/CVS/#1.20#Clazz1.java");
+        FileUtil.createData(srcDir, "pkg2/Clazz1.java");
+        FileUtil.createData(srcDir, "pkg2/deeper/Clazz1.java");
+        FileUtil.createData(srcDir, "pkg2/deeper/and/deeper/Clazz1.java");
+        Set packages = new HashSet();
+        SingleModuleProperties.addNonEmptyPackages(packages, srcDir, "java", false);
+        assertEquals("two packages", 4, packages.size());
+        assertTrue("pkg1", packages.remove("pkg1"));
+        assertTrue("pkg2", packages.remove("pkg2"));
+        assertTrue("pkg2.deeper", packages.remove("pkg2.deeper"));
+        assertTrue("pkg2.deeper.and.deeper", packages.remove("pkg2.deeper.and.deeper"));
     }
     
 //    public void testReloadNetBeansModulueListSpeedHid() throws Exception {

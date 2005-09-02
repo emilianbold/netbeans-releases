@@ -52,6 +52,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
+import org.openide.util.Utilities;
 
 /**
  * Provides convenient access to a lot of NetBeans Module's properties.
@@ -431,7 +432,8 @@ public final class SingleModuleProperties extends ModuleProperties {
             
             // find all available public packages in a source root
             File srcDir = getHelper().resolveFile(getEvaluator().getProperty("src.dir")); // NOI18N
-            addNonEmptyPackages(availablePublicPackages, FileUtil.toFileObject(srcDir), "java", false); // NOI18N
+            SingleModuleProperties.addNonEmptyPackages(availablePublicPackages, 
+                    FileUtil.toFileObject(srcDir), "java", false); // NOI18N
             
             // find all available public packages in classpath extensions
             String[] libsPaths = getProjectXMLManager().getBinaryOrigins();
@@ -600,7 +602,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         try {
             JarFileSystem jfs = new JarFileSystem();
             jfs.setJarFile(jarFile);
-            addNonEmptyPackages(pkgs, jfs.getRoot(), "class", true); // NOI18N
+            SingleModuleProperties.addNonEmptyPackages(pkgs, jfs.getRoot(), "class", true); // NOI18N
         } catch (PropertyVetoException pve) {
             ErrorManager.getDefault().notify(pve);
         } catch (IOException ioe) {
@@ -617,7 +619,7 @@ public final class SingleModuleProperties extends ModuleProperties {
      * package (x.y.z) <code>isJarRoot</code> specifies if a given root is root
      * of a jar file.
      */
-    private void addNonEmptyPackages(Set/*<String>*/ pkgs, FileObject root, String ext, boolean isJarRoot) {
+    static void addNonEmptyPackages(Set/*<String>*/ pkgs, FileObject root, String ext, boolean isJarRoot) {
         if (root == null) {
             return;
         }
@@ -625,7 +627,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             FileObject subDir = (FileObject) en1.nextElement();
             for (Enumeration en2 = subDir.getData(false); en2.hasMoreElements(); ) {
                 FileObject kid = (FileObject) en2.nextElement();
-                if (kid.hasExt(ext)) {
+                if (kid.hasExt(ext) && Utilities.isJavaIdentifier(kid.getName())) {
                     String pkg = isJarRoot ? subDir.getPath() :
                         PropertyUtils.relativizeFile(
                             FileUtil.toFile(root),
