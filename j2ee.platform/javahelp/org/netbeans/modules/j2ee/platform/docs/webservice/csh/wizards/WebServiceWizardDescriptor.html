@@ -15,7 +15,26 @@
 You open the New Web Service wizard by right-clicking a web application,
 choosing New &gt; File/Folder and selecting Web Service from the Web Services category.
 <p>In the Name and Location page, you have to set the following properties: 
-<p>tbd</p>
+<ul>
+	<li><b>Web Service Name.</b> Specifies the name of the web service. The name is used to name the
+	three files that are created by the web service wizard. By default, they are named as follows:
+	<ul>
+		<li><tt>NewWebService-config.xml</tt>
+		<li><tt>NewWebServiceImpl.java</tt>
+		<li><tt>NewWebServiceSEI.java</tt>
+	</ul></li>
+      <li><b>Location.</b> Specifies the source root where the web service files will be created.
+       By default, you only have one source root, the <tt<src</tt> folder. To add additional source root,
+        right-click the project node in the Projects window, choose Properties, click Sources, and define
+	a new source package folder.</li>
+	<li><b>Package.</b> Specifies the package name where the web service files will be housed.</li>
+	<li><b>Web Service Creation Type.</b> Specifies the artifacts used to create the web service.
+	<ul><li><b>From scratch.</b> Use this when you have no code to expose. Click Use existing code
+		when you have a session bean in an EJB module or a class in a web application 
+		that you want to expose. Click Next and then select the component that you want to expose as a web service.</li>
+ <li><b>From Local WSDL File.</b> Browse to a WSDL file on your filesystem.</li>
+<li><b>From WSDL URL.</b> Specify a URL to an online WSDL file.</li></ul>
+ </ul>
 <table>
   <tr>
     <th colspan=2 align=left><a name="seealso">See Also</a></th>
@@ -23,8 +42,8 @@ choosing New &gt; File/Folder and selecting Web Service from the Web Services ca
   <tr>      
  <td width="23"></td>
     <td>
-    <a href="../../consume/wsc_proxy.html">Setting a Proxy for Consuming a Web Service</a><br>
-
+    <a href="../../create/create_ws_from_scratch.html">Creating a Web Service from Scratch</a><br>
+<a href="../../create/create_ws_from_wsdl.html">Creating a Web Service from a WSDL File</a><br>
     </td>
   </tr>
 </table>
