@@ -19,7 +19,6 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.BasicCommand;
 import org.netbeans.lib.cvsclient.command.CommandException;
-import org.netbeans.lib.cvsclient.command.checkout.CheckoutCommand;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.CommandDuplicator;
 import org.netbeans.modules.versioning.system.cvss.ui.wizards.RootWizard;
@@ -85,6 +84,7 @@ public abstract class ExecutorSupport implements CVSListener  {
     private StringBuffer message = new StringBuffer();
     private ClientRuntime clientRuntime;
     private List errorMessages = new ArrayList();
+    private List warningMessages = new ArrayList();
 
     private ExecutorGroup group;
 
@@ -185,6 +185,9 @@ public abstract class ExecutorSupport implements CVSListener  {
         if (e.isError()) {
             errorMessages.add(e.getMessage());
         }
+        else if (e.getMessage().startsWith("W ")) {
+            warningMessages.add(e.getMessage().substring(2));
+        }
         if (e.isTagged()) {
             String s = MessageEvent.parseTaggedMessage(message, e.getMessage());
             if (s != null) {
@@ -233,7 +236,9 @@ public abstract class ExecutorSupport implements CVSListener  {
                     }
                     if (error instanceof CommandException) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, error);
-                        reportError(Arrays.asList(new Object [] { error.getMessage() }));
+                        report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
+                               NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
+                               Arrays.asList(new Object [] { error.getMessage() }), NotifyDescriptor.ERROR_MESSAGE);
                     }
                     else if (retryConnection(error)) {
                         terminated = false;
@@ -253,7 +258,14 @@ public abstract class ExecutorSupport implements CVSListener  {
                     }
                     commandFinished((ClientRuntime.Result) e.getSource());
                     if (cmd.hasFailed()) {
-                        reportError(errorMessages);
+                        report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"),
+                               NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"), 
+                               errorMessages, NotifyDescriptor.ERROR_MESSAGE);
+                    }
+                    if (warningMessages.size() > 0) {
+                        report(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandWarning_Title"), 
+                               NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandWarning_Prompt"), 
+                               warningMessages, NotifyDescriptor.WARNING_MESSAGE);
                     }
                 }
             }
@@ -276,19 +288,19 @@ public abstract class ExecutorSupport implements CVSListener  {
         }
     }
 
-    private void reportError(List messages) {
-        StringBuffer errorReport = new StringBuffer();
-        errorReport.append(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Prompt"));
-        errorReport.append("\n\n");
-        for (Iterator i = messages.iterator(); i.hasNext();) {
-            errorReport.append(i.next());
-            errorReport.append('\n');
-        }
-        NotifyDescriptor nd = new NotifyDescriptor.Message(errorReport.toString(), JOptionPane.ERROR_MESSAGE);
-        nd.setTitle(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandFailed_Title"));
-        DialogDisplayer.getDefault().notify(nd);
+    private void report(String title, String prompt, List messages, int type) {
+        CommandReport report = new CommandReport(prompt, messages);
+        JButton ok = new JButton(NbBundle.getMessage(ExecutorSupport.class, "MSG_CommandReport_OK"));
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                report, 
+                title, 
+                NotifyDescriptor.DEFAULT_OPTION,
+                type,
+                new Object [] { ok },
+                ok);
+        DialogDisplayer.getDefault().notify(descriptor);
     }
-
+    
     /** Retry aware task events source*/
     public void addTaskListener(TaskListener l) {
         synchronized(taskListeners) {
