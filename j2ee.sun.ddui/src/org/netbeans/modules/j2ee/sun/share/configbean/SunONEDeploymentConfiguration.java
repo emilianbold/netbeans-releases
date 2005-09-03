@@ -65,7 +65,6 @@ import org.netbeans.modules.j2ee.sun.share.Constants;
 import org.netbeans.modules.j2ee.sun.share.plan.DeploymentPlan;
 import org.netbeans.modules.j2ee.sun.share.plan.FileEntry;
 import org.netbeans.modules.j2ee.sun.share.config.ConfigurationStorage;
-import org.netbeans.modules.j2ee.sun.share.config.ConfigDataObject;
 import org.netbeans.modules.j2ee.sun.share.config.DDRoot;
 import org.netbeans.modules.j2ee.sun.share.config.DDFilesListener;
 
@@ -148,7 +147,6 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
 //        for(int i = 0; i < configFiles.length; i++) {
 //            System.out.println("SunONEDC.init(): file[" + i + "] = " + configFiles[i]);
 //        }
-        
         this.configFiles = configFiles;
         this.resourceDir = resourceDir;
         this.keepUpdated = keepUpdated;
@@ -227,14 +225,27 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private J2eeModuleProvider getProvider(File file) {
         J2eeModuleProvider provider = null;
         if(file != null) {
+            System.out.println("Querying for J2eeModuleProvider:");
             FileObject fo = FileUtil.toFileObject(file);
             if(fo != null) {
+                System.out.println("  FileObject to locate project from is: " + fo);
                 Project project = FileOwnerQuery.getOwner(fo);
+                System.out.println("  Project instance of type: " + ((project != null) ? project.getClass().getName() : "(null project)"));
                 if (project != null) {
-                    provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+                    org.openide.util.Lookup lookup = project.getLookup();
+//                    provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+                    provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+                    System.out.println("  Lookup query returned: " + provider);
+                    if(provider == null) {
+                        System.out.println("Lookup is: " + lookup);
+                    }
                 }
             } else {
-                provider = getProvider(file.getParentFile());
+                File parent = file.getParentFile();
+                if(parent != null) {
+                    System.out.println("Crawling parents to find provider: " + parent);
+                    provider = getProvider(parent);
+                }
             }
         }
         return provider;
