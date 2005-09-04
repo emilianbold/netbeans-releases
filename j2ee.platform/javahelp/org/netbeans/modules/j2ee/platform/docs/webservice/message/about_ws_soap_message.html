@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2005 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+	<title>About Message Handlers</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head> 
+<body bgcolor="#FFFFFF">
+<h2>About Message Handlers</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>Message handlers are Java classes that can modify a SOAP message. A SOAP message may either
+ represent a SOAP request or a SOAP response. 
+ Handlers can be associated with 
+  a web service or web service client.
+  A handler has access to the body and header 
+  blocks of a message, but not to the application code. Handlers are usually designed 
+  to work with the header blocks and to supplement the processing done by the 
+  application code.</p>
+<p>Typical uses of handlers include:</p>
+<ul>
+  <li>Logging and auditing</li>
+  <li>Encryption and decryption</li>
+  <li>Caching of data</li>
+</ul>
+<p>Handlers must implement the <tt>javax.xml.rpc.handler.Handler</tt> interface. This interface
+ provides the following methods:
+<ul>
+	<li><tt>init()</tt>. Life cycle method. Called when the message handler is initialized.
+	<li><tt>getHeaders()</tt>. Gets the header block for processing.
+	<li><tt>handleRequest()</tt>. Called when the processing a SOAP request.
+	<li><tt>handleResponse()</tt>. Called when the processing a SOAP response.
+	<li><tt>handleFault()</tt>. Called when the processing a SOAP fault.
+	<li><tt>destroy()</tt>. Life cycle method. Called when the message handler is destroyed.
+</ul>
+<p>There are four places in a client-service interaction where message handlers can execute:
+<ul><li>Client-side message handlers:
+<ul>
+	<li>The <tt>handleRequest()</tt> is called before the client's request is sent to the web service.
+	<li>The <tt>handleResponse()</tt> is called before the service's response is delivered to the client.
+</ul>
+<li>Service-side message handlers:
+<ul>
+<li>The <tt>handleRequest()</tt> is called before a client's request is delivered to the service.
+<li>The <tt>handleResponse()</tt> is called before the service's response is sent to the client.
+</ul></ul>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td> 
+<a href="../about/about_ws.html">About Web Services</a><br>
+<a href="../consume/about_wsc.html">About Web Service Clients</a><br>
+<a href="create_ws_soap_message.html">Creating a Message Handler</a><br>
+<a href="configure_ws_soap_message.html">Configuring a Message Handler</a><br>
+<a href="test_and_use_ws_soap_message.html">Testing and Using a Message Handler</a><br>
+</td>
+</tr>
+</table> 
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>

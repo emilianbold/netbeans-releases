@@ -208,7 +208,6 @@
 	<mapID target="create_ws_from_scratch" url="webservice/create/create_ws_from_scratch.html" />
 	<mapID target="create_ws_from_wsdl" url="webservice/create/create_ws_from_wsdl.html" />
 	<mapID target="add_ws_operation" url="webservice/create/add_ws_operation.html" />
-	<mapID target="add_ws_soap_message" url="webservice/create/add_ws_soap_message.html" />
 	<!-- End of "Create" section -->
 	<!-- Start of "Configure" section -->
 	<mapID target="config_ws_about" url="webservice/configure/config_ws_about.html" />
@@ -241,6 +240,13 @@
 	<mapID target="wsc_secure" url="webservice/consume/wsc_secure.html" />
 	<mapID target="wsc_deploy" url="webservice/consume/wsc_deploy.html" />
 	<!-- End of "Consume" section -->
+	<!-- Start of "Message" section -->
+	<mapID target="about_ws_soap_message" url="webservice/message/about_ws_soap_message.html" />
+	<mapID target="create_ws_soap_message" url="webservice/message/create_ws_soap_message.html" />
+	<mapID target="configure_ws_soap_message" url="webservice/message/configure_ws_soap_message.html" />
+	<mapID target="test_and_use_ws_soap_message" url="webservice/message/test_and_use_ws_soap_message.html" />
+	<mapID target="example_logging" url="webservice/message/example_logging.html" />
+	<!-- End of "Message" section -->
 
 	<!--Start of web service CSH -->
 	<mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="webservice/csh/websvcdb.html" />

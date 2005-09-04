@@ -255,7 +255,6 @@
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws_from_scratch" />
 		<tocitem text="Creating a Web Service from a WSDL File" target="create_ws_from_wsdl" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
-	        <tocitem text="Adding a SOAP Message Handler" target="add_ws_soap_message" />
 	</tocitem>
         <tocitem text="Configuring Web Services" >
 	   <tocitem text="About Configuring Web Services" target="config_ws_about" />
@@ -288,9 +287,20 @@
 		 <tocitem text="Testing a Web Service on the Client Side" target="wsc_test" /> 
 		 <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
 		 <tocitem text="Building a Web Service Client" target="wsc_build" />
-		 <tocitem text="Securing a Web Service Client" target="wsc_secure" />
 		 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
 	 </tocitem>
+	 <tocitem text="Implementing Message Handlers" >
+ 		<tocitem text="About Message Handlers" target="about_ws_soap_message" />
+		<tocitem text="Creating a Message Handler" target="create_ws_soap_message" />
+		<tocitem text="Configuring a Message Handler" target="configure_ws_soap_message" />
+		<tocitem text="Testing and Using a Message Handler" target="test_and_use_ws_soap_message" />
+		<tocitem text="Examples" >
+			<tocitem text="Logging" target="example_logging" />
+			<tocitem text="Auditing" target="tbd" />
+			<tocitem text="Encryption and decryption" target="tbd" />
+			<tocitem text="Caching of data" target="tbd" />
+		</tocitem>
+	</tocitem>
  </tocitem> 
 </tocitem>
 </toc>
