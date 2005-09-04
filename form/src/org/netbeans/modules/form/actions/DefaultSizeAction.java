@@ -57,21 +57,21 @@ public class DefaultSizeAction extends NodeAction {
                 layoutUE = layoutModel.getUndoableEdit();
             }
             layoutDesigner.setDefaultSize(metacomp.getId());
-//            if (metacomp instanceof RADVisualContainer) {
-//                formModel.fireContainerLayoutChanged((RADVisualContainer)metacomp, null, null, null);
-//                // [should be recursive]
-//            }
+            if (metacomp instanceof RADVisualContainer) {
+                formModel.fireContainerLayoutChanged((RADVisualContainer)metacomp, null, null, null);
+                // [should be recursive]
+            }
             if (topDesignComponent == null && metacomp == formDesigner.getTopDesignComponent()) {
                 topDesignComponent = metacomp;
             }
-//            else { // update container the component is in
-//                formModel.fireContainerLayoutChanged(metacomp.getParentContainer(), null, null, null);
-//            }
+            else { // update container the component is in
+                formModel.fireContainerLayoutChanged(metacomp.getParentContainer(), null, null, null);
+            }
         }
 
-//        if (topDesignComponent != null) {
-            formDesigner.updateDesignerSize();
-//        }
+        if (topDesignComponent != null) {
+            formDesigner.resetDesignerSize();
+        }
         if (layoutUE != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
             formModel.addUndoableEdit(layoutUE);
         }
@@ -96,7 +96,10 @@ public class DefaultSizeAction extends NodeAction {
                 RADVisualContainer parent = visualMetaComp.getParentContainer();
                 if ((parent != null && parent.getLayoutSupport() == null)
                     || (visualMetaComp instanceof RADVisualContainer
-                        && ((RADVisualContainer)visualMetaComp).getLayoutSupport() == null))
+                        && ((RADVisualContainer)visualMetaComp).getLayoutSupport() == null
+                        && (!(visualMetaComp instanceof RADVisualFormContainer)
+                            || ((RADVisualFormContainer)visualMetaComp).getFormSizePolicy()
+                                 != RADVisualFormContainer.GEN_BOUNDS)))
                     return visualMetaComp;
             }
         }

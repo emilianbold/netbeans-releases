@@ -1151,14 +1151,6 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     if (w >= 0 && h >= 0) {
                         size = new Dimension(w ,h);
                         formDesigner.setStoredDesignerSize(size);
-                        // update must be done immediately because of a weird
-                        // mouse move event occurring after closing the input
-                        // dialog but before updating the designer through
-                        // synthetic property change processing
-                        formDesigner.getComponentLayer().setDesignerSize(size);
-                        formDesigner.getLayoutDesigner().externalSizeChangeHappened();
-//                        formDesigner.updateComponentLayer();
-                        
                         setToolTipText(null);
                         setCursor(Cursor.getDefaultCursor());
                     }
@@ -2203,15 +2195,19 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
             }
             else { // resizing canceled
                 formDesigner.getLayoutDesigner().endMoving(false);
+
                 if (isTopComponent()) {
                     Dimension prevSize = formDesigner.getStoredDesignerSize();
-                    if (!formDesigner.getComponentLayer().getDesignerSize().equals(prevSize)) {
+                    ComponentLayer compLayer = formDesigner.getComponentLayer();
+                    if (!compLayer.getDesignerSize().equals(prevSize)) {
                         // restore the previous designer size 	 
-                        formDesigner.getComponentLayer().setDesignerSize(prevSize);
+                        compLayer.setDesignerSize(prevSize);
+                        compLayer.revalidate();
                     }
-                    formDesigner.updateContainerLayout((RADVisualContainer)formDesigner.getTopDesignComponent(), false);
+                    compLayer.repaint();
+//                    formDesigner.updateContainerLayout((RADVisualContainer)formDesigner.getTopDesignComponent(), false);
                 }
-                else {
+                else { // add resized component back
                     formDesigner.updateContainerLayout(getSourceContainer(), false);
                 }
             }

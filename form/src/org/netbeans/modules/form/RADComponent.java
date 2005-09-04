@@ -483,8 +483,11 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
      * @param value new value of the aux property or null to remove it
      */
     public void setAuxValue(String key, Object value) {
-        if (auxValues == null)
+        if (auxValues == null) {
+            if (value == null)
+                return;
             auxValues = new TreeMap();
+        }
         auxValues.put(key, value);
     }
 

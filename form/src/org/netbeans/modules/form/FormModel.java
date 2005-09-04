@@ -59,6 +59,7 @@ public class FormModel
     private UndoRedo.Manager undoRedoManager;
     private boolean undoRedoRecording = false;
     private CompoundEdit compoundEdit;
+    private boolean autoEndCoumpoundEdit;
 
     private FormEvents formEvents;
 
@@ -473,10 +474,11 @@ public class FormModel
         return undoRedoRecording;
     }
 
-    public boolean startCompoundEdit() {
+    public boolean startCompoundEdit(boolean endAutomatically) {
         if (compoundEdit == null) {
             t("starting compound edit"); // NOI18N
             compoundEdit = new CompoundEdit();
+            autoEndCoumpoundEdit = endAutomatically;
             return true;
         }
         return false;
@@ -486,6 +488,7 @@ public class FormModel
         if (compoundEdit != null) {
             t("ending compound edit: "+commit); // NOI18N
             compoundEdit.end();
+            autoEndCoumpoundEdit = false;
             if (commit && undoRedoRecording && compoundEdit.isSignificant()) {
                 getUndoRedoManager().undoableEditHappened(
                     new UndoableEditEvent(this, compoundEdit));
@@ -948,7 +951,6 @@ public class FormModel
      */
     private class EventBroker implements Runnable {
         private List eventList;
-        private boolean compoundUndoStarted;
 
         public void sendEvent(FormModelEvent ev) {
             if (shouldSendLater(ev))
@@ -971,11 +973,11 @@ public class FormModel
 
             if (eventList == null) {
                 eventList = new ArrayList();
-                compoundUndoStarted = ev.isModifying()
-                                      && FormModel.this.isUndoRedoRecording()
-                                      && FormModel.this.startCompoundEdit();
-                if (compoundUndoStarted)
+                if (ev.isModifying()
+                    && FormModel.this.isUndoRedoRecording()
+                    && FormModel.this.startCompoundEdit(true))
                     t("compound undoable edit started from event broker"); // NOI18N
+
                 java.awt.EventQueue.invokeLater(this);
             }
 
@@ -990,10 +992,6 @@ public class FormModel
         private List pickUpEvents() {
             List list = eventList;
             eventList = null;
-            if (compoundUndoStarted) {
-                compoundUndoStarted = false;
-                FormModel.this.endCompoundEdit(true);
-            }
             return list;
         }
 
@@ -1004,6 +1002,10 @@ public class FormModel
                 list.toArray(events);
                 t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
                 FormModel.this.fireEvents(events);
+            }
+            if (FormModel.this.autoEndCoumpoundEdit) {
+                FormModel.this.endCompoundEdit(true);
+                t("coumpound undoable edit ended automatically");
             }
         }
     }

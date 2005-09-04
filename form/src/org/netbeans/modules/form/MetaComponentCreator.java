@@ -161,7 +161,7 @@ public class MetaComponentCreator {
         if (preMetaComp != null)
             releasePrecreatedComponent();
 
-        formModel.startCompoundEdit();
+        formModel.startCompoundEdit(true);
 
         try { // Look&Feel UI defaults remapping needed
             FormLAF.executeWithLookAndFeel(
@@ -227,7 +227,6 @@ public class MetaComponentCreator {
                                 targetComp,
                                 constraints);
 
-            formModel.endCompoundEdit(true);
             preMetaComp = null;
             preLayoutComp = null;
         }

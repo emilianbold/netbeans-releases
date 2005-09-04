@@ -208,7 +208,7 @@ class CopySupport {
                                                targetComponent))
                     return null; // not allowed, ignore paste
 
-                sourceForm.startCompoundEdit();
+                sourceForm.startCompoundEdit(true);
                 boolean resetConstraintProperties = false;
                 LayoutModel layoutModel = sourceForm.getLayoutModel();
                 LayoutComponent layoutComponent = null;
@@ -284,7 +284,6 @@ class CopySupport {
                 if (resetConstraintProperties) {
                     ((RADVisualComponent)sourceComponent).resetConstraintsProperties();
                 }
-                sourceForm.endCompoundEdit(true);
             }
 
             return ExTransferable.EMPTY;

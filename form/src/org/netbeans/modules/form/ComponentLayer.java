@@ -87,12 +87,14 @@ class ComponentLayer extends JPanel
         return designerPanel.getDesignerSize();
     }
 
-    void setDesignerSize(Dimension size) {
-        if (size != null && !size.equals(designerPanel.getDesignerSize())) {
-            designerPanel.setDesignerSize(size);
-//            revalidate();
-//            repaint();
+    Dimension setDesignerSize(Dimension size) {
+        if (size == null) {
+            size = componentContainer.getComponent(0).getPreferredSize();
         }
+        if (!size.equals(designerPanel.getDesignerSize())) {
+            designerPanel.setDesignerSize(size);
+        }
+        return size;
     }
 
     void setTopDesignComponent(Component component) {

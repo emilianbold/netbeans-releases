@@ -38,6 +38,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public static final int GEN_NOTHING = 2;
 
     // Synthetic properties of form
+    private Dimension designerSize;
     private Dimension formSize;// = new Dimension(FormEditor.DEFAULT_FORM_WIDTH, FormEditor.DEFAULT_FORM_HEIGHT);
     private Point formPosition;
     private boolean generatePosition = true;
@@ -81,55 +82,44 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
 
     public Dimension getFormSize() {
-        if (formSize == null) {
-            Dimension size = getDesignerSize();
-            if (getBeanInstance() instanceof Dialog
-                || getBeanInstance() instanceof Frame)
-            {
-                Dimension diffDim = getWindowContentDimensionDiff();
-                size = new Dimension(size.width + diffDim.width,
-                                     size.height + diffDim.height);
-            }
-            formSize = size; //new Dimension(400, 300); //topContainer.getSize();
-        }
         return formSize;
     }
 
     public void setFormSize(Dimension value) {
-        setFormSizeImpl(value);
+        Dimension old = setFormSizeImpl(value);
 
-        if (getFormSizePolicy() == GEN_BOUNDS) {
-            if (getBeanInstance() instanceof Dialog
-                || getBeanInstance() instanceof Frame)
-            {
-                Dimension diffDim = getWindowContentDimensionDiff();
-                value = new Dimension(value.width - diffDim.width,
-                                      value.height - diffDim.height);
-            }
-            setDesignerSizeImpl(value);
+        // this is called when the property is enabled for writing (i.e. policy
+        // is GEN_BOUNDS), but also when loading form (when policy might be not
+        // set yet) - so always propagate to designer size
+        if (getBeanInstance() instanceof Dialog
+            || getBeanInstance() instanceof Frame)
+        {
+            Dimension diffDim = getWindowContentDimensionDiff();
+            value = new Dimension(value.width - diffDim.width,
+                                  value.height - diffDim.height);
         }
+        setDesignerSizeImpl(value, false);
+
+        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
     }
 
-    private void setFormSizeImpl(Dimension value) {
-        Object old = formSize;
+    private Dimension setFormSizeImpl(Dimension value) {
+        Dimension old = formSize;
         formSize = value;
-        getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
-
-        if (getNodeReference() != null) // propagate the change to node
+        if (getNodeReference() != null) { // propagate the change to node
             getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
+        }
+        return old;
     }
 
     public Dimension getDesignerSize() {
-        Dimension size = (Dimension) getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
-        if (size == null)
-            size = new Dimension(400, 300);
-        return size;
+        return designerSize;
     }
 
     public void setDesignerSize(Dimension value) {
-        setDesignerSizeImpl(value);
+        Dimension old = setDesignerSizeImpl(value);
 
-        if (getFormSizePolicy() == GEN_BOUNDS) {
+        if (getFormSizePolicy() == GEN_BOUNDS) { // propagate to form size
             if (getBeanInstance() instanceof Dialog
                 || getBeanInstance() instanceof Frame)
             {
@@ -139,16 +129,28 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
             setFormSizeImpl(value);
         }
+
+        getFormModel().fireSyntheticPropertyChanged(this, FormDesigner.PROP_DESIGNER_SIZE, old, value);
     }
 
-    private void setDesignerSizeImpl(Dimension value) {
-        Object old = getDesignerSize();
-        setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
-        getFormModel().fireSyntheticPropertyChanged(
-            this, FormDesigner.PROP_DESIGNER_SIZE, old, value);
+    private boolean shouldPersistDesignerSize() {
+        // don't persist designer size if form size is defined (persisted)
+        // and neither for free design forms
+        return getFormSizePolicy() != GEN_BOUNDS && !getFormModel().isFreeDesignDefaultLayout();
+    }
 
-        if (getNodeReference() != null) // propagate the change to node
+    Dimension setDesignerSizeImpl(Dimension value) {
+        return setDesignerSizeImpl(value, shouldPersistDesignerSize());
+    }
+
+    private Dimension setDesignerSizeImpl(Dimension value, boolean persistent) {
+        Dimension old = designerSize;
+        designerSize = value;
+        setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, persistent ? value : null);
+        if (getNodeReference() != null) { // propagate the change to node
             getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
+        }
+        return old;
     }
 
     public boolean getGeneratePosition() {
@@ -193,8 +195,16 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public void setFormSizePolicy(int value) {
         int old = formSizePolicy;
         formSizePolicy = value;
-        if (value == GEN_BOUNDS && formSize == null)
-            setFormSize(getDesignerSize());
+        if (value == GEN_BOUNDS) {
+            if (formSize == null)
+                setFormSizeImpl(getDesignerSize());
+            // designer size should not be persistent if form size is defined
+            setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, null);
+        }
+        else if (!getFormModel().isFreeDesignDefaultLayout()) {
+            // designer size should be persistent
+            setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, getDesignerSize());
+        }
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE_POLICY,
                                         new Integer(old), new Integer(value));
     }
@@ -248,7 +258,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
             public void setValue(Object val) throws IllegalAccessException,
                                                     IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                if (!(val instanceof Dimension)) throw new IllegalArgumentException();
+//                if (!(val instanceof Dimension)) throw new IllegalArgumentException();
                 setFormSize((Dimension)val);
             }
 
@@ -375,8 +385,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
                 throws IllegalAccessException, IllegalArgumentException,
                        java.lang.reflect.InvocationTargetException
             {
-                if (!(val instanceof Dimension))
-                    throw new IllegalArgumentException();
+//                if (!(val instanceof Dimension))
+//                    throw new IllegalArgumentException();
                 setDesignerSize((Dimension)val);
             }
         };
