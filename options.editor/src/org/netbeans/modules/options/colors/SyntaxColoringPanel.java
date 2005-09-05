@@ -389,7 +389,7 @@ PropertyChangeListener {
             updatePreview ();
             return;
         }
-        bFont.setEnabled (false);
+        bFont.setEnabled (true);
         cbEffects.setEnabled (true);
         foregroundColorChooser.setEnabled (true);
         backgroundColorChooser.setEnabled (true);
