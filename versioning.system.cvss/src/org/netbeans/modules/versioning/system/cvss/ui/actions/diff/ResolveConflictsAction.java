@@ -46,6 +46,10 @@ public class ResolveConflictsAction extends AbstractSystemAction {
         return enabledForStatus;
     }
 
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    }
+
     public void performCvsAction(ActionEvent ev) {
         File [] files = getFilesToProcess();
         CvsFileNode [] nodes = CvsVersioningSystem.getInstance().getFileTableModel(files, FileInformation.STATUS_VERSIONED_CONFLICT).getNodes();

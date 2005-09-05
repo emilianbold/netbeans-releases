@@ -45,6 +45,10 @@ public class GetCleanAction extends AbstractSystemAction {
                 ~FileInformation.STATUS_VERSIONED_UPTODATE;
     }
     
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    }
+    
     public void performCvsAction(ActionEvent ev) {
         int res = JOptionPane.showConfirmDialog(
                 null, 
