@@ -257,12 +257,35 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private javax.swing.JTextField projectName;
     // End of variables declaration//GEN-END:variables
     
+    private String computeValidProjectName(String projectLocation, String projectNamePrefix) {
+        File location = new File(projectLocation);
+        
+        if (!location.exists()) {
+            return projectNamePrefix;
+        }
+        
+        int num = 1;
+        String projectName;
+        
+        while (new File(location, projectName = projectNamePrefix + "_" + num).exists()) {
+            num++;
+        }
+        
+        return projectName;
+    }
+    
     private void setProject() {
         FileObject parent = project.getProjectDirectory().getParent();
         File parentFile = FileUtil.toFile(parent);
         
         projectLocation.setText(parentFile.getAbsolutePath());
-        projectName.setText(isMove ? project.getProjectDirectory().getNameExt() : project.getProjectDirectory().getNameExt() + "Copy");
+        
+        if (isMove) {
+            projectName.setText(project.getProjectDirectory().getNameExt());
+        } else {
+            projectName.setText(computeValidProjectName(parentFile.getAbsolutePath(), project.getProjectDirectory().getNameExt()));
+        }
+        
         updateProjectFolder();
         validateDialog();
         
