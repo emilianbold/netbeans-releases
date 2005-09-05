@@ -30,6 +30,10 @@ public final class AdvancedPanelController extends PanelController {
 
     private AdvancedPanel advancedPanel = new AdvancedPanel ();
 
+        
+    public void update () {
+        advancedPanel.update ();
+    }
     
     public void applyChanges () {
         advancedPanel.applyChanges ();

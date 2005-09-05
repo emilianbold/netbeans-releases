@@ -29,6 +29,10 @@ public final class IndentationPanelController extends PanelController {
     private IndentationPanel indentationPanel = new IndentationPanel ();
     
     
+    public void update () {
+        indentationPanel.update ();
+    }
+    
     public void applyChanges () {
         indentationPanel.applyChanges ();
     }

@@ -29,6 +29,10 @@ public final class AntPanelController extends PanelController {
     private AntCustomizer antCustomizer = new AntCustomizer ();
     
     
+    public void update () {
+        antCustomizer.update ();
+    }
+    
     public void applyChanges () {
         antCustomizer.applyChanges ();
     }

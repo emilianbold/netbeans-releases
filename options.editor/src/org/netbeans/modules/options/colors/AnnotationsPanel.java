@@ -83,13 +83,12 @@ import org.openide.util.NbBundle;
 public class AnnotationsPanel extends JPanel implements ActionListener, 
 PropertyChangeListener {
     
-    private ColorModel          colorModel = ColorModel.getDefault ();
+    private ColorModel          colorModel;
     
     private JList		lCategories = new JList ();
     private ColorComboBox	foregroundColorChooser = new ColorComboBox ();
     private ColorComboBox	backgroundColorChooser = new ColorComboBox ();
     private ColorComboBox	waveUnderlinedColorChooser = new ColorComboBox ();
-//    private JPanel              previewPanel = new JPanel ();
  
     private boolean		listen = false;
     private String              currentScheme;
@@ -98,60 +97,38 @@ PropertyChangeListener {
 
     
     /** Creates new form FontAndColorsPanel */
-    public AnnotationsPanel (String currentScheme) {
-        this.currentScheme = currentScheme;
+    public AnnotationsPanel () {
 
         // 1) init components
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
-        
-        foregroundColorChooser.addPropertyChangeListener (this);
-        backgroundColorChooser.addPropertyChangeListener (this);
-        waveUnderlinedColorChooser.addPropertyChangeListener (this);
-
-//        previewPanel.setLayout (new BorderLayout ());
-//        previewPanel.setBorder (new EtchedBorder ());
-
-        // 2) define layout
-	FormLayout layout = new FormLayout (
-            "p:g, 10dlu, p, 3dlu, p:g", // cols
-            "p, 3dlu, p, 3dlu, p, 3dlu, p, p:g");//, f:130dlu:g");      // rows
-        //layout.setColumnGroups (new int [][] {{1, 5}});
-        PanelBuilder builder = new PanelBuilder (layout, this);
-        CellConstraints cc = new CellConstraints ();
-        CellConstraints lc = new CellConstraints ();
-        builder.setDefaultDialogBorder ();
-	
-        builder.addLabel (loc ("CTL_Category"),         lc.xy  (1, 1),
-	                  new JScrollPane (lCategories),cc.xywh(1, 3, 1, 6));
-        
-        builder.addLabel (loc ("CTL_Foreground_label"), lc.xy  (3, 3),
-                          foregroundColorChooser,	cc.xy  (5, 3));
-        builder.addLabel (loc ("CTL_Background_label"), lc.xy  (3, 5),
-                          backgroundColorChooser,	cc.xy  (5, 5));
-        builder.addLabel (loc ("CTL_Wave_underlined_label"),	lc.xy  (3, 7),
-                          waveUnderlinedColorChooser,   cc.xy  (5, 7));
-	
-//        builder.add (previewPanel,                      cc.xyw (1, 9, 5));
-        
         lCategories.addListSelectionListener (new ListSelectionListener () {
             public void valueChanged (ListSelectionEvent e) {
                 if (!listen) return;
                 refreshUI ();
             }
         });
-        
-//	previewPanel.removeAll ();
-//	previewPanel.add (
-//	    "Center", 
-//	    colorModel.getPreviewComponent ("Defaults")
-//	);
-        
-        // setup categories list
-        lCategories.setListData (getAnnotations (currentScheme));
 	lCategories.setCellRenderer (new CategoryRenderer ());
-        refreshUI ();
-        listen = true;
+        foregroundColorChooser.addPropertyChangeListener (this);
+        backgroundColorChooser.addPropertyChangeListener (this);
+        waveUnderlinedColorChooser.addPropertyChangeListener (this);
+
+        // 2) define layout
+	FormLayout layout = new FormLayout (
+            "p:g, 10dlu, p, 3dlu, p:g", // cols
+            "p, 3dlu, p, 3dlu, p, 3dlu, p, p:g");//, f:130dlu:g");      // rows
+        PanelBuilder builder = new PanelBuilder (layout, this);
+        CellConstraints cc = new CellConstraints ();
+        CellConstraints lc = new CellConstraints ();
+        builder.setDefaultDialogBorder ();
+        builder.addLabel (loc ("CTL_Category"),         lc.xy  (1, 1),
+	                  new JScrollPane (lCategories),cc.xywh(1, 3, 1, 6));
+        builder.addLabel (loc ("CTL_Foreground_label"), lc.xy  (3, 3),
+                          foregroundColorChooser,	cc.xy  (5, 3));
+        builder.addLabel (loc ("CTL_Background_label"), lc.xy  (3, 5),
+                          backgroundColorChooser,	cc.xy  (5, 5));
+        builder.addLabel (loc ("CTL_Wave_underlined_label"),	lc.xy  (3, 7),
+                          waveUnderlinedColorChooser,   cc.xy  (5, 7));
     }
  
     public void actionPerformed (ActionEvent evt) {
@@ -165,7 +142,19 @@ PropertyChangeListener {
         updateData ();
     }
     
-    public void applyChanges () {
+    void update () {
+        if (colorModel == null) {
+            // first update
+            listen = false;
+            colorModel = ColorModel.getDefault ();
+            currentScheme = colorModel.getCurrentScheme ();
+            lCategories.setListData (getAnnotations (currentScheme));
+            refreshUI ();
+            listen = true;
+        }
+    }
+    
+    void applyChanges () {
         Iterator it = toBeSaved.iterator ();
         while (it.hasNext ()) {
             String scheme = (String) it.next ();

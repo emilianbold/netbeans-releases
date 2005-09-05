@@ -32,6 +32,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.actions.CopyAction;
@@ -139,7 +140,8 @@ public class OptionsWindowAction extends AbstractAction {
             if (op == null) {
                 op = new OptionsPanel ();
                 optionsPanel = new WeakReference (op);
-            }
+            } else
+                op.update ();
             
             final DialogDescriptor descriptor = new DialogDescriptor (
                 op,

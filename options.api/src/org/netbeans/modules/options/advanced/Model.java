@@ -84,6 +84,12 @@ public final class Model extends TabbedPanelModel {
     
     // implementation ..........................................................
     
+    void update () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            ((PanelController) it.next ()).update ();
+    }
+    
     void applyChanges () {
         Iterator it = categoryToController.values ().iterator ();
         while (it.hasNext ())

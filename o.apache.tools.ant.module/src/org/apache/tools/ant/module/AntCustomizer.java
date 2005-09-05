@@ -70,33 +70,26 @@ ActionListener {
     private JComboBox cbVerbosity = new JComboBox ();
     private JButton bProperties = new JButton ();
     private JButton bClasspath = new JButton ();
+    protected JLabel lAntVersion = new JLabel ();
     
     private NbClassPath classpath;
     private Properties properties;
     
     
     public AntCustomizer () {
-        AntSettings settings = AntSettings.getDefault ();
-        classpath = settings.getExtraClasspath ();
-        properties = settings.getProperties ();
-        
-        tfAntHome.setText (settings.getAntHomeWithDefault ().toString ());
+
         loc (bAntHome, "Ant_Home_Button");
         bAntHome.addActionListener (this);
         loc (cbSaveFiles, "Save_Files");
         cbSaveFiles.setBackground (Color.white);
-        cbSaveFiles.setSelected (settings.getSaveAll ());
         cbReuseOutput.setBackground (Color.white);
         loc (cbReuseOutput, "Reuse_Output");
-        cbReuseOutput.setSelected (settings.getAutoCloseTabs ());
         loc(cbAlwaysShowOutput, "Always_Show_Output");
         cbAlwaysShowOutput.setBackground(Color.white);
-        cbAlwaysShowOutput.setSelected(settings.getAlwaysShowOutput());
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_warn"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_info"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_verbose"));
         cbVerbosity.addItem(NbBundle.getMessage(AntCustomizer.class, "LBL_verbosity_debug"));
-        cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
         loc (bProperties, "Properties_Button");
         bProperties.addActionListener (this);
         loc (bClasspath, "Classpath_Button");
@@ -115,16 +108,15 @@ ActionListener {
                 "p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p, 5dlu, p"
             );      // rows
             PanelBuilder builder1 = new PanelBuilder (layout1);
-            builder1.addLabel (loc ("Ant_Home"),        lc.xy (1, 1), 
-                              tfAntHome,                cc.xy (3, 1));
-            builder1.add (bAntHome,                     cc.xy (5, 1));
-            builder1.addLabel ("(" + settings.getAntVersion () + ")",      
-                                                        lc.xyw (3, 3, 3));
-            builder1.add (     cbSaveFiles,             cc.xy (3, 5));
-            builder1.add (     cbReuseOutput,           cc.xy (3, 7));
-            builder1.add (     cbAlwaysShowOutput,      cc.xy (3, 9));
-            builder1.addLabel (loc ("Verbosity"),       lc.xy (1, 11), 
-                              cbVerbosity,              cc.xy (3, 11, "l, d"));   
+            builder1.addLabel ( loc ("Ant_Home"),       lc.xy (1, 1), 
+                                tfAntHome,              cc.xy (3, 1));
+            builder1.add (      bAntHome,               cc.xy (5, 1));
+            builder1.add (      lAntVersion,            lc.xyw (3, 3, 3));
+            builder1.add (      cbSaveFiles,            cc.xy (3, 5));
+            builder1.add (      cbReuseOutput,          cc.xy (3, 7));
+            builder1.add (      cbAlwaysShowOutput,     cc.xy (3, 9));
+            builder1.addLabel ( loc ("Verbosity"),      lc.xy (1, 11), 
+                                cbVerbosity,            cc.xy (3, 11, "l, d"));   
             builder1.getPanel ().setBackground (Color.white);
             //setBorder (new TitledBorder (loc ("Ant_Settings")));
         builder.add (builder1.getPanel (),              cc.xy (1, 1));
@@ -173,8 +165,20 @@ ActionListener {
             );
     }
     
+    void update () {
+        AntSettings settings = AntSettings.getDefault ();
+        classpath = settings.getExtraClasspath ();
+        properties = settings.getProperties ();
+        
+        tfAntHome.setText (settings.getAntHomeWithDefault ().toString ());
+        cbSaveFiles.setSelected (settings.getSaveAll ());
+        cbReuseOutput.setSelected (settings.getAutoCloseTabs ());
+        cbAlwaysShowOutput.setSelected(settings.getAlwaysShowOutput());
+        cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
+        lAntVersion.setText ("(" + settings.getAntVersion () + ")");
+    }
+    
     void applyChanges () {
-        System.out.println("AntCustomizer.applyChanges");
         AntSettings settings = AntSettings.getDefault ();
         settings.setAntHome (new File (tfAntHome.getText ()));
         settings.setAutoCloseTabs (cbReuseOutput.isSelected ());

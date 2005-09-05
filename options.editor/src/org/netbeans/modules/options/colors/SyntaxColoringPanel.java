@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
 PropertyChangeListener {
     
-    private ColorModel          colorModel = ColorModel.getDefault ();
+    private ColorModel          colorModel = null;
     
     private JComboBox		cbLanguages = new JComboBox ();
     private JList		lCategories = new JList ();
@@ -98,6 +98,7 @@ PropertyChangeListener {
     private JComboBox		cbEffects = new JComboBox ();
     private ColorComboBox	effectsColorChooser = new ColorComboBox ();
     private JPanel              previewPanel = new JPanel ();
+    private Preview             preview;
  
     private String		currentLanguage;
     private String              currentScheme;
@@ -107,22 +108,19 @@ PropertyChangeListener {
 
     
     /** Creates new form FontAndColorsPanel */
-    public SyntaxColoringPanel (String currentScheme) {
-        this.currentScheme = currentScheme;
-        currentLanguage = (String) colorModel.getLanguages ().iterator ().next ();
+    public SyntaxColoringPanel () {
 
         // 1) init components
-	List languages = new ArrayList 
-	    (colorModel.getLanguages ());
-	Collections.sort (languages, new LanguagesComparator ());
-	Iterator it = languages.iterator ();
-        while (it.hasNext ())
-            cbLanguages.addItem (it.next ());
         cbLanguages.addActionListener (this);
-	    
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
-        
+	lCategories.setCellRenderer (new CategoryRenderer ());
+        lCategories.addListSelectionListener (new ListSelectionListener () {
+            public void valueChanged (ListSelectionEvent e) {
+                if (!listen) return;
+                refreshUI ();
+            }
+        });
 	tfFont.setEditable (false);
         bFont.addActionListener (this);
         bFont.setMargin (new Insets (0, 0, 0, 0));
@@ -130,12 +128,15 @@ PropertyChangeListener {
 
         backgroundColorChooser.addPropertyChangeListener (this);
         
+        cbEffects.addItem (loc ("CTL_Effects_None"));
+        cbEffects.addItem (loc ("CTL_Effects_Underlined"));
+        cbEffects.addItem (loc ("CTL_Effects_Wave_Underlined"));
+        cbEffects.addItem (loc ("CTL_Effects_Strike_Through"));
         cbEffects.addActionListener (this);
         effectsColorChooser = new ColorComboBox ();
         effectsColorChooser.addPropertyChangeListener (this);
 
-        previewPanel = (JPanel) colorModel.getPreviewComponent 
-            (currentScheme, currentLanguage, true);
+        previewPanel = new JPanel (new BorderLayout ());
         previewPanel.setBorder (new EtchedBorder ());
 
         // 2) define layout
@@ -152,7 +153,7 @@ PropertyChangeListener {
 	layout = new FormLayout (
             "p:g, 10dlu, p, 3dlu, p:g, 1dlu, p", // cols
             "p, 10dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 3dlu, p, 5dlu, p, 3dlu, f:130dlu:g");      // rows
-        layout.setColumnGroups (new int [][] {{1, 5}});
+        //layout.setColumnGroups (new int [][] {{1, 5}});
         builder = new PanelBuilder (layout, this);
         builder.setDefaultDialogBorder ();
 	
@@ -171,26 +172,8 @@ PropertyChangeListener {
         builder.addLabel (loc ("CTL_Effects_label"),	lc.xy  (3, 11),
                           cbEffects,			cc.xyw (5, 11, 3));
         builder.add (effectsColorChooser,		cc.xyw (5, 13, 3));
-	
         builder.addLabel (loc ("CTL_Preview"),	        lc.xyw (1, 15, 7),
                           previewPanel,                 cc.xyw (1, 17, 7));
-        
-	lCategories.setCellRenderer (new CategoryRenderer ());
-        lCategories.addListSelectionListener (new ListSelectionListener () {
-            public void valueChanged (ListSelectionEvent e) {
-                if (!listen) return;
-                refreshUI ();
-            }
-        });
-        
-        cbEffects.addItem (loc ("CTL_Effects_None"));
-        cbEffects.addItem (loc ("CTL_Effects_Underlined"));
-        cbEffects.addItem (loc ("CTL_Effects_Wave_Underlined"));
-        cbEffects.addItem (loc ("CTL_Effects_Strike_Through"));
-	//setCurrentLanguage (currentLanguage);
-        listen = true;
-        cbLanguages.setSelectedIndex (0);
-        lCategories.setSelectedIndex (0);
     }
  
     public void actionPerformed (ActionEvent evt) {
@@ -247,7 +230,31 @@ PropertyChangeListener {
         updateData ();
     }
     
-    public void applyChanges () {
+    void update () {
+	if (colorModel == null) {
+            // first update
+            colorModel = ColorModel.getDefault ();
+            currentScheme = colorModel.getCurrentScheme ();
+            currentLanguage = (String) colorModel.getLanguages ().
+                iterator ().next ();
+            Component component = colorModel.getPreviewComponent 
+                    (currentScheme, currentLanguage, true);
+            preview = (Preview) component;
+            previewPanel.add ("Center", component);
+            listen = false;
+            List languages = new ArrayList 
+                (colorModel.getLanguages ());
+            Collections.sort (languages, new LanguagesComparator ());
+            Iterator it = languages.iterator ();
+            while (it.hasNext ())
+                cbLanguages.addItem (it.next ());
+            listen = true;
+            cbLanguages.setSelectedIndex (0);
+            lCategories.setSelectedIndex (0);
+        }
+    }
+    
+    void applyChanges () {
 	Iterator it = toBeSaved.keySet ().iterator ();
 	while (it.hasNext ()) {
 	    String scheme = (String) it.next ();
@@ -355,7 +362,7 @@ PropertyChangeListener {
     }
     
     private void updatePreview () {
-        ((Preview) previewPanel).setParameters (
+        preview.setParameters (
             currentScheme, 
             currentLanguage, 
             getCategories (currentScheme, currentLanguage)

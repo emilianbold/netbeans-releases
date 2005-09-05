@@ -81,6 +81,11 @@ public abstract class OptionsCategory {
         
         
         /**
+         * Component should update its content.
+         */
+	public abstract void update ();
+        
+        /**
          * This method is called when Options Dialog "OK" button is pressed.
          */
         public abstract void applyChanges ();
@@ -88,7 +93,7 @@ public abstract class OptionsCategory {
         /**
          * This method is called when Options Dialog "Cancel" button is pressed.
          */
-	public abstract void cancel ();     
+	public abstract void cancel ();
         
         /**
          * Should returns <code>true</code> if some option value in this 

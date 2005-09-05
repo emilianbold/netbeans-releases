@@ -63,6 +63,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.options.ui.LoweredBorder;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsCategory.PanelController;
@@ -76,6 +78,7 @@ import org.openide.loaders.FolderLookup;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import org.openide.util.Utilities;
 import org.netbeans.modules.options.ui.ShadowBorder;
@@ -127,6 +130,10 @@ public class OptionsPanel extends JPanel {
     
     /** Creates new form OptionsPanel */
     public OptionsPanel () {
+        final ProgressHandle progressHandle = ProgressHandleFactory.
+            createHandle (loc ("CTL_Loading_Options"));
+        progressHandle.start ();
+
         // 1) Load panels.
         FileObject fo = Repository.getDefault ().getDefaultFileSystem ().
             findResource ("OptionsDialog");
@@ -153,7 +160,7 @@ public class OptionsPanel extends JPanel {
             categoryToPanel.put (ocp, component);
             maxW = Math.max (maxW, component.getPreferredSize ().width);
             maxH = Math.max (maxH, component.getPreferredSize ().height);
-            //S ystem.out.println (ocp.getCategoryName () + " : " + c.getPreferredSize ());
+            System.out.println (ocp.getCategoryName () + " : " + component.getPreferredSize ());
         }
         pOptions.setPreferredSize (new Dimension (maxW, maxH));
 
@@ -204,8 +211,22 @@ public class OptionsPanel extends JPanel {
         builder.add (    pTitle,       cc.xy    (3, 1));
         builder.add (    pOptions,     cc.xy    (3, 3, "f,f"));
         
-        if (k > 0)
-            setCurrentIndex (0);
+        if (k < 1) return;
+        OptionsCategory category = (OptionsCategory) optionCategories.get (0);
+        PanelController controller = (PanelController) 
+            categoryToController.get (category);
+        controller.update ();
+        setCurrentIndex (0);
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                Iterator it = optionCategories.iterator ();
+                it.next ();
+                while (it.hasNext ())
+                    ((PanelController) categoryToController.get (it.next ())).
+                        update ();
+                progressHandle.finish ();
+            }
+        });
     }
     
     int getCurrentIndex () {
@@ -253,6 +274,12 @@ public class OptionsPanel extends JPanel {
         PanelController controller = (PanelController) categoryToController.
             get (ocp);
         return controller.getHelpCtx ();
+    }
+    
+    void update () {
+        Iterator it = categoryToController.values ().iterator ();
+        while (it.hasNext ())
+            ((PanelController) it.next ()).update ();
     }
     
     void save () {

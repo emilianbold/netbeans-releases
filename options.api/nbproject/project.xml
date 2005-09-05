@@ -18,6 +18,14 @@ Microsystems, Inc. All Rights Reserved.
             <code-name-base>org.netbeans.modules.options.api</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.progress</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.libs.formlayout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

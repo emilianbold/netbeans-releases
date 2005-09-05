@@ -29,6 +29,10 @@ public final class FontAndColorsPanelController extends PanelController {
     private FontAndColorsPanel fontAndColorsPanel = new FontAndColorsPanel ();
     
     
+    public void update () {
+        fontAndColorsPanel.update ();
+    }
+    
     public void applyChanges () {
         fontAndColorsPanel.applyChanges ();
     }

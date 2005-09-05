@@ -73,13 +73,16 @@ ChangeListener, ActionListener {
     private JSpinner        tfStatementIndent = new JSpinner ();
     private JSpinner        tfIndent = new JSpinner ();
     private JEditorPane     epPreview = new JEditorPane ();
+    
+    private Model           model;
     private String          originalText;
-	private boolean         originalExpandedTabs;
-	private boolean         originalAddStar;
-	private boolean         originalNewLine;
-	private boolean         originalSpace;
-	private int             originalStatementIndent;
-	private int             originalIndent;
+    private boolean         originalExpandedTabs;
+    private boolean         originalAddStar;
+    private boolean         originalNewLine;
+    private boolean         originalSpace;
+    private int             originalStatementIndent;
+    private int             originalIndent;
+    private boolean         listen = false;
 
 	
     public IndentationPanel () {
@@ -88,26 +91,9 @@ ChangeListener, ActionListener {
         loc (cbAddStar, "Add_Leading_Star");
         loc (cbNewLine, "Add_New_Line");
         loc (cbSpace, "Add_Space");
-        // save original values
-		Model model = Model.getDefault ();
-        originalExpandedTabs = model.isExpandTabs ();
-        originalAddStar= model.getJavaFormatLeadingStarInComment ();
-        originalNewLine = model.getJavaFormatNewlineBeforeBrace ();
-        originalSpace = model.getJavaFormatSpaceBeforeParenthesis ();
-        originalStatementIndent = model.
-            getJavaFormatStatementContinuationIndent ();
-        originalIndent = model.getSpacesPerTab ();
-        // init components
-        epPreview.setContentType ("text/x-java");
-//        epPreview.setEditorKit (new JavaKit ());
-        epPreview.setBorder (new EtchedBorder ());
-		cbExpandTabs.setSelected (originalExpandedTabs);
-        cbAddStar.setSelected (originalAddStar);
-        cbNewLine.setSelected (originalNewLine);
-        cbSpace.setSelected (originalSpace);
-        tfIndent.setValue (new Integer (originalIndent));
-        tfStatementIndent.setValue (new Integer (originalStatementIndent));
+
         //listeners
+        epPreview.setBorder (new EtchedBorder ());
         cbNewLine.addActionListener (this);
         cbAddStar.addActionListener (this);
         cbExpandTabs.addActionListener (this);
@@ -115,46 +101,22 @@ ChangeListener, ActionListener {
         tfStatementIndent.addChangeListener (this);
         tfIndent.addChangeListener (this);
         epPreview.setEditable (false);
-        // add text to preview
-        InputStream is = getClass ().getResourceAsStream 
-            ("/org/netbeans/modules/options/indentation/indentationExample");
-        BufferedReader r = new BufferedReader (new InputStreamReader (is));
-        StringBuffer sb = new StringBuffer ();
-        try {
-            String line = r.readLine ();
-            while (line != null) {
-                sb.append (line).append ('\n');
-                line = r.readLine ();
-            }
-            originalText = new String (sb);
-        } catch (IOException ex) {
-            ex.printStackTrace ();
-        }
-        reformat ();
 
-        
         FormLayout layout = new FormLayout (
             "p, 5dlu, 30dlu, 10dlu, p:g", // cols
             "p, 5dlu, p, 5dlu, p, 5dlu, p, 10dlu, p, 3dlu, f:p:g"
         );      // rows
-        
         PanelBuilder builder = new PanelBuilder (layout, this);
-
         CellConstraints lc = new CellConstraints ();
         CellConstraints cc = new CellConstraints ();
-//        builder.addSeparator (loc ("Properties"),  cc.xyw (1, 1, 7));
-        
         builder.addLabel (    loc ("Statement_Indent"),  lc.xy  (1, 1),
                               tfStatementIndent,   cc.xy  (3, 1));
         builder.addLabel (    loc ("Indent"),      lc.xy  (1, 3),
                               tfIndent,            cc.xy  (3, 3));
-
         builder.add (         cbExpandTabs,        cc.xy  (5, 1));
         builder.add (         cbAddStar,           cc.xy  (5, 3));
         builder.add (         cbNewLine,           cc.xy  (5, 5));
         builder.add (         cbSpace,             cc.xy  (5, 7));
-        
-//        builder.addSeparator (loc ("Preview"),     cc.xyw (1, 11, 7));
         builder.addLabel (    loc ("Preview"),     lc.xyw (1, 9, 5),
                               epPreview,           cc.xyw (1, 11, 5, "f, f"));
     }
@@ -177,7 +139,6 @@ ChangeListener, ActionListener {
     }
 
     private void updatePreview () {
-		Model model = Model.getDefault ();
         model.setJavaFormatLeadingStarInComment (cbAddStar.isSelected ());
         model.setJavaFormatNewlineBeforeBrace (cbNewLine.isSelected ());
         model.setJavaFormatSpaceBeforeParenthesis (cbSpace.isSelected ());
@@ -188,10 +149,8 @@ ChangeListener, ActionListener {
         model.setSpacesPerTab (
             ((Integer) (tfIndent.getValue ())).intValue ()
         );
-        reformat ();
-    }
-
-    private void reformat () {
+        
+        // start formatter
         epPreview.setText (originalText);
         BaseDocument doc = (BaseDocument) epPreview.getDocument ();
         try {
@@ -209,18 +168,65 @@ ChangeListener, ActionListener {
     // ActionListener ..........................................................
     
     public void stateChanged (ChangeEvent e) {
+        if (!listen) return;
         updatePreview ();
     }
     
     public void actionPerformed (ActionEvent e) {
+        if (!listen) return;
         updatePreview ();
     }
 
+    public void update () {
+	if (model == null) 
+            model = Model.getDefault ();
+        
+        if (originalText == null) {
+            // add text to preview
+            InputStream is = getClass ().getResourceAsStream 
+                ("/org/netbeans/modules/options/indentation/indentationExample");
+            BufferedReader r = new BufferedReader (new InputStreamReader (is));
+            StringBuffer sb = new StringBuffer ();
+            try {
+                String line = r.readLine ();
+                while (line != null) {
+                    sb.append (line).append ('\n');
+                    line = r.readLine ();
+                }
+                originalText = new String (sb);
+            } catch (IOException ex) {
+                ex.printStackTrace ();
+            }
+        }
+        
+        // save original values
+        originalExpandedTabs = model.isExpandTabs ();
+        originalAddStar = model.getJavaFormatLeadingStarInComment ();
+        originalNewLine = model.getJavaFormatNewlineBeforeBrace ();
+        originalSpace = model.getJavaFormatSpaceBeforeParenthesis ();
+        originalStatementIndent = model.
+            getJavaFormatStatementContinuationIndent ();
+        originalIndent = model.getSpacesPerTab ();
+        
+        // init components
+        listen = false;
+        epPreview.setContentType ("text/x-java");
+	cbExpandTabs.setSelected (originalExpandedTabs);
+        cbAddStar.setSelected (originalAddStar);
+        cbNewLine.setSelected (originalNewLine);
+        cbSpace.setSelected (originalSpace);
+        tfIndent.setValue (new Integer (originalIndent));
+        tfStatementIndent.setValue (new Integer (originalStatementIndent));
+        listen = true;
+        
+        // update preview
+        updatePreview ();
+    }
+    
     public void applyChanges () {
     }
     
     public void cancel () {
-	Model model = Model.getDefault ();
         model.setJavaFormatLeadingStarInComment (originalAddStar);
         model.setJavaFormatNewlineBeforeBrace (originalNewLine);
         model.setJavaFormatSpaceBeforeParenthesis (originalSpace);

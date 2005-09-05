@@ -14,10 +14,12 @@
 package org.netbeans.modules.options.advanced;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditorManager;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -85,6 +87,18 @@ public final class AdvancedPanel extends JPanel {
         CellConstraints cc = new CellConstraints ();
         CellConstraints lc = new CellConstraints ();
         builder.add (scrollPane, cc.xy (1, 1, "f,f"));
+        
+        int preferredWith = 0;
+        Iterator it = model.getCategories ().iterator ();
+        while (it.hasNext ()) {
+            String category = (String) it.next ();
+            JComponent component = model.getPanel (category);
+            preferredWith = Math.max (
+                preferredWith, 
+                component.getPreferredSize ().width
+            );
+        }
+        setPreferredSize (new Dimension (preferredWith, 100));
     }
     
     private static String loc (String key) {
@@ -102,6 +116,10 @@ public final class AdvancedPanel extends JPanel {
                 (JLabel) c, 
                 loc (key)
             );
+    }
+    
+    public void update () {
+        model.update ();
     }
     
     public void applyChanges () {

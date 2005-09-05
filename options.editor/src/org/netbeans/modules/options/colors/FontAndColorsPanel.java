@@ -84,18 +84,17 @@ ActionListener {
  
     /** Creates new form FontAndColorsPanel */
     public FontAndColorsPanel () {
-        currentScheme = colorModel.getCurrentScheme ();
-        syntaxColoringPanel = new SyntaxColoringPanel (currentScheme);
-        editorPanel = new EditorPanel (currentScheme);
-        annotationsPanel = new AnnotationsPanel (currentScheme);
         
-        cbSchemes = new JComboBox();
+        // init components
+        syntaxColoringPanel = new SyntaxColoringPanel ();
+        editorPanel = new EditorPanel ();
+        annotationsPanel = new AnnotationsPanel ();
+        cbSchemes = new JComboBox ();
         cbSchemes.addItemListener (new ItemListener () {
             public void itemStateChanged (ItemEvent evt) {
                 cbSchemesItemStateChanged (evt);
             }
         });
-
         JPanel pButtons = new JPanel (new GridLayout (1, 2, 3, 3));
         loc (bClone = new JButton (), "CTL_Create_New");
         bClone.addActionListener (this);
@@ -103,35 +102,22 @@ ActionListener {
         loc (bDelete = new JButton (), "CTL_Delete");
         bDelete.addActionListener (this);
         pButtons.add (bDelete);
-
         tabbedPane = new JTabbedPane ();
 
+        // init layout
         FormLayout layout = new FormLayout (
             "p, 3dlu, p:g, 5dlu, p", // cols
             "p, 5dlu, f:p:g");      // rows
-
         PanelBuilder builder = new PanelBuilder (layout, this);
-
         CellConstraints cc = new CellConstraints ();
         CellConstraints lc = new CellConstraints ();
-
         builder.addLabel (     loc ("CTL_Color_Scheme_Name"), lc.xy (1, 1), 
                                cbSchemes,                     cc.xy (3, 1));
         builder.add (          pButtons,                      cc.xy (5, 1, "l,d"));
-	
         builder.add (          tabbedPane,                    cc.xyw (1, 3, 5));
-
 	tabbedPane.addTab (loc ("Syntax_coloring_tab"), syntaxColoringPanel);
 	tabbedPane.addTab (loc ("Editor_tab"), editorPanel);
 	tabbedPane.addTab (loc ("Annotations_tab"), annotationsPanel);
-        
-        // init schemes
-        listen = false;
-        Iterator it = colorModel.getSchemeNames ().iterator ();
-        while (it.hasNext ())
-            cbSchemes.addItem (it.next ());
-        listen = true;
-        cbSchemes.setSelectedItem (currentScheme);
     }
 
     private void cbSchemesItemStateChanged (ItemEvent evt) {
@@ -148,6 +134,21 @@ ActionListener {
      
     
     // other methods ...........................................................
+    
+    void update () {
+        editorPanel.update ();
+        syntaxColoringPanel.update ();
+        annotationsPanel.update ();
+        currentScheme = colorModel.getCurrentScheme ();
+        
+        // init schemes
+        listen = false;
+        Iterator it = colorModel.getSchemeNames ().iterator ();
+        while (it.hasNext ())
+            cbSchemes.addItem (it.next ());
+        listen = true;
+        cbSchemes.setSelectedItem (currentScheme);
+    }
     
     void applyChanges () {
         editorPanel.applyChanges ();
