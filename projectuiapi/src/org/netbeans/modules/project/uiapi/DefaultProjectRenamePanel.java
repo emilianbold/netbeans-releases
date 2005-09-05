@@ -260,13 +260,8 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     
     private String computeError() {
         File location = FileUtil.toFile(project.getProjectDirectory().getParent());
-        File projectFolderFile = new File(location, projectName.getText());
         
-        if (projectFolderFile.exists()) {
-            return NbBundle.getMessage(ProjectCopyPanel.class, "ERR_Project_Folder_Exists");
-        }
-        
-        return null;
+        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText());
     }
     
     public void showProgress() {

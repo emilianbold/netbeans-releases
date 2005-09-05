@@ -442,6 +442,30 @@ public final class DefaultProjectOperationsImplementation {
         dialog[0] = null;
     }
     
+    static String computeError(File location, String projectNameText) {
+        if (!location.exists()) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Does_Not_Exist");
+        }
+        
+        if (!location.canWrite()) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Location_Read_Only");
+        }
+        
+        if (projectNameText.length() == 0) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Name_Must_Entered");
+        }
+        
+        File projectFolderFile = new File(location, projectNameText);
+        
+        if (projectFolderFile.exists()) {
+            return NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ERR_Project_Folder_Exists");
+        }
+        
+        return null;
+    }
+    
+
+    
     static interface Executor {
         public void execute();
     }

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFileChooser;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
@@ -367,20 +368,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
     private String computeError() {
         File location = new File(projectLocation.getText());
         
-        System.err.println("location = " + location );
-        if (!location.exists()) {
-            return NbBundle.getMessage(ProjectCopyPanel.class, "ERR_Location_Does_Not_Exist");
-        }
-        
-        File projectFolderFile = new File(location, projectName.getText());
-        
-        System.err.println("projectFolderFile = " + projectFolderFile );
-        System.err.println("projectFolderFile.exists()=" + projectFolderFile.exists());
-        if (projectFolderFile.exists()) {
-            return NbBundle.getMessage(ProjectCopyPanel.class, "ERR_Project_Folder_Exists");
-        }
-        
-        return null;
+        return DefaultProjectOperationsImplementation.computeError(location, projectName.getText());
     }
     
     public void showProgress() {
