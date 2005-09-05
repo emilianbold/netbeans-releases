@@ -358,12 +358,23 @@ public class FormModel
     }
 
     public void removeComponent(RADComponent metacomp, boolean fromModel) {
-        Object layoutStartMark = layoutModel.getChangeMark();
-        UndoableEdit ue = layoutModel.getUndoableEdit();
-        removeLayoutComponentsRecursively(metacomp, fromModel);
+        Object layoutStartMark;
+        UndoableEdit ue;
+        if (fromModel) {
+            layoutStartMark = layoutModel.getChangeMark();
+            ue = layoutModel.getUndoableEdit();
+            layoutModel.removeComponent(metacomp.getId(), true);
+            removeLayoutComponentsRecursively(metacomp);
+        }
+        else {
+            layoutStartMark = null;
+            ue = null;
+        }
+
         removeComponentImpl(metacomp, fromModel);
         // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
-        if (!layoutStartMark.equals(layoutModel.getChangeMark())) {
+
+        if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
             addUndoableEdit(ue); // is added to a compound edit
         }
     }
@@ -409,15 +420,20 @@ public class FormModel
         FormModelEvent ev = fireComponentRemoved(metacomp, parentContainer, index, fromModel);
         ev.setCodeChange(codeStructureMark1, codeStructureMark2);
     }
-    
-    private void removeLayoutComponentsRecursively(RADComponent metacomp, boolean fromModel) {
-        if (fromModel && (metacomp instanceof ComponentContainer)) {
+
+    // needed for the case of mixed hierarchy of new/old layout support
+    private void removeLayoutComponentsRecursively(RADComponent metacomp) {
+        if (metacomp instanceof ComponentContainer) {
             RADComponent[] comps = ((ComponentContainer)metacomp).getSubBeans();
             for (int i=0; i<comps.length; i++) {
-                removeLayoutComponentsRecursively(comps[i], fromModel);
+                removeLayoutComponentsRecursively(comps[i]);
             }
         }
-        layoutModel.removeComponentAndIntervals(metacomp.getId(), fromModel);
+        LayoutComponent layoutComp = layoutModel.getLayoutComponent(metacomp.getId());
+        if (layoutComp != null && layoutComp.getParent() == null) {
+            // remove only root components
+            layoutModel.removeComponent(layoutComp.getId(), true);
+        }
     }
 
     void updateMapping(RADComponent metacomp, boolean register) {

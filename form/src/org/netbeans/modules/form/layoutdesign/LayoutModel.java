@@ -63,34 +63,10 @@ public class LayoutModel implements LayoutConstants {
         addComponent(comp, null, -1);
     }
 
-    // supposing none of removing components is a parent of another
-    public void removeComponents(String[] componentIds) {
-        for (int i=0; i < componentIds.length; i++) {
-            removeComponentAndIntervals(componentIds[i], true);
-        }
-    }
-
-    public void removeComponentAndIntervals(String compId, boolean fromModel) {
+    public void removeComponent(String compId, boolean fromModel) {
         LayoutComponent comp = getLayoutComponent(compId);
-        if (comp != null) {
-            boolean wasRoot = (comp.getParent() == null);
-            removeComponent(comp, fromModel);
-            if (!wasRoot && fromModel) {
-                for (int j=0; j < DIM_COUNT; j++) {
-                    removeInterval(comp.getLayoutInterval(j));
-                }
-            }
-        }
-    }
-
-    void removeComponents(LayoutComponent[] components) {
-        for (int i=0; i < components.length; i++) {
-            LayoutComponent comp = components[i];
-            removeComponent(comp);
-            for (int j=0; j < DIM_COUNT; j++) {
-                removeInterval(comp.getLayoutInterval(j));
-            }
-        }
+        if (comp != null)
+            removeComponentAndIntervals(comp, fromModel);
     }
 
     /**
@@ -134,7 +110,7 @@ public class LayoutModel implements LayoutConstants {
 
     void registerComponent(LayoutComponent comp, boolean recursive) {
         idToComponents.put(comp.getId(), comp);
-        if (recursive) {
+        if (recursive && comp.isLayoutContainer()) {
             for (Iterator it=comp.getSubcomponents(); it.hasNext(); ) {
                 registerComponent((LayoutComponent)it.next(), recursive);
             }
@@ -142,7 +118,7 @@ public class LayoutModel implements LayoutConstants {
     }
 
     void unregisterComponent(LayoutComponent comp, boolean recursive) {
-        if (recursive) {
+        if (recursive && comp.isLayoutContainer()) {
             for (Iterator it=comp.getSubcomponents(); it.hasNext(); ) {
                 unregisterComponent((LayoutComponent)it.next(), recursive);
             }
@@ -211,14 +187,23 @@ public class LayoutModel implements LayoutConstants {
             unregisterComponent(component, true);
         }
 
-        
         // record undo/redo and fire event
         LayoutEvent ev = new LayoutEvent(this, LayoutEvent.COMPONENT_REMOVED);
         ev.setComponent(component, parent, index);
         addChange(ev);
         fireEvent(ev);
     }
-    
+
+    void removeComponentAndIntervals(LayoutComponent comp, boolean fromModel) {
+        boolean wasRoot = (comp.getParent() == null);
+        removeComponent(comp, fromModel);
+        if (!wasRoot) {
+            for (int i=0; i < DIM_COUNT; i++) {
+                removeInterval(comp.getLayoutInterval(i));
+            }
+        }
+    }
+
     void addInterval(LayoutInterval interval, LayoutInterval parent, int index) {
         assert interval.getParent() == null;
 

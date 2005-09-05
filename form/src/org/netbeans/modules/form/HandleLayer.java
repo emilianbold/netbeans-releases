@@ -2033,7 +2033,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     // dropped in old layout support, or on non-visual area
                     createLayoutUndoableEdit();
                     formDesigner.getLayoutDesigner().removeDraggedComponents();
-                    oldDragger.dropComponents(p);
+                    oldDragger.dropComponents(p, targetContainer);
                     placeLayoutUndoableEdit();
                 }
                 else { // dropped in new layout support
@@ -2058,7 +2058,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         void oldMove(Point p) {
-            oldDragger.drag(p);
+            oldDragger.drag(p, targetContainer);
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg) {
@@ -2185,7 +2185,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 }
                 else { // old layout support
                     if (targetContainer != null) {
-                        oldDragger.dropComponents(p);
+                        oldDragger.dropComponents(p, targetContainer);
                     }
                 }
                 if (isTopComponent()) {
@@ -2253,7 +2253,7 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         }
 
         void oldMove(Point p) {
-            oldDragger.drag(p);
+            oldDragger.drag(p, targetContainer);
         }
 
         void oldPaintFeedback(Graphics2D g, Graphics gg) {

@@ -99,7 +99,8 @@ class ComponentDragger
         this.resizeType = resizeType;
     }
 
-    void drag(Point p) {
+    void drag(Point p, RADVisualContainer target) {
+        targetMetaContainer = target;
         mousePosition = p;
     }
 
@@ -152,10 +153,11 @@ class ComponentDragger
         g.setStroke(oldStroke);
     }
 
-    void dropComponents(Point point) {
+    void dropComponents(Point point, RADVisualContainer target) {
         List constraints = null; // constraints of the dragged components
         List indices = null; // indices of the dragged components
 
+        targetMetaContainer = target;
         if (targetMetaContainer != null) {
             constraints = new ArrayList(selectedComponents.length);
             indices = new ArrayList(selectedComponents.length);
@@ -422,13 +424,13 @@ class ComponentDragger
         if (selectedComponents == null || selectedComponents.length == 0)
             return false;
 
-        if (!fixedTarget) {
-            targetMetaContainer = resizeType == 0 ?
-                handleLayer.getMetaContainerAt(p, HandleLayer.COMP_DEEPEST) :
-                selectedComponents[0].getParentContainer();
+//        if (!fixedTarget) {
+//            targetMetaContainer = resizeType == 0 ?
+//                handleLayer.getMetaContainerAt(p, HandleLayer.COMP_DEEPEST) :
+//                selectedComponents[0].getParentContainer();
             if (targetMetaContainer == null)
                 return false; // unknown meta-container
-        }
+//        }
 
         RADVisualContainer fixTargetContainer = null;
         do {

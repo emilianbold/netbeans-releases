@@ -218,7 +218,9 @@ class CopySupport {
                         resetConstraintProperties = true;
                         Object layoutUndoMark = layoutModel.getChangeMark();
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                        layoutModel.removeComponentAndIntervals(sourceComponent.getId(), true);
+                        boolean fromModel = !(targetComponent instanceof RADVisualContainer)
+                                            || ((RADVisualContainer)targetComponent).getLayoutSupport() != null;
+                        layoutModel.removeComponent(sourceComponent.getId(), fromModel);
                         if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                             sourceForm.addUndoableEdit(ue);
                         }

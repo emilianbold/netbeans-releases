@@ -164,7 +164,7 @@ public class LayoutDesigner implements LayoutConstants {
             if (sub.isEmptySpace()) {
                 if (!interval.isSequential()) {
                     // filling gap in empty root group
-                    assert interval.getParent() == null && interval.getSubIntervalCount() == 1;
+                    assert interval.getParent() == null;
                     if (space.isSet(dimension)) {
                         imposeCurrentGapSize(sub, space.size(dimension), dimension);
                     }
@@ -426,13 +426,10 @@ public class LayoutDesigner implements LayoutConstants {
                         }
                         LayoutInterval parent = LayoutInterval.getCommonParent(children);
                         // Restriction of the layout model of the common parent
-                        // in the original layout
+                        // in the original layout (this also removes the original intervals)
                         addingInts[dim] = restrictedCopy(parent, components, origSpace, dim, null);
                     } else {
                         addingInts[dim] = components[0].getLayoutInterval(dim);
-//                        if ((components[0].getParent() == null) && (addingInts[dim].getParent() != null)) {
-//                            layoutModel.removeInterval(addingInts[dim]);
-//                        }
                     }
                 }
 
@@ -450,14 +447,14 @@ public class LayoutDesigner implements LayoutConstants {
                                 layoutModel.removeComponentFromLinkSizedGroup(components[i], VERTICAL);
                             }
                         }
-                        layoutModel.removeComponent(comp, false);
                         if (components.length == 1) { // remove also the intervals
-                            for (int dim=0; dim < DIM_COUNT; dim++) {
-                                layoutModel.removeInterval(comp.getLayoutInterval(dim));
-                            }
-                        } // Don't remove layout intervals of components from
-                          // their parents if moving multiple components - the
-                          // intervals are placed in the adding group already
+                            layoutModel.removeComponentAndIntervals(comp, false);
+                        }
+                        else { // Don't remove layout intervals of components if
+                            // moving multiple components - the intervals are placed
+                            // in the adding group already (by restrictedCopy)
+                            layoutModel.removeComponent(comp, false);
+                        }
                     }
                 }
 
@@ -710,11 +707,16 @@ public class LayoutDesigner implements LayoutConstants {
         return new int[] {leading, trailing};
     }
 
+    /**
+     * Removes currently dragged components from layout model. Called when
+     * the components where dragged out of the form (or to a container not
+     * managed by this layout model).
+     */
     public void removeDraggedComponents() {
         if (dragger != null) {
             LayoutComponent[] components = dragger.getMovingComponents();
-            if (components[0].getParent() != null) { // remove from original location
-                layoutModel.removeComponents(components);
+            for (int i=0; i < components.length; i++) {
+                layoutModel.removeComponentAndIntervals(components[i], true);
             }
             endMoving(false);
         }
