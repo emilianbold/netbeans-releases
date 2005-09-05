@@ -223,10 +223,10 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                 frameSize.height = screenSize.height;
                 frameViewer.setSize(frameSize);
             }
-            // Now center it.
-            frameViewer.setBounds(Utilities.findCenterBounds(frameSize));
+            //Put frame to top right
+            frameViewer.setLocation(new Point(screenSize.width - frameViewer.getSize().width, 0));
         }
-
+        
         frameViewer.setState(Frame.NORMAL);
         if (frameViewer.isVisible()) {
             frameViewer.repaint();
