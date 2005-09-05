@@ -296,7 +296,7 @@
 		<tocitem text="Testing and Using a Message Handler" target="test_and_use_ws_soap_message" />
 		<tocitem text="Examples" >
 			<tocitem text="Logging" target="example_logging" />
-			<tocitem text="Auditing" target="tbd" />
+			<tocitem text="Auditing" target="example_auditing" />
 			<tocitem text="Encryption and decryption" target="tbd" />
 			<tocitem text="Caching of data" target="tbd" />
 		</tocitem>

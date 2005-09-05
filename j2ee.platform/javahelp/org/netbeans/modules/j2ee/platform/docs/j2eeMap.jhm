@@ -246,6 +246,7 @@
 	<mapID target="configure_ws_soap_message" url="webservice/message/configure_ws_soap_message.html" />
 	<mapID target="test_and_use_ws_soap_message" url="webservice/message/test_and_use_ws_soap_message.html" />
 	<mapID target="example_logging" url="webservice/message/example_logging.html" />
+	<mapID target="example_auditing" url="webservice/message/example_auditing.html" />
 	<!-- End of "Message" section -->
 
 	<!--Start of web service CSH -->
