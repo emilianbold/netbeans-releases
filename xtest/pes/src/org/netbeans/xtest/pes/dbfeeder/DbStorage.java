@@ -151,7 +151,7 @@ public class DbStorage {
             String fullOSName = OSNameMappingTable.getFullOSName(osName,osVersion,osArch);
             if (fullOSName.equals(OSNameMappingTable.UNKNOWN_OS)) {
                 fullOSName = osName+"-"+osVersion+"-"+osArch;
-                PESLogger.logger.severe("Unknown OS detected when inserting new full os name to OSnames table. osName="
+                PESLogger.logger.severe("Unknown OS detected when inserting new full os name to OSnames table. host="+info.getHost()+", osName="
                         +osName+", osVersion="+osVersion+", osArch="+osArch
                         +". You should manually fix the row with name="+fullOSName);
                         
