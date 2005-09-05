@@ -59,7 +59,10 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
         }
-        
+        if (p.getPrimaryKeyClassName().trim().equals("")) { //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
+            return false;
+        }
         wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
         return true;
     }

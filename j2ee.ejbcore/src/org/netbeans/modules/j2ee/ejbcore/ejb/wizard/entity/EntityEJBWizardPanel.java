@@ -16,6 +16,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.FQNSearch;
 
 /**
@@ -49,6 +51,18 @@ public class EntityEJBWizardPanel extends javax.swing.JPanel {
             }
         });
 
+        primaryKeyTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                listener.stateChanged(null);
+            }
+            public void insertUpdate(DocumentEvent e) {
+                listener.stateChanged(null);
+            }
+            public void removeUpdate(DocumentEvent e) {
+                listener.stateChanged(null);
+            }
+        });
+        
     }
     
     public boolean isCMP() {
