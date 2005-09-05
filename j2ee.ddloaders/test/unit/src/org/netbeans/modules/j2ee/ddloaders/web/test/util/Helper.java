@@ -79,6 +79,9 @@ public class Helper {
     }
 
     public static void waitForDispatchThread() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return;
+        }
         final boolean[] finished = new boolean[]{false};
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {

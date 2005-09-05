@@ -235,6 +235,7 @@ public class DDEditorTest extends NbTestCase {
     public DDBeanTableModel getDDBeanModel() {
         DDBeanTableModel ddBeanModel;
         try {
+            Helper.waitForDispatchThread();
             ddBeanModel = Helper.getContextParamsTableModel(dObj);
         } catch (Exception ex) {
             throw new AssertionFailedErrorException("Failed to open Context Params section", ex);
