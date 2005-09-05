@@ -121,9 +121,12 @@ public class CompletionJListOperator extends JListOperator {
             viewField.setAccessible(true);
             final CompletionJList compJList =
                     (CompletionJList) viewField.get(compSPane);
-            waitFor(new Waitable() {
+            Object result = waitFor(new Waitable() {
                 public Object actionProduced(Object obj) {
                     List list = null;
+                    if (DocumentWatcher.isActive() && DocumentWatcher.isModified()) {
+                        return INSTANT_SUBSTITUTION;
+                    }
                     try {
                         list = getCompletionItems(compJList);
                     } catch (java.lang.Exception ex) {
@@ -140,6 +143,9 @@ public class CompletionJListOperator extends JListOperator {
                     return "Wait for completion items data";
                 }
             });
+            if (result.equals(INSTANT_SUBSTITUTION)) {
+                return null;
+            }
             return compJList;
         } catch (Exception ex) {
             throw new JemmyException("Cannot find CompletionJList component", ex);
