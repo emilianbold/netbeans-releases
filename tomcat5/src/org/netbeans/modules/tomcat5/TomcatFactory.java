@@ -35,8 +35,8 @@ import org.openide.util.NbBundle;
 public class TomcatFactory implements DeploymentFactory {
     
     public static final String tomcatUriPrefix = "tomcat:"; // NOI18N
-    // PENDING - shouldn't this be 5.0.x ?
-    private static final String DISCONNECTED_URI = "tomcat:jakarta-tomcat-5.0.19"; // NOI18N
+
+    private static final String DISCONNECTED_URI = "tomcat:jakarta-tomcat-5.0.x"; // NOI18N
     
     private static TomcatFactory instance;
     
