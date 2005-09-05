@@ -288,7 +288,10 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         item = menu.add(new SystemActionBridge(SystemAction.get(BranchAction.class), actionsLoc.getString("CTL_PopupMenuItem_Branch")));
         Mnemonics.setLocalizedText(item, item.getText());
         menu.add(new JSeparator());
-        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), actionsLoc.getString("CTL_PopupMenuItem_Annotations")));
+        item = menu.add(new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
+                                               ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible() ? 
+                                               actionsLoc.getString("CTL_PopupMenuItem_HideAnnotations") : 
+                                               actionsLoc.getString("CTL_PopupMenuItem_ShowAnnotations")));
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionsLoc.getString("CTL_PopupMenuItem_SearchHistory")));
         Mnemonics.setLocalizedText(item, item.getText());
