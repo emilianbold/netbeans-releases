@@ -382,7 +382,15 @@
     <mapID target="dd_multiview_CMPField" url="ejb/csh/graphic_editor/dd_multiview_CMPField.html" />
     <mapID target="dd_multiview_Finders" url="ejb/csh/graphic_editor/dd_multiview_Finders.html" />
     <mapID target="dd_multiview_Selects" url="ejb/csh/graphic_editor/dd_multiview_Selects.html" />
+    
+    <!-- New EJB Wizard Pages -->
 
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor" url="ejb/csh/ejb_new_session.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizardDescriptor" url="ejb/csh/ejb_new_mdb.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.entity.EntityEJBWizardDescriptor" url="ejb/csh/ejb_new_entity.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.MultipleEntitySetupPanel" url="ejb/csh/ejb_generate_cmp1.html" />
+    <mapID target="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.RelatedCMPTablesPanel" url="ejb/csh/ejb_generate_cmp2.html" />
+    
     
     <!-- End of EJB help -->
 

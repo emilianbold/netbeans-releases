@@ -32,7 +32,8 @@
   <li>Declare a variable for the remote home interface.</li>
   <li>In the <tt>setUp</tt> method, write code to instantiate this variable, as 
     in the following example: 
-    <pre>protected void setUp() throws NamingException, CreateException, RemoteException {
+    <pre>protected void setUp() throws NamingException, 
+			CreateException, RemoteException {
     ServiceLocator sl = new ServiceLocator();
     newSessionHome = (NewSessionRemoteHome)sl.getRemoteHome("ejb/NewSessionBean", 
 	        NewSessionRemoteHome.class);
@@ -55,8 +56,9 @@ catch (Exception e) {
 </ul>
 <dl>
     <dt>See Also</dt>
-    <dd>nowrap><a href="nbdocs:/org/netbeans/modules/usersguide/junit/junit_about.html">About 
-      JUnit</a></dd>
+    
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/junit/junit_about.html">About 
+    JUnit</a></dd>
       <dd><a href="nbdocs:/org/netbeans/modules/usersguide/junit/junit_runningtests.html">Running 
       JUnit Tests</a></dd>
       <dd><a href="nbdocs:/org/netbeans/modules/usersguide/junit/junit_configuring.html">Configuring 

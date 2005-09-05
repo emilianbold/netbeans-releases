@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>New Session Bean Wizard</title>
+<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>New Session Bean Wizard</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The New Session Bean wizard creates a new session bean in an EJB module project. 
+<p>You set the following information in the wizard:</p>
+<ul>
+  <li><b>EJB Name.</b> Set the name of the session bean in the deployment descriptors 
+    and is the basis for the session bean's class and interface names.</li>
+  <li><b>Location.</b> Select the source folder where you want to create the session 
+    bean files.</li>
+  <li><b>Package.</b> Select an existing package or type the name of a new package.</li>
+  <li><b>Session Type.</b> Select one of the following: 
+    <ul>
+      <li><b>Stateless.</b> The bean does not save state information during its 
+        conversation with the user. These enterprise beans are useful for simple 
+        interactions between client and application service, interactions that 
+        are complete in a single method invocation. 
+        <p>An example is an enterprise bean that processes orders. Each order 
+          can be processed by an invocation of one method, such as <tt>processOrder()</tt>. 
+          All the information needed for processing is contained in the method 
+          parameters.</p>
+      </li>
+      <li><b>Stateful.</b> The bean saves state information during its conversation 
+        with the user. These enterprise beans are useful for business processes 
+        that require an interaction between client and application service that 
+        lasts longer than a single method invocation and requires memory of the 
+        state of the interaction. 
+        <p>An example is an online shopping cart. The end user, through the client 
+          program, can order a number of items. The stateful session bean managing 
+          the interaction must accumulate items until the end user is ready to 
+          review the accumulated order, approve or reject items, and initiate 
+          processing of the lot. The stateful session bean has to store the unprocessed 
+          items and enable the end user to add more.</p>
+      </li>
+    </ul>
+  </li>
+  <li><b>Create Interface.</b> Specify which interfaces to create for the session 
+    bean: 
+    <ul>
+      <li><b>Remote.</b> Allow your session bean to be accessed from remote clients 
+        using remote method calls. This usually means clients that are not running 
+        on the session bean's application server.</li>
+      <li><b>Local.</b> Allow your session bean to be accessed from clients that 
+        are running in the same Java virtual machine.</li>
+    </ul>
+  </li>
+</ul>
+<h4>How to Get There</h4>
+<p>You open the New Session Bean wizard by doing any of the following: 
+<ul>
+  <li>Right-clicking the project node or Enterprise Beans node for any EJB module 
+    project and choosing New &gt; Session Bean.</li>
+  <li>Choosing File &gt; New (Ctrl-N), setting an EJB module project in the Project 
+    drop-down list, and selecting the Session Bean template from the Enterprise 
+    category.</li>
+</ul>
+<dl> 
+  <dt>See Also</dt>
+  <dd><a href="nbdocs:/org/netbeans/modules/usersguide/project/proj_stand_about.html">About 
+    Session Beans</a></dd>
+  <dd><a href="../editing/create_ejb_project.html">Creating an EJB Module Project</a></dd>
+  <dd><a href="../editing/create_ejb.html">Creating an Enterprise Bean</a></dd>
+  <dd><a href="../editing/define_business_method.html">Defining a Business Method</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

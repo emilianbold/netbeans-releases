@@ -45,34 +45,36 @@
         <p> If the multiplicity is set to many, you can choose whether to return 
           <tt>java.util.Set</tt> or <tt>java.util.Collection</tt>. Choose <tt>java.util.Set</tt> 
           if the returned beans cannot be duplicates. Choose <tt>java.util.Collection</tt> 
-          if the returned beans can include duplicates.
+          if the returned beans can include duplicates. 
       </li>
     </ul>
   </li>
   <li>Specify whether to add getter and setter methods for the field to the entity 
     bean's local interface. </li>
 </ol>
-<ul class="note">
+<b>Notes:</b> 
+<ul>
   <li>When you generate CMP entity beans from a database, the IDE automatically 
     registers all of the container-managed relationships based on the relationships 
     in the database.</li>
   <li>Changes in the <tt>ejb-jar.xml</tt> deployment descriptor can result in 
-    automatic or necessary changes in the corresponding <tt>sun-ejb-jar.xml</tt> 
-    or the application server specific-deployment files. For example, when you 
-    add a relationship in <tt>ejb-jar.xml</tt>, you have to map it to a real database 
-    in <tt>sun-ejb-jar.xml</tt>.</li>
+    automatic or necessary changes in the corresponding application server-specific 
+    deployment descriptors. For example, when you add a relationship in <tt>ejb-jar.xml</tt>, 
+    you have to map it to a real database in <tt>sun-ejb-jar.xml</tt>.</li>
 </ul>
-<dl>
-    <dt>See Also</dt>
-    <dd><a href="about_ejb_relationship.html">About Container-Managed Relationships</a></dd>
-    <dd><a href="../general/about_deployment_descriptors.html">About Deployment 
+<dl> 
+  <dt>See Also</dt>
+  <dd><a href="about_ejb_relationship.html">About Container-Managed Relationships</a></dd>
+  <dd><a href="../general/about_deployment_descriptors.html">About Deployment 
     Descriptors</a></dd>
-    <dd><a href="config_ejb_dd.html">Configuring EJB Deployment Descriptors</a> </dd>
-    <dd><a href="config_ejb_about.html">About Configuring EJB Modules</a></dd>
-    <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans from a Database</dd>
+  <dd><a href="config_ejb_dd.html">Configuring EJB Deployment Descriptors</a> 
+  </dd>
+  <dd><a href="config_ejb_about.html">About Configuring EJB Modules</a></dd>
+  <dd><a href="../editing/generate_cmp_beans.html">Generating CMP Entity Beans 
+    from a Database</a></dd>
 </dl>
 <hr>
-<small> <a href="../../credits.html">Legal Notices</a></small> 
+<small><a href="../../credits.html">Legal Notices</a></small> 
 <table cellpadding="20" border="0"> <tr> 
     <td>&nbsp;</td>
   </tr>
