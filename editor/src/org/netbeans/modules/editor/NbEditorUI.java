@@ -40,6 +40,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.Settings;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -79,7 +80,6 @@ public class NbEditorUI extends ExtEditorUI {
     private boolean attached = false;
     private ChangeListener listener;
     private FontColorSettings fontColorSettings;    
-    private final Object FONT_COLOR_SETTINGS_LOCK = new Object();
     private FontColorSettings bfontColorSettings;    
     
     private LookupListener lookupListener;
@@ -150,7 +150,7 @@ public class NbEditorUI extends ExtEditorUI {
     }
     
     private FontColorSettings getFontColorSettings(){
-        synchronized (FONT_COLOR_SETTINGS_LOCK){
+        synchronized (Settings.class){
             if (fontColorSettings == null){
                 final String mimeType = getDocumentContentType();
                 if (mimeType == null){
