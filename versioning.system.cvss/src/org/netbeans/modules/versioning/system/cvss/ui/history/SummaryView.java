@@ -20,6 +20,8 @@ import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryA
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.GetCleanAction;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -47,10 +49,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
 
     private final List  dispResults;
     private String      message;
+    private AttributeSet searchHiliteAttrs;
 
     public SummaryView(SearchHistoryPanel master, List results) {
         this.master = master;
         this.dispResults = expandResults(results);
+        FontColorSettings fcs = (FontColorSettings) MimeLookup.getMimeLookup("text/x-java").lookup(FontColorSettings.class);
+        searchHiliteAttrs = fcs.getFontColors("highlight-search");
         message = master.getCriteria().getCommitMessage();
         resultsList = new JList(new SummaryListModel());
         resultsList.setFixedCellHeight(-1);
@@ -337,8 +342,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             defaultFormat = DateFormat.getDateTimeInstance();
 
             hiliteStyle = textPane.addStyle("hilite", normalStyle);
-            // TODO: take this color from Editor.Settings
-            StyleConstants.setBackground(hiliteStyle, new Color(246, 248, 139));
+            StyleConstants.setBackground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background));
+            StyleConstants.setForeground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground));
             
             setLayout(new BorderLayout());
             add(textPane);
