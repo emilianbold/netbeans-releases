@@ -84,6 +84,8 @@ public class SwitchBranchAction extends AbstractSystemAction {
             cmd.setUpdateByRevision(settings.getBranchName());
         }
         
+        cmd.setBuildDirectories(true);
+        cmd.setPruneDirectories(true);
         cmd.setFiles(roots);
         
         UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
