@@ -63,7 +63,7 @@ public class ImportProjectAction extends CallableSystemAction {
                 true, new Object[]{}, null, 0, null, null);
         desc.setClosingOptions(new Object[]{});
         final Dialog progressDialog = DialogDisplayer.getDefault().createDialog(desc);
-        ((JDialog) progressDialog).setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        ((JDialog) progressDialog).setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         progressPanel.setNumberOfSteps(wizard.getNumberOfImportedProject());
         
         // progress timer for periodically update progress
