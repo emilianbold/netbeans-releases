@@ -18,6 +18,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.j2ee.dd.impl.web.WebAppProxy;
+import org.netbeans.modules.j2ee.dd.impl.common.DDUtils;
 import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
@@ -81,7 +82,7 @@ public final class DDProvider {
                 version = getVersion(fo.getInputStream());
                 // preparsing
                 error = parse(fo);
-                original = createWebApp(fo.getInputStream(), version);
+                original = DDUtils.createWebApp(fo.getInputStream(), version);
                 baseBeanMap.put(fo.getURL(), new WeakReference (original));
             } else {
                 version = original.getVersion ();
@@ -151,7 +152,7 @@ public final class DDProvider {
      * @return WebApp object - root of the deployment descriptor bean graph
      */    
     public WebApp getDDRoot(File f) throws IOException, SAXException {
-        return createWebApp(new FileInputStream(f), getVersion(new FileInputStream(f)));
+        return DDUtils.createWebApp(new FileInputStream(f), getVersion(new FileInputStream(f)));
     }
     
     /**  Convenient method for getting the BaseBean object from CommonDDBean object.
@@ -166,18 +167,6 @@ public final class DDProvider {
         return null;
     }
 
-    private static WebApp createWebApp(java.io.InputStream is, String version) throws java.io.IOException, SAXException {
-        try {
-            if (WebApp.VERSION_2_3.equals(version)) {
-                return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
-            } else {
-                return org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp.createGraph(is);
-            }
-        } catch (RuntimeException ex) {
-            throw new SAXException (ex.getMessage());
-        }
-    }
-    
     /** Parsing just for detecting the version  SAX parser used
     */
     private static String getVersion(java.io.InputStream is) throws java.io.IOException, SAXException {
@@ -312,7 +301,7 @@ public final class DDProvider {
                                 webApp.setError(null);
                                 webApp.setStatus(WebApp.STATE_VALID);
                             }
-                            WebApp original = createWebApp(fo.getInputStream(), version);
+                            WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
                             baseBeanMap.put(fo.getURL(), new WeakReference (original));
                             errorMap.put(fo.getURL(), webApp.getError ());
                             // replacing original file in proxy WebApp
@@ -340,7 +329,7 @@ public final class DDProvider {
                         String version = null;
                         try {
                             version = getVersion(fo.getInputStream());
-                            WebApp original = createWebApp(fo.getInputStream(), version);
+                            WebApp original = DDUtils.createWebApp(fo.getInputStream(), version);
                             if (original.getClass().equals (orig.getClass())) {
                                 orig.merge(original,WebApp.MERGE_UPDATE);
                             } else {

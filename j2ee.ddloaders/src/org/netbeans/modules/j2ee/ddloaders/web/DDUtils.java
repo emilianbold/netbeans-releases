@@ -99,20 +99,6 @@ public class DDUtils {
     }
     */
 
-    public static WebApp createWebApp(InputStream is, String version) throws IOException, SAXException {
-        try {
-            if (WebApp.VERSION_2_3.equals(version)) {
-                return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
-            } else {
-                return org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp.createGraph(is);
-            }
-        } catch (RuntimeException ex) {
-            throw new SAXException(ex.getMessage());
-        } finally {
-            is.close();
-        }
-    }
-
     /** Parsing just for detecting the version  SAX parser used
     */
     public static String getVersion(InputSource is) throws IOException, SAXException {

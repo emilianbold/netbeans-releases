@@ -14,6 +14,7 @@ package org.netbeans.modules.j2ee.dd.impl.common;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -70,6 +71,22 @@ public class DDUtils {
             // until the file becomes parsable again to do a merge
             //ejbJarProxy.setOriginal(null);
             ejbJarProxy.setProxyVersion(null);
+        }
+    }
+
+    public static WebApp createWebApp(InputStream is, String version) throws IOException, SAXException {
+        try {
+            if (WebApp.VERSION_2_3.equals(version)) {
+                return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
+            } else {
+                org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp webApp =
+                        org.netbeans.modules.j2ee.dd.impl.web .model_2_4.WebApp.createGraph(is);
+                // creates attribute xmlns:xsi to prevent possible exceptions in 
+                webApp._getSchemaLocation();
+                return webApp;
+            }
+        } catch (RuntimeException ex) {
+            throw new SAXException (ex.getMessage());
         }
     }
 }

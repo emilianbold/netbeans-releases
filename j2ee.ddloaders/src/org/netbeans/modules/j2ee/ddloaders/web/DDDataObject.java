@@ -221,7 +221,8 @@ public class DDDataObject extends  DDMultiViewDataObject
             SAXParseException error = DDUtils.parse(createInputSource());
 
             // creating model
-            WebAppProxy app = new WebAppProxy(DDUtils.createWebApp(createInputStream(), version), version);
+            WebAppProxy app = new WebAppProxy(org.netbeans.modules.j2ee.dd.impl.common.DDUtils.createWebApp(
+                    createInputStream(), version), version);
             if (updateWebApp) {
                 if (((WebAppProxy) webApp).getOriginal() != null) {
                     webApp.merge(app, WebApp.MERGE_UPDATE);
