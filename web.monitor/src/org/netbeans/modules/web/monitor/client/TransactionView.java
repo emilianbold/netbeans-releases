@@ -170,6 +170,16 @@ class TransactionView extends TopComponent implements ExplorerManager.Provider,
 
     }
 
+    // Need to override requestFocusInWindow to call requestFocusInWindow
+    // on some internal component for F1 help to work correctly
+    public boolean requestFocusInWindow() {
+        if (tree != null) {
+            return tree.requestFocusInWindow();
+        } else {
+            return false;
+        }
+    }
+    
     public HelpCtx getHelpCtx() {
 	String helpID = NbBundle.getBundle(TransactionView.class).getString("MON_Transaction_View_F1_Help_ID"); // NOI18N
 	return new HelpCtx( helpID );
