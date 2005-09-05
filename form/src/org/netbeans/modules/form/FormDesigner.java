@@ -21,7 +21,6 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.beans.*;
-import javax.swing.event.MouseInputAdapter;
 
 import org.jdesktop.layout.*;
 

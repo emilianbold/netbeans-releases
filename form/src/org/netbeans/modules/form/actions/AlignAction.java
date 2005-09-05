@@ -15,13 +15,11 @@ package org.netbeans.modules.form.actions;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
-import org.netbeans.modules.form.layoutdesign.LayoutUtils;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;

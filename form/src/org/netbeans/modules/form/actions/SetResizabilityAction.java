@@ -20,7 +20,6 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
-import org.netbeans.modules.form.layoutdesign.LayoutUtils;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;

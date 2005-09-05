@@ -27,7 +27,6 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.LayoutConstants;
 import org.netbeans.modules.form.layoutdesign.LayoutDesigner;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
-import org.netbeans.modules.form.layoutdesign.LayoutUtils;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;

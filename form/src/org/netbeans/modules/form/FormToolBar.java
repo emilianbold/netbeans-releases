@@ -23,7 +23,6 @@ import java.util.*;
 
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 import org.netbeans.modules.form.palette.*;

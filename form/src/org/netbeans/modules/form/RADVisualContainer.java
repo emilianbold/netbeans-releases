@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.lang.reflect.Method;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.layoutdesign.LayoutModel;
 
 
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
