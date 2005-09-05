@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -74,6 +76,9 @@ public class J2SEClassPathUi {
     /** Renderer which can be used to render the classpath in lists
      */    
     public static class ClassPathListCellRenderer extends DefaultListCellRenderer {
+        
+        private static final Pattern FOREIGN_PLAIN_FILE_REFERENCE = Pattern.compile("\\$\\{file\\.reference\\.([^${}]+)\\}"); // NOI18N
+        private static final Pattern UNKNOWN_FILE_REFERENCE = Pattern.compile("\\$\\{([^${}]+)\\}"); // NOI18N
         
         private static String RESOURCE_ICON_JAR = "org/netbeans/modules/java/j2seproject/ui/resources/jar.gif"; //NOI18N
         private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/java/j2seproject/ui/resources/libraries.gif"; //NOI18N
@@ -246,7 +251,15 @@ public class J2SEClassPathUi {
         private String getFileRefName( ClassPathSupport.Item item ) {
             String ID = item.getReference();        
             // something in the form of "${file.reference.smth.jar}"
-            return ID.substring(17, ID.length()-1);
+            Matcher m = FOREIGN_PLAIN_FILE_REFERENCE.matcher(ID);
+            if (m.matches()) {
+                return m.group(1);
+            }
+            m = UNKNOWN_FILE_REFERENCE.matcher(ID);
+            if (m.matches()) {
+                return m.group(1);
+            }
+            return ID;
         }
 
 
