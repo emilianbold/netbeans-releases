@@ -62,7 +62,6 @@ public abstract class AbstractMethodController extends EjbMethodController {
     public abstract GenerateFromIntf createGenerateFromIntf();
 
     public final void createAndAdd(Method clientView, boolean local, boolean isComponent) {
-        Type returnType = clientView.getType();
         JavaClass home = null;
         JavaClass component = null;
         boolean rollback = true;
@@ -77,13 +76,9 @@ public abstract class AbstractMethodController extends EjbMethodController {
             }
             if (isComponent) {
                 registerClassForSave(component);
-                TypeReference typeReference = JavaModelUtil.resolveImportsForType(component, clientView.getType());
-                clientView.setTypeName(typeReference);
                 component.getContents().add(clientView);
             } else {
                 registerClassForSave(home);
-                TypeReference typeReference = JavaModelUtil.resolveImportsForType(home, clientView.getType());
-                clientView.setTypeName(typeReference);
                 home.getContents().add(clientView);
             }
             JavaClass bc = JMIUtils.findClass(model.getEjbClass(), cp);
@@ -94,12 +89,14 @@ public abstract class AbstractMethodController extends EjbMethodController {
                     Method me = (Method) it.next();
                     if (JMIUtils.findInClass(me,bc) == null) {
                         registerClassForSave(bc);
-                        TypeReference typeReference = JavaModelUtil.resolveImportsForType(bc, returnType);
+                        TypeReference typeReference = JavaModelUtil.resolveImportsForType(bc, me.getType());
                         me.setTypeName(typeReference);
                         bc.getContents().add(me);
                     }
                 }
             }
+            TypeReference typeReference = JavaModelUtil.resolveImportsForType(isComponent ? component : home, clientView.getType());
+            clientView.setTypeName(typeReference);
             if (!local) {
                 addExceptionIfNecessary(clientView, RemoteException.class.getName());
             }
