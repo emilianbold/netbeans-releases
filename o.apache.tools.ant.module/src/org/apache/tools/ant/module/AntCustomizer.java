@@ -77,7 +77,7 @@ ActionListener {
     
     
     public AntCustomizer () {
-
+        tfAntHome.setColumns (30);
         loc (bAntHome, "Ant_Home_Button");
         bAntHome.addActionListener (this);
         loc (cbSaveFiles, "Save_Files");
