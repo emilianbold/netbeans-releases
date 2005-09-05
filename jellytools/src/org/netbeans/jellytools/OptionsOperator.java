@@ -7,15 +7,18 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.jellytools;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JLabel;
 import javax.swing.table.JTableHeader;
 import javax.swing.tree.TreePath;
 
@@ -24,6 +27,7 @@ import org.netbeans.core.projects.SettingChildren.FileStateProperty;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OptionsViewAction;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
+import org.netbeans.jemmy.ComponentChooser;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
@@ -34,6 +38,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.Operator;
 
 /**
@@ -62,7 +67,12 @@ public class OptionsOperator extends NbDialogOperator {
 
     private static int DEFINE_HERE = 0;
 
-    private TreeTableOperator _treeTable;
+    private static final String CLASSIC_VIEW_LABEL = Bundle.getStringTrimmed(
+                                                        "org.netbeans.modules.options.Bundle",
+                                                        "Classic");
+    private static final String MODERN_VIEW_LABEL = Bundle.getStringTrimmed(
+                                                        "org.netbeans.modules.options.Bundle",
+                                                        "Modern");
     
     /**
      * Waits for the Options window opened
@@ -99,15 +109,29 @@ public class OptionsOperator extends NbDialogOperator {
 
     //subcomponents
 
+    /** Returns operator of "Classic View" button.
+     * @return  JButtonOperator instance of "Classic View" button
+     */
+    public JButtonOperator btClassicView() {
+        // we cannot cache oeprator because everytime a new dialog is created
+        return new JButtonOperator(this, CLASSIC_VIEW_LABEL);
+    }
+
+    /** Returns operator of "Modern View" button.
+     * @return  JButtonOperator instance of "Modern View" button
+     */
+    public JButtonOperator btModernView() {
+        // we cannot cache oeprator because everytime a new dialog is created
+        return new JButtonOperator(this, MODERN_VIEW_LABEL);
+    }
+
     /** Getter for table containing property list and
      * property definition levels.
      * @return TreeTableOperator instance
      */
     public TreeTableOperator treeTable() {
-        if(_treeTable == null) {
-            _treeTable = new TreeTableOperator(this);
-        }
-        return _treeTable;
+        // we cannot cache oeprator because everytime a new dialog is created
+        return new TreeTableOperator(this);
     }
 
     //shortcuts
@@ -302,6 +326,87 @@ public class OptionsOperator extends NbDialogOperator {
         new ComponentOperator(header).clickMouse(rect.x + rect.width/2, 
                                                  rect.y + rect.height/2,
                                                  1);
+    }
+
+    // Modern view Options
+    
+    /** Switch to classic view of options. */
+    public void switchToClassicView() {
+        if(JButtonOperator.findJButton((Container)this.getSource(), CLASSIC_VIEW_LABEL, true, true) != null) {
+            btClassicView().push();
+        }
+        sourceInternal = new OptionsOperator().getSource();
+    }
+    
+    private Component sourceInternal;
+    
+    public Component getSource() {
+        if(sourceInternal == null) {
+            sourceInternal = super.getSource();
+        }
+        return sourceInternal;
+    }
+    
+
+    /** Switch to modern view of options. */
+    public void switchToModernView() {
+        if(JButtonOperator.findJButton((Container)this.getSource(), MODERN_VIEW_LABEL, true, true) != null) {
+            btModernView().push();
+        }
+        sourceInternal = new OptionsOperator().getSource();
+    }
+    
+    /** Selects a category with given name.
+     * @param name name of category to be selected
+     */
+    public void selectCategory(final String name) {
+        final StringComparator comparator = this.getComparator();
+        new JLabelOperator(this, new ComponentChooser() {
+            public boolean checkComponent(Component comp) {
+                if(comp.getClass().getName().equals("org.netbeans.modules.options.OptionsPanel$Button")) { // NOI18N
+                    if(((JLabel)comp).getText() != null) {
+                        return comparator.equals(((JLabel)comp).getText(), name);
+                    }
+                }
+                return false;
+            }
+            public String getDescription() {
+                return "OptionsPanel$Button with text "+name; // NOI18N
+            }
+        }).clickMouse();
+        // wait for second label signing appropriate panel
+        new JLabelOperator(this, name, 1);
+    }
+
+    /** Selects General category. */
+    public void selectGeneral() {
+        Bundle.getStringTrimmed("org.netbeans.modules.options.advanced.Bundle", "CTL_Advanced_Options");
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.general.Bundle",
+                                               "CTL_General_Options"));
+    }
+
+    /** Selects Editor category. */
+    public void selectEditor() {
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.editor.Bundle",
+                                               "CTL_Editor"));
+    }
+
+    /** Selects Fonts & Colors category. */
+    public void selectFontAndColors() {
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.colors.Bundle",
+                                               "CTL_Font_And_Color_Options"));
+    }
+
+    /** Selects Keymap category. */
+    public void selectKeymap() {
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.keymap.Bundle",
+                                               "CTL_Keymap_Options"));
+    }
+    
+    /** Selects Advanced category. */
+    public void selectAdvanced() {
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.advanced.Bundle",
+                                               "CTL_Advanced_Options"));
     }
 
     /** Performs verification by accessing all sub-components */    
