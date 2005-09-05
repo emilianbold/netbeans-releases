@@ -1730,16 +1730,10 @@ public class LayoutDesigner implements LayoutConstants {
 
             // Perform alignment of the intervals transfered into common parallel parent
             if (closed) {
-                if (alignment == LEADING) {
-                    align(trailingIntervals, false, dimension, TRAILING);
-                    align(leadingIntervals, false, dimension, LEADING);
-                } else {
-                    align(leadingIntervals, false, dimension, LEADING);
-                    align(trailingIntervals, false, dimension, TRAILING);
-                }
+                align(leadingIntervals, trailingIntervals, true, dimension, alignment);
             } else {
                 LayoutInterval[] itervalsToAlign = (alignment == LEADING) ? leadingIntervals : trailingIntervals;
-                align(itervalsToAlign, closed, dimension, alignment);
+                align(itervalsToAlign, null, false, dimension, alignment);
             }
             
             // Must be done after align() to keep original eff. alignment inside align() method
@@ -2264,9 +2258,10 @@ public class LayoutDesigner implements LayoutConstants {
      * Aligns given intervals to a parallel group. The intervals are supposed
      * to have the same first parallel parent.
      */
-    private boolean align(LayoutInterval[] intervals, boolean closed, int dimension, int alignment) {
+    private boolean align(LayoutInterval[] leadingInts, LayoutInterval[] trailingInts, boolean closed, int dimension, int alignment) {
         // find common parallel group for aligned intervals
         LayoutInterval commonGroup = null;
+        LayoutInterval[] intervals = leadingInts;
         for (int i=0; i < intervals.length; i++) {
             LayoutInterval interval = intervals[i];
             LayoutInterval parent = interval.getParent();
@@ -2305,7 +2300,7 @@ public class LayoutDesigner implements LayoutConstants {
                 mainEffectiveAlign = LayoutInterval.getEffectiveAlignment(interval); // [need better way to collect - here it takes the last one...]
 
                 // extract the interval surroundings
-                int extractCount = operations.extract(interval, alignment, closed,
+                int extractCount = operations.extract(interval, closed ? trailingInts[i] : interval, alignment, closed,
                                                       restLeading, restTrailing);
                 if (extractCount == 1) { // the parent won't be reused
                     layoutModel.removeInterval(parent);
@@ -2374,11 +2369,11 @@ public class LayoutDesigner implements LayoutConstants {
         // create the remainder groups around the main one
         if (!restLeading.isEmpty()) {
             // [should change to operations.addGroupContent]
-            createRemainderGroup(restLeading, commonSeq, commonSeq.indexOf(group), LEADING, mainEffectiveAlign);
+            createRemainderGroup(restLeading, commonSeq, commonSeq.indexOf(group), LEADING, mainEffectiveAlign, dimension);
         }
         if (!restTrailing.isEmpty()) {
             // [should change to operations.addGroupContent]
-            createRemainderGroup(restTrailing, commonSeq, commonSeq.indexOf(group), TRAILING, mainEffectiveAlign);
+            createRemainderGroup(restTrailing, commonSeq, commonSeq.indexOf(group), TRAILING, mainEffectiveAlign, dimension);
         }
 
         return true;
@@ -2395,9 +2390,10 @@ public class LayoutDesigner implements LayoutConstants {
      *        group (LEADING or TRAILING)
      * @param mainAlignment effective alignment of the main group (LEADING or
      *        TRAILING or something else meaning not aligned)
+     * @param dimension dimension the remainder group is created in.
      */
     private void createRemainderGroup(List list, LayoutInterval seq,
-                                      int index, int position, int mainAlignment)
+                                      int index, int position, int mainAlignment, int dimension)
     {
         assert seq.isSequential() && (position == LEADING || position == TRAILING);
         if (position == TRAILING) {
@@ -2486,8 +2482,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
 
         if (onlyGaps) {
-            layoutModel.addInterval(gap, seq, index);
-            assertSingleGap(gap);
+            operations.insertGapIntoSequence(gap, seq, index, dimension);
             return;
         }
 
@@ -3427,15 +3422,6 @@ public class LayoutDesigner implements LayoutConstants {
                     optimizeGaps(parent, dimension, false);
                 }
             }
-        }
-    }
-
-    private static void assertSingleGap(LayoutInterval gap) {
-        if (gap != null && gap.isEmptySpace() && gap.getParent() != null && gap.getParent().isSequential()) {
-            LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(gap, LEADING, false);
-            assert neighbor == null || !neighbor.isEmptySpace();
-            neighbor = LayoutInterval.getDirectNeighbor(gap, TRAILING, false);
-            assert neighbor == null || !neighbor.isEmptySpace();
         }
     }
 

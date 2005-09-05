@@ -45,26 +45,34 @@ class LayoutOperations implements LayoutConstants {
      * 'restTrailing' lists. Does not extract/remove the interval itself.
      */
     int extract(LayoutInterval interval, int alignment, boolean closed,
+                List restLeading, List restTrailing) {
+        return extract(interval, interval, alignment, closed, restLeading, restTrailing);
+    }
+        
+    int extract(LayoutInterval leading, LayoutInterval trailing, int alignment, boolean closed,
                 List restLeading, List restTrailing)
     {
-        LayoutInterval seq = interval.getParent();
+        LayoutInterval seq = leading.getParent();
         assert seq.isSequential();
 
-        int index = seq.indexOf(interval);
+        int leadingIndex = seq.indexOf(leading);
+        int trailingIndex = seq.indexOf(trailing);
         int count = seq.getSubIntervalCount();
         int extractCount;
-        if (closed || (alignment != LEADING && alignment != TRAILING)) {
+        if (closed) {
+            extractCount = trailingIndex - leadingIndex + 1;
+        } else if (alignment != LEADING && alignment != TRAILING) {
             extractCount = 1;
         }
         else {
-            extractCount = alignment == LEADING ? count - index : index + 1;
+            extractCount = alignment == LEADING ? count - leadingIndex : leadingIndex + 1;
         }
 
         if (extractCount < seq.getSubIntervalCount()) {
             List toRemainL = null;
             List toRemainT = null;
-            int startIndex = alignment == LEADING ? index : index - extractCount + 1;
-            int endIndex = alignment == LEADING ? index + extractCount - 1 : index;
+            int startIndex = alignment == LEADING ? leadingIndex : leadingIndex - extractCount + 1;
+            int endIndex = alignment == LEADING ? trailingIndex + extractCount - 1 : trailingIndex;
             Iterator it = seq.getSubIntervals();
             for (int idx=0; it.hasNext(); idx++) {
                 LayoutInterval li = (LayoutInterval) it.next();
