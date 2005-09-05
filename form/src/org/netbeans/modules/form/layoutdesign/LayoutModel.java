@@ -180,9 +180,11 @@ public class LayoutModel implements LayoutConstants {
         if (parent != null) {
             index = parent.remove(component);
         }
-        else {
-            index = -1;
+        else if (!fromModel || getLayoutComponent(component.getId()) == null) {
+            return; // the removal operation is "noop"
         }
+        else index = -1;
+       
         if (fromModel) {
             unregisterComponent(component, true);
         }
