@@ -91,25 +91,15 @@ public class ImportProjectAction extends CallableSystemAction {
                     }
                     // open created projects when importing finished
                     OpenProjects.getDefault().open(importer.getProjects(), true);
+                    if (importer.getProjects().length > 0) {
+                        OpenProjects.getDefault().setMainProject(importer.getProjects()[0]);
+                    }
                 }
             }
         });
         importer.startImporting(); // runs importing in separate thread
         progressTimer.start();
         progressDialog.setVisible(true);
-        //        OpenProjectList.getDefault().open(project, true);
-        //        OpenProjectList.getDefault().setMainProject( project );
-        //        final ProjectTab ptLogial  = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
-        //        ProjectUtilities.openProjectFiles(project);
-        //        Node root = ptLogial.getExplorerManager().getRootContext();
-        //        Node projNode = root.getChildren().findChild(project.getProjectDirectory().getName());
-        //        try {
-        //            ptLogial.getExplorerManager().setSelectedNodes(new Node[] {projNode});
-        //            ptLogial.open();
-        //            ptLogial.requestActive();
-        //        } catch (Exception ignore) {
-        //            // may ignore it
-        //        }
     }
     
     public String getName() {
