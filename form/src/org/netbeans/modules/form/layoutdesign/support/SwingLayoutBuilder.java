@@ -93,7 +93,7 @@ public class SwingLayoutBuilder {
      */
     public void removeComponentsFromContainer(Component[] components, String[] compIds) {
         if (components.length != compIds.length) {
-            throw new IllegalArgumentException("Sizes must match");
+            throw new IllegalArgumentException("Sizes must match"); // NOI18N
         }
         for (int counter = 0; counter < components.length; counter++) {
             componentIDMap.remove(compIds[counter]);

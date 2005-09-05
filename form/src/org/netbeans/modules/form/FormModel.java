@@ -1005,7 +1005,7 @@ public class FormModel
             }
             if (FormModel.this.autoEndCoumpoundEdit) {
                 FormModel.this.endCompoundEdit(true);
-                t("coumpound undoable edit ended automatically");
+                t("coumpound undoable edit ended automatically"); // NOI18N
             }
         }
     }

@@ -120,7 +120,7 @@ public final class PaletteUtils {
                     public boolean isValidCategory( Lookup lkp ){                    
                         FilterNode node = (FilterNode) lkp.lookup( Node.class );                           
                         DataFolder df = (DataFolder) node.getCookie(DataObject.class);                        
-                        Boolean noPaletteCategory = (Boolean) df.getPrimaryFile().getAttribute("isNoPaletteCategory");
+                        Boolean noPaletteCategory = (Boolean) df.getPrimaryFile().getAttribute("isNoPaletteCategory"); // NOI18N
                         return noPaletteCategory != null ? !noPaletteCategory.booleanValue() : true;
                     }
                     public boolean isValidItem( Lookup lkp ){                        
@@ -128,7 +128,7 @@ public final class PaletteUtils {
                     }    
                 };      
                 
-                palette = PaletteFactory.createPalette( "FormDesignerPalette", new FormPaletteActions(), filter, null);
+                palette = PaletteFactory.createPalette( "FormDesignerPalette", new FormPaletteActions(), filter, null); // NOI18N
             } catch( IOException ioE ) {
                 ioE.printStackTrace();
                 //TODO error handling

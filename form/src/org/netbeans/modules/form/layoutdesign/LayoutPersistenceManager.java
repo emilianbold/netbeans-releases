@@ -181,7 +181,7 @@ public class LayoutPersistenceManager implements LayoutConstants {
             saveSize(interval.getPreferredSize(), ATTR_SIZE_PREF);
             saveSize(interval.getMaximumSize(), ATTR_SIZE_MAX);
             saveAttributes(interval.getAttributes());
-            sb.append("/>\n");
+            sb.append("/>\n"); // NOI18N
         }
         indent--;
     }

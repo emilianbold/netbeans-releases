@@ -1810,7 +1810,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
          */
         ResizabilityAction(int dimension) {
             this.dimension = dimension;
-            String code = (dimension == LayoutConstants.HORIZONTAL) ? "h" : "v";
+            String code = (dimension == LayoutConstants.HORIZONTAL) ? "h" : "v"; // NOI18N
             String iconResource = ICON_BASE + code + ".png"; // NOI18N
             putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage(iconResource)));
             putValue(Action.SHORT_DESCRIPTION, FormUtils.getBundleString("CTL_ResizeButton_" + code)); // NOI18N

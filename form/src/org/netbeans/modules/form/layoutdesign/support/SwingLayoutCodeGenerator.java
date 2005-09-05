@@ -341,7 +341,7 @@ public class SwingLayoutCodeGenerator {
                         layout.append(", " + info.variableName); // NOI18N
                     }
                 }
-                layout.append( "}, ");
+                layout.append( "}, "); // NOI18N
                 if (dimension == LayoutConstants.HORIZONTAL) {
                     layout.append(LAYOUT_NAME + ".HORIZONTAL);\n\n"); //NOI18N
                 } else {

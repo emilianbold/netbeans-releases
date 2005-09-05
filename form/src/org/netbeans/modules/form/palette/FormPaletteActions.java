@@ -28,19 +28,19 @@ public class FormPaletteActions extends PaletteActions {
 
     public Action[] getImportActions() {
         return new Action[] {
-            new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) {
+            new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
                 public void actionPerformed(java.awt.event.ActionEvent e) {
                     BeanInstaller.installBeans(ClassSource.JAR_SOURCE);
                 }
             },
                     
-            new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) {
+            new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
                 public void actionPerformed(java.awt.event.ActionEvent e) {
                     BeanInstaller.installBeans(ClassSource.LIBRARY_SOURCE);
                 }
             },
                     
-            new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) {
+            new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
                 public void actionPerformed(java.awt.event.ActionEvent e) {
                     BeanInstaller.installBeans(ClassSource.PROJECT_SOURCE);
                 }
