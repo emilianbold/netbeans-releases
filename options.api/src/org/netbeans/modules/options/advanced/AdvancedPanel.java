@@ -95,7 +95,7 @@ public final class AdvancedPanel extends JPanel {
             JComponent component = model.getPanel (category);
             preferredWith = Math.max (
                 preferredWith, 
-                component.getPreferredSize ().width
+                component.getPreferredSize ().width + 22
             );
         }
         setPreferredSize (new Dimension (preferredWith, 100));
