@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.netbeans.modules.projectimport.LoggerFactory;
 import org.openide.ErrorManager;
 
 /**
@@ -28,6 +30,10 @@ import org.openide.ErrorManager;
  * @author mkrauskopf
  */
 public final class Workspace {
+    
+    /** Logger for this class. */
+    private static final Logger logger =
+            LoggerFactory.getDefault().createLogger(Workspace.class);
     
     /** Represents variable in Eclipse project's classpath. */
     static class Variable {
@@ -173,15 +179,19 @@ public final class Workspace {
      * returns its instance or null in the case it's not found.
      */
     EclipseProject getProjectByRawPath(String rawPath) {
+        EclipseProject project = null;
         for (Iterator it = projects.iterator(); it.hasNext(); ) {
             EclipseProject prj = (EclipseProject) it.next();
             // rawpath = /name
             if (prj.getName().equals(rawPath.substring(1))) {
-                return prj;
+                project = prj;
             }
         }
-        //        return (EclipseProject) projects.get(rawPath);
-        return null;
+        if (project == null) {
+            logger.info("Project with raw path \"" + rawPath + "\" cannot" + // NOI18N
+                    " be found in project list: " + projects); // NOI18N
+        }
+        return project;
     }
     
     public Set getProjects() {

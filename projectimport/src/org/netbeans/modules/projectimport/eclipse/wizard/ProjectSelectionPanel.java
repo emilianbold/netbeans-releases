@@ -166,6 +166,7 @@ final class ProjectSelectionPanel extends JPanel {
         
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             EclipseProject project = projects[rowIndex];
+            assert projects != null;
             if (((Boolean) aValue).booleanValue()) {
                 selectedProjects.add(project);
             } else {
@@ -221,6 +222,7 @@ final class ProjectSelectionPanel extends JPanel {
         }
         for (Iterator it = selectedProjects.iterator(); it.hasNext(); ) {
             EclipseProject selProject = (EclipseProject) it.next();
+            assert selProject != null;
             solved.push(selProject);
             currentRoot = selProject;
             fillUpRequiredProjects(selProject);
@@ -237,6 +239,7 @@ final class ProjectSelectionPanel extends JPanel {
         }
         for (Iterator it = children.iterator(); it.hasNext(); ) {
             EclipseProject child = (EclipseProject) it.next();
+            assert child != null;
             if (solved.contains(child)) {
                 recursionDetected(child);
                 return;

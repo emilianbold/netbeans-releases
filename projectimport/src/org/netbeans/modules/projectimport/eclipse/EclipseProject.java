@@ -263,8 +263,10 @@ public final class EclipseProject implements Comparable {
                 projectsWeDependOn = new HashSet();
                 for (Iterator it = cp.getProjects().iterator(); it.hasNext(); ) {
                     ClassPathEntry cp = (ClassPathEntry) it.next();
-                    projectsWeDependOn.add(workspace.getProjectByRawPath(
-                            cp.getRawPath()));
+                    EclipseProject prj = workspace.getProjectByRawPath(cp.getRawPath());
+                    if (prj != null) {
+                        projectsWeDependOn.add(prj);
+                    }
                 }
             }
         }
