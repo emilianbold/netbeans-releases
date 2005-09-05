@@ -584,7 +584,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
         ToolbarConstraints tc;
         String name;
         ToolbarRow lastRow = null;
-        boolean someBarAdded = false;
 
         for (int i = 0; i < tbs.length; i++) {
             tb = tbs[i];
@@ -599,13 +598,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 }
                 tc = new ToolbarConstraints (this, name, null, Boolean.TRUE); /* ... there is created a new constraints. */
                 addToolbar (lastRow, tc);
-                someBarAdded = true;
             }
             toolbarPanel().add (tb, tc);
-        }
-
-        if( someBarAdded ) {
-            rebuildMenu();
         }
         
         revalidateWindow();
@@ -702,6 +696,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
             toolbarLayout = new ToolbarLayout (this);
             toolbarPanel().setLayout (toolbarLayout);
             reactivatePanel (someBarRemoved, writeAtAll);
+            rebuildMenu();
         }
 
         return toolbarPanel();
