@@ -16,7 +16,6 @@ package org.netbeans.modules.versioning.system.cvss.ui.actions.log;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.windows.WindowManager;
@@ -127,7 +126,7 @@ public class AnnotationsAction extends AbstractSystemAction {
         }
     }
 
-    private boolean visible() {
+    public boolean visible() {
         JEditorPane currentPane = activatedEditorPane();
         return AnnotationBarManager.annotationBarVisible(currentPane);
     }

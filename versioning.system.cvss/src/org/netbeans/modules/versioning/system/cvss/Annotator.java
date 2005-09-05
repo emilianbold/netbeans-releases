@@ -319,7 +319,10 @@ public class Annotator {
                 new SystemActionBridge(SystemAction.get(SwitchBranchAction.class), loc.getString("CTL_PopupMenuItem_SwitchBranch")),
                 new SystemActionBridge(SystemAction.get(MergeBranchAction.class), loc.getString("CTL_PopupMenuItem_MergeBranch")),
                 null,
-                new SystemActionBridge(SystemAction.get(AnnotationsAction.class), loc.getString("CTL_PopupMenuItem_Annotations")),
+                new SystemActionBridge(SystemAction.get(AnnotationsAction.class), 
+                                        ((AnnotationsAction)SystemAction.get(AnnotationsAction.class)).visible() ? 
+                                        loc.getString("CTL_PopupMenuItem_HideAnnotations") : 
+                                        loc.getString("CTL_PopupMenuItem_ShowAnnotations")),
                 new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory")),
                 null,
                 new SystemActionBridge(SystemAction.get(GetCleanAction.class), loc.getString("CTL_PopupMenuItem_GetClean")),
