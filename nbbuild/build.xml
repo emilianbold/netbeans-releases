@@ -54,7 +54,6 @@ Microsystems, Inc. All Rights Reserved.
     <property file="build.properties"/>
 
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <ant dir="external" target="unscramble"/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <path id="bootstrap-cp">
      <pathelement location="${ant.jar}"/>
@@ -102,32 +101,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="allmodules" value="${fixedmodules},${modules}"/>
   </target>
 
-  <target name="maybe-pre-unscramble" depends="init-module-list" unless="netbeans.no.pre.unscramble">
-    <!-- To make things more pleasant for the user, unscramble available modules now. -->
-    <!-- Otherwise the user would be prompted at intervals and it would get annoying. -->
-    <echo>About to unscramble additional third-party files you will probably need.
-If you do not plan to use them and wish to avoid accepting their licenses,
-try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
-    <subant target="pre-unscramble-one" inheritall="true" genericantfile="build.xml" >
-      <dirset  dir="..">
-        <include name="*/external"/>
-        <exclude name="nbbuild/external"/>
-      </dirset>
-    </subant>
-  </target>
-  <!-- this target is needed in order to let the subant task set correctly
-    the basedir to one of the */external directories. Then we can just
-    call the unscramble target and get the ant to run the right build script's
-    target withh the right basedir
-    -->
-  <target name="pre-unscramble-one" if="buildFileAvailable" depends="hasBuildFile">
-     <ant target="unscramble" />
-  </target>
-
-  <target name="hasBuildFile">
-    <available file="build.xml" property="buildFileAvailable"/>
-  </target>
-
   <target name="set-buildnumber" unless="buildnumber">
     <tstamp>
     	<format property="buildnumber" pattern="yyMMdd"/>
@@ -137,7 +110,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </tstamp>
   </target>
 
-  <target name="init" depends="init-module-list,maybe-pre-unscramble,set-buildnumber,init-tasks">
+  <target name="init" depends="init-module-list,set-buildnumber,init-tasks">
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
@@ -610,7 +583,6 @@ the ${netbeans.dest}/bin/ directory.
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${one-cluster-dependencies}"/>
       <param name="one.cluster.name" value="${one.cluster.name}"/>
-      <param name="netbeans.no.pre.unscramble" value="true"/>
     </antcall>
     <mkdir dir="${netbeans.dest.dir}"/>
     <nbmerge failonerror="${stop.when.broken.modules}" 
@@ -1259,12 +1231,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="testbuild"/>
     <mkdir dir="testbuild"/>
     <unzip dest="testbuild" src="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"/>
-    <echo>scrambler2=${scrambler2}</echo>
     <property name="one.cluster.name" value="${cluster.name}"/>
-    <property name="scrambler2" value=""/>
     <propertyset id="sanity-build">
       <propertyref name="one.cluster.name"/>
-      <propertyref name="scrambler2"/>
     </propertyset>
     <echoproperties destfile="testbuild/nbbuild/user.properties">
         <propertyset refid="sanity-build"/>
