@@ -17,11 +17,6 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.ErrorManager;
-import org.openide.awt.HtmlRenderer;
-import org.openide.nodes.Node.Property;
-import org.openide.util.Utilities;
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -37,11 +32,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.HierarchyBoundsListener;
 import java.awt.event.HierarchyListener;
 import java.awt.event.MouseEvent;
-
 import java.beans.PropertyEditor;
-
 import java.lang.reflect.InvocationTargetException;
-
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -53,9 +45,13 @@ import javax.swing.KeyStroke;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
+import org.openide.awt.HtmlRenderer;
+import org.openide.nodes.Node.Property;
+import org.openide.util.Utilities;
 
-
-/** Factory for renderers which can display properties.  With the exception
+/** 
+ * Factory for renderers which can display properties.  With the exception
  * of the string renderer (which, if tableUI is passed to the constructor,
  * is a simple JLabel), the renderers are subclasses of the various
  * InplaceEditor implementations in this package, which are subclassed in
@@ -71,21 +67,22 @@ import javax.swing.event.ChangeListener;
  *
  * @author  Tim Boudreau
  */
-class RendererFactory {
-    private StringRenderer stringRenderer = null;
-    private CheckboxRenderer checkboxRenderer = null;
-    private ComboboxRenderer comboboxRenderer = null;
-    private RadioRenderer radioRenderer = null;
-    private TextFieldRenderer textFieldRenderer = null;
-    private ButtonPanel buttonPanel = null;
-    private IconPanel iconPanel = null;
-    ReusablePropertyModel mdl;
-    ReusablePropertyEnv env;
+final class RendererFactory {
+
+    private StringRenderer stringRenderer;
+    private CheckboxRenderer checkboxRenderer;
+    private ComboboxRenderer comboboxRenderer;
+    private RadioRenderer radioRenderer;
+    private TextFieldRenderer textFieldRenderer;
+    private ButtonPanel buttonPanel;
+    private IconPanel iconPanel;
+    private ReusablePropertyModel mdl;
+    private ReusablePropertyEnv env;
     private boolean tableUI;
-    private boolean suppressButton = false;
+    private boolean suppressButton;
     private int radioButtonMax = -1;
     private boolean useRadioBoolean = PropUtils.forceRadioButtons;
-    private boolean useLabels = false;
+    private boolean useLabels;
 
     /** Creates a new instance of RendererFactory */
     public RendererFactory(boolean tableUI, ReusablePropertyEnv env, ReusablePropertyModel mdl) {
@@ -462,11 +459,9 @@ class RendererFactory {
     static final class ComboboxRenderer extends ComboInplaceEditor {
         private Object item = null;
         boolean editable = false;
-        private boolean tableUI;
 
         public ComboboxRenderer(boolean tableUI) {
             super(tableUI);
-            this.tableUI = tableUI;
         }
 
         public boolean isEditable() {
@@ -606,6 +601,7 @@ class RendererFactory {
         public StringRenderer(boolean tableUI) {
             this.tableUI = tableUI;
             setOpaque(true);
+            ((HtmlRenderer.Renderer) htmlLabel).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }
 
         /** OptimizeIt shows about 12Ms overhead calling back to Component.enable(),
@@ -685,10 +681,8 @@ class RendererFactory {
             if ((editor != null) && editor.isPaintable()) {
                 delegatedPaint(g);
             } else {
-                String htmlDisplayValue = (env == null) ? null
-                                                        : (String) env.getFeatureDescriptor().getValue(
-                        "htmlDisplayValue"
-                    ); // NOI18N
+                String htmlDisplayValue = (env == null) ? null :
+                    (String) env.getFeatureDescriptor().getValue("htmlDisplayValue"); // NOI18N
                 boolean htmlValueUsed = htmlDisplayValue != null;
 
                 JLabel lbl = htmlValueUsed ? htmlLabel : noHtmlLabel;
