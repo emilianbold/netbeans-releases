@@ -41,20 +41,22 @@ public final class PaletteItemNode extends AbstractNode {
     
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
     
+    String name;
     String displayName;
     String description;
     Image icon16;
     Image icon32;
     private Lookup localLookup;
     
-    PaletteItemNode(String displayName, String description, Image icon16, Image icon32, Lookup lookup) {
-        this( displayName, description, icon16, icon32, lookup, new InstanceContent() );
+    PaletteItemNode(String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup) {
+        this(name, displayName, description, icon16, icon32, lookup, new InstanceContent() );
     }
     
-    private PaletteItemNode(String displayName, String description, Image icon16, Image icon32, Lookup lookup, InstanceContent content ) {
+    private PaletteItemNode(String name, String displayName, String description, Image icon16, Image icon32, Lookup lookup, InstanceContent content ) {
         super(Children.LEAF, new ProxyLookup( new Lookup[] { lookup, new AbstractLookup(content) } ) );
         
         content.add( this );
+        this.name = name;
         this.displayName = displayName;
         this.description = description;
         this.icon16 = icon16;
@@ -62,6 +64,10 @@ public final class PaletteItemNode extends AbstractNode {
         this.localLookup = lookup;
     }
  
+    public String getName() {
+        return name;
+    }
+
     public String getDisplayName() {
         return displayName;
     }

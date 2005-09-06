@@ -149,6 +149,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
 
         private PaletteItemNode createPaletteItemNode(PaletteItemHandler handler) {
 
+            String name = xmlDataObject.getName();
             String displayName = getDisplayName(handler.getBundleName(), handler.getDisplayNameKey(), handler.getClassName());
             String tooltip = getTooltip(handler.getBundleName(), handler.getTooltipKey(), handler.getClassName(), handler.getDisplayNameKey());
             Image icon16 = getIcon(handler.getIcon16URL());
@@ -168,7 +169,7 @@ public class PaletteEnvironmentProvider implements Environment.Provider {
                 objectsToLookup.add(handler.getBody());
             Lookup lookup = Lookups.fixed(objectsToLookup.toArray());
 
-            PaletteItemNode node = new PaletteItemNode(displayName, tooltip, icon16, icon32, lookup);
+            PaletteItemNode node = new PaletteItemNode(name, displayName, tooltip, icon16, icon32, lookup);
 
             return node;
         }
