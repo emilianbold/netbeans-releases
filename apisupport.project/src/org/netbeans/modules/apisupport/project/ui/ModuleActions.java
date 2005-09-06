@@ -33,6 +33,7 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -69,7 +70,12 @@ public final class ModuleActions implements ActionProvider {
         actions.add(null);
         boolean isNetBeansOrg;
         try {
-            isNetBeansOrg = project.getModuleList().getEntry(project.getCodeNameBase()).getNetBeansOrgPath() != null;
+            ModuleEntry e = project.getModuleList().getEntry(project.getCodeNameBase());
+            if (e != null) {
+                isNetBeansOrg = e.getNetBeansOrgPath() != null;
+            } else { // #63633
+                isNetBeansOrg = false;
+            }
         } catch (IOException e) {
             // What to do?
             isNetBeansOrg = false;
