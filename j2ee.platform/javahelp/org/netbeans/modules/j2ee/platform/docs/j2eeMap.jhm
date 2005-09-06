@@ -283,6 +283,7 @@
     <mapID target="ent_app_build" url="enterprise/general/ent_app_build.html" />
     <mapID target="ent_app_verify" url="enterprise/general/ent_app_verify.html" />
     <mapID target="ent_app_deploy" url="enterprise/general/ent_app_deploy.html" />
+    <mapID target="service_locator" url="enterprise/general/service_locator.html" />
 
     <!-- New Enterprise Application Project Wizard csh -->
     <mapID target="org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIterator" url="enterprise/csh/NewEarProjectWizardIterator.html" />

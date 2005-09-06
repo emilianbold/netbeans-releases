@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta name="lastupdated" content="2Feb04">
+<!-- p2 -->
+
+<title>Using Service Locators</title>
+<link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Using Service Locators</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+<p>A service locator is a class that provides a single, reusable way to obtain 
+  a reference to the following:</p>
+<ul>
+  <li>An enterprise bean's local and/or remote home interfaces</li>
+  <li>A JMS connection factory and topic destination</li>
+  <li>An e-mail session</li>
+  <li>A JDBC data source</li>
+  <li>The URL, name, or boolean value for an environment entry</li>
+</ul>
+<p>You can create a regular service locator or one that caches the obtained reference 
+  for further use. </p>
+<p><b>To create a service locator:</b></p>
+<ol>
+  <li>Choose File &gt; New.</li>
+  <li>From the Enterprise category, select Service Locator or Caching Service 
+    Locator. </li>
+</ol>
+<p><b>To use a service locator:</b></p>
+<ol>
+  <li>Run any of the following commands: 
+    <ul>
+      <li>Call Enterprise Bean</li>
+      <li>Use Database</li>
+      <li>Send JMS Message</li>
+      <li>Send E-Mail</li>
+    </ul>
+  </li>
+  <li>In the Service Locator Strategy section, select Use Existing Class and specify 
+    the class name of the service locator. You can use the Browse button to search 
+    for the class.</li>
+</ol>
+<p><b>Notes:</b></p>
+<ul>
+  <li>The service locator template is fully functional. You do not need to modify 
+    the code, although you can customize its caching behavior.</li>
+  <li>You can only create a service locator in a web application project, enterprise 
+    application projects, or EJB module project.</li>
+</ul>
+<dl> 
+  <dt>See Also</dt>
+  <dd><a href="../../ejb/editing/call_ejb.html">Calling an Enterprise Bean</a></dd>
+  <dd>Sending a JMS Message</dd>
+  <dd>Looking Up a Database from a Java File</dd>
+  <dd>Sending E-mail from a Java File</dd>
+</dl>
+
+
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+  </body>
+</html>
