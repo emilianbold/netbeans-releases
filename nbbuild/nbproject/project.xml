@@ -185,6 +185,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../core/javahelp</project>
                 <project>../core/multiview</project>
                 <project>../core/navigator</project>
+                <project>../core/options</project>
                 <project>../core/output2</project>
                 <project>../core/palette</project>
                 <project>../core/progress</project>
@@ -216,6 +217,7 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../editor/hints</project>
                 <project>../editor/lib</project>
                 <project>../editor/mimelookup</project>
+                <project>../editor/options</project>
                 <project>../editor/plain</project>
                 <project>../editor/plain/lib</project>
                 <project>../editor/settings</project>
@@ -313,7 +315,6 @@ Microsystems, Inc. All Rights Reserved.
                 <project>../serverplugins/jmxri</project>
                 <project>../serverplugins/sun/appsrv</project>
                 <project>../serverplugins/sun/appsrv81</project>
-                <project>../serverplugins/sun/appsrvbridge</project>
                 <project>../serverplugins/sun/sunddapi</project>
                 <project>../serverplugins/sun/sunddui</project>
                 <project>../serverplugins/weblogic9</project>
