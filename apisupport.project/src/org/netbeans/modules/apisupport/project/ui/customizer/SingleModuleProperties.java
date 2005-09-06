@@ -339,17 +339,14 @@ public final class SingleModuleProperties extends ModuleProperties {
     
     /**
      * Always returns fresh list model of all dependencies in the module's
-     * universe regarding the currently selected platform with <code>
-     * alreadyAdded</code> dependencies excluded.
+     * universe regarding the currently selected platform.
      */
-    DependencyListModel getUniverseDependenciesListModel(Collection/*<ModuleDependency>*/ alreadyAdded) {
+    DependencyListModel getUniverseDependenciesListModel() {
         // when you get here platform is always valid
         if (universeDependencies == null) {
             reloadModuleListInfo();
         }
-        SortedSet set = new TreeSet(universeDependencies);
-        set.removeAll(alreadyAdded);
-        return new DependencyListModel(set);
+        return new DependencyListModel(universeDependencies);
     }
     
     FriendListModel getFriendListModel() {

@@ -364,8 +364,7 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_removeModuleDependency
     
     private void addModuleDependency(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addModuleDependency
-        DependencyListModel model = getProperties().getUniverseDependenciesListModel(
-                getDepListModel().getDependencies());
+        DependencyListModel model = getProperties().getUniverseDependenciesListModel();
         final AddModulePanel addPanel = new AddModulePanel(model);
         final DialogDescriptor descriptor = new DialogDescriptor(addPanel,
                 NbBundle.getMessage(CustomizerLibraries.class,
@@ -386,9 +385,11 @@ public class CustomizerLibraries extends NbPropertyPanel.Single {
         d.setVisible(true);
         if (descriptor.getValue().equals(DialogDescriptor.OK_OPTION)) {
             ModuleDependency newDep = addPanel.getSelectedDependency();
-            getDepListModel().addDependency(newDep);
+            if (!getDepListModel().getDependencies().contains(newDep)) {
+                getDepListModel().addDependency(newDep);
+                dependencyList.setSelectedValue(newDep, true);
+            }
             dependencyList.requestFocus();
-            dependencyList.setSelectedValue(newDep, true);
         }
         d.dispose();
         dependencyList.requestFocus();
