@@ -7,11 +7,54 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.explorer.propertysheet;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.PropertySet;
@@ -22,29 +65,6 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-import java.awt.*;
-import java.awt.event.*;
-
-import java.beans.FeatureDescriptor;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.*;
-import javax.swing.event.*;
 
 
 /**
@@ -168,11 +188,11 @@ public class PropertySheet extends JPanel {
     private int sortingMode = UNSORTED;
 
     /**Tracks whether the description area should be shown */
-    boolean showDesc;
+    private boolean showDesc;
 
     /** Temporary storage for the last selected node in the case the property
      * sheet was removed temporarily from a container (winsys DnD) */
-    private Reference storedNode = null;
+    private Reference storedNode;
 
     //Package private for unit tests
     SheetTable table = new SheetTable();
@@ -1178,7 +1198,7 @@ public class PropertySheet extends JPanel {
         private PropertyChangeListener inner;
 
         /** Cache the current node locally only in the listener */
-        private Node currNode = null;
+        private Node currNode;
 
         public SheetPCListener() {
             inner = new PCL();
@@ -1286,48 +1306,41 @@ public class PropertySheet extends JPanel {
             /** Receives property change events directed to PropertyChangeListeners,
              * not NodeListeners */
             public void propertyChange(final PropertyChangeEvent evt) {
-                javax.swing.SwingUtilities.invokeLater(
-                    new Runnable() {
-                        public void run() {
-                            String nm = evt.getPropertyName();
-
-                            if (
-                                Node.PROP_COOKIE.equals(nm) || //weed out frequently abused property changes
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        String nm = evt.getPropertyName();
+                        if (Node.PROP_COOKIE.equals(nm) || // weed out frequently abused property changes
                                 Node.PROP_ICON.equals(nm) || Node.PROP_PARENT_NODE.equals(nm) ||
-                                    Node.PROP_OPENED_ICON.equals(nm) || Node.PROP_LEAF.equals(nm)
-                            ) {
-                                ErrorManager.getDefault().log(
+                                Node.PROP_OPENED_ICON.equals(nm) || Node.PROP_LEAF.equals(nm)) {
+                            ErrorManager.getDefault().log(
                                     ErrorManager.WARNING,
-                                    "Recived bogus property change " + nm + " from " + evt.getSource() +
-                                    ".  This should ony be fired to" +
-                                    "NodeListeners, not general property change listeners"
-                                ); //NOI18N
-                            } else if (
-                                isDescriptionVisible() &&
-                                    (Node.PROP_DISPLAY_NAME.equals(nm) || Node.PROP_SHORT_DESCRIPTION.equals(nm))
-                            ) {
-                                Node n = (Node) evt.getSource();
-
-                                /*
-                                fallbackTitle = n.getDisplayName();
-                                fallbackDescription = n.getShortDescription();
-                                if (infoPanel != null) {
-                                    table.fireChange();
-                                    infoPanel.getBottomComponent().repaint();
-                                }
-                                */
-                            } else if (nm == null) {
-                                setCurrentNode(currNode);
-                            } else {
-                                table.repaintProperty(nm);
+                                    "Recived bogus property change " + nm + " from " + evt.getSource() + // NOI18N
+                                    ".  This should ony be fired to" + // NOI18N
+                                    "NodeListeners, not general property change listeners"); // NOI18N
+                        } else if (isDescriptionVisible() &&
+                                (Node.PROP_DISPLAY_NAME.equals(nm) || Node.PROP_SHORT_DESCRIPTION.equals(nm))) {
+                            Node n = (Node) evt.getSource();
+                            /*
+                            fallbackTitle = n.getDisplayName();
+                            fallbackDescription = n.getShortDescription();
+                            if (infoPanel != null) {
+                                table.fireChange();
+                                infoPanel.getBottomComponent().repaint();
                             }
+                            */
+                        } else if (nm == null) {
+                            if (currNode != null) {
+                                setCurrentNode(currNode);
+                            }
+                        } else {
+                            table.repaintProperty(nm);
                         }
                     }
-                );
+                });
             }
         }
     }
-
+    
     private static final class TabInfo {
         public String[] titles;
         public Object[] sets;
