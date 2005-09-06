@@ -120,14 +120,11 @@ public class IMCollabSession extends Object implements CollabSession, Collaborat
         presenceService.initialize(this);
         conferenceService.initialize(this);
 
-        //		String v = (String)personalStoreService.getProfile().
-        //						getProperty("licenseKey", ""); // NOI18N
-        //		if (v.trim().length()==0)
-        //		{
-        //			personalStoreService.getProfile().setProperty("licenseKey", // NOI18N
-        //						getManager().getUserInterface().getEncryptedLicenseKey());
-        //			personalStoreService.getProfile().save();
-        //		}
+        String v = (String)personalStoreService.getProfile().getProperty("licenseKey", ""); // NOI18N
+        if (v.trim().length()==0) {
+            personalStoreService.getProfile().setProperty("licenseKey", "NB-42"); // NOI18N
+            personalStoreService.getProfile().save();
+        }
         String forumManage = personalStoreService.getProfile().getProperty("sunIMAllowForumManage", "deny"); // NOI18N
 
         userPrincipal.setConversationAdminRole(forumManage.equals("allow") ? true : false);
