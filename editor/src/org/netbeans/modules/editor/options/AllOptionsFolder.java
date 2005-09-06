@@ -64,8 +64,6 @@ public class AllOptionsFolder{
     // List of already initialized options
     private static Map installedOptions = new Hashtable();
     
-    private static Object INSTALLED_OPTIONS_LOCK = new Object();
-    
     /** Listens to changes on the Modules folder */
     private static FileChangeListener moduleRegListener;
 
@@ -77,7 +75,7 @@ public class AllOptionsFolder{
     
     /** Gets the singleton of global options MIME folder */
     public MIMEOptionFolder getMIMEFolder(){
-        synchronized (AllOptionsFolder.class){
+        synchronized (Settings.class){
             if (mimeFolder!=null) return mimeFolder;
 
             FileObject f = Repository.getDefault().getDefaultFileSystem().
@@ -210,38 +208,40 @@ public class AllOptionsFolder{
     }
     
     /** Creates the only instance of AllOptionsFolder. */
-    public static synchronized AllOptionsFolder getDefault(){
-        // try to find the itutor XML settings
-        if (settingsFolder!=null) return settingsFolder;
-        org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
-        findResource(FOLDER);
-        if (f==null) return null;
-        
-        DataFolder df = DataFolder.findFolder(f);
-        if (df == null) {
-        } else {
-            if (settingsFolder == null){
-                settingsFolder = new AllOptionsFolder(df);
-                
-                // attach listeners for module registry for listening on addition or removal of modules in IDE
-                if(moduleRegListener == null) {
-                    moduleRegListener = new FileChangeAdapter() {
-                        public void fileChanged(FileEvent fe){
-                            updateOptions();
+    public static AllOptionsFolder getDefault(){
+        synchronized (Settings.class) {
+            // try to find the itutor XML settings
+            if (settingsFolder!=null) return settingsFolder;
+            org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
+            findResource(FOLDER);
+            if (f==null) return null;
+
+            DataFolder df = DataFolder.findFolder(f);
+            if (df == null) {
+            } else {
+                if (settingsFolder == null){
+                    settingsFolder = new AllOptionsFolder(df);
+
+                    // attach listeners for module registry for listening on addition or removal of modules in IDE
+                    if(moduleRegListener == null) {
+                        moduleRegListener = new FileChangeAdapter() {
+                            public void fileChanged(FileEvent fe){
+                                updateOptions();
+                            }
+                        };
+
+                        FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
+
+                        if (moduleRegistry !=null){ //NOI18N
+                            moduleRegistry.addFileChangeListener(moduleRegListener);
                         }
-                    };
-
-                    FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
-
-                    if (moduleRegistry !=null){ //NOI18N
-                        moduleRegistry.addFileChangeListener(moduleRegListener);
                     }
+
+                    return settingsFolder;
                 }
-                
-                return settingsFolder;
             }
+            return null;
         }
-        return null;
     }
     
     /** Getter for KeyBingings */
@@ -279,7 +279,7 @@ public class AllOptionsFolder{
     /** Returns kitClass of uninstalled option */ 
     private static Class uninstallOption(){
         List updatedInstalledOptions = AllOptionsFolder.getDefault().getInstalledOptions();
-        synchronized (INSTALLED_OPTIONS_LOCK){
+        synchronized (Settings.class){
             Iterator i = installedOptions.keySet().iterator();
             while (i.hasNext()){
                 Object obj = i.next();
@@ -338,7 +338,7 @@ public class AllOptionsFolder{
         initInstance(ic);
         BaseOptions ret = null;
         try{
-            synchronized (INSTALLED_OPTIONS_LOCK){
+            synchronized (Settings.class){
                 ret = (installedOptions.get(ic.instanceClass()) instanceof BaseOptions) ? (BaseOptions) installedOptions.get(ic.instanceClass())
                 : null;
             }
@@ -355,7 +355,7 @@ public class AllOptionsFolder{
     private void initInstance(InstanceCookie ic){
         try{
             Object optionObj;
-            synchronized (INSTALLED_OPTIONS_LOCK){
+            synchronized (Settings.class){
                 if (installedOptions.containsKey(ic.instanceClass())) {
                     return;
                 }
@@ -390,7 +390,7 @@ public class AllOptionsFolder{
                 BaseOptions oldBO = BaseOptions.getOptions(kitClass);
                 if (oldBO != null){
                     boolean process = false;
-                    synchronized (INSTALLED_OPTIONS_LOCK){
+                    synchronized (Settings.class){
                         if (!installedOptions.containsKey(kitClass)){
                             installedOptions.put(kitClass, oldBO);
                             process = true;

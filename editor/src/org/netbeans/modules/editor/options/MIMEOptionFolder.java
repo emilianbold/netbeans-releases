@@ -22,6 +22,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.editor.Settings;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -94,7 +95,7 @@ public class MIMEOptionFolder{
             
             MIMEProcessor mp = (MIMEProcessor) cookies[i].instanceCreate();
             if (!files.containsKey(mp.instanceClass())){
-                synchronized(this){
+                synchronized(Settings.class){
                     files.put(
                     mp.instanceClass(),
                     mp.createMIMEOptionFile(base, mp)
@@ -131,7 +132,7 @@ public class MIMEOptionFolder{
     /** Gets Multi Property Folder */
     MultiPropertyFolder getMPFolder(String folderName, boolean forceCreation){
         // check local map first
-        synchronized (mpFolderMap){
+        synchronized (Settings.class){
             MultiPropertyFolder mpFolder = (MultiPropertyFolder) mpFolderMap.get(folderName);
             if (mpFolder != null) return mpFolder;
         }
@@ -154,7 +155,7 @@ public class MIMEOptionFolder{
 
         DataFolder df = DataFolder.findFolder(fo);
         if (df!=null){
-            synchronized (mpFolderMap){
+            synchronized (Settings.class){
                 MultiPropertyFolder mpFolder;
                 if (!mpFolderMap.containsKey(folderName)){
                     mpFolder = new MultiPropertyFolder(df, base);
@@ -193,31 +194,33 @@ public class MIMEOptionFolder{
     
     /** Gets MIME Option subFolder from this folder
      *  @param subFolder the name of subFolder  */
-    protected synchronized MIMEOptionFolder getFolder(String subFolder){
+    protected MIMEOptionFolder getFolder(String subFolder){
 
-        if (subFolders.get(subFolder) != null){
-            return (MIMEOptionFolder)subFolders.get(subFolder);
-        }
-        
-        org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
-            findResource(folder.getPrimaryFile().getPath()+"/"+subFolder); // NOI18N
-        if (f==null) return null;
-        
-            try {
-                DataObject d = DataObject.find(f);
-                DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
-                if (df != null) {
-                    MIMEOptionFolder mof = new MIMEOptionFolder(df, base);
-                    subFolders.put(subFolder, mof);
-                    return mof;
-                }
-            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+        synchronized (Settings.class) {
+            if (subFolders.get(subFolder) != null){
+                return (MIMEOptionFolder)subFolders.get(subFolder);
             }
 
-        
+            org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
+                findResource(folder.getPrimaryFile().getPath()+"/"+subFolder); // NOI18N
+            if (f==null) return null;
 
-        return null;
+                try {
+                    DataObject d = DataObject.find(f);
+                    DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
+                    if (df != null) {
+                        MIMEOptionFolder mof = new MIMEOptionFolder(df, base);
+                        subFolders.put(subFolder, mof);
+                        return mof;
+                    }
+                } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+
+
+
+            return null;
+        }
     }
     
     
@@ -314,7 +317,7 @@ public class MIMEOptionFolder{
             
             if(publicID == null || systemID == null || tagRoot == null || fn == null) return null;
             
-            synchronized (this){
+            synchronized (Settings.class){
                 createEmptyXMLFile(fn, tagRoot, publicID, systemID);
             }
         }
