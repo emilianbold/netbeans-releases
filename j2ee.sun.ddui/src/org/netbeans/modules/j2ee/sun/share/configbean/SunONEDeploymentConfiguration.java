@@ -225,25 +225,16 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
     private J2eeModuleProvider getProvider(File file) {
         J2eeModuleProvider provider = null;
         if(file != null) {
-            System.out.println("Querying for J2eeModuleProvider:");
             FileObject fo = FileUtil.toFileObject(file);
             if(fo != null) {
-                System.out.println("  FileObject to locate project from is: " + fo);
                 Project project = FileOwnerQuery.getOwner(fo);
-                System.out.println("  Project instance of type: " + ((project != null) ? project.getClass().getName() : "(null project)"));
                 if (project != null) {
                     org.openide.util.Lookup lookup = project.getLookup();
-//                    provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
                     provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
-                    System.out.println("  Lookup query returned: " + provider);
-                    if(provider == null) {
-                        System.out.println("Lookup is: " + lookup);
-                    }
                 }
             } else {
                 File parent = file.getParentFile();
                 if(parent != null) {
-                    System.out.println("Crawling parents to find provider: " + parent);
                     provider = getProvider(parent);
                 }
             }
