@@ -13,8 +13,11 @@
 
 package org.netbeans.modules.web.jsf;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.xml.core.lib.EncodingHelper;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -24,6 +27,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.cookies.*;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -37,9 +41,41 @@ public class JSFConfigEditorSupport extends DataEditorSupport
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
-            saveDocument();
+            JSFConfigDataObject obj = (JSFConfigDataObject) getDataObject ();
+            if (obj.isDocumentValid()) {
+                saveDocument();
+            }else {
+                //obj.displayErrorMessage();
+                //StatusDisplayer.getDefault().setStatusText("");
+                DialogDescriptor dialog = new DialogDescriptor(
+                    NbBundle.getMessage (JSFConfigEditorSupport.class, "MSG_invalidXmlWarning"),
+                    NbBundle.getMessage (JSFConfigEditorSupport.class, "TTL_invalidXmlWarning"));
+                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);
+                if (dialog.getValue() == org.openide.DialogDescriptor.OK_OPTION) {
+                    saveDocument();
+                }
+                /*else {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run(){
+                            StatusDisplayer.getDefault().setStatusText("");
+                        }
+                    },100);
+                }*/
+            }
         }
     };
+    private JSFConfigDataObject dataObject;
+    private RequestProcessor.Task parsingDocumentTask;
+    /** Delay for automatic parsing - in miliseconds */
+    private static final int AUTO_PARSING_DELAY = 2000;
+    private DocumentListener docListener = null;
+    
+    public JSFConfigEditorSupport(JSFConfigDataObject dobj) {
+        super(dobj,new XmlEnv(dobj));
+        dataObject = dobj;
+        setMIMEType("text/x-jsf+xml");
+    }
     
     /*
      * Save document using encoding declared in XML prolog if possible otherwise
@@ -116,11 +152,25 @@ public class JSFConfigEditorSupport extends DataEditorSupport
             }
         }
     }
+   
     
-    public JSFConfigEditorSupport(JSFConfigDataObject dobj) {
-        super(dobj,new XmlEnv(dobj));
-        setMIMEType("text/x-jsf+xml");
-        
+    /** Restart the timer which starts the parser after the specified delay.
+    * @param onlyIfRunning Restarts the timer only if it is already running
+    */
+    public void restartTimer() {
+        if (parsingDocumentTask==null || parsingDocumentTask.isFinished() ||
+            parsingDocumentTask.cancel()) {
+            dataObject.setDocumentDirty(true);
+            Runnable r = new Runnable() {
+                            public void run() {
+                                dataObject.parsingDocument();
+                        }
+                    };
+            if (parsingDocumentTask != null)
+                parsingDocumentTask = RequestProcessor.getDefault().post(r, AUTO_PARSING_DELAY);
+            else
+                parsingDocumentTask = RequestProcessor.getDefault().post(r, 100);
+        } 
     }
     
     /** 
@@ -129,11 +179,25 @@ public class JSFConfigEditorSupport extends DataEditorSupport
      *    or false if it has refused and the document should remain unmodified
      */
     protected boolean notifyModified () {
-        if (!super.notifyModified()) 
+        boolean notif = super.notifyModified();
+        if (!notif){
             return false;
-
+        }
         addSaveCookie();
-
+        
+        if (docListener == null){
+            // attach document listener
+            docListener = new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) { change(e); }
+                public void changedUpdate(DocumentEvent e) { }
+                public void removeUpdate(DocumentEvent e) { change(e); }
+            
+                private void change(DocumentEvent e) {
+                    if (!dataObject.isNodeDirty()) restartTimer();
+                }
+            };
+            getDocument().addDocumentListener(docListener);
+        }
         return true;
     }
 
@@ -146,12 +210,10 @@ public class JSFConfigEditorSupport extends DataEditorSupport
 
     /** Helper method. Adds save cookie to the data object. */
     private void addSaveCookie() {
-        JSFConfigDataObject obj = (JSFConfigDataObject)getDataObject();
-
         // Adds save cookie to the data object.
-        if(obj.getCookie(SaveCookie.class) == null) {
-            obj.getCookieSet0().add(saveCookie);
-            obj.setModified(true);
+        if(dataObject.getCookie(SaveCookie.class) == null) {
+            dataObject.getCookieSet0().add(saveCookie);
+            dataObject.setModified(true);
         }
     }
 
@@ -167,11 +229,14 @@ public class JSFConfigEditorSupport extends DataEditorSupport
             obj.setModified(false);
         }
     }
+
+    public void open() {
+        super.open();
+        // parse once after opening the document
+        restartTimer();
+    }
     
-    /** A description of the binding between the editor support and the object.
-     * Note this may be serialized as part of the window system and so
-     * should be static, and use the transient modifier where needed.
-     */
+    
     private static class XmlEnv extends DataEditorSupport.Env {
 
         private static final long serialVersionUID = -800036748848958489L;

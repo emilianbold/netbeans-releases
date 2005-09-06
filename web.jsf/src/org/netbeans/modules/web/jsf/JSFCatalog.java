@@ -115,9 +115,9 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
      * @return InputSource for publisId, 
      */    
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
-       if (JSF_ID_1_0.equals(systemId)) {
+       if (JSF_ID_1_0.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_0);
-        } else if (JSF_ID_1_1.equals(systemId)) {
+        } else if (JSF_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_JSF_1_1);
         } else {
             return null;
