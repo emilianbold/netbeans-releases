@@ -14,6 +14,9 @@
 package org.netbeans.modules.versioning.system.cvss;
 
 import java.util.*;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
 
 /**
  * Small notification dialog similar to ErrorManager's one. The main purpose is to show (possibly long) list
@@ -22,18 +25,40 @@ import java.util.*;
  * @author Maros Sandor
  */
 public class CommandReport extends javax.swing.JPanel {
+
+    private final String text;
     
     public CommandReport(String message, List messages) {
-        initComponents();
-        jLabel1.setText(message);
         StringBuffer errorReport = new StringBuffer();
         for (Iterator i = messages.iterator(); i.hasNext();) {
             errorReport.append(i.next());
-            errorReport.append('\n');
+            errorReport.append('\n'); // NOI18N
         }
-        msg.setText(errorReport.toString());
+        text = errorReport.toString();
+        
+        initComponents();
+        
+        JComponent msg = createCenterComponent();
+        jScrollPane1.setViewportView(msg);        
+        jLabel1.setText(message);        
     }
 
+    private JComponent createCenterComponent() {
+        if (text.startsWith("<html") || text.startsWith("<HTML")) {  // NOI18N
+            JLabel msg = new JLabel(text);
+            return msg;            
+        } else {
+            JTextArea msg = new JTextArea();
+            msg.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveBackground")); // NOI18N
+            msg.setColumns(40);
+            msg.setEditable(false);
+            msg.setRows(10);
+            msg.setMargin(new java.awt.Insets(4, 4, 0, 0));
+            msg.setText(text);
+            return msg;
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -43,14 +68,6 @@ public class CommandReport extends javax.swing.JPanel {
     private void initComponents() {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        msg = new javax.swing.JTextArea();
-
-        msg.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveBackground"));
-        msg.setColumns(40);
-        msg.setEditable(false);
-        msg.setRows(10);
-        msg.setMargin(new java.awt.Insets(4, 4, 0, 0));
-        jScrollPane1.setViewportView(msg);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -77,7 +94,6 @@ public class CommandReport extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea msg;
     // End of variables declaration//GEN-END:variables
     
 }

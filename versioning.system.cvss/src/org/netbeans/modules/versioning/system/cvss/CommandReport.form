@@ -41,21 +41,6 @@
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JTextArea" name="msg">
-          <Properties>
-            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="c8" green="d0" id="TextField.inactiveBackground" palette="3" red="d4" type="palette"/>
-            </Property>
-            <Property name="columns" type="int" value="40"/>
-            <Property name="editable" type="boolean" value="false"/>
-            <Property name="rows" type="int" value="10"/>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-              <Insets value="[4, 4, 0, 0]"/>
-            </Property>
-          </Properties>
-        </Component>
-      </SubComponents>
     </Container>
   </SubComponents>
 </Form>
