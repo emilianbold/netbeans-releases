@@ -140,6 +140,7 @@
          <tocitem text="About Servlets" target="about_servlet" />
          <tocitem text="Creating a Servlet" target="servlet_create" />
 	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
+	 <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
          <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
 	 <tocitem text="Running a Servlet" target="servlet_run" />
@@ -291,7 +292,7 @@
 		 <tocitem text="Building a Web Service Client" target="wsc_build" />
 		 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
 	 </tocitem>
-	 <tocitem text="Implementing Message Handlers" >
+	 <tocitem text="Inserting Message Handlers" >
  		<tocitem text="About Message Handlers" target="about_ws_soap_message" />
 		<tocitem text="Creating a Message Handler" target="create_ws_soap_message" />
 		<tocitem text="Configuring a Message Handler" target="configure_ws_soap_message" />
