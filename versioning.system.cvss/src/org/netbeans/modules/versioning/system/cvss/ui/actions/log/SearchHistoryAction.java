@@ -25,6 +25,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
+import java.io.File;
 
 /**
  * Search History action.
@@ -57,6 +58,10 @@ public class SearchHistoryAction extends AbstractSystemAction  {
                 tc.setName(title);
                 tc.open();
                 tc.requestActive();
+                File [] files = context.getFiles();
+                if (files.length == 1 && files[0].isFile()) {
+                    tc.search();
+                }
             }
         });
     }
