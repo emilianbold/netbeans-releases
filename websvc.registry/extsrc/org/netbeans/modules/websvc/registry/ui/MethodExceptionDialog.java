@@ -55,7 +55,7 @@ public class MethodExceptionDialog extends javax.swing.JPanel {
         dialog.show();
     }
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
+        return new HelpCtx(TestWebServiceMethodDlg.class);
     }
     
     /** This method is called from within the constructor to

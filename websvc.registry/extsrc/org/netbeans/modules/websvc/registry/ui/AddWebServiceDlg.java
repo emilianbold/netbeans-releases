@@ -146,7 +146,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
     Set webServicesToProcess = null;
     
     private static JFileChooser wsdlFileChooser;
-    TestWebServiceDlg wsTester;
     
     private String URL_WSDL_MSG = NbBundle.getMessage(AddWebServiceDlg.class, "URL_WSDL_MSG");
     private String LOCAL_WSDL_MSG = NbBundle.getMessage(AddWebServiceDlg.class, "LOCAL_WSDL_MSG");
@@ -290,7 +289,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener, Hyperlin
     
     /** XXX once we implement context sensitive help, change the return */
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
+        return new HelpCtx(AddWebServiceDlg.class);
     }
     
     private void initComponents() {

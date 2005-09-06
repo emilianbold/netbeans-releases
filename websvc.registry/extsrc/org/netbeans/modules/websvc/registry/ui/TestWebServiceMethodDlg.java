@@ -298,7 +298,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
         dialog.show();
     }
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
+        return new HelpCtx(TestWebServiceMethodDlg.class);
     }
 
     /** This method is called from within the constructor to
@@ -366,7 +366,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
 
         jPanel4.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2,java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/registry/ui/Bundle").getString("RESULTS"));
-        jLabel2.setToolTipText(NbBundle.getMessage(TestWebServiceDlg.class, "ACSD_RESULT_TABLE"));
+        jLabel2.setToolTipText(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSD_RESULT_TABLE"));
         jPanel4.add(jLabel2, java.awt.BorderLayout.NORTH);
 
         jPanel4.add(scrollPaneResults, java.awt.BorderLayout.CENTER);
@@ -562,8 +562,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
 
         returnOutline.setRenderDataProvider(new TypeDataProvider());
 
-        returnOutline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TestWebServiceDlg.class, "ACSN_RESULT_TABLE"));
-        //returnOutline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TestWebServiceDlg.class, "ACSD_RESULT_TABLE"));
+        returnOutline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSN_RESULT_TABLE"));
+        //returnOutline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSD_RESULT_TABLE"));
         
         return returnOutline;
     }
@@ -629,8 +629,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener {
          */
         returnOutline.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
 
-        returnOutline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TestWebServiceDlg.class, "ACSN_PARAMETER_TABLE"));
-        returnOutline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TestWebServiceDlg.class, "ACSD_PARAMETER_TABLE"));
+        returnOutline.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSN_PARAMETER_TABLE"));
+        returnOutline.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TestWebServiceMethodDlg.class, "ACSD_PARAMETER_TABLE"));
         
         return returnOutline;
     }

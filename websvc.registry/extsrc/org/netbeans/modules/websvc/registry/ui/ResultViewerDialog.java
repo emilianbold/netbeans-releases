@@ -70,7 +70,7 @@ public class ResultViewerDialog extends javax.swing.JPanel {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public JButton getOkButton() {
