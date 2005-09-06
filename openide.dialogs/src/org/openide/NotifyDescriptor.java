@@ -10,18 +10,15 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.openide;
 
-import org.openide.util.NbBundle;
+package org.openide;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-
-import java.beans.*;
-
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
-
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -29,8 +26,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.border.*;
-
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import org.openide.awt.Mnemonics;
+import org.openide.util.NbBundle;
 
 /**
 * This class provides a description of a user notification to be displayed.
@@ -875,22 +874,10 @@ public class NotifyDescriptor extends Object {
         */
         protected Component createDesign(final String text) {
             int index;
-            char mnemonic = 0;
-            String txt;
             JPanel panel = new JPanel();
 
-            if ((text != null) && ((index = text.indexOf('&')) >= 0) && ((index + 1) < text.length())) {
-                mnemonic = text.charAt(index + 1);
-                txt = text.substring(0, index) + text.substring(index + 1);
-            } else {
-                txt = text;
-            }
-
-            JLabel textLabel = new JLabel(txt);
-
-            if ((txt != null) && (txt.length() > 0)) {
-                textLabel.setDisplayedMnemonic((mnemonic == 0) ? text.charAt(0) : mnemonic);
-            }
+            JLabel textLabel = new JLabel();
+            Mnemonics.setLocalizedText(textLabel, text);
 
             textLabel.setBorder(new EmptyBorder(0, 0, 0, 10));
             panel.setLayout(new BorderLayout());
