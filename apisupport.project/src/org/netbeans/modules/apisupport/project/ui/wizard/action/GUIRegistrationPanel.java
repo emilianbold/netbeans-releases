@@ -75,7 +75,6 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     private static final DefaultComboBoxModel EMPTY_MODEL = new DefaultComboBoxModel(new Object[] { EMPTY_VALUE });
     
     private DataModel data;
-    private boolean firstTime = true;
     
     private final JComponent[] gmiGroup;
     private final JComponent[] toolbarGroup;
@@ -159,12 +158,7 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
     
     protected void readFromDataModel() {
         initializeGlobalAction();
-        if (firstTime) {
-            firstTime = false;
-            setValid(Boolean.FALSE);
-        } else {
-            checkValidity();
-        }
+        checkValidity();
     }
     
     private void initializeGlobalAction() {
