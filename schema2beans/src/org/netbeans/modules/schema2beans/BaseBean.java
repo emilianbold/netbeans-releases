@@ -297,6 +297,10 @@ public abstract class BaseBean implements Cloneable, Bean {
         createAttribute("xmlns", "xmlns", AttrProp.CDATA | AttrProp.IMPLIED,
                 null, namespace);
         setAttributeValue("xmlns", namespace);
+        if (beanProp().getAttrProp("xsi:schemaLocation", true) == null) {
+            createAttribute("xmlns:xsi", "xmlns:xsi", AttrProp.CDATA | AttrProp.IMPLIED, null, null);
+            createAttribute("xsi:schemaLocation", "xsi:schemaLocation", AttrProp.CDATA | AttrProp.IMPLIED, null, null);
+        }
     }
     
     public String getDefaultNamespace() {

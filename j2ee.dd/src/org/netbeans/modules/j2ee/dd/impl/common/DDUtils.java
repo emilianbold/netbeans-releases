@@ -79,11 +79,7 @@ public class DDUtils {
             if (WebApp.VERSION_2_3.equals(version)) {
                 return org.netbeans.modules.j2ee.dd.impl.web.model_2_3.WebApp.createGraph(is);
             } else {
-                org.netbeans.modules.j2ee.dd.impl.web.model_2_4.WebApp webApp =
-                        org.netbeans.modules.j2ee.dd.impl.web .model_2_4.WebApp.createGraph(is);
-                // creates attribute xmlns:xsi to prevent possible exceptions in 
-                webApp._getSchemaLocation();
-                return webApp;
+                return org.netbeans.modules.j2ee.dd.impl.web .model_2_4.WebApp.createGraph(is);
             }
         } catch (RuntimeException ex) {
             throw new SAXException (ex.getMessage());
