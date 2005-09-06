@@ -18,11 +18,10 @@ import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectType;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.Element;
-
-// XXX need unit test
 
 /**
  * Says which module packages are accessible.
@@ -60,7 +59,7 @@ public final class AccessibilityQueryImpl implements AccessibilityQueryImplement
                     }
                     return Boolean.FALSE;
                 } else {
-                    assert false : "Invalid project.xml for " + project;
+                    Util.err.log(ErrorManager.WARNING, "Invalid project.xml for " + project);
                     return null;
                 }
             }
