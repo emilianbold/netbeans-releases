@@ -58,8 +58,10 @@ public class TextFieldRenderer extends  DefaultTableCellRenderer {
             comp.setEditable(isEditable);
             
             // makes visual line selection possible
-            if (row == table.getSelectedRow())
+            if (row == table.getSelectedRow()) {
                 comp.setBackground(table.getSelectionBackground());
+                comp.setForeground(java.awt.Color.WHITE);
+            }
             
 	    return comp;
 	}

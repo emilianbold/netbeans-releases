@@ -82,8 +82,10 @@ public class OperationParameterPanelRenderer extends  DefaultTableCellRenderer {
         text.setText(paramString);
         
         // makes visual line selection possible
-        if (row == table.getSelectedRow())
+        if (row == table.getSelectedRow()) {
             text.setBackground(table.getSelectionBackground());
+            text.setForeground(java.awt.Color.WHITE);
+        }
         
         return comp;
     }
