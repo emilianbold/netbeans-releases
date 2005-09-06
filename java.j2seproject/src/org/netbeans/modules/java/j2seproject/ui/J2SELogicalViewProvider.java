@@ -681,9 +681,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
                 if (clientView != null) {
                     WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
-                    List clients = wss.getServiceClients();
-                    if ((clients != null) && (clients.size() > 0)) {
-                        result = new Node[] {clientView.createWebServiceClientView(wss.getWsdlFolder())};
+                    if (wss!=null) {
+                        List clients = wss.getServiceClients();
+                        if ((clients != null) && (clients.size() > 0)) {
+                            result = new Node[] {clientView.createWebServiceClientView(wss.getWsdlFolder())};
+                        }
                     }
                 }
             } else {
