@@ -7,18 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * StringInplaceEditor.java
- *
- * Created on January 4, 2003, 4:28 PM
- */
-package org.openide.explorer.propertysheet;
 
-import org.openide.explorer.propertysheet.*;
-import org.openide.nodes.Node.*;
+package org.openide.explorer.propertysheet;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -28,26 +21,29 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyEditor;
+import javax.swing.JComponent;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
-import java.beans.*;
-
-import java.util.*;
-
-import javax.swing.*;
-import javax.swing.event.*;
-
-
-/** A JTextField implementation of the InplaceEditor interface.
- *  @author Tim Boudreau
+/** 
+ * A JTextField implementation of the InplaceEditor interface.
+ * @author Tim Boudreau
  */
 class StringInplaceEditor extends JTextField implements InplaceEditor {
-    protected PropertyEditor editor = null;
-    protected PropertyEnv env = null;
-    private boolean added = false;
-    private String valFromEditor = null;
-    private String valFromTextField = null;
-    KeyStroke[] strokes = new KeyStroke[] {
+
+    protected PropertyEditor editor;
+    protected PropertyEnv env;
+    private boolean added;
+    private String valFromEditor;
+    private String valFromTextField;
+    private PropertyModel pm;
+    
+    private KeyStroke[] strokes = new KeyStroke[] {
             KeyStroke.getKeyStroke(
                 KeyEvent.VK_HOME, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | KeyEvent.SHIFT_DOWN_MASK
             ),
@@ -55,7 +51,6 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
                 KeyEvent.VK_END, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | KeyEvent.SHIFT_DOWN_MASK
             ), KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0, false), KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0, false)
         };
-    private PropertyModel pm = null;
 
     public void removeNotify() {
         super.removeNotify();
@@ -118,13 +113,13 @@ class StringInplaceEditor extends JTextField implements InplaceEditor {
     public void reset() {
         String txt;
         txt = editor.getAsText();
-        valFromEditor = txt;
 
         //don't want an editor with the text "different values" in it //NOI18N
         if (editor instanceof PropUtils.DifferentValuesEditor) {
             txt = ""; //NOI18N
         }
 
+        valFromEditor = txt;
         //issue 26367, form editor needs ability to set a custom value
         //when editing is initiated (event handler combos, part of them
         //cleaning up their EnhancedPropertyEditors).          
