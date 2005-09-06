@@ -69,7 +69,7 @@ import org.openide.util.Utilities;
 public class FontAndColorsPanel extends JPanel implements 
 ActionListener {
     
-    private ColorModel		    colorModel = ColorModel.getDefault ();
+    private ColorModel		    colorModel;
     private JComboBox		    cbSchemes;
     private JButton		    bDelete;
     private JButton		    bClone;
@@ -139,15 +139,19 @@ ActionListener {
         editorPanel.update ();
         syntaxColoringPanel.update ();
         annotationsPanel.update ();
-        currentScheme = colorModel.getCurrentScheme ();
         
-        // init schemes
-        listen = false;
-        Iterator it = colorModel.getSchemeNames ().iterator ();
-        while (it.hasNext ())
-            cbSchemes.addItem (it.next ());
-        listen = true;
-        cbSchemes.setSelectedItem (currentScheme);
+        if (colorModel == null) {
+            colorModel = ColorModel.getDefault ();
+            currentScheme = colorModel.getCurrentScheme ();
+
+            // init schemes
+            listen = false;
+            Iterator it = colorModel.getSchemeNames ().iterator ();
+            while (it.hasNext ())
+                cbSchemes.addItem (it.next ());
+            listen = true;
+            cbSchemes.setSelectedItem (currentScheme);
+        }
     }
     
     void applyChanges () {
