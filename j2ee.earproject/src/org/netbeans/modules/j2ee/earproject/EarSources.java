@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,6 +35,7 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
     private final PropertyEvaluator evaluator;
     private Sources delegate;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private SourcesHelper sourcesHelper;
 
     EarSources(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
@@ -56,16 +57,16 @@ class EarSources implements Sources, PropertyChangeListener, ChangeListener  {
     }
 
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, evaluator);
+        sourcesHelper = new SourcesHelper(helper, evaluator);
         String configFilesLabel = org.openide.util.NbBundle.getMessage(EarSources.class, "LBL_Node_ConfigBase"); //NOI18N
-        h.addPrincipalSourceRoot("${"+EarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+EarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
         // XXX add build dir too?
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
-                h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        return h.createSources();
+        return sourcesHelper.createSources();
     }
 
     public void addChangeListener(ChangeListener changeListener) {
