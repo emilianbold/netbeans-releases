@@ -100,6 +100,8 @@ Microsystems, Inc. All Rights Reserved.
             <pathelement location="${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar"/>
             <pathelement location="${netbeans.home}/../testtools/modules/ext/nbjunit.jar"/>
             <pathelement location="${netbeans.home}/../testtools/modules/ext/insanelib.jar"/>
+            <pathelement location="${netbeans.user}/modules/ext/nbjunit.jar"/>
+            <pathelement location="${netbeans.user}/modules/ext/insanelib.jar"/>
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/junit.jar"/>
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/nbjunit.jar"/>
             <pathelement location="${netbeans.dest.dir}/../../xtest/lib/insanelib.jar"/>
