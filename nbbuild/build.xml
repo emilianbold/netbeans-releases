@@ -1673,4 +1673,5 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </apply>
   </target>
 
+    <target name="maybe-pre-unscramble"><echo>XXX DO NOT CALL ME ANY MORE PLEASE!</echo></target>
 </project>
