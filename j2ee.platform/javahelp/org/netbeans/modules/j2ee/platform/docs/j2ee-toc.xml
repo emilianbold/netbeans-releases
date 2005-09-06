@@ -251,7 +251,8 @@
 		<tocitem text="About Web Services" target="about_ws" />
 		<tocitem text="Working with Web Services" target="ws_process" />
 		<tocitem text="Web Service Tasks: Quick Reference" target="ws_quickref" />
-	        <tocitem text="Preparing to Develop Web Services and Clients" target="set_ws_server" />
+		<tocitem text="Preparing to Develop Web Services and Clients" target="set_ws_server" />
+		<tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
  	 </tocitem>
 	 <tocitem text="Implementing Web Services" >
  		<tocitem text="About Implementing Web Services" target="about_implement_ws" />
@@ -285,7 +286,7 @@
 	 <tocitem text="Consuming Web Services" >
 		 <tocitem text="About Web Service Clients" target="about_wsc" />
 		 <tocitem text="Working with Web Service Clients" target="wsc_process" />
-		 <tocitem text="Setting a Proxy for Consuming a Web Service" target="wsc_proxy" /> 
+		 <tocitem text="Setting a Proxy for Web Services and Clients" target="wsc_proxy" /> 
 		 <tocitem text="Creating a Web Service Client" target="wsc_create" />
 		 <tocitem text="Testing a Web Service on the Client Side" target="wsc_test" /> 
 		 <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />

@@ -4,11 +4,11 @@ Inc.  All rights reserved.
 Use is subject to license terms.  *--> 
 <html> 
 <head> 
-<title>Setting a Proxy for Consuming a Web Service</title>
+<title>Setting a Proxy for Web Services and Clients</title>
 <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head> 
 <body bgcolor="#FFFFFF">
-<h2>Setting a Proxy for Consuming a Web Service</h2>
+<h2>Setting a Proxy for Web Services and Clients</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 
 <p>If you want to access a web service, but your system is 
@@ -19,6 +19,8 @@ For working with web services, setting a proxy can be important in one or more o
 	<li>When retrieving the WSDL file in the Web Service Client wizard.
 	<li>When using the IDE to test the web service.
 	<li>When deploying to the Sun Java System Application Server.
+	<li>When deploying to the JBoss Server.
+	<li>When deploying to the Tomcat Web Server.
 	<li>When deploying a web service client in a Java application.
 </ul>
 
@@ -49,7 +51,7 @@ For working with web services, setting a proxy can be important in one or more o
 
 <p><b>To deploy to the Sun Java System Application Server:</b>
 <p>Typically, an error such as the following is returned when the proxy settings
- for a web service client deployed to the Sun Java System Application Server have
+ for a web service or web service client deployed to the Sun Java System Application Server have
  not been set correctly:
 <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
 <p>Do the following to check and set the proxy:
@@ -62,12 +64,39 @@ For working with web services, setting a proxy can be important in one or more o
 	<li>In the JVMs Properties dialog box, click JVMOptions.
 	<li>Add the following properties:
 	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
+	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</tt></i></ol>
+  <p>Stop and then restart the server for the new proxy settings to take effect.
+
+<p><b>To deploy to the JBoss Server:</b>
+<p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
+ for a web service or web service client deployed to JBoss have
+ not been set correctly.
+<p>Do the following to check and set the proxy:
+<ol>
+	<li>In your filesystem, go to <tt><i>jboss_install_dir\</i>bin\run.bat</tt>.
+	<li>Add this line:
+	<tt>set JAVA_OPTS=-Dhttp.proxyHost=<i>your.proxy.host</i> -Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></ol>
+  <p>Stop and then restart the server for the new proxy settings to take effect.
+
+
+<p><b>To deploy to the Tomcat Web Server:</b>
+<p>Typically, <i>nothing</i> is displayed in the browser when the proxy settings
+ for a web service or web service client deployed to JBoss have
+ not been set correctly.
+<p>Do the following to check and set the proxy:
+<ol>
+	<li>Open the Runtime window (Ctrl-5).
+	<li>If the Tomcat Web Server is started, stop it.
+	<li>Right-click the Tomcat node and choose Properties.
+	<li>In the Platform tab, add the following properties in the VM Options text box:
+	  <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
 	  <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i></ol>
-	  Stop and then restart the server for the new proxy settings to take effect.
+  <p>Start the server for the new proxy settings to take effect.
+  
 <p><b>To deploy a web service client in a Java application:</b>
 
 <p>Typically, an error such as the following is returned when the proxy settings
-for a web service client deployed from a Java application have
+for a web service or web service client deployed from a Java application have
  not been set correctly:
 <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
 <p>Do the following to check and set the proxy:
@@ -81,7 +110,7 @@ for a web service client deployed from a Java application have
  <p>The changes take effect when you click OK.
  <p>Note that for client deployment from Java applications, you must set the proxy for each project, because
  each Java application runs as a standalone JVM process and each can provide different JVM parameters. For web
- applications sharing the same instance of the Sun Java System Application Server, you need set the proxy only once --
+ applications sharing the same instance of a server, you need set the proxy only once --
   on the server itself, as described above.
   
 <table>
