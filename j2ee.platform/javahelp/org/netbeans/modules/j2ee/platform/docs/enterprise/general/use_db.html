@@ -8,16 +8,17 @@
 <meta name="lastupdated" content="2Feb04">
 <!-- p2 -->
 
-<title>Using a Database in an Enterprise Application</title>
+<title>Accessing a Connection Pool from a Java File</title>
 <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Using a Database in an Enterprise Application</h2>
+<h2>Accessing a Connection Pool from a Java File</h2>
 <p><small> <a href="#seealso">See Also</a> </small></p>
 <p>Applications that are deployed to servers often need to access databases that 
-  reside on remote machines. You therefore have to set up a JDBC data source on 
-  the server that points to the database, then use the data source's JNDI name 
-  to acquire a connection to the database.</p>
+  reside on remote machines. You therefore have to set up a JDBC connection pool 
+  the server that points to the database. You then create a data source that connects 
+  to the connection pool and use the data source's JNDI name to acquire a connection 
+  to the database.</p>
 <p><b>To access a database from an enterprise application:</b></p>
 <ol>
   <li>(Optional) Create a service locator class to handle getting the reference 
@@ -46,6 +47,10 @@
     for the service locator class name.</li>
   <li>Click OK.</li>
 </ol>
+<ul class="note">
+  <li>The Use Database command is only available in EJB module and web application 
+    projects.</li>
+</ul>
 <dl> 
   <dt>See Also</dt>
   <dd><a href="../../server/server_aboutdbconnect.html">About Connection Pools</a></dd>

@@ -26,8 +26,7 @@
     <td>Create an EJB module project.</td>
     <td> 
       <ol>
-        <li>Choose File &gt; New 
-          Project (Ctrl-Shift-N).</li>
+        <li>Choose File &gt; New Project (Ctrl-Shift-N).</li>
         <li>Select the right <a href="../editing/create_ejb_project.html">template</a> 
           from the Enterprise category.&nbsp;</li>
       </ol>
@@ -38,8 +37,7 @@
     <td> 
       <ol>
         <li>Select the project node for any EJB module project</li>
-        <li>Choose File &gt; New 
-          (Ctrl-N).</li>
+        <li>Choose File &gt; New (Ctrl-N).</li>
         <li>Select an <a href="../editing/create_ejb.html">enterprise bean template</a> 
           from the Enterprise category.</li>
       </ol>
@@ -50,9 +48,8 @@
     <td> 
       <ol>
         <li>Create a <a href="nbdocs://org.netbeans.modules.dbschema/org/netbeans/modules/dbschema/docs/dbschema.html">database 
-          schema file</a> for the database or choose Tools &gt; PointBase 
-          Database &gt; Start 
-          Local PointBase Database.</li>
+          schema file</a> for the database or choose Tools &gt; PointBase Database 
+          &gt; Start Local PointBase Database.</li>
         <li>Right-click the EJB module project node and choose New &gt; <a href="../editing/generate_cmp_beans.html">CMP 
           Entity Beans from Database</a>.</li>
       </ol>
@@ -108,8 +105,7 @@
         <li>Open any Java class file from an EJB module project or web application 
           project.</li>
         <li>Right-click anywhere inside the class file and choose Enterprise Resources 
-          &gt; <a href="../editing/call_ejb.html">Call 
-          Enterprise Bean</a>.</li>
+          &gt; <a href="../editing/call_ejb.html">Call Enterprise Bean</a>.</li>
       </ol>
     </td>
   </tr>
@@ -134,12 +130,35 @@
     </td>
   </tr>
   <tr valign="top"> 
+    <td>Add or remove local and remote interfaces.</td>
+    <td> 
+      <ol>
+        <li>Expand Configuration Files node for the EJB module project.</li>
+        <li>Double-click <tt>ejb-jar.xml</tt> or <tt>sun-ejb-jar.xml</tt> to open 
+          the deployment descriptors in a <a href="../configuring/config_ejb_dd.html">visual 
+          editor</a>.</li>
+        <li>Expand the Enterprise Bean Implementation and Interfaces section for 
+          the enterprise bean.</li>
+        <li>Select or unselect the checkbox for the appropriate interface.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
     <td>Add a business method to an enterprise bean.</td>
     <td> 
       <ol>
         <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; <a href="../editing/define_business_method.html">Add 
-          Business Method</a>.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; 
+          <a href="../editing/define_business_method.html">Add Business Method</a>.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td>Add a method to an interface.</td>
+    <td>
+      <ol>
+        <li>Right-click the method in the Source Editor and choose EJB Methods 
+          &gt; Add to Local Interface or Add to Remote Interface.</li>
       </ol>
     </td>
   </tr>
@@ -148,8 +167,8 @@
     <td> 
       <ol>
         <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; <a href="../editing/define_finder_method.html">Add 
-          Finder Method</a>.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; 
+          <a href="../editing/define_finder_method.html">Add Finder Method</a>.</li>
       </ol>
     </td>
   </tr>
@@ -158,8 +177,8 @@
     <td> 
       <ol>
         <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; <a href="../editing/define_select_method.html">Add 
-          Select Method</a>.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; 
+          <a href="../editing/define_select_method.html">Add Select Method</a>.</li>
       </ol>
     </td>
   </tr>
@@ -168,8 +187,8 @@
     <td> 
       <ol>
         <li>Open the bean class for the enterprise bean in the Source Editor.</li>
-        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; <a href="../editing/define_cmp_field.html">Add 
-          CMP Field</a>.</li>
+        <li>Right-click anywhere in the bean class and choose EJB Methods &gt; 
+          <a href="../editing/define_cmp_field.html">Add CMP Field</a>.</li>
       </ol>
     </td>
   </tr>
@@ -196,7 +215,7 @@
         <li>If the module is a stand-alone EJB module, right-click the EJB module 
           project and choose Debug Project.</li>
       </ul>
-      </td>
+    </td>
   </tr>
   <!--
   <tr valign="top"> 
