@@ -79,11 +79,12 @@ public class OperationExceptionPanelRenderer extends  DefaultTableCellRenderer {
         }
         text.setText(excepClassString);
         
+        /*
         // makes visual line selection possible
         if (row == table.getSelectedRow()) {
             text.setBackground(table.getSelectionBackground());
-            text.setForeground(java.awt.Color.WHITE);
         }
+         */
         
         return comp;
     }
