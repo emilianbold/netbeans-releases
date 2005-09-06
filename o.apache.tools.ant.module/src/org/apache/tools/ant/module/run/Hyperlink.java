@@ -201,11 +201,13 @@ public final class Hyperlink extends Annotation implements OutputListener, Prope
             }
             attach(ann);
             // #17625: detach others however
-            Iterator it = hyperlinks.iterator();
-            while (it.hasNext()) {
-                Hyperlink h = (Hyperlink)it.next();
-                if (h != this) {
-                    h.doDetach();
+            synchronized (hyperlinks) {
+                Iterator it = hyperlinks.iterator();
+                while (it.hasNext()) {
+                    Hyperlink h = (Hyperlink)it.next();
+                    if (h != this) {
+                        h.doDetach();
+                    }
                 }
             }
             ann.addPropertyChangeListener(this);
