@@ -48,6 +48,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
      **/
     private boolean externalRootsRegistered;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private SourcesHelper sourcesHelper;
 
     EjbJarSources(AntProjectHelper helper, PropertyEvaluator evaluator,
                 SourceRoots sourceRoots, SourceRoots testRoots) {
@@ -85,7 +86,7 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
     }
 
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, evaluator);
+        sourcesHelper = new SourcesHelper(helper, evaluator);
         File projectDir = FileUtil.toFile(this.helper.getProjectDirectory());
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
@@ -116,8 +117,8 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
                     }
                 }
             }
-            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
@@ -148,25 +149,25 @@ public class EjbJarSources implements Sources, PropertyChangeListener, ChangeLis
                     }
                 }
             }
-            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
             String configFilesLabel = org.openide.util.NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Node_DocBase"); //NOI18N
-            h.addPrincipalSourceRoot("${"+EjbJarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
-            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot("${"+EjbJarProjectProperties.META_INF+"}", configFilesLabel, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         
-        h.addNonSourceRoot(BUILD_DIR_PROP);
-        h.addNonSourceRoot(DIST_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 if (!externalRootsRegistered) {
-                    h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                     externalRootsRegistered = true;
                 }
             }
         });
-        return h.createSources();
+        return sourcesHelper.createSources();
     }
 
     public void addChangeListener(ChangeListener changeListener) {
