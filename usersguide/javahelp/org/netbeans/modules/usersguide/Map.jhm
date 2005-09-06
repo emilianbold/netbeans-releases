@@ -108,7 +108,6 @@
 
 <mapID target="java.sync.properties" url="java/synchronizing/properties.html" />
 <mapID target="java.sync.new-interface" url="java/synchronizing/new-interface.html" />
-<mapID target="java.sync.template" url="java/synchronizing/template.html" />
 <mapID target="java.override" url="java/override.html" />
 <mapID target="java.java_sources" url="java/java_sources.html" />
 <mapID target="java.encoding" url="java/encoding.html" />
@@ -434,7 +433,7 @@ the Options window:-->
 <mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
 
 
-<!-- Options | Editing | Java Sources | Source Synchronization :-->
+<!-- Options | Editing | Java Sources | Override Methods :-->
 <mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
 <!--CSH for GUI/Form Editor:-->
@@ -614,10 +613,6 @@ the Options window:-->
 
 
 
-   <!--csh for java actions:-->
-   <mapID target="org.netbeans.modules.java.ui.actions.SynchronizeAction" url="java/synchronizing/new-interface.html" />
-<!--Help button on synchronize  dialog-->
-   <mapID target="java.sync.csh.confirmchanges" url="java/synchronizing/new-interface.html" /> 
 
 <!--This ID is for the Auto Comment Tool tab in Source Editor:-->
    <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />

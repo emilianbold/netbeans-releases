@@ -220,7 +220,6 @@
       <tocitem text="Source Editor Properties" target="editing.editor-props"/>
       <tocitem text="Setting Keyboard Shortcuts for the Source Editor" target="editing.settingkeybdshorts"/>
       <tocitem text="Setting Source Synchronization Properties" target="java.sync.properties" />
-      <tocitem text="Setting Synchronization Mode in a Template" target="java.sync.template" />
       <tocitem text="Indentation Properties" target="editing.indentation"/>
       <tocitem text="Print Properties" target="editing.printing"/>
       <tocitem text="Setting Fonts and Colors in the Source Editor" target="editing.fontsandcolors"/>
