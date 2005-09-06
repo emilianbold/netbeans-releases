@@ -34,7 +34,7 @@ public class AddWebServiceAction extends NodeAction {
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new HelpCtx(AddWebServiceAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public String getName() {

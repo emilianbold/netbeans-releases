@@ -51,7 +51,7 @@ public class TestWebServiceMethodAction extends NodeAction {
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_add_websvcdb");
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public String getName() {
