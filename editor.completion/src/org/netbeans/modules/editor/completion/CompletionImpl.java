@@ -634,7 +634,13 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, ChangeListener
 
     public boolean hideToolTip() {
         toolTipCancel();
-        return layout.hideToolTip();
+        final boolean[] hide = new boolean[1];
+        runInAWT(new Runnable() {
+            public void run() {
+                hide[0] = layout.hideToolTip();
+            }
+        });
+        return hide[0];
     }
     
     /** Attempt to find the editor keystroke for the given editor action. */
