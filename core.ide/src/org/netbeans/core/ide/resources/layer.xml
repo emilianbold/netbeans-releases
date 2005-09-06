@@ -75,15 +75,6 @@ Microsystems, Inc. All Rights Reserved.
                 
             </folder>        
             
-            <folder name="SourceCreationAndManagement">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-
-                <file name="Templates.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
-                    <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-                </file>
-            </folder> <!-- SourceCreationAndManagement -->
-            
             <folder name="Editing">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
                 <file name="IndentationEngines.shadow">
