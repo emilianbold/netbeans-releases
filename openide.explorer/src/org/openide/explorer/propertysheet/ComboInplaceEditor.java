@@ -157,7 +157,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         //Some property editors (i.e. IMT's choice editor) treat
         //null as 0.  Probably not the right way to do it, but needs to
         //be handled.
-        if ((o == null) && (editor.getTags() != null) && (editor.getTags().length > 0)) {
+        if ((o == null) && (editor != null) && (editor.getTags() != null) && (editor.getTags().length > 0)) {
             o = editor.getTags()[0];
         }
 
