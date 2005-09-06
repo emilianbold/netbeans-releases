@@ -275,7 +275,8 @@ public class FormEditorSupport extends JavaEditor
     // static getters
 
     JEditorPane getEditorPane() {
-        return ((CloneableEditorSupport.Pane)multiviewTC).getEditorPane();
+        return multiviewTC != null ?
+            ((CloneableEditorSupport.Pane)multiviewTC).getEditorPane() : null;
     }
 
     // -----------
