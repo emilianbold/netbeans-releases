@@ -272,10 +272,13 @@ type) the custom parameter is ignored.
           <TD>
             When it is set the property editor will use htmlDisplayValue as a
             string to be shown to the user. Given HTML is interpreted as
-            described in awt/HtmlRenderer.html
+            described in 
             <a href="@org-openide-awt@/org/openide/awt/HtmlRenderer.html"><code>HtmlRenderer</code></a>.
             So it gives a possibility to show property values e.g. in red,
-            bold, ... font.
+            bold, ... font. Be aware that due to the performance reason, the
+            given <em>html</em> longer than 511 bytes will not be interpretted
+            as html.
+            See <a href="http://www.netbeans.org/issues/show_bug.cgi?id=44152">issue 44152</a> for details.
           </TD>
         </TR>
 	<TR> 
