@@ -425,7 +425,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
         
     <target name="clean" depends="files-init">
-        <delete dir="build"/>
+        <available property="app.running" file="build/testuserdir/lock"/>
+        <delete failonerror="false">
+            <fileset dir="build">
+                <exclude name="testuserdir/" if="app.running"/>
+            </fileset>
+        </delete>
         <delete dir="${netbeans.javadoc.dir}/${code.name.base.dashes}"/>
         <delete file="${netbeans.javadoc.dir}/${code.name.base.dashes}.zip"/>
         <delete failonerror="false"> <!-- #59457: OK if cluster does not exist currently -->

@@ -124,7 +124,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="clean" depends="-init" description="Clean all modules in the suite.">
         <subant target="clean" buildpath="${modules.sorted}" inheritrefs="false" inheritall="false"/>
-        <delete dir="build" failonerror="false"/>
+        <available property="app.running" file="build/testuserdir/lock"/>
+        <delete failonerror="false">
+            <fileset dir="build">
+                <exclude name="testuserdir/" if="app.running"/>
+            </fileset>
+        </delete>
         <delete dir="dist" failonerror="false"/>
     </target>
 
