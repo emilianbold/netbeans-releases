@@ -496,8 +496,9 @@ public class JavaKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         public JavaGotoSuperImplementation() {
             super(gotoSuperImplementationAction);
             putValue(SHORT_DESCRIPTION, NbBundle.getBundle(JavaKit.class).getString("goto-super-implementation"));
-            putValue(ExtKit.TRIMMED_TEXT, NbBundle.getBundle(JavaKit.class).getString("goto-super-implementation-trimmed"));
-            
+            String name = NbBundle.getBundle(JavaKit.class).getString("goto-super-implementation-trimmed");
+            putValue(ExtKit.TRIMMED_TEXT,name);
+            putValue(POPUP_MENU_TEXT, name);
         }
   
 //        public String getPopupMenuText(JTextComponent target) {
