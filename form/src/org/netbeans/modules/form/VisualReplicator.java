@@ -203,6 +203,8 @@ public class VisualReplicator { //implements VisualMapper
 
     public void updateContainerLayout(RADVisualContainer metacont) {
         Container cont = (Container) getClonedComponent(metacont);
+        if (cont == null) // The container is not cloned by the replicator
+            return;       // see issue 63654
         Container contDelegate = metacont.getContainerDelegate(cont);
         LayoutSupportManager laysup = metacont.getLayoutSupport();
         SwingLayoutBuilder layoutBuilder;
