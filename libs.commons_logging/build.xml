@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the Logging library:</text>
-                <file location="../../nbbuild/external/apache-license-2.0.txt"/>
+                <file location="../external/commons-logging-1.0.4-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

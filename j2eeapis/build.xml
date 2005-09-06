@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the J2EE(TM) Application Deployment library:</text>
-                <file location="../external/j2ee-deployment-license.html"/>
+                <file location="../external/jsr88javax-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

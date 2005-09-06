@@ -73,7 +73,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the Ant module itself:</text>
                 <file location="${license.file}"/>
                 <text>For the Ant runtime:</text>
-                <file location="${nb_all}/nbbuild/external/apache-license-2.0.txt"/>
+                <file location="${nb_all}/ant/external/ant-1.6.5-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

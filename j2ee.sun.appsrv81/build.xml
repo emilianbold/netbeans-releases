@@ -8,18 +8,12 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="appsrv-plugin" default="netbeans" basedir=".">
   <import file="../../../nbbuild/templates/projectized.xml"/>
-
-   <property name="extnl" location="../../../nbbuild/external"/>
-   
-
-
-    
     <target depends="init" name="compile">
         <ant dir="../appsrvbridge" target="jar" inheritAll="false"/>
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
@@ -27,18 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 	<antcall target="projectized-common.compile"/>
     </target>
 
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-
-       <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
-
-       <scramble>
-           <binary clear="../../external/appsrvjars.zip" scrambled="../../external/appsrvjars.zip.scrambled" license="../../external/appsrv81license.txt"/>
-       </scramble>
-        
-    </target>    
-
- 
-   
     <target name="files-init" depends="basic-init">
         <patternset id="module.files">
             <include name="${module.jar}"/>
@@ -47,14 +29,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="modules/ext/appsrvbridge.jar"/>
         </patternset>
     </target>    
-
-
-
-
-
-
-
-
 
     <target name="javahelp" depends="init,unjar-extra-help">
         <antcall target="projectized.javahelp"/>
