@@ -12,6 +12,7 @@
  */
 package org.openide.explorer.view;
 
+import javax.swing.plaf.basic.BasicTreeUI;
 import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -37,7 +38,6 @@ import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.plaf.TableUI;
 import javax.swing.plaf.basic.BasicTableUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
@@ -356,7 +356,7 @@ class TreeTable extends JTable implements Runnable {
             super.clearSelection();
         }
     }
-
+    
     /* Updates tree column name and sets ignoreClearSelection flag.
      */
     public void tableChanged(TableModelEvent e) {
@@ -1283,7 +1283,6 @@ class TreeTable extends JTable implements Runnable {
             //requestFocus();  //no longer necessary, STPolicy will do it - Tim
         }
     }
-
     /**
      * ListToTreeSelectionModelWrapper extends DefaultTreeSelectionModel
      * to listen for changes in the ListSelectionModel it maintains. Once
@@ -1296,6 +1295,7 @@ class TreeTable extends JTable implements Runnable {
 
         public ListToTreeSelectionModelWrapper() {
             super();
+            listSelectionModel = new TreeTableSelectionModel();
             getListSelectionModel().addListSelectionListener(createListSelectionListener());
         }
 
@@ -1390,15 +1390,34 @@ class TreeTable extends JTable implements Runnable {
          */
         class ListSelectionHandler implements ListSelectionListener {
             public void valueChanged(ListSelectionEvent e) {
-                if (inSelectAll) {
+                if( inSelectAll || e.getValueIsAdjusting() ) {
                     return;
                 }
-
+                
                 updateSelectedPathsFromSelectedRows();
             }
         }
     }
 
+    /**
+     * #63287 - in JDK1.6 the JTable makes additional changes to the ListSelectionModel
+     * when clearing row selection. These events must be ignored the same way as
+     * the overridden method TreeTable.clearSelection()
+     */
+    class TreeTableSelectionModel extends DefaultListSelectionModel {
+        public void setAnchorSelectionIndex(int anchorIndex) {
+            if( ignoreClearSelection )
+                return;
+            super.setAnchorSelectionIndex(anchorIndex);
+        }
+
+        public void setLeadSelectionIndex(int leadIndex) {
+            if( ignoreClearSelection )
+                return;
+            super.setLeadSelectionIndex(leadIndex);
+        }
+    }
+    
     /* This is overriden to handle mouse events especially. E.g. do not change selection
      * when it was clicked on tree's expand/collapse toggles.
      */
@@ -1498,9 +1517,8 @@ class TreeTable extends JTable implements Runnable {
 
                 if (isTreeColumn(column)) {
                     TreePath path = tree.getPathForRow(TreeTable.this.rowAtPoint(e.getPoint()));
-                    Rectangle r = tree.getPathBounds(path);
 
-                    if ((e.getX() >= (r.x - positionX)) && (e.getX() <= (r.x - positionX + r.width))) {
+                    if ( isLocationInExpandControl( path, p )  ) {
                         changeSelection = false;
                     }
                 }
@@ -1524,6 +1542,31 @@ class TreeTable extends JTable implements Runnable {
                     setValueIsAdjusting(true);
                     table.changeSelection(row, column, e.isControlDown(), e.isShiftDown());
                 }
+            }
+            
+            private boolean isLocationInExpandControl( TreePath path, Point location ) {
+                if( tree.getModel().isLeaf( path.getLastPathComponent() ) )
+                    return false;
+                
+                Rectangle r = tree.getPathBounds(path);
+                int boxWidth = 8;
+                Insets i = tree.getInsets();
+                int indent = 0;
+                
+                if( tree.getUI() instanceof BasicTreeUI ) {
+                    BasicTreeUI ui = (BasicTreeUI)tree.getUI();
+                    if( null != ui.getExpandedIcon() )
+                        boxWidth = ui.getExpandedIcon().getIconWidth();
+                    
+                    indent = ui.getLeftChildIndent();
+                }
+                int boxX;
+                if( tree.getComponentOrientation().isLeftToRight() ) {
+                    boxX = r.x - positionX - indent - boxWidth;
+                } else {
+                    boxX = r.x - positionX + indent + r.width;
+                }
+                return location.getX() >= boxX && location.getX() <= (boxX + boxWidth);
             }
         }
     }
