@@ -50,40 +50,40 @@ Microsystems, Inc. All Rights Reserved.
                 <binary-origin>../external/collab-service.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-core-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-core-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-core-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-core-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-sasl-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-sasl-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-sasl-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-sasl-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-core-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-core-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-core-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-core-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-disco-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-disco-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-disco-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-disco-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-fneg-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-fneg-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-fneg-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-fneg-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-info-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-info-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-info-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-info-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-si-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-si-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-si-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-si-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-sift-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-sift-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-sift-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-sift-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/jso-x-xdata-0.12.3.jar</runtime-relative-path>
-                <binary-origin>../external/jso-x-xdata-0.12.3.jar</binary-origin>
+                <runtime-relative-path>ext/jso-x-xdata-0.12.5.jar</runtime-relative-path>
+                <binary-origin>../external/jso-x-xdata-0.12.5.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.8.jar</runtime-relative-path>
