@@ -213,8 +213,8 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 WEBSERVICE_CATEGORY,
                 bundle.getString( "LBL_Config_WebServicesCategory" ), // NOI18N
                 null,
-                new ProjectCustomizer.Category[] { services, clients } );
-//                new ProjectCustomizer.Category[] { services } );
+//                new ProjectCustomizer.Category[] { services, clients } );
+                new ProjectCustomizer.Category[] { services } );
                 
         List servicesSettings = null;
         List serviceClientsSettings = null;

@@ -30,7 +30,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
  *
  * @author Peter Williams
  */
-public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider, WebServicesClientSupportProvider {
+public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider/*, WebServicesClientSupportProvider*/ {
 
     public ProjectWebServicesSupportProvider () {
     }
