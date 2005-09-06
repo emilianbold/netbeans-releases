@@ -1484,7 +1484,9 @@ class LayoutFeeder implements LayoutConstants {
                 layoutModel.setIntervalSize(interval,
                         interval.getMinimumSize(), NOT_EXPLICITLY_DEFINED, interval.getMaximumSize());
             }
-            if (aligning1.isComponent() || LayoutInterval.getCount(aligning1, DEFAULT, true) == 1) {
+            if ((aligning1.isComponent() || LayoutInterval.getCount(aligning1, DEFAULT, true) == 1)
+                && (aligning2.isComponent() || LayoutInterval.getCount(aligning2, DEFAULT, true) == 1))
+            {   // aligning single components
                 setParallelSameSize(group, aligning2, dimension, alignment);
             }
         }
