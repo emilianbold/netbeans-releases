@@ -21,6 +21,8 @@ import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.event.*;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -94,6 +96,7 @@ public class UpdateExecutor extends ExecutorSupport {
             cache.clearVirtualDirectoryContents(files[i], ucmd.isRecursive());
         }
         
+        Set filesystems = new HashSet(2);
         boolean hasConflict = false;
         for (Iterator i = toRefresh.iterator(); i.hasNext();) {
             DefaultFileInfoContainer info = (DefaultFileInfoContainer) i.next();
@@ -106,23 +109,17 @@ public class UpdateExecutor extends ExecutorSupport {
             }
             cache.refreshCached(info.getFile(), c);
             refreshedFiles.add(info.getFile());
-            FileObject fo = FileUtil.toFileObject(info.getFile());
-            if (fo != null) {
-                fo.refresh();
-                fo.getParent().refresh();
-            } else {
-                fo = FileUtil.toFileObject(info.getFile().getParentFile());
-                if (fo != null) fo.refresh();
-            }
         }
                 
         // refresh all command roots
+        // assuming that command roots and updated files all belong to the same filesystem
         for (int i = 0; i < files.length; i++) {
             if (ucmd.isRecursive()) {
                 refreshRecursively(files[i]);
             } else {
                 refreshFlat(files[i]);
             }
+            addFileSystem(filesystems, FileUtil.toFileObject(files[i]));
             if (files[i].isFile()) {
                 cache.refreshCached(files[i].getParentFile(), FileStatusCache.REPOSITORY_STATUS_UNKNOWN);                
             }
@@ -136,6 +133,19 @@ public class UpdateExecutor extends ExecutorSupport {
                     NbBundle.getMessage(UpdateExecutor.class, "MSG_UpdateGeneratedConflicts_Title"),
                     JOptionPane.WARNING_MESSAGE
                     );
+        }
+        
+        for (Iterator i = filesystems.iterator(); i.hasNext();) {
+            FileSystem fileSystem = (FileSystem) i.next();
+            fileSystem.refresh(true);
+        }
+    }
+
+    private void addFileSystem(Set filesystems, FileObject fo) {
+        try {
+            filesystems.add(fo.getFileSystem());
+        } catch (FileStateInvalidException e) {
+            // ignore invalid filesystems
         }
     }
 
