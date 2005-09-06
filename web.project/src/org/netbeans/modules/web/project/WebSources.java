@@ -54,6 +54,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
      **/
     private boolean externalRootsRegistered;    
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
+    private SourcesHelper sourcesHelper;
 
     WebSources(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
         this.helper = helper;
@@ -90,7 +91,7 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
     }
 
     private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, evaluator);
+        sourcesHelper = new SourcesHelper(helper, evaluator);
         File projectDir = FileUtil.toFile(this.helper.getProjectDirectory());
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
@@ -121,8 +122,8 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
                     }
                 }
             }
-            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
@@ -153,31 +154,31 @@ public class WebSources implements Sources, PropertyChangeListener, ChangeListen
                     }
                 }
             }
-            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         
         //Web Pages
         String webModuleLabel = org.openide.util.NbBundle.getMessage(WebProjectProperties.class, "LBL_Node_WebModule"); //NOI18N
         String webPagesLabel = org.openide.util.NbBundle.getMessage(WebProjectProperties.class, "LBL_Node_DocBase"); //NOI18N
-        h.addPrincipalSourceRoot("${"+ WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
-        h.addPrincipalSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null); //NOI18N
-        h.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null); //NOI18N
-        h.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null); //NOI18N
+        sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null); //NOI18N
+        sourcesHelper.addPrincipalSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null); //NOI18N
+        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}", WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null); //NOI18N
+        sourcesHelper.addTypedSourceRoot("${"+ WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null); //NOI18N
         
-        h.addNonSourceRoot(BUILD_DIR_PROP);
-        h.addNonSourceRoot(DIST_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
+        sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 if (!externalRootsRegistered) {
-                    h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
                     externalRootsRegistered = true;
                 }
             }
         });
-        return h.createSources();
+        return sourcesHelper.createSources();
     }
 
     public void addChangeListener(ChangeListener changeListener) {
