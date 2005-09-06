@@ -16,8 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="compile" depends="init">
-        <!-- unscramble ../external/junit-3.8.1.jar and ../external/insanelib.jar used in cp.extra -->
-        <ant dir="../external" target="unscramble"/>
         <copy file="../external/insanelib.jar" todir="${cluster}/modules/ext"/>
         <antcall target="projectized-common.compile"/>
     </target>

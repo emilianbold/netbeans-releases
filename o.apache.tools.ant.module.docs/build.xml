@@ -16,7 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../nbbuild/templates/projectized.xml"/>
 
     <target name="javahelp" depends="init" if="has.javahelp">
-        <ant dir="../external" target="unscramble"/>
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/ant-docs"/>
         <unzip dest="${build.javahelp.dir}/${javahelp.base}/ant-docs">
             <fileset dir="../external">

@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <ant dir="../external" target="unscramble"/>
+        <ant dir="../external" target="unzip"/>
         
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf"/>
         <copy file="../external/jsf-1.1/commons-beanutils.jar"
@@ -77,4 +77,3 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
 </project>
-    

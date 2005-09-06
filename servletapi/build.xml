@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <ant dir="../external" target="unscramble"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <copy file="../external/servlet-2.2.jar" tofile="${cluster}/modules/ext/servlet-2.2.jar"/>
     </target>

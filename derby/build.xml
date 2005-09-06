@@ -6,7 +6,6 @@
     <property name="derby.filename" value="derby-10.1.1.0"/>
     
     <target name="release" depends="init">
-        <ant dir="../external" target="unscramble"/>
         <unzip src="../external/${derby.filename}.zip" dest="${cluster}" />
     </target>
     

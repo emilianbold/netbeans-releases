@@ -35,10 +35,6 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="${xtest/nbjunit.dir}/modules/ext/nbjunit-ide.jar" todir="lib"/>
   </target>
 
-  <target name="init" depends="default.init">
-      <ant dir="external" target="unscramble"/>
-  </target>
-  
   <target name="compile" depends="init,prepare-nbjunit">
     <path id="basecp">	
 	<pathelement location="src"/>
@@ -99,9 +95,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="makedist">
      <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
-     <ant dir="../nbbuild" target="all-xtest" inheritAll="false">
-        <property name="netbeans.no.pre.unscramble" value="true"/>
-     </ant>
+     <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
      <zip zipfile="xtest-distribution.zip">     
 	<zipfileset dir="lib" prefix="lib" includes="**/*.xml,**/*.jar,**/*.xsl,**/*.exe,**/*.so,**/*.dll,**/*.properties,**/*.dylib"/>
         <zipfileset dir="plugins" prefix="plugins" includes="**"/>
@@ -159,9 +153,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="all-xtest">
      <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
-     <ant dir="../nbbuild" target="all-xtest" inheritAll="false">
-        <property name="netbeans.no.pre.unscramble" value="true"/>
-     </ant>
+     <ant dir="../nbbuild" target="all-xtest" inheritAll="false"/>
   </target>  
   
   <!-- XTest PES proxy targets -->

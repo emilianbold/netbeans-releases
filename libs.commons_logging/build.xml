@@ -19,7 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <ant dir="../external" target="unscramble"/>
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext">
             <fileset dir="../external">

@@ -17,9 +17,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
   
-  <target name="init">
-       <ant dir="../external" target="unscramble"/>
-  </target>
+  <target name="init"/>
   
   <target name="compile" depends="init">
       <mkdir dir="build/classes"/>

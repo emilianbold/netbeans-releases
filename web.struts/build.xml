@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <ant dir="../external" target="unscramble"/>
+        <ant dir="../external" target="unzip"/>
         
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
         <copy file="../external/struts-1.2.7-lib/antlr.jar"
@@ -82,4 +82,3 @@ Microsystems, Inc. All Rights Reserved.
     </target>   
 
 </project>
-    

@@ -7,14 +7,8 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
- * NbExecutor.java
- *
- * Created on March 28, 2001, 6:57 PM
  */
 
 package org.netbeans.xtest;
@@ -50,7 +44,6 @@ public class NbExecutor extends Task {
                                             "running.mode",
                                             "basedir",
                                             "user.dir",
-                                            "scrambler2",
                                             "jdkhome"};
 
     public void setTargetName(String name) {

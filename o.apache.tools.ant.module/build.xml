@@ -17,8 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="build-init" depends="projectized.build-init">
-        <ant dir="external" target="unscramble"/>
-        <ant dir="../libs/external" target="unscramble"/>
+        <ant dir="external" target="unzip"/>
         <property name="src-bridge.cp" value="${module.classpath}:${src-bridge.cp.extra}"/>
     </target>
     
@@ -161,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
     - external/build.xml
     - external/.cvsignore
-    and cvs rm -f the old .scrambled files and ant scramble to make new ones and cvs add -kb them
+    and cvs rm -f the old .zip files and cvs add -kb the new ones
 7.  Run: ant -f ${here}/docs/build.xml check-javahelp
     You can ignore links to api/org/apache/... which will be broken, as well as a few other things.
     But for real problems in the HTML, commit fixes to docs/manual/ in the ant.apache.org CVS trunk.

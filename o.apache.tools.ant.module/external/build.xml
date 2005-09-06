@@ -12,9 +12,10 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="ant/external" default="unscramble" basedir=".">
-    <target name="unscramble">
+    <target name="unzip">
         <unzip src="ant-libs-1.6.5.zip" dest="lib"/>
     </target>
+    <target name="unscramble" depends="unzip"/>
     <target name="clean">
         <delete dir="lib"/>
     </target>

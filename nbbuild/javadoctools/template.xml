@@ -268,7 +268,6 @@ cause it to fail.
         </style>
     </target>
     <target name="javadoc-stage-init-apichanges" depends="javadoc-init,javadoc-check-timestamps" unless="javadoc.up.to.date">
-        <ant dir="../../libs/external" target="unscramble"/>
         <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
     </target>
 

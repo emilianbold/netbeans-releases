@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -65,7 +65,7 @@ public class PrintCvsModules extends Task {
         dir = f;
     }
 
-    /** Mode - either sources or external unscrambled binaries
+    /** Mode - either sources or external binaries
      */
     public static final class Mode extends org.apache.tools.ant.types.EnumeratedAttribute {
         public String[] getValues() {
@@ -132,6 +132,7 @@ public class PrintCvsModules extends Task {
                     String modname = (String)it.next ();
                     set.createInclude ().setName (modname + "/external/*");
                 }
+                // XXX kill the below soon...
                 set.createExclude ().setName ("**/unscrambling.log");
                 // walk through selected files and explicitly exclude unscrambled files
                 org.apache.tools.ant.DirectoryScanner ds = set.getDirectoryScanner(this.getProject());

@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <ant dir="external" target="unscramble"/>
         <mkdir dir="${cluster}/docs"/>
         <copy file="external/junit-3.8.1-api.zip" todir="${cluster}/docs"/>
         <mkdir dir="${cluster}/modules/ext"/>

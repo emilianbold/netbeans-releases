@@ -84,10 +84,6 @@
 #
 # mozbrowser=mozilla
 # display test results automatically in Netscape or Mozilla
-#
-# unscramble=MAGICVALUEHERE
-# If you are a Sun employee or otherwise got explicit permission, you may auto unscramble files;
-# just insert the magic value (see http://nbbuild.netbeans.org/scrambler.html)
 
 
 # --- Beginning of script. ---
@@ -191,11 +187,6 @@ export JAVA_HOME=$nbjdk
 export PATH=$nbjdk/bin:$PATH
 export CLASSPATH=
 
-if [ -n "$unscramble" ]
-then
-    scramblerflag=-Dscrambler2=$unscramble
-fi
-
 CVSLOG="/tmp/cvs-update.log.$$"
 origdisplay=$DISPLAY
 if [ $spawndisplay = yes ]
@@ -252,7 +243,7 @@ else
     trap "rm -f $CVSLOG" EXIT
 fi
 
-antcmd="nice $ant -emacs $scramblerflag"
+antcmd="nice $ant -emacs"
 
 if [ $doclean = yes ]
 then
@@ -301,7 +292,7 @@ function browse() {
 
 if [ $testedmodule != none ]
 then
-    testantcmd="nice $testant -emacs $scramblerflag -Djdkhome=$nbtestjdk"
+    testantcmd="nice $testant -emacs -Djdkhome=$nbtestjdk"
     if [ $doclean = yes ]
     then
         echo "----------CLEANING AND BUILDING TESTS----------" 1>&2
