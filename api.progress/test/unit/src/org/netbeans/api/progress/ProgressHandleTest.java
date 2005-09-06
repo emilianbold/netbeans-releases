@@ -15,23 +15,22 @@
 package org.netbeans.api.progress;
 
 import junit.framework.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JProgressBar;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.progress.module.Controller;
 import org.netbeans.progress.module.InternalHandle;
 import org.netbeans.progress.module.ProgressUIWorker;
 import org.netbeans.progress.module.ProgressEvent;
+import org.netbeans.progress.module.ui.NbProgressBar;
 import org.openide.util.Cancellable;
 
 /**
  *
  * @author Milos Kleint (mkleint@netbeans.org)
  */
-public class ProgressHandleTest extends TestCase {
+public class ProgressHandleTest extends NbTestCase {
     
     ProgressHandle proghandle;
     InternalHandle handle;
@@ -194,6 +193,61 @@ public class ProgressHandleTest extends TestCase {
             }
     }
     
+
+/**
+ * test switching in non-status bar component
+ */
+    public void testSwitch() {
+        
+        final int WAIT = 1500;
+        
+        class MyFrame extends JFrame implements Runnable {
+            
+            JComponent component;
+            
+            public MyFrame(JComponent component) {
+                getContentPane().add(component);
+            }
+            
+            public void run() {
+                setVisible(true);
+                setBounds(0, 0, 400, 50);
+            }
+        }
+        
+        assertFalse(SwingUtilities.isEventDispatchThread());
+        ProgressHandle handle = ProgressHandleFactory.createHandle("foo");
+        JComponent component = ProgressHandleFactory.createProgressComponent(handle);
+        
+
+        
+        handle.start();
+        
+        SwingUtilities.invokeLater(new MyFrame(component));
+        
+        try {
+            Thread.sleep(WAIT);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } 
+        
+        
+        handle.switchToDeterminate(100);
+        handle.progress(50);
+        
+        try {
+            Thread.sleep(WAIT);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } 
+
+        assertFalse("The progress bar is still indeterminate!", ((NbProgressBar)component).isIndeterminate());
+        handle.finish();
+    }    
+
+    protected boolean runInEQ() {
+        return false;
+    }
     
     
 }
