@@ -12,33 +12,43 @@
  */
 package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 
+import java.io.InputStream;
+import org.xml.sax.InputSource;
+
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
-import java.io.InputStream;
+import org.netbeans.api.xml.cookies.CheckXMLCookie;
+import org.netbeans.api.xml.cookies.ValidateXMLCookie;
+import org.netbeans.spi.xml.cookies.CheckXMLSupport;
+import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
+
+import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
+import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.*;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 
-import org.netbeans.modules.j2ee.sun.dd.api.DDProvider;
-import org.netbeans.modules.j2ee.sun.dd.api.serverresources.*;
 
 /** Represents a SunResource object in the Repository.
  *
  * @author nityad
  */
-public class SunResourceDataObject extends MultiDataObject{
+public class SunResourceDataObject extends XMLDataObject { // extends MultiDataObject{
     private static String JDBC_CP = "ConnectionPool"; //NOI18N
     private static String JDBC_DS = "DataSource"; //NOI18N
     private static String PMF = "PersistenceManager"; //NOI18N
     private static String MAIL = "MailSession"; //NOI18N
     private static String JMS = "JMS"; //NOI18N
+
+    private ValidateXMLCookie validateCookie = null;
+    private CheckXMLCookie checkCookie = null;
     
     ConnPoolBean cpBean = null;
     DataSourceBean dsBean = null;
@@ -59,11 +69,11 @@ public class SunResourceDataObject extends MultiDataObject{
         pf.addFileChangeListener(org.openide.util.WeakListener.fileChange(fl,pf));*/
         
         resType = getResource(pf);
-        init(pf);
+//        init(pf);
     }
     
-    private void init(FileObject pf) {
-        CookieSet cookies = getCookieSet();
+//    private void init(FileObject pf) {
+//        CookieSet cookies = getCookieSet();
         // Add whatever capabilities you need, e.g.:
         /*
         cookies.add(new ExecSupport(getPrimaryEntry()));
@@ -78,7 +88,30 @@ public class SunResourceDataObject extends MultiDataObject{
             }
         });
          */
+//    }
+    
+    public org.openide.nodes.Node.Cookie getCookie(Class c) {
+        Node.Cookie retValue = null;
+        if (ValidateXMLCookie.class.isAssignableFrom(c)) {
+            if (validateCookie == null) {
+                InputSource in = DataObjectAdapters.inputSource(this);
+                validateCookie = new ValidateXMLSupport(in);
+            }
+            return validateCookie;
+        } else if (CheckXMLCookie.class.isAssignableFrom(c)) {
+            if (checkCookie == null) {
+                InputSource in = DataObjectAdapters.inputSource(this);
+                checkCookie = new CheckXMLSupport(in);
+            }
+            return checkCookie;
+        }
+        
+        if (retValue == null) {
+            retValue = super.getCookie(c);
+        }
+        return retValue;
     }
+    
     
     public HelpCtx getHelpCtx() {
         return null; // HelpCtx.DEFAULT_HELP;

@@ -156,14 +156,23 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.xml</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.10</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <!-- contributes to Linkageerror issues for javax.management -->
-                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend> 
+                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <package>org.netbeans.modules.j2ee.sun.ide.editors</package>
                 <package>org.netbeans.modules.j2ee.sun.api</package>
-                <package>org.netbeans.modules.j2ee.sun.sunresources.beans</package> 
+                <package>org.netbeans.modules.j2ee.sun.sunresources.beans</package>
                 <package>org.netbeans.modules.j2ee.sun.ide.j2ee.mbmapping</package>
                 <package>org.netbeans.modules.j2ee.sun.appsrvapi</package>
             </friend-packages>

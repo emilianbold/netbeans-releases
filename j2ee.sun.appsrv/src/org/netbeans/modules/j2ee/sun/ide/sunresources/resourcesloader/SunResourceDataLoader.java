@@ -13,12 +13,17 @@
 package org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader;
 
 import java.io.IOException;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.resourceactions.RegisterAction;
 
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.DeleteAction;
+import org.openide.actions.FileSystemAction;
+import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
+import org.openide.actions.RenameAction;
+import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 
 import org.openide.loaders.UniFileLoader;
@@ -60,14 +65,22 @@ public class SunResourceDataLoader extends UniFileLoader {
     
     protected SystemAction[] defaultActions() {
         return new SystemAction[] {
-            SystemAction.get(PropertiesAction.class),
+            SystemAction.get(OpenAction.class),
+            SystemAction.get(RegisterAction.class),
+            SystemAction.get(FileSystemAction.class),
+            null,
             SystemAction.get(CutAction.class),
             SystemAction.get(CopyAction.class),
             SystemAction.get(PasteAction.class),
+            null,
             SystemAction.get(DeleteAction.class),
+            SystemAction.get(RenameAction.class),
+            null,
+            SystemAction.get(ToolsAction.class),
+            SystemAction.get(PropertiesAction.class),
         };
-    }
-    
+    }        
+
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new SunResourceDataObject(primaryFile, this);
     }
