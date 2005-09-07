@@ -665,7 +665,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * tree to the table over the custom editor button will just set focus
      * to the table, but will not initiate the custom editor dialog */
     public void processMouseEvent(MouseEvent me) {
-        if (me.getID() == me.MOUSE_PRESSED && !SwingUtilities.isRightMouseButton(me) &&
+        if (me.getID() == me.MOUSE_PRESSED && !me.isPopupTrigger() &&
                 onCustomEditorButton(me) && !hasFocus()) {
             if (PropUtils.psCommitOnFocusLoss && isEditing()) {
                 getEditor().stopCellEditing();
