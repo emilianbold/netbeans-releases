@@ -77,6 +77,16 @@ public class TreeTableOperator extends JTableOperator {
      */
     public JTreeOperator tree() {
         if(_tree == null) {
+            // Need to wait until TreeTable is populated. Otherwise it can throw
+            // NPE from getValueAt(0, 0).
+            waitState(new ComponentChooser() {
+                public boolean checkComponent(Component comp) {
+                    return getColumnCount() > 0 && getRowCount() > 0;
+                }
+                public String getDescription() {
+                    return "TreeTable contains any rows.";
+                }
+            });
             // cell renderer component for first column is JTree
             Object value = getValueAt(0, 0);
             JTree jTree = (JTree)getCellRenderer(0, 0).getTableCellRendererComponent((JTable)this.getSource(), value, false, false, 0, 0);
