@@ -84,14 +84,14 @@ public final class View implements LogicalViewProvider {
                 }
             }
             // Otherwise, check children and look for <source-folder>/<source-file> matches.
-            if (target instanceof DataObject) {
+            if (target instanceof DataObject || target instanceof FileObject) {
                 DataObject d = (DataObject) kids[i].getLookup().lookup(DataObject.class);
                 if (d == null) {
                     continue;
                 }
                 // Copied from org.netbeans.spi.java.project.support.ui.TreeRootNode.PathFinder.findPath:
                 FileObject kidFO = d.getPrimaryFile();
-                FileObject targetFO = ((DataObject) target).getPrimaryFile();
+                FileObject targetFO = target instanceof DataObject ? ((DataObject) target).getPrimaryFile() : (FileObject) target;
                 if (kidFO == targetFO) {
                     return kids[i];
                 } else if (FileUtil.isParentOf(kidFO, targetFO)) {

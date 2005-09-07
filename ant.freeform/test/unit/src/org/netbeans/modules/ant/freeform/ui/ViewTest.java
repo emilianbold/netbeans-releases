@@ -121,9 +121,13 @@ public class ViewTest extends TestBase {
         FileObject file = project.getProjectDirectory().getFileObject(path);
         assertNotNull("found " + path, file);
         DataObject d = DataObject.find(file);
-        Node n = lpp.findPath(root, d);
-        assertNotNull("found node for " + path, n);
-        assertEquals("correct node", d, n.getLookup().lookup(DataObject.class));
+        Node nDO = lpp.findPath(root, d);
+        Node nFO = lpp.findPath(root, file);
+        assertNotNull("found node for " + path, nDO);
+        assertNotNull("found node for " + path, nFO);
+        assertEquals("correct node", d, nDO.getLookup().lookup(DataObject.class));
+        //not exactly fullfilling the contract:
+        assertEquals("correct node", d, nFO.getLookup().lookup(DataObject.class));
     }
     
     public static void doTestFindPathNegative(LogicalViewProvider lpp, Node root, Project project, String path) throws Exception {
