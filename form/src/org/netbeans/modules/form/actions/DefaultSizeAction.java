@@ -43,37 +43,40 @@ public class DefaultSizeAction extends NodeAction {
         Object layoutUndoMark = null;
         javax.swing.undo.UndoableEdit layoutUE = null;
 
-        for (int i=0; i < nodes.length; i++) {
-            RADVisualComponent metacomp = getValidComponent(nodes[i]);
-            if (metacomp == null)
-                return; // all components must be valid
+        try {
+            for (int i=0; i < nodes.length; i++) {
+                RADVisualComponent metacomp = getValidComponent(nodes[i]);
+                if (metacomp == null)
+                    return; // all components must be valid
 
-            if (layoutDesigner == null) {
-                formModel = metacomp.getFormModel();
-                formDesigner = FormEditor.getFormDesigner(formModel);
-                layoutDesigner = formDesigner.getLayoutDesigner();
-                layoutModel = formModel.getLayoutModel();
-                layoutUndoMark = layoutModel.getChangeMark();
-                layoutUE = layoutModel.getUndoableEdit();
+                if (layoutDesigner == null) {
+                    formModel = metacomp.getFormModel();
+                    formDesigner = FormEditor.getFormDesigner(formModel);
+                    layoutDesigner = formDesigner.getLayoutDesigner();
+                    layoutModel = formModel.getLayoutModel();
+                    layoutUndoMark = layoutModel.getChangeMark();
+                    layoutUE = layoutModel.getUndoableEdit();
+                }
+                layoutDesigner.setDefaultSize(metacomp.getId());
+                if (metacomp instanceof RADVisualContainer) {
+                    formModel.fireContainerLayoutChanged((RADVisualContainer)metacomp, null, null, null);
+                    // [should be recursive]
+                }
+                if (topDesignComponent == null && metacomp == formDesigner.getTopDesignComponent()) {
+                    topDesignComponent = metacomp;
+                }
+                else { // update container the component is in
+                    formModel.fireContainerLayoutChanged(metacomp.getParentContainer(), null, null, null);
+                }
             }
-            layoutDesigner.setDefaultSize(metacomp.getId());
-            if (metacomp instanceof RADVisualContainer) {
-                formModel.fireContainerLayoutChanged((RADVisualContainer)metacomp, null, null, null);
-                // [should be recursive]
-            }
-            if (topDesignComponent == null && metacomp == formDesigner.getTopDesignComponent()) {
-                topDesignComponent = metacomp;
-            }
-            else { // update container the component is in
-                formModel.fireContainerLayoutChanged(metacomp.getParentContainer(), null, null, null);
-            }
-        }
 
-        if (topDesignComponent != null) {
-            formDesigner.resetDesignerSize();
-        }
-        if (layoutUE != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
-            formModel.addUndoableEdit(layoutUE);
+            if (topDesignComponent != null) {
+                formDesigner.resetDesignerSize();
+            }
+        } finally  {
+            if (layoutUE != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                formModel.addUndoableEdit(layoutUE);
+            }
         }
     }
 

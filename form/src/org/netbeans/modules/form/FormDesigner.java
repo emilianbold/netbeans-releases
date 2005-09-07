@@ -900,10 +900,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         LayoutModel layoutModel = formModel.getLayoutModel();
         Object layoutUndoMark = layoutModel.getChangeMark();
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-        getLayoutDesigner().align(selectedIds, closed, dimension, alignment);
-        formModel.fireContainerLayoutChanged((RADVisualContainer)parent, null, null, null);
-        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-            formModel.addUndoableEdit(ue);
+        try {
+            getLayoutDesigner().align(selectedIds, closed, dimension, alignment);
+        } finally {
+            formModel.fireContainerLayoutChanged((RADVisualContainer)parent, null, null, null);
+            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                formModel.addUndoableEdit(ue);
+            }
         }
     }
     
@@ -1829,23 +1832,26 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             LayoutDesigner layoutDesigner = getLayoutDesigner();
             Collection componentIds = componentIds();
             Set containers = new HashSet();
-            Iterator iter = componentIds.iterator();
-            while (iter.hasNext()) {
-                String compId = (String)iter.next();
-                LayoutComponent layoutComp = layoutModel.getLayoutComponent(compId);
-                boolean resizing = (getResizabilityButtons()[dimension]).isSelected();
-                if (layoutDesigner.isComponentResizing(layoutComp, dimension) != resizing) {
-                    layoutDesigner.setComponentResizing(layoutComp, dimension, resizing);
-                    RADVisualComponent comp = (RADVisualComponent)formModel.getMetaComponent(compId);
-                    containers.add(comp.getParentContainer());
+            try {
+                Iterator iter = componentIds.iterator();
+                while (iter.hasNext()) {
+                    String compId = (String)iter.next();
+                    LayoutComponent layoutComp = layoutModel.getLayoutComponent(compId);
+                    boolean resizing = (getResizabilityButtons()[dimension]).isSelected();
+                    if (layoutDesigner.isComponentResizing(layoutComp, dimension) != resizing) {
+                        layoutDesigner.setComponentResizing(layoutComp, dimension, resizing);
+                        RADVisualComponent comp = (RADVisualComponent)formModel.getMetaComponent(compId);
+                        containers.add(comp.getParentContainer());
+                    }
                 }
-            }
-            iter = containers.iterator();
-            while (iter.hasNext()) {
-                formModel.fireContainerLayoutChanged((RADVisualContainer)iter.next(), null, null, null);
-            }
-            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                formModel.addUndoableEdit(ue);
+            } finally {
+                Iterator iter = containers.iterator();
+                while (iter.hasNext()) {
+                    formModel.fireContainerLayoutChanged((RADVisualContainer)iter.next(), null, null, null);
+                }
+                if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                    formModel.addUndoableEdit(ue);
+                }
             }
         }
     }

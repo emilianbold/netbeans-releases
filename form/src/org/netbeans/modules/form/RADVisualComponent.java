@@ -555,12 +555,15 @@ public class RADVisualComponent extends RADComponent {
             LayoutInterval interval = component.getLayoutInterval(dimension);
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-            layoutModel.setIntervalSize(interval, interval.getMinimumSize(false), newValue.intValue(), interval.getMaximumSize(false));
-            getNodeReference().firePropertyChangeHelper(
-                getName(), oldValue, newValue);
-            getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
-            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                getFormModel().addUndoableEdit(ue);
+            try {
+                layoutModel.setIntervalSize(interval, interval.getMinimumSize(false), newValue.intValue(), interval.getMaximumSize(false));
+                getNodeReference().firePropertyChangeHelper(
+                    getName(), oldValue, newValue);
+            } finally {
+                getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
+                if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                    getFormModel().addUndoableEdit(ue);
+                }
             }
         }
         
@@ -643,15 +646,18 @@ public class RADVisualComponent extends RADComponent {
             LayoutInterval interval = component.getLayoutInterval(dimension);
             Object layoutUndoMark = layoutModel.getChangeMark();
             javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-            layoutModel.setIntervalSize(interval,
-                resizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
-                interval.getPreferredSize(false),
-                resizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
-            getNodeReference().firePropertyChangeHelper(
-                getName(), oldValue, newValue);
-            getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
-            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                getFormModel().addUndoableEdit(ue);
+            try {
+                layoutModel.setIntervalSize(interval,
+                    resizable ? LayoutConstants.NOT_EXPLICITLY_DEFINED : LayoutConstants.USE_PREFERRED_SIZE,
+                    interval.getPreferredSize(false),
+                    resizable ? Short.MAX_VALUE : LayoutConstants.USE_PREFERRED_SIZE);
+                getNodeReference().firePropertyChangeHelper(
+                    getName(), oldValue, newValue);                
+            } finally {
+                getFormModel().fireContainerLayoutChanged(getParentContainer(), null, null, null);
+                if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                    getFormModel().addUndoableEdit(ue);
+                }
             }
         }
         

@@ -215,18 +215,21 @@ public class SelectLayoutAction extends CallableSystemAction {
                     LayoutModel layoutModel = formModel.getLayoutModel();
                     Object layoutUndoMark = layoutModel.getChangeMark();
                     javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-                    formModel.setNaturalContainerLayout(container);
-                    if (convertToNew) {
-                        RADVisualComponent[] components = container.getSubComponents();
-                        java.util.Map idToComponent = new java.util.HashMap();
-                        FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
-                        for (int j=0; j<components.length; j++) {
-                            idToComponent.put(components[j].getId(), formDesigner.getComponent(components[j]));
+                    try {
+                        formModel.setNaturalContainerLayout(container);
+                        if (convertToNew) {
+                            RADVisualComponent[] components = container.getSubComponents();
+                            java.util.Map idToComponent = new java.util.HashMap();
+                            FormDesigner formDesigner = FormEditor.getFormDesigner(formModel);
+                            for (int j=0; j<components.length; j++) {
+                                idToComponent.put(components[j].getId(), formDesigner.getComponent(components[j]));
+                            }
+                            layoutModel.createModel(container.getId(), (java.awt.Container)formDesigner.getComponent(container), idToComponent);
                         }
-                        layoutModel.createModel(container.getId(), (java.awt.Container)formDesigner.getComponent(container), idToComponent);
-                    }
-                    if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                        formModel.addUndoableEdit(ue);
+                    } finally {
+                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                            formModel.addUndoableEdit(ue);
+                        }
                     }
                     FormEditor.getFormEditor(formModel).updateProjectForNaturalLayout();
                 }

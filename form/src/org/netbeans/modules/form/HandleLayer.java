@@ -772,11 +772,18 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
 
         boolean done = true;
 
-        if (draggedComponent != null) {
-            if (draggedComponent.end(e))
-                draggedComponent = null;
-            else
-                done = false;
+        if (draggedComponent != null) {            
+            boolean retVal = true;
+            try {
+                retVal = draggedComponent.end(e);
+            } finally {
+                if (retVal) {
+                    draggedComponent = null;
+                    draggingEnded = true;
+                } else {
+                    done = false;
+                }
+            }
         }
         else if (selectionDragger != null) {
             if (e != null)
@@ -2032,9 +2039,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                 if (targetContainer == null || targetContainer.getLayoutSupport() != null) {
                     // dropped in old layout support, or on non-visual area
                     createLayoutUndoableEdit();
-                    formDesigner.getLayoutDesigner().removeDraggedComponents();
-                    oldDragger.dropComponents(p, targetContainer);
-                    placeLayoutUndoableEdit();
+                    try {
+                        formDesigner.getLayoutDesigner().removeDraggedComponents();
+                        oldDragger.dropComponents(p, targetContainer);
+                    } finally {
+                        placeLayoutUndoableEdit();
+                    }
                 }
                 else { // dropped in new layout support
                     if (targetContainer != originalCont) {
@@ -2044,9 +2054,12 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         }
                     }
                     createLayoutUndoableEdit();
-                    formDesigner.getLayoutDesigner().endMoving(true);
-                    getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
-                    placeLayoutUndoableEdit();
+                    try {
+                        formDesigner.getLayoutDesigner().endMoving(true);
+                    } finally {
+                        getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
+                        placeLayoutUndoableEdit();
+                    }
                 }
             }
             else { // canceled
@@ -2167,21 +2180,24 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     doLayout(showingComponents[0]);
 
                     createLayoutUndoableEdit();
-                    formDesigner.getLayoutDesigner().endMoving(true);
-                    for (int i=0; i < movingComponents.length; i++) {
-                        RADVisualComponent metacomp = movingComponents[i];
-                        if (metacomp instanceof RADVisualContainer) {
-                            RADVisualContainer visCont = (RADVisualContainer) metacomp;
-                            if (visCont.getLayoutSupport() == null) {
-                                getFormModel().fireContainerLayoutChanged(
-                                    visCont, null, null, null);
+                    try {
+                        formDesigner.getLayoutDesigner().endMoving(true);
+                        for (int i=0; i < movingComponents.length; i++) {
+                            RADVisualComponent metacomp = movingComponents[i];
+                            if (metacomp instanceof RADVisualContainer) {
+                                RADVisualContainer visCont = (RADVisualContainer) metacomp;
+                                if (visCont.getLayoutSupport() == null) {
+                                    getFormModel().fireContainerLayoutChanged(
+                                        visCont, null, null, null);
+                                }
                             }
                         }
+                    } finally {
+                        if (targetContainer != null) {
+                            getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
+                        }
+                        placeLayoutUndoableEdit();
                     }
-                    if (targetContainer != null) {
-                        getFormModel().fireContainerLayoutChanged(targetContainer, null, null, null);
-                    }
-                    placeLayoutUndoableEdit();
                 }
                 else { // old layout support
                     if (targetContainer != null) {
@@ -2368,15 +2384,18 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                     addedComponent = movingComponents[0];
                     if (getLayoutModel() != null) { // Some beans don't have layout
                         createLayoutUndoableEdit();
-                        formDesigner.getLayoutDesigner().endMoving(newLayout);
-                        LayoutComponent layoutComponent =
-                                getComponentCreator().getPrecreatedLayoutComponent();
-                        if (layoutComponent.isLayoutContainer()) {
-                            if (!newLayout) { // always add layout container to the model 
-                                getLayoutModel().addRootComponent(layoutComponent);
+                        try {
+                            formDesigner.getLayoutDesigner().endMoving(newLayout);
+                            LayoutComponent layoutComponent =
+                                    getComponentCreator().getPrecreatedLayoutComponent();
+                            if (layoutComponent.isLayoutContainer()) {
+                                if (!newLayout) { // always add layout container to the model 
+                                    getLayoutModel().addRootComponent(layoutComponent);
+                                }
                             }
+                        } finally {
+                            placeLayoutUndoableEdit();
                         }
-                        placeLayoutUndoableEdit();
                     }
                     getComponentCreator().addPrecreatedComponent(
                                             targetContainer, constraints);
@@ -2391,8 +2410,11 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
                         && ((RADVisualContainer)addedComponent).getLayoutSupport() == null)
                     {
                         createLayoutUndoableEdit();
-                        getLayoutModel().addRootComponent(new LayoutComponent(addedComponent.getId(), true));
-                        placeLayoutUndoableEdit();
+                        try {
+                            getLayoutModel().addRootComponent(new LayoutComponent(addedComponent.getId(), true));
+                        } finally {
+                            placeLayoutUndoableEdit();
+                        }
                     }
                 }
 
@@ -2510,10 +2532,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         public void drop(java.awt.dnd.DropTargetDropEvent dtde) {
             if (draggedComponent != null) {
                 NewComponentDrag newComponentDrag = ((NewComponentDrag)draggedComponent);
-                newComponentDrag.end(dtde.getLocation(), 0);
                 String id = newComponentDrag.addedComponent.getId();
-                draggedComponent = null;
-                draggingEnded = true;
+                try {
+                    newComponentDrag.end(dtde.getLocation(), 0);
+                } finally {
+                    draggedComponent = null;
+                    draggingEnded = true;
+                }
                 Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
                 if (node != null) {
                     NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);

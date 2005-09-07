@@ -220,9 +220,12 @@ class CopySupport {
                         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
                         boolean fromModel = !(targetComponent instanceof RADVisualContainer)
                                             || ((RADVisualContainer)targetComponent).getLayoutSupport() != null;
-                        layoutModel.removeComponent(sourceComponent.getId(), fromModel);
-                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                            sourceForm.addUndoableEdit(ue);
+                        try {
+                            layoutModel.removeComponent(sourceComponent.getId(), fromModel);
+                        } finally {
+                            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                                sourceForm.addUndoableEdit(ue);
+                            }
                         }
                     }
                 }
@@ -248,9 +251,12 @@ class CopySupport {
                                 MetaComponentCreator.shouldBeLayoutContainer((RADVisualComponent)sourceComponent));
                         }
                         resetConstraintProperties = true;
-                        layoutModel.addNewComponent(layoutComponent, parent, null);
-                        if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                            sourceForm.addUndoableEdit(ue);
+                        try {
+                            layoutModel.addNewComponent(layoutComponent, parent, null);
+                        } finally {
+                            if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
+                                sourceForm.addUndoableEdit(ue);
+                            }
                         }
                     } else {
                         RADVisualComponent[] compArray = new RADVisualComponent[] {

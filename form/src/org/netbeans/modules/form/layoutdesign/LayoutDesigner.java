@@ -402,6 +402,7 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     public void endMoving(boolean committed) {
+        try {
         if (committed) {
             LayoutComponent[] components = dragger.getMovingComponents();
             LayoutComponent targetContainer = dragger.getTargetContainer();
@@ -481,8 +482,6 @@ public class LayoutDesigner implements LayoutConstants {
             }
             else { // resizing root container
                 assert dragger.isResizing();
-                if (!dragger.isResizing())
-                    return; // no data about target container
 
                 modelListener.deactivate(); // do not react on model changes
 
@@ -499,8 +498,9 @@ public class LayoutDesigner implements LayoutConstants {
             modelListener.activate();
             visualStateUpToDate = false;
         }
-
-        dragger = null;
+        } finally {
+            dragger = null;
+        }
     }
 
     /**

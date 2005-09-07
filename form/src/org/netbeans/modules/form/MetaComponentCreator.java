@@ -319,9 +319,12 @@ public class MetaComponentCreator {
             layoutComp = new LayoutComponent(radComp.getId(), isContainer);
         }
         javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-        LayoutComponent parent = layoutModel.getLayoutComponent(targetCont.getId());    
-        layoutModel.addNewComponent(layoutComp, parent, prototype);
-        formModel.addUndoableEdit(ue);
+        try {
+            LayoutComponent parent = layoutModel.getLayoutComponent(targetCont.getId());    
+            layoutModel.addNewComponent(layoutComp, parent, prototype);
+        } finally {
+            formModel.addUndoableEdit(ue);
+        }
     }
 
     private RADComponent copyComponent2(RADComponent sourceComp,

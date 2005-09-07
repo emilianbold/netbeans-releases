@@ -358,24 +358,22 @@ public class FormModel
     }
 
     public void removeComponent(RADComponent metacomp, boolean fromModel) {
-        Object layoutStartMark;
-        UndoableEdit ue;
-        if (fromModel) {
-            layoutStartMark = layoutModel.getChangeMark();
-            ue = layoutModel.getUndoableEdit();
-            layoutModel.removeComponent(metacomp.getId(), true);
-            removeLayoutComponentsRecursively(metacomp);
-        }
-        else {
-            layoutStartMark = null;
-            ue = null;
-        }
+        Object layoutStartMark = null;
+        UndoableEdit ue = null;
+        try {
+            if (fromModel) {
+                layoutStartMark = layoutModel.getChangeMark();
+                ue = layoutModel.getUndoableEdit();
+                layoutModel.removeComponent(metacomp.getId(), true);
+                removeLayoutComponentsRecursively(metacomp);
+            }
 
-        removeComponentImpl(metacomp, fromModel);
-        // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
-
-        if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
-            addUndoableEdit(ue); // is added to a compound edit
+            removeComponentImpl(metacomp, fromModel);
+            // [TODO need effective multi-component remove from LayoutModel (start in ComponentInspector.DeleteActionPerformer)]
+        } finally {
+            if (layoutStartMark != null && !layoutStartMark.equals(layoutModel.getChangeMark())) {
+                addUndoableEdit(ue); // is added to a compound edit
+            }
         }
     }
 
@@ -1013,15 +1011,18 @@ public class FormModel
 
         public void run() {
             List list = pickUpEvents();
-            if (list != null && !list.isEmpty()) {
-                FormModelEvent[] events = new FormModelEvent[list.size()];
-                list.toArray(events);
-                t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
-                FormModel.this.fireEvents(events);
-            }
-            if (FormModel.this.autoEndCoumpoundEdit) {
-                FormModel.this.endCompoundEdit(true);
-                t("coumpound undoable edit ended automatically"); // NOI18N
+            try {
+                if (list != null && !list.isEmpty()) {
+                    FormModelEvent[] events = new FormModelEvent[list.size()];
+                    list.toArray(events);
+                    t("firing event batch of "+list.size()+" events from event broker"); // NOI18N
+                    FormModel.this.fireEvents(events);
+                }
+            } finally {
+                if (FormModel.this.autoEndCoumpoundEdit) {
+                    FormModel.this.endCompoundEdit(true);
+                    t("coumpound undoable edit ended automatically"); // NOI18N
+                }
             }
         }
     }

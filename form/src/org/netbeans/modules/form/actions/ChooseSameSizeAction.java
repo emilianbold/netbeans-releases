@@ -224,31 +224,22 @@ public class ChooseSameSizeAction extends NodeAction {
                     return;
                 }
             }
-            
-            if (!mi.isSelected()) {
-                FormModel formModel = rc.getFormModel();
-                LayoutModel layoutModel = formModel.getLayoutModel();
-                Object layoutUndoMark = layoutModel.getChangeMark();
-                javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
+                        
+            FormModel formModel = rc.getFormModel();
+            LayoutModel layoutModel = formModel.getLayoutModel();
+            Object layoutUndoMark = layoutModel.getChangeMark();
+            javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
 
-                layoutModel.unsetSameSize(getComponentIds(mi.getRADComponents()), mi.getDimension());
-
-                formModel.fireContainerLayoutChanged(visCont, null, null, null);
-
-                if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
-                    formModel.addUndoableEdit(ue);
+            try {
+                List compIds = getComponentIds(mi.getRADComponents());
+                int dimension = mi.getDimension();
+                if (mi.isSelected()) {
+                    layoutModel.unsetSameSize(compIds, dimension);
+                } else {
+                    layoutModel.unsetSameSize(compIds, dimension);
                 }
-            } else {
-
-                FormModel formModel = rc.getFormModel();
-                LayoutModel layoutModel = formModel.getLayoutModel();
-                Object layoutUndoMark = layoutModel.getChangeMark();
-                javax.swing.undo.UndoableEdit ue = layoutModel.getUndoableEdit();
-
-                layoutModel.setSameSize(getComponentIds(mi.getRADComponents()), mi.getDimension());
-
+            } finally {
                 formModel.fireContainerLayoutChanged(visCont, null, null, null);
-
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     formModel.addUndoableEdit(ue);
                 }

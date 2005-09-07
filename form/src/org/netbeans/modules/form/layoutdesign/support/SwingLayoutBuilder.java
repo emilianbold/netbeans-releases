@@ -112,16 +112,21 @@ public class SwingLayoutBuilder {
 
     public void createLayout() {
         container.removeAll();
-        GroupLayout layout = new GroupLayout(container);
-        container.setLayout(layout);
-        LayoutInterval horizontalInterval = containerLC.getLayoutRoot(LayoutConstants.HORIZONTAL);
-        GroupLayout.Group horizontalGroup = composeGroup(layout, horizontalInterval, true, true);
-        layout.setHorizontalGroup(horizontalGroup);
-        LayoutInterval verticalInterval = containerLC.getLayoutRoot(LayoutConstants.VERTICAL);
-        GroupLayout.Group verticalGroup = composeGroup(layout, verticalInterval, true, true);
-        layout.setVerticalGroup(verticalGroup);
-        composeLinks(layout);
-        layout.layoutContainer(container);
+        try {
+            GroupLayout layout = new GroupLayout(container);
+            container.setLayout(layout);
+            LayoutInterval horizontalInterval = containerLC.getLayoutRoot(LayoutConstants.HORIZONTAL);
+            GroupLayout.Group horizontalGroup = composeGroup(layout, horizontalInterval, true, true);
+            layout.setHorizontalGroup(horizontalGroup);
+            LayoutInterval verticalInterval = containerLC.getLayoutRoot(LayoutConstants.VERTICAL);
+            GroupLayout.Group verticalGroup = composeGroup(layout, verticalInterval, true, true);
+            layout.setVerticalGroup(verticalGroup);
+            composeLinks(layout);
+            layout.layoutContainer(container);
+        } catch (Exception ex) {
+            container.setLayout(null);
+            throw new RuntimeException("Error occured. Use undo to return to the last good state.", ex); // NOI18N
+        }
     }
     
     public void doLayout() {
