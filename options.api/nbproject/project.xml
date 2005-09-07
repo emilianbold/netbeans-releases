@@ -103,31 +103,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.openide.modules</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.text</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.compat</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.options</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-            </module-dependencies>
+                </module-dependencies>
             <public-packages>
                 <package>org.netbeans.spi.options</package>
                 <package>org.netbeans.modules.options.ui</package>
