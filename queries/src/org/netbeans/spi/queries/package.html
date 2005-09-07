@@ -31,11 +31,11 @@ requests directly to a proper implementation of some secondary interface (again
 registered in default lookup). This technique permits the SPI to be very
 flexible while keeping a typical API method call fast. For an example, note that
 only one instance of
-<a href="@PROJECTS/PROJECTAPI@/org/netbeans/spi/project/ProjectFactory.html"><code>ProjectFactory</code></a>
+<a href="@org-netbeans-modules-projectapi@/org/netbeans/spi/project/ProjectFactory.html"><code>ProjectFactory</code></a>
 is
 necessary to support all Ant-based projects: each project type is defined using
 an
-<a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/AntBasedProjectType.html"><code>AntBasedProjectType</code></a>,
+<a href="@org-netbeans-modules-project-ant@/org/netbeans/spi/project/support/ant/AntBasedProjectType.html"><code>AntBasedProjectType</code></a>,
 and the
 singleton multiplexer delegates appropriately based on the project type ID found
 in <code>nbproject/project.xml</code> in the project directory. Therefore adding
