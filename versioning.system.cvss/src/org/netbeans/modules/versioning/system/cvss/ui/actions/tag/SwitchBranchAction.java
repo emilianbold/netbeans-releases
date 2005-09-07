@@ -14,21 +14,29 @@
 package org.netbeans.modules.versioning.system.cvss.ui.actions.tag;
 
 import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.add.AddExecutor;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.FileInformation;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
+import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.command.add.AddCommand;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.RequestProcessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.Dialog;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * Performs the CVS 'update -r branch' command on selected nodes.
@@ -52,6 +60,14 @@ public class SwitchBranchAction extends AbstractSystemAction {
     }
 
     public void performCvsAction(ActionEvent ev) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                switchBranch();
+            }
+        });
+    }
+    
+    private void switchBranch() {
         File [] roots = getFilesToProcess();
 
         UpdateCommand cmd = new UpdateCommand();
@@ -78,17 +94,77 @@ public class SwitchBranchAction extends AbstractSystemAction {
         if (descriptor.getValue() != swich) return;
 
         settings.saveSettings();
-        if (settings.isSwitchToTrunk()) {
-            cmd.setResetStickyOnes(true);
-        } else {
-            cmd.setUpdateByRevision(settings.getBranchName());
+        
+        List newFolders = new ArrayList();
+        List others = new ArrayList();
+        FileStatusCache cache = CvsVersioningSystem.getInstance().getStatusCache();
+        for (int i = 0; i < roots.length; i++) {
+            File root = roots[i];
+            if (root.isDirectory() && cache.getStatus(root).getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                newFolders.add(root);
+            } else {
+                others.add(root);
+            }
+        }
+
+        // Special treatment for Locally New folders. Ww cannot switch them to branch with the Update command.
+        // Workaround: add the folder to CVS, then manually create CVS/Tag inside
+        if (newFolders.size() > 0) {
+            AddCommand acmd = new AddCommand();
+            File [] files = (File[]) newFolders.toArray(new File[newFolders.size()]);
+            acmd.setFiles(files);
+            AddExecutor [] aexecutors = AddExecutor.executeCommand(acmd, CvsVersioningSystem.getInstance(), null);
+            ExecutorSupport.wait(aexecutors);
+            if (settings.isSwitchToTrunk()) {
+                setSticky(files, null);
+            } else {
+                setSticky(files, settings.getBranchName());
+            }
         }
         
-        cmd.setBuildDirectories(true);
-        cmd.setPruneDirectories(true);
-        cmd.setFiles(roots);
-        
-        UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
-        ExecutorSupport.notifyError(executors);
+        if (others.size() > 0) {
+            if (settings.isSwitchToTrunk()) {
+                cmd.setResetStickyOnes(true);
+            } else {
+                cmd.setUpdateByRevision(settings.getBranchName());
+            }
+            
+            cmd.setBuildDirectories(true);
+            cmd.setPruneDirectories(true);
+            cmd.setFiles((File[]) others.toArray(new File[others.size()]));
+            
+            UpdateExecutor [] executors = UpdateExecutor.executeCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            ExecutorSupport.notifyError(executors);
+        }
+    }
+
+    private void setSticky(File[] files, String sticky) {
+        for (int i = 0; i < files.length; i++) {
+            File file = files[i];
+            try {
+                setSticky(file, sticky);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+        }
+    }
+
+    /**
+     * Creates CVS/Tag file under the given directory with Tsticky string. If sticky is null, it deleted CVS/Tag file. 
+     * 
+     * @param file directory to tag
+     * @param sticky sitcky tag to use
+     * @throws IOException if some I/O operation fails
+     */ 
+    private void setSticky(File file, String sticky) throws IOException {
+        File tag = new File(file, "CVS/Tag");
+        tag.delete();
+        if (sticky != null) {
+            FileWriter w = new FileWriter(tag);
+            w.write("T");
+            w.write(sticky);
+            w.write(System.getProperty("line.separator"));
+            w.close();
+        }
     }
 }
