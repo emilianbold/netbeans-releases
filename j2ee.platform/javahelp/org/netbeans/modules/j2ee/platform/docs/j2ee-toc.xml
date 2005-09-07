@@ -141,6 +141,7 @@
          <tocitem text="Creating a Servlet" target="servlet_create" />
 	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
 	 <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
+	 <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
          <tocitem text="Viewing a JSP File's Servlet" target="jsp_servletview" />
          <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
 	 <tocitem text="Running a Servlet" target="servlet_run" />
