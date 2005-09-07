@@ -227,6 +227,7 @@ ChangeListener, ActionListener {
     }
     
     public void cancel () {
+        if (model == null) return; // not initialized yet...
         model.setJavaFormatLeadingStarInComment (originalAddStar);
         model.setJavaFormatNewlineBeforeBrace (originalNewLine);
         model.setJavaFormatSpaceBeforeParenthesis (originalSpace);

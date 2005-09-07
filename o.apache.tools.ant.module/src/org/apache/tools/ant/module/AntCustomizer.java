@@ -27,6 +27,7 @@ import java.beans.PropertyEditorManager;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -36,6 +37,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 
@@ -44,11 +46,15 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileFilter;
 
 import org.netbeans.spi.options.OptionsCategory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.execution.NbClassPath;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -62,18 +68,20 @@ import org.openide.util.NbBundle;
 public final class AntCustomizer extends JPanel implements 
 ActionListener {
 
-    private JTextField tfAntHome = new JTextField ();
-    private JButton bAntHome = new JButton ();
-    private JCheckBox cbSaveFiles = new JCheckBox ();
-    private JCheckBox cbReuseOutput = new JCheckBox ();
-    private JCheckBox cbAlwaysShowOutput = new JCheckBox();
-    private JComboBox cbVerbosity = new JComboBox ();
-    private JButton bProperties = new JButton ();
-    private JButton bClasspath = new JButton ();
-    protected JLabel lAntVersion = new JLabel ();
+    private JTextField      tfAntHome = new JTextField ();
+    private JButton         bAntHome = new JButton ();
+    private JCheckBox       cbSaveFiles = new JCheckBox ();
+    private JCheckBox       cbReuseOutput = new JCheckBox ();
+    private JCheckBox       cbAlwaysShowOutput = new JCheckBox();
+    private JComboBox       cbVerbosity = new JComboBox ();
+    private JButton         bProperties = new JButton ();
+    private JButton         bClasspath = new JButton ();
+    protected JLabel        lAntVersion = new JLabel ();
     
-    private NbClassPath classpath;
-    private Properties properties;
+    private NbClassPath     classpath;
+    private Properties      properties;
+    private boolean         changed = false;
+    private File            originalAntHome;
     
     
     public AntCustomizer () {
@@ -169,27 +177,32 @@ ActionListener {
         AntSettings settings = AntSettings.getDefault ();
         classpath = settings.getExtraClasspath ();
         properties = settings.getProperties ();
-        
-        tfAntHome.setText (settings.getAntHomeWithDefault ().toString ());
+        originalAntHome = settings.getAntHomeWithDefault ();
+            
+        tfAntHome.setText (originalAntHome.toString ());
         cbSaveFiles.setSelected (settings.getSaveAll ());
         cbReuseOutput.setSelected (settings.getAutoCloseTabs ());
-        cbAlwaysShowOutput.setSelected(settings.getAlwaysShowOutput());
+        cbAlwaysShowOutput.setSelected (settings.getAlwaysShowOutput ());
         cbVerbosity.setSelectedIndex (settings.getVerbosity () - 1);
         lAntVersion.setText ("(" + settings.getAntVersion () + ")");
     }
     
     void applyChanges () {
+        if (!changed) return;
         AntSettings settings = AntSettings.getDefault ();
         settings.setAntHome (new File (tfAntHome.getText ()));
         settings.setAutoCloseTabs (cbReuseOutput.isSelected ());
         settings.setSaveAll (cbSaveFiles.isSelected ());
-        settings.setAlwaysShowOutput(cbAlwaysShowOutput.isSelected());
+        settings.setAlwaysShowOutput (cbAlwaysShowOutput.isSelected ());
         settings.setVerbosity (cbVerbosity.getSelectedIndex () + 1);
         settings.setProperties (properties);
         settings.setExtraClasspath (classpath);
     }
     
     void cancel () {
+        if (!changed) return;
+        AntSettings settings = AntSettings.getDefault ();
+        settings.setAntHome (originalAntHome);
     }
     
     boolean dataValid () {
@@ -203,11 +216,30 @@ ActionListener {
     public void actionPerformed (ActionEvent e) {
         Object o = e.getSource ();
         if (o == bAntHome) {
-            // XXX implement!
-            /*
-            if (!f.isDirectory() && new File(new File(f, "lib"), "ant.jar").isFile())
-                then warn: "ERR_not_ant_home"
-             */
+            JFileChooser chooser = new JFileChooser (tfAntHome.getText ());
+            chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+            int r = chooser.showDialog (
+                SwingUtilities.getWindowAncestor (this),
+                loc ("Select_Directory")
+            );
+            if (r == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile ();
+                if (!new File (new File (file, "lib"), "ant.jar").isFile ()) {
+                    DialogDisplayer.getDefault ().notify (new Message (
+                        MessageFormat.format (
+                            loc ("Not_a_ant_home"),
+                            new Object[] {file}
+                        ),
+                        Message.WARNING_MESSAGE
+                    ));
+                    return;
+                }
+                tfAntHome.setText (file.getAbsolutePath ());
+                AntSettings settings = AntSettings.getDefault ();
+                settings.setAntHome (file);
+                lAntVersion.setText ("(" + settings.getAntVersion () + ")");
+                changed = true;
+            }
         } else
         if (o == bClasspath) {
             PropertyEditor editor = PropertyEditorManager.findEditor 
@@ -221,8 +253,8 @@ ActionListener {
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
             if (dd.getValue () == dd.OK_OPTION) {
-                System.out.println("classpath OK " + editor.getValue ());
                 classpath = (NbClassPath) editor.getValue ();
+                changed = true;
             }
         } else
         if (o == bProperties) {
@@ -237,13 +269,11 @@ ActionListener {
             Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
             if (dd.getValue () == dd.OK_OPTION) {
-                if (customEditor instanceof EnhancedCustomPropertyEditor) {
-                    System.out.println("properties OK " + ((EnhancedCustomPropertyEditor) customEditor).getPropertyValue ());
+                if (customEditor instanceof EnhancedCustomPropertyEditor)
                     properties = (Properties) ((EnhancedCustomPropertyEditor) customEditor).getPropertyValue ();
-                } else {
-                    System.out.println("properties OK " + editor.getValue ());
+                else
                     properties = (Properties) editor.getValue ();
-                }
+                changed = true;
             }
         }
     }
