@@ -65,7 +65,9 @@ public class DocumentModelProviderFactory {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("There isn't any DocumentModelProvider registered for " + mimeType + " mimetype!"));
                 
                 provider = providers.size() > 0 ? (DocumentModelProvider)providers.iterator().next() : null;
-            }
+                mime2provider.put(mimeType, provider);
+                
+            } else return provider;
         } else
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new NullPointerException("mimeType cannot be null!"));
         

@@ -60,6 +60,7 @@ public final class DocumentElement {
     private int startSectionLength, endSectionLength;
     private DocumentModel model;
     private Attributes attributes;
+    private boolean elementEmpty;
     
     //stores DocumentElement listeners
     private HashSet deListeners = new HashSet();
@@ -72,6 +73,7 @@ public final class DocumentElement {
         this.endSectionLength = endSectionLength;
         this.type = type;
         this.attributes = new Attributes(this, attrsMap);
+        this.elementEmpty = false;
         
         //create positions for start and end offsets
         setStartPosition(startOffset);
@@ -207,6 +209,16 @@ public final class DocumentElement {
     }
     
     /* EOF j.s.t.Element methods */
+    
+    /** called by DocumentModel when checking elements after a document content update */
+    void setElementIsEmptyState() {
+        elementEmpty = true;
+    }
+    
+    /** states whether the document is empty - used only by DocumentModel */
+    boolean isEmpty() {
+        return elementEmpty;
+    }
     
     /** Returns an instance of DocumentModel within which hierarchy the element lives.
      * @return the DocumentModel which holds this element 

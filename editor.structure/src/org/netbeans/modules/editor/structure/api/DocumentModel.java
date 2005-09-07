@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -118,7 +119,10 @@ public final class DocumentModel {
     //a semaphore signalling the state of synchronization between document and the elements
     //this is always se to true when the document is changed and is set back to false
     //when the elements are resorted.
-    private boolean documentDirty = true;
+    boolean documentDirty = true;
+    
+    private Hashtable childrenCache = null;
+    private Hashtable parentsCache = null;
     
     //model synchronization
     private int numReaders = 0;
@@ -134,6 +138,9 @@ public final class DocumentModel {
     DocumentModel(Document doc, DocumentModelProvider provider) throws DocumentModelException {
         this.doc = (BaseDocument)doc; //type changed in DocumentModel.getDocumentModel(document);
         this.provider = provider;
+        
+        this.childrenCache = new Hashtable();
+        this.parentsCache = new Hashtable();
         
         //init RP & RP task
         requestProcessor = new RequestProcessor(DocumentModel.class.getName());
@@ -237,22 +244,19 @@ public final class DocumentModel {
             //the only exception where startoffset and endoffset can be the some is root elements =>
             if(ancestor == getRootElement()) return true;
             
-            //xxx testing
-            if(ancestor.getStartOffset() == descendant.getStartOffset()
-            && ancestor.getEndOffset() > descendant.getEndOffset()
-            && !isEmpty(descendant))
-                return true;
+            //performance optimalization
+            int ancestorSO = ancestor.getStartOffset();
+            int descendantSO = descendant.getStartOffset();
+            int ancestorEO = ancestor.getEndOffset();
+            int descendantEO = descendant.getEndOffset();
             
-            if(ancestor.getEndOffset() == descendant.getEndOffset()
-            && ancestor.getStartOffset() < descendant.getStartOffset()
-            && !isEmpty(descendant))
-                return true;
+            if(!descendant.isEmpty()) {
+                if((ancestorSO == descendantSO && ancestorEO > descendantEO)
+                        || (ancestorEO == descendantEO && ancestorSO < descendantSO))
+                    return true;
+            }
             
-            return ((ancestor.getStartOffset() < descendant.getStartOffset()) &&
-                    (ancestor.getEndOffset() > descendant.getEndOffset()));
-            
-            //XXX must be resolved: the case where both offsets are the same is not handled :-((((
-            
+            return (ancestorSO < descendantSO && ancestorEO > descendantEO);
             
         }finally{
             readUnlock();
@@ -298,7 +302,7 @@ public final class DocumentModel {
     
     // ---- private methods -----
     private synchronized TreeSet getElementsSet() {
-        if(documentDirty) resortElements();
+        if(documentDirty) resortAndMarkEmptyElements();
         return elements;
     }
     
@@ -431,7 +435,7 @@ public final class DocumentModel {
     /** AFAIK there isn't also any way how to explicitly resort a set so I need to use a list and resort it
      * manually after each elements change. This allows me to resort elements after a document change to
      * keep correct he eleements order. */
-    private void resortElements() {
+    private void resortAndMarkEmptyElements() {
         //the resort has to lock the model for access since it modifies the elements order
         //and the document for modifications
         writeLock();
@@ -442,15 +446,21 @@ public final class DocumentModel {
                 elements.clear();
                 Iterator i = list.iterator();
                 while(i.hasNext()) {
-                    elements.add(i.next());
+                    DocumentElement de = (DocumentElement)i.next();
+                    if(isEmpty(de)) de.setElementIsEmptyState();
+                    elements.add(de);
                 }
             } finally {
                 doc.readUnlock();
             }
         }finally {
-            writeUnlock();            
+            writeUnlock();
         }
         documentDirty = false;
+        
+        //and clear children/parent caches
+        clearChildrenCache();
+        clearParentsCache();
     }
     
     private void addRootElement() {
@@ -469,23 +479,27 @@ public final class DocumentModel {
     
     
     List /*<DocumentElement>*/ getChildren(DocumentElement de) {
+        //try to use cached children if available
+        List cachedChildren = getCachedChildren(de);
+        if(cachedChildren != null) return cachedChildren;
+        
         readLock();
         try {
             //test whether the element has been removed - in such a case anyone can still have a reference to it
             //but the element is not held in the document structure elements list
             if(!getElementsSet().contains(de)) {
                 if(debug) System.err.println("Warning: DocumentModel.getChildren(...) called for " + de + " which has already been removed!");
-                return Collections.EMPTY_LIST;
+                return Collections.EMPTY_LIST; //do not cache
             }
             
             //there is a problem with empty elements - if an element is removed its boundaries
             //are the some and the standart getParent/getChildren algorith fails.
             //the root element can be empty however it has to return children (also empty)
-            if(!de.equals(getRootElement()) && isEmpty(de)) return Collections.EMPTY_LIST;
+            if(!de.equals(getRootElement()) && de.isEmpty()) return Collections.EMPTY_LIST;
             
             //if the root element is empty the rest of elements is also empty and
             //has to be returned as children
-            if(de.equals(getRootElement()) && isEmpty(de)) {
+            if(de.equals(getRootElement()) && de.isEmpty()) {
                 ArrayList al = new ArrayList((Collection)getElementsSet().clone());
                 al.remove(de); //remove the root itself
                 return al;
@@ -506,7 +520,7 @@ public final class DocumentModel {
                 //the next element must be the first child if its startOffset < the given element endOffset
                 DocumentElement firstChild = (DocumentElement)pchi.next();
                 children.add(firstChild);
-                if(!isDescendantOf(de, firstChild)) return Collections.EMPTY_LIST;
+                if(!isDescendantOf(de, firstChild)) return cacheChildrenList(de, Collections.EMPTY_LIST);
                 else {
                     //the element is a child
                     //check the other elements - find first element which has startOffset > firstChild.endOffset
@@ -531,19 +545,37 @@ public final class DocumentModel {
             //check whether I am returning myself as a child of me :-(
             assert !children.contains(de) : "getChildren(de) contains the de itself!";
             
-            return children;
+            return cacheChildrenList(de, children);
         }catch(Exception e) {
             System.err.println("Error in getCHildren!!!! for " + de);
             debugElements();
             DocumentModelUtils.dumpElementStructure(getRootElement());
             e.printStackTrace();
+            //do not cache in case of error
             return Collections.EMPTY_LIST;
         } finally {
             readUnlock();
         }
     }
     
+    private List/*<DocumentElement>*/ getCachedChildren(DocumentElement de) {
+        return (List)childrenCache.get(de);
+    }
+    
+    private List/*<DocumentElement>*/ cacheChildrenList(DocumentElement de, List/*<DocumentElement>*/ children) {
+        childrenCache.put(de, children);
+        return children;
+    }
+    
+    private void clearChildrenCache() {
+        childrenCache.clear();
+    }
+    
     DocumentElement getParent(DocumentElement de) {
+        //try to use cached parent if available
+        DocumentElement cachedParent = getCachedParent(de);
+        if(cachedParent != null) return cachedParent;
+        
         readLock();
         try {
             if(!getElementsSet().contains(de)) {
@@ -564,17 +596,32 @@ public final class DocumentModel {
             for(int i = headarr.length - 1; i >= 0; i--) {
                 DocumentElement el = headarr[i];
                 //test whether the element is empty - if so, get next one etc...
-                if(!isEmpty(el) && isDescendantOf(el,de) && el.getStartOffset() < de.getStartOffset()) return el;
+                //if(!isEmpty(el) && el.getStartOffset() < de.getStartOffset() && isDescendantOf(el,de)) return cacheParent(de, el);
+                if(el.isEmpty() && isDescendantOf(el,de) && el.getStartOffset() < de.getStartOffset()) return cacheParent(de, el);
             }
             
-            //if not found (e.g. has the same startoffsets in case of root) 
+            //if not found (e.g. has the same startoffsets in case of root)
             //root is returned in all cases except parent of the root itself
-            return getRootElement(); 
+            return cacheParent(de, getRootElement());
             
         }finally{
             readUnlock();
         }
     }
+    
+    private DocumentElement/*<DocumentElement>*/ getCachedParent(DocumentElement de) {
+        return (DocumentElement)parentsCache.get(de);
+    }
+    
+    private DocumentElement cacheParent(DocumentElement de, DocumentElement parent) {
+        parentsCache.put(de, parent);
+        return parent;
+    }
+    
+    private void clearParentsCache() {
+        parentsCache.clear();
+    }
+    
     
     /** This method should be owerrided by subclasses to return appropriate DocumentElement
      * instancies according to given DocumentElementType. */
@@ -787,6 +834,7 @@ public final class DocumentModel {
         }
         
         private void commit() throws DocumentModelTransactionCancelledException {
+            long a = System.currentTimeMillis();
             writeLock();
             try {
                 //test if the transaction has been cancelled and if co throw TransactionCancelledException
@@ -794,12 +842,16 @@ public final class DocumentModel {
                 
                 //XXX not an ideal algorithm :-)
                 //first remove all elements
+                long r = System.currentTimeMillis();
                 if(debug) System.out.println("\n# commiting REMOVEs");
                 Iterator mods = modifications.iterator();
                 while(mods.hasNext()) {
                     DocumentModelModification dmm = (DocumentModelModification)mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_REMOVED) removeDE(dmm.de);
                 }
+                if(measure) System.out.println("[xmlmodel] removes commit done in " + (System.currentTimeMillis() - r));
+                
+                long adds = System.currentTimeMillis();
                 //then add all new elements
                 //it is better to add the elements from roots to leafs
                 if(debug) System.out.println("\n# commiting ADDs");
@@ -809,23 +861,29 @@ public final class DocumentModel {
                     DocumentModelModification dmm = (DocumentModelModification)mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_ADD) sortedAdds.add(dmm.de);
                 }
+                int addsNum = sortedAdds.size();
                 Iterator addsIterator = sortedAdds.iterator();
                 while(addsIterator.hasNext()) {
                     addDE((DocumentElement)addsIterator.next());
                 }
+                if(measure) System.out.println("[xmlmodel] adds commit (" + addsNum + ") done in " + (System.currentTimeMillis() - adds));
                 
+                long upds = System.currentTimeMillis();
                 if(debug) System.out.println("\n# commiting UPDATESs");
                 mods = modifications.iterator();
                 while(mods.hasNext()) {
                     DocumentModelModification dmm = (DocumentModelModification)mods.next();
                     if(dmm.type == DocumentModelModification.ELEMENT_CHANGED) updateDE(dmm.de);
                 }
-                
+                if(measure) System.out.println("[xmlmodel] updates commit done in " + (System.currentTimeMillis() - upds));
             } finally {
                 writeUnlock();
             }
             if(debug) System.out.println("# commit finished\n");
+            if(measure) System.out.println("[xmlmodel] commit done in " + (System.currentTimeMillis() - a));
             
+//            debugElements();
+//            DocumentModelUtils.dumpElementStructure(getRootElement());
         }
         
         private void updateDE(DocumentElement de) {
@@ -842,17 +900,24 @@ public final class DocumentModel {
             //this is ensured by using a set and proper DocumentElement.equals() implementation
             
             if(getElementsSet().add(de)) {
+                List children = de.getChildren();
+                DocumentElement parent = (DocumentElement)de.getParentElement();
+                
+                //clear caches
+                clearChildrenCache();
+                clearParentsCache();
+                
                 /* events firing:
                  * If the added element has a children, we have to fire remove event
                  * to their previous parents (it is the added element's parent)
                  * and fire add event to the added element for all its children
                  */
-                DocumentElement parent = (DocumentElement)de.getParentElement();
+                
                 if(parent != null) {//root element doesn't have any parent
                     //fire add event for the new document element itself
                     parent.childAdded(de);
                     //fire events for all affected children
-                    Iterator/*<DocumentElement>*/ childrenIterator = de.getChildren().iterator();
+                    Iterator/*<DocumentElement>*/ childrenIterator = children.iterator();
                     while(childrenIterator.hasNext()) {
                         DocumentElement child = (DocumentElement)childrenIterator.next();
                         parent.childRemoved(child);
@@ -878,8 +943,6 @@ public final class DocumentModel {
             //get children of the element to be removed
             Iterator/*<DocumentElement>*/ childrenIterator = de.getChildren().iterator();
             
-            //remove the element itself
-//                elements.remove(de);
             if(debug) System.out.println("[DMT] removed element " + de + " ;parent = " + parent);
             
                 /* events firing:
@@ -891,6 +954,10 @@ public final class DocumentModel {
                 if(debug) System.out.println("[DTM] Trying to recover by returning root element...");
                 parent = getRootElement();
             }
+            
+            //clear caches
+            clearChildrenCache();
+            clearParentsCache();
             
             getElementsSet().remove(de);
             
@@ -949,7 +1016,7 @@ public final class DocumentModel {
         return de.getStartOffset() == de.getEndOffset();
     }
     
-//compares elements according to their start offsets
+    //compares elements according to their start offsets
     private static final Comparator ELEMENTS_COMPARATOR = new Comparator() {
         public int compare(Object o1, Object o2) {
             DocumentElement de1 = (DocumentElement)o1;
@@ -963,7 +1030,7 @@ public final class DocumentModel {
                 //to compare them according to their endoffsets
                 int endOffsetDelta = de2.getEndOffset() - de1.getEndOffset();
                 if(endOffsetDelta != 0) {
-                    return (isEmpty(de1) || isEmpty(de2)) ? -endOffsetDelta : endOffsetDelta;
+                    return (de1.isEmpty() || de2.isEmpty()) ? -endOffsetDelta : endOffsetDelta;
                 } else {
                     //because of TreeSet operations seems to use the comparator to test equality of elements
                     int typesDelta = de1.getType().compareTo(de2.getType());
@@ -1099,9 +1166,7 @@ public final class DocumentModel {
     private static final String DOCUMENT_ROOT_ELEMENT_TYPE = "ROOT_ELEMENT";
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.editor.model.debug");
-    
-    private static boolean consistency_check = Boolean.getBoolean("org.netbeans.editor.model.enable_consistency_check");
-    private static final String CONST_CHECK_MSG = "[document model consistency check]";
+    private static final boolean measure = Boolean.getBoolean("org.netbeans.editor.model.measure");
     
     private static final String GENERATING_MODEL_PROPERTY = "generating_document_model";
     
