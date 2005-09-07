@@ -17,7 +17,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -267,32 +266,35 @@ public final class SourcesHelper {
         while (it.hasNext()) {
             Root r = (Root)it.next();
             File locF = r.getActualLocation();
-            URI uri = locF.toURI();
             FileObject loc = locF != null ? FileUtil.toFileObject(locF) : null;
-            if (loc != null) {
-                if (FileUtil.getRelativePath(pdir, loc) != null) {
-                    // Inside projdir already. Skip it.
+            if (loc == null) {
+                // Not there; skip it.
+                continue;
+            }
+            if (!loc.isFolder()) {
+                // Actually a file. Skip it.
+                continue;
+            }
+            if (FileUtil.getRelativePath(pdir, loc) != null) {
+                // Inside projdir already. Skip it.
+                continue;
+            }
+            try {
+                Project other = ProjectManager.getDefault().findProject(loc);
+                if (other != null) {
+                    // This is a foreign project; we cannot own it. Skip it.
                     continue;
                 }
-                try {
-                    if (loc.isFolder()) {
-                        Project other = ProjectManager.getDefault().findProject(loc);
-                        if (other != null) {
-                            // This is a foreign project; we cannot own it. Skip it.
-                            continue;
-                        }
-                    }
-                } catch (IOException e) {
-                    // Assume it is a foreign project and skip it.
-                    continue;
-                }
+            } catch (IOException e) {
+                // Assume it is a foreign project and skip it.
+                continue;
             }
             // It's OK to go.
             if (newRootsToRegister != null) {
-                newRootsToRegister.add(uri);
+                newRootsToRegister.add(loc);
             } else {
-                lastRegisteredRoots.add(uri);
-                FileOwnerQuery.markExternalOwner(uri, p, registeredRootAlgorithm);
+                lastRegisteredRoots.add(loc);
+                FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
             }
         }
         if (newRootsToRegister != null) {
@@ -301,13 +303,13 @@ public final class SourcesHelper {
             toUnregister.removeAll(newRootsToRegister);
             Iterator rootIt = toUnregister.iterator();
             while (rootIt.hasNext()) {
-                URI loc = (URI)rootIt.next();
+                FileObject loc = (FileObject)rootIt.next();
                 FileOwnerQuery.markExternalOwner(loc, null, registeredRootAlgorithm);
             }
             newRootsToRegister.removeAll(lastRegisteredRoots);
             rootIt = newRootsToRegister.iterator();
             while (rootIt.hasNext()) {
-                URI loc = (URI)rootIt.next();
+                FileObject loc = (FileObject)rootIt.next();
                 FileOwnerQuery.markExternalOwner(loc, p, registeredRootAlgorithm);
             }
         }
