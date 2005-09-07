@@ -21,15 +21,19 @@ import java.lang.InterruptedException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  * Rather dummy implementation of the Java Platform, but sufficient for communication
@@ -37,7 +41,18 @@ import org.openide.modules.InstalledFileLocator;
  * Made public to allow ide/projectimport to reuse it
  */
 public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable {
-
+    
+    private static Set propertiesToFix = new HashSet ();
+    
+    //Properties used by IDE which should be fixed not to use resolved symlink
+    static {
+        propertiesToFix.add ("sun.boot.class.path");    //NOI18N
+        propertiesToFix.add ("sun.boot.library.path");  //NOI18N
+        propertiesToFix.add ("java.library.path");      //NOI18N
+        propertiesToFix.add ("java.ext.dirs");          //NOI18N
+        propertiesToFix.add ("java.home");              //NOI18N       
+    }
+    
     private boolean valid;
 
     public static NewJ2SEPlatform create (FileObject installFolder) throws IOException {
@@ -76,7 +91,9 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
             Map m = new HashMap(p.size());
             for (Enumeration en = p.keys(); en.hasMoreElements(); ) {
                 String k = (String)en.nextElement();
-                m.put(k, p.getProperty(k));
+                String v = (String) p.getProperty(k);
+                v = fixSymLinks (k,v);
+                m.put(k, v);
             }   
             this.setSystemProperties(m);
             this.valid = true;
@@ -85,7 +102,51 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
         } catch (IOException ex) {
             this.valid = false;
         }
-    }    
+    }
+    
+    
+    /**
+     * Fixes sun.boot.class.path property if it contains resolved
+     * symbolic link. On Suse the jdk is symlinked and during update
+     * the link is changed
+     *
+     */
+    private String fixSymLinks (String key, String value) {
+        if (Utilities.isUnix() && propertiesToFix.contains (key)) {
+            try {
+                String[] pathElements = value.split(File.pathSeparator);
+                boolean changed = false;
+                for (Iterator it = this.getInstallFolders().iterator(); it.hasNext();) {
+                    File f = FileUtil.toFile ((FileObject) it.next());
+                    if (f != null) {
+                        String path = f.getAbsolutePath();
+                        String canonicalPath = f.getCanonicalPath();
+                        if (!path.equals(canonicalPath)) {
+                            for (int i=0; i<pathElements.length; i++) {
+                                if (pathElements[i].startsWith(canonicalPath)) {
+                                    pathElements[i] = path + pathElements[i].substring(canonicalPath.length());
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (changed) {
+                    StringBuffer sb = new StringBuffer ();
+                    for (int i = 0; i<pathElements.length; i++) {
+                        if (i > 0) {
+                            sb.append(File.pathSeparatorChar);
+                        }
+                        sb.append(pathElements[i]);                
+                    }
+                    return sb.toString();
+                }
+            } catch (IOException ioe) {
+                //Return the original value
+            }
+        }
+        return value;
+    }
 
 
     private void getSDKProperties(String javaPath, String path) throws IOException {
