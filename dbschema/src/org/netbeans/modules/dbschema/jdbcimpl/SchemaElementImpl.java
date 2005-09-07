@@ -342,8 +342,14 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                         } else
                             continue;                            
                         
-                        pkSchema = rs.getString("PKTABLE_SCHEM").trim(); //NOI18N
-                        fkSchema = rs.getString("FKTABLE_SCHEM").trim(); //NOI18N
+                        pkSchema = rs.getString("PKTABLE_SCHEM"); //NOI18N
+                        if (pkSchema != null) {
+                            pkSchema = pkSchema.trim();
+                        }
+                        fkSchema = rs.getString("FKTABLE_SCHEM"); //NOI18N
+                        if (fkSchema != null) {
+                            fkSchema = fkSchema.trim();
+                        }
                         if ((pkSchema == fkSchema) || (pkSchema.equals(fkSchema))) {
                             refTable = rs.getString("PKTABLE_NAME").trim(); //NOI18N
                             if (! tables.contains(refTable))
