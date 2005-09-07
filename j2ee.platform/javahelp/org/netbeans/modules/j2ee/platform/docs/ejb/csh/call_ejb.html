@@ -1,0 +1,96 @@
+ 
+<html>
+
+    <!--
+    *     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+    *     Use is subject to license terms.
+    -->
+    <head>
+
+
+        <title>Call Enterprise Bean Dialog Box</title> 
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+    </head>
+    <body>
+<h2>Call Enterprise Bean Dialog Box</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>This dialog box generates a reference to an enterprise bean in a Java class 
+  file. Once you have a reference to the bean's local or remote interface, you 
+  can call the bean's business methods. </p>
+<p>You open the dialog box by right-clicking in the file to which you want to 
+  add the lookup code and choosing Enterprise Resources &gt; Call Enterprise Bean. 
+  The file must be located in an EJB module project or web application project. 
+  You cannot run the comand from a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="free-form web application project">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>.</p>
+<p>You use the dialog box in the following way:</p>
+<ol>
+  <li>The top panel lists all of the enterprise beans in the currently opened 
+    projects. If the file you ran the command on is in a free-form EJB project, 
+    the panel only lists the enterprise beans in the same project. You cannot 
+    call an enterprise bean in another project from a free-form EJB project. <br>
+    Select the enterprise bean you want to call.</li>
+  <li>Select whether to use inline lookup code or use an existing <a href="../../enterprise/general/service_locator.html">service 
+    locator</a> class. </li>
+  <li>Specify whether to reference the local interface or the remote interface. 
+    In order to reference a bean's local interface, the class that is referencing 
+    the bean must be packaged in the same enterprise application as the enterprise 
+    bean.</li>
+  <li>Click OK.</li>
+</ol>
+<p>When you call an enterprise bean, the following occurs:</p>
+<ul>
+  <li>A lookup method is created in the caller class.</li>
+  <li>The enterprise bean project is added to the caller project's classpath.</li>
+  <li>A reference to the entity or session bean being called is added to the deployment 
+    descriptor of the caller project. If and where the reference is added depends 
+    on which of the following applies: 
+    <ul>
+      <li>If the lookup is made from an enterprise bean implementation class, 
+        the reference is added to the corresponding bean.</li>
+      <li>If the lookup is made from any class of a web application, the reference 
+        is added to the web application.</li>
+      <li>If the lookup is made from a plain Java class of an EJB module, no reference 
+        is added. In this case, the reference has to be added manually to the 
+        bean calling the plain Java class.</li>
+    </ul>
+  </li>
+</ul>
+<ul class="note">
+  <li>If you are calling an enterprise bean that is in a free-form EJB module 
+    project and you get an error that the selected bean is not specified in the 
+    distribution archive, you have to specify the EJB module project's output. 
+    Right-click the EJB module's project node, choose Properties, and specify 
+    the output JAR file in the Output panel.</li>
+</ul>
+<dl> 
+  <dt>See Also</dt>
+  <dd><a href="../../enterprise/general/add_modules_to_ent_app.html">Adding a 
+    Module to an Enterprise Application</a></dd>
+  <dd><a href="../configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>
+  <dd><a href="../../enterprise/general/service_locator.html">Using a Service 
+    Locator</a></dd>
+  <dd><a href="define_business_method.html">Defining a Business Method</a> </dd>
+  <dd><a href="create_ejb.html">Creating an Enterprise Bean</a></dd>
+  <dd><a href="create_ejb.html">Using Service Locators</a></dd>
+</dl>
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+
+</html>

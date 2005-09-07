@@ -8,23 +8,21 @@
 <meta name="lastupdated" content="2Feb04">
 <!-- p2 -->
 
-<title>Accessing a Connection Pool from a Java Class</title>
+<title>Choose Database Dialog Box</title>
 <link rel="StyleSheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Accessing a Connection Pool from a Java Class</h2>
+<h2>Choose Database Dialog Box</h2>
 <p><small> <a href="#seealso">See Also</a> </small></p>
-<p>Applications that are deployed to servers often need to access databases that 
-  reside on remote machines. You therefore have to set up a JDBC connection pool 
-  the server that points to the database. You then create a data source that connects 
-  to the connection pool and use the data source's JNDI name to acquire a connection 
-  to the database.</p>
-<p><b>To access a database from an enterprise application:</b></p>
+<p>You use this dialog box to insert look-up code for a networked database into 
+  a Java class file. The lookup code looks for a data source with the given JNDI 
+  name and attempts to retrieve a connection to it.</p>
+<p>You can only insert database look-up code in Java classes that are located 
+  in an EJB module project or web application project. You open the dialog box 
+  by right-clicking the class in the Source Editor and choosing Enterprise Resources 
+  &gt; Use Database.</p>
+<p>You use the dialog box as follows:</p>
 <ol>
-  <li>(Optional) Create a service locator class to handle getting the reference 
-    to the database.</li>
-  <li>Open the Java file from which you want to access the database. In the Source 
-    Edtior, right-click the file and choose Enterprise Resources &gt; Use Database.</li>
   <li>Enter a JNDI name for the database connection. This name must be the same 
     as the JNDI name of the JDBC data source for the database on the target server. 
   </li>
@@ -43,18 +41,15 @@
     </ol>
   </li>
   <li>Under Service Locator Strategy, specify whether to generate inline lookup 
-    code or use an existing service locator. You can click the Browse to search 
-    for the service locator class name.</li>
+    code or use an existing <a href="../general/service_locator.html">service 
+    locator</a>. You can click the Browse to search for the service locator class 
+    name.</li>
   <li>Click OK.</li>
 </ol>
-<ul class="note">
-  <li>The Use Database command is only available in EJB module and web application 
-    projects.</li>
-</ul>
 <dl> 
   <dt>See Also</dt>
   <dd><a href="../../server/server_aboutdbconnect.html">About Connection Pools</a></dd>
-  <dd><a href="service_locator.html">Using a Service Locator</a></dd>
+  <dd><a href="../general/service_locator.html">Using a Service Locator</a></dd>
   <dd><a href="nbdocs:/org/netbeans/modules/db/docs/connectdb.html">Connecting 
     to a Database</a></dd>
   <dd><a href="nbdocs:/org/netbeans/modules/db/docs/adddriver.html">Adding a New 
