@@ -2532,13 +2532,13 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         public void drop(java.awt.dnd.DropTargetDropEvent dtde) {
             if (draggedComponent != null) {
                 NewComponentDrag newComponentDrag = ((NewComponentDrag)draggedComponent);
-                String id = newComponentDrag.addedComponent.getId();
                 try {
                     newComponentDrag.end(dtde.getLocation(), 0);
                 } finally {
                     draggedComponent = null;
                     draggingEnded = true;
                 }
+                String id = newComponentDrag.addedComponent.getId();
                 Node node = NodeTransfer.node(dtde.getTransferable(), NodeTransfer.DND_COPY);
                 if (node != null) {
                     NewComponentDrop newComponentDrop = (NewComponentDrop)node.getCookie(NewComponentDrop.class);
