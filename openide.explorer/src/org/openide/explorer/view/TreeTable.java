@@ -11,8 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.explorer.view;
-
-import javax.swing.plaf.basic.BasicTreeUI;
 import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -1517,8 +1515,9 @@ class TreeTable extends JTable implements Runnable {
 
                 if (isTreeColumn(column)) {
                     TreePath path = tree.getPathForRow(TreeTable.this.rowAtPoint(e.getPoint()));
-
-                    if ( isLocationInExpandControl( path, p )  ) {
+                    Rectangle r = tree.getPathBounds(path);
+ 
+                    if ((e.getX() >= (r.x - positionX)) && (e.getX() <= (r.x - positionX + r.width))) {
                         changeSelection = false;
                     }
                 }
@@ -1542,31 +1541,6 @@ class TreeTable extends JTable implements Runnable {
                     setValueIsAdjusting(true);
                     table.changeSelection(row, column, e.isControlDown(), e.isShiftDown());
                 }
-            }
-            
-            private boolean isLocationInExpandControl( TreePath path, Point location ) {
-                if( tree.getModel().isLeaf( path.getLastPathComponent() ) )
-                    return false;
-                
-                Rectangle r = tree.getPathBounds(path);
-                int boxWidth = 8;
-                Insets i = tree.getInsets();
-                int indent = 0;
-                
-                if( tree.getUI() instanceof BasicTreeUI ) {
-                    BasicTreeUI ui = (BasicTreeUI)tree.getUI();
-                    if( null != ui.getExpandedIcon() )
-                        boxWidth = ui.getExpandedIcon().getIconWidth();
-                    
-                    indent = ui.getLeftChildIndent();
-                }
-                int boxX;
-                if( tree.getComponentOrientation().isLeftToRight() ) {
-                    boxX = r.x - positionX - indent - boxWidth;
-                } else {
-                    boxX = r.x - positionX + indent + r.width;
-                }
-                return location.getX() >= boxX && location.getX() <= (boxX + boxWidth);
             }
         }
     }
