@@ -264,6 +264,7 @@ the Options window:-->
 <mapID target="junit_creatingtests" url="junit/junit_creatingtests.html" />
 <mapID target="junit_runningtests" url="junit/junit_runningtests.html" />	
 <mapID target="junit_configuring" url="junit/junit_configuring.html" />
+<mapID target="junit_debuggingtests" url="junit/junit_debuggingtests.html" />
 
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />

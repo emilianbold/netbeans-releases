@@ -348,58 +348,12 @@
     <tocitem text="About JUnit" target="junit_about"></tocitem>
     <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
     <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
-    <tocitem text="Creating Unit Tests with JUnit" target="junit_creatingtests"></tocitem>
-    <tocitem text="Running JUnit Tests" target="junit_runningtests"></tocitem>
+    <tocitem text="Creating a JUnit Test" target="junit_creatingtests"></tocitem>
+    <tocitem text="Running a JUnit Test" target="junit_runningtests"></tocitem>
+    <tocitem text="Debugging a JUnit Test" target="junit_debuggingtests"></tocitem>
     <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
   </tocitem>
 </tocitem>
-
-    <!-- Detritus - Removed from TOC, Index, and JHM
-    <tocitem text="DELETEd Adding Items to a Web Application" target="webmod_additems" />  
-    <tocitem text="DELETEdCreating a Web Application Group" target="webmod_multipletest" />         
-    <tocitem text="DELETEd Working with Dreamweaver Files" target="jsp_dwt" />
-    <tocitem text="DELETEdCompiling a JSP Source File" target="jsp_compile" />    
-    <tocitem text="DELETEdViewing Both JSP and Servlet Files" target="jsp_togglebreakpt"/>
-
-    <tocitem text="DELETEd" target="concepts_jump" /> 
-    <tocitem text="DELETEd" target="jsp_jump"/>
-    <tocitem text="DELETEd" target="webmod_jump" />
-    
-            <tocitem text="DELETEd" target="war_import" />	    
-            <tocitem text="DELETEd" target="webmod_chngdir" />  
-    <tocitem text="DELETE" target="jsp_debuggrprops" />            
-    -->
-
-    <!-- No longer in TOC
-    <tocitem text="NOTOCSetting JSP Page Properties" target="jsp_props" />
-    <tocitem text="NOTOCSetting Servlet Properties" target="servlet_props" />
-
-
-
-    <tocitem text="NOTOCSetting Filter Properties" target="filter_props" />
-    <tocitem text="NOTOCSetting Listener Properties" target="listen_props"/>
-    <tocitem text="NOTOCSetting the Compiler for a Servlet File" target="webmod_dbggrprops">  										
-
-
-
-
-
-
-    <tocitem text="NOTOCSetting WEB-INF Properties" target="webmod_webinfprops" />
-
-
-    Not part of core product 
-    <tocitem text="NOTOCEditing Web Application Deployment Properties" target="dd_properties" />
-    <tocitem text="NOTOCEditing Web Application Reference Properties" target="dd_references" />
-    <tocitem text="NOTOCEditing Web Application Security Properties" target="dd_security" />
-
-
-
-
-    <tocitem text="NOTOCEditing Web Application Archive Properties" target="war_editprop" />
-
-    -->
-
 
 <tocitem text="Servers and Databases">
 
