@@ -241,23 +241,6 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.core.multiview</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.multiview</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <implementation-version/>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.sun.appsrv</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -292,8 +275,7 @@ Microsystems, Inc. All Rights Reserved.
                         <implementation-version/>
                     </run-dependency>
                 </dependency>
-                
-                                <dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.jmxri</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -301,7 +283,6 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                
             </module-dependencies>
             <public-packages/>
         </data>
