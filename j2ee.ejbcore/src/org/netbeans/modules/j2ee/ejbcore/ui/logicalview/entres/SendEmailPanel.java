@@ -14,6 +14,8 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -33,6 +35,21 @@ public class SendEmailPanel extends javax.swing.JPanel {
         initComponents();
         slcPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slcPanel,BorderLayout.CENTER);
+        slcPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
+                    Object newvalue = evt.getNewValue();
+                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                        boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
+                        if (isServiceLocatorOk) {
+                            checkJndiName();
+                        } else {
+                            firePropertyChange(IS_VALID, true, false);
+                        }
+                    }
+                }
+            }
+        });
         jndiName.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
                 checkJndiName();
