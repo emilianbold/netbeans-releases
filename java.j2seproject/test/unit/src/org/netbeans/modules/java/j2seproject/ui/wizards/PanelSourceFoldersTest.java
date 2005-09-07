@@ -45,9 +45,9 @@ public class PanelSourceFoldersTest extends NbTestCase {
         assertNotNull("Empty name", PanelProjectLocationExtSrc.checkValidity ("",projectDir.getAbsolutePath()));
         assertNotNull("Read Only WorkDir", PanelProjectLocationExtSrc.checkValidity ("",badProjectDir.getAbsolutePath()));
         assertNotNull("Non Existent Sources", PanelSourceFolders.checkValidity (projectDir, new File[] {badSrcDir} , new File[] {test}));
-        assertFalse("Sources == Tests",  FolderList.isValidRoot (src, new File[] {src}));
-        assertFalse("Tests under Sources", FolderList.isValidRoot (new File (src, "Tests"),new File[] {src}));
-        assertFalse("Sources under Tests", FolderList.isValidRoot (badSrcDir2, new File[] {test}));
+        assertFalse("Sources == Tests",  FolderList.isValidRoot (src, new File[] {src},projectDir));
+        assertFalse("Tests under Sources", FolderList.isValidRoot (new File (src, "Tests"),new File[] {src},projectDir));
+        assertFalse("Sources under Tests", FolderList.isValidRoot (badSrcDir2, new File[] {test},projectDir));
         assertNull ("Valid data", PanelSourceFolders.checkValidity (projectDir, new File[]{src}, new File[]{test}));
     }
 }

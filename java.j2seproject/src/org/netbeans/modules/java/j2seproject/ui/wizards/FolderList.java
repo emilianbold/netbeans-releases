@@ -211,7 +211,7 @@ public final class FolderList extends javax.swing.JPanel {
                 new File[0] : this.relatedFolderList.getFiles();
             for (int i=0, index=model.size(); i<files.length; i++, index++) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
-                if (!isValidRoot(normalizedFile, relatedFolders)) {
+                if (!isValidRoot(normalizedFile, relatedFolders, this.projectFolder)) {
                     invalidRoots.add (normalizedFile);
                 }
                 else {
@@ -238,8 +238,9 @@ public final class FolderList extends javax.swing.JPanel {
     }//GEN-LAST:event_addButtonActionPerformed
     
     
-    static boolean isValidRoot (File file, File[] relatedRoots) {        
-        if (FileOwnerQuery.getOwner(file.toURI())!=null) {
+    static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {        
+        if (FileOwnerQuery.getOwner(file.toURI())!=null 
+            && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
             return false;
         }                
         else if (contains (file, relatedRoots)) {
