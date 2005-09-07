@@ -186,7 +186,9 @@ class ShortcutsFolder {
         }
         
         public void fileAttributeChanged (FileAttributeEvent fe) {
-            if (!fe.getName ().equals (CURRENT_PROFILE_ATTRIBUTE)) return;
+            if (fe.getName () != null &&
+                !fe.getName ().equals (CURRENT_PROFILE_ATTRIBUTE)
+            ) return;
             if (task != null) task.cancel ();
             task = RequestProcessor.getDefault ().post (this, 500);
         }
