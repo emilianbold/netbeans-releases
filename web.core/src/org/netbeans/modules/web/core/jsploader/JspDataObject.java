@@ -245,8 +245,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 if (encoding != null) {
                     if (!"".equals(encoding)) {
                         try {
-                            sun.io.CharToByteConverter.getConverter(encoding);
-                        } catch (IOException ex) {
+                            Charset.forName(encoding);
+                        } catch (IllegalArgumentException ex) {
                             IOException t = new IOException(
                                 NbBundle.getMessage(JspDataObject.class, "FMT_UnsupportedEncoding", encoding)
                             );
