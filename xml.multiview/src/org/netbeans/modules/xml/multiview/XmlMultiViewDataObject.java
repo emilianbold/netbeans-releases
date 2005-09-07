@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
@@ -55,7 +56,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private transient WeakReference lockReference;
 
 
-    private AbstractMultiViewElement activeMVElement;
+    private MultiViewElement activeMVElement;
 
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
@@ -225,10 +226,10 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
 
     /** Enable to get active MultiViewElement object
      */
-    protected AbstractMultiViewElement getActiveMultiViewElement() {
+    protected MultiViewElement getActiveMultiViewElement() {
         return activeMVElement;
     }
-    void setActiveMultiViewElement(AbstractMultiViewElement element) {
+    void setActiveMultiViewElement(MultiViewElement element) {
         activeMVElement = element;
     }
     /** Opens the specific view
