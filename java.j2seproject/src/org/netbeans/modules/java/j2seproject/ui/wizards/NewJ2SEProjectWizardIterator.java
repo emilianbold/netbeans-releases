@@ -190,6 +190,9 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
+        //set the default values of the sourceRoot and the testRoot properties
+        this.wiz.putProperty("sourceRoot", new File[0]);    //NOI18N
+        this.wiz.putProperty("testRoot", new File[0]);      //NOI18N
     }
 
     public void uninitialize(WizardDescriptor wiz) {
