@@ -14,7 +14,9 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.Cursor;
+import java.awt.Rectangle;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.TooManyListenersException;
 import javax.swing.JComponent;
@@ -22,7 +24,12 @@ import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.navigation.base.ModelBusyListener;
+import org.netbeans.modules.java.navigation.base.NavigatorJList;
+import org.netbeans.modules.java.navigation.spi.NavigatorListModel;
+import org.netbeans.modules.java.navigation.spi.RelatedItemProvider.RelatedItemEvent;
+import org.netbeans.modules.java.navigation.spi.RelatedItemProvider.RelatedItemListener;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -34,7 +41,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dafe Simonek
  */
-public final class ClassMemberPanel implements NavigatorPanel, LookupListener, ModelBusyListener {
+public final class ClassMemberPanel implements NavigatorPanel, LookupListener, ModelBusyListener, RelatedItemListener {
     
     /** Lookup template to search for java data objects. shared with InheritanceTreePanel */
     static final Lookup.Template JDOS = new Lookup.Template(JavaDataObject.class);
@@ -129,19 +136,62 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
     
     // end of ModelBusyListener implementation
     
+    // RelatedItemListener impl, for selecting method currently edited in editor
+    
+    public void itemsChanged (RelatedItemEvent evt) {
+        Object sel = evt.getNewPrimary ();
+        Object oldSel = evt.getOldPrimary ();
+        
+        NavigatorJList list = getPanelUI().getContent();
+        NavigatorListModel mdl = (NavigatorListModel)list.getModel();
+        Rectangle r;
+        int idx = sel == null ? -1 : mdl.indexOf ( sel );
+        list.setSelectedIndex ( sel == null ? -1 : idx );
+        if ( idx != -1 ) {
+            list.ensureIndexIsVisible(idx);
+            list.repaint ( list.getCellBounds ( idx, idx ) );
+        }
+
+        idx = oldSel == null ? -1 : mdl.indexOf ( oldSel );
+        if ( idx != -1 ) {
+            list.repaint ( list.getCellBounds ( idx, idx ) );
+        }
+
+        for ( Iterator i = evt.getPreviousRelatedItems ().iterator (); i.hasNext (); ) {
+            idx = mdl.indexOf ( i.next () );
+            if ( idx != -1 ) {
+                r = list.getCellBounds ( idx, idx );
+                list.repaint ( r );
+            }
+        }
+        for ( Iterator i = evt.getRelatedItems ().iterator (); i.hasNext (); ) {
+            idx = mdl.indexOf ( i.next () );
+            if ( idx != -1 ) {
+                r = list.getCellBounds ( idx, idx );
+                list.repaint ( r );
+            }
+        }
+    }
+
+    public void itemsCleared (RelatedItemEvent evt) {
+        getPanelUI().getContent().repaint();
+    }    
+    
+    
     /********** non public stuff **********/
     
     private void setNewContent (JavaDataObject jdo) {
         ClassMemberPanelUI ui = getPanelUI();
-        curModel = new ClassMemberModel(jdo, ui);
+        curModel = new ClassMemberModel(jdo, ui, this);
         ui.getContent().setModel(curModel);
         ui.setFilters(curModel.getFilters());
-        curModel.addNotify();
         try {
             curModel.addBusyListener(this);
         } catch (TooManyListenersException exc) {
-            // ignore, we just have no busy cursor then, not a big problem
+            // listeners registered twice, probably?
+            ErrorManager.getDefault().notify(exc);
         }
+        curModel.addNotify();
     }
     
     private void detachFromModel (ClassMemberModel model) {
@@ -155,6 +205,7 @@ public final class ClassMemberPanel implements NavigatorPanel, LookupListener, M
         }
         return panelUI;
     }
+
 
     
 }
