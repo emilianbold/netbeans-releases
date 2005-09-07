@@ -72,9 +72,9 @@ public class UseDatabaseAction extends NodeAction {
                 new HelpCtx(SelectDatabasePanel.class), 
                 null
                 );
-        p.getServiceLocatorPanel().addPropertyChangeListener(new PropertyChangeListener() {
+        p.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
+                if (evt.getPropertyName().equals(SelectDatabasePanel.IS_VALID)) {
                     Object newvalue = evt.getNewValue();
                     if ((newvalue != null) && (newvalue instanceof Boolean)) {
                         nd.setValid(((Boolean)newvalue).booleanValue());
@@ -82,6 +82,7 @@ public class UseDatabaseAction extends NodeAction {
                 }
             }
         });
+        p.checkDatabaseName();
         Object option = DialogDisplayer.getDefault().notify(nd);
         if (option == NotifyDescriptor.OK_OPTION) {
             try {

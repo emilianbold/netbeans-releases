@@ -17,6 +17,8 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
@@ -30,6 +32,9 @@ import org.openide.util.NbBundle;
  * @author  Chris Webster
  */
 public class SelectDatabasePanel extends javax.swing.JPanel {
+    
+    public static final String IS_VALID = "SelectDatabasePanel_isValid"; //NOI18N
+
     private DefaultComboBoxModel model;
     private Node driverNode;
     private static String PROTOTYPE_VALUE = "jdbc:pointbase://localhost/sample [pbpublic on PBPUBLIC] "; //NOI18N
@@ -48,6 +53,32 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         slPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
         createResourcesCheckBox.setSelected(FoldersListSettings.getDefault().isAgreedCreateServerResources());
+        slPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
+                    Object newvalue = evt.getNewValue();
+                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                        boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
+                        if (isServiceLocatorOk) {
+                            checkDatabaseName();
+                        } else {
+                            firePropertyChange(IS_VALID, true, false);
+                        }
+                    }
+                }
+            }
+        });
+        databaseName.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                checkDatabaseName();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                checkDatabaseName();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                checkDatabaseName();
+            }
+        });
     }
     
     private void getConnections() {
@@ -84,10 +115,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     
     public String getServiceLocator() {
         return slPanel.classSelected();
-    }
-    
-    public ServiceLocatorStrategyPanel getServiceLocatorPanel() {
-        return slPanel;
     }
     
     public boolean createServerResources() {
@@ -188,12 +215,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_jndiName"));
 
-        databaseName.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                databaseNameActionPerformed(evt);
-            }
-        });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -240,10 +261,6 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         FoldersListSettings.getDefault().setAgreedCreateServerResources(createResourcesCheckBox.isSelected());
     }//GEN-LAST:event_createResourcesCheckBoxActionPerformed
 
-    private void databaseNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_databaseNameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_databaseNameActionPerformed
-
     private void addConnectionPressed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addConnectionPressed
         ConnectionManager.getDefault().showAddConnectionDialog(null);
         getConnections();
@@ -270,4 +287,13 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         int driverCount = JDBCDriverManager.getDefault().getDrivers().length;
         addConnectionButton.setEnabled(driverCount > 0);
     }
+    
+    protected void checkDatabaseName() {
+        if (databaseName.getText().trim().equals("")) {
+            firePropertyChange(IS_VALID, true, false);
+        } else {
+            firePropertyChange(IS_VALID, false, true);
+        }
+    }
+    
 }
