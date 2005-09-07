@@ -98,6 +98,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
 
         // password field, features automatic fill from ~/.cvspass
 
+        repositoryPanel.extSshRadioButton.addActionListener(this);
+        repositoryPanel.internalSshRadioButton.addActionListener(this);
+        repositoryPanel.extCommandTextField.getDocument().addDocumentListener(this);
+        repositoryPanel.extPasswordField.getDocument().addDocumentListener(this);
         repositoryPanel.passwordTextField.getDocument().addDocumentListener(this);
         RequestProcessor requestProcessor = new RequestProcessor();
         updatePasswordTask = requestProcessor.create(new Runnable() {
@@ -510,7 +514,11 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
         scrambledPassword = null;
         valid();
     }
-
+    
+    private void setValid() {
+        valid();
+    }
+    
     private void onProxyConfiguration() {
         ProxySelector selector = new ProxySelector();
         selector.setProxyDescriptor(proxyDescriptor);
@@ -539,6 +547,10 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             onCvsRootChange();
         } else if (repositoryPanel.editButton == e.getSource()) {
             editRoot();
+        } else if (repositoryPanel.extSshRadioButton == e.getSource()) {
+            setValid();
+        } else if (repositoryPanel.internalSshRadioButton == e.getSource()) {
+            setValid();
         } else {
             assert false : "Unexpected event source: " + e.getSource();  // NOI18N
         }
@@ -564,8 +576,12 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
             public void run() {
                 if (e.getDocument() == repositoryPanel.passwordTextField.getDocument()) {
                     onPasswordChange();
-                } else {   // combo
+                } else if (e.getDocument() == ((JTextComponent) repositoryPanel.rootComboBox.getEditor().getEditorComponent()).getDocument()) {
                     onCvsRootChange();
+                } else if (e.getDocument() == repositoryPanel.extPasswordField.getDocument()) {
+                    setValid();
+                } else if (e.getDocument() == repositoryPanel.extCommandTextField.getDocument()) {
+                    setValid();
                 }
             }
         };
