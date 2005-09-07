@@ -1006,6 +1006,16 @@ class TreeTable extends JTable implements Runnable {
                     }
                 };
         }
+
+        public void fireTreeCollapsed(TreePath path) {
+            super.fireTreeCollapsed(path);
+            firePropertyChange("width", -1, getWidth());
+        }
+
+        public void fireTreeExpanded(TreePath path) {
+            super.fireTreeExpanded(path);
+            firePropertyChange("width", -1, getWidth());
+        }
     }
 
     /**
