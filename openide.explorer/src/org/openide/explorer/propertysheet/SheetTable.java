@@ -665,35 +665,34 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * tree to the table over the custom editor button will just set focus
      * to the table, but will not initiate the custom editor dialog */
     public void processMouseEvent(MouseEvent me) {
-        if (me.getID() == me.MOUSE_PRESSED) {
-            if (onCustomEditorButton(me) && !hasFocus()) {
-                if (PropUtils.psCommitOnFocusLoss && isEditing()) {
-                    getEditor().stopCellEditing();
-
-                    // #54211: it can happen that PropertySheet window is closed
-                    // when previous property editing is finished (e.g. Form 
-                    // event properties) If this is the case don't try to edit 
-                    // newly selected property.
-                    if (isGoingToBeClosed()) {
-                        return;
-                    }
-                }
-
-                int row = rowAtPoint(me.getPoint());
-                int col = columnAtPoint(me.getPoint());
-
-                if ((row != -1) && (col != -1)) {
-                    changeSelection(row, col, false, false);
-                    getCustomEditorAction().actionPerformed(
-                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CUSTOM_EDITOR)
-                    );
-                    me.consume();
-
+        if (me.getID() == me.MOUSE_PRESSED && !SwingUtilities.isRightMouseButton(me) &&
+                onCustomEditorButton(me) && !hasFocus()) {
+            if (PropUtils.psCommitOnFocusLoss && isEditing()) {
+                getEditor().stopCellEditing();
+                
+                // #54211: it can happen that PropertySheet window is closed
+                // when previous property editing is finished (e.g. Form
+                // event properties) If this is the case don't try to edit
+                // newly selected property.
+                if (isGoingToBeClosed()) {
                     return;
                 }
             }
+            
+            int row = rowAtPoint(me.getPoint());
+            int col = columnAtPoint(me.getPoint());
+            
+            if ((row != -1) && (col != -1)) {
+                changeSelection(row, col, false, false);
+                getCustomEditorAction().actionPerformed(
+                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CUSTOM_EDITOR)
+                        );
+                me.consume();
+                
+                return;
+            }
         }
-
+        
         super.processMouseEvent(me);
     }
 
