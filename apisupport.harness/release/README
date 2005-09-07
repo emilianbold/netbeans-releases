@@ -428,10 +428,17 @@ javac.source - default "1.4"; to use JDK 1.5 features like generics:
 
     javac.source=1.5
 
+javadoc.apichanges - optional location of an API changes list. Currently for
+netbeans.org modules only.
+
 javadoc.arch - optional location of an architecture XML description. Highly
 recommended as it makes your module self-documenting.
 
     javadoc.arch=${basedir}/arch.xml
+
+javadoc.overview - optional location of a Javadoc overview page. Discouraged
+since it disables the default content which links to various generated documents
+which you would need to manually add to your own overview.
 
 javadoc.title - title for Javadoc build. Optional for external modules.
 
