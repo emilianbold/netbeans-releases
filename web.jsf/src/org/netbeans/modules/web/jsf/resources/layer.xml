@@ -69,6 +69,19 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
   
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="jsf-config1.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="jsf-config1.1">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="Templates">
         <folder name="JSP_Servlet">
             <folder name="Java_Server_Faces">
