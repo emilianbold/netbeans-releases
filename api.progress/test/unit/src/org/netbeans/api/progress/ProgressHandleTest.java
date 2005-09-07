@@ -134,6 +134,8 @@ public class ProgressHandleTest extends NbTestCase {
     // tasks shorter than the InternalHandle.INITIAL_DELAY should be discarded.
     public void testIfShortOnesGetDiscarded() throws Exception {
         Controller.defaultInstance = new Controller(new FailingUI());
+        // need to simulate the status bar controller by setting the initial delay.
+        Controller.defaultInstance.minimumDiff = Controller.INITIAL_DELAY;
         proghandle = ProgressHandleFactory.createHandle("a1");
         proghandle.start();
         proghandle.progress("");

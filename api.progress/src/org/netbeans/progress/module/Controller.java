@@ -21,6 +21,7 @@ import java.awt.Frame;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -45,7 +46,16 @@ public final class Controller implements Runnable, ActionListener {
     private boolean dispatchRunning;
     private Timer timer;
     private static final int TIMER_QUANTUM = 400;
-    int minimumDiff = 0;
+    
+    // non-private so that it can be accessed from the tests
+    public int minimumDiff = 0;
+    
+    /**
+     * initial delay for ading progress indication into the UI. if finishes earlier,
+     * not shown at all, applies just to the status line (default) comtroller.
+     */
+    public static final int INITIAL_DELAY = 500;
+    
     /** Creates a new instance of Controller */
     public Controller(ProgressUIWorker comp) {
         component = comp;
@@ -62,7 +72,7 @@ public final class Controller implements Runnable, ActionListener {
             defaultInstance = new Controller(component);
             // just the default instance (status bar one) should have an initial delay
             // for placing items into UI.
-            defaultInstance.minimumDiff = InternalHandle.INITIAL_DELAY;
+            defaultInstance.minimumDiff = INITIAL_DELAY;
             component.setModel(defaultInstance.getModel());
         }
         return defaultInstance;
@@ -82,7 +92,12 @@ public final class Controller implements Runnable, ActionListener {
     
     void start(InternalHandle handle) {
         ProgressEvent event = new ProgressEvent(handle, ProgressEvent.TYPE_START, isWatched(handle));
-        postEvent(event);
+        if (minimumDiff == INITIAL_DELAY) {
+            // default controller
+            postEvent(event);
+        } else {
+            runImmediately(Collections.singleton(event));
+        }
     }
     
     void finish(InternalHandle handle) {
@@ -129,13 +144,19 @@ public final class Controller implements Runnable, ActionListener {
     }
     
     /**
-     * from UI thread only
+     * 
      */ 
     void runImmediately(Collection events) {
         synchronized (this) {
+            // need to add to queue immediately in the current thread
             eventQueue.addAll(events);
             dispatchRunning = true;
-            run();
+            // trigger ui update as fast as possible.
+            if (SwingUtilities.isEventDispatchThread()) {
+                run();
+            } else {
+                SwingUtilities.invokeLater(this);
+            }
         }
     }
     
@@ -166,8 +187,11 @@ public final class Controller implements Runnable, ActionListener {
             while (it.hasNext()) {
                 ProgressEvent event = (ProgressEvent)it.next();
                 if (event.getType() == ProgressEvent.TYPE_START) {
-                    justStarted.add(event.getSource());
-//                    model.addHandle(event.getSource());
+                    if (event.getSource().isCustomPlaced()) {
+                        model.addHandle(event.getSource());
+                    } else {
+                        justStarted.add(event.getSource());
+                    }
                 }
                 else if (event.getType() == ProgressEvent.TYPE_FINISH &&
                        (! justStarted.contains(event.getSource()))) 
