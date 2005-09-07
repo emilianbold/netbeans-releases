@@ -334,6 +334,9 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
             }
         }
         
+        // sets JVM Proxy Options
+        clientSupport.setProxyJVMOptions(WebProxySetter.getInstance().getProxyHost(),WebProxySetter.getInstance().getProxyPort());
+        
         // 3. add the service client to the project.
         // Use Progress API to display generator messages.
 
@@ -369,6 +372,7 @@ public class WebServiceClientWizardIterator implements WizardDescriptor.Instanti
                 }
             }
         });
+
         
         return result;
     }

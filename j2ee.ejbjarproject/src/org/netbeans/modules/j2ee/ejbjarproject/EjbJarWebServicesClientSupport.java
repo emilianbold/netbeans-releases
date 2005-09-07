@@ -758,6 +758,10 @@ public class EjbJarWebServicesClientSupport implements WebServicesClientSupportI
     NbBundle.getMessage(EjbJarWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
     new String [] { "wsi", "strict" });
     
+    /** Does nothing in ejb-jar project */
+    public void setProxyJVMOptions(String proxyHost, String proxyPort) {
+    }
+    
     /** Stub descriptor for clients supported by this project type.
      */
     private static class JAXRPCClientStubDescriptor extends ClientStubDescriptor {

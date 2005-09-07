@@ -810,6 +810,10 @@ public class WebProjectWebServicesClientSupport implements WebServicesClientSupp
         
     }
     
+    /** Does nothing in web project */
+    public void setProxyJVMOptions(String proxyHost, String proxyPort) {
+    }
+    
     /** Stub descriptor for services and clients supported by this project type.
      */
     private static class JAXRPCClientStubDescriptor extends ClientStubDescriptor {

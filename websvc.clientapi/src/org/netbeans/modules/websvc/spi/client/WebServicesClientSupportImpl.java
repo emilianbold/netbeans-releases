@@ -46,4 +46,6 @@ public interface WebServicesClientSupportImpl {
     
     public void setWsdlSource(String serviceName, String wsdlSource);
     
+    public void setProxyJVMOptions(String proxyHost, String proxyPort);
+    
 }

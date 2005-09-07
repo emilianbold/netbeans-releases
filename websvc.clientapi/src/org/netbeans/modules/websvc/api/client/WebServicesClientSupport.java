@@ -201,6 +201,10 @@ public final class WebServicesClientSupport {
     public void setWsdlSource(String serviceName, String wsdlSource) {
         impl.setWsdlSource(serviceName, wsdlSource);
     }
+    
+    public void setProxyJVMOptions(String proxyHost, String proxyPort) {
+        impl.setProxyJVMOptions(proxyHost, proxyPort);
+    }
 
 /* !PW FIXME What to put here?  (commented code came from WebModule API)
  *
