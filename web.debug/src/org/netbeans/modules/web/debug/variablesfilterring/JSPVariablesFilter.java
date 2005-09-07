@@ -66,7 +66,7 @@ public class JSPVariablesFilter implements TreeModelFilter {
                 return children;
 
             List visibleChildrenList = new ArrayList();
-            ImplicitLocals implicitLocals = null;
+            ImplicitLocals implicitLocals = new ImplicitLocals();
             Object refThis = null;
             AttributeMap requestAttributes = new AttributeMap("request");
             AttributeMap sessionAttributes = new AttributeMap("session");
@@ -78,8 +78,6 @@ public class JSPVariablesFilter implements TreeModelFilter {
                 if (var instanceof LocalVariable) {
                     LocalVariable lvar = (LocalVariable)var;
                     if (ImplicitLocals.isImplicitLocal(lvar.getName())) {
-                        if (implicitLocals == null)
-                            implicitLocals = new ImplicitLocals();
                         implicitLocals.addLocal(lvar);
 
                         if (lvar instanceof ObjectVariable) {
