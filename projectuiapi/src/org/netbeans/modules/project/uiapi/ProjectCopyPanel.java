@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
@@ -194,6 +195,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(extSourcesWarning, gridBagConstraints);
 
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;

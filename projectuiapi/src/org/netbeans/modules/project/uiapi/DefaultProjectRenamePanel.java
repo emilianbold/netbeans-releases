@@ -16,6 +16,7 @@ import java.awt.CardLayout;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -154,6 +155,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
+        errorMessage.setForeground(UIManager.getColor("nb.errorForeground"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
