@@ -52,8 +52,8 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="Popup">
                     <!-- Place after EJBActionGroup and/or EnterpriseRefActionGroup -->
                     <attr name="generate-goto-popup/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-j2ee-ejbjarproject-ui-logicalview-ejb-action-EnterpriseRefActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-ejb-action-EJBActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
+                    <attr name="org-netbeans-modules-j2ee-ejbcore-ui-logicalview-entres-EnterpriseRefActionGroup.instance/org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance" boolvalue="true"/>
                     <attr name="org-netbeans-modules-websvc-core-webservices-action-WebServiceActionGroup.instance/org-netbeans-modules-refactoring-ui-WhereUsedAction.instance" boolvalue="true"/>
                     <!-- Place after WebServiceActionGroup -->
                     <attr name="generate-goto-popup/org-netbeans-modules-websvc-core-client-actions-WebServiceClientActionGroup.instance" boolvalue="true"/>
