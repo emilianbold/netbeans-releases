@@ -67,6 +67,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
     private JavaClass beanClass;
     private EjbJar ejbJar;
     private FileObject srcFile;
+    private String ejbName;
     
     /** Creates new form CallEjbPanel */
     public CallEjbPanel(Node rootNode, String lastLocator, JavaClass beanClass) {
@@ -86,6 +87,8 @@ public class CallEjbPanel extends javax.swing.JPanel {
                 Ejb[] ejbs = ejbJar.getEnterpriseBeans().getEjbs();
                 for (int i = 0; i < ejbs.length; i++) {
                     if (ejbs[i].getEjbClass().equals(beanClass.getName())) {
+                        String displayName = ejbs[i].getDefaultDisplayName();
+                        this.ejbName = displayName == null ? ejbs[i].getEjbName() : displayName;
                         EjbRef[] ejbRefs = ejbs[i].getEjbRef();
                         EjbLocalRef[] ejbLocalRefs = ejbs[i].getEjbLocalRef();
                         this.refNameSet = new HashSet(ejbRefs.length + ejbLocalRefs.length);
@@ -377,7 +380,7 @@ public class CallEjbPanel extends javax.swing.JPanel {
             }
             
             if (((JavaClass) member).equals(CallEjbPanel.this.beanClass)) {
-                setErrorMessage(""); //NOI18N
+                setErrorMessage(NbBundle.getMessage(CallEjbPanel.class, "LBL_CannotCallItself", ejbName)); //NOI18N
                 return false;
             }
             
