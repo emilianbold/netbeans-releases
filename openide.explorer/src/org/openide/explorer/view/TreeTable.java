@@ -11,6 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.openide.explorer.view;
+import javax.swing.table.TableColumnModel;
 import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -807,6 +808,31 @@ class TreeTable extends JTable implements Runnable {
         }
 
         return unfocusedSelFg;
+    }
+
+    protected JTableHeader createDefaultTableHeader() {
+        return new TreeTableHeader( getColumnModel() );
+    }
+    
+    /**
+     * #53748: Default TableHeader provides wrong preferred height when the first column
+     * uses default renderer and has no value.
+     */
+    private static class TreeTableHeader extends JTableHeader {
+        public TreeTableHeader( TableColumnModel columnModel ) {
+            super( columnModel );
+        }
+
+        public Dimension getPreferredSize() {
+
+            Dimension retValue = super.getPreferredSize();
+            
+            Component comp = getDefaultRenderer().getTableCellRendererComponent( getTable(), 
+						"X", false, false, -1, 0 );
+            int rendererHeight = comp.getPreferredSize().height; 
+            retValue.height = Math.max(retValue.height, rendererHeight); 
+            return retValue;
+        }
     }
 
     /**
