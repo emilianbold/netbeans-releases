@@ -29,7 +29,7 @@
     </action-mappings>
     
     <controller
-        processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
+    processorClass="org.apache.struts.tiles.TilesRequestProcessor"/>
 
     <message-resources parameter="_____MESSAGE_RESOURCE____"/>    
     
