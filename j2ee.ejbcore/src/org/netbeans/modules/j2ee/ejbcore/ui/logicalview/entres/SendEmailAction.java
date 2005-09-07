@@ -12,6 +12,8 @@
  */
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
@@ -54,7 +56,7 @@ public class SendEmailAction extends NodeAction {
         enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
         SendEmailPanel p = new SendEmailPanel(erc.getServiceLocatorName()); //NOI18N
-        DialogDescriptor nd = new DialogDescriptor(
+        final DialogDescriptor nd = new DialogDescriptor(
                 p,
                 NbBundle.getMessage(SendEmailAction.class, "LBL_SpecifyMailResource"),
                 true,
@@ -64,6 +66,19 @@ public class SendEmailAction extends NodeAction {
                 new HelpCtx(SendEmailPanel.class),
                 null
                 );
+        
+        p.addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals(SendEmailPanel.IS_VALID)) {
+                    Object newvalue = evt.getNewValue();
+                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                        nd.setValid(((Boolean)newvalue).booleanValue());
+                    }
+                }
+            }
+        });
+        p.checkJndiName();
+
         Object option = DialogDisplayer.getDefault().notify(nd);
         if (option == NotifyDescriptor.OK_OPTION) {
             try {

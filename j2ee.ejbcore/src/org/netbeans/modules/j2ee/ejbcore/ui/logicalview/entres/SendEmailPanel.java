@@ -14,6 +14,8 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.awt.BorderLayout;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 
 /**
@@ -21,6 +23,9 @@ import java.awt.BorderLayout;
  * @author  blaha
  */
 public class SendEmailPanel extends javax.swing.JPanel {
+
+    public static final String IS_VALID = "SendEmailPanel_isValid"; //NOI18N
+    
     private ServiceLocatorStrategyPanel slcPanel;
     
     /** Creates new form SendEmailPanel */
@@ -28,6 +33,17 @@ public class SendEmailPanel extends javax.swing.JPanel {
         initComponents();
         slcPanel = new ServiceLocatorStrategyPanel(lastLocator);
         serviceLocatorPanel.add(slcPanel,BorderLayout.CENTER);
+        jndiName.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                checkJndiName();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                checkJndiName();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                checkJndiName();
+            }
+        });
     }
     
     public String getServiceLocator(){
@@ -95,5 +111,13 @@ public class SendEmailPanel extends javax.swing.JPanel {
     private javax.swing.JTextField jndiName;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
+    
+    protected void checkJndiName() {
+        if (jndiName.getText().trim().equals("")) {
+            firePropertyChange(IS_VALID, true, false);
+        } else {
+            firePropertyChange(IS_VALID, false, true);
+        }
+    }
     
 }
