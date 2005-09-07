@@ -73,7 +73,7 @@ public class SendJMSMessageAction extends NodeAction {
                     );
             
             Object button = DialogDisplayer.getDefault().notify(nd);
-            if (button != okButton) {
+            if (button != DialogDescriptor.OK_OPTION) {
                 return;
             }
             
