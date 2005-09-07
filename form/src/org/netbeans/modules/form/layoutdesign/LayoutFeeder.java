@@ -1153,6 +1153,7 @@ class LayoutFeeder implements LayoutConstants {
         int pos = interval.getCurrentSpace().positions[dimension][alignment];
         assert pos != LayoutRegion.UNKNOWN;
         int sizeIncrement = Integer.MIN_VALUE;
+        int d = alignment == LEADING ? -1 : 1;
         int[] groupPos = null;
         LayoutInterval parent = interval.getParent();
         LayoutInterval prev = null;
@@ -1163,9 +1164,7 @@ class LayoutFeeder implements LayoutConstants {
                     int accommodated = accommodateSizeInSequence(interval, prev, sizeIncrement, alignment);
                     sizeIncrement -= accommodated;
                     if (groupPos != null) {
-                        if (alignment == LEADING)
-                            accommodated = -accommodated;
-                        groupPos[alignment] += accommodated;
+                        groupPos[alignment] += accommodated * d;
                     }
                 }
                 LayoutInterval neighbor = LayoutInterval.getDirectNeighbor(interval, alignment, false);
@@ -1178,8 +1177,11 @@ class LayoutFeeder implements LayoutConstants {
             else {
                 groupPos = parent.getCurrentSpace().positions[dimension];
                 if (groupPos[alignment] != LayoutRegion.UNKNOWN) {
-                    sizeIncrement = alignment == LEADING ?
-                        groupPos[alignment] - pos : pos - groupPos[alignment];
+                    sizeIncrement = (pos - groupPos[alignment]) * d;
+                    // update space of subgroup according to parent (needed if subgroup is also parallel)
+                    int subPos[] = interval.getCurrentSpace().positions[dimension];
+                    if (subPos[alignment]*d < groupPos[alignment]*d)
+                        subPos[alignment] = groupPos[alignment];
                 }
                 else groupPos = null;
                 if (!interval.isSequential())
@@ -1302,9 +1304,16 @@ class LayoutFeeder implements LayoutConstants {
         // can't align with own subinterval or interval in the same sequence
 
         // if not in same parallel group try to substitute interval with parent
+        boolean resizing = LayoutInterval.wantResize(interval);
         LayoutInterval parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
         while (!parParent.isParentOf(toAlignWith)) {
-            if (LayoutInterval.isAlignedAtBorder(interval, parParent, alignment)) {
+            if (LayoutInterval.isAlignedAtBorder(interval, parParent, alignment)) { // substitute with parent
+                // make sure parent space is up-to-date
+                parParent.getCurrentSpace().positions[dimension][alignment]
+                        = interval.getCurrentSpace().positions[dimension][alignment];
+                // allow parent resizing if substituting for resizing interval
+                if (resizing && !LayoutInterval.canResize(parParent))
+                    operations.enableGroupResizing(parParent);
                 interval = parParent;
                 parParent = LayoutInterval.getFirstParent(interval, PARALLEL);
             }
@@ -2166,16 +2175,24 @@ class LayoutFeeder implements LayoutConstants {
             if (commonGroup.isSequential()) {
                 if (commonGroup.isParentOf(iDesc1.parent)) {
                     ext1 = iDesc1.parent.isSequential() ? iDesc1.parent : iDesc1.neighbor;
-                    if (ext1 != null)
+                    if (ext1 != null) {
+                        while (ext1.getParent().getParent() != commonGroup) {
+                            ext1 = ext1.getParent();
+                        }
                         startIndex = commonGroup.indexOf(ext1.getParent());
+                    }
                 }
                 else startGap = commonGroup.getSubInterval(startIndex).isEmptySpace();
 
                 endIndex = commonGroup.getSubIntervalCount() - 1;
                 if (commonGroup.isParentOf(iDesc2.parent)) {
                     ext2 = iDesc2.parent.isSequential() ? iDesc2.parent : iDesc2.neighbor;
-                    if (ext2 != null)
+                    if (ext2 != null) {
+                        while (ext2.getParent().getParent() != commonGroup) {
+                            ext2 = ext2.getParent();
+                        }
                         endIndex = commonGroup.indexOf(ext2.getParent());
+                    }
                 }
                 else endGap = commonGroup.getSubInterval(endIndex).isEmptySpace();
             }
