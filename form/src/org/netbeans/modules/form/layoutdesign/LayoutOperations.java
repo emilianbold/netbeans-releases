@@ -1065,6 +1065,7 @@ class LayoutOperations implements LayoutConstants {
             int idx = layoutModel.removeInterval(interval);
             seq.setAlignment(interval.getAlignment());
             layoutModel.addInterval(seq, parent, idx);
+            layoutModel.setIntervalAlignment(interval, DEFAULT);
             layoutModel.addInterval(interval, seq, 0);
             layoutModel.addInterval(gap, seq, alignment == LEADING ? 0 : 1);
         }
