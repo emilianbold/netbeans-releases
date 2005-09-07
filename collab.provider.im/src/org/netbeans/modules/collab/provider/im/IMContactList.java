@@ -161,7 +161,8 @@ public class IMContactList extends Object {
         boolean hasContacts = false;
 
         Collection folders = _getSession().getPersonalStoreService().getFolders(PersonalStoreFolder.CONTACT_FOLDER);
-
+        folders = new ArrayList(folders); // clone first
+	
         for (Iterator i = folders.iterator(); i.hasNext();) {
             PersonalStoreFolder folder = (PersonalStoreFolder) i.next();
             String folderName = folder.getDisplayName();
