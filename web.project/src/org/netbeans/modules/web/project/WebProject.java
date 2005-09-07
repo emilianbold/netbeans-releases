@@ -620,12 +620,15 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
                     
                     EditableProperties props = updateHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
+                    if (props.getProperty(WebProjectProperties.WAR_PACKAGE) == null)
+                        props.setProperty(WebProjectProperties.WAR_PACKAGE, "true"); //NOI18N
                     //update lib references in private properties
                     ArrayList l = new ArrayList ();
                     l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
                     l.addAll(classPathExtender.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                     WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
                     updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     
                     try {
                         ProjectManager.getDefault().saveProject(WebProject.this);
