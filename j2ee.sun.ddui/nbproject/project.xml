@@ -201,18 +201,6 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
-                <!-- !PW j2eeeditor dependency was added only for the config editor's
-                     panel view, which is inherited from the j2eeserver ui code we
-                     moved over.  This goes away when we can migrate to multiview.
-                -->
-                <dependency>
-                    <code-name-base>org.netbeans.libs.j2eeeditor</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
                 <dependency>
                     <code-name-base>org.openide.compat</code-name-base>
                     <build-prerequisite/>
