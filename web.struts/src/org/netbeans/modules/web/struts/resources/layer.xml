@@ -52,13 +52,27 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Separator0.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     </file>
-                    
                 </folder>
-
             </folder>
-            
         </folder>
     </folder>
+    
+    <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="struts-config1.0">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="struts-config1.1">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+                <folder name="struts-config1.2">
+                    <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    
     <folder name="j2ee">
         <folder name="webtier">
             <folder name="framework">
