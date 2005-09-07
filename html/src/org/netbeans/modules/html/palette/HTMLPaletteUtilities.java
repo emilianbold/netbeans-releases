@@ -155,6 +155,9 @@ public final class HTMLPaletteUtilities {
         if (doc == null)
             return;
         
+        if (doc instanceof BaseDocument)
+            ((BaseDocument)doc).atomicLock();
+        
         int start = insert(s, target, doc);
         
         if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
@@ -170,6 +173,9 @@ public final class HTMLPaletteUtilities {
 //            caret.moveDot(current);
 //            caret.setSelectionVisible(true);
 //        }
+
+        if (doc instanceof BaseDocument)
+            ((BaseDocument)doc).atomicUnlock();
         
     }
     

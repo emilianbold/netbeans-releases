@@ -85,6 +85,9 @@ public final class JSPPaletteUtilities {
         if (s == null)
             s = "";
         
+        if (doc instanceof BaseDocument)
+            ((BaseDocument)doc).atomicLock();
+        
         int start = insert(s, target, doc);
         
         if (reformat && start >= 0 && doc instanceof BaseDocument) {  // format the inserted text
@@ -100,6 +103,9 @@ public final class JSPPaletteUtilities {
 //            caret.moveDot(current);
 //            caret.setSelectionVisible(true);
 //        }
+
+        if (doc instanceof BaseDocument)
+            ((BaseDocument)doc).atomicUnlock();
         
     }
     
