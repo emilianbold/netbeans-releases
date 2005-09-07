@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.JButton;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -61,7 +63,7 @@ public class SendJMSMessageAction extends NodeAction {
             MessageDestinationPanel panel = 
                     new MessageDestinationPanel(okButton, erc.getServiceLocatorName());
             
-            DialogDescriptor nd = new DialogDescriptor(
+            final DialogDescriptor nd = new DialogDescriptor(
                     panel,
                     NbBundle.getMessage(SendJMSMessageAction.class,"LBL_SelectMessageDestination"),
                     true,
@@ -72,6 +74,18 @@ public class SendJMSMessageAction extends NodeAction {
                     null
                     );
             
+            panel.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(MessageDestinationPanel.IS_VALID)) {
+                        Object newvalue = evt.getNewValue();
+                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
+                            nd.setValid(((Boolean)newvalue).booleanValue());
+                        }
+                    }
+                }
+            });
+            panel.checkDestination();
+
             Object button = DialogDisplayer.getDefault().notify(nd);
             if (button != DialogDescriptor.OK_OPTION) {
                 return;
