@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
            <include name="collab-service.jar"/>
            <include name="jso-*-0.12.5.jar"/>
            <include name="log4j-1.2.8.jar"/>
-           <include name="xp.jar"/>
+           <include name="xp-0.5.jar"/>
            <include name="jaxen-core-1.0.jar"/>
            <include name="saxpath-1.0.jar"/>        
           </fileset>
@@ -49,13 +49,15 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
 		<text>Jabber Stream Objects 0.12.5</text>
-                <file location="../external/jso-lgpl2.1-license.txt"/>
+                <file location="../external/jso-0.12.5-license.txt"/>
 		<text>Log4J - Apache Common Logging 1.2.8</text>
-                <file location="../external/apache-2.0-license.txt"/>
+                <file location="../external/log4j-1.2.8-license.txt"/>
                 <text>XP - XML Parser 0.5</text>
-                <file location="../external/jc-license.txt"/>
-                <text>Jaxen 1.0 and SaxPath 1.0</text>
-                <file location="../external/jaxen-license.txt"/>
+                <file location="../external/xp-0.5-license.txt"/>
+                <text>Jaxen 1.0</text>
+                <file location="../external/jaxen-core-1.0-license.txt"/>
+                <text>SaxPath 1.0</text>
+                <file location="../external/saxpath-1.0-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
