@@ -44,16 +44,16 @@ public class ViewTest extends TestBase {
         super(name);
     }
     
-    private LogicalViewProvider lpp;
+    private LogicalViewProvider lvp;
     
     protected void setUp() throws Exception {
         super.setUp();
-        lpp = (LogicalViewProvider) extsrcroot.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("found a LogicalViewProvider", lpp);
+        lvp = (LogicalViewProvider) extsrcroot.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("found a LogicalViewProvider", lvp);
     }
     
     public void testViewItemBasic() throws Exception {
-        Node root = lpp.createLogicalView();
+        Node root = lvp.createLogicalView();
         assertEquals("lookup has project", extsrcroot, root.getLookup().lookup(Project.class));
         Children ch = root.getChildren();
         Node[] kids = ch.getNodes(true);
@@ -67,7 +67,7 @@ public class ViewTest extends TestBase {
     }
     
     public void testViewItemChanges() throws Exception {
-        Node root = lpp.createLogicalView();
+        Node root = lvp.createLogicalView();
         Children ch = root.getChildren();
         Node[] kids = ch.getNodes(true);
         assertEquals("two child nodes", 2, kids.length);
@@ -106,23 +106,23 @@ public class ViewTest extends TestBase {
     
     public void testFindPath() throws Exception {
         // Do not test packages style - provided only by java/freeform.
-        LogicalViewProvider lpp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull(lpp2);
-        Node root = lpp2.createLogicalView();
-        doTestFindPathPositive(lpp2, root, simple, "xdocs/foo.xml");
-        doTestFindPathPositive(lpp2, root, simple, "xdocs");
-        doTestFindPathPositive(lpp2, root, simple, "build.properties");
-        doTestFindPathPositive(lpp2, root, simple, "build.xml");
-        doTestFindPathNegative(lpp2, root, simple, "nbproject/project.xml");
-        doTestFindPathNegative(lpp2, root, simple, "nbproject");
+        LogicalViewProvider lvp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull(lvp2);
+        Node root = lvp2.createLogicalView();
+        doTestFindPathPositive(lvp2, root, simple, "xdocs/foo.xml");
+        doTestFindPathPositive(lvp2, root, simple, "xdocs");
+        doTestFindPathPositive(lvp2, root, simple, "build.properties");
+        doTestFindPathPositive(lvp2, root, simple, "build.xml");
+        doTestFindPathNegative(lvp2, root, simple, "nbproject/project.xml");
+        doTestFindPathNegative(lvp2, root, simple, "nbproject");
     }
     
-    public static void doTestFindPathPositive(LogicalViewProvider lpp, Node root, Project project, String path) throws Exception {
+    public static void doTestFindPathPositive(LogicalViewProvider lvp, Node root, Project project, String path) throws Exception {
         FileObject file = project.getProjectDirectory().getFileObject(path);
         assertNotNull("found " + path, file);
         DataObject d = DataObject.find(file);
-        Node nDO = lpp.findPath(root, d);
-        Node nFO = lpp.findPath(root, file);
+        Node nDO = lvp.findPath(root, d);
+        Node nFO = lvp.findPath(root, file);
         assertNotNull("found node for " + path, nDO);
         assertNotNull("found node for " + path, nFO);
         assertEquals("correct node", d, nDO.getLookup().lookup(DataObject.class));
@@ -130,11 +130,11 @@ public class ViewTest extends TestBase {
         assertEquals("correct node", d, nFO.getLookup().lookup(DataObject.class));
     }
     
-    public static void doTestFindPathNegative(LogicalViewProvider lpp, Node root, Project project, String path) throws Exception {
+    public static void doTestFindPathNegative(LogicalViewProvider lvp, Node root, Project project, String path) throws Exception {
         FileObject file = project.getProjectDirectory().getFileObject(path);
         assertNotNull("found " + path, file);
         DataObject d = DataObject.find(file);
-        Node n = lpp.findPath(root, d);
+        Node n = lvp.findPath(root, d);
         assertNull("did not find node for " + path, n);
     }
     

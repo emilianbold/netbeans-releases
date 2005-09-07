@@ -29,16 +29,16 @@ public class ViewTest extends TestBase {
         super(name);
     }
     
-    private LogicalViewProvider lpp;
+    private LogicalViewProvider lvp;
     
     protected void setUp() throws Exception {
         super.setUp();
-        lpp = (LogicalViewProvider) extsrcroot.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull("found a LogicalViewProvider", lpp);
+        lvp = (LogicalViewProvider) extsrcroot.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull("found a LogicalViewProvider", lvp);
     }
     
     public void testViewItemBasic() throws Exception {
-        Node root = lpp.createLogicalView();
+        Node root = lvp.createLogicalView();
         Children ch = root.getChildren();
         Node[] kids = ch.getNodes(true);
         assertEquals("two child nodes", 2, kids.length);
@@ -54,15 +54,15 @@ public class ViewTest extends TestBase {
     }
     
     public void testFindPath() throws Exception {
-        LogicalViewProvider lpp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
-        assertNotNull(lpp2);
-        Node root = lpp2.createLogicalView();
-        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "src/org/foo/myapp/MyApp.java");
-        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "src/org/foo/myapp");
-        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathNegative(lpp2, root, simple, "src/org/foo");
-        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathNegative(lpp2, root, simple, "src/org");
-        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "src");
-        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lpp2, root, simple, "antsrc/org/foo/ant/SpecialTask.java");
+        LogicalViewProvider lvp2 = (LogicalViewProvider) simple.getLookup().lookup(LogicalViewProvider.class);
+        assertNotNull(lvp2);
+        Node root = lvp2.createLogicalView();
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "src/org/foo/myapp/MyApp.java");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "src/org/foo/myapp");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathNegative(lvp2, root, simple, "src/org/foo");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathNegative(lvp2, root, simple, "src/org");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "src");
+        org.netbeans.modules.ant.freeform.ui.ViewTest.doTestFindPathPositive(lvp2, root, simple, "antsrc/org/foo/ant/SpecialTask.java");
     }
     
 }
