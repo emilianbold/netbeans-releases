@@ -54,6 +54,8 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             DocumentModel model, DocumentChange[] changes)
             throws DocumentModelException, DocumentModelTransactionCancelledException {
         
+        long a = System.currentTimeMillis();
+        
         if(debug) System.out.println("\n\n\n\n\n");
         if(debug) DocumentModelUtils.dumpElementStructure(model.getRootElement());
         
@@ -178,7 +180,7 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
             generateDocumentElements(dtm, model, de);
         }
         
-        
+        if(measure) System.out.println("[xmlmodel] generated in " + (System.currentTimeMillis() - a));
         
     }
     
@@ -387,5 +389,6 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
     
     
     private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.debug");
+    private static final boolean measure = Boolean.getBoolean("org.netbeans.modules.xml.text.structure.measure");
     
 }
