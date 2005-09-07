@@ -297,7 +297,7 @@ abstract public class BasicWizardIterator implements WizardDescriptor.Instantiat
             }
             
             WizardDescriptor wiz = (WizardDescriptor) settings;
-            if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue())) {
+            if (WizardDescriptor.NEXT_OPTION.equals(wiz.getValue()) || wiz.getValue() == null) {
                 panel.readFromDataModel();
             }
         }
