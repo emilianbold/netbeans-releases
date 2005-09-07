@@ -39,6 +39,10 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         this.enableCheckbox = enableCheckbox;
         this.handle = handle;
         initComponents();
+        
+        if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
+            ((CardLayout) progress.getLayout()).show(progress, "progress");
+        }
     }
     
     /** This method is called from within the constructor to
@@ -60,9 +64,10 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ACSD_Delete_Panel", new Object[] {}));
         warningText.setEditable(false);
         warningText.setFont(javax.swing.UIManager.getFont("Label.font"));
-        warningText.setText(getWarningText());
+        warningText.setText(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Pre_Delete_Warning", new Object[] {projectDisplaName}));
         warningText.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
         warningText.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -71,8 +76,10 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(warningText, gridBagConstraints);
+        warningText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ASCN_Pre_Delete_Warning", new Object[] {}));
+        warningText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ACSD_Pre_Delete_Warning", new Object[] {projectDisplaName}));
 
-        org.openide.awt.Mnemonics.setLocalizedText(deleteSourcesCheckBox, getCheckboxText());
+        org.openide.awt.Mnemonics.setLocalizedText(deleteSourcesCheckBox, org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Delete_Also_Sources", new Object[] {projectFolder}));
         deleteSourcesCheckBox.setEnabled(enableCheckbox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -80,10 +87,12 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         add(deleteSourcesCheckBox, gridBagConstraints);
+        deleteSourcesCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ACSN_Delete_Also_Sources", new Object[] {projectFolder}));
+        deleteSourcesCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "ACSD_Delete_Also_Sources", new Object[] {}));
 
         progress.setLayout(new java.awt.CardLayout());
 
-        progress.add(jPanel4, "card3");
+        progress.add(jPanel4, "not-progress");
 
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
@@ -104,7 +113,7 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jPanel3, gridBagConstraints);
 
-        progress.add(progressImpl, "card2");
+        progress.add(progressImpl, "progress");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -137,10 +146,6 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
 
     void setDeleteSources(boolean value) {
         deleteSourcesCheckBox.setSelected(value);
-    }
-    
-    private String getWarningText() {
-        return NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Pre_Delete_Warning", new Object[] {projectDisplaName});
     }
     
     private String getCheckboxText() {

@@ -31,6 +31,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -148,7 +149,7 @@ public final class DefaultProjectOperationsImplementation {
         
         String caption = NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Delete_Project_Caption");
         
-        handler.showConfirmationDialog(deletePanel, project, caption, "Yes", "No", true, new Executor() {
+        handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
             public void execute() {
                 OpenProjects.getDefault().close(new Project[] {project});
                 
@@ -180,10 +181,10 @@ public final class DefaultProjectOperationsImplementation {
     
     //<editor-fold defaultstate="collapsed" desc="Copy Operation">
     public static void copyProject(final Project project) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Copy Project");
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Handle"));
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, false);
         
-        showConfirmationDialog(panel, project, "Copy Project", "Copy", null, false, new Executor() {
+        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Copy_Project_Caption"), "Copy_Button", null, false, new Executor() { // NOI18N
             public void execute() {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
@@ -234,10 +235,10 @@ public final class DefaultProjectOperationsImplementation {
     
     //<editor-fold defaultstate="collapsed" desc="Move Operation">
     public static void moveProject(final Project project) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Move Project");
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Handle"));
         final ProjectCopyPanel panel = new ProjectCopyPanel(handle, project, true);
         
-        showConfirmationDialog(panel, project, "Move Project", "Move", null, false, new Executor() {
+        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Move_Project_Caption"), "Move_Button", null, false, new Executor() { // NOI18N
             public void execute() {
                 String nueName = panel.getNewName();
                 File newTarget = panel.getNewDirectory();
@@ -253,10 +254,10 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     public static void renameProject(final Project project, final String nueName) {
-        final ProgressHandle handle = ProgressHandleFactory.createHandle("Rename Project");
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Handle"));
         final DefaultProjectRenamePanel panel = new DefaultProjectRenamePanel(handle, project, nueName);
         
-        showConfirmationDialog(panel, project, "Rename Project", "Rename", null, false, new Executor() {
+        showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
             
             public void execute() {
                 String nueName = panel.getNewName();
@@ -366,24 +367,21 @@ public final class DefaultProjectOperationsImplementation {
     }
     
     private static JComponent wrapPanel(JComponent component) {
-        JPanel result = new JPanel();
+        component.setBorder(new EmptyBorder(12, 12, 12, 12));
         
-        result.setLayout(new GridBagLayout());
-        
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        
-        gridBagConstraints.insets = new Insets(12, 12, 12, 12);
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        result.add(component, gridBagConstraints);
-        
-        return result;
+        return component;
     }
     
     private static void showConfirmationDialog(final JComponent panel, Project project, String caption, String confirmButton, String cancelButton, boolean doSetMessageType, final Executor executor) {
-        final JButton confirm = new JButton(confirmButton);
-        final JButton cancel  = new JButton(cancelButton == null ? "Cancel" : cancelButton);
+        final JButton confirm = new JButton(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_" + confirmButton));
+        final JButton cancel  = new JButton(cancelButton == null ?
+              NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Cancel_Button")
+            : NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_" + cancelButton));
+        
+        confirm.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ACSD_" + confirmButton));
+        cancel.getAccessibleContext().setAccessibleDescription(cancelButton == null ?
+              NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ACSD_Cancel_Button")
+            : NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "ACSD_" + cancelButton));
         
         assert panel instanceof InvalidablePanel;
         

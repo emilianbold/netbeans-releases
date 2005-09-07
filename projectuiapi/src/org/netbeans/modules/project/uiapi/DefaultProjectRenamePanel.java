@@ -57,6 +57,10 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         projectName.getDocument().addDocumentListener(this);
         updateProjectFolder();
         validateDialog();
+        
+        if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
+            ((CardLayout) progress.getLayout()).show(progress, "progress");
+        }
     }
     
     public synchronized void addChangeListener(ChangeListener l) {
@@ -91,6 +95,8 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Project_Rename", new Object[] {}));
+        jLabel1.setLabelFor(projectName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Project_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -99,22 +105,26 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(jLabel1, gridBagConstraints);
 
+        projectFolderLabel.setLabelFor(projectFolder);
         org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Project_Folder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(6, 18, 0, 12);
         add(projectFolderLabel, gridBagConstraints);
 
-        projectName.setColumns(20);
+        projectName.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(projectName, gridBagConstraints);
+        projectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSN_Project_Name", new Object[] {}));
+        projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Project_Name", new Object[] {}));
 
+        projectFolder.setColumns(30);
         projectFolder.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -122,6 +132,8 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(projectFolder, gridBagConstraints);
+        projectFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSN_Project_Folder", new Object[] {}));
+        projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Project_Folder", new Object[] {}));
 
         org.openide.awt.Mnemonics.setLocalizedText(alsoRenameFolder, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Also_Rename_Project_Folder"));
         alsoRenameFolder.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
@@ -131,10 +143,12 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(alsoRenameFolder, gridBagConstraints);
+        alsoRenameFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSN_Also_Rename_Project_Folder", new Object[] {}));
+        alsoRenameFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Also_Rename_Project_Folder", new Object[] {}));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Rename_Dialog_Text", ProjectUtils.getInformation(project).getDisplayName()));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Rename_Dialog_Text", new Object[] {ProjectUtils.getInformation(project).getDisplayName()}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -152,7 +166,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
 
         progress.setLayout(new java.awt.CardLayout());
 
-        progress.add(jPanel4, "card3");
+        progress.add(jPanel4, "not-progress");
 
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
@@ -173,7 +187,7 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jPanel3, gridBagConstraints);
 
-        progress.add(progressImpl, "card2");
+        progress.add(progressImpl, "progress");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

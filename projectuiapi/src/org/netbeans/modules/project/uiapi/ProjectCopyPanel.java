@@ -59,11 +59,13 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectName.getDocument().addDocumentListener(this);
         projectLocation.getDocument().addDocumentListener(this);
         
-        progress.setVisible(false);
-        
         if (isMove) {
             nameLabel.setVisible(false);
             projectName.setVisible(false);
+        }
+        
+        if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
+            ((CardLayout) progress.getLayout()).show(progress, "progress");
         }
     }
     
@@ -102,13 +104,15 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
 
         setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Copy_Move_Dialog_Text", new Integer(isMove ? 1 : 0), ProjectUtils.getInformation(project).getDisplayName()));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Copy_Move_Panel", new Object[] {new Integer(isMove ? 1 : 0)}));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Copy_Move_Dialog_Text", new Object[] {new Integer(isMove ? 1 : 0), ProjectUtils.getInformation(project).getDisplayName()}));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(jLabel1, gridBagConstraints);
 
+        jLabel2.setLabelFor(projectLocation);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Project_Location"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -117,7 +121,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(jLabel2, gridBagConstraints);
 
-        projectLocation.setColumns(20);
+        projectLocation.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -125,7 +129,10 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 5);
         add(projectLocation, gridBagConstraints);
+        projectLocation.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSN_Project_Location", new Object[] {}));
+        projectLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Project_Location", new Object[] {}));
 
+        nameLabel.setLabelFor(projectName);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Project_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -134,7 +141,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(nameLabel, gridBagConstraints);
 
-        projectName.setColumns(20);
+        projectName.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -142,6 +149,8 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 5);
         add(projectName, gridBagConstraints);
+        projectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSN_Project_Name", new Object[] {}));
+        projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Project_Name", new Object[] {}));
 
         org.openide.awt.Mnemonics.setLocalizedText(browse, org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Browse", new Object[] {}));
         browse.addActionListener(new java.awt.event.ActionListener() {
@@ -155,7 +164,9 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(browse, gridBagConstraints);
+        browse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Browse", new Object[] {}));
 
+        jLabel4.setLabelFor(projectFolder);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "LBL_Project_Folder"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -164,6 +175,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(jLabel4, gridBagConstraints);
 
+        projectFolder.setColumns(30);
         projectFolder.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -171,6 +183,8 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 5);
         add(projectFolder, gridBagConstraints);
+        projectFolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSN_Project_Folder", new Object[] {}));
+        projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ProjectCopyPanel.class, "ACSD_Project_Folder", new Object[] {}));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -190,7 +204,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
 
         progress.setLayout(new java.awt.CardLayout());
 
-        progress.add(jPanel4, "card3");
+        progress.add(jPanel4, "not-progress");
 
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
@@ -211,7 +225,7 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jPanel3, gridBagConstraints);
 
-        progress.add(progressImpl, "card2");
+        progress.add(progressImpl, "progress");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -375,9 +389,8 @@ public class ProjectCopyPanel extends javax.swing.JPanel implements DocumentList
         projectFolder.setEnabled(false);
         projectLocation.setEnabled(false);
         projectName.setEnabled(false);
-        progress.setVisible(true);
         browse.setEnabled(false);
         
-        ((CardLayout) progress.getLayout()).last(progress);
+        ((CardLayout) progress.getLayout()).show(progress, "progress");
     }
 }
