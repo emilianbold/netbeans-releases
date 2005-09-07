@@ -178,8 +178,7 @@ public class SwingLayoutCodeGenerator {
         if (interval.isGroup()) {
             layout.append(".add("); // NOI18N
             int alignment = interval.getAlignment();
-            if (alignment != LayoutConstants.DEFAULT) {
-                assert interval.getParent().isParallel();
+            if ((alignment != LayoutConstants.DEFAULT) && interval.getParent().isParallel()) {
                 String alignmentStr = convertAlignment(alignment);
                 layout.append(alignmentStr).append(", "); // NOI18N
             }
@@ -194,7 +193,7 @@ public class SwingLayoutCodeGenerator {
                 LayoutComponent layoutComp = interval.getComponent();
                 ComponentInfo info = (ComponentInfo)componentIDMap.get(layoutComp.getId());
                 assert (info.variableName != null);
-                if ((alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)) {
+                if (interval.getParent().isSequential() || (alignment == LayoutConstants.DEFAULT) || (alignment == groupAlignment)) {
                     layout.append(info.variableName);
                 } else {
                     String alignmentStr = convertAlignment(alignment);

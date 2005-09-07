@@ -111,6 +111,8 @@ public class SwingLayoutBuilder {
     }
 
     public void createLayout() {
+        Throwable th = null;
+        boolean reset = false;
         container.removeAll();
         try {
             GroupLayout layout = new GroupLayout(container);
@@ -124,8 +126,15 @@ public class SwingLayoutBuilder {
             composeLinks(layout);
             layout.layoutContainer(container);
         } catch (Exception ex) {
+            reset = true;
+            th = ex;
+        } catch (Error err) {
+            reset = true;
+            th = err;
+        }
+        if (reset) {
             container.setLayout(null);
-            throw new RuntimeException("Error occured. Use undo to return to the last good state.", ex); // NOI18N
+            throw new RuntimeException("Error occured. Use undo to return to the last good state.", th); // NOI18N
         }
     }
     
@@ -169,7 +178,9 @@ public class SwingLayoutBuilder {
                            boolean first, boolean last) {
         if (interval.isGroup()) {
             if (group instanceof GroupLayout.SequentialGroup) {
-                assert (interval.getAlignment() == LayoutConstants.DEFAULT);
+                if (interval.getAlignment() != LayoutConstants.DEFAULT) {
+                    System.err.println("WARNING: Ignoring non-default alignment of interval in sequential group."); // NOI18N
+                }
                 ((GroupLayout.SequentialGroup)group).add(composeGroup(layout, interval, first, last));
             } else {
                 int alignment = convertAlignment(interval.getAlignment());
@@ -184,12 +195,11 @@ public class SwingLayoutBuilder {
                 LayoutComponent layoutComp = interval.getComponent();
                 Component comp = (Component)componentIDMap.get(layoutComp.getId());
                 assert (comp != null);
-                if (alignment == LayoutConstants.DEFAULT) {
-                    if (group instanceof GroupLayout.SequentialGroup) {
-                        ((GroupLayout.SequentialGroup)group).add(comp, min, pref, max);
-                    } else {
-                        ((GroupLayout.ParallelGroup)group).add(comp, min, pref, max);
+                if (group instanceof GroupLayout.SequentialGroup) {
+                    if (alignment != LayoutConstants.DEFAULT) {
+                        System.err.println("WARNING: Ignoring non-default alignment of interval in sequential group."); // NOI18N
                     }
+                    ((GroupLayout.SequentialGroup)group).add(comp, min, pref, max);
                 } else {
                     GroupLayout.ParallelGroup pGroup = (GroupLayout.ParallelGroup)group;
                     int groupAlignment = convertAlignment(alignment);
