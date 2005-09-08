@@ -151,6 +151,10 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         add(jLabel1, gridBagConstraints);
+        locationTextField.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
+        locationTextField.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_InstallLocation"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
@@ -173,6 +177,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel {
         add(jButton1, gridBagConstraints);
         jButton1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerLocationVisualPanel.class, "LBL_BrowseButton"));
         jButton1.getAccessibleContext().setAccessibleDescription("ACSD_Browse_Button_InstallLoc");
+        jButton1.setMnemonic('b');
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
