@@ -21,9 +21,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nb.dir" location="../../nbbuild/netbeans"/>
 
   <!-- Specific to Mac OS X installer -->
-  <property name="appname" value="NetBeans4.2dev"/>
-  <property name="appversion" value="4.2dev"/>
-  <property name="version" value="4.2dev"/>
+  <property name="appname" value="NetBeans5.0dev"/>
+  <property name="appversion" value="5.0dev"/>
+  <property name="version" value="5.0dev"/>
                                                                                                                                  
   <property name="app.dir" value="${appname}.app"/>
   <property name="build.dir" value="build"/>
@@ -69,7 +69,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="NetBeans4.2dev-asbundle-${buildnumber}"/>
+    <property name="installer.basename" value="NetBeans5.0dev-asbundle-${buildnumber}"/>
   </target>
   
   <macrodef name="transform-ml">

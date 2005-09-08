@@ -628,10 +628,10 @@ public final class NbPlatform implements Comparable {
         return MessageFormat.format(currVer, new Object[] {implVers});
     }
     private static String findCurrVer(JarFile jar, String infix) throws IOException {
-        // first try to find the Bundle for 4.2+ (after openide split)
+        // first try to find the Bundle for 5.0+ (after openide split)
         ZipEntry bundle = jar.getEntry("org/netbeans/core/startup/Bundle" + infix + ".properties"); // NOI18N
         if (bundle == null) {
-            // might be <4.2 (before openide split)
+            // might be <5.0 (before openide split)
             bundle = jar.getEntry("org/netbeans/core/Bundle" + infix + ".properties"); // NOI18N
         }
         if (bundle == null) {

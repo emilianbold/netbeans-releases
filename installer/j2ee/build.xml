@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="set-installer.basename" unless="installer.basename" depends="set-buildnumber">
-    <property name="installer.basename" value="J2EEKit4.2dev-${buildnumber}"/>
+    <property name="installer.basename" value="J2EEKit5.0dev-${buildnumber}"/>
   </target>
   
   <target name="set-ismp.cp" unless="ismp.cp-set">

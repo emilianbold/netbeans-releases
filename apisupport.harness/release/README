@@ -264,7 +264,7 @@ If you do not export any API, say so:
 
     <public-packages/>
 
-If you export an API to selected modules only, you can use (NB 4.2+ only!):
+If you export an API to selected modules only, you can use (NB 5.0+ only!):
 
     <friend-packages>
         <friend>org.netbeans.modules.brother</friend>
@@ -884,7 +884,7 @@ which is obsoleted by this new system.
 
 10. Consider using <friend-packages> instead of <public-packages> if you want to
 export a limited API without using implementation dependencies. *Will not work
-in NB 4.1, only 4.2+.*
+in NB 4.1, only 5.0+.*
 
 11. Do not pick an explicit name for your module; accept
 modules/${code.name.base.dashes}.jar. It can be autoload or eager just by

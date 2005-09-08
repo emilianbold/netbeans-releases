@@ -31,7 +31,7 @@ static char options[4098] = "";
 static char dirs[4098] = "", extradirs[4098];
 static char jdkswitch[MAX_PATH] = "";
 
-static char* defaultDirs[] = { "nb4.2",
+static char* defaultDirs[] = { "nb5.0",
                                "ide6",
                                "enterprise2",
                                "harness",

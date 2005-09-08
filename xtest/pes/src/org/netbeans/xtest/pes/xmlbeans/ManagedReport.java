@@ -146,7 +146,7 @@ public class ManagedReport extends XTestResultsReport  {
     
     /** It returns xmlat_webLink trimmed of ending index.html.
      * xmlat_webLink points to index.html of the report, e.g. 
-     * netbeans_4.2/200507061600/qa-functional_validation/qa-xp-s3/index.html.
+     * netbeans_5.0/200507061600/qa-functional_validation/qa-xp-s3/index.html.
      */
     public String getPathToResultsRoot() {
         if (xmlat_webLink == null) return null;

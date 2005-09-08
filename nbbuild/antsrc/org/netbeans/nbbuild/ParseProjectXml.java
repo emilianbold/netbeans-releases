@@ -555,7 +555,7 @@ public final class ParseProjectXml extends Task {
             
             if ("org.openide".equals (cnb)) {
                 // XXX special handling of splited openide, can be removed
-                // after 4.2 release or when apisupport improved
+                // after 5.0 release or when apisupport improved
                 getProject ().log ("Do not depend on org.openide anymore, depend on its libraries. Update " + getProjectFile (), getProject().MSG_WARN);
                 
                 cp.append (computeClasspathModuleLocation (modules, "org.openide.util").getAbsolutePath ());
