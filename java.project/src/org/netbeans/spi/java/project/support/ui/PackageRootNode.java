@@ -45,7 +45,10 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
@@ -187,9 +190,32 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
         return actions;            
     }
 
-    // Show properties of the DataFolder
+    // Show reasonable properties of the DataFolder,
+    //it shows the sorting names as rw property, the name as ro property and the path to root as ro property
     public PropertySet[] getPropertySets() {            
-        return getDataFolderNodeDelegate().getPropertySets();
+        PropertySet[] properties =  getDataFolderNodeDelegate().getPropertySets();
+        for (int i=0; i< properties.length; i++) {
+            if (Sheet.PROPERTIES.equals(properties[i].getName())) {
+                //Replace the Sheet.PROPERTIES by the new one
+                //having the ro name property and ro path property
+                properties[i] = Sheet.createPropertiesSet();
+                ((Sheet.Set)properties[i]).put( new PropertySupport.ReadOnly (DataObject.PROP_NAME, String.class,
+                    NbBundle.getMessage (PackageRootNode.class,"PROP_name"), NbBundle.getMessage (PackageRootNode.class,"HINT_name")) {
+
+                          public /*@Override*/ Object getValue () {
+                              return PackageRootNode.this.getDisplayName();
+                          }
+                });
+                ((Sheet.Set)properties[i]).put( new PropertySupport.ReadOnly ("ROOT_PATH", String.class,    //NOI18N
+                    NbBundle.getMessage (PackageRootNode.class,"PROP_rootpath"), NbBundle.getMessage (PackageRootNode.class,"HINT_rootpath")) {
+
+                          public /*@Override*/ Object getValue () {                              
+                              return FileUtil.getFileDisplayName(PackageRootNode.this.file);
+                          }
+                });
+            }
+        }
+        return properties;
     }
 
     // XXX Paste types - probably not very nice 

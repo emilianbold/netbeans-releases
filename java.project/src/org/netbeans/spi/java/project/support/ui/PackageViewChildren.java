@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.Action;
@@ -51,6 +52,8 @@ import org.openide.loaders.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -843,6 +846,38 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 setChildren( empty ? Children.LEAF: df.createNodeChildren( NO_FOLDERS_FILTER ) );                
                 update();
             }
+        }
+        
+        
+        public /*@Override*/ Node.PropertySet[] getPropertySets () {
+            Node.PropertySet[] properties = super.getPropertySets ();
+            for (int i=0; i< properties.length; i++) {
+                if (Sheet.PROPERTIES.equals(properties[i].getName())) {
+                    //Replace the Sheet.PROPERTIES by the new one
+                    //having only the name property which does refactoring
+                    properties[i] = Sheet.createPropertiesSet();
+                    ((Sheet.Set)properties[i]).put( new PropertySupport.ReadWrite (DataObject.PROP_NAME, String.class,
+                        NbBundle.getMessage (PackageViewChildren.class,"PROP_name"), NbBundle.getMessage (PackageViewChildren.class,"HINT_name")) {
+                        
+                              public /*@Override*/ Object getValue () {
+                                  return PackageViewChildren.PackageNode.this.getName();
+                              }
+
+                              public /*@Override*/ void setValue (Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                                  if (!canRename())
+                                      throw new IllegalAccessException();
+                                  if (!(val instanceof String))
+                                      throw new IllegalArgumentException();
+                                  PackageViewChildren.PackageNode.this.setName((String)val);
+                              }
+
+                              public /*@Override*/ boolean canWrite () {
+                                  return PackageViewChildren.PackageNode.this.canRename();
+                              }
+                    });
+                }
+            }
+            return properties;
         }
         
         private DataFolder getDataFolder() {
