@@ -13,8 +13,11 @@
 
 package org.netbeans.modules.web.struts;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.xml.core.lib.EncodingHelper;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -24,6 +27,7 @@ import org.openide.text.DataEditorSupport;
 import org.openide.cookies.*;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -37,9 +41,33 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
     private final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
-            saveDocument();
+            StrutsConfigDataObject obj = (StrutsConfigDataObject) getDataObject ();
+            if (obj.isDocumentValid()) {
+                saveDocument();
+            }else {
+                DialogDescriptor dialog = new DialogDescriptor(
+                    NbBundle.getMessage (StrutsConfigEditorSupport.class, "MSG_invalidXmlWarning"),         //NOI18N
+                    NbBundle.getMessage (StrutsConfigEditorSupport.class, "TTL_invalidXmlWarning"));        //NOI18N
+                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);
+                if (dialog.getValue() == org.openide.DialogDescriptor.OK_OPTION) {
+                    saveDocument();
+                }
+            }
         }
     };
+    
+    private StrutsConfigDataObject dataObject;
+    private RequestProcessor.Task parsingDocumentTask;
+    /** Delay for automatic parsing - in miliseconds */
+    private static final int AUTO_PARSING_DELAY = 2000;
+    private DocumentListener docListener = null;
+    
+    public StrutsConfigEditorSupport(StrutsConfigDataObject dobj) {
+        super(dobj,new XmlEnv(dobj));
+        setMIMEType("text/x-struts+xml");                           //NOI18N
+        dataObject = dobj;
+    }
     
     /*
      * Save document using encoding declared in XML prolog if possible otherwise
@@ -59,7 +87,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
             getDataObject().setModified (false);
         } catch (java.io.UnsupportedEncodingException ex) {
             // ask user what next?
-            String message = NbBundle.getMessage(StrutsConfigEditorSupport.class,"TEXT_SAVE_AS_UTF",enc);
+            String message = NbBundle.getMessage(StrutsConfigEditorSupport.class,"TEXT_SAVE_AS_UTF",enc);               //NOI18N
             NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message);
             Object res = DialogDisplayer.getDefault().notify(descriptor);
 
@@ -117,11 +145,23 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
         }
     }
     
-    public StrutsConfigEditorSupport(StrutsConfigDataObject dobj) {
-        super(dobj,new XmlEnv(dobj));
-        // TODO - there should not be this mimetype, but some differetnt. We need distinguish the completion providers.
-        setMIMEType("text/x-struts+xml");
-        //setMIMEType("text/xml-struts-config");
+    /** Restart the timer which starts the parser after the specified delay.
+    * @param onlyIfRunning Restarts the timer only if it is already running
+    */
+    public void restartTimer() {
+        if (parsingDocumentTask==null || parsingDocumentTask.isFinished() ||
+            parsingDocumentTask.cancel()) {
+            dataObject.setDocumentDirty(true);
+            Runnable r = new Runnable() {
+                            public void run() {
+                                dataObject.parsingDocument();
+                        }
+                    };
+            if (parsingDocumentTask != null)
+                parsingDocumentTask = RequestProcessor.getDefault().post(r, AUTO_PARSING_DELAY);
+            else
+                parsingDocumentTask = RequestProcessor.getDefault().post(r, 100);
+        } 
     }
     
     /** 
@@ -135,6 +175,19 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
 
         addSaveCookie();
 
+        if (docListener == null){
+            // attach document listener
+            docListener = new DocumentListener() {
+                public void insertUpdate(DocumentEvent e) { change(e); }
+                public void changedUpdate(DocumentEvent e) { }
+                public void removeUpdate(DocumentEvent e) { change(e); }
+            
+                private void change(DocumentEvent e) {
+                    if (!dataObject.isNodeDirty()) restartTimer();
+                }
+            };
+            getDocument().addDocumentListener(docListener);
+        }
         return true;
     }
 

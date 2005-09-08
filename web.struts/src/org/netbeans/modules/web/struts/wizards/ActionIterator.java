@@ -25,6 +25,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.config.model.*;
+import org.netbeans.modules.web.struts.editor.StrutsEditorUtilities;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataFolder;
@@ -37,6 +38,8 @@ import org.netbeans.api.project.Project;
 
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.editor.BaseDocument;
+import org.openide.cookies.OpenCookie;
 //import org.netbeans.modules.web.core.Util;
 //import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
@@ -56,7 +59,7 @@ public class ActionIterator implements TemplateWizard.Iterator {
     private transient boolean debug = false;
     
     public void initialize (TemplateWizard wizard) {
-        if (debug) log ("initialize");
+        if (debug) log ("initialize");  //NOI18N
         index = 0;
         // obtaining target folder
         Project project = Templates.getProject( wizard );
@@ -70,9 +73,9 @@ public class ActionIterator implements TemplateWizard.Iterator {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (debug) {
-            log ("\tproject: " + project);
-            log ("\ttargetFolder: " + targetFolder);
-            log ("\tsourceGroups.length: " + sourceGroups.length);
+            log ("\tproject: " + project);                          //NOI18N
+            log ("\ttargetFolder: " + targetFolder);                //NOI18N
+            log ("\tsourceGroups.length: " + sourceGroups.length);  //NOI18N
         }
         
         WizardDescriptor.Panel secondPanel = new ActionPanel(project);
@@ -107,7 +110,7 @@ public class ActionIterator implements TemplateWizard.Iterator {
     
     public Set instantiate(TemplateWizard wizard) throws IOException {
         if (debug)
-            log("instantiate");
+            log("instantiate");                                 //NOI18N
         
         FileObject dir = Templates.getTargetFolder( wizard );
         DataFolder df = DataFolder.findFolder( dir );
@@ -115,7 +118,7 @@ public class ActionIterator implements TemplateWizard.Iterator {
         
         String superclass=(String)wizard.getProperty(WizardProperties.ACTION_SUPERCLASS);
         if (debug)
-            log("superclass="+superclass);
+            log("superclass="+superclass);   //NOI18N
         
         if (ActionPanelVisual.DISPATCH_ACTION.equals(superclass)) {
             FileObject templateParent = template.getParent();
@@ -150,33 +153,39 @@ public class ActionIterator implements TemplateWizard.Iterator {
             if (packageName!=null) break;
         }
         if (packageName!=null) packageName = packageName.replace('/','.');
-        else packageName="";
+        else packageName="";                        //NOI18N
         String className=null;
         if (packageName.length()>0)
             className=packageName+"."+targetName;//NOI18N
         else
             className=targetName;
-        action.setAttributeValue("type", className);
+        action.setAttributeValue("type", className);                    //NOI18N
         
         String path = (String) wizard.getProperty(WizardProperties.ACTION_PATH);
-        action.setAttributeValue("path", path.startsWith("/") ? path : "/" + path);
+        action.setAttributeValue("path", path.startsWith("/") ? path : "/" + path);     //NOI18N
         
         String formName = (String) wizard.getProperty(WizardProperties.ACTION_FORM_NAME);
         if (formName!=null) {
-            action.setAttributeValue("name", formName);
-            action.setAttributeValue("scope",(String) wizard.getProperty(WizardProperties.ACTION_SCOPE));
-            action.setAttributeValue("input",(String) wizard.getProperty(WizardProperties.ACTION_INPUT));
-            action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));
+            action.setAttributeValue("name", formName);         //NOI18N
+            action.setAttributeValue("scope",(String) wizard.getProperty(WizardProperties.ACTION_SCOPE));   //NOI18N
+            action.setAttributeValue("input",(String) wizard.getProperty(WizardProperties.ACTION_INPUT));   //NOI18N
+            action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));   //NOI18N
             Boolean validate = (Boolean) wizard.getProperty(WizardProperties.ACTION_VALIDATE);
             if (Boolean.FALSE.equals(validate)) action.setAttributeValue("validate","false"); //NOI18N
-            action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));
+            action.setAttributeValue("attribute",(String) wizard.getProperty(WizardProperties.ACTION_ATTRIBUTE));   //NOI18N
         }
-        action.setAttributeValue("parameter",(String) wizard.getProperty(WizardProperties.ACTION_PARAMETER));
+        action.setAttributeValue("parameter",(String) wizard.getProperty(WizardProperties.ACTION_PARAMETER));       //NOI18N
         
+        if (config != null && config.getActionMappings() == null)
+            config.setActionMappings(new ActionMappings());
         config.getActionMappings().addAction(action);
-        configDO.write(config);
-       // config.getActionMappings().addAction( new Action())
-        
+        BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+        if (doc == null){
+            ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
+            doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+        }
+        StrutsEditorUtilities.writeBean(doc, action, "action", "action-mappings");                                  //NOI18N
+        configDO.getEditorSupport().saveDocument();        
         return Collections.singleton(dobj);
     }
     
@@ -199,7 +208,7 @@ public class ActionIterator implements TemplateWizard.Iterator {
     }
     
     public String name () {
-        return NbBundle.getMessage (ActionIterator.class, "TITLE_x_of_y",
+        return NbBundle.getMessage (ActionIterator.class, "TITLE_x_of_y",               //NOI18N
             new Integer (index + 1), new Integer (panels.length));
     }
     

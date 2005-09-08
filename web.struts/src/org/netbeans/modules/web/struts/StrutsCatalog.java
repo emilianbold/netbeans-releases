@@ -108,7 +108,7 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return I18N display name
      */
     public String getDisplayName() {
-        return NbBundle.getMessage (StrutsCatalog.class, "LBL_StrutsCatalog");
+        return NbBundle.getMessage (StrutsCatalog.class, "LBL_StrutsCatalog");  //NOI18N
     }
     
     /**
@@ -124,7 +124,7 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return I18N short description
      */
     public String getShortDescription() {
-        return NbBundle.getMessage (StrutsCatalog.class, "DESC_StrutsCatalog");
+        return NbBundle.getMessage (StrutsCatalog.class, "DESC_StrutsCatalog");     //NOI18N
     }
     
    /**
@@ -134,15 +134,15 @@ public class StrutsCatalog implements CatalogReader, CatalogDescriptor, org.xml.
      * @return InputSource for publisId, 
      */    
     public org.xml.sax.InputSource resolveEntity(String publicId, String systemId) throws org.xml.sax.SAXException, java.io.IOException {
-       if (STRUTS_ID_1_0.equals(systemId)) {
+       if (STRUTS_ID_1_0.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_STRUTS_1_0);
-        } else if (STRUTS_ID_1_1.equals(systemId)) {
+        } else if (STRUTS_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_STRUTS_1_1);
-        } else if (STRUTS_ID_1_2.equals(systemId)) {
+        } else if (STRUTS_ID_1_2.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_STRUTS_1_2);
-        } else if (TILES_ID_1_1.equals(systemId)) {
+        } else if (TILES_ID_1_1.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_TILES_1_1);
-        } else if (VALIDATOR_ID_1_1_3.equals(systemId)) {
+        } else if (VALIDATOR_ID_1_1_3.equals(publicId)) {
             return new org.xml.sax.InputSource(URL_VALIDATOR_1_1_3);    
         } else {
             return null;

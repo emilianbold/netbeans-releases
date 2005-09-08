@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.struts.config.model.FormBeans;
 
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -34,13 +35,16 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.web.struts.StrutsConfigDataObject;
 import org.netbeans.modules.web.struts.config.model.FormBean;
 import org.netbeans.modules.web.struts.config.model.StrutsConfig;
+import org.netbeans.modules.web.struts.editor.StrutsEditorUtilities;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 
 
@@ -56,10 +60,10 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
     
     private transient WizardDescriptor.Panel[] panels;
 
-    private transient boolean debug = true;
+    private transient boolean debug = false;
     
     public void initialize (TemplateWizard wizard) {
-        if (debug) log ("initialize");
+        if (debug) log ("initialize");                  //NOI18N
         index = 0;
         // obtaining target folder
         Project project = Templates.getProject( wizard );
@@ -73,9 +77,9 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                                     JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (debug) {
-            log ("\tproject: " + project);
-            log ("\ttargetFolder: " + targetFolder);
-            log ("\tsourceGroups.length: " + sourceGroups.length);
+            log ("\tproject: " + project);              //NOI18N
+            log ("\ttargetFolder: " + targetFolder);    //NOI18N
+            log ("\tsourceGroups.length: " + sourceGroups.length);  //NOI18N
         }
         
         WizardDescriptor.Panel secondPanel = new FormBeanNewPanel(project);               
@@ -122,7 +126,7 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
         EditorCookie editorCookie = (EditorCookie) dobj.getCookie(EditorCookie.class);
         if (editorCookie != null) {
             javax.swing.text.Document doc = editorCookie.openDocument();
-            replaceInDocument(doc, "__SUPERCLASS__", (String) wizard.getProperty(WizardProperties.FORMBEAN_SUPERCLASS));
+            replaceInDocument(doc, "__SUPERCLASS__", (String) wizard.getProperty(WizardProperties.FORMBEAN_SUPERCLASS));    //NOI18N
             SaveCookie save = (SaveCookie) dobj.getCookie(SaveCookie.class);
             if (save != null)
                 save.save();
@@ -147,7 +151,7 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
             if (packageName!=null) break;
         }
         if (packageName!=null) packageName = packageName.replace('/','.');
-        else packageName="";
+        else packageName="";    //NOI18N
         String className=null;
         if (packageName.length()>0)
             className=packageName+"."+targetName;//NOI18N
@@ -155,11 +159,19 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
             className=targetName;
         
         formBean.setAttributeValue("name", targetName); //NOI18N
-        formBean.setAttributeValue("type", className); //NOI18N
-        
+        formBean.setAttributeValue("type", className); //NOI18N     
+        if (config != null && config.getFormBeans()==null){
+            config.setFormBeans(new FormBeans());
+        }
+             
         config.getFormBeans().addFormBean(formBean);
-        configDO.write(config);
-        
+        BaseDocument doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+        if (doc == null){
+            ((OpenCookie)configDO.getCookie(OpenCookie.class)).open();
+            doc = (BaseDocument)configDO.getEditorSupport().getDocument();
+        }
+        StrutsEditorUtilities.writeBean(doc, formBean, "form-bean", "form-beans"); //NOI18N
+        configDO.getEditorSupport().saveDocument();
         return Collections.singleton(dobj);
     }
     
@@ -182,7 +194,7 @@ public class FormBeanIterator implements TemplateWizard.Iterator {
     }
     
     public String name () {
-        return NbBundle.getMessage (ActionIterator.class, "TITLE_x_of_y",
+        return NbBundle.getMessage (ActionIterator.class, "TITLE_x_of_y",   //NOI18N
             new Integer (index + 1), new Integer (panels.length));
     }
     

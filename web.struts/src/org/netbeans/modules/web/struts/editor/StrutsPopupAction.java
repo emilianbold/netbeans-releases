@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
@@ -87,11 +88,12 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
         public JPopupMenu getPopupMenu() {
             JPopupMenu pm = super.getPopupMenu();
             pm.removeAll();
-            pm.add(new AddFormBeanAction());
             pm.add(new AddActionAction());
             pm.add(new AddForwardInlcudeAction());
             pm.add(new AddForwardAction());
             pm.add(new AddExceptionAction());
+            pm.add(new JSeparator());
+            pm.add(new AddFormBeanAction());
             pm.add(new AddFormPropertyAction());
             pm.pack();
             return pm;
@@ -101,8 +103,6 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
     public static class AddFormBeanAction extends BaseAction{
         public AddFormBeanAction(){
             super(NbBundle.getBundle(StrutsPopupAction.class).getString("add-form-bean-action")); //NOI18N
-            //putValue(SHORT_DESCRIPTION, );
-            //putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(StrutsPopupAction.class).getString(addFormBean));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -110,7 +110,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
             DataObject data = NbEditorUtilities.getDataObject(doc);
             AddFormBeanPanel dialogPanel = new AddFormBeanPanel();
             AddDialog dialog = new AddDialog(dialogPanel,
-                        NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddFormBean"),
+                        NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddFormBean"),         //NOI18N
                         new HelpCtx(AddFormBeanPanel.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -129,8 +129,11 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     bean.setAttributeValue("type",dialogPanel.getFormBeanClass()); //NOI18N
                     bean.setAttributeValue("name",dialogPanel.getFormName()); //NOI18N
                     beans.addFormBean(bean);
-                    ((StrutsConfigDataObject)data).write(config);
-                } catch (java.io.IOException ex) {}
+                    //((StrutsConfigDataObject)data).write(config);
+                    target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument)doc, bean, "form-bean", "form-beans"));       //NOI18N
+                } catch (java.io.IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
             }
             
         }
@@ -146,7 +149,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
             DataObject data = NbEditorUtilities.getDataObject(doc);
             AddActionPanel dialogPanel = new AddActionPanel((StrutsConfigDataObject)data);
             AddDialog dialog = new AddDialog(dialogPanel,
-                    NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddAction"),
+                    NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddAction"),           //NOI18N
                     new HelpCtx(AddActionPanel.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -171,7 +174,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     action.setAttributeValue("attribute",dialogPanel.getAttribute()); //NOI18N
                     action.setAttributeValue("parameter",dialogPanel.getParameter()); //NOI18N
                     mappings.addAction(action);
-                    ((StrutsConfigDataObject)data).write(config);
+                    target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument)doc, action, "action", "action-mappings"));      //NOI18N
                 } catch (java.io.IOException ex) {}
             }
         }
@@ -188,7 +191,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
             
             AddFIActionPanel dialogPanel = new AddFIActionPanel((StrutsConfigDataObject)data);
             AddDialog dialog = new AddDialog(dialogPanel,
-                    NbBundle.getMessage(StrutsPopupAction.class,"TTL_Forward-Include"),
+                    NbBundle.getMessage(StrutsPopupAction.class,"TTL_Forward-Include"),             //NOI18N
                     new HelpCtx(AddFIActionPanel.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -210,7 +213,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                         action.setAttributeValue("include",dialogPanel.getResource()); //NOI18N
                     }
                     mappings.addAction(action);
-                    ((StrutsConfigDataObject)data).write(config);
+                    target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument)doc, action, "action", "action-mappings"));
                 } catch (java.io.IOException ex) {}    
             }
         }
@@ -227,7 +230,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
             
             AddFormPropertyPanel dialogPanel = new AddFormPropertyPanel((StrutsConfigDataObject)data);
             AddDialog dialog = new AddDialog(dialogPanel,
-                    NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddFormProperty"),
+                    NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddFormProperty"),                 //NOI18N
                     new HelpCtx(AddFormPropertyPanel.class));
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -239,7 +242,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     if (config==null) return; //TODO:inform that XML file is corrupted
                     FormProperty prop = new FormProperty();
                     prop.setAttributeValue("name",dialogPanel.getPropertyName()); //NOI18N
-                    prop.setAttributeValue("type",dialogPanel.getPropertyType());
+                    prop.setAttributeValue("type",dialogPanel.getPropertyType());   //NOI18N
                     if (dialogPanel.isArray()) {
                         prop.setAttributeValue("size",dialogPanel.getArraySize()); //NOI18N
                     } else {
@@ -249,11 +252,12 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     for (int i=0;i<beans.length;i++) {
                         if (dialogPanel.getFormName().equals(beans[i].getAttributeValue("name"))) { //NOI18N
                             beans[i].addFormProperty(prop);
-                            beans[i].setAttributeValue("dynamic","true");
+                            beans[i].setAttributeValue("dynamic","true");           //NOI18N
+                            target.setCaretPosition(StrutsEditorUtilities.writePropertyIntoBean((BaseDocument) doc, prop, beans[i].getAttributeValue("name"))); //NOI18N
                             break;
                         }
                     }
-                    ((StrutsConfigDataObject)data).write(config);
+                    
                  
                 } catch (java.io.IOException ex) {}
             }
@@ -293,7 +297,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                 else 
                     dialogPanel = new AddForwardDialogPanel((StrutsConfigDataObject)data, targetActionPath);
                 AddDialog dialog = new AddDialog(dialogPanel,
-                        NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddForward"),
+                        NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddForward"),          //NOI18N
                         new HelpCtx(AddForwardDialogPanel.class));
                 dialog.disableAdd(); // disable Add button
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -310,6 +314,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                             config.setGlobalForwards(forwards);
                         }
                         forwards.addForward(forward);
+                        target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument)doc, forward, "forward", "global-forwards")); //NOI18N
                     } else {
                         Action[] actions = config.getActionMappings().getAction();
                         for (int i=0;i<actions.length;i++) {
@@ -318,8 +323,9 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                                 break;
                             }
                         }
+                        target.setCaretPosition(StrutsEditorUtilities.writeForwardIntoAction((BaseDocument)doc, forward, dialogPanel.getLocationAction()));
                     }
-                    ((StrutsConfigDataObject)data).write(config);
+                    
                 }
             } catch (java.io.IOException ex) {
                 ErrorManager.getDefault().notify(ex);
@@ -361,7 +367,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                     dialogPanel = new AddExceptionDialogPanel((StrutsConfigDataObject)data, targetActionPath);
                 
                 AddDialog dialog = new AddDialog(dialogPanel,
-                        NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddException"),
+                        NbBundle.getMessage(StrutsPopupAction.class,"TTL_AddException"),        //NOI18N
                         new HelpCtx(AddExceptionDialogPanel.class));
                 dialog.disableAdd(); // disable Add button
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
@@ -381,6 +387,7 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                             config.setGlobalExceptions(exceptions);
                         }
                         exceptions.addStrutsException(exception);
+                        target.setCaretPosition(StrutsEditorUtilities.writeBean((BaseDocument) doc, exception, "exception", "global-exceptions"));          //NOI18N
                     } else {
                         Action[] actions = config.getActionMappings().getAction();
                         for (int i=0;i<actions.length;i++) {
@@ -389,8 +396,8 @@ public final class StrutsPopupAction extends SystemAction implements Presenter.P
                                 break;
                             }
                         }
+                        target.setCaretPosition(StrutsEditorUtilities.writeExceptionIntoAction((BaseDocument)doc, exception, dialogPanel.getLocationAction()));
                     }
-                    ((StrutsConfigDataObject)data).write(config);
                 }
             } catch (java.io.IOException ex) {}
         }
