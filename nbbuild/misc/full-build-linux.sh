@@ -40,10 +40,10 @@
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
 #
-# ant=/opt/ant-1.6.3/bin/ant
-# Ant 1.6.3 installation directory.
+# ant=/opt/ant-1.6.5/bin/ant
+# Ant 1.6.5 installation directory.
 #
-# testant=/opt/ant-1.6.3/bin/ant
+# testant=/opt/ant-1.6.5/bin/ant
 # By default, same as ant.
 #
 # doclean=no
@@ -136,9 +136,9 @@ then
         echo "You need to set the variable 'nbjdk' to a JDK 1.4.2_08 installation" 1>&2
         exit 2
     fi
-    if $ant -version 2>&1 | fgrep -q -v 1.6.3
+    if $ant -version 2>&1 | fgrep -q -v 1.6.5
     then
-        echo "You need to set the variable 'ant' to an Ant 1.6.3 binary" 1>&2
+        echo "You need to set the variable 'ant' to an Ant 1.6.5 binary" 1>&2
         exit 2
     fi
 fi
