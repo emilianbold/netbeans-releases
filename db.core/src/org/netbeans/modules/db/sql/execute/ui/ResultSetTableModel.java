@@ -72,7 +72,7 @@ public class ResultSetTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int column) {
-        return getColumnDef(column).isWritable();
+        return false;
     }
 
     public String getColumnName(int column) {
