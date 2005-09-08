@@ -82,7 +82,6 @@ public class NbEditorUI extends ExtEditorUI {
     private FontColorSettings fontColorSettings;    
     private FontColorSettings bfontColorSettings;    
     
-    private LookupListener lookupListener;
     private static final Map /*<mimeType, map of colorings>*/coloringMap = new HashMap(5);
     
     /**
@@ -159,13 +158,7 @@ public class NbEditorUI extends ExtEditorUI {
                 MimeLookup lookup = MimeLookup.getMimeLookup(mimeType);
                 Lookup.Result result = lookup.lookup(new Lookup.Template(FontColorSettings.class));
                 Collection inst = result.allInstances();
-                lookupListener = new LookupListener(){
-                    public void resultChanged(LookupEvent ev){
-                        synchronized (coloringMap){
-                            coloringMap.remove(mimeType);
-                        }
-                    }
-                };
+                LookupListener lookupListener = new MyLookupListener(mimeType);
                 result.addLookupListener(lookupListener);
                 if (inst.size() > 0){
                     fontColorSettings = (FontColorSettings)inst.iterator().next();
@@ -690,6 +683,22 @@ public class NbEditorUI extends ExtEditorUI {
             }
         }
 
+    }
+
+    private static class MyLookupListener implements LookupListener {
+
+        private String mimeType;
+
+        public MyLookupListener(String mimeType) {
+            super();
+            this.mimeType = mimeType;
+        }
+
+        public void resultChanged(LookupEvent ev) {
+            synchronized (coloringMap){
+                coloringMap.remove(mimeType);
+            }
+        }
     }
 
 }
