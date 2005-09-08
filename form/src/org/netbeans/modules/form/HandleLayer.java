@@ -159,12 +159,19 @@ class HandleLayer extends JPanel implements MouseListener, MouseMotionListener
         else { // just paint the selection of selected components
             g2.setColor(formSettings.getSelectionBorderColor());
             g2.setStroke(getPaintStroke());
-            Iterator metacomps = formDesigner.getSelectedLayoutComponents().iterator();
-            boolean first = true;
-            while (metacomps.hasNext()) {
-                RADComponent metacomp = (RADComponent)metacomps.next();
-                paintSelection(g2, metacomp, first || !isInNewLayout(metacomp));
-                first = false;
+            try {
+                Iterator metacomps = formDesigner.getSelectedLayoutComponents().iterator();
+                boolean first = true;
+                while (metacomps.hasNext()) {
+                    RADComponent metacomp = (RADComponent)metacomps.next();
+                    paintSelection(g2, metacomp, first || !isInNewLayout(metacomp));
+                    first = false;
+                }
+            } catch (Exception ex) {
+                // Make sure that problems in selection painting
+                // doesn't cause endless stream of exceptions.
+                formDesigner.clearSelection();
+                throw new RuntimeException(ex);
             }
 
             if (selectionDragger != null)
