@@ -829,9 +829,49 @@
 //      UPDATE = UPDATE;
 //      DELETE = DELETE;
 //    };
-    SizelessTypes = (BIGINT,"CHAR FOR BIT DATA",CLOB,DATE,INTEGER,"LONG VARCHAR",SMALLINT,TIME,TIMESTAMP,"VARCHAR FOR BIT DATA");
+    SizelessTypes = (BIGINT,CLOB,DATE,INTEGER,"LONG VARCHAR",SMALLINT,TIME,TIMESTAMP);
     DecimalTypes = (DECIMAL,DOUBLE,NUMERIC,REAL);
     CharacterTypes = (CHAR,VARCHAR);
+
+    TypePrefixSuffixMap = {
+      "CHAR FOR BIT DATA" = {
+        Prefix = "CHAR";
+        Suffix = "FOR BIT DATA";
+      };
+      "VARCHAR FOR BIT DATA" = {
+        Prefix = VARCHAR;
+        Suffix = "FOR BIT DATA";
+      };
+    };
+
+/////////////////////
+// Columns definition
+/////////////////////
+
+    Column = {
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ default {default.value}][ {column.notnull}not null][ check ({check.condition})]";
+    };
+
+    UniqueColumn = {
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] unique";
+    };
+
+    PrimaryKeyColumn = {
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] primary key";
+    };
+
+    ForeignKeyColumn = {
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}][ check ({check.condition})] references {fkobject.name}[({fkcolumn.name})]";
+    };
+
+    CheckColumn = {
+      Class = org.netbeans.lib.ddl.impl.TableColumn;
+      Format = "{column.name} {column.type}[({column.size}[,{column.decsize}])][ {column.type.suffix}][ {column.notnull}not null][ default {default.value}] check ({check.condition})";
+    };
 
   };
 

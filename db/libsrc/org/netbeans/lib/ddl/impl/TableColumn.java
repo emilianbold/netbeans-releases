@@ -181,7 +181,21 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
             if (!qdefval.startsWith("(" + strdelim) && !qdefval.endsWith(strdelim + ")")) //hack for MSSQLServer, default value is encapsulated in () so I can't generate '()'
                 qdefval = strdelim + defval + strdelim;
         
-        args.put("column.type", spec.getType(type)); // NOI18N
+        String dbType = spec.getType(type);
+        String dbTypeSuffix = null;
+        Map suffixTypeMap = (Map)spec.getProperties().get("TypePrefixSuffixMap"); // NOI18N
+        if (suffixTypeMap != null) {
+            Map dbTypePrefixSuffix = (Map)suffixTypeMap.get(dbType);
+            if (dbTypePrefixSuffix != null) {
+                dbType = (String)dbTypePrefixSuffix.get("Prefix"); // NOI18N
+                dbTypeSuffix = (String)dbTypePrefixSuffix.get("Suffix"); // NOI18N
+            }
+        }
+        args.put("column.type", dbType);
+        if (dbTypeSuffix != null) {
+            args.put("column.type.suffix", dbTypeSuffix);
+        }
+        
         if (!nullable)
             args.put("column.notnull", ""); // NOI18N
         
