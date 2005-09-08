@@ -27,6 +27,7 @@ import org.netbeans.modules.j2ee.jboss4.ide.Customizer;
 import org.netbeans.modules.j2ee.jboss4.ide.JBJ2eePlatformFactory;
 import java.awt.Component;
 import org.openide.util.actions.SystemAction;
+import javax.swing.ToolTipManager;
 
 /**
  *
@@ -36,6 +37,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     private JBDeploymentManager deploymentManager;
     private static final String ADMIN_URL = "/web-console/"; //NOI18N
+    private static final String HTTP_HEADER = "http://";
     
     public JBManagerNode(Children children, Lookup lookup) {
         super(children);
@@ -94,6 +96,7 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
                 instanceProperties.setProperty(JBInstantiatingIterator.PROPERTY_DISPLAY_NAME, (String)val);
             }
         };
+        
         properties.put(property);
 
         // servewr name
@@ -161,6 +164,12 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     public Image getOpenedIcon(int type) {
         return getIcon(type);
+    }
+
+    public String getShortDescription() {
+        String host = (String)InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_HOST);
+        String port = (String)InstanceProperties.getInstanceProperties(((JBDeploymentManager)deploymentManager).getUrl()).getProperty(JBInstantiatingIterator.PROPERTY_PORT);
+        return  HTTP_HEADER + host + ":" + port + "/";
     }
     
 }
