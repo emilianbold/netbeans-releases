@@ -21,7 +21,6 @@ import java.text.MessageFormat;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.jmi.javamodel.Feature;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.Method;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -49,8 +48,7 @@ import org.openide.DialogDescriptor;
 public class UseDatabaseAction extends NodeAction {
     
     protected void performAction(Node[] nodes) {
-        Feature feature = (Feature) nodes[0].getLookup().lookup(Feature.class);
-        JavaClass beanClass = JMIUtils.getDeclaringClass(feature);
+        JavaClass beanClass = JMIUtils.getJavaClassFromNode(nodes[0]);
         FileObject srcFile = JavaModel.getFileObject(beanClass.getResource());
         Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
 
