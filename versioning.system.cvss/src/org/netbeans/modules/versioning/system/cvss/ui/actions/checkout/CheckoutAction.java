@@ -255,19 +255,20 @@ public final class CheckoutAction extends SystemAction {
             Object src = e.getSource();
             dialog.setVisible(false);
             if (panel.openButton.equals(src)) {
-                Project p = projectToBeOpened;
-
                 // show project chooser
                 if (projectToBeOpened == null) {
                     JFileChooser chooser = ProjectChooser.projectChooser();
                     chooser.setCurrentDirectory(workingFolder);
+                    chooser.setMultiSelectionEnabled(true);
                     chooser.showOpenDialog(null);
-                    File projectDir = chooser.getSelectedFile();
-                    if (projectDir != null) {
+                    File [] projectDirs = chooser.getSelectedFiles();
+                    for (int i = 0; i < projectDirs.length; i++) {
+                        File projectDir = projectDirs[i];
                         FileObject projectFolder = FileUtil.toFileObject(projectDir);
                         if (projectFolder != null) {
                             try {
-                                p = ProjectManager.getDefault().findProject(projectFolder);
+                                Project p = ProjectManager.getDefault().findProject(projectFolder);
+                                openProject(p);
                             } catch (IOException e1) {
                                 ErrorManager err = ErrorManager.getDefault();
                                 err.annotate(e1, "Can not find project for " + projectFolder);
@@ -275,11 +276,10 @@ public final class CheckoutAction extends SystemAction {
                             }
                         }
                     }
+                } else {
+                    if (projectToBeOpened == null) return; 
+                    openProject(projectToBeOpened);
                 }
-
-                if (p == null) return;
-
-                openProject(p);
 
             } else if (panel.createButton.equals(src)) {
                 ProjectUtilities.newProjectWizard(workingFolder);
